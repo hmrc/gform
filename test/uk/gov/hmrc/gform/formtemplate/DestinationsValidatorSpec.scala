@@ -82,7 +82,7 @@ class DestinationsValidatorSpec extends Spec with ScalaCheckDrivenPropertyChecks
     DestinationsValidator.validateNoGroupInDeclaration(destinationList) should be(Valid)
   }
 
-  "validateDestinationIncludeIfs" should "return an error when destinations have the different includeIf statements" in {
+  "validateDestinationIncludeIfs" should "return an error when destinations have the different type of includeIf statements" in {
     val destinations = NonEmptyList.of(
       hmrcDms.copy(includeIf = IncludeIfValue(IncludeIf(Equals(FormCtx(FormComponentId("fieldA")), Constant("1"))))),
       hmrcDms.copy(includeIf = HandlebarValue("${empName = ''}"))
@@ -91,7 +91,7 @@ class DestinationsValidatorSpec extends Spec with ScalaCheckDrivenPropertyChecks
     DestinationsValidator.validateDestinationIncludeIfs(
       destinationList.copy(destinations = destinations)
     ) shouldBe Invalid(
-      "IncludeIf statements in destinations are not valid. It must be the combination of handlebar or expression."
+      "IncludeIf statements in destinations are not valid. Destinations 'includeIf' must be either all 'gform expressions' ie. ${...} or all 'handlebar expressions' ie. {{...}}. It cannot be mix of both."
     )
   }
 

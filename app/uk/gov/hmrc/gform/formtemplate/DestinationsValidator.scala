@@ -53,7 +53,7 @@ object DestinationsValidator {
 
       if (hasIncludeIfValue && hasHandlebarValue) {
         Invalid(
-          "IncludeIf statements in destinations are not valid. It must be the combination of handlebar or expression."
+          "IncludeIf statements in destinations are not valid. Destinations 'includeIf' must be either all 'gform expressions' ie. ${...} or all 'handlebar expressions' ie. {{...}}. It cannot be mix of both."
         )
       } else {
         Valid
