@@ -23,6 +23,8 @@ import uk.gov.hmrc.gform.core.{ Invalid, Valid }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.PrimitiveGen._
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Constant, Equals, FormComponentId, FormCtx, IncludeIf }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationIncludeIf.{ HandlebarValue, IncludeIfValue }
 
 class DestinationsValidatorSpec extends Spec with ScalaCheckDrivenPropertyChecks {
   "validateUniqueDestinationIds" should "return an error when there are duplicate ids" in {
@@ -78,5 +80,40 @@ class DestinationsValidatorSpec extends Spec with ScalaCheckDrivenPropertyChecks
 
   it should "pass validation when there is not a Group component in Declaration section" in {
     DestinationsValidator.validateNoGroupInDeclaration(destinationList) should be(Valid)
+  }
+
+  "validateDestinationIncludeIfs" should "return an error when destinations have the different type of includeIf statements" in {
+    val destinations = NonEmptyList.of(
+      hmrcDms.copy(includeIf = IncludeIfValue(IncludeIf(Equals(FormCtx(FormComponentId("fieldA")), Constant("1"))))),
+      hmrcDms.copy(includeIf = HandlebarValue("${empName = ''}"))
+    )
+
+    DestinationsValidator.validateDestinationIncludeIfs(
+      destinationList.copy(destinations = destinations)
+    ) shouldBe Invalid(
+      "IncludeIf statements in destinations are not valid. Destinations 'includeIf' must be either all 'gform expressions' ie. ${...} or all 'handlebar expressions' ie. {{...}}. It cannot be mix of both."
+    )
+  }
+
+  "validateDestinationIncludeIfs" should "pass validation when both are includeIf statement" in {
+    val destinations = NonEmptyList.of(
+      hmrcDms.copy(includeIf = IncludeIfValue(IncludeIf(Equals(FormCtx(FormComponentId("fieldA")), Constant("1"))))),
+      hmrcDms.copy(includeIf = IncludeIfValue(IncludeIf(Equals(FormCtx(FormComponentId("fieldA")), Constant("2")))))
+    )
+
+    DestinationsValidator.validateDestinationIncludeIfs(destinationList.copy(destinations = destinations)) should be(
+      Valid
+    )
+  }
+
+  "validateDestinationIncludeIfs" should "pass validation when both are handlebar statement" in {
+    val destinations = NonEmptyList.of(
+      hmrcDms.copy(includeIf = HandlebarValue("{{isNotNull empName}}")),
+      hmrcDms.copy(includeIf = HandlebarValue("{{isNull empName}}"))
+    )
+
+    DestinationsValidator.validateDestinationIncludeIfs(destinationList.copy(destinations = destinations)) should be(
+      Valid
+    )
   }
 }
