@@ -61,6 +61,7 @@ object BooleanExprSubstituter extends Substituter[BooleanExprSubstitutions, Form
         case RemoveSpaces(_)               => t
         case NumberedList(_)               => t
         case BulletedList(_)               => t
+        case Substring(_, _, _)            => t
       }
     }
 

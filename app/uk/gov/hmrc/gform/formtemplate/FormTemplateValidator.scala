@@ -939,6 +939,7 @@ object FormTemplateValidator {
       case RemoveSpaces(_)             => Valid
       case NumberedList(_)             => Valid
       case BulletedList(_)             => Valid
+      case Substring(_, _, _)          => Valid
     }
   }
 

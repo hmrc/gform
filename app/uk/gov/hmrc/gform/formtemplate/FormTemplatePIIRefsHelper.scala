@@ -137,6 +137,7 @@ object FormTemplatePIIRefsHelper {
       case RemoveSpaces(FormComponentId(value))               => List(value)
       case NumberedList(FormComponentId(value))               => List(value)
       case BulletedList(FormComponentId(value))               => List(value)
+      case Substring(expr, _, _)                              => extractRefs(expr)
     }
 
   implicit class JsLookupResultOps(result: JsLookupResult) {

@@ -63,6 +63,7 @@ object ExprSubstituter extends Substituter[ExprSubstitutions, FormTemplate] {
         case RemoveSpaces(_)                 => t
         case NumberedList(_)                 => t
         case BulletedList(_)                 => t
+        case Substring(_, _, _)              => t
       }
     }
 
