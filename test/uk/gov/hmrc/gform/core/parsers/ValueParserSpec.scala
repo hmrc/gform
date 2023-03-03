@@ -1073,7 +1073,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
   it should "parse substirng function" in {
     val res = ValueParser.validate("${substring(fieldId, 3, 4)}")
     res.right.value should be(
-      TextExpression(Substring(TextExpression(FormCtx(FormComponentId("fieldId"))), 3, 4))
+      TextExpression(Substring(FormCtx(FormComponentId("fieldId")), 3, 4))
     )
   }
 }

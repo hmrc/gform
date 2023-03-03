@@ -89,7 +89,7 @@ final case class Typed(expr: Expr, tpe: ExplicitExprType) extends Expr
 final case class RemoveSpaces(formComponentId: FormComponentId) extends Expr
 final case class NumberedList(formComponentId: FormComponentId) extends Expr
 final case class BulletedList(formComponentId: FormComponentId) extends Expr
-final case class Substring(field1: TextExpression, from: Int, to: Int) extends Expr
+final case class Substring(field1: Expr, beginIndex: Int, endIndex: Int) extends Expr
 
 sealed trait SizeRefType extends Product with Serializable
 
