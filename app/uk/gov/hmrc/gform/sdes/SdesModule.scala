@@ -92,6 +92,11 @@ class SdesModule(
   val sdesController: SdesController =
     new SdesController(configModule.controllerComponents, sdesService, objectStoreModule.objectStoreService)
 
+  val sdesWorkItemService: SdesWorkItemAlgebra[Future] = new SdesWorkItemService(sdesNotificationRepository)
+
+  val sdesWorkItemController: SdesWorkItemController =
+    new SdesWorkItemController(configModule.controllerComponents, sdesWorkItemService)
+
   val foptSdesService: SdesAlgebra[FOpt] = new SdesAlgebra[FOpt] {
 
     override def pushWorkItem(

@@ -97,7 +97,8 @@ class PlayComponentsModule(
     translationModule.translationController,
     notificationBannerModule.notificationBannerController,
     sdesModule.sdesCallbackController,
-    sdesModule.sdesController
+    sdesModule.sdesController,
+    sdesModule.sdesWorkItemController
   )
 
   private val healthController =

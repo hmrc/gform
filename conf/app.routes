@@ -91,3 +91,8 @@ GET           /sdes/search/:page/:pageSize                                      
 GET           /sdes/:correlationId                                                                      uk.gov.hmrc.gform.sdes.SdesController.find(correlationId: CorrelationId)
 POST          /sdes/notify/:correlationId                                                               uk.gov.hmrc.gform.sdes.SdesController.notifySDES(correlationId: CorrelationId)
 DELETE        /sdes/:correlationId                                                                      uk.gov.hmrc.gform.sdes.SdesController.remove(correlationId: CorrelationId)
+
+GET           /sdes-work-item/search/:page/:pageSize                                                    uk.gov.hmrc.gform.sdes.SdesWorkItemController.search(page: Int, pageSize: Int, formTemplateId: Option[FormTemplateId], status: Option[ProcessingStatus])
+POST          /sdes-work-item/enqueue/:id                                                               uk.gov.hmrc.gform.sdes.SdesWorkItemController.enqueue(id: String)
+GET           /sdes-work-item/:id                                                                       uk.gov.hmrc.gform.sdes.SdesWorkItemController.get(id: String)
+DELETE        /sdes-work-item/:id                                                                       uk.gov.hmrc.gform.sdes.SdesWorkItemController.delete(id: String)
