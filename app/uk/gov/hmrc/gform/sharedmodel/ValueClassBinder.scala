@@ -27,6 +27,9 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplateId, FormTemplateRawId, SectionNumber }
 import uk.gov.hmrc.gform.sharedmodel.notifier.NotifierEmailAddress
 import uk.gov.hmrc.gform.sharedmodel.sdes._
+import uk.gov.hmrc.mongo.workitem.ProcessingStatus
+import uk.gov.hmrc.mongo.workitem.ProcessingStatus.Implicits.format
+
 object ValueClassBinder {
 
   implicit val jLiteralAffinityGroup = new JavascriptLiteral[AffinityGroup] {
@@ -51,6 +54,8 @@ object ValueClassBinder {
   implicit val notificationStatusBinder: QueryStringBindable[NotificationStatus] = valueClassQueryBinder(
     NotificationStatus.fromName
   )
+  implicit val processingStatusBinder: QueryStringBindable[ProcessingStatus] = valueClassQueryBinder(_.name)
+
   implicit val reads: Reads[Crypted] = Reads {
     case JsString(str) => JsSuccess(Crypted(str))
     case unknown       => JsError(s"Failed to read Crypted. Expected JsString, but found $unknown")

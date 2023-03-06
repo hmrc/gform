@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.gform.scheduler
 
+import org.mongodb.scala.model.IndexModel
 import play.api.libs.json.OFormat
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.workitem.ProcessingStatus.PermanentlyFailed
@@ -26,13 +27,15 @@ import scala.concurrent.{ ExecutionContext, Future }
 
 abstract class WorkItemRepo[N](
   mongoComponent: MongoComponent,
-  collectionName: String
+  collectionName: String,
+  extraIndexes: Seq[IndexModel]
 )(implicit ec: ExecutionContext, format: OFormat[N])
     extends WorkItemRepository[N](
       collectionName = collectionName,
       mongoComponent = mongoComponent,
       itemFormat = format,
-      workItemFields = WorkItemFields.default
+      workItemFields = WorkItemFields.default,
+      extraIndexes = extraIndexes
     ) {
   override def now(): Instant = Instant.now()
 
