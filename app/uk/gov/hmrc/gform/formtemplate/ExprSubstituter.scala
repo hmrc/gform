@@ -60,6 +60,7 @@ object ExprSubstituter extends Substituter[ExprSubstitutions, FormTemplate] {
         case Size(_, _)                      => t
         case Typed(expr, tpe)                => Typed(substitute(substitutions, expr), tpe)
         case IndexOf(formComponentId, index) => t
+        case IndexOfDataRetrieveCtx(_, _)    => t
         case RemoveSpaces(_)                 => t
         case NumberedList(_)                 => t
         case BulletedList(_)                 => t

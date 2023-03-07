@@ -933,13 +933,14 @@ object FormTemplateValidator {
           .map(_.id)
           .contains(value)
           .validationResult(s"$value is not AddToList Id")
-      case Size(value, _)              => validate(FormCtx(value), sections)
-      case Typed(expr, tpe)            => validate(expr, sections)
-      case IndexOf(formComponentId, _) => validate(FormCtx(formComponentId), sections)
-      case RemoveSpaces(_)             => Valid
-      case NumberedList(_)             => Valid
-      case BulletedList(_)             => Valid
-      case Substring(_, _, _)          => Valid
+      case Size(value, _)               => validate(FormCtx(value), sections)
+      case Typed(expr, tpe)             => validate(expr, sections)
+      case IndexOf(formComponentId, _)  => validate(FormCtx(formComponentId), sections)
+      case IndexOfDataRetrieveCtx(_, _) => Valid
+      case RemoveSpaces(_)              => Valid
+      case NumberedList(_)              => Valid
+      case BulletedList(_)              => Valid
+      case Substring(_, _, _)           => Valid
     }
   }
 

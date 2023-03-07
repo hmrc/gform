@@ -179,6 +179,7 @@ final case class CsvCountryCheck(formComponentId: FormComponentId, column: Strin
 final case class CsvOverseasCountryCheck(formComponentId: FormComponentId, column: String) extends Expr
 final case class CsvCountryCountCheck(formComponentId: FormComponentId, column: String, value: String) extends Expr
 final case class IndexOf(formComponentId: FormComponentId, index: Int) extends Expr
+final case class IndexOfDataRetrieveCtx(ctx: DataRetrieveCtx, index: Int) extends Expr
 
 sealed trait DateProjection extends Product with Serializable {
   def dateExpr: DateExpr
@@ -194,6 +195,7 @@ object DateProjection {
 }
 
 object Expr {
+  implicit val dataRetrieveCtxFormat: OFormat[DataRetrieveCtx] = derived.oformat()
   implicit val format: OFormat[Expr] = derived.oformat()
 
   implicit val leafExprs: LeafExpr[Expr] = (path: TemplatePath, t: Expr) => List(ExprWithPath(path, t))
