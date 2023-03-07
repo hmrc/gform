@@ -88,7 +88,8 @@ class FormComponentMaker(json: JsValue) {
   lazy val optionHelpText: Option[NonEmptyList[SmartString]] =
     (json \ "optionHelpText").asOpt[NonEmptyList[SmartString]]
   lazy val submitMode: Option[String] = (json \ "submitMode").asOpt[String]
-  lazy val choices: Option[List[OptionData]] = (json \ "choices").asOpt[List[OptionData]]
+  lazy val choicesOpt: Opt[Option[List[OptionData]]] =
+    toOpt((json \ "choices").validateOpt[List[OptionData]], "/choices")
 
   lazy val revealingFieldsJson: Option[List[List[JsValue]]] =
     (json \ "revealingFields").asOpt[List[List[JsValue]]]
@@ -493,6 +494,7 @@ class FormComponentMaker(json: JsValue) {
       selectionCriteria <- optSelectionCriteria
       maybeFormatExpr   <- optMaybeFormatExpr(roundingMode)(selectionCriteria)(emailVerification)
       maybeValueExpr    <- optMaybeValueExpr
+      choices           <- choicesOpt
       oChoice: Opt[Choice] = (maybeFormatExpr, choices, multivalue, maybeValueExpr) match {
                                // format: off
         case (IsOrientation(VerticalOrientation),   Some(x :: xs), IsMultivalue(MultivalueYes), Selections(selections)) => Choice(Checkbox, NonEmptyList(x, xs),          Vertical,   selections, optionHints, optionHelpText, dividerPositon, dividerText, noneChoice, noneChoiceError).asRight
@@ -527,79 +529,82 @@ class FormComponentMaker(json: JsValue) {
 
     val maybeRevealingFields: Option[Opt[List[List[FormComponent]]]] =
       revealingFields.map(_.traverse(_.traverse(_.optFieldValue())))
-    (choices, maybeValueExpr, maybeRevealingFields) match {
-      case (Some(options), Selections(selections), Some(Right(revealingFields))) =>
-        def mkError[A](error: String): Either[String, A] = s"RevealingChoice error: $error".asLeft
 
-        val selectionE: Either[String, Option[Int]] = selections match {
-          case Nil              => Right(None)
-          case selection :: Nil => Right(Some(selection))
-          case _ :: _ =>
-            val sel = selections.mkString(",")
-            mkError(s"Only single choice can be selected, but $sel has been defined")
-        }
+    choicesOpt.flatMap { choices =>
+      (choices, maybeValueExpr, maybeRevealingFields) match {
+        case (Some(options), Selections(selections), Some(Right(revealingFields))) =>
+          def mkError[A](error: String): Either[String, A] = s"RevealingChoice error: $error".asLeft
 
-        def rcFromSelection(selections: List[Boolean]): Either[String, RevealingChoice] = {
-          val hints =
-            optionHints.fold[List[Option[SmartString]]](List.fill(revealingFields.size)(None))(
-              _.toList.map(hint => if (hint.nonEmpty) Some(hint) else None)
-            )
+          val selectionE: Either[String, Option[Int]] = selections match {
+            case Nil              => Right(None)
+            case selection :: Nil => Right(Some(selection))
+            case _ :: _ =>
+              val sel = selections.mkString(",")
+              mkError(s"Only single choice can be selected, but $sel has been defined")
+          }
 
-          val revealingChoiceElements: List[RevealingChoiceElement] =
-            options
-              .zip(revealingFields)
-              .zip(selections)
-              .zip(hints)
-              .map { case (((choice, fields), selected), hint) =>
-                RevealingChoiceElement(choice, fields, hint, selected)
+          def rcFromSelection(selections: List[Boolean]): Either[String, RevealingChoice] = {
+            val hints =
+              optionHints.fold[List[Option[SmartString]]](List.fill(revealingFields.size)(None))(
+                _.toList.map(hint => if (hint.nonEmpty) Some(hint) else None)
+              )
+
+            val revealingChoiceElements: List[RevealingChoiceElement] =
+              options
+                .zip(revealingFields)
+                .zip(selections)
+                .zip(hints)
+                .map { case (((choice, fields), selected), hint) =>
+                  RevealingChoiceElement(choice, fields, hint, selected)
+                }
+
+            (revealingChoiceElements, multivalue) match {
+              case (x :: xs, IsMultivalue(MultivalueYes)) => RevealingChoice(NonEmptyList(x, xs), true).asRight
+              case (x :: xs, IsMultivalue(MultivalueNo))  => RevealingChoice(NonEmptyList(x, xs), false).asRight
+              case (_ :: _, _) =>
+                mkError(s"'$multivalue' is not a valid value for the revealing choice multivalue property")
+              case _ => mkError("At least one choice needs to be specified")
+            }
+          }
+
+          def construcRevealingChoice(maybeSelection: Option[Int]): Either[String, RevealingChoice] =
+            if (optionHints.fold(false)(_.size =!= options.size)) {
+              mkError(
+                s"Number of 'choices': ${options.size} and number of 'hints': ${optionHints.map(_.size)} does not match. They need to be identical."
+              )
+            } else if (options.size =!= revealingFields.size) {
+              mkError(
+                s"Number of 'choices': ${options.size} and number of 'revealingFields': ${revealingFields.size} does not match. They need to be identical."
+              )
+            } else {
+
+              val initialSelections = List.fill(options.size)(false)
+              val selectionsE = maybeSelection.fold[Either[String, List[Boolean]]](initialSelections.asRight) {
+                selection =>
+                  if (initialSelections.isDefinedAt(selection)) {
+                    initialSelections.updated(selection, true).asRight
+                  } else mkError(s"Selection index $selection doesn't correspond to any of the choices")
               }
 
-          (revealingChoiceElements, multivalue) match {
-            case (x :: xs, IsMultivalue(MultivalueYes)) => RevealingChoice(NonEmptyList(x, xs), true).asRight
-            case (x :: xs, IsMultivalue(MultivalueNo))  => RevealingChoice(NonEmptyList(x, xs), false).asRight
-            case (_ :: _, _) =>
-              mkError(s"'$multivalue' is not a valid value for the revealing choice multivalue property")
-            case _ => mkError("At least one choice needs to be specified")
-          }
-        }
+              for {
+                selections <- selectionsE
+                rc         <- rcFromSelection(selections)
+              } yield rc
 
-        def construcRevealingChoice(maybeSelection: Option[Int]): Either[String, RevealingChoice] =
-          if (optionHints.fold(false)(_.size =!= options.size)) {
-            mkError(
-              s"Number of 'choices': ${options.size} and number of 'hints': ${optionHints.map(_.size)} does not match. They need to be identical."
-            )
-          } else if (options.size =!= revealingFields.size) {
-            mkError(
-              s"Number of 'choices': ${options.size} and number of 'revealingFields': ${revealingFields.size} does not match. They need to be identical."
-            )
-          } else {
-
-            val initialSelections = List.fill(options.size)(false)
-            val selectionsE = maybeSelection.fold[Either[String, List[Boolean]]](initialSelections.asRight) {
-              selection =>
-                if (initialSelections.isDefinedAt(selection)) {
-                  initialSelections.updated(selection, true).asRight
-                } else mkError(s"Selection index $selection doesn't correspond to any of the choices")
             }
 
-            for {
-              selections <- selectionsE
-              rc         <- rcFromSelection(selections)
-            } yield rc
+          val res = for {
+            selection <- selectionE
+            rc        <- construcRevealingChoice(selection)
+          } yield rc
 
-          }
-
-        val res = for {
-          selection <- selectionE
-          rc        <- construcRevealingChoice(selection)
-        } yield rc
-
-        res.leftMap(UnexpectedState)
-      case _ =>
-        UnexpectedState(s"""|Wrong revealing choice definition
-                            |choices : $choices
-                            |selections: $maybeValueExpr
-                            |revealingFields: $maybeRevealingFields""".stripMargin).asLeft
+          res.leftMap(UnexpectedState)
+        case _ =>
+          UnexpectedState(s"""|Wrong revealing choice definition
+                              |choices : $choices
+                              |selections: $maybeValueExpr
+                              |revealingFields: $maybeRevealingFields""".stripMargin).asLeft
+      }
     }
   }
 

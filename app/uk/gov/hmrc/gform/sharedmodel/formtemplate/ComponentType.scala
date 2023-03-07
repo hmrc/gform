@@ -24,6 +24,7 @@ import cats.data.NonEmptyList
 import julienrf.json.derived
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
+import uk.gov.hmrc.gform.core.parsers.ValueParser
 import uk.gov.hmrc.gform.formtemplate.FormComponentMakerService.{ IsFalseish, IsTrueish }
 import uk.gov.hmrc.gform.sharedmodel.{ LocalisedString, SmartString, ValueClassFormat }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.DisplayWidth.DisplayWidth
@@ -186,16 +187,32 @@ object SummaryDisplayWidth extends Enumeration {
 sealed trait OptionData extends Product with Serializable
 
 object OptionData {
-  final case class Dynamic(formComponentId: FormComponentId)
+  sealed trait Dynamic extends Product with Serializable
 
   object Dynamic {
 
-    val templateReads: Reads[Dynamic] = Reads.StringReads.map(d => Dynamic(FormComponentId(d)))
+    final case class ATLBased(formComponentId: FormComponentId) extends Dynamic
+    final case class DataRetrieveBased(indexOfDataRetrieveCtx: IndexOfDataRetrieveCtx) extends Dynamic
+
+    val templateReads: Reads[OptionData.Dynamic] = Reads.StringReads.flatMap { d =>
+      val parsed = ValueParser.validate("${" + d + "}")
+      parsed match {
+        case Right(TextExpression(FormCtx(fcId))) => Reads.pure(OptionData.Dynamic.ATLBased(fcId))
+        case Right(TextExpression(drc @ DataRetrieveCtx(_, _))) =>
+          Reads.pure(OptionData.Dynamic.DataRetrieveBased(IndexOfDataRetrieveCtx(drc, 0)))
+        case _ => Reads.failed("Wrong expression used in dynamic: " + d)
+      }
+    }
+
+    implicit val dataRetrieveCtx: Format[DataRetrieveCtx] = derived.oformat()
+    implicit val indexOfDataRetrieveCtx: Format[IndexOfDataRetrieveCtx] = derived.oformat()
     implicit val format: Format[Dynamic] = OFormatWithTemplateReadFallback(templateReads)
 
-    implicit val leafExprs: LeafExpr[Dynamic] = (path: TemplatePath, t: Dynamic) => {
-      LeafExpr(path, t.formComponentId)
-    }
+    implicit val leafExprs: LeafExpr[Dynamic] = (path: TemplatePath, t: Dynamic) =>
+      t match {
+        case Dynamic.ATLBased(formComponentId)          => LeafExpr(path, formComponentId)
+        case Dynamic.DataRetrieveBased(dataRetrieveCtx) => LeafExpr(path, dataRetrieveCtx)
+      }
   }
 
   case class IndexBased(
