@@ -386,14 +386,26 @@ class FormComponentMaker(json: JsValue) {
 
   private lazy val addressOpt: Opt[Address] = {
 
+    val addressValueOpt = for {
+      maybeValue <- toOpt((json \ "value").validateOpt[SmartString], "/value")
+      expr <- maybeValue.fold[Opt[Option[Expr]]](None.asRight) {
+                case s: SmartString if s.interpolations.size != 1 =>
+                  UnexpectedState("address value should contain only one expression").asLeft
+                case s: SmartString if !s.nonEmpty =>
+                  UnexpectedState("address value should not have any strings").asLeft
+                case s => s.interpolations.headOption.asRight
+              }
+    } yield expr
+
     import Address.Configurable._
     for {
       city          <- AddressParser.mandatoryField(mandatoryCity, Mandatory.City)
       international <- internationalOpt
       _             <- mandatoryCityForNonInternationnal(city, international)
+      value         <- addressValueOpt
     } yield {
       val mandatoryFields: List[Mandatory] = List(city).flatten
-      Address(international, mandatoryFields, optCountyDisplayed.getOrElse(false))
+      Address(international, mandatoryFields, optCountyDisplayed.getOrElse(false), value)
     }
   }
 

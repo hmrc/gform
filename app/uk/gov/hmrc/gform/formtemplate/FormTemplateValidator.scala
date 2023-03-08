@@ -816,7 +816,8 @@ object FormTemplateValidator {
     case Date(_, _, _)                        => Valid
     case CalendarDate                         => Valid
     case TaxPeriodDate                        => Valid
-    case Address(_, _, _)                     => Valid
+    case Address(_, _, _, Some(expr))         => validateAddressValue(expr, formTemplate)
+    case Address(_, _, _, _)                  => Valid
     case Choice(_, _, _, _, _, _, _, _, _, _) => Valid
     case RevealingChoice(revealingChoiceElements, _) =>
       validate(revealingChoiceElements.toList.flatMap(_.revealingFields.map(_.`type`)), formTemplate)
@@ -829,6 +830,18 @@ object FormTemplateValidator {
     case PostcodeLookup              => Valid
     case MiniSummaryList(ls)         => validateMiniSummaryList(ls, formTemplate)
     case t: TableComp                => TableCompValidator.validateTableComp(t)
+  }
+
+  def validateAddressValue(expr: Expr, formTemplate: FormTemplate): ValidationResult = {
+    val sections = formTemplate.formKind.allSections
+    val addressIds = SectionHelper.pages(sections).flatMap(page => page.allFormComponents ++ page.fields).collect {
+      case fc @ IsAddress(_) => fc.id
+    }
+    expr match {
+      case AuthCtx(AuthInfo.ItmpAddress)              => Valid
+      case FormCtx(fcId) if addressIds.contains(fcId) => Valid
+      case _                                          => Invalid("address value expression should contain either address component id or itmpAddress")
+    }
   }
 
   def validateMiniSummaryList(rows: List[MiniSummaryRow], formTemplate: FormTemplate): ValidationResult = {

@@ -613,4 +613,32 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
       )
     )
   }
+
+  it should "parse Address with FormCtx value" in {
+    val formComponentMaker = new FormComponentMaker(Json.parse("""
+                                                                 |{
+                                                                 |  "id": "userAddressCopy",
+                                                                 |  "type": "address",
+                                                                 |  "label": "Address copy",
+                                                                 |  "submitMode": "summaryinfoonly",
+                                                                 |  "value": "${userAddress}"
+                                                                 |}
+                                                                 |""".stripMargin))
+    val result = formComponentMaker.optFieldValue().map(_.`type`)
+    result shouldBe Right(Address(false, List(), false, Some(FormCtx(FormComponentId("userAddress")))))
+  }
+
+  it should "parse Address with auth.itmpAddress value" in {
+    val formComponentMaker = new FormComponentMaker(Json.parse("""
+                                                                 |{
+                                                                 |  "id": "userAddressCopy",
+                                                                 |  "type": "address",
+                                                                 |  "label": "Address copy",
+                                                                 |  "submitMode": "summaryinfoonly",
+                                                                 |  "value": "${auth.itmpAddress}"
+                                                                 |}
+                                                                 |""".stripMargin))
+    val result = formComponentMaker.optFieldValue().map(_.`type`)
+    result shouldBe Right(Address(false, List(), false, Some(AuthCtx(AuthInfo.ItmpAddress))))
+  }
 }
