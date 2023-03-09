@@ -229,6 +229,8 @@ object FormTemplateValidator {
             .map(_.id)
             .contains(formComponentId) =>
         Invalid(s"${path.path}: $formComponentId is not AddToList Id")
+      case ReferenceInfo.SubstringExpr(path, Substring(FormCtx(formComponentId), _, _)) if !allFcIds(formComponentId) =>
+        invalid(path, formComponentId)
       case _ => Valid
     }
 
