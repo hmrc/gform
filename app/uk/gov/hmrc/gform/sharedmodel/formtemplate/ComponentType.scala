@@ -89,7 +89,8 @@ case object TaxPeriodDate extends ComponentType
 case class Address(
   international: Boolean,
   mandatoryFields: List[Address.Configurable.Mandatory],
-  countyDisplayed: Boolean
+  countyDisplayed: Boolean,
+  value: Option[Expr]
 ) extends ComponentType {
   def fields(id: FormComponentId): NonEmptyList[FormComponentId] = Address.fields(id)
 
@@ -520,7 +521,8 @@ object ComponentType {
       case CalendarDate                        => Nil
       case PostcodeLookup                      => Nil
       case TaxPeriodDate                       => Nil
-      case Address(_, _, _)                    => Nil
+      case Address(_, _, _, Some(expr))        => List(ExprWithPath(path, expr))
+      case Address(_, _, _, _)                 => Nil
       case OverseasAddress(_, _, value, _)     => LeafExpr(path, value)
       case Choice(_, options, _, _, hints, optionHelpText, _, _, _, _) =>
         LeafExpr(path + "choices", options) ++
