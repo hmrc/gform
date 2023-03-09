@@ -78,7 +78,7 @@ final case class ExprWithPath(path: TemplatePath, expr: Expr) {
     case r @ RemoveSpaces(_)                           => ReferenceInfo.RemoveSpacesExpr(path, r) :: Nil
     case n @ NumberedList(_)                           => ReferenceInfo.NumberedListExpr(path, n) :: Nil
     case b @ BulletedList(_)                           => ReferenceInfo.BulletedListExpr(path, b) :: Nil
-    case s @ Substring(_, _, _)                        => ReferenceInfo.SubstringExpr(path, s) :: Nil
+    case s @ Substring(expr, _, _)                     => ReferenceInfo.SubstringExpr(path, s) :: toReferenceInfo(expr)
   }
 }
 
