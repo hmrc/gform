@@ -159,7 +159,8 @@ object Substituter {
     ev2: Substituter[A, BooleanExpr]
   ): Substituter[A, TableValueRow] = (substitutions, t) =>
     t match {
-      case TableValueRow(values, includeIf) => TableValueRow(values(substitutions), includeIf(substitutions))
+      case TableValueRow(values, includeIf, dynamic) =>
+        TableValueRow(values(substitutions), includeIf(substitutions), dynamic)
     }
 
   implicit def componentTypeSubstituter[A](implicit

@@ -537,7 +537,8 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
                   None
                 )
               ),
-              Some(IncludeIf(TopLevelRef(BooleanExprId("expression"))))
+              Some(IncludeIf(TopLevelRef(BooleanExprId("expression")))),
+              Option.empty[Dynamic]
             ),
             TableValueRow(
               List(
@@ -557,7 +558,8 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
                   None
                 )
               ),
-              Some(IncludeIf(TopLevelRef(BooleanExprId("expression"))))
+              Some(IncludeIf(TopLevelRef(BooleanExprId("expression")))),
+              Option.empty[Dynamic]
             ),
             TableValueRow(
               List(
@@ -586,7 +588,8 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
                   None
                 )
               ),
-              None
+              None,
+              Option.empty[Dynamic]
             )
           ),
           toSmartString("Summary value"),
