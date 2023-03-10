@@ -19,7 +19,7 @@ package uk.gov.hmrc.gform.formtemplate
 import munit.FunSuite
 import uk.gov.hmrc.gform.Helpers.toSmartString
 import uk.gov.hmrc.gform.core.{ Invalid, Valid }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ IncludeIf, TableComp, TableValue, TableValueRow }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Dynamic, IncludeIf, TableComp, TableValue, TableValueRow }
 
 class TableCompValidatorSuite extends FunSuite {
   test("TableCompValidator.validateTableComp (1)") {
@@ -32,7 +32,8 @@ class TableCompValidatorSuite extends FunSuite {
           List(
             TableValue(toSmartString("Column 1"), None, Some(5), None)
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         )
       ),
       toSmartString("Summary value")
@@ -59,7 +60,8 @@ class TableCompValidatorSuite extends FunSuite {
             TableValue(toSmartString("Column 4"), None, None, None),
             TableValue(toSmartString("Column 5"), None, None, None)
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         )
       ),
       toSmartString("Summary value")
@@ -86,7 +88,8 @@ class TableCompValidatorSuite extends FunSuite {
             TableValue(toSmartString("Column 4"), None, None, None),
             TableValue(toSmartString("Column 5"), None, None, None)
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         )
       ),
       toSmartString("Summary value")
@@ -106,7 +109,8 @@ class TableCompValidatorSuite extends FunSuite {
           List(
             TableValue(toSmartString("Column 1"), None, Some(5), None)
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         )
       ),
       toSmartString("Summary value")
@@ -128,7 +132,8 @@ class TableCompValidatorSuite extends FunSuite {
             TableValue(toSmartString("Column 2"), None, None, None),
             TableValue(toSmartString("Column 3"), None, None, None)
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         )
       ),
       toSmartString("Summary value")
@@ -149,7 +154,8 @@ class TableCompValidatorSuite extends FunSuite {
             TableValue(toSmartString("Column 1"), None, Some(2), None),
             TableValue(toSmartString("Column 2"), None, Some(1), None)
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         )
       ),
       toSmartString("Summary value")
@@ -170,7 +176,8 @@ class TableCompValidatorSuite extends FunSuite {
             TableValue(toSmartString("Column 1"), None, Some(2), None),
             TableValue(toSmartString("Column 2"), None, Some(0), None)
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         )
       ),
       toSmartString("Summary value")
@@ -191,7 +198,8 @@ class TableCompValidatorSuite extends FunSuite {
             TableValue(toSmartString("Column 1"), None, Some(2), None),
             TableValue(toSmartString("Column 2"), None, None, None)
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         )
       ),
       toSmartString("Summary value")
@@ -216,7 +224,8 @@ class TableCompValidatorSuite extends FunSuite {
             TableValue(toSmartString("Column 3"), None, Some(2), None),
             TableValue(toSmartString("Column 4"), None, None, None)
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         )
       ),
       toSmartString("Summary value")
@@ -235,7 +244,8 @@ class TableCompValidatorSuite extends FunSuite {
           List(
             TableValue(toSmartString("Row 1, Column 1"), None, None, Some(5))
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         )
       ),
       toSmartString("Summary value")
@@ -260,21 +270,24 @@ class TableCompValidatorSuite extends FunSuite {
             TableValue(toSmartString("Row 1, Column 1"), None, None, Some(3)),
             TableValue(toSmartString("Row 1, Column 2"), None, None, None)
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         ),
         TableValueRow(
           List(
             TableValue(toSmartString("Row 2, Colummn 1"), None, None, None),
             TableValue(toSmartString("Row 2, Colummn 2"), None, None, None)
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         ),
         TableValueRow(
           List(
             TableValue(toSmartString("Row 3, Colummn 1"), None, None, None),
             TableValue(toSmartString("Row 3, Colummn 2"), None, None, None)
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         )
       ),
       toSmartString("Summary value")
@@ -296,21 +309,24 @@ class TableCompValidatorSuite extends FunSuite {
             TableValue(toSmartString("Row 1, Column 1"), None, None, Some(3)),
             TableValue(toSmartString("Row 1, Column 2"), None, None, None)
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         ),
         TableValueRow(
           List(
             TableValue(toSmartString("Row 2, Colummn 1"), None, None, Some(2)),
             TableValue(toSmartString("Row 2, Colummn 2"), None, None, None)
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         ),
         TableValueRow(
           List(
             TableValue(toSmartString("Row 3, Colummn 1"), None, None, None),
             TableValue(toSmartString("Row 3, Colummn 2"), None, None, None)
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         )
       ),
       toSmartString("Summary value")
@@ -331,7 +347,8 @@ class TableCompValidatorSuite extends FunSuite {
           List(
             TableValue(toSmartString("Row 1, Column 1"), None, None, Some(0))
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         )
       ),
       toSmartString("Summary value")
@@ -353,19 +370,22 @@ class TableCompValidatorSuite extends FunSuite {
             TableValue(toSmartString("Row 1, Column 1"), None, None, Some(3)),
             TableValue(toSmartString("Row 1, Column 2"), None, None, None)
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         ),
         TableValueRow(
           List(
             TableValue(toSmartString("Row 2, Colummn 2"), None, None, None)
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         ),
         TableValueRow(
           List(
             TableValue(toSmartString("Row 3, Colummn 2"), None, None, None)
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         )
       ),
       toSmartString("Summary value")
@@ -389,20 +409,23 @@ class TableCompValidatorSuite extends FunSuite {
             TableValue(toSmartString("Row 1 Column 2"), None, None, None),
             TableValue(toSmartString("Row 1 Column 3"), None, None, None)
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         ),
         TableValueRow(
           List(
             TableValue(toSmartString("Row 2 Column 2"), None, None, Some(2)),
             TableValue(toSmartString("Row 2 Column 3"), None, None, None)
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         ),
         TableValueRow(
           List(
             TableValue(toSmartString("Row 3 Column 3"), None, None, None)
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         ),
         TableValueRow(
           List(
@@ -410,27 +433,31 @@ class TableCompValidatorSuite extends FunSuite {
             TableValue(toSmartString("Row 4 Column 2"), None, None, None),
             TableValue(toSmartString("Row 4 Column 3"), None, None, None)
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         ),
         TableValueRow(
           List(
             TableValue(toSmartString("Row 5 Column 2"), None, None, None),
             TableValue(toSmartString("Row 5 Column 3"), None, None, None)
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         ),
         TableValueRow(
           List(
             TableValue(toSmartString("Row 6 Column 2"), None, None, None),
             TableValue(toSmartString("Row 6 Column 3"), None, None, None)
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         ),
         TableValueRow(
           List(
             TableValue(toSmartString("Row 7 Column 1"), None, Some(3), Some(5))
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         )
       ),
       toSmartString("Summary value")
@@ -454,12 +481,14 @@ class TableCompValidatorSuite extends FunSuite {
           List(
             TableValue(toSmartString("Row 1, Column 1"), None, None, Some(2))
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         ),
         TableValueRow(
           List(
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         )
       ),
       toSmartString("Summary value")
@@ -474,13 +503,15 @@ class TableCompValidatorSuite extends FunSuite {
           List(
             TableValue(toSmartString("Row 1, Column 1"), None, None, Some(2))
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         ),
         TableValueRow(
           List(
             TableValue(toSmartString(""), None, None, Some(-1))
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         )
       ),
       toSmartString("Summary value")
@@ -502,18 +533,21 @@ class TableCompValidatorSuite extends FunSuite {
             TableValue(toSmartString("Row 1, Column 1"), None, None, Some(2)),
             TableValue(toSmartString("Row 1, Column 2"), None, None, Some(3))
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         ),
         TableValueRow(
           List(
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         ),
         TableValueRow(
           List(
             TableValue(toSmartString("Row 3, Column 1"), None, None, None)
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         )
       ),
       toSmartString("Summary value")
@@ -530,21 +564,24 @@ class TableCompValidatorSuite extends FunSuite {
             TableValue(toSmartString("Row 1, Column 1"), None, None, Some(2)),
             TableValue(toSmartString("Row 1, Column 2"), None, None, Some(3))
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         ),
         TableValueRow(
           List(
             TableValue(toSmartString(""), None, None, Some(-1)),
             TableValue(toSmartString(""), None, None, Some(-2))
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         ),
         TableValueRow(
           List(
             TableValue(toSmartString("Row 3, Column 1"), None, None, None),
             TableValue(toSmartString(""), None, None, Some(-1))
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         )
       ),
       toSmartString("Summary value")
@@ -566,22 +603,26 @@ class TableCompValidatorSuite extends FunSuite {
           List(
             TableValue(toSmartString("Row 1, Column 1"), None, Some(3), Some(4))
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         ),
         TableValueRow(
           List(
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         ),
         TableValueRow(
           List(
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         ),
         TableValueRow(
           List(
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         ),
         TableValueRow(
           List(
@@ -589,7 +630,8 @@ class TableCompValidatorSuite extends FunSuite {
             TableValue(toSmartString("Row 5, Column 2"), None, None, None),
             TableValue(toSmartString("Row 5, Column 3"), None, None, None)
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         )
       ),
       toSmartString("Summary value")
@@ -608,7 +650,8 @@ class TableCompValidatorSuite extends FunSuite {
             TableValue(toSmartString(""), None, None, None),
             TableValue(toSmartString(""), None, None, None)
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         ),
         TableValueRow(
           List(
@@ -616,7 +659,8 @@ class TableCompValidatorSuite extends FunSuite {
             TableValue(toSmartString(""), None, None, None),
             TableValue(toSmartString(""), None, None, None)
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         ),
         TableValueRow(
           List(
@@ -624,7 +668,8 @@ class TableCompValidatorSuite extends FunSuite {
             TableValue(toSmartString(""), None, None, None),
             TableValue(toSmartString(""), None, None, None)
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         ),
         TableValueRow(
           List(
@@ -632,7 +677,8 @@ class TableCompValidatorSuite extends FunSuite {
             TableValue(toSmartString(""), None, None, None),
             TableValue(toSmartString(""), None, None, None)
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         ),
         TableValueRow(
           List(
@@ -640,7 +686,8 @@ class TableCompValidatorSuite extends FunSuite {
             TableValue(toSmartString("Row 5, Column 2"), None, None, None),
             TableValue(toSmartString("Row 5, Column 3"), None, None, None)
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         )
       ),
       toSmartString("Summary value")
@@ -661,7 +708,8 @@ class TableCompValidatorSuite extends FunSuite {
           List(
             TableValue(toSmartString("Column 1"), None, Some(5), None)
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         )
       ),
       toSmartString("Summary value")
@@ -680,7 +728,8 @@ class TableCompValidatorSuite extends FunSuite {
             TableValue(toSmartString(""), None, None, None),
             TableValue(toSmartString(""), None, None, None)
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         )
       ),
       toSmartString("Summary value")
@@ -701,7 +750,8 @@ class TableCompValidatorSuite extends FunSuite {
           List(
             TableValue(toSmartString("Column 1"), None, None, Some(5))
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         )
       ),
       toSmartString("Summary value")
@@ -716,7 +766,8 @@ class TableCompValidatorSuite extends FunSuite {
           List(
             TableValue(toSmartString("Column 1"), None, None, Some(5))
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         )
       ),
       toSmartString("Summary value")
@@ -744,7 +795,8 @@ class TableCompValidatorSuite extends FunSuite {
             TableValue(toSmartString("Row 1 Column 4"), None, None, Some(2)),
             TableValue(toSmartString("Row 1 Column 5"), None, Some(2), None)
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         ),
         TableValueRow(
           List(
@@ -754,7 +806,8 @@ class TableCompValidatorSuite extends FunSuite {
             TableValue(toSmartString("Row 2 Column 5"), None, None, None),
             TableValue(toSmartString("Row 2 Column 6"), None, None, None)
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         )
       ),
       toSmartString("Summary value")
@@ -779,7 +832,8 @@ class TableCompValidatorSuite extends FunSuite {
             TableValue(toSmartString("Row 1 Column 5"), None, Some(2), None),
             TableValue(toSmartString(""), None, None, None)
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         ),
         TableValueRow(
           List(
@@ -790,7 +844,8 @@ class TableCompValidatorSuite extends FunSuite {
             TableValue(toSmartString("Row 2 Column 5"), None, None, None),
             TableValue(toSmartString("Row 2 Column 6"), None, None, None)
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         )
       ),
       toSmartString("Summary value")
@@ -819,7 +874,8 @@ class TableCompValidatorSuite extends FunSuite {
             TableValue(toSmartString("Row 1 Column 4"), None, None, None),
             TableValue(toSmartString("Row 1 Column 5"), None, None, None)
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         ),
         TableValueRow(
           List(
@@ -827,21 +883,24 @@ class TableCompValidatorSuite extends FunSuite {
             TableValue(toSmartString("Row 2 Column 2"), None, Some(3), Some(3)),
             TableValue(toSmartString("Row 2 Column 5"), None, None, None)
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         ),
         TableValueRow(
           List(
             TableValue(toSmartString("Row 3 Column 1"), None, None, None),
             TableValue(toSmartString("Row 3 Column 5"), None, None, None)
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         ),
         TableValueRow(
           List(
             TableValue(toSmartString("Row 4 Column 1"), None, None, None),
             TableValue(toSmartString("Row 4 Column 5"), None, None, None)
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         ),
         TableValueRow(
           List(
@@ -851,7 +910,8 @@ class TableCompValidatorSuite extends FunSuite {
             TableValue(toSmartString("Row 5 Column 5"), None, None, None),
             TableValue(toSmartString("Row 5 Column 6"), None, None, None)
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         )
       ),
       toSmartString("Summary value")
@@ -874,7 +934,8 @@ class TableCompValidatorSuite extends FunSuite {
             TableValue(toSmartString("Row 1 Column 4"), None, None, None),
             TableValue(toSmartString("Row 1 Column 5"), None, None, None)
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         ),
         TableValueRow(
           List(
@@ -884,7 +945,8 @@ class TableCompValidatorSuite extends FunSuite {
             TableValue(toSmartString(""), None, None, None),
             TableValue(toSmartString("Row 2 Column 5"), None, None, None)
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         ),
         TableValueRow(
           List(
@@ -894,7 +956,8 @@ class TableCompValidatorSuite extends FunSuite {
             TableValue(toSmartString(""), None, None, None),
             TableValue(toSmartString("Row 3 Column 5"), None, None, None)
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         ),
         TableValueRow(
           List(
@@ -904,7 +967,8 @@ class TableCompValidatorSuite extends FunSuite {
             TableValue(toSmartString(""), None, None, None),
             TableValue(toSmartString("Row 4 Column 5"), None, None, None)
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         ),
         TableValueRow(
           List(
@@ -914,7 +978,8 @@ class TableCompValidatorSuite extends FunSuite {
             TableValue(toSmartString("Row 5 Column 5"), None, None, None),
             TableValue(toSmartString("Row 5 Column 6"), None, None, None)
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         )
       ),
       toSmartString("Summary value")
@@ -943,7 +1008,8 @@ class TableCompValidatorSuite extends FunSuite {
             TableValue(toSmartString("Row 1 Column 4"), None, None, None),
             TableValue(toSmartString("Row 1 Column 5"), None, None, None)
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         ),
         TableValueRow(
           List(
@@ -951,21 +1017,24 @@ class TableCompValidatorSuite extends FunSuite {
             TableValue(toSmartString("Row 2 Column 2"), None, Some(4), Some(3)),
             TableValue(toSmartString("Row 2 Column 5"), None, None, None)
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         ),
         TableValueRow(
           List(
             TableValue(toSmartString("Row 3 Column 1"), None, None, None),
             TableValue(toSmartString("Row 3 Column 5"), None, None, None)
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         ),
         TableValueRow(
           List(
             TableValue(toSmartString("Row 4 Column 1"), None, None, None),
             TableValue(toSmartString("Row 4 Column 5"), None, None, None)
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         ),
         TableValueRow(
           List(
@@ -975,7 +1044,8 @@ class TableCompValidatorSuite extends FunSuite {
             TableValue(toSmartString("Row 5 Column 5"), None, None, None),
             TableValue(toSmartString("Row 5 Column 6"), None, None, None)
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         )
       ),
       toSmartString("Summary value")
@@ -998,7 +1068,8 @@ class TableCompValidatorSuite extends FunSuite {
             TableValue(toSmartString("Row 1 Column 4"), None, None, None),
             TableValue(toSmartString("Row 1 Column 5"), None, None, None)
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         ),
         TableValueRow(
           List(
@@ -1009,7 +1080,8 @@ class TableCompValidatorSuite extends FunSuite {
             TableValue(toSmartString(""), None, None, None),
             TableValue(toSmartString("Row 2 Column 5"), None, None, None)
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         ),
         TableValueRow(
           List(
@@ -1020,7 +1092,8 @@ class TableCompValidatorSuite extends FunSuite {
             TableValue(toSmartString(""), None, None, None),
             TableValue(toSmartString("Row 3 Column 5"), None, None, None)
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         ),
         TableValueRow(
           List(
@@ -1031,7 +1104,8 @@ class TableCompValidatorSuite extends FunSuite {
             TableValue(toSmartString(""), None, None, None),
             TableValue(toSmartString("Row 4 Column 5"), None, None, None)
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         ),
         TableValueRow(
           List(
@@ -1041,7 +1115,8 @@ class TableCompValidatorSuite extends FunSuite {
             TableValue(toSmartString("Row 5 Column 5"), None, None, None),
             TableValue(toSmartString("Row 5 Column 6"), None, None, None)
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         )
       ),
       toSmartString("Summary value")
@@ -1066,20 +1141,23 @@ class TableCompValidatorSuite extends FunSuite {
             TableValue(toSmartString("Row 1 Column 2"), None, None, None),
             TableValue(toSmartString("Row 1 Column 3"), None, None, None)
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         ),
         TableValueRow(
           List(
             TableValue(toSmartString("Row 2 Column 2"), None, None, Some(2)),
             TableValue(toSmartString("Row 2 Column 3"), None, None, None)
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         ),
         TableValueRow(
           List(
             TableValue(toSmartString("Row 3 Column 3"), None, None, None)
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         ),
         TableValueRow(
           List(
@@ -1087,27 +1165,31 @@ class TableCompValidatorSuite extends FunSuite {
             TableValue(toSmartString("Row 4 Column 2"), None, None, None),
             TableValue(toSmartString("Row 4 Column 3"), None, None, None)
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         ),
         TableValueRow(
           List(
             TableValue(toSmartString("Row 5 Column 2"), None, None, None),
             TableValue(toSmartString("Row 5 Column 3"), None, None, None)
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         ),
         TableValueRow(
           List(
             TableValue(toSmartString("Row 6 Column 2"), None, None, None),
             TableValue(toSmartString("Row 6 Column 3"), None, None, None)
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         ),
         TableValueRow(
           List(
             TableValue(toSmartString("Row 7 Column 1"), None, Some(3), Some(5))
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         )
       ),
       toSmartString("Summary value")
@@ -1126,7 +1208,8 @@ class TableCompValidatorSuite extends FunSuite {
             TableValue(toSmartString("Row 1 Column 2"), None, None, None),
             TableValue(toSmartString("Row 1 Column 3"), None, None, None)
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         ),
         TableValueRow(
           List(
@@ -1134,7 +1217,8 @@ class TableCompValidatorSuite extends FunSuite {
             TableValue(toSmartString("Row 2 Column 2"), None, None, Some(2)),
             TableValue(toSmartString("Row 2 Column 3"), None, None, None)
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         ),
         TableValueRow(
           List(
@@ -1142,7 +1226,8 @@ class TableCompValidatorSuite extends FunSuite {
             TableValue(toSmartString(""), None, None, Some(-1)),
             TableValue(toSmartString("Row 3 Column 3"), None, None, None)
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         ),
         TableValueRow(
           List(
@@ -1150,7 +1235,8 @@ class TableCompValidatorSuite extends FunSuite {
             TableValue(toSmartString("Row 4 Column 2"), None, None, None),
             TableValue(toSmartString("Row 4 Column 3"), None, None, None)
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         ),
         TableValueRow(
           List(
@@ -1158,7 +1244,8 @@ class TableCompValidatorSuite extends FunSuite {
             TableValue(toSmartString("Row 5 Column 2"), None, None, None),
             TableValue(toSmartString("Row 5 Column 3"), None, None, None)
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         ),
         TableValueRow(
           List(
@@ -1166,7 +1253,8 @@ class TableCompValidatorSuite extends FunSuite {
             TableValue(toSmartString("Row 6 Column 2"), None, None, None),
             TableValue(toSmartString("Row 6 Column 3"), None, None, None)
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         ),
         TableValueRow(
           List(
@@ -1174,7 +1262,8 @@ class TableCompValidatorSuite extends FunSuite {
             TableValue(toSmartString(""), None, None, None),
             TableValue(toSmartString(""), None, None, None)
           ),
-          Option.empty[IncludeIf]
+          Option.empty[IncludeIf],
+          Option.empty[Dynamic]
         )
       ),
       toSmartString("Summary value")

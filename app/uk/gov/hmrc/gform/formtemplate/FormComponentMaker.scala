@@ -227,8 +227,9 @@ class FormComponentMaker(json: JsValue) {
     def getRow(json: JsValue): Opt[TableValueRow] =
       for {
         includeIf <- toOpt((json \ "includeIf").validateOpt[IncludeIf], "/includeIf")
+        dynamic   <- toOpt((json \ "dynamic").validateOpt[Dynamic], "/dynamic")
         values    <- values(json)
-      } yield TableValueRow(values, includeIf)
+      } yield TableValueRow(values, includeIf, dynamic)
 
     def rows(json: JsValue): Opt[List[TableValueRow]] =
       for {

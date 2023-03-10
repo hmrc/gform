@@ -185,49 +185,50 @@ object SummaryDisplayWidth extends Enumeration {
   implicit val displayWidthWrites: Writes[SummaryDisplayWidth] = Writes.enumNameWrites
 }
 
+sealed trait Dynamic extends Product with Serializable
+
+object Dynamic {
+
+  final case class ATLBased(formComponentId: FormComponentId) extends Dynamic
+  final case class DataRetrieveBased(indexOfDataRetrieveCtx: IndexOfDataRetrieveCtx) extends Dynamic
+
+  val templateReads: Reads[Dynamic] = Reads.StringReads.flatMap { d =>
+    val parsed = ValueParser.validate("${" + d + "}")
+    parsed match {
+      case Right(TextExpression(FormCtx(fcId))) => Reads.pure(Dynamic.ATLBased(fcId))
+      case Right(TextExpression(drc @ DataRetrieveCtx(_, _))) =>
+        Reads.pure(Dynamic.DataRetrieveBased(IndexOfDataRetrieveCtx(drc, 0)))
+      case _ => Reads.failed("Wrong expression used in dynamic: " + d)
+    }
+  }
+
+  implicit val dataRetrieveCtx: Format[DataRetrieveCtx] = derived.oformat()
+  implicit val indexOfDataRetrieveCtx: Format[IndexOfDataRetrieveCtx] = derived.oformat()
+  implicit val format: Format[Dynamic] = OFormatWithTemplateReadFallback(templateReads)
+
+  implicit val leafExprs: LeafExpr[Dynamic] = (path: TemplatePath, t: Dynamic) =>
+    t match {
+      case Dynamic.ATLBased(formComponentId)          => LeafExpr(path, formComponentId)
+      case Dynamic.DataRetrieveBased(dataRetrieveCtx) => LeafExpr(path, dataRetrieveCtx)
+    }
+}
+
 sealed trait OptionData extends Product with Serializable
 
 object OptionData {
-  sealed trait Dynamic extends Product with Serializable
-
-  object Dynamic {
-
-    final case class ATLBased(formComponentId: FormComponentId) extends Dynamic
-    final case class DataRetrieveBased(indexOfDataRetrieveCtx: IndexOfDataRetrieveCtx) extends Dynamic
-
-    val templateReads: Reads[OptionData.Dynamic] = Reads.StringReads.flatMap { d =>
-      val parsed = ValueParser.validate("${" + d + "}")
-      parsed match {
-        case Right(TextExpression(FormCtx(fcId))) => Reads.pure(OptionData.Dynamic.ATLBased(fcId))
-        case Right(TextExpression(drc @ DataRetrieveCtx(_, _))) =>
-          Reads.pure(OptionData.Dynamic.DataRetrieveBased(IndexOfDataRetrieveCtx(drc, 0)))
-        case _ => Reads.failed("Wrong expression used in dynamic: " + d)
-      }
-    }
-
-    implicit val dataRetrieveCtx: Format[DataRetrieveCtx] = derived.oformat()
-    implicit val indexOfDataRetrieveCtx: Format[IndexOfDataRetrieveCtx] = derived.oformat()
-    implicit val format: Format[Dynamic] = OFormatWithTemplateReadFallback(templateReads)
-
-    implicit val leafExprs: LeafExpr[Dynamic] = (path: TemplatePath, t: Dynamic) =>
-      t match {
-        case Dynamic.ATLBased(formComponentId)          => LeafExpr(path, formComponentId)
-        case Dynamic.DataRetrieveBased(dataRetrieveCtx) => LeafExpr(path, dataRetrieveCtx)
-      }
-  }
 
   case class IndexBased(
     label: SmartString,
     hint: Option[SmartString],
     includeIf: Option[IncludeIf],
-    dynamic: Option[OptionData.Dynamic]
+    dynamic: Option[Dynamic]
   ) extends OptionData
 
   case class ValueBased(
     label: SmartString,
     hint: Option[SmartString],
     includeIf: Option[IncludeIf],
-    dynamic: Option[OptionData.Dynamic],
+    dynamic: Option[Dynamic],
     value: String
   ) extends OptionData
 
@@ -472,12 +473,16 @@ object TableValue {
 
 case class TableValueRow(
   values: List[TableValue],
-  includeIf: Option[IncludeIf]
+  includeIf: Option[IncludeIf],
+  dynamic: Option[Dynamic]
 )
 
 object TableValueRow {
   implicit val leafExprs: LeafExpr[TableValueRow] = (path: TemplatePath, r: TableValueRow) =>
-    LeafExpr(path + "includeIf", r.includeIf) ++ LeafExpr(path + "values", r.values)
+    LeafExpr(path + "includeIf", r.includeIf) ++ LeafExpr(path + "values", r.values) ++ LeafExpr(
+      path + "dynamic",
+      r.dynamic
+    )
   implicit val format: Format[TableValueRow] = derived.oformat()
 }
 
