@@ -674,7 +674,7 @@ class FormComponentMaker(json: JsValue) {
       val mandatoryFields: List[Mandatory] = List(line2, postcode).flatten
       val optionalFields: List[Optional] = List(city).flatten
 
-      OverseasAddress(mandatoryFields, optionalFields, maybeOverseasAddressValue, optCountryLookup.getOrElse(true))
+      OverseasAddress(mandatoryFields, optionalFields, optCountryLookup.getOrElse(true))
     }
   }
 

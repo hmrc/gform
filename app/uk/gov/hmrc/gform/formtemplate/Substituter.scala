@@ -191,8 +191,8 @@ object Substituter {
       case TaxPeriodDate                    => TaxPeriodDate
       case a @ Address(_, _, _, Some(expr)) => a.copy(value = Some(expr(substitutions)))
       case a @ Address(_, _, _, _)          => a
-      case OverseasAddress(mandatoryFields, optionalFields, value, countryLookup) =>
-        OverseasAddress(mandatoryFields, optionalFields, value(substitutions), countryLookup)
+      case OverseasAddress(mandatoryFields, optionalFields, countryLookup) =>
+        OverseasAddress(mandatoryFields, optionalFields, countryLookup)
 
       case Choice(
             tpe,

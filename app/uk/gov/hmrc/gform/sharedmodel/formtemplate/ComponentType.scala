@@ -118,7 +118,6 @@ object Address {
 case class OverseasAddress(
   mandatoryFields: List[OverseasAddress.Configurable.Mandatory],
   optionalFields: List[OverseasAddress.Configurable.Optional],
-  value: Option[OverseasAddress.Value],
   countryLookup: Boolean
 ) extends ComponentType
 
@@ -528,7 +527,7 @@ object ComponentType {
       case TaxPeriodDate                       => Nil
       case Address(_, _, _, Some(expr))        => List(ExprWithPath(path, expr))
       case Address(_, _, _, _)                 => Nil
-      case OverseasAddress(_, _, value, _)     => LeafExpr(path, value)
+      case OverseasAddress(_, _, _)            => Nil
       case Choice(_, options, _, _, hints, optionHelpText, _, _, _, _) =>
         LeafExpr(path + "choices", options) ++
           LeafExpr(path + "hints", hints) ++
