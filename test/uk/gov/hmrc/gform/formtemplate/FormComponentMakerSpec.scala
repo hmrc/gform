@@ -24,6 +24,7 @@ import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.OverseasAddress.Configurable._
 
 class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemplateSupport {
 
@@ -644,4 +645,49 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
     val result = formComponentMaker.optFieldValue().map(_.`type`)
     result shouldBe Right(Address(false, List(), false, Some(AuthCtx(AuthInfo.ItmpAddress))))
   }
+
+  it should "parse Overseas Address with FormCtx value" in {
+    val formComponentMaker = new FormComponentMaker(Json.parse("""
+                                                                 |{
+                                                                 |  "type": "overseasAddress",
+                                                                 |  "id": "colombiaAddress",
+                                                                 |  "label": "",
+                                                                 |  "line2Mandatory": "true",
+                                                                 |  "cityMandatory": "false",
+                                                                 |  "postcodeMandatory": "true",
+                                                                 |  "value": "${userAddress}"
+                                                                 |}
+                                                                 |""".stripMargin))
+    val result = formComponentMaker.optFieldValue().map(_.`type`)
+    val expected = OverseasAddress(
+      List(Mandatory.Line2, Mandatory.Postcode),
+      List(Optional.City),
+      true,
+      Some(FormCtx(FormComponentId("userAddress")))
+    )
+    result shouldBe Right(expected)
+  }
+
+  it should "parse Overseas Address with itmpAddress value" in {
+    val formComponentMaker = new FormComponentMaker(Json.parse("""
+                                                                 |{
+                                                                 |  "type": "overseasAddress",
+                                                                 |  "id": "colombiaAddress",
+                                                                 |  "label": "",
+                                                                 |  "line2Mandatory": "true",
+                                                                 |  "cityMandatory": "false",
+                                                                 |  "postcodeMandatory": "true",
+                                                                 |  "value": "${auth.itmpAddress}"
+                                                                 |}
+                                                                 |""".stripMargin))
+    val result = formComponentMaker.optFieldValue().map(_.`type`)
+    val expected = OverseasAddress(
+      List(Mandatory.Line2, Mandatory.Postcode),
+      List(Optional.City),
+      true,
+      Some(AuthCtx(AuthInfo.ItmpAddress))
+    )
+    result shouldBe Right(expected)
+  }
+
 }

@@ -662,16 +662,28 @@ class FormComponentMaker(json: JsValue) {
 
   private val overseasAddressOpt: Opt[OverseasAddress] = {
 
+    val valueOpt = for {
+      maybeValue <- toOpt((json \ "value").validateOpt[SmartString], "/value")
+      expr <- maybeValue.fold[Opt[Option[Expr]]](None.asRight) {
+                case s: SmartString if s.interpolations.size != 1 =>
+                  UnexpectedState("overseas address value should contain only one expression").asLeft
+                case s: SmartString if !s.nonEmpty =>
+                  UnexpectedState("overseas address value should not have any strings").asLeft
+                case s => s.interpolations.headOption.asRight
+              }
+    } yield expr
+
     import OverseasAddress.Configurable._
     for {
       line2    <- OverseasAddressParser.mandatoryField(mandatoryLine2, Mandatory.Line2)
       city     <- OverseasAddressParser.optionalField(mandatoryCity, Optional.City)
       postcode <- OverseasAddressParser.mandatoryField(mandatoryPostcode, Mandatory.Postcode)
+      value    <- valueOpt
     } yield {
       val mandatoryFields: List[Mandatory] = List(line2, postcode).flatten
       val optionalFields: List[Optional] = List(city).flatten
 
-      OverseasAddress(mandatoryFields, optionalFields, optCountryLookup.getOrElse(true))
+      OverseasAddress(mandatoryFields, optionalFields, optCountryLookup.getOrElse(true), value)
     }
   }
 
