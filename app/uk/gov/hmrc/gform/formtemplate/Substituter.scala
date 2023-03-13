@@ -95,18 +95,6 @@ object Substituter {
         HmrcRosmRegistrationCheckValidator(errorMessage(substitutions), regime, utr, postcode)
     }
 
-  implicit def overseasAddressValueSubstituter[A](implicit
-    ev: Substituter[A, Expr]
-  ): Substituter[A, OverseasAddress.Value] = (substitutions, t) =>
-    t.copy(
-      t.line1(substitutions),
-      t.line2(substitutions),
-      t.line3(substitutions),
-      t.city(substitutions),
-      t.postcode(substitutions),
-      t.country(substitutions)
-    )
-
   implicit def optionDataSubstituter[A](implicit
     ev: Substituter[A, Expr],
     ev2: Substituter[A, BooleanExpr]

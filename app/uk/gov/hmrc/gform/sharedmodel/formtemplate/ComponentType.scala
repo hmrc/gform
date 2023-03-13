@@ -138,28 +138,6 @@ object OverseasAddress {
     }
   }
 
-  case class Value(
-    line1: SmartString,
-    line2: SmartString,
-    line3: SmartString,
-    city: SmartString,
-    postcode: SmartString,
-    country: SmartString
-  )
-
-  object Value {
-    implicit val format: OFormat[Value] = derived.oformat()
-
-    implicit val leafExprs: LeafExpr[Value] = (path: TemplatePath, t: Value) =>
-      LeafExpr(path + "line1", t.line1) ++
-        LeafExpr(path + "line2", t.line2) ++
-        LeafExpr(path + "line3", t.line3) ++
-        LeafExpr(path + "city", t.city) ++
-        LeafExpr(path + "postcode", t.postcode) ++
-        LeafExpr(path + "country", t.country)
-
-  }
-
   implicit val format: OFormat[OverseasAddress] = derived.oformat()
 
 }

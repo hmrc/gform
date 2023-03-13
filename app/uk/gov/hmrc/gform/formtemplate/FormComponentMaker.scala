@@ -50,8 +50,6 @@ class FormComponentMaker(json: JsValue) {
   lazy val label: SmartString = (json \ "label").as[SmartString]
 
   lazy val optMaybeValueExpr: Opt[Option[ValueExpr]] = parse("value", ValueParser.validate)
-  lazy val optMaybeOverseasAddressValue: Opt[Option[OverseasAddress.Value]] =
-    parse("value", OverseasAddressParser.validate)
 
   lazy val optEmailVerification: Opt[EmailVerification] = (json \ "verifiedBy") match {
     case JsDefined(verifiedBy) =>
@@ -666,10 +664,9 @@ class FormComponentMaker(json: JsValue) {
 
     import OverseasAddress.Configurable._
     for {
-      maybeOverseasAddressValue <- optMaybeOverseasAddressValue
-      line2                     <- OverseasAddressParser.mandatoryField(mandatoryLine2, Mandatory.Line2)
-      city                      <- OverseasAddressParser.optionalField(mandatoryCity, Optional.City)
-      postcode                  <- OverseasAddressParser.mandatoryField(mandatoryPostcode, Mandatory.Postcode)
+      line2    <- OverseasAddressParser.mandatoryField(mandatoryLine2, Mandatory.Line2)
+      city     <- OverseasAddressParser.optionalField(mandatoryCity, Optional.City)
+      postcode <- OverseasAddressParser.mandatoryField(mandatoryPostcode, Mandatory.Postcode)
     } yield {
       val mandatoryFields: List[Mandatory] = List(line2, postcode).flatten
       val optionalFields: List[Optional] = List(city).flatten
