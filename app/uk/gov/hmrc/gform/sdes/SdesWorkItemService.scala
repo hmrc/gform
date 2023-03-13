@@ -16,10 +16,12 @@
 
 package uk.gov.hmrc.gform.sdes
 
+import cats.syntax.traverse._
 import cats.syntax.functor._
 import org.bson.types.ObjectId
 import org.mongodb.scala.model.Filters
 import org.mongodb.scala.model.Filters.equal
+import uk.gov.hmrc.gform.envelope.EnvelopeAlgebra
 import uk.gov.hmrc.gform.scheduler.sdes.SdesWorkItemRepo
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.gform.sharedmodel.sdes.{ SdesWorkItem, SdesWorkItemData, SdesWorkItemPageData }
@@ -43,8 +45,9 @@ trait SdesWorkItemAlgebra[F[_]] {
   def delete(id: String): F[Unit]
 }
 
-class SdesWorkItemService(sdesWorkItemRepo: SdesWorkItemRepo)(implicit ec: ExecutionContext)
-    extends SdesWorkItemAlgebra[Future] {
+class SdesWorkItemService(sdesWorkItemRepo: SdesWorkItemRepo, envelopeAlgebra: EnvelopeAlgebra[Future])(implicit
+  ec: ExecutionContext
+) extends SdesWorkItemAlgebra[Future] {
 
   override def search(
     page: Int,
@@ -60,8 +63,13 @@ class SdesWorkItemService(sdesWorkItemRepo: SdesWorkItemRepo)(implicit ec: Execu
     for {
       sdesWorkItem <-
         sdesWorkItemRepo.collection.find(query).sort(sort).skip(skip).limit(pageSize).toFuture().map(_.toList)
+      sdesWorkItemData <- sdesWorkItem.traverse(workItem =>
+                            for {
+                              numberOfFiles <- envelopeAlgebra.get(workItem.item.envelopeId).map(_.files.size)
+                            } yield SdesWorkItemData.fromWorkItem(workItem, numberOfFiles)
+                          )
       count <- sdesWorkItemRepo.collection.countDocuments(query).toFuture()
-    } yield SdesWorkItemPageData(sdesWorkItem.map(SdesWorkItemData.fromWorkItem), count)
+    } yield SdesWorkItemPageData(sdesWorkItemData, count)
   }
 
   override def delete(id: String): Future[Unit] =

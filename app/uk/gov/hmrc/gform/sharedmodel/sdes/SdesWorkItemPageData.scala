@@ -38,6 +38,7 @@ case class SdesWorkItemData(
   envelopeId: EnvelopeId,
   formTemplateId: FormTemplateId,
   submissionRef: SubmissionRef,
+  numberOfFiles: Int,
   size: Long,
   status: ProcessingStatus,
   failureCount: Int,
@@ -47,11 +48,12 @@ case class SdesWorkItemData(
 
 object SdesWorkItemData {
 
-  def fromWorkItem(workItem: WorkItem[SdesWorkItem]) = SdesWorkItemData(
+  def fromWorkItem(workItem: WorkItem[SdesWorkItem], numberOfFiles: Int = 0) = SdesWorkItemData(
     workItem.id.toString,
     workItem.item.envelopeId,
     workItem.item.formTemplateId,
     workItem.item.submissionRef,
+    numberOfFiles,
     workItem.item.sdesNotifyRequest.file.size,
     workItem.status,
     workItem.failureCount,
