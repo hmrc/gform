@@ -108,7 +108,8 @@ class ApplicationModule(context: Context)
   private val mongoModule = new MongoModule(configModule)
   private val envelopeModule = new EnvelopeModule(mongoModule, configModule)
   private val objectStoreModule = new ObjectStoreModule(configModule, wsClient, akkaModule, envelopeModule)
-  private val sdesModule = new SdesModule(configModule, wSHttpModule, mongoModule, objectStoreModule, akkaModule)
+  private val sdesModule =
+    new SdesModule(configModule, wSHttpModule, mongoModule, objectStoreModule, akkaModule, envelopeModule)
   val fileUploadModule =
     new FileUploadModule(
       configModule,

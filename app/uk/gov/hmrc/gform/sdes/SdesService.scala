@@ -16,12 +16,14 @@
 
 package uk.gov.hmrc.gform.sdes
 
+import cats.syntax.traverse._
 import cats.syntax.functor._
 import cats.syntax.show._
 import org.mongodb.scala.model.Filters
 import org.mongodb.scala.model.Filters.{ equal, exists, lt }
 import org.slf4j.LoggerFactory
 import uk.gov.hmrc.gform.core._
+import uk.gov.hmrc.gform.envelope.EnvelopeAlgebra
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.repo.Repo
 import uk.gov.hmrc.gform.scheduler.sdes.SdesWorkItemRepo
@@ -35,7 +37,6 @@ import uk.gov.hmrc.objectstore.client.ObjectSummaryWithMd5
 
 import java.time.{ Instant, LocalDateTime }
 import java.util.{ Base64, UUID }
-
 import scala.concurrent.{ ExecutionContext, Future }
 
 trait SdesAlgebra[F[_]] {
@@ -82,7 +83,8 @@ class SdesService(
   informationType: String,
   recipientOrSender: String,
   fileLocationUrl: String,
-  sdesNotificationRepository: SdesWorkItemRepo
+  sdesNotificationRepository: SdesWorkItemRepo,
+  envelopeAlgebra: EnvelopeAlgebra[Future]
 )(implicit
   ec: ExecutionContext
 ) extends SdesAlgebra[Future] {
@@ -168,24 +170,14 @@ class SdesService(
     val skip = page * pageSize
     for {
       sdesSubmissions <- repoSdesSubmission.page(query, sort, skip, pageSize)
-      count           <- repoSdesSubmission.count(queryNotProcessed)
-      countAll        <- repoSdesSubmission.count(queryByTemplateId)
-    } yield SdesSubmissionPageData(
-      sdesSubmissions.map(s =>
-        SdesSubmissionData(
-          s._id,
-          s.envelopeId,
-          s.formTemplateId,
-          s.submissionRef,
-          s.submittedAt,
-          s.status,
-          s.failureReason.getOrElse(""),
-          s.lastUpdated
-        )
-      ),
-      count,
-      countAll
-    )
+      sdesSubmissionData <- sdesSubmissions.traverse(sdesSubmission =>
+                              for {
+                                numberOfFiles <- envelopeAlgebra.get(sdesSubmission.envelopeId).map(_.files.size)
+                              } yield SdesSubmissionData.fromSdesSubmission(sdesSubmission, numberOfFiles)
+                            )
+      count    <- repoSdesSubmission.count(queryNotProcessed)
+      countAll <- repoSdesSubmission.count(queryByTemplateId)
+    } yield SdesSubmissionPageData(sdesSubmissionData, count, countAll)
 
   }
 
