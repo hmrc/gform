@@ -18,7 +18,6 @@ package uk.gov.hmrc.gform.sharedmodel
 
 import munit.{ FunSuite, Location }
 import play.api.libs.json.{ JsError, JsSuccess, Json, Reads }
-import uk.gov.hmrc.gform.Helpers._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ ComponentType, FormComponent, OverseasAddress }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.OverseasAddress.Configurable._
 
@@ -32,32 +31,14 @@ class ComponentTypeSpec extends FunSuite {
                          |  "label": "",
                          |  "line2Mandatory": "true",
                          |  "cityMandatory": "false",
-                         |  "postcodeMandatory": "true",
-                         |  "value": {
-                         |    "line1": "Entrada 7 Via Cerritos",
-                         |    "line2": "Condominio Samanes de Tacurumbi",
-                         |    "line3": "Casa 2",
-                         |    "city": "Pereira",
-                         |    "postcode": "600007",
-                         |    "country": "Colombia"
-                         |  }
+                         |  "postcodeMandatory": "true"
                          |}""")
 
-    import OverseasAddress._
     val expected = OverseasAddress(
       List(Mandatory.Line2, Mandatory.Postcode),
       List(Optional.City),
-      Some(
-        Value(
-          toSmartString("Entrada 7 Via Cerritos"),
-          toSmartString("Condominio Samanes de Tacurumbi"),
-          toSmartString("Casa 2"),
-          toSmartString("Pereira"),
-          toSmartString("600007"),
-          toSmartString("Colombia")
-        )
-      ),
-      true
+      true,
+      None
     )
 
     assertEquals(componentType, expected)
@@ -75,7 +56,7 @@ class ComponentTypeSpec extends FunSuite {
                          |  "postcodeMandatory": "false"
                          |}""")
 
-    val expected = OverseasAddress(Nil, Nil, None, true)
+    val expected = OverseasAddress(Nil, Nil, true, None)
 
     assertEquals(componentType, expected)
 
@@ -89,7 +70,7 @@ class ComponentTypeSpec extends FunSuite {
                          |  "label": ""
                          |}""")
 
-    val expected = OverseasAddress(Nil, Nil, None, true)
+    val expected = OverseasAddress(Nil, Nil, true, None)
 
     assertEquals(componentType, expected)
 
@@ -104,7 +85,7 @@ class ComponentTypeSpec extends FunSuite {
                          |  "countryLookup": "false"
                          |}""")
 
-    val expected = OverseasAddress(Nil, Nil, None, false)
+    val expected = OverseasAddress(Nil, Nil, false, None)
 
     assertEquals(componentType, expected)
 

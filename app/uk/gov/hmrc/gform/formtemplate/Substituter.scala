@@ -95,18 +95,6 @@ object Substituter {
         HmrcRosmRegistrationCheckValidator(errorMessage(substitutions), regime, utr, postcode)
     }
 
-  implicit def overseasAddressValueSubstituter[A](implicit
-    ev: Substituter[A, Expr]
-  ): Substituter[A, OverseasAddress.Value] = (substitutions, t) =>
-    t.copy(
-      t.line1(substitutions),
-      t.line2(substitutions),
-      t.line3(substitutions),
-      t.city(substitutions),
-      t.postcode(substitutions),
-      t.country(substitutions)
-    )
-
   implicit def optionDataSubstituter[A](implicit
     ev: Substituter[A, Expr],
     ev2: Substituter[A, BooleanExpr]
@@ -186,13 +174,13 @@ object Substituter {
           displayCharCount
         )
 
-      case d @ Date(_, _, _)                => d
-      case CalendarDate                     => CalendarDate
-      case TaxPeriodDate                    => TaxPeriodDate
-      case a @ Address(_, _, _, Some(expr)) => a.copy(value = Some(expr(substitutions)))
-      case a @ Address(_, _, _, _)          => a
-      case OverseasAddress(mandatoryFields, optionalFields, value, countryLookup) =>
-        OverseasAddress(mandatoryFields, optionalFields, value(substitutions), countryLookup)
+      case d @ Date(_, _, _)                        => d
+      case CalendarDate                             => CalendarDate
+      case TaxPeriodDate                            => TaxPeriodDate
+      case a @ Address(_, _, _, Some(expr))         => a.copy(value = Some(expr(substitutions)))
+      case a @ Address(_, _, _, _)                  => a
+      case o @ OverseasAddress(_, _, _, Some(expr)) => o.copy(value = Some(expr(substitutions)))
+      case o @ OverseasAddress(_, _, _, _)          => o
 
       case Choice(
             tpe,

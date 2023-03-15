@@ -16,17 +16,12 @@
 
 package uk.gov.hmrc.gform.core.parsers
 
-import play.api.libs.json.JsValue
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.formtemplate.FormComponentMakerService.{ IsFalseish, IsTrueish }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.OverseasAddress
 
 object OverseasAddressParser {
-  def validate(expression: JsValue): Opt[OverseasAddress.Value] =
-    expression
-      .asOpt[OverseasAddress.Value]
-      .toRight(UnexpectedState(s"Cannot convert $expression to OverseasAddress.Value"))
 
   def mandatoryField(
     string: Option[String],
