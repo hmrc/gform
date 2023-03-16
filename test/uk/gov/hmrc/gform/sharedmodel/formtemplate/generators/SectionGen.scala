@@ -160,6 +160,7 @@ trait SectionGen {
       instruction        <- Gen.option(InstructionGen.instructionGen)
       presentationHint   <- Gen.option(PresentationHintGen.presentationHintGen)
       infoMessage        <- Gen.option(smartStringGen)
+      errorMessage       <- Gen.option(smartStringGen)
       maybePageId        <- Gen.option(PageIdGen.pageIdGen)
     } yield Section
       .AddToList(
@@ -178,6 +179,7 @@ trait SectionGen {
         instruction,
         presentationHint,
         infoMessage,
+        errorMessage,
         pageIdToDisplayAfterRemove = maybePageId
       )
 
