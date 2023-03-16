@@ -215,8 +215,6 @@ object FormTemplateValidator {
         invalid(path, formComponentId)
       case ReferenceInfo.IndexOfExpr(path, IndexOf(formComponentId, _)) if !allFcIds(formComponentId) =>
         invalid(path, formComponentId)
-      case ReferenceInfo.RemoveSpacesExpr(path, RemoveSpaces(formComponentId)) if !allFcIds(formComponentId) =>
-        invalid(path, formComponentId)
       case ReferenceInfo.NumberedListExpr(path, NumberedList(formComponentId))
           if !SectionHelper
             .addToListFormComponents(formTemplate.formKind.allSections)
@@ -229,7 +227,7 @@ object FormTemplateValidator {
             .map(_.id)
             .contains(formComponentId) =>
         Invalid(s"${path.path}: $formComponentId is not AddToList Id")
-      case ReferenceInfo.SubstringExpr(path, Substring(FormCtx(formComponentId), _, _)) if !allFcIds(formComponentId) =>
+      case ReferenceInfo.StringOpsExpr(path, StringOps(FormCtx(formComponentId), _)) if !allFcIds(formComponentId) =>
         invalid(path, formComponentId)
       case _ => Valid
     }
@@ -965,10 +963,9 @@ object FormTemplateValidator {
       case Typed(expr, tpe)             => validate(expr, sections)
       case IndexOf(formComponentId, _)  => validate(FormCtx(formComponentId), sections)
       case IndexOfDataRetrieveCtx(_, _) => Valid
-      case RemoveSpaces(_)              => Valid
       case NumberedList(_)              => Valid
       case BulletedList(_)              => Valid
-      case Substring(_, _, _)           => Valid
+      case StringOps(_, _)              => Valid
     }
   }
 

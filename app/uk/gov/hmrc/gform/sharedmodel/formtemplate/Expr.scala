@@ -86,10 +86,9 @@ final case class AddressLens(formComponentId: FormComponentId, detail: AddressDe
 final case class Period(dateCtx1: Expr, dateCtx2: Expr) extends Expr
 final case class Size(formComponentId: FormComponentId, index: SizeRefType) extends Expr
 final case class Typed(expr: Expr, tpe: ExplicitExprType) extends Expr
-final case class RemoveSpaces(formComponentId: FormComponentId) extends Expr
 final case class NumberedList(formComponentId: FormComponentId) extends Expr
 final case class BulletedList(formComponentId: FormComponentId) extends Expr
-final case class Substring(field1: Expr, beginIndex: Int, endIndex: Int) extends Expr
+final case class StringOps(field1: Expr, stringFnc: StringFnc) extends Expr
 
 sealed trait SizeRefType extends Product with Serializable
 
@@ -293,4 +292,17 @@ object LoginInfo {
   final case object GGLogin extends LoginInfo
 
   implicit val format: OFormat[LoginInfo] = derived.oformat()
+}
+
+sealed trait StringFnc
+object StringFnc {
+  case object UpperFirst extends StringFnc
+  case object UpperAll extends StringFnc
+  case object LowerFirst extends StringFnc
+  case object LowerAll extends StringFnc
+  case object UpperCase extends StringFnc
+  case object LowerCase extends StringFnc
+  case object RemoveSpaces extends StringFnc
+  case class SubString(beginIndex: Int, endIndex: Int) extends StringFnc
+  implicit val format: OFormat[StringFnc] = derived.oformat()
 }

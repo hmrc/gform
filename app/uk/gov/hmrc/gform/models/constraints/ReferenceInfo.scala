@@ -41,8 +41,7 @@ object ReferenceInfo {
       extends ReferenceInfo
   final case class MiniSummaryRowExpr(path: TemplatePath, miniSummaryRow: MiniSummaryRow) extends ReferenceInfo
   final case class IndexOfExpr(path: TemplatePath, indexOf: IndexOf) extends ReferenceInfo
-  final case class RemoveSpacesExpr(path: TemplatePath, removeSpaces: RemoveSpaces) extends ReferenceInfo
   final case class NumberedListExpr(path: TemplatePath, numberedList: NumberedList) extends ReferenceInfo
   final case class BulletedListExpr(path: TemplatePath, numberedList: BulletedList) extends ReferenceInfo
-  final case class SubstringExpr(path: TemplatePath, substring: Substring) extends ReferenceInfo
+  final case class StringOpsExpr(path: TemplatePath, stringOps: StringOps) extends ReferenceInfo
 }
