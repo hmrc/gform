@@ -81,7 +81,7 @@ trait Rewriter {
       formTemplate.formKind.allSections.foldLeft(fcLookupDeclaration) {
         case (acc, Section.NonRepeatingPage(page)) => acc ++ lookupFromPage(page.fields) ++ questionFcid(page)
         case (acc, Section.RepeatingPage(page, _)) => acc ++ lookupFromPage(page.fields) ++ questionFcid(page)
-        case (acc, Section.AddToList(_, _, _, _, _, _, _, _, pages, _, _, _, _, _, _, _, _, _, _)) =>
+        case (acc, Section.AddToList(_, _, _, _, _, _, _, _, pages, _, _, _, _, _, _, _, _, _, _, _)) =>
           acc ++ pages.toList.flatMap(page => lookupFromPage(page.fields) ++ questionFcid(page))
       }
 
@@ -95,7 +95,7 @@ trait Rewriter {
       formTemplate.formKind.allSections.flatMap {
         case Section.NonRepeatingPage(page) => page.fields.flatMap(f)
         case Section.RepeatingPage(page, _) => page.fields.flatMap(f)
-        case Section.AddToList(_, _, _, _, _, _, _, _, pages, _, _, _, _, _, _, _, _, _, _) =>
+        case Section.AddToList(_, _, _, _, _, _, _, _, pages, _, _, _, _, _, _, _, _, _, _, _) =>
           pages.toList.flatMap(page => page.fields.flatMap(f))
       }
 
@@ -154,9 +154,9 @@ trait Rewriter {
     }
 
     val pages: List[Page] = formTemplate.formKind.allSections.flatMap {
-      case Section.NonRepeatingPage(page)                                                 => List(page)
-      case Section.RepeatingPage(page, _)                                                 => List(page)
-      case Section.AddToList(_, _, _, _, _, _, _, _, pages, _, _, _, _, _, _, _, _, _, _) => pages.toList
+      case Section.NonRepeatingPage(page)                                                    => List(page)
+      case Section.RepeatingPage(page, _)                                                    => List(page)
+      case Section.AddToList(_, _, _, _, _, _, _, _, pages, _, _, _, _, _, _, _, _, _, _, _) => pages.toList
     }
 
     val redirectsIncludeIfs: List[IncludeIf] = pages.flatMap(_.redirects).flatMap(_.toList.map(_.`if`))
@@ -188,6 +188,7 @@ trait Rewriter {
             pages,
             repeatsUntil,
             repeatsWhile,
+            _,
             _,
             _,
             _,
