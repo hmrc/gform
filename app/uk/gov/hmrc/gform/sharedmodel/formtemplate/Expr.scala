@@ -88,6 +88,7 @@ final case class Size(formComponentId: FormComponentId, index: SizeRefType) exte
 final case class Typed(expr: Expr, tpe: ExplicitExprType) extends Expr
 final case class NumberedList(formComponentId: FormComponentId) extends Expr
 final case class BulletedList(formComponentId: FormComponentId) extends Expr
+final case class Concat(exprs: List[Expr]) extends Expr
 final case class StringOps(field1: Expr, stringFnc: StringFnc) extends Expr
 
 sealed trait SizeRefType extends Product with Serializable

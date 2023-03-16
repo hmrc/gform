@@ -78,6 +78,7 @@ final case class ExprWithPath(path: TemplatePath, expr: Expr) {
     case n @ NumberedList(_)                           => ReferenceInfo.NumberedListExpr(path, n) :: Nil
     case b @ BulletedList(_)                           => ReferenceInfo.BulletedListExpr(path, b) :: Nil
     case s @ StringOps(expr, _)                        => ReferenceInfo.StringOpsExpr(path, s) :: toReferenceInfo(expr)
+    case Concat(exprs)                                 => toReferenceInfo(exprs: _*)
   }
 }
 

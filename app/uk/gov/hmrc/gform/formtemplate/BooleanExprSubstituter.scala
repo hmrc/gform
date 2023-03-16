@@ -62,6 +62,7 @@ object BooleanExprSubstituter extends Substituter[BooleanExprSubstitutions, Form
         case NumberedList(_)               => t
         case BulletedList(_)               => t
         case StringOps(_, _)               => t
+        case Concat(exprs)                 => Concat(exprs.map(substitute(substitutions, _)))
       }
     }
 

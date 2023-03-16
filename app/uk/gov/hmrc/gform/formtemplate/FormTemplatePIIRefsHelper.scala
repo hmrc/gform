@@ -138,6 +138,7 @@ object FormTemplatePIIRefsHelper {
       case NumberedList(FormComponentId(value))               => List(value)
       case BulletedList(FormComponentId(value))               => List(value)
       case StringOps(expr, _)                                 => extractRefs(expr)
+      case Concat(exprs)                                      => exprs.flatMap(extractRefs)
     }
 
   implicit class JsLookupResultOps(result: JsLookupResult) {

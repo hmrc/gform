@@ -393,6 +393,34 @@ class TopLevelExpressionsSuite extends FunSuite {
     )
   }
 
+  test("TopLevelExpressions - concat type") {
+    check(
+      Json.obj(
+        "taxRate" -> "100",
+        "taxOwed" -> Json.obj(
+          "value" -> "200",
+          "type"  -> "sterling",
+          "round" -> "HalfUp"
+        ),
+        "taxYear" -> "concat('Business owes ', taxOwed, ' at rate of £', taxRate, ' in tax year ',  year(TODAY) + 1)"
+      ),
+      Map(
+        ExpressionId("taxRate") -> Constant("100"),
+        ExpressionId("taxOwed") -> Typed(Constant("200"), ExplicitExprType.Sterling(RoundingMode.HalfUp)),
+        ExpressionId("taxYear") -> Concat(
+          List(
+            Constant("Business owes "),
+            Typed(Constant("200"), ExplicitExprType.Sterling(RoundingMode.HalfUp)),
+            Constant(" at rate of £"),
+            Constant("100"),
+            Constant(" in tax year "),
+            Add(DateFunction(DateProjection.Year(DateValueExpr(TodayDateExprValue))), Constant("1"))
+          )
+        )
+      )
+    )
+  }
+
   private def check(json: JsValue, expressions: Map[ExpressionId, Expr]) =
     expressionsContextFromJson(json) { exprSubstitutions =>
       val exprSubstitutionsE = TopLevelExpressions.resolveReferences(exprSubstitutions)
