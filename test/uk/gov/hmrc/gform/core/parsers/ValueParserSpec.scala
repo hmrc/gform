@@ -1137,4 +1137,12 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
       )
     )
   }
+
+  it should "parse concat function" in {
+    val res = ValueParser.validate("${concat(fieldId, ' test')}")
+    res.right.value should be(
+      TextExpression(Concat(List(FormCtx(FormComponentId("fieldId")), Constant(" test"))))
+    )
+  }
+
 }

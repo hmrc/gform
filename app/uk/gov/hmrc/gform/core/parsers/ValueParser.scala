@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.gform.core.parsers
 
+import scala.language.postfixOps
 import java.time.LocalDate
 import scala.util.parsing.combinator._
 import uk.gov.hmrc.gform.core.Opt
@@ -305,6 +306,9 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
     }
     | "lowercase(" ~ _expr1 ~ ")" ^^ { case _ ~ value ~ _ =>
       StringOps(value, StringFnc.LowerCase)
+    }
+    | "concat(" ~ _expr1 ~ (("," ~> _expr1) *) ~ ")" ^^ { case _ ~ expr ~ exprs ~ _ =>
+      Concat(expr +: exprs)
     }
     | FormComponentId.unanchoredIdValidation ~ "[" ~ nonZeroPositiveInteger ~ "]" ^^ {
       case formComponentId ~ _ ~ index ~ _ =>
