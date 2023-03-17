@@ -175,10 +175,9 @@ object TopLevelExpressions {
         case Typed(expr, tpe)              => Typed(loop(expr), tpe)
         case IndexOf(_, _)                 => e
         case IndexOfDataRetrieveCtx(_, _)  => e
-        case RemoveSpaces(_)               => e
         case NumberedList(_)               => e
         case BulletedList(_)               => e
-        case Substring(_, _, _)            => e
+        case StringOps(_, _)               => e
       }
     expressions.get(expressionId).fold(expressions) { expr =>
       expressions + (expressionId -> loop(expr))

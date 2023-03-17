@@ -75,10 +75,9 @@ final case class ExprWithPath(path: TemplatePath, expr: Expr) {
     case Typed(expr, tpe)                              => toReferenceInfo(expr)
     case s @ IndexOf(_, _)                             => ReferenceInfo.IndexOfExpr(path, s) :: Nil
     case IndexOfDataRetrieveCtx(ctx, _)                => ReferenceInfo.DataRetrieveCtxExpr(path, ctx) :: Nil
-    case r @ RemoveSpaces(_)                           => ReferenceInfo.RemoveSpacesExpr(path, r) :: Nil
     case n @ NumberedList(_)                           => ReferenceInfo.NumberedListExpr(path, n) :: Nil
     case b @ BulletedList(_)                           => ReferenceInfo.BulletedListExpr(path, b) :: Nil
-    case s @ Substring(expr, _, _)                     => ReferenceInfo.SubstringExpr(path, s) :: toReferenceInfo(expr)
+    case s @ StringOps(expr, _)                        => ReferenceInfo.StringOpsExpr(path, s) :: toReferenceInfo(expr)
   }
 }
 

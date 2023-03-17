@@ -59,10 +59,9 @@ object BooleanExprSubstituter extends Substituter[BooleanExprSubstitutions, Form
         case Typed(expr, tpe)              => Typed(substitute(substitutions, expr), tpe)
         case IndexOf(_, _)                 => t
         case IndexOfDataRetrieveCtx(_, _)  => t
-        case RemoveSpaces(_)               => t
         case NumberedList(_)               => t
         case BulletedList(_)               => t
-        case Substring(_, _, _)            => t
+        case StringOps(_, _)               => t
       }
     }
 

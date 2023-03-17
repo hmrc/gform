@@ -1070,10 +1070,71 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     )
   }
 
-  it should "parse substirng function" in {
+  it should "parse substring function" in {
     val res = ValueParser.validate("${substring(fieldId, 3, 4)}")
     res.right.value should be(
-      TextExpression(Substring(FormCtx(FormComponentId("fieldId")), 3, 4))
+      TextExpression(StringOps(FormCtx(FormComponentId("fieldId")), StringFnc.SubString(3, 4)))
+    )
+  }
+
+  it should "parse removeSpaces function" in {
+    val res = ValueParser.validate("${removeSpaces(fieldId)}")
+    res.right.value should be(
+      TextExpression(StringOps(FormCtx(FormComponentId("fieldId")), StringFnc.RemoveSpaces))
+    )
+  }
+
+  it should "parse upperFirst function" in {
+    val res = ValueParser.validate("${upperFirst(fieldId)}")
+    res.right.value should be(
+      TextExpression(StringOps(FormCtx(FormComponentId("fieldId")), StringFnc.UpperFirst))
+    )
+  }
+
+  it should "parse upperAll function" in {
+    val res = ValueParser.validate("${upperAll(fieldId)}")
+    res.right.value should be(
+      TextExpression(StringOps(FormCtx(FormComponentId("fieldId")), StringFnc.UpperAll))
+    )
+  }
+
+  it should "parse lowerFirst function" in {
+    val res = ValueParser.validate("${lowerFirst(fieldId)}")
+    res.right.value should be(
+      TextExpression(StringOps(FormCtx(FormComponentId("fieldId")), StringFnc.LowerFirst))
+    )
+  }
+
+  it should "parse lowerAll function" in {
+    val res = ValueParser.validate("${lowerAll(fieldId)}")
+    res.right.value should be(
+      TextExpression(StringOps(FormCtx(FormComponentId("fieldId")), StringFnc.LowerAll))
+    )
+  }
+
+  it should "parse uppercase function" in {
+    val res = ValueParser.validate("${uppercase(fieldId)}")
+    res.right.value should be(
+      TextExpression(StringOps(FormCtx(FormComponentId("fieldId")), StringFnc.UpperCase))
+    )
+  }
+
+  it should "parse lowercase function" in {
+    val res = ValueParser.validate("${lowercase(fieldId)}")
+    res.right.value should be(
+      TextExpression(StringOps(FormCtx(FormComponentId("fieldId")), StringFnc.LowerCase))
+    )
+  }
+
+  it should "parse lowercase, uppercase, and lowerFirst functions" in {
+    val res = ValueParser.validate("${lowerFirst(uppercase(lowercase(fieldId)))}")
+    res.right.value should be(
+      TextExpression(
+        StringOps(
+          StringOps(StringOps(FormCtx(FormComponentId("fieldId")), StringFnc.LowerCase), StringFnc.UpperCase),
+          StringFnc.LowerFirst
+        )
+      )
     )
   }
 }

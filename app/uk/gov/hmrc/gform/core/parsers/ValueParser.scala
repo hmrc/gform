@@ -275,9 +275,6 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
     | FormComponentId.unanchoredIdValidation ~ "." ~ sizeRefTypeParser <~ ".size" ^^ { case value ~ _ ~ index =>
       Size(FormComponentId(value), index)
     }
-    | "removeSpaces(" ~ FormComponentId.unanchoredIdValidation ~ ")" ^^ { case _ ~ value ~ _ =>
-      RemoveSpaces(FormComponentId(value))
-    }
     | "numberedList(" ~ FormComponentId.unanchoredIdValidation ~ ")" ^^ { case _ ~ value ~ _ =>
       NumberedList(FormComponentId(value))
     }
@@ -286,7 +283,28 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
     }
     | "substring(" ~ _expr1 ~ "," ~ positiveInteger ~ "," ~ positiveInteger ~ ")" ^^ {
       case _ ~ value ~ _ ~ from ~ _ ~ to ~ _ =>
-        Substring(value, from, to)
+        StringOps(value, StringFnc.SubString(from, to))
+    }
+    | "removeSpaces(" ~ _expr1 ~ ")" ^^ { case _ ~ value ~ _ =>
+      StringOps(value, StringFnc.RemoveSpaces)
+    }
+    | "upperFirst(" ~ _expr1 ~ ")" ^^ { case _ ~ value ~ _ =>
+      StringOps(value, StringFnc.UpperFirst)
+    }
+    | "lowerFirst(" ~ _expr1 ~ ")" ^^ { case _ ~ value ~ _ =>
+      StringOps(value, StringFnc.LowerFirst)
+    }
+    | "upperAll(" ~ _expr1 ~ ")" ^^ { case _ ~ value ~ _ =>
+      StringOps(value, StringFnc.UpperAll)
+    }
+    | "lowerAll(" ~ _expr1 ~ ")" ^^ { case _ ~ value ~ _ =>
+      StringOps(value, StringFnc.LowerAll)
+    }
+    | "uppercase(" ~ _expr1 ~ ")" ^^ { case _ ~ value ~ _ =>
+      StringOps(value, StringFnc.UpperCase)
+    }
+    | "lowercase(" ~ _expr1 ~ ")" ^^ { case _ ~ value ~ _ =>
+      StringOps(value, StringFnc.LowerCase)
     }
     | FormComponentId.unanchoredIdValidation ~ "[" ~ nonZeroPositiveInteger ~ "]" ^^ {
       case formComponentId ~ _ ~ index ~ _ =>
