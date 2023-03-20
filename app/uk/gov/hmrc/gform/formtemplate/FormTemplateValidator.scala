@@ -36,6 +36,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.PageLink
 
 import scala.Function.const
 import scala.util.{ Failure, Success, Try }
+import DividerPosition._
 
 object FormTemplateValidator {
 
@@ -427,8 +428,8 @@ object FormTemplateValidator {
   def validateChoiceDividerPositionLowerBound(sectionsList: List[Page]): ValidationResult = {
     def check(choice: Choice): Boolean = choice.dividerPosition
       .map {
-        case IntDivider(i)    => i <= 0
-        case StringDivider(_) => false
+        case DividerPositionNumber(i) => i <= 0
+        case DividerPositionValue(_)  => false
       }
       .getOrElse(false)
 
@@ -438,8 +439,8 @@ object FormTemplateValidator {
   def validateChoiceDividerPositionUpperBound(sectionsList: List[Page]): ValidationResult = {
     def check(choice: Choice): Boolean = choice.dividerPosition
       .map {
-        case IntDivider(i)    => i >= choice.options.size
-        case StringDivider(_) => false
+        case DividerPositionNumber(i) => i >= choice.options.size
+        case DividerPositionValue(_)  => false
       }
       .getOrElse(false)
 
