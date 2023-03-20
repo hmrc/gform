@@ -425,13 +425,23 @@ object FormTemplateValidator {
   }
 
   def validateChoiceDividerPositionLowerBound(sectionsList: List[Page]): ValidationResult = {
-    def check(choice: Choice): Boolean = choice.dividerPosition.fold(false)(_ <= 0)
+    def check(choice: Choice): Boolean = choice.dividerPosition
+      .map {
+        case IntDivider(i)    => i <= 0
+        case StringDivider(_) => false
+      }
+      .getOrElse(false)
 
-    validateChoice(sectionsList, check, "dividerPosition should be greater than 0")
+    validateChoice(sectionsList, check, "dividerPosition should be greater than 0 value")
   }
 
   def validateChoiceDividerPositionUpperBound(sectionsList: List[Page]): ValidationResult = {
-    def check(choice: Choice): Boolean = choice.dividerPosition.fold(false)(_ >= choice.options.size)
+    def check(choice: Choice): Boolean = choice.dividerPosition
+      .map {
+        case IntDivider(i)    => i >= choice.options.size
+        case StringDivider(_) => false
+      }
+      .getOrElse(false)
 
     validateChoice(sectionsList, check, "dividerPosition should be less than the number of choices")
   }
