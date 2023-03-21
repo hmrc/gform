@@ -203,6 +203,9 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
     | "param" ~ "." ~ alphabeticOnly ^^ { case _ ~ _ ~ param =>
       ParamCtx(QueryParam(param))
     }
+    | "auth" ~ "." ~ "itmpAddress" ~ "." ~ "country" ^^ { _ =>
+      CountryOfItmpAddress
+    }
     | "auth" ~ "." ~ authInfo ^^ { case _ ~ _ ~ authInfo =>
       AuthCtx(authInfo)
     }

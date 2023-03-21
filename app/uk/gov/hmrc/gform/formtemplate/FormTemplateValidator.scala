@@ -967,6 +967,7 @@ object FormTemplateValidator {
       case BulletedList(_)              => Valid
       case StringOps(_, _)              => Valid
       case Concat(exprs)                => Monoid.combineAll(exprs.map(e => validate(e, sections)))
+      case CountryOfItmpAddress         => Valid
     }
   }
 
