@@ -421,10 +421,10 @@ class HandlebarsTemplateProcessorHelpers(
   def isNotSuccessCode(code: Integer): CharSequence = log("isNotSuccessCode", code)(condition(!isSuccCode(code)))
   private def isSuccCode(code: Integer): Boolean = code != null && code >= 200 && code <= 299
 
-  def desCurrentDate: CharSequence = condition(DateTimeFormatter.ISO_LOCAL_DATE.format(timeProvider.localDateTime))
-  def currentDate: CharSequence = condition(DateTimeFormatter.BASIC_ISO_DATE.format(timeProvider.localDateTime))
-  def currentTimestamp: CharSequence = condition(DateTimeFormatter.ISO_INSTANT.format(timeProvider.instant))
-  def currentMonth(): CharSequence = condition(timeProvider.localDateTime.getMonthValue)
+  def desCurrentDate: CharSequence = condition(DateTimeFormatter.ISO_LOCAL_DATE.format(timeProvider.localDateTime()))
+  def currentDate: CharSequence = condition(DateTimeFormatter.BASIC_ISO_DATE.format(timeProvider.localDateTime()))
+  def currentTimestamp: CharSequence = condition(DateTimeFormatter.ISO_INSTANT.format(timeProvider.instant()))
+  def currentMonth(): CharSequence = condition(timeProvider.localDateTime().getMonthValue)
 
   def greaterThan(first: Any, second: Any): CharSequence = log("greaterThan", first, second) {
     ifNotNullAsNumber(first) { f =>

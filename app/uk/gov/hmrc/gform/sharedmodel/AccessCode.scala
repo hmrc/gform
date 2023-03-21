@@ -37,7 +37,7 @@ object AccessCode {
       Stream continually nextAlphaNum
     }
 
-    def getChars(i: Int) = State[Rnd[Int], String](r => (r, alphanumeric.take(i).toList.mkString))
+    def getChars(i: Int) = State[Rnd[Int], String](r => (r, alphanumeric().take(i).toList.mkString))
 
     val refGen = for {
       a <- getChars(3)

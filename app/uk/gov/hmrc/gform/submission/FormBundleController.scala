@@ -50,7 +50,7 @@ class FormBundleController(
             logger.info(show"getFormBundle, formId: '${rootFormIdData.toFormId.value}: $tree")
             tree
           }
-          .map(_.map(_.formIdData).toList)
+          .map(_.map(_.formIdData).toList())
           .toFuture
           .asOkJson
       }

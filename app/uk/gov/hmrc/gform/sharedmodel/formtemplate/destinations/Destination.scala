@@ -158,7 +158,7 @@ object Destination {
 
   implicit val leafExprs: LeafExpr[Destination] = (path: TemplatePath, t: Destination) =>
     t match {
-      case d: DestinationWithCustomerId => List(ExprWithPath(path + "customerId", d.customerId))
+      case d: DestinationWithCustomerId => List(ExprWithPath(path + "customerId", d.customerId()))
       case _                            => Nil
     }
 }

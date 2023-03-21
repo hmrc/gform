@@ -36,7 +36,7 @@ lazy val microservice = (project in file("."))
     scalaSettings,
     defaultSettings(),
     scalafmtOnCompile := true,
-    scalaVersion := "2.12.15",
+    scalaVersion := "2.13.8",
     Test / testOptions := (Test / testOptions).value
       .map {
         // Default Argument added by https://github.com/hmrc/sbt-settings
@@ -72,7 +72,6 @@ lazy val microservice = (project in file("."))
     scalacOptions ++= Seq(
       "-Xfatal-warnings",
       "-Xlint:-missing-interpolator,_",
-      "-Yno-adapted-args",
       "-Ywarn-numeric-widen",
       "-Ywarn-value-discard",
       "-Ywarn-dead-code",

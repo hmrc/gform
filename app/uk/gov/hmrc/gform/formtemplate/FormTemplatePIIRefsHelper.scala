@@ -91,7 +91,7 @@ object FormTemplatePIIRefsHelper {
     (jsValue \ "noPIITitle" \ "en").asOpt[String].orElse((jsValue \ "noPIITitle").asOpt[String])
 
   private def escapeRegexChars(input: String): String = input.flatMap { c =>
-    if (REGEX_SPECIAL_CHARS.contains(c)) List('\\', c) else List(c)
+    if (REGEX_SPECIAL_CHARS.contains(c)) List('\\', c).toString() else List(c).toString()
   }
 
   private def getPageTitle(page: JsValue): Option[String] = {
