@@ -34,7 +34,6 @@ import uk.gov.hmrc.gform.formtemplate.FormComponentMakerService._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.JsonUtils._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.{ LangADT, LocalisedString, SmartString }
-import DividerPosition._
 
 case class MES(
   mandatory: Boolean,
@@ -161,7 +160,7 @@ class FormComponentMaker(json: JsValue) {
   lazy val dividerPositon: Option[DividerPosition] =
     for {
       s <- (json \ "dividerPosition").asOpt[String]
-    } yield Try(s.toInt).toOption.fold[DividerPosition](DividerPositionValue(s))(i => DividerPositionNumber(i))
+    } yield Try(s.toInt).toOption.fold[DividerPosition](DividerPosition.Value(s))(i => DividerPosition.Number(i))
 
   lazy val dividerText: LocalisedString = (json \ "dividerText")
     .asOpt[LocalisedString]
