@@ -1084,31 +1084,17 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     )
   }
 
-  it should "parse upperFirst function" in {
-    val res = ValueParser.validate("${upperFirst(fieldId)}")
+  it should "parse capitalize function" in {
+    val res = ValueParser.validate("${capitalize(fieldId)}")
     res.right.value should be(
-      TextExpression(StringOps(FormCtx(FormComponentId("fieldId")), StringFnc.UpperFirst))
+      TextExpression(StringOps(FormCtx(FormComponentId("fieldId")), StringFnc.Capitalize))
     )
   }
 
-  it should "parse upperAll function" in {
-    val res = ValueParser.validate("${upperAll(fieldId)}")
+  it should "parse capitalizeAll function" in {
+    val res = ValueParser.validate("${capitalizeAll(fieldId)}")
     res.right.value should be(
-      TextExpression(StringOps(FormCtx(FormComponentId("fieldId")), StringFnc.UpperAll))
-    )
-  }
-
-  it should "parse lowerFirst function" in {
-    val res = ValueParser.validate("${lowerFirst(fieldId)}")
-    res.right.value should be(
-      TextExpression(StringOps(FormCtx(FormComponentId("fieldId")), StringFnc.LowerFirst))
-    )
-  }
-
-  it should "parse lowerAll function" in {
-    val res = ValueParser.validate("${lowerAll(fieldId)}")
-    res.right.value should be(
-      TextExpression(StringOps(FormCtx(FormComponentId("fieldId")), StringFnc.LowerAll))
+      TextExpression(StringOps(FormCtx(FormComponentId("fieldId")), StringFnc.CapitalizeAll))
     )
   }
 
@@ -1126,13 +1112,13 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     )
   }
 
-  it should "parse lowercase, uppercase, and lowerFirst functions" in {
-    val res = ValueParser.validate("${lowerFirst(uppercase(lowercase(fieldId)))}")
+  it should "parse lowercase, uppercase, and capitalize functions" in {
+    val res = ValueParser.validate("${capitalize(uppercase(lowercase(fieldId)))}")
     res.right.value should be(
       TextExpression(
         StringOps(
           StringOps(StringOps(FormCtx(FormComponentId("fieldId")), StringFnc.LowerCase), StringFnc.UpperCase),
-          StringFnc.LowerFirst
+          StringFnc.Capitalize
         )
       )
     )
