@@ -289,17 +289,11 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
     | "removeSpaces(" ~ _expr1 ~ ")" ^^ { case _ ~ value ~ _ =>
       StringOps(value, StringFnc.RemoveSpaces)
     }
-    | "upperFirst(" ~ _expr1 ~ ")" ^^ { case _ ~ value ~ _ =>
-      StringOps(value, StringFnc.UpperFirst)
+    | "capitalize(" ~ _expr1 ~ ")" ^^ { case _ ~ value ~ _ =>
+      StringOps(value, StringFnc.Capitalize)
     }
-    | "lowerFirst(" ~ _expr1 ~ ")" ^^ { case _ ~ value ~ _ =>
-      StringOps(value, StringFnc.LowerFirst)
-    }
-    | "upperAll(" ~ _expr1 ~ ")" ^^ { case _ ~ value ~ _ =>
-      StringOps(value, StringFnc.UpperAll)
-    }
-    | "lowerAll(" ~ _expr1 ~ ")" ^^ { case _ ~ value ~ _ =>
-      StringOps(value, StringFnc.LowerAll)
+    | "capitalizeAll(" ~ _expr1 ~ ")" ^^ { case _ ~ value ~ _ =>
+      StringOps(value, StringFnc.CapitalizeAll)
     }
     | "uppercase(" ~ _expr1 ~ ")" ^^ { case _ ~ value ~ _ =>
       StringOps(value, StringFnc.UpperCase)

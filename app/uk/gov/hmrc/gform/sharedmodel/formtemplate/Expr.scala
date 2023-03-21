@@ -297,10 +297,8 @@ object LoginInfo {
 
 sealed trait StringFnc
 object StringFnc {
-  case object UpperFirst extends StringFnc
-  case object UpperAll extends StringFnc
-  case object LowerFirst extends StringFnc
-  case object LowerAll extends StringFnc
+  case object Capitalize extends StringFnc
+  case object CapitalizeAll extends StringFnc
   case object UpperCase extends StringFnc
   case object LowerCase extends StringFnc
   case object RemoveSpaces extends StringFnc
