@@ -47,6 +47,7 @@ trait Verifier {
       _ <- fromOptA(FormTemplateValidator.validateChoiceHints(pages).toEither)
       _ <- fromOptA(FormTemplateValidator.validateChoiceDividerPositionLowerBound(pages).toEither)
       _ <- fromOptA(FormTemplateValidator.validateChoiceDividerPositionUpperBound(pages).toEither)
+      _ <- fromOptA(FormTemplateValidator.validateChoiceDividerPositionValue(pages).toEither)
       _ <- fromOptA(FormTemplateValidator.validateChoiceNoneChoiceAndError(pages).toEither)
       _ <- fromOptA(FormTemplateValidator.validateChoiceNoneChoiceMultivalueOnly(pages).toEither)
       _ <- fromOptA(FormTemplateValidator.validateChoiceNoneChoiceValue(pages).toEither)

@@ -424,6 +424,20 @@ object FormTemplateValidator {
     validateChoice(sectionsList, check, "Choice components doesn't have equal number of choices and hints")
   }
 
+  def validateChoiceDividerPositionValue(sectionsList: List[Page]): ValidationResult = {
+    def check(choice: Choice): Boolean = choice.dividerPosition
+      .map {
+        case DividerPosition.Number(i) => false
+        case DividerPosition.Value(d) =>
+          choice.options.collectFirst {
+            case v: OptionData.ValueBased if v.value === d => true
+          }.isEmpty
+      }
+      .getOrElse(false)
+
+    validateChoice(sectionsList, check, "dividerPosition value should be one of the non dynamic choice options")
+  }
+
   def validateChoiceDividerPositionLowerBound(sectionsList: List[Page]): ValidationResult = {
     def check(choice: Choice): Boolean = choice.dividerPosition
       .map {
