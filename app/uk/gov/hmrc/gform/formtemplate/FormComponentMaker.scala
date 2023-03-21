@@ -17,7 +17,6 @@
 package uk.gov.hmrc.gform.formtemplate
 
 import java.time.format.DateTimeFormatter
-import scala.util.Try
 import cats.data.NonEmptyList
 import cats.instances.either._
 import cats.instances.int._
@@ -158,9 +157,11 @@ class FormComponentMaker(json: JsValue) {
     }
 
   lazy val dividerPositon: Option[DividerPosition] =
-    for {
-      s <- (json \ "dividerPosition").asOpt[String]
-    } yield Try(s.toInt).toOption.fold[DividerPosition](DividerPosition.Value(s))(i => DividerPosition.Number(i))
+    (json \ "dividerPosition").toOption.flatMap {
+      case JsNumber(number) => Some(DividerPosition.Number(number.toIntExact))
+      case JsString(value)  => Some(DividerPosition.Value(value))
+      case _                => Option.empty[DividerPosition]
+    }
 
   lazy val dividerText: LocalisedString = (json \ "dividerText")
     .asOpt[LocalisedString]
