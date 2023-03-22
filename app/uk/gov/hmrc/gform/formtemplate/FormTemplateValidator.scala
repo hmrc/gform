@@ -424,14 +424,38 @@ object FormTemplateValidator {
     validateChoice(sectionsList, check, "Choice components doesn't have equal number of choices and hints")
   }
 
-  def validateChoiceDividerPositionLowerBound(sectionsList: List[Page]): ValidationResult = {
-    def check(choice: Choice): Boolean = choice.dividerPosition.fold(false)(_ <= 0)
+  def validateChoiceDividerPositionValue(sectionsList: List[Page]): ValidationResult = {
+    def check(choice: Choice): Boolean = choice.dividerPosition
+      .map {
+        case DividerPosition.Number(i) => false
+        case DividerPosition.Value(d) =>
+          choice.options.collectFirst {
+            case v: OptionData.ValueBased if v.value === d => true
+          }.isEmpty
+      }
+      .getOrElse(false)
 
-    validateChoice(sectionsList, check, "dividerPosition should be greater than 0")
+    validateChoice(sectionsList, check, "dividerPosition value should be one of the non dynamic choice options")
+  }
+
+  def validateChoiceDividerPositionLowerBound(sectionsList: List[Page]): ValidationResult = {
+    def check(choice: Choice): Boolean = choice.dividerPosition
+      .map {
+        case DividerPosition.Number(i) => i <= 0
+        case DividerPosition.Value(_)  => false
+      }
+      .getOrElse(false)
+
+    validateChoice(sectionsList, check, "dividerPosition should be greater than 0 value")
   }
 
   def validateChoiceDividerPositionUpperBound(sectionsList: List[Page]): ValidationResult = {
-    def check(choice: Choice): Boolean = choice.dividerPosition.fold(false)(_ >= choice.options.size)
+    def check(choice: Choice): Boolean = choice.dividerPosition
+      .map {
+        case DividerPosition.Number(i) => i >= choice.options.size
+        case DividerPosition.Value(_)  => false
+      }
+      .getOrElse(false)
 
     validateChoice(sectionsList, check, "dividerPosition should be less than the number of choices")
   }

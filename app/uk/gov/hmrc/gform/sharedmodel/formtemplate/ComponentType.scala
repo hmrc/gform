@@ -253,6 +253,14 @@ object NoneChoice {
   implicit val format: OFormat[NoneChoice] = OFormatWithTemplateReadFallback(templateReads)
 }
 
+sealed trait DividerPosition extends Product with Serializable
+
+object DividerPosition {
+  final case class Number(pos: Int) extends DividerPosition
+  final case class Value(value: String) extends DividerPosition
+  implicit val format: OFormat[DividerPosition] = derived.oformat()
+}
+
 case class Choice(
   `type`: ChoiceType,
   options: NonEmptyList[OptionData],
@@ -260,7 +268,7 @@ case class Choice(
   selections: List[Int],
   hints: Option[NonEmptyList[SmartString]],
   optionHelpText: Option[NonEmptyList[SmartString]],
-  dividerPosition: Option[Int],
+  dividerPosition: Option[DividerPosition],
   dividerText: LocalisedString,
   noneChoice: Option[NoneChoice],
   noneChoiceError: Option[LocalisedString]
