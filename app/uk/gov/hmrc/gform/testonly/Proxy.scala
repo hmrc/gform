@@ -41,7 +41,7 @@ class Proxy(wsClient: WSClient, controllerComponents: ControllerComponents)(impl
         Result(
           ResponseHeader(
             streamedResponse.status,
-            streamedResponse.headers.mapValues(_.head).filter(filterOutContentHeaders)
+            streamedResponse.headers.mapValues(_.head).filter(filterOutContentHeaders).toMap
           ),
           Streamed(streamedResponse.bodyAsSource, contentLength, contentType)
         )
@@ -67,7 +67,13 @@ class Proxy(wsClient: WSClient, controllerComponents: ControllerComponents)(impl
 
     response.map { response =>
       val transformedBody: ByteString = ByteString(bodyTransformer(response.body))
-      Result(ResponseHeader(response.status, response.headers.mapValues(_.head)), Strict(transformedBody, None))
+      Result(
+        header = ResponseHeader(response.status, response.headers.view.mapValues(_.head).toMap),
+        body = Strict(transformedBody, None),
+        newSession = None,
+        newFlash = None,
+        newCookies = Seq.empty
+      )
     }
   }
 

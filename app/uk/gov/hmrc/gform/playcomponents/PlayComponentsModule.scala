@@ -145,7 +145,7 @@ class PlayComponentsModule(
     auditingModule.microserviceAuditFilter,
     loggingFilter,
     cacheControlFilter,
-    new MDCFilter(akkaModule.materializer, configModule.configuration, configModule.appConfig.appName)
+    new MDCFilter {}
   )
 
   lazy val httpRequestHandler =

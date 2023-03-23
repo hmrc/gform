@@ -20,7 +20,6 @@ import play.api.libs.json._
 import cats.syntax.either._
 import cats.syntax.option._
 import julienrf.json.derived
-import play.api.libs.json._
 import uk.gov.hmrc.gform.sharedmodel.EmailVerifierService
 import uk.gov.hmrc.gform.sharedmodel.email.LocalisedEmailTemplateId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._

@@ -143,8 +143,8 @@ object DesRegistrationResponse {
 
   private val desReads: Reads[DesRegistrationResponse] = Reads(json =>
     ((json \ "individual"), (json \ "organisation")) match {
-      case (JsDefined(_), JsUndefined()) => readDesRegistrationResponse(json, "individual")
-      case (JsUndefined(), JsDefined(_)) => readDesRegistrationResponse(json, "organisation")
+      case (JsDefined(_), JsUndefined()) => readDesRegistrationResponse(json, Symbol("individual"))
+      case (JsUndefined(), JsDefined(_)) => readDesRegistrationResponse(json, Symbol("organisation"))
       case _                             => JsError("[DesRegistrationResponse] Not Supported json: " + json)
     }
   )

@@ -30,10 +30,10 @@ object Now {
   }
 
   implicit object LocalDateNow extends Now[LocalDate] {
-    def apply: LocalDate = LocalDate.now(ZoneId.of("Europe/London"))
+    def apply(): LocalDate = LocalDate.now(ZoneId.of("Europe/London"))
   }
 
   implicit object LocalDateTimeNow extends Now[LocalDateTime] {
-    def apply: LocalDateTime = LocalDateTime.now(ZoneId.of("Europe/London"))
+    def apply(): LocalDateTime = LocalDateTime.now(ZoneId.of("Europe/London"))
   }
 }

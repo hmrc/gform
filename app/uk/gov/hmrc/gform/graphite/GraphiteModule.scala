@@ -54,7 +54,7 @@ class GraphiteModule(
       val graphiteProviderConfig: GraphiteProviderConfig = GraphiteProviderConfig.fromConfig(graphiteConfiguration)
 
       val reporterConfig: GraphiteReporterProviderConfig =
-        GraphiteReporterProviderConfig.fromConfig(configuration, graphiteConfiguration)
+        GraphiteReporterProviderConfig.fromConfig(configuration)
 
       val graphite: Graphite = new GraphiteProvider(graphiteProviderConfig).get
 
