@@ -1131,4 +1131,11 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     )
   }
 
+  it should "parse auth.itmpAddress.country function" in {
+    val res = ValueParser.validate("${auth.itmpAddress.country}")
+    res.right.value should be(
+      TextExpression(CountryOfItmpAddress)
+    )
+  }
+
 }

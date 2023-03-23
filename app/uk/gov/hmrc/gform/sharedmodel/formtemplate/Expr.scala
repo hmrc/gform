@@ -180,6 +180,7 @@ final case class CsvOverseasCountryCheck(formComponentId: FormComponentId, colum
 final case class CsvCountryCountCheck(formComponentId: FormComponentId, column: String, value: String) extends Expr
 final case class IndexOf(formComponentId: FormComponentId, index: Int) extends Expr
 final case class IndexOfDataRetrieveCtx(ctx: DataRetrieveCtx, index: Int) extends Expr
+final case object CountryOfItmpAddress extends Expr
 
 sealed trait DateProjection extends Product with Serializable {
   def dateExpr: DateExpr
