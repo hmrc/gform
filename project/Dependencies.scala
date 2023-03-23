@@ -13,8 +13,8 @@ object Dependencies {
 
   val compile = Seq(
     "com.github.pureconfig"      %% "pureconfig"                        % "0.16.0",
+    "uk.gov.hmrc.mongo"          %% "hmrc-mongo-play-28"                % hmrcMongoVersion,
     "uk.gov.hmrc.mongo"          %% "hmrc-mongo-work-item-repo-play-28" % hmrcMongoVersion,
-//    "uk.gov.hmrc"                %% "play-scheduling-play-28"           % "8.1.0",
     "uk.gov.hmrc"                %% "http-caching-client"               % "10.0.0-play-28",
     "uk.gov.hmrc"                %% "bootstrap-backend-play-28"         % bootstrapVersion,
     "uk.gov.hmrc"                %% "domain"                            % "8.1.0-play-28",
