@@ -141,7 +141,7 @@ class RepoDestinationAuditer(
   ): List[String] = {
     import shapeless.syntax.typeable._
 
-    import scala.collection.JavaConverters._
+    import scala.jdk.CollectionConverters._
 
     def extractValuesFromTextOrArrayNode(node: JsonNode): List[String] =
       node.cast[TextNode].toList.map(_.asText) :::

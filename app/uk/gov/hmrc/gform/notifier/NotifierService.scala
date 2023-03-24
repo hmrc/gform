@@ -21,7 +21,7 @@ import cats.syntax.show._
 import org.slf4j.LoggerFactory
 import uk.gov.service.notify.NotificationClientApi
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.util.{ Failure, Success, Try }
 
 class NotifierService[F[_]](client: NotificationClientApi)(implicit F: ApplicativeError[F, String])

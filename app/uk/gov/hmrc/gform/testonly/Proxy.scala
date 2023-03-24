@@ -41,7 +41,7 @@ class Proxy(wsClient: WSClient, controllerComponents: ControllerComponents)(impl
         Result(
           ResponseHeader(
             streamedResponse.status,
-            streamedResponse.headers.mapValues(_.head).filter(filterOutContentHeaders).toMap
+            streamedResponse.headers.view.mapValues(_.head).filter(filterOutContentHeaders).toMap
           ),
           Streamed(streamedResponse.bodyAsSource, contentLength, contentType)
         )
@@ -60,7 +60,7 @@ class Proxy(wsClient: WSClient, controllerComponents: ControllerComponents)(impl
       .withFollowRedirects(false)
       .withMethod(inboundRequest.method)
       .withHttpHeaders(processHeaders(inboundRequest.headers, extraHeaders = Nil): _*)
-      .withQueryStringParameters(inboundRequest.queryString.mapValues(_.head).toSeq: _*)
+      .withQueryStringParameters(inboundRequest.queryString.view.mapValues(_.head).toSeq: _*)
       .withBody(inboundRequest.body)
 
     val response: Future[WSResponse] = outboundRequest.execute()
@@ -90,7 +90,7 @@ class Proxy(wsClient: WSClient, controllerComponents: ControllerComponents)(impl
         .withFollowRedirects(false)
         .withMethod(inboundRequest.method)
         .withHttpHeaders(processHeaders(inboundRequest.headers, extraHeaders = Nil): _*)
-        .withQueryStringParameters(inboundRequest.queryString.mapValues(_.head).toSeq: _*)
+        .withQueryStringParameters(inboundRequest.queryString.view.mapValues(_.head).toSeq: _*)
         .withBody(inboundRequest.body)
     )
 

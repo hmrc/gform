@@ -88,7 +88,7 @@ object ValueClassBinder {
 
     new PathBindable[A] {
       override def bind(key: String, value: String): Either[String, A] =
-        stringBinder.bind(key, value).right.flatMap(parseString)
+        stringBinder.bind(key, value).flatMap(parseString)
 
       override def unbind(key: String, a: A): String =
         stringBinder.unbind(key, fromAtoString(a))
@@ -107,7 +107,7 @@ object ValueClassBinder {
 
     new PathBindable[Option[A]] {
       override def bind(key: String, value: String): Either[String, Option[A]] =
-        stringBinder.bind(key, value).right.flatMap(parseString)
+        stringBinder.bind(key, value).flatMap(parseString)
 
       override def unbind(key: String, ma: Option[A]): String =
         ma.fold("")(a => stringBinder.unbind(key, fromAtoString(a)))

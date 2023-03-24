@@ -184,7 +184,7 @@ object DestinationsProcessorModelAlgebra {
         periodKey <- lookup.get(fcId)
         obligationDetail <- form.thirdPartyData.obligations
                               .findByPeriodKey(taxResponse.id.recalculatedTaxPeriodKey.hmrcTaxPeriod, periodKey)
-      } yield Map(fcId.value -> objectNode(mkMap(obligationDetail).mapValues(textNode).toMap))
+      } yield Map(fcId.value -> objectNode(mkMap(obligationDetail).view.mapValues(textNode).toMap))
     }
 
     val jsonNodes: Map[String, JsonNode] =
@@ -207,7 +207,7 @@ object DestinationsProcessorModelAlgebra {
           "organisationName" -> f(_.orgOrInd.getOrganisationName),
           "organisationType" -> f(_.orgOrInd.getOrganisationType),
           "isAGroup"         -> f(_.orgOrInd.getIsAGroup)
-        ).mapValues(textNode).toMap
+        ).view.mapValues(textNode).toMap
       )
     )
   }

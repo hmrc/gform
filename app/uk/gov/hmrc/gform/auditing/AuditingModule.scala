@@ -23,7 +23,7 @@ import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.graphite.GraphiteModule
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.http.connector.{ AuditConnector, DatastreamMetrics }
-import uk.gov.hmrc.play.bootstrap.audit.{ DefaultAuditChannel, DefaultAuditConnector }
+import uk.gov.hmrc.play.audit.{ DefaultAuditChannel, DefaultAuditConnector }
 import uk.gov.hmrc.play.bootstrap.backend.filters.{ BackendAuditFilter, DefaultBackendAuditFilter }
 import uk.gov.hmrc.play.bootstrap.config.DefaultHttpAuditEvent
 
@@ -50,7 +50,12 @@ class AuditingModule(
     )
 
   val auditConnector: AuditConnector =
-    new DefaultAuditConnector(configModule.auditingConfig, defaultAuditChannel, applicationLifecycle, datastreamMetrics)
+    new DefaultAuditConnector(
+      configModule.auditingConfig,
+      defaultAuditChannel,
+      applicationLifecycle,
+      datastreamMetrics
+    )
 
   val microserviceAuditFilter: BackendAuditFilter = new DefaultBackendAuditFilter(
     configModule.configuration,

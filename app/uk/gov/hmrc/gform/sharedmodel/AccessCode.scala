@@ -34,7 +34,7 @@ object AccessCode {
     def alphanumeric() = {
       val chars = ('A' to 'Z') ++ ('0' to '9')
       def nextAlphaNum: Char = chars(rnd.random(chars.length))
-      Stream continually nextAlphaNum
+      LazyList continually nextAlphaNum
     }
 
     def getChars(i: Int) = State[Rnd[Int], String](r => (r, alphanumeric().take(i).toList.mkString))

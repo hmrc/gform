@@ -54,7 +54,7 @@ class FUInterceptorController(
     //by default we replace all quarantined statueses to be cleaned
     //this is because on local machines we must rely on obsolete fileupload run in Service Manager
     //yep, this is not the state of the art ...
-    body.replaceAllLiterally("QUARANTINED", "CLEANED")
+    body.replace("QUARANTINED", "CLEANED")
 
   def setPredefinedResponse(pathParam: String) = Action(parse.json[JsValue]) { implicit r =>
     val path = s"/$pathParam"

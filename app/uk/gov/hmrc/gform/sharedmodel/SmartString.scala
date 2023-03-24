@@ -78,7 +78,7 @@ object SmartStringTemplateReader {
       .map { case (s, i) => SmartString(LocalisedString(Map(LangADT.En -> s)), i) }
 
   private def readLocalisedStringFromTemplateObject(value: Map[String, JsValue]) =
-    LocalisedString.format.reads(JsObject(value.filterKeys(_ =!= interpolationsFieldName).toMap))
+    LocalisedString.format.reads(JsObject(value.view.filterKeys(_ =!= interpolationsFieldName).toMap))
 
   private def readInterpolationsFromTemplateObject(value: Map[String, JsValue]) =
     value

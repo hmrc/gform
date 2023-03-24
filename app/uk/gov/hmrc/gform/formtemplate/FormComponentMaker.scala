@@ -467,8 +467,8 @@ class FormComponentMaker(json: JsValue) {
     for {
       emailVerification <- optEmailVerification
       selectionCriteria <- optSelectionCriteria
-      fieldValues       <- fieldValuesOpt.right
-      format            <- optMaybeFormatExpr(roundingMode)(selectionCriteria)(emailVerification).right
+      fieldValues       <- fieldValuesOpt
+      format            <- optMaybeFormatExpr(roundingMode)(selectionCriteria)(emailVerification)
       repMax            <- optMaybeRepeatsMax
       repMin            <- optMaybeRepeatsMin
       group             <- validateRepeatsAndBuildGroup(repMax, repMin, fieldValues)
@@ -527,7 +527,7 @@ class FormComponentMaker(json: JsValue) {
                                        |""".stripMargin
                                  ).asLeft
                              }
-      result <- oChoice.right
+      result <- oChoice
     } yield result
   }
 
@@ -788,8 +788,8 @@ class FormComponentMaker(json: JsValue) {
     val optMaybeString: Opt[Option[T]] = toOpt((json \ path).validateOpt[T], path)
     import cats.implicits._
     for {
-      maybeString <- optMaybeString.right
-      res         <- maybeString.traverse[Opt, R](validate).right
+      maybeString <- optMaybeString
+      res         <- maybeString.traverse[Opt, R](validate)
 
     } yield res
   }

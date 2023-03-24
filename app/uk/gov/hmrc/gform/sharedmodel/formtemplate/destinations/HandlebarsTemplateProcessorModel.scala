@@ -20,7 +20,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import play.api.libs.json._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.JsonNodes._
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 case class HandlebarsTemplateProcessorModel(model: JsonNode) extends AnyVal {
   def +(that: HandlebarsTemplateProcessorModel): HandlebarsTemplateProcessorModel =

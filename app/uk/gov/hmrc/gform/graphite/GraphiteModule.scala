@@ -51,7 +51,7 @@ class GraphiteModule(
   val datastreamMetrics: DatastreamMetrics =
     if (kenshooMetricsEnabled(configuration) && graphitePublisherEnabled(graphiteConfiguration)) {
 
-      val graphiteProviderConfig: GraphiteProviderConfig = GraphiteProviderConfig.fromConfig(graphiteConfiguration)
+      val graphiteProviderConfig: GraphiteProviderConfig = GraphiteProviderConfig.fromRootConfig(graphiteConfiguration)
 
       val reporterConfig: GraphiteReporterProviderConfig =
         GraphiteReporterProviderConfig.fromConfig(configuration)

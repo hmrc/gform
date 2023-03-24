@@ -55,7 +55,7 @@ case class FormComponent(
           for {
             field <- fields
             res <- updateField(1, field) :: (1 until max.getOrElse(1))
-                     .map(i => updateField(i + 1, field.copy(id = FormComponentId(i + "_" + field.id.value))))
+                     .map(i => updateField(i + 1, field.copy(id = FormComponentId(s"$i + _ + ${field.id.value}"))))
                      .toList
           } yield res
         expandedFields.flatMap(
