@@ -17,12 +17,12 @@
 package uk.gov.hmrc.gform.save4later
 
 import play.api.libs.json._
-import uk.gov.hmrc.crypto.{ Crypted, CryptoWithKeysFromConfig, PlainText }
+import uk.gov.hmrc.crypto.{ Crypted, Decrypter, Encrypter, PlainText }
 
 import scala.util.{ Failure, Success, Try }
 
 object EncyryptedFormat {
-  def formatEncrypted[A](jsonCrypto: CryptoWithKeysFromConfig)(implicit format: Format[A]): Format[A] = new Format[A] {
+  def formatEncrypted[A](jsonCrypto: Encrypter with Decrypter)(implicit format: Format[A]): Format[A] = new Format[A] {
     override def reads(json: JsValue): JsResult[A] = json match {
       case JsString(encrypted) =>
         Try(Json.parse(jsonCrypto.decrypt(Crypted(encrypted)).value).as[A]) match {

@@ -19,13 +19,13 @@ package uk.gov.hmrc.gform.save4later
 import play.api.libs.json.Reads._
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
-import uk.gov.hmrc.crypto.{ Crypted, CryptoWithKeysFromConfig, PlainText }
+import uk.gov.hmrc.crypto.{ Crypted, Decrypter, Encrypter, PlainText }
 import uk.gov.hmrc.gform.sharedmodel.UserId
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeExpiryDate, EnvelopeId, Form, FormComponentIdToFileIdMapping, FormData, FormId, FormStatus, ThirdPartyData, VisitIndex }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplateId, FormTemplateVersion }
 
 object EncryptedFormFormat {
-  def formatEncrypted(jsonCrypto: CryptoWithKeysFromConfig): Format[Form] = new Format[Form] {
+  def formatEncrypted(jsonCrypto: Encrypter with Decrypter): Format[Form] = new Format[Form] {
     private val componentIdToFileId = "componentIdToFileId"
     private val formData = "formData"
     private val thirdPartyData = "thirdPartyData"

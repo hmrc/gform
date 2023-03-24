@@ -18,7 +18,7 @@ package uk.gov.hmrc.gform.save4later
 
 import akka.http.scaladsl.model.StatusCodes
 import play.api.libs.json.Format
-import uk.gov.hmrc.crypto.CryptoWithKeysFromConfig
+import uk.gov.hmrc.crypto.{ Decrypter, Encrypter }
 import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormId, FormIdData, Submitted }
 import uk.gov.hmrc.gform.time.TimeProvider
 import uk.gov.hmrc.http.{ HeaderCarrier, UpstreamErrorResponse }
@@ -30,7 +30,7 @@ import org.mongodb.scala.model.{ Filters, Updates }
 
 class FormMongoCache(
   mongoCacheRepository: MongoCacheRepository[String],
-  jsonCrypto: CryptoWithKeysFromConfig,
+  jsonCrypto: Encrypter with Decrypter,
   timeProvider: TimeProvider
 )(implicit
   ec: ExecutionContext

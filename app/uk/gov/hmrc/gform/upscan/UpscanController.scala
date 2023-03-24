@@ -29,9 +29,8 @@ import play.api.libs.json.{ JsResult, JsValue, Json }
 import play.api.mvc.{ Action, AnyContent, ControllerComponents, Result }
 
 import scala.concurrent.{ ExecutionContext, Future }
+import uk.gov.hmrc.crypto.{ Crypted, Decrypter, Encrypter, PlainText }
 import uk.gov.hmrc.gform.config.AppConfig
-import uk.gov.hmrc.crypto.{ Crypted, CryptoWithKeysFromConfig, PlainText }
-//import uk.gov.hmrc.crypto.SymmetricCryptoFactory.aesCryptoFromConfig
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.fileupload.FileUploadFrontendAlgebra
 import uk.gov.hmrc.gform.form.FormAlgebra
@@ -43,7 +42,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AllowedFileTypes, FileUpload
 
 class UpscanController(
   appConfig: AppConfig,
-  queryParameterCrypto: CryptoWithKeysFromConfig,
+  queryParameterCrypto: Encrypter with Decrypter,
   formService: FormAlgebra[Future],
   upscanService: UpscanService,
   fileUploadFrontendAlgebra: FileUploadFrontendAlgebra[Future],

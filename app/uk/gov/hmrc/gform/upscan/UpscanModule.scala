@@ -17,7 +17,7 @@
 package uk.gov.hmrc.gform.upscan
 
 import scala.concurrent.{ ExecutionContext, Future }
-import uk.gov.hmrc.crypto.CryptoWithKeysFromConfig
+import uk.gov.hmrc.crypto.{ Decrypter, Encrypter }
 import uk.gov.hmrc.gform.config.{ AppConfig, ConfigModule }
 import uk.gov.hmrc.gform.fileupload.FileUploadFrontendAlgebra
 import uk.gov.hmrc.gform.form.FormService
@@ -30,7 +30,7 @@ class UpscanModule(
   formService: FormService[Future],
   wSHttpModule: WSHttpModule,
   configModule: ConfigModule,
-  queryParameterCrypto: CryptoWithKeysFromConfig,
+  queryParameterCrypto: Encrypter with Decrypter,
   fileUploadFrontendAlgebra: FileUploadFrontendAlgebra[Future],
   formTemplateModule: FormTemplateModule,
   appConfig: AppConfig,
