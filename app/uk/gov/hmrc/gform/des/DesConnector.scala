@@ -152,12 +152,7 @@ class DesConnector(wSHttp: WSHttp, baseUrl: String, desConfig: DesConnectorConfi
 
     val url = s"$baseUrl${desConfig.basePath}/individuals/$nino/employment/$taxYear"
 
-    wSHttp
-      .GET[JsValue](
-        url,
-        headers = authHeaders
-      )
-    lb
+    wSHttp.GET[JsValue](url, headers = authHeaders)
   }
 
   def testOnlyGet(url: String): Future[HttpResponse] =

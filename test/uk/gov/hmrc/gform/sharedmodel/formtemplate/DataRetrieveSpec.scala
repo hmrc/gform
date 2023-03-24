@@ -19,8 +19,7 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import play.api.libs.json.{ JsError, JsPath, Json, JsonValidationError }
-import uk.gov.hmrc.gform.sharedmodel.{ DataRetrieve, DataRetrieveId }
-import uk.gov.hmrc.gform.sharedmodel.DataRetrieve.{ BusinessBankAccountExistence, ValidateBankDetails }
+import uk.gov.hmrc.gform.sharedmodel.{ Attr, AttributeInstruction, ConstructAttribute, DataRetrieve, DataRetrieveId, Fetch }
 
 class DataRetrieveSpec extends AnyFlatSpec with Matchers {
 
@@ -31,15 +30,55 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
                |  "type": "validateBankDetails",
                |  "id": "bankDetails",
                |  "parameters": {
-               |    "sortCode": "${sortCode}",
-               |    "accountNumber": "${accountNumber}"
+               |    "sortCode": "${sortCodeExpr}",
+               |    "accountNumber": "${accountNumberExpr}"
                |  }
                |}
                |""".stripMargin)
-      .as[DataRetrieve] shouldBe ValidateBankDetails(
+      .as[DataRetrieve] shouldBe DataRetrieve(
+      DataRetrieve.Type("validateBankDetails"),
       DataRetrieveId("bankDetails"),
-      FormCtx(FormComponentId("sortCode")),
-      FormCtx(FormComponentId("accountNumber"))
+      Attr.FromObject(
+        List(
+          AttributeInstruction(
+            DataRetrieve.Attribute("isValid"),
+            ConstructAttribute.AsIs(Fetch(List("accountNumberIsWellFormatted")))
+          ),
+          AttributeInstruction(
+            DataRetrieve.Attribute("sortCodeIsPresentOnEISCD"),
+            ConstructAttribute.AsIs(Fetch(List("sortCodeIsPresentOnEISCD")))
+          ),
+          AttributeInstruction(
+            DataRetrieve.Attribute("sortCodeBankName"),
+            ConstructAttribute.AsIs(Fetch(List("sortCodeBankName")))
+          ),
+          AttributeInstruction(
+            DataRetrieve.Attribute("nonStandardAccountDetailsRequiredForBacs"),
+            ConstructAttribute.AsIs(Fetch(List("nonStandardAccountDetailsRequiredForBacs")))
+          ),
+          AttributeInstruction(
+            DataRetrieve.Attribute("sortCodeSupportsDirectDebit"),
+            ConstructAttribute.AsIs(Fetch(List("sortCodeSupportsDirectDebit")))
+          ),
+          AttributeInstruction(
+            DataRetrieve.Attribute("sortCodeSupportsDirectCredit"),
+            ConstructAttribute.AsIs(Fetch(List("sortCodeSupportsDirectCredit")))
+          ),
+          AttributeInstruction(DataRetrieve.Attribute("iban"), ConstructAttribute.AsIs(Fetch(List("iban"))))
+        )
+      ),
+      Map(),
+      List(
+        DataRetrieve.ParamExpr(
+          DataRetrieve.Parameter("sortCode", List("account"), DataRetrieve.ParamType.String),
+          FormCtx(FormComponentId("sortCodeExpr"))
+        ),
+        DataRetrieve.ParamExpr(
+          DataRetrieve.Parameter("accountNumber", List("account"), DataRetrieve.ParamType.String),
+          FormCtx(FormComponentId("accountNumberExpr"))
+        )
+      ),
+      None
     )
   }
 
@@ -56,11 +95,60 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
                |  }
                |}
                |""".stripMargin)
-      .as[DataRetrieve] shouldBe BusinessBankAccountExistence(
+      .as[DataRetrieve] shouldBe DataRetrieve(
+      DataRetrieve.Type("businessBankAccountExistence"),
       DataRetrieveId("businessBankAccount"),
-      FormCtx(FormComponentId("sortCode")),
-      FormCtx(FormComponentId("accountNumber")),
-      FormCtx(FormComponentId("companyName")),
+      Attr.FromObject(
+        List(
+          AttributeInstruction(
+            DataRetrieve.Attribute("accountNumberIsWellFormatted"),
+            ConstructAttribute.AsIs(Fetch(List("accountNumberIsWellFormatted")))
+          ),
+          AttributeInstruction(
+            DataRetrieve.Attribute("sortCodeIsPresentOnEISCD"),
+            ConstructAttribute.AsIs(Fetch(List("sortCodeIsPresentOnEISCD")))
+          ),
+          AttributeInstruction(
+            DataRetrieve.Attribute("sortCodeBankName"),
+            ConstructAttribute.AsIs(Fetch(List("sortCodeBankName")))
+          ),
+          AttributeInstruction(
+            DataRetrieve.Attribute("nonStandardAccountDetailsRequiredForBacs"),
+            ConstructAttribute.AsIs(Fetch(List("nonStandardAccountDetailsRequiredForBacs")))
+          ),
+          AttributeInstruction(
+            DataRetrieve.Attribute("accountExists"),
+            ConstructAttribute.AsIs(Fetch(List("accountExists")))
+          ),
+          AttributeInstruction(
+            DataRetrieve.Attribute("nameMatches"),
+            ConstructAttribute.AsIs(Fetch(List("nameMatches")))
+          ),
+          AttributeInstruction(
+            DataRetrieve.Attribute("sortCodeSupportsDirectDebit"),
+            ConstructAttribute.AsIs(Fetch(List("sortCodeSupportsDirectDebit")))
+          ),
+          AttributeInstruction(
+            DataRetrieve.Attribute("sortCodeSupportsDirectCredit"),
+            ConstructAttribute.AsIs(Fetch(List("sortCodeSupportsDirectCredit")))
+          )
+        )
+      ),
+      Map(),
+      List(
+        DataRetrieve.ParamExpr(
+          DataRetrieve.Parameter("sortCode", List("account"), DataRetrieve.ParamType.String),
+          FormCtx(FormComponentId("sortCode"))
+        ),
+        DataRetrieve.ParamExpr(
+          DataRetrieve.Parameter("accountNumber", List("account"), DataRetrieve.ParamType.String),
+          FormCtx(FormComponentId("accountNumber"))
+        ),
+        DataRetrieve.ParamExpr(
+          DataRetrieve.Parameter("companyName", List("business"), DataRetrieve.ParamType.String),
+          FormCtx(FormComponentId("companyName"))
+        )
+      ),
       None
     )
   }
@@ -110,32 +198,6 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
       .validateOpt[DataRetrieve] shouldBe JsError("'type' attribute missing")
   }
 
-  it should "fallback to default reads" in {
-    Json
-      .parse("""
-               |{
-               |   "ValidateBankDetails":{
-               |      "id":"bankDetails",
-               |      "sortCode":{
-               |         "FormCtx":{
-               |            "formComponentId":"sortCode"
-               |         }
-               |      },
-               |      "accountNumber":{
-               |         "FormCtx":{
-               |            "formComponentId":"accountNumber"
-               |         }
-               |      }
-               |   }
-               |}
-               |""".stripMargin)
-      .as[DataRetrieve] shouldBe ValidateBankDetails(
-      DataRetrieveId("bankDetails"),
-      FormCtx(FormComponentId("sortCode")),
-      FormCtx(FormComponentId("accountNumber"))
-    )
-  }
-
   it should "parse json as CompanyRegistrationNumber" in {
     Json
       .parse("""
@@ -147,9 +209,40 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
                |  }
                |}
                |""".stripMargin)
-      .as[DataRetrieve] shouldBe DataRetrieve.CompanyRegistrationNumber(
+      .as[DataRetrieve] shouldBe DataRetrieve(
+      DataRetrieve.Type("companyRegistrationNumber"),
       DataRetrieveId("companyRegistration"),
-      FormCtx(FormComponentId("companyNumber")),
+      Attr.FromObject(
+        List(
+          AttributeInstruction(
+            DataRetrieve.Attribute("companyName"),
+            ConstructAttribute.AsIs(Fetch(List("company_name")))
+          ),
+          AttributeInstruction(
+            DataRetrieve.Attribute("companyStatus"),
+            ConstructAttribute.AsIs(Fetch(List("company_status")))
+          ),
+          AttributeInstruction(
+            DataRetrieve.Attribute("registeredOfficeAddress"),
+            ConstructAttribute.Concat(
+              List(
+                Fetch(List("registered_office_address", "address_line_1")),
+                Fetch(List("registered_office_address", "address_line_2")),
+                Fetch(List("registered_office_address", "postal_code")),
+                Fetch(List("registered_office_address", "locality")),
+                Fetch(List("registered_office_address", "region"))
+              )
+            )
+          )
+        )
+      ),
+      Map(),
+      List(
+        DataRetrieve.ParamExpr(
+          DataRetrieve.Parameter("companyNumber", List(), DataRetrieve.ParamType.String),
+          FormCtx(FormComponentId("companyNumber"))
+        )
+      ),
       None
     )
   }
@@ -165,9 +258,22 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
                |  }
                |}
                |""".stripMargin)
-      .as[DataRetrieve] shouldBe DataRetrieve.NinoInsights(
+      .as[DataRetrieve] shouldBe DataRetrieve(
+      DataRetrieve.Type("ninoInsights"),
       DataRetrieveId("ninoCheck"),
-      FormCtx(FormComponentId("nino")),
+      Attr.FromObject(
+        List(
+          AttributeInstruction(DataRetrieve.Attribute("riskScore"), ConstructAttribute.AsIs(Fetch(List("riskScore")))),
+          AttributeInstruction(DataRetrieve.Attribute("reason"), ConstructAttribute.AsIs(Fetch(List("reason"))))
+        )
+      ),
+      Map(),
+      List(
+        DataRetrieve.ParamExpr(
+          DataRetrieve.Parameter("nino", List(), DataRetrieve.ParamType.String),
+          FormCtx(FormComponentId("nino"))
+        )
+      ),
       None
     )
   }
@@ -184,10 +290,27 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
                |  }
                |}
                |""".stripMargin)
-      .as[DataRetrieve] shouldBe DataRetrieve.BankAccountInsights(
+      .as[DataRetrieve] shouldBe DataRetrieve(
+      DataRetrieve.Type("bankAccountInsights"),
       DataRetrieveId("bankCheck"),
-      FormCtx(FormComponentId("sortCode")),
-      FormCtx(FormComponentId("accountNumber")),
+      Attr.FromObject(
+        List(
+          AttributeInstruction(DataRetrieve.Attribute("riskScore"), ConstructAttribute.AsIs(Fetch(List("riskScore")))),
+          AttributeInstruction(DataRetrieve.Attribute("reason"), ConstructAttribute.AsIs(Fetch(List("reason"))))
+        )
+      ),
+      Map(DataRetrieve.Attribute("riskScore") -> DataRetrieve.AttrType.Integer),
+      List(
+        DataRetrieve
+          .ParamExpr(
+            DataRetrieve.Parameter("sortCode", List(), DataRetrieve.ParamType.String),
+            FormCtx(FormComponentId("sortCode"))
+          ),
+        DataRetrieve.ParamExpr(
+          DataRetrieve.Parameter("accountNumber", List(), DataRetrieve.ParamType.String),
+          FormCtx(FormComponentId("accountNumber"))
+        )
+      ),
       None
     )
   }
@@ -205,10 +328,27 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
                |  }
                |}
                |""".stripMargin)
-      .as[DataRetrieve] shouldBe DataRetrieve.BankAccountInsights(
+      .as[DataRetrieve] shouldBe DataRetrieve(
+      DataRetrieve.Type("bankAccountInsights"),
       DataRetrieveId("bankCheck"),
-      FormCtx(FormComponentId("sortCode")),
-      FormCtx(FormComponentId("accountNumber")),
+      Attr.FromObject(
+        List(
+          AttributeInstruction(DataRetrieve.Attribute("riskScore"), ConstructAttribute.AsIs(Fetch(List("riskScore")))),
+          AttributeInstruction(DataRetrieve.Attribute("reason"), ConstructAttribute.AsIs(Fetch(List("reason"))))
+        )
+      ),
+      Map(DataRetrieve.Attribute("riskScore") -> DataRetrieve.AttrType.Integer),
+      List(
+        DataRetrieve
+          .ParamExpr(
+            DataRetrieve.Parameter("sortCode", List(), DataRetrieve.ParamType.String),
+            FormCtx(FormComponentId("sortCode"))
+          ),
+        DataRetrieve.ParamExpr(
+          DataRetrieve.Parameter("accountNumber", List(), DataRetrieve.ParamType.String),
+          FormCtx(FormComponentId("accountNumber"))
+        )
+      ),
       Some(IncludeIf(IsTrue))
     )
   }
@@ -227,12 +367,69 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
                |  }
                |}
                |""".stripMargin)
-      .as[DataRetrieve] shouldBe DataRetrieve.PersonalBankAccountExistence(
+      .as[DataRetrieve] shouldBe DataRetrieve(
+      DataRetrieve.Type("personalBankAccountExistence"),
       DataRetrieveId("personalBankDetails"),
-      FormCtx(FormComponentId("sortCode")),
-      FormCtx(FormComponentId("accNumber")),
-      FormCtx(FormComponentId("firstName")),
-      FormCtx(FormComponentId("lastName")),
+      Attr.FromObject(
+        List(
+          AttributeInstruction(
+            DataRetrieve.Attribute("accountNumberIsWellFormatted"),
+            ConstructAttribute.AsIs(Fetch(List("accountNumberIsWellFormatted")))
+          ),
+          AttributeInstruction(
+            DataRetrieve.Attribute("accountExists"),
+            ConstructAttribute.AsIs(Fetch(List("accountExists")))
+          ),
+          AttributeInstruction(
+            DataRetrieve.Attribute("nameMatches"),
+            ConstructAttribute.AsIs(Fetch(List("nameMatches")))
+          ),
+          AttributeInstruction(
+            DataRetrieve.Attribute("accountName"),
+            ConstructAttribute.AsIs(Fetch(List("accountName")))
+          ),
+          AttributeInstruction(
+            DataRetrieve.Attribute("nonStandardAccountDetailsRequiredForBacs"),
+            ConstructAttribute.AsIs(Fetch(List("nonStandardAccountDetailsRequiredForBacs")))
+          ),
+          AttributeInstruction(
+            DataRetrieve.Attribute("sortCodeIsPresentOnEISCD"),
+            ConstructAttribute.AsIs(Fetch(List("sortCodeIsPresentOnEISCD")))
+          ),
+          AttributeInstruction(
+            DataRetrieve.Attribute("sortCodeSupportsDirectDebit"),
+            ConstructAttribute.AsIs(Fetch(List("sortCodeSupportsDirectDebit")))
+          ),
+          AttributeInstruction(
+            DataRetrieve.Attribute("sortCodeSupportsDirectCredit"),
+            ConstructAttribute.AsIs(Fetch(List("sortCodeSupportsDirectCredit")))
+          ),
+          AttributeInstruction(
+            DataRetrieve.Attribute("sortCodeBankName"),
+            ConstructAttribute.AsIs(Fetch(List("sortCodeBankName")))
+          ),
+          AttributeInstruction(DataRetrieve.Attribute("iban"), ConstructAttribute.AsIs(Fetch(List("iban"))))
+        )
+      ),
+      Map(),
+      List(
+        DataRetrieve.ParamExpr(
+          DataRetrieve.Parameter("sortCode", List("account"), DataRetrieve.ParamType.String),
+          FormCtx(FormComponentId("sortCode"))
+        ),
+        DataRetrieve.ParamExpr(
+          DataRetrieve.Parameter("accountNumber", List("account"), DataRetrieve.ParamType.String),
+          FormCtx(FormComponentId("accNumber"))
+        ),
+        DataRetrieve.ParamExpr(
+          DataRetrieve.Parameter("firstName", List("subject"), DataRetrieve.ParamType.String),
+          FormCtx(FormComponentId("firstName"))
+        ),
+        DataRetrieve.ParamExpr(
+          DataRetrieve.Parameter("lastName", List("subject"), DataRetrieve.ParamType.String),
+          FormCtx(FormComponentId("lastName"))
+        )
+      ),
       None
     )
   }

@@ -26,7 +26,7 @@ import uk.gov.hmrc.gform.config.FileInfoConfig
 import uk.gov.hmrc.gform.core._
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.formtemplate._
-import uk.gov.hmrc.gform.sharedmodel.{ AvailableLanguages, DataRetrieveAttribute, DataRetrieveId }
+import uk.gov.hmrc.gform.sharedmodel.{ AvailableLanguages, DataRetrieve, DataRetrieveId }
 import uk.gov.hmrc.gform.sharedmodel.email.LocalisedEmailTemplateId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.{ NewForm, NewFormForTemplate, NewSession, PageLink, SignOut }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.UserField.Enrolment
@@ -859,7 +859,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     val res = ValueParser.validate("${dataRetrieve.businessBankDetails.accountNumberIsWellFormatted}")
     res.right.value should be(
       TextExpression(
-        DataRetrieveCtx(DataRetrieveId("businessBankDetails"), DataRetrieveAttribute.AccountNumberIsWellFormatted)
+        DataRetrieveCtx(DataRetrieveId("businessBankDetails"), DataRetrieve.Attribute("accountNumberIsWellFormatted"))
       )
     )
   }
@@ -868,7 +868,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     val res = ValueParser.validate("${dataRetrieve.businessBankDetails.sortCodeIsPresentOnEISCD}")
     res.right.value should be(
       TextExpression(
-        DataRetrieveCtx(DataRetrieveId("businessBankDetails"), DataRetrieveAttribute.SortCodeIsPresentOnEISCD)
+        DataRetrieveCtx(DataRetrieveId("businessBankDetails"), DataRetrieve.Attribute("sortCodeIsPresentOnEISCD"))
       )
     )
   }
@@ -876,7 +876,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
   it should "parse business bank existence - sortCodeBankName" in {
     val res = ValueParser.validate("${dataRetrieve.businessBankDetails.sortCodeBankName}")
     res.right.value should be(
-      TextExpression(DataRetrieveCtx(DataRetrieveId("businessBankDetails"), DataRetrieveAttribute.SortCodeBankName))
+      TextExpression(DataRetrieveCtx(DataRetrieveId("businessBankDetails"), DataRetrieve.Attribute("sortCodeBankName")))
     )
   }
 
@@ -886,7 +886,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
       TextExpression(
         DataRetrieveCtx(
           DataRetrieveId("businessBankDetails"),
-          DataRetrieveAttribute.NonStandardAccountDetailsRequiredForBacs
+          DataRetrieve.Attribute("nonStandardAccountDetailsRequiredForBacs")
         )
       )
     )
@@ -895,14 +895,14 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
   it should "parse business bank existence - accountExists" in {
     val res = ValueParser.validate("${dataRetrieve.businessBankDetails.accountExists}")
     res.right.value should be(
-      TextExpression(DataRetrieveCtx(DataRetrieveId("businessBankDetails"), DataRetrieveAttribute.AccountExists))
+      TextExpression(DataRetrieveCtx(DataRetrieveId("businessBankDetails"), DataRetrieve.Attribute("accountExists")))
     )
   }
 
   it should "parse business bank existence - nameMatches" in {
     val res = ValueParser.validate("${dataRetrieve.businessBankDetails.nameMatches}")
     res.right.value should be(
-      TextExpression(DataRetrieveCtx(DataRetrieveId("businessBankDetails"), DataRetrieveAttribute.NameMatches))
+      TextExpression(DataRetrieveCtx(DataRetrieveId("businessBankDetails"), DataRetrieve.Attribute("nameMatches")))
     )
   }
 
@@ -910,7 +910,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     val res = ValueParser.validate("${dataRetrieve.businessBankDetails.sortCodeSupportsDirectDebit}")
     res.right.value should be(
       TextExpression(
-        DataRetrieveCtx(DataRetrieveId("businessBankDetails"), DataRetrieveAttribute.SortCodeSupportsDirectDebit)
+        DataRetrieveCtx(DataRetrieveId("businessBankDetails"), DataRetrieve.Attribute("sortCodeSupportsDirectDebit"))
       )
     )
   }
@@ -919,15 +919,9 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     val res = ValueParser.validate("${dataRetrieve.businessBankDetails.sortCodeSupportsDirectCredit}")
     res.right.value should be(
       TextExpression(
-        DataRetrieveCtx(DataRetrieveId("businessBankDetails"), DataRetrieveAttribute.SortCodeSupportsDirectCredit)
+        DataRetrieveCtx(DataRetrieveId("businessBankDetails"), DataRetrieve.Attribute("sortCodeSupportsDirectCredit"))
       )
     )
-  }
-
-  it should "parse business bank existence - invalid attribute failure" in {
-    assertThrows[Exception] {
-      ValueParser.validate("${dataRetrieve.businessBankDetails.dummy}")
-    }
   }
 
   it should "parse quotedLocalisedConstant localized constant" in {
@@ -987,7 +981,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     val res = ValueParser.validate("${dataRetrieve.companyRegistrationNumber.name}")
     res.right.value should be(
       TextExpression(
-        DataRetrieveCtx(DataRetrieveId("companyRegistrationNumber"), DataRetrieveAttribute.Name)
+        DataRetrieveCtx(DataRetrieveId("companyRegistrationNumber"), DataRetrieve.Attribute("name"))
       )
     )
   }
@@ -996,7 +990,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     val res = ValueParser.validate("${dataRetrieve.companyRegistrationNumber.status}")
     res.right.value should be(
       TextExpression(
-        DataRetrieveCtx(DataRetrieveId("companyRegistrationNumber"), DataRetrieveAttribute.Status)
+        DataRetrieveCtx(DataRetrieveId("companyRegistrationNumber"), DataRetrieve.Attribute("status"))
       )
     )
   }
@@ -1005,22 +999,16 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     val res = ValueParser.validate("${dataRetrieve.companyRegistrationNumber.registeredAddress}")
     res.right.value should be(
       TextExpression(
-        DataRetrieveCtx(DataRetrieveId("companyRegistrationNumber"), DataRetrieveAttribute.RegisteredAddress)
+        DataRetrieveCtx(DataRetrieveId("companyRegistrationNumber"), DataRetrieve.Attribute("registeredAddress"))
       )
     )
-  }
-
-  it should "parse company registration number - invalid attribute failure" in {
-    assertThrows[Exception] {
-      ValueParser.validate("${dataRetrieve.companyRegistrationNumber.surname}")
-    }
   }
 
   it should "parse nino insights - riskScore" in {
     val res = ValueParser.validate("${dataRetrieve.ninoInsights.riskScore}")
     res.right.value should be(
       TextExpression(
-        DataRetrieveCtx(DataRetrieveId("ninoInsights"), DataRetrieveAttribute.RiskScore)
+        DataRetrieveCtx(DataRetrieveId("ninoInsights"), DataRetrieve.Attribute("riskScore"))
       )
     )
   }
@@ -1029,7 +1017,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     val res = ValueParser.validate("${dataRetrieve.ninoInsights.reason}")
     res.right.value should be(
       TextExpression(
-        DataRetrieveCtx(DataRetrieveId("ninoInsights"), DataRetrieveAttribute.Reason)
+        DataRetrieveCtx(DataRetrieveId("ninoInsights"), DataRetrieve.Attribute("reason"))
       )
     )
   }
@@ -1038,7 +1026,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     val res = ValueParser.validate("${dataRetrieve.bankCheck.riskScore}")
     res.right.value should be(
       TextExpression(
-        DataRetrieveCtx(DataRetrieveId("bankCheck"), DataRetrieveAttribute.RiskScore)
+        DataRetrieveCtx(DataRetrieveId("bankCheck"), DataRetrieve.Attribute("riskScore"))
       )
     )
   }
@@ -1047,7 +1035,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     val res = ValueParser.validate("${dataRetrieve.bankCheck.reason}")
     res.right.value should be(
       TextExpression(
-        DataRetrieveCtx(DataRetrieveId("bankCheck"), DataRetrieveAttribute.Reason)
+        DataRetrieveCtx(DataRetrieveId("bankCheck"), DataRetrieve.Attribute("reason"))
       )
     )
   }
@@ -1056,7 +1044,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     val res = ValueParser.validate("${dataRetrieve.personalBankAccountExistence.accountExists}")
     res.right.value should be(
       TextExpression(
-        DataRetrieveCtx(DataRetrieveId("personalBankAccountExistence"), DataRetrieveAttribute.AccountExists)
+        DataRetrieveCtx(DataRetrieveId("personalBankAccountExistence"), DataRetrieve.Attribute("accountExists"))
       )
     )
   }
@@ -1065,7 +1053,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     val res = ValueParser.validate("${dataRetrieve.personalBankAccountExistence.nameMatches}")
     res.right.value should be(
       TextExpression(
-        DataRetrieveCtx(DataRetrieveId("personalBankAccountExistence"), DataRetrieveAttribute.NameMatches)
+        DataRetrieveCtx(DataRetrieveId("personalBankAccountExistence"), DataRetrieve.Attribute("nameMatches"))
       )
     )
   }
