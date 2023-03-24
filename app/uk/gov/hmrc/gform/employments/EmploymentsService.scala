@@ -16,11 +16,10 @@
 
 package uk.gov.hmrc.gform.employments
 
+import play.api.libs.json.JsValue
 import uk.gov.hmrc.gform.des.DesAlgebra
-import uk.gov.hmrc.gform.sharedmodel.des.EmploymentsResponse
-import uk.gov.hmrc.gform.sharedmodel.ServiceCallResponse
 
 class EmploymentsService[F[_]](desConnector: DesAlgebra[F]) {
-  def callDES(nino: String, taxYear: Int): F[ServiceCallResponse[List[EmploymentsResponse]]] =
+  def callDES(nino: String, taxYear: Int): F[JsValue] =
     desConnector.lookupEmployment(nino, taxYear)
 }

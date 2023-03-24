@@ -21,12 +21,12 @@ import java.time.LocalDate
 import scala.util.parsing.combinator._
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.formtemplate.BooleanExprId
+import uk.gov.hmrc.gform.sharedmodel.{ DataRetrieve, DataRetrieveId }
 import uk.gov.hmrc.gform.sharedmodel.dblookup.CollectionName
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.PageLink
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.SelectionCriteriaValue.{ SelectionCriteriaExpr, SelectionCriteriaReference, SelectionCriteriaSimpleValue }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.UserField.Enrolment
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
-import uk.gov.hmrc.gform.sharedmodel.{ DataRetrieveAttribute, DataRetrieveId }
 
 import scala.util.matching.Regex
 
@@ -215,16 +215,16 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
     | "link" ~ "." ~ internalLinkParser ^^ { case _ ~ _ ~ internalLink =>
       LinkCtx(internalLink)
     }
-    | "dataRetrieve" ~ "." ~ DataRetrieveId.unanchoredIdValidation ~ "." ~ DataRetrieveAttribute.unanchoredIdValidation ~ "[" ~ nonZeroPositiveInteger ~ "]" ^^ {
+    | "dataRetrieve" ~ "." ~ DataRetrieveId.unanchoredIdValidation ~ "." ~ DataRetrieve.Attribute.unanchoredIdValidation ~ "[" ~ nonZeroPositiveInteger ~ "]" ^^ {
       case _ ~ _ ~ dataRetrieveId ~ _ ~ dataRetrieveAttribute ~ _ ~ index ~ _ =>
         IndexOfDataRetrieveCtx(
-          DataRetrieveCtx(DataRetrieveId(dataRetrieveId), DataRetrieveAttribute.fromName(dataRetrieveAttribute)),
+          DataRetrieveCtx(DataRetrieveId(dataRetrieveId), DataRetrieve.Attribute(dataRetrieveAttribute)),
           index - 1
         )
     }
-    | "dataRetrieve" ~ "." ~ DataRetrieveId.unanchoredIdValidation ~ "." ~ DataRetrieveAttribute.unanchoredIdValidation ^^ {
+    | "dataRetrieve" ~ "." ~ DataRetrieveId.unanchoredIdValidation ~ "." ~ DataRetrieve.Attribute.unanchoredIdValidation ^^ {
       case _ ~ _ ~ dataRetrieveId ~ _ ~ dataRetrieveAttribute =>
-        DataRetrieveCtx(DataRetrieveId(dataRetrieveId), DataRetrieveAttribute.fromName(dataRetrieveAttribute))
+        DataRetrieveCtx(DataRetrieveId(dataRetrieveId), DataRetrieve.Attribute(dataRetrieveAttribute))
     }
     | "count(" ~ "dataRetrieve" ~ "." ~ DataRetrieveId.unanchoredIdValidation ~ ")" ^^ {
       case _ ~ _ ~ _ ~ dataRetrieveId ~ _ =>
