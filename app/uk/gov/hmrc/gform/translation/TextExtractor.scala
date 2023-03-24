@@ -200,9 +200,9 @@ class Translator(json: Json, paths: List[List[Instruction]], val topLevelExprDat
         translationState.constants.find(_.enString === row.en) match {
           case None => currentExpr
           case Some(TranslatableConstant.NonTranslated(Constant(en))) =>
-            currentExpr.replace(s"'$en'", s"'${row.en}','${row.cy}'")
+            currentExpr.replace(s"'$en'", s"'${row.en}'|'${row.cy}'")
           case Some(TranslatableConstant.Translated(Constant(en), Constant(cy))) =>
-            currentExpr.replace(s"'$en','$cy'", s"'${row.en}','${row.cy}'")
+            currentExpr.replace(s"'$en','$cy'", s"'${row.en}'|'${row.cy}'")
         }
       }
     }

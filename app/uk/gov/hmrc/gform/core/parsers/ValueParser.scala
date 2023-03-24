@@ -370,7 +370,7 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
     str
   }
 
-  lazy val quotedLocalisedConstant: Parser[Expr] = quotedConstant ~ "," ~ quotedConstant ^^ { case en ~ _ ~ cy =>
+  lazy val quotedLocalisedConstant: Parser[Expr] = quotedConstant ~ "|" ~ quotedConstant ^^ { case en ~ _ ~ cy =>
     IfElse(Equals(LangCtx, Constant("en")), en, cy)
   } | quotedConstant
 

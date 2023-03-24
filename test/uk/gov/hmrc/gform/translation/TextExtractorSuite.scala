@@ -879,7 +879,7 @@ class TextExtractorSuite extends FunSuite {
       json"""
           {
             "expressions": {
-              "employeesYourCap": "if employee || agent then 'Your','Cy-Your' + ' ' else 'Employee’s'"
+              "employeesYourCap": "if employee || agent then 'Your'|'Cy-Your' + ' ' else 'Employee’s'"
             }
           }
           """
@@ -887,7 +887,7 @@ class TextExtractorSuite extends FunSuite {
       json"""
           {
             "expressions": {
-              "employeesYourCap": "if employee || agent then 'Your','Cy-Your-2' + ' ' else 'Employee’s','Cy-Employee’s'"
+              "employeesYourCap": "if employee || agent then 'Your'|'Cy-Your-2' + ' ' else 'Employee’s'|'Cy-Employee’s'"
             }
           }
           """
@@ -951,7 +951,7 @@ class TextExtractorSuite extends FunSuite {
               "email": "if auth.emailLogin && user.affinityGroup != 'agent' then emailAddressGG else if auth.emailLogin && user.affinityGroup = 'agent' then emailAgent else auth.email",
               "employeesYour": "if employee || agent then 'your' else 'the employee’s'",
               "liveLives": "if employee || agent then 'live' else 'lives'",
-              "employeesYourCap": "if employee || agent then 'Your','Cy-Your' + ' ' else 'Employee’s '"
+              "employeesYourCap": "if employee || agent then 'Your'|'Cy-Your' + ' ' else 'Employee’s '"
             }
           }
           """
@@ -985,7 +985,7 @@ class TextExtractorSuite extends FunSuite {
               "email": "if auth.emailLogin && user.affinityGroup != 'agent' then emailAddressGG else if auth.emailLogin && user.affinityGroup = 'agent' then emailAgent else auth.email",
               "employeesYour": "if employee || agent then 'your' else 'the employee’s'",
               "liveLives": "if employee || agent then 'live' else 'lives'",
-              "employeesYourCap": "if employee || agent then 'Your','Cy-Your' + ' ' else 'Employee’s '"
+              "employeesYourCap": "if employee || agent then 'Your'|'Cy-Your' + ' ' else 'Employee’s '"
             }
           }
           """
@@ -1016,7 +1016,7 @@ class TextExtractorSuite extends FunSuite {
           {
             "expressions": {
               "vesselInstallationExp": "if empVesselInstallChoice contains 0 then 'vessel' else 'installation'",
-              "employeesYourCap": "if employee || agent then 'Your','Cy-Your' + ' ' else 'Employee’s'",
+              "employeesYourCap": "if employee || agent then 'Your'|'Cy-Your' + ' ' else 'Employee’s'",
               "enBasicGrossedTax": {
                 "value": "enBasicValueBenefit * (enBasicRate / 100) * (100 / (100 - enBasicRate))",
                 "type": "sterling",
@@ -1059,7 +1059,7 @@ class TextExtractorSuite extends FunSuite {
           {
             "expressions": {
               "vesselInstallationExp": "if empVesselInstallChoice contains 0 then 'vessel' else 'installation'",
-              "employeesYourCap": "if employee || agent then 'Your','Cy-Your' + ' ' else 'Employee’s'",
+              "employeesYourCap": "if employee || agent then 'Your'|'Cy-Your' + ' ' else 'Employee’s'",
               "enBasicGrossedTax": {
                 "value": "enBasicValueBenefit * (enBasicRate / 100) * (100 / (100 - enBasicRate))",
                 "type": "sterling",
@@ -1079,8 +1079,8 @@ class TextExtractorSuite extends FunSuite {
       json"""
           {
             "expressions": {
-              "vesselInstallationExp": "if empVesselInstallChoice contains 0 then 'vessel','cy-vessel' else 'installation','cy-installation'",
-              "employeesYourCap": "if employee || agent then 'Your','Cy-Your' + ' ' else 'Employee’s','Cy-Employee’s'",
+              "vesselInstallationExp": "if empVesselInstallChoice contains 0 then 'vessel'|'cy-vessel' else 'installation'|'cy-installation'",
+              "employeesYourCap": "if employee || agent then 'Your'|'Cy-Your' + ' ' else 'Employee’s'|'Cy-Employee’s'",
               "enBasicGrossedTax": {
                 "value": "enBasicValueBenefit * (enBasicRate / 100) * (100 / (100 - enBasicRate))",
                 "type": "sterling",
