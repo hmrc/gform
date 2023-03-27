@@ -181,14 +181,14 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
       // format: on
     )
 
-    forAll(validIdentifiersCombinations) { (serviceName, identifierName) ⇒
+    forAll(validIdentifiersCombinations) { (serviceName, identifierName) =>
       val res = ValueParser.validate(s"$${user.enrolments.$serviceName.$identifierName}")
       res.right.value should be(
         TextExpression(UserCtx(UserField.Enrolment(ServiceName(serviceName), IdentifierName(identifierName), None)))
       )
     }
 
-    forAll(invalidIdentifiersCombinations) { (serviceName, identifierName) ⇒
+    forAll(invalidIdentifiersCombinations) { (serviceName, identifierName) =>
       val res = ValueParser.validate("${user.enrolments." + serviceName + "." + identifierName + "}")
       res.left.value.error should include(
         s"Unable to parse expression $${user.enrolments.$serviceName.$identifierName}"
@@ -388,7 +388,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
       // format: on
     )
 
-    forAll(table) { (expression, expected) ⇒
+    forAll(table) { (expression, expected) =>
       val res = ValueParser.validate("${" + expression + "}")
 
       res.right.value shouldBe TextExpression(expected)
@@ -413,7 +413,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
       // format: on
     )
 
-    forAll(table) { (expression, expected) ⇒
+    forAll(table) { (expression, expected) =>
       expression.rewrite shouldBe expected
     }
   }
@@ -690,7 +690,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
 
     def expected(dateExpr: DateExpr, offset: OffsetYMD) = TextExpression(DateCtx(DateExprWithOffset(dateExpr, offset)))
 
-    forAll(table) { (expression, dateExpr, offset) ⇒
+    forAll(table) { (expression, dateExpr, offset) =>
       ValueParser.validate("${" + expression + "}") shouldBe Right(expected(dateExpr, offset))
     }
   }
@@ -704,7 +704,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
       "TODAY + 2d + 3d"
     )
 
-    forAll(table) { expression ⇒
+    forAll(table) { expression =>
       ValueParser.validate("${" + expression + "}").isLeft shouldBe true
     }
   }

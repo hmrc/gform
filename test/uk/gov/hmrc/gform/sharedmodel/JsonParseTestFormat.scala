@@ -81,7 +81,7 @@ class JsonParseTestFormat extends Spec with TableDrivenPropertyChecks {
       // format: on
     )
 
-    forAll(multilineCombinations) { (multiline, expected) ⇒
+    forAll(multilineCombinations) { (multiline, expected) =>
       val jsResult =
         implicitly[Reads[FormComponent]]
           .reads(Json.parse(startOfJson + s""", "format" : "shortText", "multiline" : "$multiline" }"""))
@@ -99,7 +99,7 @@ class JsonParseTestFormat extends Spec with TableDrivenPropertyChecks {
       ("", Text(ShortText.default, Value, DisplayWidth.DEFAULT, IsNotUpperCase))
     )
 
-    forAll(table) { (multiline, expected) ⇒
+    forAll(table) { (multiline, expected) =>
       val jsResult =
         implicitly[Reads[FormComponent]]
           .reads(Json.parse(startOfJson + s""", "format" : "shortText", "multiline" : "$multiline" }"""))

@@ -44,7 +44,7 @@ class TreeSpec extends Spec {
 
   "toList" should "produce a list of the values in fold order" in {
     val tree: Tree[Int] = Tree(1, Tree(2, Tree(3)), Tree(4))
-    tree.toList shouldBe List(1, 2, 3, 4)
+    tree.toList() shouldBe List(1, 2, 3, 4)
   }
 
   "filter" should "remove all nodes and their children if the predicate doesn't match" in {

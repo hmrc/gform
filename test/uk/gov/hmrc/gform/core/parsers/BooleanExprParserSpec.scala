@@ -220,7 +220,7 @@ class BooleanExprParserSpec extends AnyFlatSpec with Matchers with EitherValues 
 
   it should "fail to parse anything but an equals operator" in {
     val res = BooleanExprParser.validate("${abc|=form.amountA}")
-    res should be('left)
+    res should be("left")
     res.left.value shouldBe UnexpectedState("""Unable to parse expression ${abc|=form.amountA}.
                                               |Errors:
                                               |'}' expected but '|' found""".stripMargin)
@@ -230,7 +230,7 @@ class BooleanExprParserSpec extends AnyFlatSpec with Matchers with EitherValues 
   it should "fail to parse eeitt.businessUserx = XYZ}" in {
     val res = BooleanExprParser.validate("${eeitt.businessUserx=XYZ}")
 
-    res should be('left)
+    res should be("left")
 
     res.left.value match {
       case UnexpectedState(msg) =>

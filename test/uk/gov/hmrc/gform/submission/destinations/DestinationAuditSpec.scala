@@ -22,7 +22,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.verifyRoundTrip
 
 class DestinationAuditSpec extends Spec with DestinationAuditGen with ScalaCheckDrivenPropertyChecks {
   "JSON" should "round trip" in {
-    forAll(destinationAuditGen) { generatedAudit =>
+    forAll(destinationAuditGen()) { generatedAudit =>
       verifyRoundTrip(generatedAudit)
     }
   }

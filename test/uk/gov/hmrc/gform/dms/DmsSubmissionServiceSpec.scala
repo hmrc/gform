@@ -53,7 +53,7 @@ class DmsSubmissionServiceSpec extends Spec {
 
     (stubPdfDocument.getNumberOfPages _).when().returning(numberOfPages)
 
-    fixture
+    fixture()
       .expectCreateEnvelope(formTemplateId, expectedEnvId)
       .expectGeneratePdfBytesLocal(validSubmission.html, pdfContent)
       .expectLoadDocument(pdfContent, stubPdfDocument)
@@ -62,7 +62,7 @@ class DmsSubmissionServiceSpec extends Spec {
         expectedPdfAndXmlSummaries,
         expectedHmrcDms,
         0,
-        fixture.objectStoreEnable,
+        fixture().objectStoreEnable,
         formTemplateId
       )
       .service
@@ -91,17 +91,17 @@ class DmsSubmissionServiceSpec extends Spec {
 
     val formTemplateId = FormTemplateId(validSubmission.metadata.dmsFormId)
 
-    fixture
+    fixture()
       .expectCreateEnvelope(formTemplateId, expectedEnvId)
       .expectGeneratePdfBytesLocal(validSubmission.html, pdfContent)
       .expectLoadDocument(pdfContent, stubPdfDocument)
-      .expectUploadAttachment(expectedEnvId, fileAttachments.head, fixture.objectStoreEnable)
+      .expectUploadAttachment(expectedEnvId, fileAttachments.head, fixture().objectStoreEnable)
       .expectSubmitEnvelope(
         expectedSubmission,
         expectedPdfAndXmlSummaries,
         expectedDmsSubmission,
         1,
-        fixture.objectStoreEnable,
+        fixture().objectStoreEnable,
         formTemplateId
       )
       .service
@@ -125,7 +125,7 @@ class DmsSubmissionServiceSpec extends Spec {
 
     val formTemplateId = FormTemplateId(validSubmission.metadata.dmsFormId)
 
-    fixture
+    fixture()
       .expectCreateEnvelope(formTemplateId, expectedEnvId)
       .expectLoadDocument(pdfContent, stubPdfDocument)
       .expectSubmitEnvelope(
@@ -133,7 +133,7 @@ class DmsSubmissionServiceSpec extends Spec {
         expectedPdfAndXmlSummaries,
         expectedHmrcDms,
         0,
-        fixture.objectStoreEnable,
+        fixture().objectStoreEnable,
         formTemplateId
       )
       .service

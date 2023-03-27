@@ -51,7 +51,7 @@ class RepoDestinationAuditerSpec
   }
 
   it should "return the audit if there is only one" in {
-    forAll(destinationAuditGen) { audit =>
+    forAll(destinationAuditGen()) { audit =>
       val fixture = createAuditer
 
       fixture
@@ -66,7 +66,7 @@ class RepoDestinationAuditerSpec
   }
 
   it should "return the latest audit if there is more than one" in {
-    forAll(destinationAuditGen, destinationAuditGen, destinationAuditGen) {
+    forAll(destinationAuditGen(), destinationAuditGen(), destinationAuditGen()) {
       case (audit1: DestinationAudit, generatedAudit2, generatedAudit3) =>
         val audit2 = generatedAudit2.copy(formId = audit1.formId, timestamp = audit1.timestamp.plusSeconds(1))
         val audit3 = generatedAudit3.copy(formId = audit1.formId, timestamp = audit1.timestamp.minusSeconds(1))
@@ -96,7 +96,7 @@ class RepoDestinationAuditerSpec
   }
 
   it should "return all child audits that can be found when there is only one audit for each child" in {
-    forAll(submissionRefGen, destinationAuditGen, destinationAuditGen) {
+    forAll(submissionRefGen, destinationAuditGen(), destinationAuditGen()) {
       case (parentSubmissionRef, generatedAudit1, generatedAudit2) =>
         whenever(generatedAudit1.formId =!= generatedAudit2.formId) {
           val audit1 = generatedAudit1.copy(parentFormSubmissionRefs = List(parentSubmissionRef.value))
@@ -116,7 +116,7 @@ class RepoDestinationAuditerSpec
   }
 
   it should "return the latest child audit for each formId" in {
-    forAll(submissionRefGen, destinationAuditGen, destinationAuditGen, destinationAuditGen) {
+    forAll(submissionRefGen, destinationAuditGen(), destinationAuditGen(), destinationAuditGen()) {
       (parentSubmissionRef, generatedAudit1, generatedAudit2, generatedAudit3) =>
         whenever(generatedAudit3.formId =!= generatedAudit1.formId) {
           val audit1 = generatedAudit1.copy(parentFormSubmissionRefs = List(parentSubmissionRef.value))
