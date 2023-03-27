@@ -1283,6 +1283,12 @@ object FormTemplateValidator {
 
     isNonInformation.combineAll
   }
+
+  def validateTaskListDisplayWidth(formTemplate: FormTemplate): ValidationResult =
+    formTemplate.formKind.fold(_ =>
+      if (formTemplate.displayWidth.isDefined) Invalid("displayWidth property can only be used with task list")
+      else Valid
+    )(_ => Valid)
 }
 
 object IsEmailVerifiedBy {

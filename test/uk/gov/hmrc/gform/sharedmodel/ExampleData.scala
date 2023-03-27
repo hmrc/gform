@@ -515,6 +515,7 @@ trait ExampleFormTemplate {
     Some(accessibilityUrl),
     None,
     None,
+    None,
     None
   )
 }

@@ -96,6 +96,7 @@ trait Verifier {
       _ <- fromOptA(FormTemplateValidator.validateCsvOverseasCountryCheck(formTemplate, pages).toEither)
       _ <- fromOptA(FormTemplateValidator.validatePageRedirects(pages).toEither)
       _ <- fromOptA(DestinationsValidator.validateDestinationIncludeIfs(formTemplate.destinations).toEither)
+      _ <- fromOptA(FormTemplateValidator.validateTaskListDisplayWidth(formTemplate).toEither)
     } yield ()
 
   }
