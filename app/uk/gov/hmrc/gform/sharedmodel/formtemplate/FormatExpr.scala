@@ -22,6 +22,8 @@ import play.api.libs.json._
 import uk.gov.hmrc.gform.core.parsers.{ SelectionCriteriaParser, ValueParser }
 import uk.gov.hmrc.gform.sharedmodel.{ EmailVerifierService, LocalisedString }
 
+import scala.annotation.nowarn
+
 sealed trait FormatExpr
 final case class OrientationFormat(value: String) extends FormatExpr
 final case class DateFormat(expressions: DateConstraintType) extends FormatExpr
@@ -244,7 +246,7 @@ object SelectionCriteriaValue {
   case class SelectionCriteriaExpr(expr: FormCtx) extends SelectionCriteriaValue
   case class SelectionCriteriaReference(expr: FormCtx, name: CsvColumnName) extends SelectionCriteriaValue
   case class SelectionCriteriaSimpleValue(value: List[String]) extends SelectionCriteriaValue
-
+  @nowarn
   private val reads: Reads[SelectionCriteriaValue] = Reads { json =>
     json \ "value" match {
       case JsDefined(JsArray(values)) =>
@@ -273,7 +275,7 @@ object SelectionCriteriaValue {
 case class SelectionCriteria(column: CsvColumnName, value: SelectionCriteriaValue)
 
 object SelectionCriteria {
-
+  @nowarn
   implicit val reads: Reads[SelectionCriteria] = Reads { json =>
     SelectionCriteriaValue.format.reads(json).flatMap { value =>
       json \ "column" match {

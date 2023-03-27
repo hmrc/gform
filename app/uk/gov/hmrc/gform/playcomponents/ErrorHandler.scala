@@ -29,6 +29,8 @@ import uk.gov.hmrc.gform.core.UniqueIdGenerator
 import scala.concurrent.Future
 import uk.gov.hmrc.http.{ HttpException, JsValidationException, NotFoundException, UpstreamErrorResponse }
 
+import scala.annotation.nowarn
+
 class ErrorHandler(environment: Environment, configuration: Configuration, sourceMapper: Option[SourceMapper])(implicit
   uniqueIdGenerator: UniqueIdGenerator
 ) extends DefaultHttpErrorHandler(environment, configuration, sourceMapper, None) {
@@ -81,7 +83,7 @@ class ErrorHandler(environment: Environment, configuration: Configuration, sourc
     logger.error(response.toString, e)
     Future.successful(InternalServerError(Json.toJson(response)))
   }
-
+  @nowarn
   private def onUpstreamErrorResponse(e: UpstreamErrorResponse) = {
     val (response, result) = e match {
       case UpstreamErrorResponse.Upstream4xxResponse(e) =>

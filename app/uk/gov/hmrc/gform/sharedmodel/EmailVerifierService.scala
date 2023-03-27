@@ -23,6 +23,8 @@ import uk.gov.hmrc.gform.sharedmodel.email.EmailTemplateId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.OFormatWithTemplateReadFallback
 import uk.gov.hmrc.gform.sharedmodel.notifier.NotifierTemplateId
 
+import scala.annotation.nowarn
+
 sealed trait EmailVerifierService extends Product with Serializable
 
 object EmailVerifierService {
@@ -46,7 +48,7 @@ object EmailVerifierService {
       case LangADT.Cy => emailTemplateIdCy.getOrElse(emailTemplateId)
     }
   }
-
+  @nowarn
   private val templateReads: Reads[EmailVerifierService] = Reads { json =>
     ((json \ "service"), (json \ "emailTemplateId")) match {
       case (JsDefined(JsString("notify")), JsDefined(JsString(emailTemplateId))) =>

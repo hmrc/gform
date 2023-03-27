@@ -23,6 +23,8 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import cats.syntax.either._
 import uk.gov.hmrc.gform.sharedmodel.SmartString
 
+import scala.annotation.nowarn
+
 object FormComponentMakerService {
 
   def createObject(
@@ -77,13 +79,14 @@ object FormComponentMakerService {
         TextArea(f, expr, dw, rows, displayCharCount).asRight
       case _ => createError(Some(formatExpr), maybeValueExpr, multiLine, json).asLeft
     }
-
+  @nowarn
   def createError(
     maybeFormatExpr: Option[FormatExpr],
     maybeValueExpr: Option[ValueExpr],
     multiLine: Option[String],
     json: JsValue
   ): UnexpectedState = {
+
     val formComponentMaker = new FormComponentMaker(json)
     (maybeFormatExpr, maybeValueExpr, multiLine) match {
       case (maybeInvalidFormat, maybeValue, IsNotMultiline()) =>

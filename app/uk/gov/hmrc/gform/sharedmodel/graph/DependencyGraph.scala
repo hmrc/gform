@@ -37,7 +37,7 @@ object DependencyGraph {
         case HasExpr(SingleExpr(expr)) => eval(expr)
         case _                         => List.empty
       }
-      fcIds(fc).map(fc.id ~> _).foldLeft(emptyGraph)(_ + _)
+      fcIds(fc).map(fc.id ~> _).foldLeft(emptyGraph)(_ union Set(_))
     }
 
     def eval(expr: Expr): List[FormComponentId] =

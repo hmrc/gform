@@ -19,6 +19,8 @@ package uk.gov.hmrc.gform.sharedmodel
 import cats.Functor
 import play.api.libs.json._
 
+import scala.annotation.nowarn
+
 sealed trait ServiceCallResponse[+A] extends Product with Serializable
 
 case object NotFound extends ServiceCallResponse[Nothing]
@@ -41,7 +43,7 @@ object ServiceCallResponse {
         case CannotRetrieveResponse => Json.obj("det" -> "CannotRetrieveResponse")
         case ServiceResponse(a)     => Json.obj("det" -> implicitly[Writes[A]].writes(a))
       }
-
+    @nowarn
     override def reads(json: JsValue): JsResult[ServiceCallResponse[A]] =
       json \ "det" match {
         case JsDefined(js) =>

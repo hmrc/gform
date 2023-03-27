@@ -57,7 +57,7 @@ object TopLevelExpressions {
         }
     }
 
-    layers.foldLeft(emptyGraph)(_ + _)
+    layers.foldLeft(emptyGraph)(_ union Set(_))
   }
 
   def toTopologicalSort(

@@ -35,6 +35,7 @@ import shapeless.syntax.typeable._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.PageLink
 
 import scala.Function.const
+import scala.annotation.nowarn
 import scala.util.{ Failure, Success, Try }
 
 object FormTemplateValidator {
@@ -809,7 +810,7 @@ object FormTemplateValidator {
     val results = componentTypes.map(validate(_, formTemplate))
     Monoid[ValidationResult].combineAll(results)
   }
-
+  @nowarn
   def validate(componentType: ComponentType, formTemplate: FormTemplate): ValidationResult = componentType match {
     case HasExpr(SingleExpr(expr))            => validate(expr, formTemplate.formKind.allSections)
     case HasExpr(MultipleExpr(fields))        => Valid
@@ -984,7 +985,7 @@ object FormTemplateValidator {
           )
       }
     }
-
+  @nowarn
   def validateDates(formTemplate: FormTemplate): ValidationResult =
     getAllDates(formTemplate)
       .map {

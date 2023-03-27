@@ -16,11 +16,13 @@
 
 package uk.gov.hmrc.gform.playcomponents
 
+//import akka.stream.Materializer
 import org.slf4j.LoggerFactory
+//import play.api.Configuration
+//import play.api.mvc.RequestHeader
 import play.api.http.HttpErrorHandler
 import play.api.mvc.EssentialFilter
 import play.api.routing.Router
-
 import scala.concurrent.ExecutionContext
 import uk.gov.hmrc.gform.akka.AkkaModule
 import uk.gov.hmrc.gform.auditing.AuditingModule
@@ -44,7 +46,9 @@ import uk.gov.hmrc.gform.testonly.TestOnlyModule
 import uk.gov.hmrc.gform.translation.TranslationModule
 import uk.gov.hmrc.gform.validation.ValidationModule
 import uk.gov.hmrc.gform.upscan.UpscanModule
-import uk.gov.hmrc.play.bootstrap.filters.{ CacheControlConfig, CacheControlFilter, DefaultLoggingFilter, MDCFilter }
+//import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.play.bootstrap.filters.{ CacheControlConfig, CacheControlFilter, DefaultLoggingFilter }
+//import uk.gov.hmrc.play.bootstrap.filters.MDCFilter
 import uk.gov.hmrc.play.health.HealthController
 
 class PlayComponentsModule(
@@ -144,9 +148,15 @@ class PlayComponentsModule(
     metricsModule.metricsFilter,
     auditingModule.microserviceAuditFilter,
     loggingFilter,
-    cacheControlFilter,
+    cacheControlFilter
 //    new MDCFilter(akkaModule.materializer, configModule.configuration, configModule.appConfig.appName)
-    new MDCFilter {}
+//    new MDCFilter {
+//      override val mat: Materializer = akkaModule.materializer
+//      override val configuration: Configuration = configModule.configuration
+//      override implicit val ec: ExecutionContext = ec
+//
+//      override protected def hc(implicit rh: RequestHeader): HeaderCarrier = ???
+//    }
   )
 
   lazy val httpRequestHandler =

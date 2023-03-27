@@ -72,6 +72,8 @@ object LookupMatchStringParser extends RegexParsers {
     parse(matchParser, input) match {
       case Success(result, _) => result.flatten.headOption
       case NoSuccess(msg, _)  => throw new Exception(s"Unexpected parse failure: $msg")
+      case Error(msg, _)      => throw new Exception(s"Unexpected parse failure: $msg")
+      case Failure(msg, _)    => throw new Exception(s"Unexpected parse failure: $msg")
     }
   }
 }

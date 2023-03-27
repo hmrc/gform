@@ -35,6 +35,8 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.RoundingMode._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.{ LangADT, LocalisedString, SmartString }
 
+import scala.annotation.nowarn
+
 case class MES(
   mandatory: Boolean,
   editable: Boolean,
@@ -50,7 +52,7 @@ class FormComponentMaker(json: JsValue) {
   lazy val label: SmartString = (json \ "label").as[SmartString]
 
   lazy val optMaybeValueExpr: Opt[Option[ValueExpr]] = parse("value", ValueParser.validate)
-
+  @nowarn
   lazy val optEmailVerification: Opt[EmailVerification] = (json \ "verifiedBy") match {
     case JsDefined(verifiedBy) =>
       EmailVerification.reads.reads(verifiedBy) match {
@@ -64,7 +66,7 @@ class FormComponentMaker(json: JsValue) {
     case JsDefined(JsString(IsTrueish())) => Right(true)
     case _                                => Right(false)
   }
-
+  @nowarn
   def optFileUploadProvider(compression: Boolean): Opt[FileUploadProvider] = (json \ "service") match {
     case JsDefined(JsString("upscan"))     => Right(FileUploadProvider.Upscan(compression))
     case JsDefined(JsString("fileUpload")) => Right(FileUploadProvider.FileUploadFrontend)
@@ -134,6 +136,7 @@ class FormComponentMaker(json: JsValue) {
   lazy val intervalMins: Option[Int] = (json \ "intervalMins").asOpt[Int]
   lazy val optInstruction: Opt[Option[Instruction]] =
     toOpt((json \ "instruction").validateOpt[Instruction], "/instruction")
+  @nowarn
   lazy val optSelectionCriteria: Opt[Option[List[SelectionCriteria]]] =
     json \ "selectionCriteria" match {
       case JsDefined(JsArray(selectionCriterias)) =>

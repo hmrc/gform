@@ -26,6 +26,8 @@ import uk.gov.hmrc.gform.core.parsers.ValueParser
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ ExplicitExprType, Expr, FormTemplateRaw, TextExpression, Typed, ValueExpr }
 
+import scala.annotation.nowarn
+
 sealed trait Substitutions[K, V] {
 
   def fieldName: String
@@ -131,7 +133,7 @@ object ExprSubstitutions extends Substitutions[ExpressionId, Expr] {
       case JsError(error)     => Left(UnexpectedState(JsError.toJson(error).toString()))
       case JsSuccess(expr, _) => Right(expr)
     }
-
+  @nowarn
   def from(templateRaw: FormTemplateRaw): Opt[ExprSubstitutions] =
     templateRaw.value \ fieldName match {
       case JsDefined(json) =>
@@ -152,7 +154,7 @@ object BooleanExprSubstitutions extends Substitutions[BooleanExprId, BooleanExpr
   val empty = BooleanExprSubstitutions(Map.empty[BooleanExprId, BooleanExpr])
 
   def toBooleanExpression(booleanExpr: String): Opt[BooleanExpr] = BooleanExprParser.validate("${" + booleanExpr + "}")
-
+  @nowarn
   def from(templateRaw: FormTemplateRaw): Opt[BooleanExprSubstitutions] =
     templateRaw.value \ "booleanExpressions" match {
       case JsDefined(json) =>

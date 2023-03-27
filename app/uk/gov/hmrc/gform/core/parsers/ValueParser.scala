@@ -28,6 +28,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.UserField.Enrolment
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.{ DataRetrieveAttribute, DataRetrieveId }
 
+import scala.annotation.nowarn
 import scala.util.matching.Regex
 
 trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
@@ -89,14 +90,14 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
   private val perms1: List[Parser[OffsetYMD]] = offsets.map { ap =>
     ap ^^ { a => OffsetYMD(a) }
   }
-
+  @nowarn
   private val perms2: Iterator[Parser[OffsetYMD]] =
     offsets.combinations(2).flatMap(_.permutations).map { case List(ap, bp) =>
       ap ~ bp ^^ { case a ~ b =>
         OffsetYMD(a, b)
       }
     }
-
+  @nowarn
   private val perms3: Iterator[Parser[OffsetYMD]] = offsets.permutations.map { case List(ap, bp, cp) =>
     ap ~ bp ~ cp ^^ { case a ~ b ~ c =>
       OffsetYMD(a, b, c)

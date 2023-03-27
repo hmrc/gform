@@ -19,6 +19,8 @@ package uk.gov.hmrc.gform.notificationbanner
 import julienrf.json.derived
 import play.api.libs.json.{ JsDefined, JsError, JsString, JsSuccess, JsUndefined, Json, OFormat }
 
+import scala.annotation.nowarn
+
 case class NotificationBanner(
   message: String
 )
@@ -28,7 +30,7 @@ object NotificationBanner {
   val mongoId = "notificationBanner"
 
   implicit val format: OFormat[NotificationBanner] = derived.oformat()
-
+  @nowarn
   val mongoFormat: OFormat[NotificationBanner] = OFormat[NotificationBanner](
     jsValue =>
       (jsValue \ "message") match {

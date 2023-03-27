@@ -20,12 +20,15 @@ import cats.implicits._
 import play.api.libs.json._
 import play.api.libs.json.Reads._
 import play.api.libs.functional.syntax._
+
 import scala.concurrent.ExecutionContext
 import scala.language.postfixOps
 import uk.gov.hmrc.gform.config.FileInfoConfig
 import uk.gov.hmrc.gform.core.{ FOpt, Opt, fromOptA }
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Default, Expr, ExpressionOutput, FormCategory, FormTemplate, FormTemplateRaw, SummarySection }
+
+import scala.annotation.nowarn
 
 trait RequestHandlerAlg[F[_]] {
   def handleRequest(templateRaw: FormTemplateRaw): F[Unit]
@@ -216,7 +219,7 @@ object FormTemplatesControllerRequestHandler {
     val moveSections =
       (__ \ "formKind" \ "sections").json
         .copyFrom((__ \ "sections").json.pick) and (__ \ "sections").json.prune reduce
-
+    @nowarn
     def getDownField(fieldName: String, json: JsValue): JsObject =
       (json \ fieldName) match {
         case JsDefined(field) => Json.obj(fieldName -> field)
@@ -342,6 +345,7 @@ object FormTemplatesControllerRequestHandler {
     }
 
     val transformDestinations: Reads[JsValue] = Reads { json =>
+      @nowarn
       val transformIncludeIfs: Reads[JsValue] = Reads { json =>
         json \ "includeIf" match {
           case JsDefined(JsString(_)) => JsSuccess(json)
