@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate.generators
 import org.scalacheck.Gen
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ After, AnyDate, Before, BeforeAfterPrecisely, ChildBenefitNumber, CompanyRegistrationNumber, ConcreteDate, CountryCode, DateConstraint, DateConstraintInfo, DateConstraintType, DateConstraints, DateField, Day, EORI, Email, Month, NINO, NonUkCountryCode, Number, OffsetDate, PayeReference, PositiveNumber, Precisely, RoundingMode, ShortText, Sterling, TelephoneNumber, TextConstraint, TextWithRestrictions, Today, UTR, UkBankAccountNumber, UkEORI, UkSortCodeFormat, UkVrn, Year }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ After, AnyDate, Before, BeforeAfterPrecisely, ChildBenefitNumber, CompanyRegistrationNumber, ConcreteDate, CountryCode, CtUTR, DateConstraint, DateConstraintInfo, DateConstraintType, DateConstraints, DateField, Day, EORI, Email, Month, NINO, NonUkCountryCode, Number, OffsetDate, PayeReference, PositiveNumber, Precisely, RoundingMode, SaUTR, ShortText, Sterling, TelephoneNumber, TextConstraint, TextWithRestrictions, Today, UkBankAccountNumber, UkEORI, UkSortCodeFormat, UkVrn, Year }
 
 trait FormatExprGen {
   def numberGen: Gen[Number] =
@@ -71,7 +71,8 @@ trait FormatExprGen {
     sterlingGen,
     Gen.const(UkBankAccountNumber),
     Gen.const(UkSortCodeFormat),
-    Gen.const(UTR),
+    Gen.const(SaUTR),
+    Gen.const(CtUTR),
     Gen.const(NINO),
     Gen.const(PayeReference),
     Gen.const(TelephoneNumber),

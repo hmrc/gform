@@ -178,6 +178,8 @@ case object Email extends TextConstraint
 case class EmailVerifiedBy(formComponentId: FormComponentId, emailVerifierService: EmailVerifierService)
     extends TextConstraint
 case object UTR extends TextConstraint
+case object SaUTR extends TextConstraint
+case object CtUTR extends TextConstraint
 case object NINO extends TextConstraint
 case object UkVrn extends TextConstraint
 case object PayeReference extends TextConstraint
