@@ -262,7 +262,8 @@ object DataRetrieveDefinitions {
     ),
     List(
       Parameter("nino")
-    )
+    ),
+    Map(DataRetrieve.Attribute("riskScore") -> DataRetrieve.AttrType.Integer)
   )
 
   val bankAccountInsights = DataRetrieveDefinition(
