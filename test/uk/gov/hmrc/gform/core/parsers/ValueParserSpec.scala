@@ -24,7 +24,7 @@ import uk.gov.hmrc.gform.config.FileInfoConfig
 import uk.gov.hmrc.gform.core._
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.formtemplate._
-import uk.gov.hmrc.gform.sharedmodel.{ AvailableLanguages, DataRetrieveAttribute, DataRetrieveId }
+import uk.gov.hmrc.gform.sharedmodel.{ AvailableLanguages, DataRetrieve, DataRetrieveId }
 import uk.gov.hmrc.gform.sharedmodel.email.LocalisedEmailTemplateId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.{ NewForm, NewFormForTemplate, NewSession, PageLink, SignOut }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.UserField.Enrolment
@@ -501,6 +501,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     None,
     None,
     None,
+    None,
     None
   )
 
@@ -856,7 +857,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     val res = ValueParser.validate("${dataRetrieve.businessBankDetails.accountNumberIsWellFormatted}")
     res.toOption.value should be(
       TextExpression(
-        DataRetrieveCtx(DataRetrieveId("businessBankDetails"), DataRetrieveAttribute.AccountNumberIsWellFormatted)
+        DataRetrieveCtx(DataRetrieveId("businessBankDetails"), DataRetrieve.Attribute("accountNumberIsWellFormatted"))
       )
     )
   }
@@ -865,15 +866,15 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     val res = ValueParser.validate("${dataRetrieve.businessBankDetails.sortCodeIsPresentOnEISCD}")
     res.toOption.value should be(
       TextExpression(
-        DataRetrieveCtx(DataRetrieveId("businessBankDetails"), DataRetrieveAttribute.SortCodeIsPresentOnEISCD)
+        DataRetrieveCtx(DataRetrieveId("businessBankDetails"), DataRetrieve.Attribute("sortCodeIsPresentOnEISCD"))
       )
     )
   }
 
   it should "parse business bank existence - sortCodeBankName" in {
     val res = ValueParser.validate("${dataRetrieve.businessBankDetails.sortCodeBankName}")
-    res.toOption.value should be(
-      TextExpression(DataRetrieveCtx(DataRetrieveId("businessBankDetails"), DataRetrieveAttribute.SortCodeBankName))
+    res.right.value should be(
+      TextExpression(DataRetrieveCtx(DataRetrieveId("businessBankDetails"), DataRetrieve.Attribute("sortCodeBankName")))
     )
   }
 
@@ -883,7 +884,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
       TextExpression(
         DataRetrieveCtx(
           DataRetrieveId("businessBankDetails"),
-          DataRetrieveAttribute.NonStandardAccountDetailsRequiredForBacs
+          DataRetrieve.Attribute("nonStandardAccountDetailsRequiredForBacs")
         )
       )
     )
@@ -891,15 +892,15 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
 
   it should "parse business bank existence - accountExists" in {
     val res = ValueParser.validate("${dataRetrieve.businessBankDetails.accountExists}")
-    res.toOption.value should be(
-      TextExpression(DataRetrieveCtx(DataRetrieveId("businessBankDetails"), DataRetrieveAttribute.AccountExists))
+    res.right.value should be(
+      TextExpression(DataRetrieveCtx(DataRetrieveId("businessBankDetails"), DataRetrieve.Attribute("accountExists")))
     )
   }
 
   it should "parse business bank existence - nameMatches" in {
     val res = ValueParser.validate("${dataRetrieve.businessBankDetails.nameMatches}")
-    res.toOption.value should be(
-      TextExpression(DataRetrieveCtx(DataRetrieveId("businessBankDetails"), DataRetrieveAttribute.NameMatches))
+    res.right.value should be(
+      TextExpression(DataRetrieveCtx(DataRetrieveId("businessBankDetails"), DataRetrieve.Attribute("nameMatches")))
     )
   }
 
@@ -907,7 +908,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     val res = ValueParser.validate("${dataRetrieve.businessBankDetails.sortCodeSupportsDirectDebit}")
     res.toOption.value should be(
       TextExpression(
-        DataRetrieveCtx(DataRetrieveId("businessBankDetails"), DataRetrieveAttribute.SortCodeSupportsDirectDebit)
+        DataRetrieveCtx(DataRetrieveId("businessBankDetails"), DataRetrieve.Attribute("sortCodeSupportsDirectDebit"))
       )
     )
   }
@@ -916,26 +917,20 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     val res = ValueParser.validate("${dataRetrieve.businessBankDetails.sortCodeSupportsDirectCredit}")
     res.toOption.value should be(
       TextExpression(
-        DataRetrieveCtx(DataRetrieveId("businessBankDetails"), DataRetrieveAttribute.SortCodeSupportsDirectCredit)
+        DataRetrieveCtx(DataRetrieveId("businessBankDetails"), DataRetrieve.Attribute("sortCodeSupportsDirectCredit"))
       )
     )
   }
 
-  it should "parse business bank existence - invalid attribute failure" in {
-    assertThrows[Exception] {
-      ValueParser.validate("${dataRetrieve.businessBankDetails.dummy}")
-    }
-  }
-
   it should "parse quotedLocalisedConstant localized constant" in {
-    val res = ValueParser.parseAll(ValueParser.quotedLocalisedConstant, "'Are you', 'Wyt ti'")
+    val res = ValueParser.parseAll(ValueParser.quotedLocalisedConstant, "'Are you'| 'Wyt ti'")
     res.get shouldBe IfElse(Equals(LangCtx, Constant("en")), Constant("Are you"), Constant("Wyt ti"))
 
   }
 
   it should "parse complex if-then-else expression from acceptance tests" in {
 
-    val res = ValueParser.validate("${if noCompanyName then 'Are you', 'Wyt ti' else ('Is ','Os ' + companyName)}")
+    val res = ValueParser.validate("${if noCompanyName then 'Are you'| 'Wyt ti' else ('Is '|'Os ' + companyName)}")
 
     res.toOption.value shouldBe TextExpression(
       IfElse(
@@ -984,7 +979,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     val res = ValueParser.validate("${dataRetrieve.companyRegistrationNumber.name}")
     res.toOption.value should be(
       TextExpression(
-        DataRetrieveCtx(DataRetrieveId("companyRegistrationNumber"), DataRetrieveAttribute.Name)
+        DataRetrieveCtx(DataRetrieveId("companyRegistrationNumber"), DataRetrieve.Attribute("name"))
       )
     )
   }
@@ -993,7 +988,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     val res = ValueParser.validate("${dataRetrieve.companyRegistrationNumber.status}")
     res.toOption.value should be(
       TextExpression(
-        DataRetrieveCtx(DataRetrieveId("companyRegistrationNumber"), DataRetrieveAttribute.Status)
+        DataRetrieveCtx(DataRetrieveId("companyRegistrationNumber"), DataRetrieve.Attribute("status"))
       )
     )
   }
@@ -1002,22 +997,16 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     val res = ValueParser.validate("${dataRetrieve.companyRegistrationNumber.registeredAddress}")
     res.toOption.value should be(
       TextExpression(
-        DataRetrieveCtx(DataRetrieveId("companyRegistrationNumber"), DataRetrieveAttribute.RegisteredAddress)
+        DataRetrieveCtx(DataRetrieveId("companyRegistrationNumber"), DataRetrieve.Attribute("registeredAddress"))
       )
     )
-  }
-
-  it should "parse company registration number - invalid attribute failure" in {
-    assertThrows[Exception] {
-      ValueParser.validate("${dataRetrieve.companyRegistrationNumber.surname}")
-    }
   }
 
   it should "parse nino insights - riskScore" in {
     val res = ValueParser.validate("${dataRetrieve.ninoInsights.riskScore}")
     res.toOption.value should be(
       TextExpression(
-        DataRetrieveCtx(DataRetrieveId("ninoInsights"), DataRetrieveAttribute.RiskScore)
+        DataRetrieveCtx(DataRetrieveId("ninoInsights"), DataRetrieve.Attribute("riskScore"))
       )
     )
   }
@@ -1026,7 +1015,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     val res = ValueParser.validate("${dataRetrieve.ninoInsights.reason}")
     res.toOption.value should be(
       TextExpression(
-        DataRetrieveCtx(DataRetrieveId("ninoInsights"), DataRetrieveAttribute.Reason)
+        DataRetrieveCtx(DataRetrieveId("ninoInsights"), DataRetrieve.Attribute("reason"))
       )
     )
   }
@@ -1035,7 +1024,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     val res = ValueParser.validate("${dataRetrieve.bankCheck.riskScore}")
     res.toOption.value should be(
       TextExpression(
-        DataRetrieveCtx(DataRetrieveId("bankCheck"), DataRetrieveAttribute.RiskScore)
+        DataRetrieveCtx(DataRetrieveId("bankCheck"), DataRetrieve.Attribute("riskScore"))
       )
     )
   }
@@ -1044,7 +1033,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     val res = ValueParser.validate("${dataRetrieve.bankCheck.reason}")
     res.toOption.value should be(
       TextExpression(
-        DataRetrieveCtx(DataRetrieveId("bankCheck"), DataRetrieveAttribute.Reason)
+        DataRetrieveCtx(DataRetrieveId("bankCheck"), DataRetrieve.Attribute("reason"))
       )
     )
   }
@@ -1053,7 +1042,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     val res = ValueParser.validate("${dataRetrieve.personalBankAccountExistence.accountExists}")
     res.toOption.value should be(
       TextExpression(
-        DataRetrieveCtx(DataRetrieveId("personalBankAccountExistence"), DataRetrieveAttribute.AccountExists)
+        DataRetrieveCtx(DataRetrieveId("personalBankAccountExistence"), DataRetrieve.Attribute("accountExists"))
       )
     )
   }
@@ -1062,7 +1051,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     val res = ValueParser.validate("${dataRetrieve.personalBankAccountExistence.nameMatches}")
     res.toOption.value should be(
       TextExpression(
-        DataRetrieveCtx(DataRetrieveId("personalBankAccountExistence"), DataRetrieveAttribute.NameMatches)
+        DataRetrieveCtx(DataRetrieveId("personalBankAccountExistence"), DataRetrieve.Attribute("nameMatches"))
       )
     )
   }
@@ -1081,31 +1070,17 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     )
   }
 
-  it should "parse upperFirst function" in {
-    val res = ValueParser.validate("${upperFirst(fieldId)}")
-    res.toOption.value should be(
-      TextExpression(StringOps(FormCtx(FormComponentId("fieldId")), StringFnc.UpperFirst))
+  it should "parse capitalize function" in {
+    val res = ValueParser.validate("${capitalize(fieldId)}")
+    res.right.value should be(
+      TextExpression(StringOps(FormCtx(FormComponentId("fieldId")), StringFnc.Capitalize))
     )
   }
 
-  it should "parse upperAll function" in {
-    val res = ValueParser.validate("${upperAll(fieldId)}")
-    res.toOption.value should be(
-      TextExpression(StringOps(FormCtx(FormComponentId("fieldId")), StringFnc.UpperAll))
-    )
-  }
-
-  it should "parse lowerFirst function" in {
-    val res = ValueParser.validate("${lowerFirst(fieldId)}")
-    res.toOption.value should be(
-      TextExpression(StringOps(FormCtx(FormComponentId("fieldId")), StringFnc.LowerFirst))
-    )
-  }
-
-  it should "parse lowerAll function" in {
-    val res = ValueParser.validate("${lowerAll(fieldId)}")
-    res.toOption.value should be(
-      TextExpression(StringOps(FormCtx(FormComponentId("fieldId")), StringFnc.LowerAll))
+  it should "parse capitalizeAll function" in {
+    val res = ValueParser.validate("${capitalizeAll(fieldId)}")
+    res.right.value should be(
+      TextExpression(StringOps(FormCtx(FormComponentId("fieldId")), StringFnc.CapitalizeAll))
     )
   }
 
@@ -1123,13 +1098,13 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     )
   }
 
-  it should "parse lowercase, uppercase, and lowerFirst functions" in {
-    val res = ValueParser.validate("${lowerFirst(uppercase(lowercase(fieldId)))}")
-    res.toOption.value should be(
+  it should "parse lowercase, uppercase, and capitalize functions" in {
+    val res = ValueParser.validate("${capitalize(uppercase(lowercase(fieldId)))}")
+    res.right.value should be(
       TextExpression(
         StringOps(
           StringOps(StringOps(FormCtx(FormComponentId("fieldId")), StringFnc.LowerCase), StringFnc.UpperCase),
-          StringFnc.LowerFirst
+          StringFnc.Capitalize
         )
       )
     )
@@ -1139,6 +1114,13 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     val res = ValueParser.validate("${concat(fieldId, ' test')}")
     res.toOption.value should be(
       TextExpression(Concat(List(FormCtx(FormComponentId("fieldId")), Constant(" test"))))
+    )
+  }
+
+  it should "parse auth.itmpAddress.country function" in {
+    val res = ValueParser.validate("${auth.itmpAddress.country}")
+    res.right.value should be(
+      TextExpression(CountryOfItmpAddress)
     )
   }
 

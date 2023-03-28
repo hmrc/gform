@@ -179,6 +179,7 @@ object TopLevelExpressions {
         case BulletedList(_)               => e
         case StringOps(_, _)               => e
         case Concat(exprs)                 => Concat(exprs.map(loop))
+        case CountryOfItmpAddress          => e
       }
     expressions.get(expressionId).fold(expressions) { expr =>
       expressions + (expressionId -> loop(expr))

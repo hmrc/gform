@@ -19,7 +19,7 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate
 import julienrf.json.derived
 import play.api.libs.json._
 import uk.gov.hmrc.gform.core.parsers.ExprParsers
-import uk.gov.hmrc.gform.sharedmodel.{ DataRetrieveAttribute, DataRetrieveId }
+import uk.gov.hmrc.gform.sharedmodel.{ DataRetrieve, DataRetrieveId }
 
 import uk.gov.hmrc.gform.translation.TranslatableConstant
 
@@ -173,13 +173,14 @@ final case class DateCtx(value: DateExpr) extends Expr
 final case class DateFunction(value: DateProjection) extends Expr
 final case object Value extends Expr
 final case object LangCtx extends Expr
-final case class DataRetrieveCtx(id: DataRetrieveId, attribute: DataRetrieveAttribute) extends Expr
+final case class DataRetrieveCtx(id: DataRetrieveId, attribute: DataRetrieve.Attribute) extends Expr
 final case class DataRetrieveCount(id: DataRetrieveId) extends Expr
 final case class CsvCountryCheck(formComponentId: FormComponentId, column: String) extends Expr
 final case class CsvOverseasCountryCheck(formComponentId: FormComponentId, column: String) extends Expr
 final case class CsvCountryCountCheck(formComponentId: FormComponentId, column: String, value: String) extends Expr
 final case class IndexOf(formComponentId: FormComponentId, index: Int) extends Expr
 final case class IndexOfDataRetrieveCtx(ctx: DataRetrieveCtx, index: Int) extends Expr
+final case object CountryOfItmpAddress extends Expr
 
 sealed trait DateProjection extends Product with Serializable {
   def dateExpr: DateExpr
@@ -297,10 +298,8 @@ object LoginInfo {
 
 sealed trait StringFnc
 object StringFnc {
-  case object UpperFirst extends StringFnc
-  case object UpperAll extends StringFnc
-  case object LowerFirst extends StringFnc
-  case object LowerAll extends StringFnc
+  case object Capitalize extends StringFnc
+  case object CapitalizeAll extends StringFnc
   case object UpperCase extends StringFnc
   case object LowerCase extends StringFnc
   case object RemoveSpaces extends StringFnc

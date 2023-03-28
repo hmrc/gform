@@ -41,6 +41,8 @@ class FormatValidationSpec extends Spec {
   it should "return telephoneNumber" in createTest("telephoneNumber", TelephoneNumber)
   it should "return email" in createTest("email", Email)
   it should "return utr" in createTest("utr", UTR)
+  it should "return saUtr" in createTest("saUtr", SaUTR)
+  it should "return ctUtr" in createTest("ctUtr", CtUTR)
   it should "return nino" in createTest("nino", NINO)
   it should "return TextWithRestrictions" in createTest("text(1, 1)", TextWithRestrictions(1, 1))
   it should "return ShortText" in createTest("shortText", ShortText.default)

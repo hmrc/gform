@@ -16,17 +16,18 @@
 
 package uk.gov.hmrc.gform.submission
 
-import java.time.Instant
 import org.apache.pdfbox.pdmodel.PDDocument
+import org.json4s.native.JsonMethods
+import org.json4s.native.Printer.compact
 import uk.gov.hmrc.gform.pdfgenerator.{ PdfGeneratorService, XmlGeneratorService }
-import uk.gov.hmrc.gform.sharedmodel.{ LangADT, PdfHtml, SubmissionRef }
 import uk.gov.hmrc.gform.sharedmodel.form.Form
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DataOutputFormat
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
 import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
-import org.json.XML
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DataOutputFormat
+import uk.gov.hmrc.gform.sharedmodel.{ LangADT, PdfHtml, SubmissionRef }
 
+import java.time.Instant
 import scala.concurrent.{ ExecutionContext, Future }
 
 trait PdfAndXmlSummariesFactory {
@@ -114,10 +115,7 @@ object PdfAndXmlSummariesFactory {
             )
         case DataOutputFormat.JSON =>
           Some(RoboticsXMLGenerator(formTemplate._id, hmrcDms.dmsFormId, submissionRef, structuredFormData, now, l))
-            .map { xml =>
-              val xmlJSONObj = XML.toJSONObject(xml.toString)
-              xmlJSONObj.toString
-            }
+            .map(xml => compact(JsonMethods.render(org.json4s.Xml.toJson(xml))))
       }
   }
 }

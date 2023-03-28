@@ -31,7 +31,6 @@ import uk.gov.hmrc.gform.core.parsers.{ AddressParser, BasicParsers, FormatParse
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.formtemplate.FormComponentMakerService._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.JsonUtils._
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.RoundingMode._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.{ LangADT, LocalisedString, SmartString }
 
@@ -160,7 +159,13 @@ class FormComponentMaker(json: JsValue) {
       case JsUndefined() => Right(None)
     }
 
-  lazy val dividerPositon: Option[Int] = (json \ "dividerPosition").asOpt[Int]
+  lazy val dividerPositon: Option[DividerPosition] =
+    (json \ "dividerPosition").toOption.flatMap {
+      case JsNumber(number) => Some(DividerPosition.Number(number.toIntExact))
+      case JsString(value)  => Some(DividerPosition.Value(value))
+      case _                => Option.empty[DividerPosition]
+    }
+
   lazy val dividerText: LocalisedString = (json \ "dividerText")
     .asOpt[LocalisedString]
     .getOrElse(LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")))

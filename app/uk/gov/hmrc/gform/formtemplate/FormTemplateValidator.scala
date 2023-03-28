@@ -425,14 +425,38 @@ object FormTemplateValidator {
     validateChoice(sectionsList, check, "Choice components doesn't have equal number of choices and hints")
   }
 
-  def validateChoiceDividerPositionLowerBound(sectionsList: List[Page]): ValidationResult = {
-    def check(choice: Choice): Boolean = choice.dividerPosition.fold(false)(_ <= 0)
+  def validateChoiceDividerPositionValue(sectionsList: List[Page]): ValidationResult = {
+    def check(choice: Choice): Boolean = choice.dividerPosition
+      .map {
+        case DividerPosition.Number(i) => false
+        case DividerPosition.Value(d) =>
+          choice.options.collectFirst {
+            case v: OptionData.ValueBased if v.value === d => true
+          }.isEmpty
+      }
+      .getOrElse(false)
 
-    validateChoice(sectionsList, check, "dividerPosition should be greater than 0")
+    validateChoice(sectionsList, check, "dividerPosition value should be one of the non dynamic choice options")
+  }
+
+  def validateChoiceDividerPositionLowerBound(sectionsList: List[Page]): ValidationResult = {
+    def check(choice: Choice): Boolean = choice.dividerPosition
+      .map {
+        case DividerPosition.Number(i) => i <= 0
+        case DividerPosition.Value(_)  => false
+      }
+      .getOrElse(false)
+
+    validateChoice(sectionsList, check, "dividerPosition should be greater than 0 value")
   }
 
   def validateChoiceDividerPositionUpperBound(sectionsList: List[Page]): ValidationResult = {
-    def check(choice: Choice): Boolean = choice.dividerPosition.fold(false)(_ >= choice.options.size)
+    def check(choice: Choice): Boolean = choice.dividerPosition
+      .map {
+        case DividerPosition.Number(i) => i >= choice.options.size
+        case DividerPosition.Value(_)  => false
+      }
+      .getOrElse(false)
 
     validateChoice(sectionsList, check, "dividerPosition should be less than the number of choices")
   }
@@ -968,6 +992,7 @@ object FormTemplateValidator {
       case BulletedList(_)              => Valid
       case StringOps(_, _)              => Valid
       case Concat(exprs)                => Monoid.combineAll(exprs.map(e => validate(e, sections)))
+      case CountryOfItmpAddress         => Valid
     }
   }
 
@@ -1144,7 +1169,7 @@ object FormTemplateValidator {
     val dataRetrieves: List[(Page, DataRetrieve)] = pages.flatMap(p => p.dataRetrieves().map(d => (p, d)))
     dataRetrieves.map { case (page, dataRetrieve) =>
       val pageFormComponentsIds = page.allFormComponents.map(_.id)
-      val formCtxExprs = dataRetrieve.formCtxExprs.collect { case ctx: FormCtx =>
+      val formCtxExprs = dataRetrieve.params.collect { case DataRetrieve.ParamExpr(_, ctx: FormCtx) =>
         ctx
       }
       val nonExistentFCRefs = formCtxExprs.map(_.formComponentId).filterNot(pageFormComponentsIds.contains)
@@ -1173,11 +1198,12 @@ object FormTemplateValidator {
       maybeDataRetrieve.fold[ValidationResult](
         Invalid(s"Data retrieve expression at path ${r.path} refers to non-existent id ${r.dataRetrieveCtx.id.value}")
       ) { d =>
-        d.attributes
+        d.attributes.attributes
           .contains(r.dataRetrieveCtx.attribute)
-          .validationResult(
-            s"Data retrieve expression at path ${r.path}, with id ${r.dataRetrieveCtx.id.value}, refers to non-existent attribute ${r.dataRetrieveCtx.attribute.name}"
-          )
+          .validationResult {
+            val validAttributes = d.attributes.attributes.map(_.name).mkString(", ")
+            s"Data retrieve expression at path ${r.path}, with id ${r.dataRetrieveCtx.id.value}, refers to non-existent attribute ${r.dataRetrieveCtx.attribute.name}. Valid attributes are: $validAttributes"
+          }
       }
     }.combineAll
   }
@@ -1259,6 +1285,12 @@ object FormTemplateValidator {
 
     isNonInformation.combineAll
   }
+
+  def validateTaskListDisplayWidth(formTemplate: FormTemplate): ValidationResult =
+    formTemplate.formKind.fold(_ =>
+      if (formTemplate.displayWidth.isDefined) Invalid("displayWidth property can only be used with task list")
+      else Valid
+    )(_ => Valid)
 }
 
 object IsEmailVerifiedBy {

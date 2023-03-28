@@ -139,6 +139,7 @@ object FormTemplatePIIRefsHelper {
       case BulletedList(FormComponentId(value))               => List(value)
       case StringOps(expr, _)                                 => extractRefs(expr)
       case Concat(exprs)                                      => exprs.flatMap(extractRefs)
+      case CountryOfItmpAddress                               => Nil
     }
 
   implicit class JsLookupResultOps(result: JsLookupResult) {

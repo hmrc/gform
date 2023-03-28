@@ -36,7 +36,9 @@ object Dependencies {
     "io.circe"                   %% "circe-generic"                     % "0.14.3",
     "io.circe"                   %% "circe-parser"                      % "0.14.3",
     "io.circe"                   %% "circe-literal"                     % "0.14.3",
-    "com.github.tototoshi"       %% "scala-csv"                         % "1.3.10"
+    "com.github.tototoshi"       %% "scala-csv"                         % "1.3.10",
+    "org.json4s"                 %% "json4s-core"                       % "3.2.11",
+    "org.json4s"                 %% "json4s-native"                     % "3.2.11"
   )
 
   def test(scope: String = "test,it") = Seq(

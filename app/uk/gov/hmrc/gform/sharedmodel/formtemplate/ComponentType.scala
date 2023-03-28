@@ -163,6 +163,18 @@ object SummaryDisplayWidth extends Enumeration {
   implicit val displayWidthWrites: Writes[SummaryDisplayWidth] = Writes.enumNameWrites
 }
 
+object TaskListDisplayWidth extends Enumeration {
+  type TaskListDisplayWidth = Value
+  val M, L, XL = Value
+
+  implicit val displayWidthReads: Reads[TaskListDisplayWidth] =
+    Reads.enumNameReads(TaskListDisplayWidth).preprocess {
+      case JsString(s) => JsString(s.toUpperCase)
+      case o           => o
+    }
+  implicit val displayWidthWrites: Writes[TaskListDisplayWidth] = Writes.enumNameWrites
+}
+
 sealed trait Dynamic extends Product with Serializable
 
 object Dynamic {
@@ -253,6 +265,14 @@ object NoneChoice {
   implicit val format: OFormat[NoneChoice] = OFormatWithTemplateReadFallback(templateReads)
 }
 
+sealed trait DividerPosition extends Product with Serializable
+
+object DividerPosition {
+  final case class Number(pos: Int) extends DividerPosition
+  final case class Value(value: String) extends DividerPosition
+  implicit val format: OFormat[DividerPosition] = derived.oformat()
+}
+
 case class Choice(
   `type`: ChoiceType,
   options: NonEmptyList[OptionData],
@@ -260,7 +280,7 @@ case class Choice(
   selections: List[Int],
   hints: Option[NonEmptyList[SmartString]],
   optionHelpText: Option[NonEmptyList[SmartString]],
-  dividerPosition: Option[Int],
+  dividerPosition: Option[DividerPosition],
   dividerText: LocalisedString,
   noneChoice: Option[NoneChoice],
   noneChoiceError: Option[LocalisedString]

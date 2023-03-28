@@ -114,7 +114,7 @@ class ValueParserSuite extends FunSuite {
 
   test("Localised String should expand to if-else expression") {
     val full = ValueParser.validate("${if form.lang = 'en' then 'EN' else 'CY'}")
-    val compact = ValueParser.validate("${'EN','CY'}")
+    val compact = ValueParser.validate("${'EN'|'CY'}")
 
     assertEquals(full, compact)
   }

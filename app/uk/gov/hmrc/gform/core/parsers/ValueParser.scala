@@ -21,12 +21,12 @@ import java.time.LocalDate
 import scala.util.parsing.combinator._
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.formtemplate.BooleanExprId
+import uk.gov.hmrc.gform.sharedmodel.{ DataRetrieve, DataRetrieveId }
 import uk.gov.hmrc.gform.sharedmodel.dblookup.CollectionName
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.PageLink
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.SelectionCriteriaValue.{ SelectionCriteriaExpr, SelectionCriteriaReference, SelectionCriteriaSimpleValue }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.UserField.Enrolment
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
-import uk.gov.hmrc.gform.sharedmodel.{ DataRetrieveAttribute, DataRetrieveId }
 
 import scala.annotation.nowarn
 import scala.util.matching.Regex
@@ -204,6 +204,9 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
     | "param" ~ "." ~ alphabeticOnly ^^ { case _ ~ _ ~ param =>
       ParamCtx(QueryParam(param))
     }
+    | "auth" ~ "." ~ "itmpAddress" ~ "." ~ "country" ^^ { _ =>
+      CountryOfItmpAddress
+    }
     | "auth" ~ "." ~ authInfo ^^ { case _ ~ _ ~ authInfo =>
       AuthCtx(authInfo)
     }
@@ -213,16 +216,16 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
     | "link" ~ "." ~ internalLinkParser ^^ { case _ ~ _ ~ internalLink =>
       LinkCtx(internalLink)
     }
-    | "dataRetrieve" ~ "." ~ DataRetrieveId.unanchoredIdValidation ~ "." ~ DataRetrieveAttribute.unanchoredIdValidation ~ "[" ~ nonZeroPositiveInteger ~ "]" ^^ {
+    | "dataRetrieve" ~ "." ~ DataRetrieveId.unanchoredIdValidation ~ "." ~ DataRetrieve.Attribute.unanchoredIdValidation ~ "[" ~ nonZeroPositiveInteger ~ "]" ^^ {
       case _ ~ _ ~ dataRetrieveId ~ _ ~ dataRetrieveAttribute ~ _ ~ index ~ _ =>
         IndexOfDataRetrieveCtx(
-          DataRetrieveCtx(DataRetrieveId(dataRetrieveId), DataRetrieveAttribute.fromName(dataRetrieveAttribute)),
+          DataRetrieveCtx(DataRetrieveId(dataRetrieveId), DataRetrieve.Attribute(dataRetrieveAttribute)),
           index - 1
         )
     }
-    | "dataRetrieve" ~ "." ~ DataRetrieveId.unanchoredIdValidation ~ "." ~ DataRetrieveAttribute.unanchoredIdValidation ^^ {
+    | "dataRetrieve" ~ "." ~ DataRetrieveId.unanchoredIdValidation ~ "." ~ DataRetrieve.Attribute.unanchoredIdValidation ^^ {
       case _ ~ _ ~ dataRetrieveId ~ _ ~ dataRetrieveAttribute =>
-        DataRetrieveCtx(DataRetrieveId(dataRetrieveId), DataRetrieveAttribute.fromName(dataRetrieveAttribute))
+        DataRetrieveCtx(DataRetrieveId(dataRetrieveId), DataRetrieve.Attribute(dataRetrieveAttribute))
     }
     | "count(" ~ "dataRetrieve" ~ "." ~ DataRetrieveId.unanchoredIdValidation ~ ")" ^^ {
       case _ ~ _ ~ _ ~ dataRetrieveId ~ _ =>
@@ -290,17 +293,11 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
     | "removeSpaces(" ~ _expr1 ~ ")" ^^ { case _ ~ value ~ _ =>
       StringOps(value, StringFnc.RemoveSpaces)
     }
-    | "upperFirst(" ~ _expr1 ~ ")" ^^ { case _ ~ value ~ _ =>
-      StringOps(value, StringFnc.UpperFirst)
+    | "capitalize(" ~ _expr1 ~ ")" ^^ { case _ ~ value ~ _ =>
+      StringOps(value, StringFnc.Capitalize)
     }
-    | "lowerFirst(" ~ _expr1 ~ ")" ^^ { case _ ~ value ~ _ =>
-      StringOps(value, StringFnc.LowerFirst)
-    }
-    | "upperAll(" ~ _expr1 ~ ")" ^^ { case _ ~ value ~ _ =>
-      StringOps(value, StringFnc.UpperAll)
-    }
-    | "lowerAll(" ~ _expr1 ~ ")" ^^ { case _ ~ value ~ _ =>
-      StringOps(value, StringFnc.LowerAll)
+    | "capitalizeAll(" ~ _expr1 ~ ")" ^^ { case _ ~ value ~ _ =>
+      StringOps(value, StringFnc.CapitalizeAll)
     }
     | "uppercase(" ~ _expr1 ~ ")" ^^ { case _ ~ value ~ _ =>
       StringOps(value, StringFnc.UpperCase)
@@ -374,7 +371,7 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
     str
   }
 
-  lazy val quotedLocalisedConstant: Parser[Expr] = quotedConstant ~ "," ~ quotedConstant ^^ { case en ~ _ ~ cy =>
+  lazy val quotedLocalisedConstant: Parser[Expr] = quotedConstant ~ "|" ~ quotedConstant ^^ { case en ~ _ ~ cy =>
     IfElse(Equals(LangCtx, Constant("en")), en, cy)
   } | quotedConstant
 

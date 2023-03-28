@@ -17,11 +17,10 @@
 package uk.gov.hmrc.gform.employments
 
 import org.slf4j.LoggerFactory
+import play.api.libs.json.JsValue
 import play.api.mvc.ControllerComponents
 import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.controllers.BaseController
-import uk.gov.hmrc.gform.sharedmodel.{ ServiceCallResponse, ServiceResponse }
-import uk.gov.hmrc.gform.sharedmodel.des.EmploymentsResponse
 
 import scala.concurrent.{ ExecutionContext, Future }
 
@@ -34,12 +33,7 @@ class EmploymentsController(controllerComponents: ControllerComponents, employme
     Action.async { implicit request =>
       logger.info(s"Get Employments from DES, ${loggingHelpers.cleanHeaders(request.headers)}")
 
-      val serviceResponse: Future[ServiceCallResponse[List[EmploymentsResponse]]] = employments
-        .callDES(nino, taxYear)
-        .map {
-          case uk.gov.hmrc.gform.sharedmodel.NotFound => ServiceResponse(List.empty[EmploymentsResponse])
-          case other                                  => other
-        }
+      val serviceResponse: Future[JsValue] = employments.callDES(nino, taxYear)
       serviceResponse.asOkJson
 
     }
