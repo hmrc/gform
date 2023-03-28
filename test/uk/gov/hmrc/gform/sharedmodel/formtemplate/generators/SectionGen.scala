@@ -18,10 +18,7 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate.generators
 
 import cats.data.NonEmptyList
 import org.scalacheck.Gen
-import uk.gov.hmrc.gform.sharedmodel.DataRetrieve.ValidateBankDetails
-import uk.gov.hmrc.gform.sharedmodel.DataRetrieveId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.ExprGen.formCtxGen
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.SmartStringGen.smartStringGen
 
 trait SectionGen {
@@ -87,12 +84,6 @@ trait SectionGen {
       fields        <- PrimitiveGen.oneOrMoreGen(FormComponentGen.formComponentGen())
     } yield DeclarationSection(title, noPIITitle, description, shortName, continueLabel, fields.toList)
 
-  def validateBankDetailsGen: Gen[ValidateBankDetails] = for {
-    id                <- Gen.alphaStr
-    sortCodeExpr      <- formCtxGen
-    accountNumberExpr <- formCtxGen
-  } yield ValidateBankDetails(DataRetrieveId(id), sortCodeExpr, accountNumberExpr)
-
   def pageGen: Gen[Page] =
     for {
       title            <- smartStringGen
@@ -108,12 +99,8 @@ trait SectionGen {
       continueIf       <- Gen.option(ContinueIfGen.continueIfGen)
       instruction      <- Gen.option(InstructionGen.instructionGen)
       presentationHint <- Gen.option(PresentationHintGen.presentationHintGen)
-      dataRetrieve <-
-        Gen.option(
-          Gen.choose(1, 10).flatMap(size => Gen.listOfN(size, validateBankDetailsGen)).map(NonEmptyList.fromListUnsafe)
-        )
-      confirmation <- Gen.option(ConfirmationGen.confirmationGen)
-      redirects    <- Gen.option(RedirectGen.redirectGen)
+      confirmation     <- Gen.option(ConfirmationGen.confirmationGen)
+      redirects        <- Gen.option(RedirectGen.redirectGen)
     } yield Page(
       title,
       id,
@@ -128,7 +115,7 @@ trait SectionGen {
       continueIf,
       instruction,
       presentationHint,
-      dataRetrieve,
+      None,
       confirmation,
       redirects.map(NonEmptyList.one(_)),
       None

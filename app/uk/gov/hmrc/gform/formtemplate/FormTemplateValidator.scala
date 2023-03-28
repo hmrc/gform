@@ -1168,7 +1168,7 @@ object FormTemplateValidator {
     val dataRetrieves: List[(Page, DataRetrieve)] = pages.flatMap(p => p.dataRetrieves().map(d => (p, d)))
     dataRetrieves.map { case (page, dataRetrieve) =>
       val pageFormComponentsIds = page.allFormComponents.map(_.id)
-      val formCtxExprs = dataRetrieve.formCtxExprs.collect { case ctx: FormCtx =>
+      val formCtxExprs = dataRetrieve.params.collect { case DataRetrieve.ParamExpr(_, ctx: FormCtx) =>
         ctx
       }
       val nonExistentFCRefs = formCtxExprs.map(_.formComponentId).filterNot(pageFormComponentsIds.contains)
@@ -1197,11 +1197,12 @@ object FormTemplateValidator {
       maybeDataRetrieve.fold[ValidationResult](
         Invalid(s"Data retrieve expression at path ${r.path} refers to non-existent id ${r.dataRetrieveCtx.id.value}")
       ) { d =>
-        d.attributes
+        d.attributes.attributes
           .contains(r.dataRetrieveCtx.attribute)
-          .validationResult(
-            s"Data retrieve expression at path ${r.path}, with id ${r.dataRetrieveCtx.id.value}, refers to non-existent attribute ${r.dataRetrieveCtx.attribute.name}"
-          )
+          .validationResult {
+            val validAttributes = d.attributes.attributes.map(_.name).mkString(", ")
+            s"Data retrieve expression at path ${r.path}, with id ${r.dataRetrieveCtx.id.value}, refers to non-existent attribute ${r.dataRetrieveCtx.attribute.name}. Valid attributes are: $validAttributes"
+          }
       }
     }.combineAll
   }
