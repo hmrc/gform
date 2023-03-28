@@ -267,7 +267,7 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
           AttributeInstruction(DataRetrieve.Attribute("reason"), ConstructAttribute.AsIs(Fetch(List("reason"))))
         )
       ),
-      Map(),
+      Map(DataRetrieve.Attribute("riskScore") -> DataRetrieve.AttrType.Integer),
       List(
         DataRetrieve.ParamExpr(
           DataRetrieve.Parameter("nino", List(), DataRetrieve.ParamType.String),
