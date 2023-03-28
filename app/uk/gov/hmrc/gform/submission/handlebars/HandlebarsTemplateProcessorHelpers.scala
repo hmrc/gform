@@ -24,6 +24,7 @@ import cats.syntax.eq._
 import shapeless.syntax.typeable._
 import uk.gov.hmrc.gform.time.TimeProvider
 import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
 import java.util.Base64
 
 import com.fasterxml.jackson.databind.node.{ ArrayNode, ObjectNode, TextNode }
@@ -423,7 +424,9 @@ class HandlebarsTemplateProcessorHelpers(
 
   def desCurrentDate: CharSequence = condition(DateTimeFormatter.ISO_LOCAL_DATE.format(timeProvider.localDateTime))
   def currentDate: CharSequence = condition(DateTimeFormatter.BASIC_ISO_DATE.format(timeProvider.localDateTime))
-  def currentTimestamp: CharSequence = condition(DateTimeFormatter.ISO_INSTANT.format(timeProvider.instant))
+  def currentTimestamp: CharSequence = condition(
+    DateTimeFormatter.ISO_INSTANT.format(timeProvider.instant.truncatedTo(ChronoUnit.MILLIS))
+  )
   def currentMonth(): CharSequence = condition(timeProvider.localDateTime.getMonthValue)
 
   def greaterThan(first: Any, second: Any): CharSequence = log("greaterThan", first, second) {
