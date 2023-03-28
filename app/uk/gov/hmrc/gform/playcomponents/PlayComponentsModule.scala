@@ -144,22 +144,25 @@ class PlayComponentsModule(
 
   private lazy val cacheControlFilter = new CacheControlFilter(new CacheControlConfig(), akkaModule.materializer)
 
-  abstract class mdcFilter extends MDCFilter {}
-
-  val mdcFilter: mdcFilter = new mdcFilter {
-    override val mat: Materializer = akkaModule.materializer
-    override val configuration: Configuration = configModule.configuration
-    override implicit val ec: ExecutionContext = ec
-    override protected def hc(implicit rh: RequestHeader): HeaderCarrier = ???
+  class mdcFilter(
+    mater: Materializer = akkaModule.materializer,
+    config: Configuration = configModule.configuration
+  )(implicit eCon: ExecutionContext, hCar: HeaderCarrier)
+      extends MDCFilter {
+    override val mat: Materializer = mater
+    override val configuration: Configuration = config
+    override implicit val ec: ExecutionContext = eCon
+    override protected def hc(implicit rh: RequestHeader): HeaderCarrier = hCar
   }
+//  val test: MDCFilter = new mdcFilter()
 
   lazy val httpFilters: Seq[EssentialFilter] = Seq(
     metricsModule.metricsFilter,
     auditingModule.microserviceAuditFilter,
     loggingFilter,
-    cacheControlFilter,
+    cacheControlFilter
 //    new MDCFilter(akkaModule.materializer, configModule.configuration, configModule.appConfig.appName)
-    mdcFilter
+    //test
   )
 
   lazy val httpRequestHandler =
