@@ -59,7 +59,7 @@ class ValueParserSuite extends FunSuite {
   )
 
   table.zipWithIndex.foreach { case ((ifElse, expected), rowIndex) =>
-    test(1 + rowIndex + ". " + ifElse) {
+    test(s"1 + $rowIndex .$ifElse") {
 
       val res = ValueParser.validate("${" + ifElse + "}")
 
@@ -76,7 +76,7 @@ class ValueParserSuite extends FunSuite {
   )
 
   tableWithRegex.zipWithIndex.foreach { case ((ifElse, expected), rowIndex) =>
-    test(1 + rowIndex + ". " + ifElse + " (string comparison)") {
+    test(s"1 $rowIndex . $ifElse (string comparison)") {
 
       val res = ValueParser.validate("${" + ifElse + "}")
 
@@ -121,22 +121,22 @@ class ValueParserSuite extends FunSuite {
 
   test("parse expression ${auth.itmpName}") {
     val res = ValueParser.validate("${auth.itmpName}")
-    res.right.value shouldBe TextExpression(AuthCtx(AuthInfo.ItmpName))
+    res.toOption.value shouldBe TextExpression(AuthCtx(AuthInfo.ItmpName))
   }
 
   test("parse expression ${auth.itmpName.givenName}") {
     val res = ValueParser.validate("${auth.itmpName.givenName}")
-    res.right.value shouldBe TextExpression(AuthCtx(AuthInfo.ItmpNameLens(ItmpNameFocus.GivenName)))
+    res.toOption.value shouldBe TextExpression(AuthCtx(AuthInfo.ItmpNameLens(ItmpNameFocus.GivenName)))
   }
 
   test("parse expression ${auth.itmpName.middleName}") {
     val res = ValueParser.validate("${auth.itmpName.middleName}")
-    res.right.value shouldBe TextExpression(AuthCtx(AuthInfo.ItmpNameLens(ItmpNameFocus.MiddleName)))
+    res.toOption.value shouldBe TextExpression(AuthCtx(AuthInfo.ItmpNameLens(ItmpNameFocus.MiddleName)))
   }
 
   test("parse expression ${auth.itmpName.familyName}") {
     val res = ValueParser.validate("${auth.itmpName.familyName}")
-    res.right.value shouldBe TextExpression(AuthCtx(AuthInfo.ItmpNameLens(ItmpNameFocus.FamilyName)))
+    res.toOption.value shouldBe TextExpression(AuthCtx(AuthInfo.ItmpNameLens(ItmpNameFocus.FamilyName)))
   }
 
 }

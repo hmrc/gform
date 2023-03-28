@@ -28,13 +28,13 @@ class SelectionCriteriaParserSpec extends Spec {
   "FormCtx Expr" should "be parsed successfully" in {
     val res = validate("${travelMethod}")
 
-    res.right.value should be(SelectionCriteriaExpr(FormCtx(FormComponentId("travelMethod"))))
+    res.toOption.value should be(SelectionCriteriaExpr(FormCtx(FormComponentId("travelMethod"))))
   }
 
   "FormCtx Expr and csv column name" should "be parsed successfully" in {
     val res = validate("country.CountryCode")
 
-    res.right.value should be(
+    res.toOption.value should be(
       SelectionCriteriaReference(FormCtx(FormComponentId("country")), CsvColumnName("CountryCode"))
     )
   }
@@ -42,13 +42,13 @@ class SelectionCriteriaParserSpec extends Spec {
   "Numeric value" should "be parsed successfully" in {
     val res = validate("2")
 
-    res.right.value should be(SelectionCriteriaSimpleValue(List("2")))
+    res.toOption.value should be(SelectionCriteriaSimpleValue(List("2")))
   }
 
   "String value" should "be parsed successfully" in {
     val res = validate("UK")
 
-    res.right.value should be(SelectionCriteriaSimpleValue(List("UK")))
+    res.toOption.value should be(SelectionCriteriaSimpleValue(List("UK")))
   }
 
   "FormCtx Expr and csv column name in invalid format" should "throw exception" in {

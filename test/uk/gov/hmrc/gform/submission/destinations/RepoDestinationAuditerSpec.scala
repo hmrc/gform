@@ -108,7 +108,7 @@ class RepoDestinationAuditerSpec
             .findLatestChildAudits(parentSubmissionRef)
             .value
             .futureValue
-            .right
+            .toOption
             .value
             .toSet shouldBe Set(audit1, audit2)
         }
@@ -136,7 +136,7 @@ class RepoDestinationAuditerSpec
             .findLatestChildAudits(parentSubmissionRef)
             .value
             .futureValue
-            .right
+            .toOption
             .value
             .toSet shouldBe Set(audit2, audit3)
         }

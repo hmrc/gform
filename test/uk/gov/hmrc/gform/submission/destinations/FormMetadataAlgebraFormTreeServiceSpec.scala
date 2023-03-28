@@ -34,7 +34,7 @@ class FormMetadataAlgebraFormTreeServiceSpec extends Spec with FormMetadataGen w
         .expectMetadataAlgebraFindByParentFormSubmissionRef(rootAudit.submissionRef.get, Nil)
         .service
         .getFormTree(rootAudit.formIdData)
-        .right
+        .toOption
         .value shouldBe
         Tree(BundledFormTreeNode(rootAudit.formIdData))
     }
@@ -52,7 +52,7 @@ class FormMetadataAlgebraFormTreeServiceSpec extends Spec with FormMetadataGen w
           .expectMetadataAlgebraFindByParentFormSubmissionRef(child.submissionRef.get, Nil)
           .service
           .getFormTree(root.formIdData)
-          .right
+          .toOption
           .value shouldBe
           formTree(root, formTree(child))
       }
@@ -77,7 +77,7 @@ class FormMetadataAlgebraFormTreeServiceSpec extends Spec with FormMetadataGen w
             .expectMetadataAlgebraFindByParentFormSubmissionRef(grandchild.submissionRef.get, Nil)
             .service
             .getFormTree(root.formIdData)
-            .right
+            .toOption
             .value shouldBe
             formTree(root, formTree(child, formTree(grandchild)))
         }
@@ -109,7 +109,7 @@ class FormMetadataAlgebraFormTreeServiceSpec extends Spec with FormMetadataGen w
           .expectMetadataAlgebraFindByParentFormSubmissionRef(child3.submissionRef.get, Nil)
           .service
           .getFormTree(root.formIdData)
-          .right
+          .toOption
           .value shouldBe
           formTree(root, formTree(child1), formTree(child2), formTree(child3))
       }

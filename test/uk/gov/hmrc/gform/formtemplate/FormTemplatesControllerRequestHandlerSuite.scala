@@ -19,6 +19,8 @@ package uk.gov.hmrc.gform.formtemplate
 import munit.{ FunSuite, Location }
 import play.api.libs.json.{ JsDefined, JsString, JsSuccess, JsValue, Json }
 
+import scala.annotation.nowarn
+@nowarn
 class FormTemplatesControllerRequestHandlerSuite extends FunSuite {
   test(
     "normaliseJSON should lowercased '_id' field and create new 'originalId' field holding original value of '_id' field"
