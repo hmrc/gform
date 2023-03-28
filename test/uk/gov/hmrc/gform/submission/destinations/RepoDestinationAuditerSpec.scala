@@ -60,7 +60,7 @@ class RepoDestinationAuditerSpec
         .getLatestForForm(audit.formId)
         .value
         .futureValue
-        .right
+        .left
         .value shouldBe audit
     }
   }
@@ -77,7 +77,7 @@ class RepoDestinationAuditerSpec
           .getLatestForForm(audit1.formId)
           .value
           .futureValue
-          .right
+          .left
           .value shouldBe audit2
     }
   }
@@ -91,7 +91,7 @@ class RepoDestinationAuditerSpec
       .findLatestChildAudits(submissionRef)
       .value
       .futureValue
-      .right
+      .left
       .value shouldBe Nil
   }
 
