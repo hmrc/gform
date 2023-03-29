@@ -873,7 +873,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
 
   it should "parse business bank existence - sortCodeBankName" in {
     val res = ValueParser.validate("${dataRetrieve.businessBankDetails.sortCodeBankName}")
-    res.right.value should be(
+    res.toOption.value should be(
       TextExpression(DataRetrieveCtx(DataRetrieveId("businessBankDetails"), DataRetrieve.Attribute("sortCodeBankName")))
     )
   }
@@ -892,14 +892,14 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
 
   it should "parse business bank existence - accountExists" in {
     val res = ValueParser.validate("${dataRetrieve.businessBankDetails.accountExists}")
-    res.right.value should be(
+    res.toOption.value should be(
       TextExpression(DataRetrieveCtx(DataRetrieveId("businessBankDetails"), DataRetrieve.Attribute("accountExists")))
     )
   }
 
   it should "parse business bank existence - nameMatches" in {
     val res = ValueParser.validate("${dataRetrieve.businessBankDetails.nameMatches}")
-    res.right.value should be(
+    res.toOption.value should be(
       TextExpression(DataRetrieveCtx(DataRetrieveId("businessBankDetails"), DataRetrieve.Attribute("nameMatches")))
     )
   }
@@ -1072,14 +1072,14 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
 
   it should "parse capitalize function" in {
     val res = ValueParser.validate("${capitalize(fieldId)}")
-    res.right.value should be(
+    res.toOption.value should be(
       TextExpression(StringOps(FormCtx(FormComponentId("fieldId")), StringFnc.Capitalize))
     )
   }
 
   it should "parse capitalizeAll function" in {
     val res = ValueParser.validate("${capitalizeAll(fieldId)}")
-    res.right.value should be(
+    res.toOption.value should be(
       TextExpression(StringOps(FormCtx(FormComponentId("fieldId")), StringFnc.CapitalizeAll))
     )
   }
@@ -1100,7 +1100,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
 
   it should "parse lowercase, uppercase, and capitalize functions" in {
     val res = ValueParser.validate("${capitalize(uppercase(lowercase(fieldId)))}")
-    res.right.value should be(
+    res.toOption.value should be(
       TextExpression(
         StringOps(
           StringOps(StringOps(FormCtx(FormComponentId("fieldId")), StringFnc.LowerCase), StringFnc.UpperCase),
@@ -1119,7 +1119,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
 
   it should "parse auth.itmpAddress.country function" in {
     val res = ValueParser.validate("${auth.itmpAddress.country}")
-    res.right.value should be(
+    res.toOption.value should be(
       TextExpression(CountryOfItmpAddress)
     )
   }
