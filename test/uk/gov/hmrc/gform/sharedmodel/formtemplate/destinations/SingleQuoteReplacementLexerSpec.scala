@@ -36,7 +36,7 @@ class SingleQuoteReplacementLexerSpec extends Spec {
   }
 
   it should "copy escaped unicode characters verbatim" in {
-    SingleQuoteReplacementLexer("'\u1234'") shouldBe Right("\u1234")
+    SingleQuoteReplacementLexer("\u1234") shouldBe Right("\u1234")
   }
 
   it should "copy escaped non-unicode characters verbatim" in {

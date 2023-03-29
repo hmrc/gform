@@ -146,9 +146,11 @@ class SubmissionConsolidatorConnectorSpec
     //then
     whenReady(future) { result =>
       result.isLeft shouldBe true
-      result.swap.contains(
-        s"POST of '$baseUrl/submission-consolidator/form' failed. Caused by: 'Connection refused:"
-      ) shouldBe true
+      result.swap
+        .getOrElse("Incorrect result")
+        .shouldBe(
+          s"POST of '$baseUrl/submission-consolidator/form' failed. Caused by: 'Connection refused:"
+        ) shouldBe true
       startServer()
     }
   }

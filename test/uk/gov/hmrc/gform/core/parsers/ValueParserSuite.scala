@@ -59,7 +59,7 @@ class ValueParserSuite extends FunSuite {
   )
 
   table.zipWithIndex.foreach { case ((ifElse, expected), rowIndex) =>
-    test(s"1 + $rowIndex .$ifElse") {
+    test(s"${1} $rowIndex . $ifElse") {
 
       val res = ValueParser.validate("${" + ifElse + "}")
 
@@ -76,7 +76,7 @@ class ValueParserSuite extends FunSuite {
   )
 
   tableWithRegex.zipWithIndex.foreach { case ((ifElse, expected), rowIndex) =>
-    test(s"1 $rowIndex . $ifElse (string comparison)") {
+    test(s"${1} $rowIndex . $ifElse (string comparison)") {
 
       val res = ValueParser.validate("${" + ifElse + "}")
 
