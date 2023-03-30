@@ -40,12 +40,14 @@ case class FormComponent(
   presentationHint: Option[List[PresentationHint]] = None,
   validators: List[FormComponentValidator] = Nil,
   instruction: Option[Instruction] = None,
-  labelSize: Option[LabelSize] = None
+  labelSize: Option[LabelSize] = None,
+  errorShortName: Option[SmartString] = None
 ) {
   private def updateField(i: Int, fc: FormComponent): FormComponent =
     fc.copy(
       label = LabelHelper.buildRepeatingLabel(fc.label, i),
-      shortName = LabelHelper.buildRepeatingLabel(fc.shortName, i)
+      shortName = LabelHelper.buildRepeatingLabel(fc.shortName, i),
+      errorShortName = LabelHelper.buildRepeatingLabel(fc.errorShortName, i)
     )
 
   private def loop(fc: FormComponent): List[FormComponent] =
@@ -90,7 +92,8 @@ object FormComponent {
       LeafExpr(path + s"[id=${t.id}].includeIf", t.includeIf) ++
       LeafExpr(path + s"[id=${t.id}].validIf", t.validIf) ++
       LeafExpr(path + s"[id=${t.id}].validators", t.validators) ++
-      LeafExpr(path + s"[id=${t.id}].instruction", t.instruction)
+      LeafExpr(path + s"[id=${t.id}].instruction", t.instruction) ++
+      LeafExpr(path + s"[id=${t.id}].shortName", t.shortName)
 
 }
 
