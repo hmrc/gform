@@ -265,7 +265,8 @@ object Substituter {
       validIf = t.validIf(substitutions),
       errorMessage = t.errorMessage(substitutions),
       validators = t.validators(substitutions),
-      instruction = t.instruction(substitutions)
+      instruction = t.instruction(substitutions),
+      errorShortName = t.errorShortName(substitutions)
     )
 
   implicit def pageSubstituter[A](implicit

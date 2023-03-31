@@ -690,4 +690,17 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
     result shouldBe Right(expected)
   }
 
+  it should "parse text component with errorShortName" in {
+    val formComponentMaker = new FormComponentMaker(Json.parse("""
+                                                                 |{
+                                                                 |   "id": "id1",
+                                                                 |   "type": "text",
+                                                                 |   "label": "Field 1",
+                                                                 |   "format": "text",
+                                                                 |   "errorShortName": "error short name"
+                                                                 |}
+                                                                 |""".stripMargin))
+    formComponentMaker.optFieldValue().map(_.errorShortName) shouldBe Right(Some(toSmartString("error short name")))
+  }
+
 }
