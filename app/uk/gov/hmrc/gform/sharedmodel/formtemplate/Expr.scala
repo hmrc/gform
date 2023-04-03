@@ -18,9 +18,8 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
 import julienrf.json.derived
 import play.api.libs.json._
-import uk.gov.hmrc.gform.core.parsers.ExprParsers
+import uk.gov.hmrc.gform.core.parsers.{ ExprParsers, ValueParser }
 import uk.gov.hmrc.gform.sharedmodel.{ DataRetrieve, DataRetrieveId }
-
 import uk.gov.hmrc.gform.translation.TranslatableConstant
 
 sealed trait Expr {
@@ -90,6 +89,18 @@ final case class NumberedList(formComponentId: FormComponentId) extends Expr
 final case class BulletedList(formComponentId: FormComponentId) extends Expr
 final case class Concat(exprs: List[Expr]) extends Expr
 final case class StringOps(field1: Expr, stringFnc: StringFnc) extends Expr
+final case class OptionDataValue(prefix: String, expr: Expr) extends Expr
+object OptionDataValue {
+  lazy val readsForTemplateJson: Reads[OptionDataValue] = Reads {
+    case JsString(exprAsStr) =>
+      ValueParser
+        .validateWithParser(exprAsStr, ValueParser.optionDataValue)
+        .fold(error => JsError(error.toString), JsSuccess(_))
+    case otherwise => JsError(s"Invalid expression. Expected String, got $otherwise")
+  }
+
+  implicit val format: OFormat[OptionDataValue] = OFormatWithTemplateReadFallback(readsForTemplateJson)
+}
 
 sealed trait SizeRefType extends Product with Serializable
 
@@ -97,7 +108,7 @@ object SizeRefType {
   case class IndexBased(index: Int) extends SizeRefType
   case class ValueBased(value: String) extends SizeRefType
 
-  val regex = "[-_a-zA-Z0-9]+".r
+  val regex = "[-_$a-zA-Z0-9{}]+".r
 
   implicit val format: OFormat[SizeRefType] = derived.oformat()
 }

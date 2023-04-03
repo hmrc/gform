@@ -402,6 +402,8 @@ trait Rewriter {
             `type` = choice.copy(options = choice.options.map {
               case OptionData.ValueBased(l, h, i, d, v) => OptionData.ValueBased(l, h, replaceIncludeIf(i), d, v)
               case OptionData.IndexBased(l, h, i, d)    => OptionData.IndexBased(l, h, replaceIncludeIf(i), d)
+              case OptionData.ExprBased(l, h, i, d, v) =>
+                OptionData.ExprBased(l, h, replaceIncludeIf(i), d, v)
             })
           )
         case otherwise => replaceFormComponent(formComponent)

@@ -565,6 +565,10 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
         SelectionCriteriaSimpleValue(List(value))
       }
 
+  lazy val optionDataValue: Parser[OptionDataValue] = "TY_${" ~ _expr1 ~ "}" ^^ { case _ ~ expr ~ _ =>
+    OptionDataValue("TY", expr)
+  }
+
 }
 
 object ValueParser extends ValueParser with PackratParsingHelper {

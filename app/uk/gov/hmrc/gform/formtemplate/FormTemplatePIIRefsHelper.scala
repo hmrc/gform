@@ -140,6 +140,7 @@ object FormTemplatePIIRefsHelper {
       case StringOps(expr, _)                                 => extractRefs(expr)
       case Concat(exprs)                                      => exprs.flatMap(extractRefs)
       case CountryOfItmpAddress                               => Nil
+      case OptionDataValue(_, expr)                           => extractRefs(expr)
     }
 
   implicit class JsLookupResultOps(result: JsLookupResult) {

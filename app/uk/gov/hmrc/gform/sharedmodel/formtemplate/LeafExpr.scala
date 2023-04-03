@@ -80,6 +80,7 @@ final case class ExprWithPath(path: TemplatePath, expr: Expr) {
     case s @ StringOps(expr, _)                        => ReferenceInfo.StringOpsExpr(path, s) :: toReferenceInfo(expr)
     case Concat(exprs)                                 => toReferenceInfo(exprs: _*)
     case CountryOfItmpAddress                          => Nil
+    case o @ OptionDataValue(_, expr)                  => ReferenceInfo.OptionDataValueExpr(path, o) :: toReferenceInfo(expr)
   }
 }
 

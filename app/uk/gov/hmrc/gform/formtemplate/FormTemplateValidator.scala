@@ -229,6 +229,9 @@ object FormTemplateValidator {
         Invalid(s"${path.path}: $formComponentId is not AddToList Id")
       case ReferenceInfo.StringOpsExpr(path, StringOps(FormCtx(formComponentId), _)) if !allFcIds(formComponentId) =>
         invalid(path, formComponentId)
+      case ReferenceInfo.OptionDataValueExpr(path, OptionDataValue(_, FormCtx(formComponentId)))
+          if !allFcIds(formComponentId) =>
+        invalid(path, formComponentId)
       case _ => Valid
     }
 
@@ -992,6 +995,7 @@ object FormTemplateValidator {
       case StringOps(_, _)              => Valid
       case Concat(exprs)                => Monoid.combineAll(exprs.map(e => validate(e, sections)))
       case CountryOfItmpAddress         => Valid
+      case OptionDataValue(_, _)        => Valid
     }
   }
 
