@@ -136,7 +136,9 @@ object DesRegistrationResponse {
   private val basic: OFormat[DesRegistrationResponse] = Json.format[DesRegistrationResponse]
 
   private def pickBranchAndPrune(symbol: Symbol) =
-    __.json.update((__ \ "orgOrInd").json.copyFrom((__ \ symbol).json.pickBranch)) andThen (__ \ symbol).json.prune
+    __.json.update(
+      (__ \ Symbol("orgOrInd")).json.copyFrom((__ \ symbol).json.pickBranch)
+    ) andThen (__ \ symbol).json.prune
 
   private def readDesRegistrationResponse(json: JsValue, symbol: Symbol): JsResult[DesRegistrationResponse] =
     json.transform(pickBranchAndPrune(symbol)).flatMap(basic.reads)

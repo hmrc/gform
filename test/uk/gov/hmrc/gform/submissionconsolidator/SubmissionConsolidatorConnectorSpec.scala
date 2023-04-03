@@ -148,7 +148,7 @@ class SubmissionConsolidatorConnectorSpec
       result.isLeft shouldBe true
       result.swap
         .getOrElse("Incorrect result")
-        .shouldBe(
+        .contains(
           s"POST of '$baseUrl/submission-consolidator/form' failed. Caused by: 'Connection refused:"
         ) shouldBe true
       startServer()

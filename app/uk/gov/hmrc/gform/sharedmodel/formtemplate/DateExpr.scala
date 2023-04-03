@@ -21,6 +21,7 @@ import play.api.libs.json.OFormat
 import uk.gov.hmrc.gform.models.constraints.ReferenceInfo
 
 sealed trait DateExpr {
+
   def leafExprs: List[Expr] = this match {
     case DateValueExpr(_)              => DateCtx(this) :: Nil
     case DateFormCtxVar(formCtx)       => formCtx :: Nil
