@@ -5,7 +5,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.{ aResponse, stubFor, url
 import play.api.http.HeaderNames.LOCATION
 
 trait FileUploadServiceStubs {
-  def createEnvelopeStub() {
+  def createEnvelopeStub(): Unit = {
     stubFor(
       WireMock
         .post(urlEqualTo("/file-upload/envelopes"))
