@@ -164,7 +164,6 @@ class FormTemplatesControllerRequestHandlerSuite extends FunSuite {
     val expected =
       """|[
          |  {
-         |    "title": "Page",
          |    "fields": [
          |      {
          |        "id": "choice",
@@ -241,7 +240,8 @@ class FormTemplatesControllerRequestHandlerSuite extends FunSuite {
          |          []
          |        ]
          |      }
-         |    ]
+         |    ],
+         |   "title": "Page"
          |  }
          |]""".stripMargin
 
@@ -329,20 +329,19 @@ class FormTemplatesControllerRequestHandlerSuite extends FunSuite {
       """
         | [
         | {
-        |    "title": "Page A",
         |    "fields": [
         |      {
         |        "id": "fieldA",
         |        "label": "Field A",
         |        "format": "text"
         |      }
-        |    ]
+        |    ],
+        |    "title": "Page A"
         |  },
         |  {
         |    "summaryName": "Add To List",
         |    "pages": [
         |      {
-        |        "title": "Page $n",
         |        "shortName": "asdfa",
         |        "fields": [
         |          {
@@ -351,14 +350,14 @@ class FormTemplatesControllerRequestHandlerSuite extends FunSuite {
         |            "label": "Field A",
         |            "format": "sterling"
         |          }
-        |        ]
+        |        ],
+        |        "title": "Page $n"
         |      }
         |    ],
         |    "description": "${fieldA}",
+        |    "shortName": "Add To List",
         |    "type": "addToList",
         |    "title": "Add To List",
-        |    "shortName": "Add To List",
-        |    "summaryDescription": "${fieldA}",
         |    "addAnotherQuestion": {
         |      "format": "label1",
         |      "id": "client",
@@ -378,7 +377,8 @@ class FormTemplatesControllerRequestHandlerSuite extends FunSuite {
         |          }
         |        }
         |      ]
-        |    }
+        |    },
+        |    "summaryDescription": "${fieldA}"
         |  }
         |]""".stripMargin
 

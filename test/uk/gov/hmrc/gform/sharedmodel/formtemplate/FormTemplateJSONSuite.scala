@@ -108,14 +108,14 @@ class FormTemplateJSONSuite extends FunSuite {
              |    "type": "classic",
              |    "sections": [
              |      {
-             |        "title": "Start date",
              |        "fields": [
              |          {
              |            "id": "startDate",
              |            "type": "date",
              |            "label": "Start Date1"
              |          }
-             |        ]
+             |        ],
+             |        "title": "Start date"
              |      }
              |    ]
              |  },
@@ -124,8 +124,8 @@ class FormTemplateJSONSuite extends FunSuite {
              |  },
              |  "formName": "Classic",
              |  "emailTemplateId": "eeitt_submission_confirmation",
-             |  "_id": "foo",
              |  "originalId": "foo",
+             |  "_id": "foo",
              |  "displayHMRCLogo": false,
              |  "parentFormSubmissionRefs": []
              |}""".stripMargin
@@ -243,7 +243,6 @@ class FormTemplateJSONSuite extends FunSuite {
              |            "title": "Check eligibility",
              |            "sections": [
              |              {
-             |                "title": "Applicatns age details",
              |                "fields": [
              |                  {
              |                    "id": "age",
@@ -251,7 +250,8 @@ class FormTemplateJSONSuite extends FunSuite {
              |                    "format": "number",
              |                    "label": "Age"
              |                  }
-             |                ]
+             |                ],
+             |                "title": "Applicatns age details"
              |              }
              |            ]
              |          }
@@ -264,8 +264,8 @@ class FormTemplateJSONSuite extends FunSuite {
              |  },
              |  "formName": "Task List",
              |  "emailTemplateId": "eeitt_submission_confirmation",
-             |  "_id": "foo",
              |  "originalId": "foo",
+             |  "_id": "foo",
              |  "displayHMRCLogo": false,
              |  "parentFormSubmissionRefs": []
              |}""".stripMargin
