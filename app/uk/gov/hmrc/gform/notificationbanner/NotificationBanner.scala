@@ -19,8 +19,6 @@ package uk.gov.hmrc.gform.notificationbanner
 import julienrf.json.derived
 import play.api.libs.json.{ JsDefined, JsError, JsString, JsSuccess, JsUndefined, Json, OFormat }
 
-import scala.annotation.nowarn
-
 case class NotificationBanner(
   message: String
 )
@@ -30,13 +28,13 @@ object NotificationBanner {
   val mongoId = "notificationBanner"
 
   implicit val format: OFormat[NotificationBanner] = derived.oformat()
-  @nowarn
+
   val mongoFormat: OFormat[NotificationBanner] = OFormat[NotificationBanner](
     jsValue =>
       (jsValue \ "message") match {
         case JsDefined(JsString(message)) => JsSuccess(NotificationBanner(message))
         case JsDefined(unknown)           => JsError(s"Expected string for notification banner, got $unknown")
-        case JsUndefined()                => JsError(s"Missing field 'message' in json $jsValue")
+        case _: JsUndefined               => JsError(s"Missing field 'message' in json $jsValue")
       },
     (notificationBanner: NotificationBanner) =>
       Json.obj(

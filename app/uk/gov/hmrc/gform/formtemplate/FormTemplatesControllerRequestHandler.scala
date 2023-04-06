@@ -28,8 +28,6 @@ import uk.gov.hmrc.gform.core.{ FOpt, Opt, fromOptA }
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Default, Expr, ExpressionOutput, FormCategory, FormTemplate, FormTemplateRaw, SummarySection }
 
-import scala.annotation.nowarn
-
 trait RequestHandlerAlg[F[_]] {
   def handleRequest(templateRaw: FormTemplateRaw): F[Unit]
 }
@@ -220,11 +218,11 @@ object FormTemplatesControllerRequestHandler {
     val moveSections =
       (__ \ Symbol("formKind") \ Symbol("sections")).json
         .copyFrom((__ \ Symbol("sections")).json.pick) and (__ \ "sections").json.prune reduce
-    @nowarn
+
     def getDownField(fieldName: String, json: JsValue): JsObject =
       (json \ fieldName) match {
         case JsDefined(field) => Json.obj(fieldName -> field)
-        case JsUndefined()    => Json.obj()
+        case _: JsUndefined   => Json.obj()
       }
 
     val choicesFieldUpdater: Reads[JsValue] = Reads { json =>
@@ -348,11 +346,11 @@ object FormTemplatesControllerRequestHandler {
     }
 
     val transformDestinations: Reads[JsValue] = Reads { json =>
-      @nowarn
       val transformIncludeIfs: Reads[JsValue] = Reads { json =>
         json \ "includeIf" match {
           case JsDefined(JsString(_)) => JsSuccess(json)
-          case JsUndefined()          => json.validate(__.json.update((__ \ Symbol("includeIf")).json.put(JsString("true"))))
+          case JsDefined(notAString)  => JsError(s"Destination's 'includeIf' needs to be a String, got $notAString")
+          case _: JsUndefined         => json.validate(__.json.update((__ \ Symbol("includeIf")).json.put(JsString("true"))))
         }
       }
       json.transform(j =>

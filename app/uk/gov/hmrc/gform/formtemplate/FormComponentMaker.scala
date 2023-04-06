@@ -34,8 +34,6 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.JsonUtils._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.{ LangADT, LocalisedString, SmartString }
 
-import scala.annotation.nowarn
-
 case class MES(
   mandatory: Boolean,
   editable: Boolean,
@@ -51,27 +49,27 @@ class FormComponentMaker(json: JsValue) {
   lazy val label: SmartString = (json \ "label").as[SmartString]
 
   lazy val optMaybeValueExpr: Opt[Option[ValueExpr]] = parse("value", ValueParser.validate)
-  @nowarn
+
   lazy val optEmailVerification: Opt[EmailVerification] = (json \ "verifiedBy") match {
     case JsDefined(verifiedBy) =>
       EmailVerification.reads.reads(verifiedBy) match {
         case JsSuccess(emailVerification, _) => Right(emailVerification)
         case JsError(error)                  => Left(UnexpectedState(JsError.toJson(error).toString()))
       }
-    case JsUndefined() => Right(EmailVerification.noVerification)
+    case _: JsUndefined => Right(EmailVerification.noVerification)
   }
 
   lazy val optCompression: Opt[Boolean] = (json \ "compression") match {
     case JsDefined(JsString(IsTrueish())) => Right(true)
     case _                                => Right(false)
   }
-  @nowarn
+
   def optFileUploadProvider(compression: Boolean): Opt[FileUploadProvider] = (json \ "service") match {
     case JsDefined(JsString("upscan"))     => Right(FileUploadProvider.Upscan(compression))
     case JsDefined(JsString("fileUpload")) => Right(FileUploadProvider.FileUploadFrontend)
     case JsDefined(unknown) =>
       Left(UnexpectedState(s"Unsupported file upload service '$unknown'. Only 'upscan' or 'fileUpload' are supported"))
-    case JsUndefined() => Right(FileUploadProvider.FileUploadFrontend)
+    case _: JsUndefined => Right(FileUploadProvider.FileUploadFrontend)
   }
 
   lazy val optMaybeFormatExpr
@@ -136,7 +134,7 @@ class FormComponentMaker(json: JsValue) {
   lazy val intervalMins: Option[Int] = (json \ "intervalMins").asOpt[Int]
   lazy val optInstruction: Opt[Option[Instruction]] =
     toOpt((json \ "instruction").validateOpt[Instruction], "/instruction")
-  @nowarn
+
   lazy val optSelectionCriteria: Opt[Option[List[SelectionCriteria]]] =
     json \ "selectionCriteria" match {
       case JsDefined(JsArray(selectionCriterias)) =>
@@ -157,7 +155,9 @@ class FormComponentMaker(json: JsValue) {
           case Left(e)  => Left(UnexpectedState(e.map(_.error).mkString(" ")))
         }
 
-      case JsUndefined() => Right(None)
+      case JsDefined(notAnArray) => Left(UnexpectedState(s"'selectionCriteria' needs to be an array, got: $notAnArray"))
+
+      case _: JsUndefined => Right(None)
     }
 
   lazy val dividerPositon: Option[DividerPosition] =

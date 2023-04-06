@@ -32,8 +32,6 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationInclud
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.SubmissionConsolidator
 import uk.gov.hmrc.gform.sharedmodel.notifier.NotifierPersonalisationFieldId
 
-import scala.annotation.nowarn
-
 sealed trait DestinationWithCustomerId {
   def customerId(): Expr
 }
@@ -43,13 +41,13 @@ sealed trait DestinationIncludeIf extends Product with Serializable
 object DestinationIncludeIf {
   case class HandlebarValue(value: String) extends DestinationIncludeIf
   case class IncludeIfValue(value: IncludeIf) extends DestinationIncludeIf
-  @nowarn
   private val templateReads: Reads[DestinationIncludeIf] = Reads { json =>
     json match {
       case JsString(exprAsStr) =>
         BooleanExprParser.validate(exprAsStr) fold (_ => JsSuccess(HandlebarValue(exprAsStr)), expr =>
           JsSuccess(IncludeIfValue(IncludeIf(expr))))
-      case JsUndefined() => JsSuccess(HandlebarValue(true.toString))
+      case JsNull => JsSuccess(HandlebarValue(true.toString))
+      case _      => JsError("Dsdsssss")
     }
   }
 

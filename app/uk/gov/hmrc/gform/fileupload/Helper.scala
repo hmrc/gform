@@ -27,7 +27,6 @@ import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AllowedFileTypes, FormTemplateId, JsonUtils }
 import uk.gov.hmrc.http.HttpResponse
 
-import scala.annotation.nowarn
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ ExecutionContext, Future }
 
@@ -66,8 +65,8 @@ class Helper(config: FUConfig) extends JsonUtils {
 trait Retrying {
 
   private val logger = LoggerFactory.getLogger(getClass)
-  @nowarn
-  def retry[T](f: => Future[T], delays: Seq[FiniteDuration], msg: String)(implicit
+
+  def retry[T](f: => Future[T], delays: List[FiniteDuration], msg: String)(implicit
     ec: ExecutionContext,
     s: Scheduler
   ): Future[T] =

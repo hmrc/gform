@@ -104,6 +104,7 @@ case object Infected extends FileStatus {
 object FileStatus {
 
   def unapply(status: FileStatus): String = status.value
+
   @nowarn
   val reads: Reads[FileStatus] = for {
     value <- JsPath.read[String].map {

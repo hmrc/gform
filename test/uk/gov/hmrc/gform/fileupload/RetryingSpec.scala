@@ -28,7 +28,7 @@ trait RetryingTest extends Retrying {
   def runWith3Retries(
     f: StubFunction0[Future[Int]]
   )(implicit ec: ExecutionContext, s: Scheduler): Future[Int] =
-    retry(f(), Seq(10.milliseconds, 100.milliseconds), "")
+    retry(f(), List(10.milliseconds, 100.milliseconds), "")
 }
 
 class RetryingSpec extends Spec {

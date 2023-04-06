@@ -79,6 +79,7 @@ object FormComponentMakerService {
         TextArea(f, expr, dw, rows, displayCharCount).asRight
       case _ => createError(Some(formatExpr), maybeValueExpr, multiLine, json).asLeft
     }
+
   @nowarn
   def createError(
     maybeFormatExpr: Option[FormatExpr],

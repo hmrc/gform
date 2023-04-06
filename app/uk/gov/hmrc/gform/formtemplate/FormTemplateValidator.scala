@@ -834,6 +834,7 @@ object FormTemplateValidator {
     val results = componentTypes.map(validate(_, formTemplate))
     Monoid[ValidationResult].combineAll(results)
   }
+
   @nowarn
   def validate(componentType: ComponentType, formTemplate: FormTemplate): ValidationResult = componentType match {
     case HasExpr(SingleExpr(expr))            => validate(expr, formTemplate.formKind.allSections)
@@ -1010,7 +1011,7 @@ object FormTemplateValidator {
           )
       }
     }
-  @nowarn
+
   def validateDates(formTemplate: FormTemplate): ValidationResult =
     getAllDates(formTemplate)
       .map {
@@ -1021,9 +1022,9 @@ object FormTemplateValidator {
           validateYearMonthAndDay(leapYear, month, day)
         case _ => ""
       }
-      .filterNot(_ == "") match {
-      case messages if messages.isEmpty  => Valid
-      case messages if messages.nonEmpty => Invalid(messages.mkString(". "))
+      .filterNot(_ === "") match {
+      case Nil      => Valid
+      case messages => Invalid(messages.mkString(". "))
     }
 
   private def validateYearMonthAndDay(year: Int, month: Int, day: Int): String =

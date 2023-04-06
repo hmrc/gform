@@ -90,6 +90,7 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
   private val perms1: List[Parser[OffsetYMD]] = offsets.map { ap =>
     ap ^^ { a => OffsetYMD(a) }
   }
+
   @nowarn
   private val perms2: Iterator[Parser[OffsetYMD]] =
     offsets.combinations(2).flatMap(_.permutations).map { case List(ap, bp) =>
@@ -97,6 +98,7 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
         OffsetYMD(a, b)
       }
     }
+
   @nowarn
   private val perms3: Iterator[Parser[OffsetYMD]] = offsets.permutations.map { case List(ap, bp, cp) =>
     ap ~ bp ~ cp ^^ { case a ~ b ~ c =>

@@ -83,6 +83,7 @@ class ErrorHandler(environment: Environment, configuration: Configuration, sourc
     logger.error(response.toString, e)
     Future.successful(InternalServerError(Json.toJson(response)))
   }
+
   @nowarn
   private def onUpstreamErrorResponse(e: UpstreamErrorResponse) = {
     val (response, result) = e match {

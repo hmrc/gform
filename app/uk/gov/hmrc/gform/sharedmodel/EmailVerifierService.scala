@@ -23,8 +23,6 @@ import uk.gov.hmrc.gform.sharedmodel.email.EmailTemplateId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.OFormatWithTemplateReadFallback
 import uk.gov.hmrc.gform.sharedmodel.notifier.NotifierTemplateId
 
-import scala.annotation.nowarn
-
 sealed trait EmailVerifierService extends Product with Serializable
 
 object EmailVerifierService {
@@ -48,7 +46,7 @@ object EmailVerifierService {
       case LangADT.Cy => emailTemplateIdCy.getOrElse(emailTemplateId)
     }
   }
-  @nowarn
+
   private val templateReads: Reads[EmailVerifierService] = Reads { json =>
     ((json \ "service"), (json \ "emailTemplateId")) match {
       case (JsDefined(JsString("notify")), JsDefined(JsString(emailTemplateId))) =>
@@ -58,7 +56,7 @@ object EmailVerifierService {
       case (JsDefined(_), JsUndefined()) => JsError(s"Missing field 'emailTemplateId' in json: $json")
       case (JsDefined(unknown), _) =>
         JsError(s"Unsupported email service '$unknown'. Only 'notify' or 'digitalContact' are supported")
-      case (JsUndefined(), _) => JsError(s"Missing email service. Specify one of 'notify' or 'digitalContact'")
+      case (_: JsUndefined, _) => JsError(s"Missing email service. Specify one of 'notify' or 'digitalContact'")
     }
   }
 
