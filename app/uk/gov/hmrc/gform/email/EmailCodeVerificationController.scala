@@ -26,38 +26,62 @@ import uk.gov.hmrc.gform.notifier.{ NotifierAlgebra, NotifierEmail, NotifierEmai
 import uk.gov.hmrc.gform.sharedmodel.EmailVerifierService
 import uk.gov.hmrc.gform.sharedmodel.email.ConfirmationCodeWithEmailService
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ EmailParameterValue, EmailParametersRecalculated, EmailTemplateVariable }
+import uk.gov.hmrc.gform.formtemplate.FormTemplateService
+import uk.gov.hmrc.gform.sharedmodel.email.EmailConfirmationCode
+import cats.data.NonEmptyList
+import uk.gov.hmrc.gform.sharedmodel.LangADT
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.EmailCodeParameter
 
 class EmailCodeVerificationController(
   controllerComponents: ControllerComponents,
   notifierAlgebra: NotifierAlgebra[FOpt],
-  emailService: EmailService
+  emailService: EmailService,
+  formTemplateService: FormTemplateService
 )(implicit
   ex: ExecutionContext
 ) extends BaseController(controllerComponents) {
 
   def sendEmail() =
     Action.async(parse.json[ConfirmationCodeWithEmailService]) { implicit request =>
-      val ConfirmationCodeWithEmailService(notifierEmailAddress, code, emailVerifierService, lang) = request.body
-      emailVerifierService match {
-        case notify @ EmailVerifierService.Notify(_, _) =>
-          val notifierEmail: NotifierEmail =
-            NotifierEmail(
-              notify.notifierTemplateId(lang),
-              notifierEmailAddress,
-              Map("confirmation code" -> code.code),
-              NotifierEmailReference("")
-            )
-          notifierAlgebra.email(notifierEmail).map(_ => NoContent).toFuture
-        case dc @ EmailVerifierService.DigitalContact(_, _) =>
-          emailService
-            .sendEmail(
-              Some(notifierEmailAddress.value),
-              dc.emailTemplateId(lang),
-              EmailParametersRecalculated(
-                Map(EmailTemplateVariable("confirmationCode") -> EmailParameterValue(code.code))
-              )
-            )
-            .map(_ => NoContent)
-      }
+      val ConfirmationCodeWithEmailService(notifierEmailAddress, code, emailVerifierService, lang, formTemplateId) =
+        request.body
+      formTemplateService
+        .get(formTemplateId)
+        .flatMap { formTemplate =>
+          val personalization = getPersonalization(code, formTemplate.emailCodeParameters, lang)
+          emailVerifierService match {
+            case notify @ EmailVerifierService.Notify(_, _) =>
+              val notifierEmail: NotifierEmail =
+                NotifierEmail(
+                  notify.notifierTemplateId(lang),
+                  notifierEmailAddress,
+                  personalization,
+                  NotifierEmailReference("")
+                )
+              notifierAlgebra.email(notifierEmail).map(_ => NoContent).toFuture
+            case dc @ EmailVerifierService.DigitalContact(_, _) =>
+              emailService
+                .sendEmail(
+                  Some(notifierEmailAddress.value),
+                  dc.emailTemplateId(lang),
+                  EmailParametersRecalculated(
+                    personalization.map { case (k, v) => (EmailTemplateVariable(k), EmailParameterValue(v)) }
+                  )
+                )
+                .map(_ => NoContent)
+          }
+        }
     }
+
+  private def getPersonalization(
+    code: EmailConfirmationCode,
+    emailCodeParameters: Option[NonEmptyList[EmailCodeParameter]],
+    lang: LangADT
+  ): Map[String, String] =
+    Map("confirmation code" -> code.code) ++
+      emailCodeParameters
+        .fold(List.empty[EmailCodeParameter])(_.toList)
+        .map { case EmailCodeParameter(emailTemplateVariable, value) =>
+          (emailTemplateVariable, value.m.get(lang).getOrElse(""))
+        }
 }

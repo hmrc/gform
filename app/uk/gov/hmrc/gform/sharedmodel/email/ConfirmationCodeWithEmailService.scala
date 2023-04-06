@@ -20,12 +20,14 @@ import julienrf.json.derived
 import play.api.libs.json.Format
 import uk.gov.hmrc.gform.sharedmodel.{ EmailVerifierService, LangADT }
 import uk.gov.hmrc.gform.sharedmodel.notifier.NotifierEmailAddress
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 
 case class ConfirmationCodeWithEmailService(
   notifierEmailAddress: NotifierEmailAddress,
   code: EmailConfirmationCode,
   emailVerifierService: EmailVerifierService,
-  lang: LangADT
+  lang: LangADT,
+  formTemplateId: FormTemplateId
 )
 
 object ConfirmationCodeWithEmailService {
