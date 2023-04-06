@@ -265,6 +265,8 @@ object AuthInfo {
   final case class ItmpNameLens(focus: ItmpNameFocus) extends AuthInfo
   final case object ItmpDateOfBirth extends AuthInfo
   final case object ItmpAddress extends AuthInfo
+  final case object PayeRef extends AuthInfo
+  final case object Vrn extends AuthInfo
 
   implicit val format: OFormat[AuthInfo] = derived.oformat()
 }
