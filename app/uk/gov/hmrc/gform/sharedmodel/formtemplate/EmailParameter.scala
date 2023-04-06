@@ -57,17 +57,5 @@ object EmailParametersRecalculated {
 
 case class EmailCodeParameter(emailTemplateVariable: String, value: LocalisedString)
 object EmailCodeParameter {
-  implicit val format: OFormat[EmailCodeParameter] = {
-    val mongoFormat = Json.format[EmailCodeParameter]
-
-    val uploadTemplateReads: Reads[EmailCodeParameter] =
-      for {
-        emailTemplateVariable <- (JsPath \ "emailTemplateVariable").read[String]
-        value                 <- (JsPath \ "value").read[LocalisedString]
-      } yield EmailCodeParameter(emailTemplateVariable, value)
-
-    val reads: Reads[EmailCodeParameter] = uploadTemplateReads | mongoFormat
-
-    OFormat(reads, mongoFormat)
-  }
+  implicit val format: OFormat[EmailCodeParameter] = Json.format[EmailCodeParameter]
 }

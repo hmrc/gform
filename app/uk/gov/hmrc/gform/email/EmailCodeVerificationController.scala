@@ -27,7 +27,6 @@ import uk.gov.hmrc.gform.sharedmodel.EmailVerifierService
 import uk.gov.hmrc.gform.sharedmodel.email.ConfirmationCodeWithEmailService
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ EmailParameterValue, EmailParametersRecalculated, EmailTemplateVariable }
 import uk.gov.hmrc.gform.formtemplate.FormTemplateService
-import uk.gov.hmrc.gform.sharedmodel.email.EmailConfirmationCode
 import cats.data.NonEmptyList
 import uk.gov.hmrc.gform.sharedmodel.LangADT
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.EmailCodeParameter
@@ -48,14 +47,14 @@ class EmailCodeVerificationController(
       formTemplateService
         .get(formTemplateId)
         .flatMap { formTemplate =>
-          val personalization = getPersonalization(code, formTemplate.emailCodeParameters, lang)
+          val personalization = getPersonalization(formTemplate.emailCodeParameters, lang)
           emailVerifierService match {
             case notify @ EmailVerifierService.Notify(_, _) =>
               val notifierEmail: NotifierEmail =
                 NotifierEmail(
                   notify.notifierTemplateId(lang),
                   notifierEmailAddress,
-                  personalization,
+                  Map("confirmation code" -> code.code) ++ personalization,
                   NotifierEmailReference("")
                 )
               notifierAlgebra.email(notifierEmail).map(_ => NoContent).toFuture
@@ -65,7 +64,8 @@ class EmailCodeVerificationController(
                   Some(notifierEmailAddress.value),
                   dc.emailTemplateId(lang),
                   EmailParametersRecalculated(
-                    personalization.map { case (k, v) => (EmailTemplateVariable(k), EmailParameterValue(v)) }
+                    (Map("confirmationCode" -> code.code) ++
+                      personalization).map { case (k, v) => (EmailTemplateVariable(k), EmailParameterValue(v)) }
                   )
                 )
                 .map(_ => NoContent)
@@ -74,14 +74,13 @@ class EmailCodeVerificationController(
     }
 
   private def getPersonalization(
-    code: EmailConfirmationCode,
     emailCodeParameters: Option[NonEmptyList[EmailCodeParameter]],
     lang: LangADT
   ): Map[String, String] =
-    Map("confirmation code" -> code.code) ++
-      emailCodeParameters
-        .fold(List.empty[EmailCodeParameter])(_.toList)
-        .map { case EmailCodeParameter(emailTemplateVariable, value) =>
-          (emailTemplateVariable, value.m.get(lang).getOrElse(""))
-        }
+    emailCodeParameters
+      .fold(List.empty[EmailCodeParameter])(_.toList)
+      .map { case EmailCodeParameter(emailTemplateVariable, value) =>
+        (emailTemplateVariable, value.m.get(lang).getOrElse(""))
+      }
+      .toMap
 }

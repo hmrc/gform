@@ -37,8 +37,7 @@ class DeserializeEmailCodeParameterSpec extends FunSuite {
       EmailCodeParameter(
         "testTemplateVar",
         LocalisedString(Map(LangADT.En -> "English value", LangADT.Cy -> "Welsh value"))
-      ),
-      JsPath(List(KeyPathNode("value")))
+      )
     )
   }
 
