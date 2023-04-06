@@ -137,7 +137,7 @@ object DesRegistrationResponse {
 
   private def pickBranchAndPrune(symbol: Symbol) =
     __.json.update(
-      (__ \ Symbol("orgOrInd")).json.copyFrom((__ \ symbol).json.pickBranch)
+      (__ \ "orgOrInd").json.copyFrom((__ \ symbol).json.pickBranch)
     ) andThen (__ \ symbol).json.prune
 
   private def readDesRegistrationResponse(json: JsValue, symbol: Symbol): JsResult[DesRegistrationResponse] =

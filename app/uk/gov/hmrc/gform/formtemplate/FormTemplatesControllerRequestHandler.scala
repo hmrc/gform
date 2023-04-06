@@ -131,45 +131,45 @@ object FormTemplatesControllerRequestHandler {
   def normaliseJSON(jsonValue: JsValue): JsResult[JsObject] = {
 
     val allowedFileTypes =
-      (__ \ Symbol("allowedFileTypes")).json
+      (__ \ "allowedFileTypes").json
         .copyFrom(
-          (__ \ Symbol("allowedFileTypes")).json.pick orElse Reads.pure(
+          (__ \ "allowedFileTypes").json.pick orElse Reads.pure(
             JsArray(FileInfoConfig.allAllowedFileTypes.fileExtensions.map(e => JsString(e)).toList)
           )
         )
 
     val drmValue =
-      (__ \ Symbol("draftRetrievalMethod") \ Symbol("value")).json
-        .copyFrom((__ \ Symbol("draftRetrievalMethod")).json.pick orElse Reads.pure(JsString("onePerUser")))
+      (__ \ "draftRetrievalMethod" \ "value").json
+        .copyFrom((__ \ "draftRetrievalMethod").json.pick orElse Reads.pure(JsString("onePerUser")))
 
     val drmShowContinueOrDeletePage =
-      (__ \ Symbol("draftRetrievalMethod") \ Symbol("showContinueOrDeletePage")).json
-        .copyFrom((__ \ Symbol("showContinueOrDeletePage")).json.pick orElse Reads.pure(JsString("true")))
+      (__ \ "draftRetrievalMethod" \ "showContinueOrDeletePage").json
+        .copyFrom((__ \ "showContinueOrDeletePage").json.pick orElse Reads.pure(JsString("true")))
 
     val ensureDisplayHMRCLogo =
-      (__ \ Symbol("displayHMRCLogo")).json
-        .copyFrom((__ \ Symbol("displayHMRCLogo")).json.pick orElse Reads.pure(JsFalse))
+      (__ \ "displayHMRCLogo").json
+        .copyFrom((__ \ "displayHMRCLogo").json.pick orElse Reads.pure(JsFalse))
 
-    val ensureOriginalId = (__ \ Symbol("originalId")).json.copyFrom((__ \ "_id").json.pick) orElse noTemplateId
+    val ensureOriginalId = (__ \ "originalId").json.copyFrom((__ \ "_id").json.pick) orElse noTemplateId
 
-    val lowerCaseId: Reads[JsObject] = (__ \ Symbol("_id")).json.copyFrom(
-      (__ \ Symbol("_id")).json
+    val lowerCaseId: Reads[JsObject] = (__ \ "_id").json.copyFrom(
+      (__ \ "_id").json
         .pick[JsString]
         .map(jsString => JsString(jsString.value.toLowerCase))
         .widen
     ) orElse noTemplateId
 
-    val pruneShowContinueOrDeletePage = (__ \ Symbol("showContinueOrDeletePage")).json.prune
+    val pruneShowContinueOrDeletePage = (__ \ "showContinueOrDeletePage").json.prune
 
     val ensureFormCategory =
-      (__ \ Symbol("formCategory")).json
-        .copyFrom((__ \ Symbol("formCategory")).json.pick orElse Reads.pure(JsString("default")))
+      (__ \ "formCategory").json
+        .copyFrom((__ \ "formCategory").json.pick orElse Reads.pure(JsString("default")))
 
     val ensureLanguages =
-      (__ \ Symbol("languages")).json
-        .copyFrom((__ \ Symbol("languages")).json.pick orElse Reads.pure(Json.arr("en")))
+      (__ \ "languages").json
+        .copyFrom((__ \ "languages").json.pick orElse Reads.pure(Json.arr("en")))
 
-    val formCategoryReads: Reads[FormCategory] = (__ \ Symbol("formCategory")).json.pick
+    val formCategoryReads: Reads[FormCategory] = (__ \ "formCategory").json.pick
       .flatMap { jsValue =>
         val formCategoryJsRsult: JsResult[FormCategory] = Reads.of[FormCategory].reads(jsValue)
         Reads.pure(formCategoryJsRsult.getOrElse(Default))
@@ -180,20 +180,20 @@ object FormTemplatesControllerRequestHandler {
       formCategoryReads.map(formCategory => SummarySection.defaultJson(formCategory))
 
     val ensureSummarySection =
-      (__ \ Symbol("summarySection")).json
-        .copyFrom((__ \ Symbol("summarySection")).json.pick orElse defaultSummarySection)
+      (__ \ "summarySection").json
+        .copyFrom((__ \ "summarySection").json.pick orElse defaultSummarySection)
 
     val ensureParentFormSubmissionRefs =
-      (__ \ Symbol("parentFormSubmissionRefs")).json
-        .copyFrom((__ \ Symbol("parentFormSubmissionRefs")).json.pick orElse Reads.pure(Json.arr()))
+      (__ \ "parentFormSubmissionRefs").json
+        .copyFrom((__ \ "parentFormSubmissionRefs").json.pick orElse Reads.pure(Json.arr()))
 
     val destinationsOrPrintSection =
-      (__ \ Symbol("destinations")).json
+      (__ \ "destinations").json
         .copyFrom(
-          (__ \ Symbol("destinations")).json.pick orElse (__ \ "printSection").json.pick orElse Reads.pure(JsString(""))
+          (__ \ "destinations").json.pick orElse (__ \ "printSection").json.pick orElse Reads.pure(JsString(""))
         )
 
-    val prunePrintSection = (__ \ Symbol("printSection")).json.prune
+    val prunePrintSection = (__ \ "printSection").json.prune
 
     val transformAcknowledgementSection = (jsValue: JsValue) => {
       val jsObject = jsValue.as[JsObject]
@@ -202,22 +202,22 @@ object FormTemplatesControllerRequestHandler {
     }
 
     val transformAndMoveAcknowledgementSection =
-      (__ \ Symbol("destinations") \ Symbol("acknowledgementSection")).json
-        .copyFrom((__ \ Symbol("acknowledgementSection")).json.pick.map(transformAcknowledgementSection)) orElse Reads
+      (__ \ "destinations" \ "acknowledgementSection").json
+        .copyFrom((__ \ "acknowledgementSection").json.pick.map(transformAcknowledgementSection)) orElse Reads
         .pure(
           Json.obj()
         )
 
-    val determineFormKind: Reads[JsObject] = (__ \ Symbol("sections") \ 0 \ Symbol("tasks")).json.pick
+    val determineFormKind: Reads[JsObject] = (__ \ "sections" \ 0 \ "tasks").json.pick
       .map(_ => JsString("taskList"))
       .orElse(Reads.pure(JsString("classic")))
       .flatMap { formKind =>
-        (__ \ Symbol("formKind") \ Symbol("type")).json.put(formKind)
+        (__ \ "formKind" \ "type").json.put(formKind)
       }
 
     val moveSections =
-      (__ \ Symbol("formKind") \ Symbol("sections")).json
-        .copyFrom((__ \ Symbol("sections")).json.pick) and (__ \ "sections").json.prune reduce
+      (__ \ "formKind" \ "sections").json
+        .copyFrom((__ \ "sections").json.pick) and (__ \ "sections").json.prune reduce
 
     def getDownField(fieldName: String, json: JsValue): JsObject =
       (json \ fieldName) match {
@@ -246,7 +246,7 @@ object FormTemplatesControllerRequestHandler {
 
     }
 
-    val updateChoicesField = (__ \ Symbol("choices")).json.update(list(choicesFieldUpdater))
+    val updateChoicesField = (__ \ "choices").json.update(list(choicesFieldUpdater))
 
     val choicesUpdater: Reads[JsValue] = Reads { json =>
       json \ "type" match {
@@ -263,7 +263,7 @@ object FormTemplatesControllerRequestHandler {
       json \ "type" match {
         case JsDefined(JsString("revealingChoice")) =>
           json.transform(
-            (__ \ Symbol("revealingFields")).json.update(
+            (__ \ "revealingFields").json.update(
               list(list(choicesUpdater andThen revealingChoicesUpdater))
             ) andThen updateChoicesField
           )
@@ -276,7 +276,7 @@ object FormTemplatesControllerRequestHandler {
         case JsDefined(JsBoolean(bool)) if bool =>
           json \ "type" match {
             case JsDefined(JsString("file")) =>
-              json.validate(__.json.update((__ \ Symbol("service")).json.put(JsString("upscan"))))
+              json.validate(__.json.update((__ \ "service").json.put(JsString("upscan"))))
             case _ => JsSuccess(json)
           }
         case _ => JsSuccess(json)
@@ -284,18 +284,18 @@ object FormTemplatesControllerRequestHandler {
     }
 
     val fieldsReads: Reads[JsObject] =
-      (__ \ Symbol("fields")).json
+      (__ \ "fields").json
         .update(list(choicesUpdater andThen revealingChoicesUpdater andThen fileUploadUpdater))
 
     val regularFieldsOrAddToListFieldsReads =
-      (__ \ Symbol("pages")).json.update(list(fieldsReads)) orElse fieldsReads
+      (__ \ "pages").json.update(list(fieldsReads)) orElse fieldsReads
 
     val regularFieldsOrAddToListFieldsReadsTaskList =
-      (__ \ Symbol("tasks")).json.update(list((__ \ "sections").json.update(list(regularFieldsOrAddToListFieldsReads))))
+      (__ \ "tasks").json.update(list((__ \ "sections").json.update(list(regularFieldsOrAddToListFieldsReads))))
 
     val transformChoices: Reads[JsValue] = Reads { json =>
       val updateSections: Reads[JsObject] =
-        (__ \ Symbol("sections")).json.update(
+        (__ \ "sections").json.update(
           list(regularFieldsOrAddToListFieldsReads) orElse list(regularFieldsOrAddToListFieldsReadsTaskList)
         )
       json.transform(updateSections) orElse JsSuccess(json)
@@ -303,11 +303,11 @@ object FormTemplatesControllerRequestHandler {
 
     val transformAddAnotherQuestion: Reads[JsValue] = Reads { json =>
       val updateSections: Reads[JsObject] =
-        (__ \ Symbol("sections")).json.update(of[JsArray].map { case JsArray(arr) =>
+        (__ \ "sections").json.update(of[JsArray].map { case JsArray(arr) =>
           JsArray(
             arr.map(item =>
               item
-                .transform((__ \ Symbol("addAnotherQuestion")).json.update(choicesUpdater))
+                .transform((__ \ "addAnotherQuestion").json.update(choicesUpdater))
                 .getOrElse(item)
             )
           )
@@ -318,13 +318,13 @@ object FormTemplatesControllerRequestHandler {
 
     val transformConfirmationQuestion: Reads[JsValue] = Reads { json =>
       val questionReads: Reads[JsObject] =
-        (__ \ Symbol("confirmation") \ Symbol("question")).json.update(choicesUpdater)
+        (__ \ "confirmation" \ "question").json.update(choicesUpdater)
       val updatePageQuestions: Reads[JsObject] =
-        (__ \ Symbol("sections")).json.update(of[JsArray].map { case JsArray(arr) =>
+        (__ \ "sections").json.update(of[JsArray].map { case JsArray(arr) =>
           JsArray(
             arr.map(item =>
               item
-                .transform((__ \ Symbol("pages")).json.update(of[JsArray].map { case JsArray(arr2) =>
+                .transform((__ \ "pages").json.update(of[JsArray].map { case JsArray(arr2) =>
                   JsArray(arr2.map(item2 => item2.transform(questionReads).getOrElse(item2)))
                 }))
                 .getOrElse(item)
@@ -332,7 +332,7 @@ object FormTemplatesControllerRequestHandler {
           )
         })
       val updateSectionQuestions: Reads[JsObject] =
-        (__ \ Symbol("sections")).json.update(of[JsArray].map { case JsArray(arr) =>
+        (__ \ "sections").json.update(of[JsArray].map { case JsArray(arr) =>
           JsArray(
             arr.map(item =>
               item
@@ -350,7 +350,7 @@ object FormTemplatesControllerRequestHandler {
         json \ "includeIf" match {
           case JsDefined(JsString(_)) => JsSuccess(json)
           case JsDefined(notAString)  => JsError(s"Destination's 'includeIf' needs to be a String, got $notAString")
-          case _: JsUndefined         => json.validate(__.json.update((__ \ Symbol("includeIf")).json.put(JsString("true"))))
+          case _: JsUndefined         => json.validate(__.json.update((__ \ "includeIf").json.put(JsString("true"))))
         }
       }
       json.transform(j =>
@@ -363,20 +363,20 @@ object FormTemplatesControllerRequestHandler {
     }
 
     val moveDestinations =
-      (__ \ Symbol("destinations") \ Symbol("destinations")).json
-        .copyFrom((__ \ Symbol("destinations")).json.pick.map { dJson =>
+      (__ \ "destinations" \ "destinations").json
+        .copyFrom((__ \ "destinations").json.pick.map { dJson =>
           dJson.transform(transformDestinations).getOrElse(dJson)
         }) orElse Reads.pure(Json.obj())
 
     val moveDeclarationSection =
-      (__ \ Symbol("destinations") \ Symbol("declarationSection")).json
-        .copyFrom((__ \ Symbol("declarationSection")).json.pick.map { dsJson =>
+      (__ \ "destinations" \ "declarationSection").json
+        .copyFrom((__ \ "declarationSection").json.pick.map { dsJson =>
           dsJson.transform(fieldsReads).getOrElse(dsJson)
         }) orElse Reads.pure(Json.obj())
 
-    val pruneAcknowledgementSection = (__ \ Symbol("acknowledgementSection")).json.prune
+    val pruneAcknowledgementSection = (__ \ "acknowledgementSection").json.prune
 
-    val pruneDeclarationSection = (__ \ Symbol("declarationSection")).json.prune
+    val pruneDeclarationSection = (__ \ "declarationSection").json.prune
 
     val sectionValidations: JsResult[Unit] =
       (
