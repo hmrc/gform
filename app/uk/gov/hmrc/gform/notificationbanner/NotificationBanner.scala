@@ -34,7 +34,7 @@ object NotificationBanner {
       (jsValue \ "message") match {
         case JsDefined(JsString(message)) => JsSuccess(NotificationBanner(message))
         case JsDefined(unknown)           => JsError(s"Expected string for notification banner, got $unknown")
-        case JsUndefined()                => JsError(s"Missing field 'message' in json $jsValue")
+        case _: JsUndefined               => JsError(s"Missing field 'message' in json $jsValue")
       },
     (notificationBanner: NotificationBanner) =>
       Json.obj(

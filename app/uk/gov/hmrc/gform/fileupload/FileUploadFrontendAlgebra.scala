@@ -17,7 +17,6 @@
 package uk.gov.hmrc.gform.fileupload
 
 import akka.util.ByteString
-import scala.language.higherKinds
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
 import uk.gov.hmrc.gform.upscan.UploadDetails

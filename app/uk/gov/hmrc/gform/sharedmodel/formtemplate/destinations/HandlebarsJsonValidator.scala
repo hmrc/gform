@@ -110,6 +110,8 @@ object HandlebarsJsonValidator extends RegexParsers {
     parse(phrase(handlebarsJson), code) match {
       case NoSuccess(msg, next) => Left(s"Line ${next.pos.line}, Column ${next.pos.column}: $msg")
       case Success(_, _)        => Right(code)
+      case Error(msg, _)        => Left(msg)
+      case Failure(msg, _)      => Left(msg)
     }
 
 }

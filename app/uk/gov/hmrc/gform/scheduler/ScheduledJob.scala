@@ -14,16 +14,20 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.sharedmodel.structuredform
-import play.api.libs.json.Format
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.ADTFormat
+package uk.gov.hmrc.gform.scheduler
 
-sealed trait StructuredFormDataFieldNamePurpose
-case object RoboticsXml extends StructuredFormDataFieldNamePurpose
+import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.duration.FiniteDuration
 
-object StructuredFormDataFieldNamePurpose {
-  val roboticsXml = "RoboticsXml"
+trait ScheduledJob {
+  def name: String
+  def execute(implicit ec: ExecutionContext): Future[Result]
 
-  implicit val format: Format[StructuredFormDataFieldNamePurpose] =
-    ADTFormat.formatEnumeration(roboticsXml -> RoboticsXml)
+  case class Result(message: String)
+
+  def initialDelay: FiniteDuration
+
+  def interval: FiniteDuration
+
+  override def toString() = s"$name after $initialDelay every $interval"
 }

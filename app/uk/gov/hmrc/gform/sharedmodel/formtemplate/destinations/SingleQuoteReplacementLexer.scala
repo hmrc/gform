@@ -56,5 +56,7 @@ object SingleQuoteReplacementLexer extends RegexParsers {
     parse(tokens, code) match {
       case NoSuccess(msg, _)  => Left(msg)
       case Success(result, _) => Right(result.mkString(""))
+      case Error(msg, _)      => Left(msg)
+      case Failure(msg, _)    => Left(msg)
     }
 }

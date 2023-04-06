@@ -52,7 +52,7 @@ trait WSHttp
         HttpResponse(
           status = wsResponse.status,
           body = wsResponse.body,
-          headers = wsResponse.headers
+          headers = wsResponse.headers.map(e => (e._1, e._2.toSeq))
         )
       )
   }

@@ -24,8 +24,7 @@ import uk.gov.hmrc.gform.sharedmodel.config.ExposedConfig
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.ProfileName
 import uk.gov.hmrc.http.Authorization
 import uk.gov.hmrc.play.audit.http.config.AuditingConfig
-import uk.gov.hmrc.play.bootstrap.config.{ AuditingConfigProvider, ControllerConfigs, ServicesConfig }
-
+import uk.gov.hmrc.play.bootstrap.config.{ ControllerConfigs, ServicesConfig }
 import scala.concurrent.ExecutionContext
 import scala.util.Try
 import pureconfig.generic.auto._
@@ -55,7 +54,7 @@ class ConfigModule(
 
   val serviceConfig: ServicesConfig = new ServicesConfig(configuration)
 
-  val auditingConfig: AuditingConfig = new AuditingConfigProvider(configuration, appName).get()
+  val auditingConfig: AuditingConfig = AuditingConfig.fromConfig(configuration)
 
   val notifierConfig: NotifierConfig =
     ConfigSource.default.at("microservice.services.notifier").loadOrThrow[NotifierConfig]

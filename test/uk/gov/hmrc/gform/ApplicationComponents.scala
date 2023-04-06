@@ -24,7 +24,9 @@ import play.api._
 trait ApplicationComponents extends GuiceOneAppPerTest with BeforeAndAfterAll {
   this: TestSuite =>
 
-  override def fakeApplication = new ApplicationLoader().load(context)
+  override def fakeApplication(): Application = new ApplicationLoader {
+    override def load(context: Context): Application = ???
+  }.load(context)
 
   def context: ApplicationLoader.Context = {
     val classLoader = ApplicationLoader.getClass.getClassLoader
@@ -32,13 +34,13 @@ trait ApplicationComponents extends GuiceOneAppPerTest with BeforeAndAfterAll {
     Context.create(env)
   }
 
-  override def beforeAll() {
+  override def beforeAll(): Unit = {
     super.beforeAll()
-    Play.start(fakeApplication)
+    Play.start(fakeApplication())
   }
 
-  override def afterAll() {
+  override def afterAll(): Unit = {
     super.afterAll()
-    Play.stop(fakeApplication)
+    Play.stop(fakeApplication())
   }
 }

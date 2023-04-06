@@ -26,7 +26,7 @@ object DmsSubmissionRequestInterpreter {
   def apply(request: Request[MultipartFormData[TemporaryFile]]): Either[String, (Array[Byte], DmsMetadata)] =
     request.body.files.headOption match {
       case Some(file) if validContentType(file) =>
-        val dataParts = request.body.dataParts.mapValues(_.mkString(""))
+        val dataParts = request.body.dataParts.view.mapValues(_.mkString(""))
         Json.toJson(dataParts).validate[DmsMetadata] match {
           case JsSuccess(metadata: DmsMetadata, _) => Right((readAllBytes(file.ref.path), metadata))
           case JsError(errors)                     => Left(s"Invalid metadata in the request. errors: $errors")

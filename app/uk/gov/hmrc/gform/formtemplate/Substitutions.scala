@@ -136,7 +136,7 @@ object ExprSubstitutions extends Substitutions[ExpressionId, Expr] {
     templateRaw.value \ fieldName match {
       case JsDefined(json) =>
         fromJsValue(json)(ExpressionId.apply)(toExpression)(toExpressionFromObj).map(ExprSubstitutions.apply)
-      case JsUndefined() => Right(ExprSubstitutions.empty)
+      case _: JsUndefined => Right(ExprSubstitutions.empty)
     }
 }
 
@@ -164,6 +164,6 @@ object BooleanExprSubstitutions extends Substitutions[BooleanExprId, BooleanExpr
           )
         ).map(BooleanExprSubstitutions.apply)
 
-      case JsUndefined() => Right(BooleanExprSubstitutions.empty)
+      case _: JsUndefined => Right(BooleanExprSubstitutions.empty)
     }
 }

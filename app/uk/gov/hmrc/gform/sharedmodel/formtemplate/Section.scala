@@ -40,13 +40,13 @@ sealed trait Section extends Product with Serializable {
 
 object Section {
   final case class NonRepeatingPage(page: Page) extends Section {
-    override def title: SmartString = page.title
-    override def expandedFormComponents: List[FormComponent] = page.expandedFormComponents
+    override def title(): SmartString = page.title
+    override def expandedFormComponents(): List[FormComponent] = page.expandedFormComponents
   }
 
   final case class RepeatingPage(page: Page, repeats: Expr) extends Section {
-    override def title: SmartString = page.title
-    override def expandedFormComponents: List[FormComponent] = page.expandedFormComponents
+    override def title(): SmartString = page.title
+    override def expandedFormComponents(): List[FormComponent] = page.expandedFormComponents
   }
 
   final case class AddToList(

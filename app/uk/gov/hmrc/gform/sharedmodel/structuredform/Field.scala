@@ -18,6 +18,8 @@ package uk.gov.hmrc.gform.sharedmodel.structuredform
 import play.api.libs.json.{ Format, Json, OFormat }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.JsonUtils
 
+import scala.annotation.nowarn
+
 case class Field(
   name: FieldName,
   value: StructuredFormValue,
@@ -32,7 +34,7 @@ case class Field(
 object Field {
 
   implicit val format: OFormat[Field] = {
-
+    @nowarn
     implicit val alternativeFieldNamesFormat: Format[Map[StructuredFormDataFieldNamePurpose, FieldName]] =
       JsonUtils.formatMap(
         { case StructuredFormDataFieldNamePurpose.roboticsXml =>

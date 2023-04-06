@@ -268,7 +268,7 @@ class FormTemplateValidatorSpec
                     StandardInfo,
                     SmartString(
                       LocalisedString(Map(LangADT.En -> "{0}")),
-                      ValueParser.validateWithParser(expression, ValueParser.expr).right.toSeq.toList
+                      ValueParser.validateWithParser(expression, ValueParser.expr).toOption.toSeq.toList
                     )
                   ),
                   true

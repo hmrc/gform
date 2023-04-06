@@ -17,7 +17,7 @@
 package uk.gov.hmrc.gform.formtemplate
 
 import munit.{ FunSuite, Location }
-import play.api.libs.json.{ JsDefined, JsString, JsSuccess, JsValue, Json }
+import play.api.libs.json.{ JsDefined, JsError, JsString, JsSuccess, JsValue, Json }
 
 class FormTemplatesControllerRequestHandlerSuite extends FunSuite {
   test(
@@ -66,10 +66,12 @@ class FormTemplatesControllerRequestHandlerSuite extends FunSuite {
          |}""".stripMargin
     )
 
-    val JsSuccess(normalised, _) = FormTemplatesControllerRequestHandler.normaliseJSON(json)
-
-    assertFieldValue("_id", "upper-case-template-id", normalised)
-    assertFieldValue("originalId", "Upper-CASE-Template-Id", normalised)
+    FormTemplatesControllerRequestHandler.normaliseJSON(json) match {
+      case JsSuccess(normalised, _) =>
+        assertFieldValue("_id", "upper-case-template-id", normalised)
+        assertFieldValue("originalId", "Upper-CASE-Template-Id", normalised)
+      case JsError(error) => fail("Unable to normalise json: " + error)
+    }
 
   }
 
@@ -162,7 +164,6 @@ class FormTemplatesControllerRequestHandlerSuite extends FunSuite {
     val expected =
       """|[
          |  {
-         |    "title": "Page",
          |    "fields": [
          |      {
          |        "id": "choice",
@@ -239,14 +240,18 @@ class FormTemplatesControllerRequestHandlerSuite extends FunSuite {
          |          []
          |        ]
          |      }
-         |    ]
+         |    ],
+         |   "title": "Page"
          |  }
          |]""".stripMargin
 
-    val JsSuccess(normalised, _) = FormTemplatesControllerRequestHandler.normaliseJSON(json)
-    normalised \ "formKind" \ "sections" match {
-      case JsDefined(sections) => assertEquals(Json.prettyPrint(sections), Json.prettyPrint(Json.parse(expected)))
-      case otherwise           => fail(s"No sections field present in: $normalised")
+    FormTemplatesControllerRequestHandler.normaliseJSON(json) match {
+      case JsSuccess(normalised, _) =>
+        normalised \ "formKind" \ "sections" match {
+          case JsDefined(sections) => assertEquals(Json.prettyPrint(sections), Json.prettyPrint(Json.parse(expected)))
+          case otherwise           => fail(s"No sections field present in: $normalised")
+        }
+      case JsError(error) => fail("Unable to normalise json: " + error)
     }
 
   }
@@ -327,20 +332,19 @@ class FormTemplatesControllerRequestHandlerSuite extends FunSuite {
       """
         | [
         | {
-        |    "title": "Page A",
         |    "fields": [
         |      {
         |        "id": "fieldA",
         |        "label": "Field A",
         |        "format": "text"
         |      }
-        |    ]
+        |    ],
+        |    "title": "Page A"
         |  },
         |  {
         |    "summaryName": "Add To List",
         |    "pages": [
         |      {
-        |        "title": "Page $n",
         |        "shortName": "asdfa",
         |        "fields": [
         |          {
@@ -349,14 +353,14 @@ class FormTemplatesControllerRequestHandlerSuite extends FunSuite {
         |            "label": "Field A",
         |            "format": "sterling"
         |          }
-        |        ]
+        |        ],
+        |        "title": "Page $n"
         |      }
         |    ],
         |    "description": "${fieldA}",
+        |    "shortName": "Add To List",
         |    "type": "addToList",
         |    "title": "Add To List",
-        |    "shortName": "Add To List",
-        |    "summaryDescription": "${fieldA}",
         |    "addAnotherQuestion": {
         |      "format": "label1",
         |      "id": "client",
@@ -376,15 +380,20 @@ class FormTemplatesControllerRequestHandlerSuite extends FunSuite {
         |          }
         |        }
         |      ]
-        |    }
+        |    },
+        |    "summaryDescription": "${fieldA}"
         |  }
         |]""".stripMargin
 
-    val JsSuccess(normalised, _) = FormTemplatesControllerRequestHandler.normaliseJSON(json)
-    normalised \ "formKind" \ "sections" match {
-      case JsDefined(addAnotherQuestion) =>
-        assertEquals(Json.prettyPrint(addAnotherQuestion), Json.prettyPrint(Json.parse(expected)))
-      case otherwise => fail(s"No sections field present in: $normalised")
+    FormTemplatesControllerRequestHandler.normaliseJSON(json) match {
+      case JsSuccess(normalised, _) =>
+        normalised \ "formKind" \ "sections" match {
+          case JsDefined(addAnotherQuestion) =>
+            assertEquals(Json.prettyPrint(addAnotherQuestion), Json.prettyPrint(Json.parse(expected)))
+          case otherwise => fail(s"No sections field present in: $normalised")
+        }
+
+      case JsError(error) => fail("Unable to normalise json: " + error)
     }
 
   }

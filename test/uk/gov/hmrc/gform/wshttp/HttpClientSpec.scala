@@ -15,12 +15,12 @@
  */
 
 package uk.gov.hmrc.gform.wshttp
+
 import cats.Applicative
 import org.scalacheck.Gen
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.PrimitiveGen
-import uk.gov.hmrc.http._
-import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
+import uk.gov.hmrc.http.{ AkamaiReputation, Authorization, ForwardedFor, HeaderCarrier, HttpResponse, RequestChain, RequestId, SessionId }
 
 trait HttpClientSpec extends Spec {
   case class Underlying[F[_]](httpClient: HttpClient[F])(implicit A: Applicative[F]) {

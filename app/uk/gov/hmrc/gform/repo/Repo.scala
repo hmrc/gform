@@ -52,7 +52,7 @@ class Repo[T: OWrites: Manifest](
       .find[Document](equal("_id", id))
       .first()
       .toFutureOption()
-      .map(_.map(json => Json.parse(json.toJson)))
+      .map(_.map(json => Json.parse(json.toJson())))
 
   def getDocumentAsJson(id: String): Future[JsValue] =
     findDocumentAsJson(id).map(_.getOrElse(throw new NoSuchElementException(s"$name for given id: '$id' not found")))
@@ -160,7 +160,7 @@ class Repo[T: OWrites: Manifest](
   def delete(id: String): FOpt[DeleteResult] = EitherT {
     underlying.collection
       .deleteOne(Filters.equal("_id", id))
-      .toFuture
+      .toFuture()
       .map(wr => DeleteResult(id, wr.getDeletedCount() === 1).asRight)
       .recover { case lastError =>
         UnexpectedState(lastError.getMessage).asLeft
@@ -170,7 +170,7 @@ class Repo[T: OWrites: Manifest](
   def deleteByFieldName(fieldName: String, id: String): FOpt[DeleteResult] = EitherT {
     underlying.collection
       .deleteMany(Filters.equal(fieldName, id))
-      .toFuture
+      .toFuture()
       .map(wr => DeleteResult(id, wr.getDeletedCount() > 0).asRight)
       .recover { case lastError =>
         UnexpectedState(lastError.getMessage).asLeft

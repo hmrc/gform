@@ -21,7 +21,7 @@ import cats.instances.string._
 import cats.syntax.show._
 
 case class Tree[T](value: T, children: List[Tree[T]]) {
-  def find(p: T => Boolean): Option[T] = toList.find(p)
+  def find(p: T => Boolean): Option[T] = toList().find(p)
 
   def map[U](f: T => U): Tree[U] = Tree(f(value), children.map(_.map(f)))
 

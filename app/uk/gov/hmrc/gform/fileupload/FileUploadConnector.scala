@@ -109,7 +109,7 @@ class FileUploadConnector(
     val url = s"$baseUrl/file-upload/envelopes/${envelopeId.value}/files/${fileId.value}/content"
     wSHttp
       .buildRequest(url, Seq.empty[(String, String)])
-      .get
+      .get()
       .flatMap { response =>
         if (response.status < 200 || response.status > 299)
           Future.failed(new Exception(s"Got status code ${response.status} when trying to get $url"))

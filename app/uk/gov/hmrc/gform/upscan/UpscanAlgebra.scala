@@ -17,7 +17,6 @@
 package uk.gov.hmrc.gform.upscan
 
 import akka.util.ByteString
-import scala.language.higherKinds
 
 trait UpscanAlgebra[F[_]] {
 

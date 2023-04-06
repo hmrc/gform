@@ -31,6 +31,7 @@ class HandlebarsHttpApiModule(wSHttpModule: WSHttpModule, configModule: ConfigMo
   private val httpClientMap: Map[ProfileName, HttpClient[FOpt]] =
     configModule
       .DestinationsServicesConfig()
+      .view
       .mapValues { profileConfiguration =>
         rootHttpClient
           .buildUri(uri => appendUriSegment(profileConfiguration.baseUrl, uri))
@@ -41,6 +42,7 @@ class HandlebarsHttpApiModule(wSHttpModule: WSHttpModule, configModule: ConfigMo
             )
           }
       }
+      .toMap
 
   private def appendUriSegment(base: String, toAppend: String) =
     if (toAppend.isEmpty) base

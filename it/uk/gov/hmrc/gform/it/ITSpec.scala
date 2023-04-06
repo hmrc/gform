@@ -15,11 +15,11 @@ import play.api.ApplicationLoader.Context
 import play.api.libs.json.{ Json, Reads }
 import play.api.libs.ws.ahc.StandaloneAhcWSClient
 import play.api.{ Application, Environment }
-import uk.gov.hmrc.crypto.{ Crypted, CryptoWithKeysFromConfig }
+import uk.gov.hmrc.crypto.{ Crypted, Decrypter, Encrypter, SymmetricCryptoFactory }
 import uk.gov.hmrc.gform.ApplicationLoader
 
 import scala.util.Random
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 trait ITSpec
     extends MongoDBSupport with HTTPSupport with AnyFlatSpecLike with GivenWhenThen with Matchers
@@ -63,12 +63,15 @@ trait ITSpec
     ()
   }
 
-  def decryptAs[T: Reads](value: String) =
+  def decryptAs[T: Reads](value: String): T =
     Json.parse(jsonCrypto.decrypt(Crypted(value)).value).as[T]
 
   implicit lazy val baseUrl: String = s"http://localhost:$port/gform"
   implicit val wsClient: StandaloneAhcWSClient = StandaloneAhcWSClient()
 
-  val jsonCrypto =
-    new CryptoWithKeysFromConfig(baseConfigKey = "json.encryption", ConfigFactory.parseMap(settingsOverride.asJava))
+  val jsonCrypto: Encrypter with Decrypter =
+    SymmetricCryptoFactory.aesCryptoFromConfig(
+      baseConfigKey = "json.encryption",
+      ConfigFactory.parseMap(settingsOverride.asJava)
+    )
 }

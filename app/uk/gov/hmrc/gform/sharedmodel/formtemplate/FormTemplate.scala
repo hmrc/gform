@@ -64,7 +64,7 @@ case class FormTemplate(
     }
 
   def expandedFormComponentsInMainSections: List[FormComponent] =
-    formKind.allSections.flatMap(_.expandedFormComponents)
+    formKind.allSections.flatMap(_.expandedFormComponents())
 
   val isObjectStore: Boolean = objectStore.getOrElse(false)
 }

@@ -41,7 +41,7 @@ object EmailVerification {
       (json \ "codeField") match {
         case JsDefined(JsString(field)) => JsSuccess(verifiedBy(FormComponentId(field), emailVerifierService))
         case JsDefined(unknown)         => JsError(s"Expected string for field 'codeField', got $unknown")
-        case JsUndefined()              => JsError(s"Missing field 'codeField' in json $json")
+        case _: JsUndefined             => JsError(s"Missing field 'codeField' in json $json")
       }
     }
   }

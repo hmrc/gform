@@ -58,7 +58,7 @@ object PdfAndXmlSummariesFactory {
       l: LangADT
     )(implicit now: Instant): Future[PdfAndXmlSummaries] =
       for {
-        pdf <- pdfGeneratorService.generatePDFBytesLocal(pdfData.html.replaceAllLiterally("<br>", "<br/>"))
+        pdf <- pdfGeneratorService.generatePDFBytesLocal(pdfData.html.replace("<br>", "<br/>"))
         instructionPdf <- instructionPdfData.fold(Future.successful(Option.empty[Array[Byte]]))(iPdfData =>
                             pdfGeneratorService.generatePDFBytesLocal(iPdfData.html).map(Option(_))
                           )

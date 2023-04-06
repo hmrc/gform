@@ -23,7 +23,7 @@ case class BooleanExprCache(mapping: Map[DataSource, Map[String, Boolean]]) exte
 
 object BooleanExprCache {
   implicit val b: Format[Map[DataSource, Map[String, Boolean]]] =
-    JsonUtils.formatMapO[DataSource, Map[String, Boolean]](DataSource.fromString, _.convertToString)
+    JsonUtils.formatMapO[DataSource, Map[String, Boolean]](DataSource.fromString, _.convertToString())
 
   implicit val format: Format[BooleanExprCache] = Json.format
   val empty = BooleanExprCache(Map.empty)

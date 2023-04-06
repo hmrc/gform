@@ -31,7 +31,7 @@ object DmsSubmissionWithAttachmentsRequestInterpreter {
 
     val maybeHtml: Option[Seq[String]] = request.body.dataParts.get("html")
     val maybeMetadata: Option[DmsMetadata] = Json
-      .toJson(request.body.dataParts.filterKeys(_ != "html").mapValues(_.mkString("")).map {
+      .toJson(request.body.dataParts.view.filterKeys(_ != "html").mapValues(_.mkString("")).map {
         case ("backscan", IsTrueish())  => "backscan" -> JsBoolean(true)
         case ("backscan", IsFalseish()) => "backscan" -> JsBoolean(false)
         case (key, value)               => key        -> JsString(value)

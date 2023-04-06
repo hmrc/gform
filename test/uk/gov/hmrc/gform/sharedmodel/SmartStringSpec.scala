@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.gform.sharedmodel
 
-import org.scalacheck.Gen
 import scala.language.implicitConversions
 import uk.gov.hmrc.gform._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._

@@ -58,7 +58,7 @@ class ObjectStoreServiceSpec extends AnyFlatSpec with Matchers with ScalaFutures
 
   "getFileBytes" should "get file as byte stream" in {
 
-    fixture
+    fixture()
       .expectGetFileBytes(envelopeId, fileName)
       .service
       .getFileBytes(envelopeId, fileName)
@@ -67,7 +67,7 @@ class ObjectStoreServiceSpec extends AnyFlatSpec with Matchers with ScalaFutures
 
   "uploadFile" should "get file information , upload file and amend file information" in {
 
-    fixture
+    fixture()
       .expectGet(envelopeId)
       .expectUploadFile(envelopeId, fileName, byteString, Some(ContentType.`application/pdf`.value))
       .expectSave(expectedSavedEnvelopeData)
@@ -78,7 +78,7 @@ class ObjectStoreServiceSpec extends AnyFlatSpec with Matchers with ScalaFutures
 
   "deleteFile" should "get file information, delete and store the file info" in {
 
-    fixture
+    fixture()
       .expectGetForDelete(envelopeId)
       .expectDeleteFile(envelopeId, fileName)
       .expectSave(expectedEnvelopeData)

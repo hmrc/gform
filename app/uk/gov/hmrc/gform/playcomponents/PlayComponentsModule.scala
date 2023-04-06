@@ -20,7 +20,6 @@ import org.slf4j.LoggerFactory
 import play.api.http.HttpErrorHandler
 import play.api.mvc.EssentialFilter
 import play.api.routing.Router
-
 import scala.concurrent.ExecutionContext
 import uk.gov.hmrc.gform.akka.AkkaModule
 import uk.gov.hmrc.gform.auditing.AuditingModule
@@ -44,7 +43,8 @@ import uk.gov.hmrc.gform.testonly.TestOnlyModule
 import uk.gov.hmrc.gform.translation.TranslationModule
 import uk.gov.hmrc.gform.validation.ValidationModule
 import uk.gov.hmrc.gform.upscan.UpscanModule
-import uk.gov.hmrc.play.bootstrap.filters.{ CacheControlConfig, CacheControlFilter, DefaultLoggingFilter, MDCFilter }
+import uk.gov.hmrc.play.bootstrap.backend.filters.BackendMdcFilter
+import uk.gov.hmrc.play.bootstrap.filters.{ CacheControlConfig, CacheControlFilter, DefaultLoggingFilter }
 import uk.gov.hmrc.play.health.HealthController
 
 class PlayComponentsModule(
@@ -145,7 +145,11 @@ class PlayComponentsModule(
     auditingModule.microserviceAuditFilter,
     loggingFilter,
     cacheControlFilter,
-    new MDCFilter(akkaModule.materializer, configModule.configuration, configModule.appConfig.appName)
+    new BackendMdcFilter(
+      akkaModule.materializer,
+      configModule.configuration,
+      ec
+    )
   )
 
   lazy val httpRequestHandler =

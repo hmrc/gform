@@ -20,7 +20,6 @@ import play.api.libs.json._
 import cats.syntax.either._
 import cats.syntax.option._
 import julienrf.json.derived
-import play.api.libs.json._
 import uk.gov.hmrc.gform.sharedmodel.EmailVerifierService
 import uk.gov.hmrc.gform.sharedmodel.email.LocalisedEmailTemplateId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
@@ -42,13 +41,13 @@ sealed trait DestinationIncludeIf extends Product with Serializable
 object DestinationIncludeIf {
   case class HandlebarValue(value: String) extends DestinationIncludeIf
   case class IncludeIfValue(value: IncludeIf) extends DestinationIncludeIf
-
   private val templateReads: Reads[DestinationIncludeIf] = Reads { json =>
     json match {
       case JsString(exprAsStr) =>
         BooleanExprParser.validate(exprAsStr) fold (_ => JsSuccess(HandlebarValue(exprAsStr)), expr =>
           JsSuccess(IncludeIfValue(IncludeIf(expr))))
-      case JsUndefined() => JsSuccess(HandlebarValue(true.toString))
+      case JsNull => JsSuccess(HandlebarValue(true.toString))
+      case _      => JsError("Dsdsssss")
     }
   }
 
@@ -158,7 +157,7 @@ object Destination {
 
   implicit val leafExprs: LeafExpr[Destination] = (path: TemplatePath, t: Destination) =>
     t match {
-      case d: DestinationWithCustomerId => List(ExprWithPath(path + "customerId", d.customerId))
+      case d: DestinationWithCustomerId => List(ExprWithPath(path + "customerId", d.customerId()))
       case _                            => Nil
     }
 }

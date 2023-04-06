@@ -35,6 +35,7 @@ import shapeless.syntax.typeable._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.PageLink
 
 import scala.Function.const
+import scala.annotation.nowarn
 import scala.util.{ Failure, Success, Try }
 
 object FormTemplateValidator {
@@ -834,6 +835,7 @@ object FormTemplateValidator {
     Monoid[ValidationResult].combineAll(results)
   }
 
+  @nowarn
   def validate(componentType: ComponentType, formTemplate: FormTemplate): ValidationResult = componentType match {
     case HasExpr(SingleExpr(expr))            => validate(expr, formTemplate.formKind.allSections)
     case HasExpr(MultipleExpr(fields))        => Valid
@@ -1020,9 +1022,9 @@ object FormTemplateValidator {
           validateYearMonthAndDay(leapYear, month, day)
         case _ => ""
       }
-      .filterNot(_ == "") match {
-      case messages if messages.isEmpty  => Valid
-      case messages if messages.nonEmpty => Invalid(messages.mkString(". "))
+      .filterNot(_ === "") match {
+      case Nil      => Valid
+      case messages => Invalid(messages.mkString(". "))
     }
 
   private def validateYearMonthAndDay(year: Int, month: Int, day: Int): String =

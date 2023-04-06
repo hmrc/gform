@@ -35,7 +35,7 @@ object AllowedFileTypes extends JsonUtils {
   private val templateReads: Reads[AllowedFileTypes] = Reads {
     case JsArray(types) =>
       val (uncheckedFileExtensionsJson, invalid): (IndexedSeq[JsValue], IndexedSeq[JsValue]) =
-        types.partition {
+        types.toIndexedSeq.partition {
           case JsString(_) => true
           case _           => false
         }

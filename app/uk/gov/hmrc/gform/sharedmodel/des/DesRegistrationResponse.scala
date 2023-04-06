@@ -136,15 +136,17 @@ object DesRegistrationResponse {
   private val basic: OFormat[DesRegistrationResponse] = Json.format[DesRegistrationResponse]
 
   private def pickBranchAndPrune(symbol: Symbol) =
-    __.json.update((__ \ 'orgOrInd).json.copyFrom((__ \ symbol).json.pickBranch)) andThen (__ \ symbol).json.prune
+    __.json.update(
+      (__ \ "orgOrInd").json.copyFrom((__ \ symbol).json.pickBranch)
+    ) andThen (__ \ symbol).json.prune
 
   private def readDesRegistrationResponse(json: JsValue, symbol: Symbol): JsResult[DesRegistrationResponse] =
     json.transform(pickBranchAndPrune(symbol)).flatMap(basic.reads)
 
   private val desReads: Reads[DesRegistrationResponse] = Reads(json =>
     ((json \ "individual"), (json \ "organisation")) match {
-      case (JsDefined(_), JsUndefined()) => readDesRegistrationResponse(json, 'individual)
-      case (JsUndefined(), JsDefined(_)) => readDesRegistrationResponse(json, 'organisation)
+      case (JsDefined(_), JsUndefined()) => readDesRegistrationResponse(json, Symbol("individual"))
+      case (JsUndefined(), JsDefined(_)) => readDesRegistrationResponse(json, Symbol("organisation"))
       case _                             => JsError("[DesRegistrationResponse] Not Supported json: " + json)
     }
   )

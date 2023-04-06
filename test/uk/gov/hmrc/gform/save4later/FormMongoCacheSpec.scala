@@ -25,7 +25,7 @@ import org.scalatest.flatspec.AnyFlatSpecLike
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.time.{ Millis, Seconds, Span }
 import org.scalatest.{ BeforeAndAfterAll, BeforeAndAfterEach }
-import uk.gov.hmrc.crypto.CryptoWithKeysFromConfig
+import uk.gov.hmrc.crypto.SymmetricCryptoFactory
 import uk.gov.hmrc.gform.MongoComponentSupport
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.FormGen
 import uk.gov.hmrc.gform.time.TimeProvider
@@ -66,7 +66,7 @@ class FormMongoCacheSpec
       new CurrentTimestampSupport(),
       SimpleCacheId
     ),
-    new CryptoWithKeysFromConfig(
+    SymmetricCryptoFactory.aesCryptoFromConfig(
       baseConfigKey = "json.encryption",
       parseString("""
                     | json.encryption.key = "fqpLDZ4sumDsekHkeEBlCA=="

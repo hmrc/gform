@@ -52,7 +52,7 @@ object ServiceCallResponse {
             case _                                  => JsError("Not Supported json: " + Json.prettyPrint(json))
           }
 
-        case JsUndefined() => JsError("Not Supported json: " + Json.prettyPrint(json))
+        case _: JsUndefined => JsError("Not Supported json: " + Json.prettyPrint(json))
       }
   }
 }

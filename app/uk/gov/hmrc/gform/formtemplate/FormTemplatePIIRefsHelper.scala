@@ -92,7 +92,7 @@ object FormTemplatePIIRefsHelper {
 
   private def escapeRegexChars(input: String): String = input.flatMap { c =>
     if (REGEX_SPECIAL_CHARS.contains(c)) List('\\', c) else List(c)
-  }
+  }.mkString
 
   private def getPageTitle(page: JsValue): Option[String] = {
     val title = getTitle(page)

@@ -18,7 +18,6 @@ package uk.gov.hmrc.gform.scheduler
 
 import akka.actor.{ ActorSystem, Cancellable }
 import org.slf4j.{ Logger, LoggerFactory }
-import uk.gov.hmrc.play.scheduling.ExclusiveScheduledJob
 
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.util.{ Failure, Success }

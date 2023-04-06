@@ -46,6 +46,8 @@ object MagicCommasParser extends RegexParsers {
     parse(tokensParser, input) match {
       case Success(result, _) => result
       case NoSuccess(msg, _)  => throw new Exception(s"Unexpected parse failure: $msg")
+      case Error(msg, _)      => throw new Exception(s"Unexpected parse failure: $msg")
+      case Failure(msg, _)    => throw new Exception(s"Unexpected parse failure: $msg")
     }
 
 }

@@ -95,7 +95,7 @@ object ExprSubstituter extends Substituter[ExprSubstitutions, FormTemplate] {
           }
         case d @ DateValueExpr(_) => d
         case DateExprWithOffset(dExpr, offset) =>
-          dExpr(substitutions) match {
+          aux(dExpr) match {
             case DateExprWithOffset(expr, innerOffset) => DateExprWithOffset(expr, innerOffset + offset)
             case other                                 => DateExprWithOffset(other, offset)
           }

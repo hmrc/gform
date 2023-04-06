@@ -28,6 +28,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.SelectionCriteriaValue.{ Selec
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.UserField.Enrolment
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
+import scala.annotation.nowarn
 import scala.util.matching.Regex
 
 trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
@@ -90,6 +91,7 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
     ap ^^ { a => OffsetYMD(a) }
   }
 
+  @nowarn
   private val perms2: Iterator[Parser[OffsetYMD]] =
     offsets.combinations(2).flatMap(_.permutations).map { case List(ap, bp) =>
       ap ~ bp ^^ { case a ~ b =>
@@ -97,6 +99,7 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
       }
     }
 
+  @nowarn
   private val perms3: Iterator[Parser[OffsetYMD]] = offsets.permutations.map { case List(ap, bp, cp) =>
     ap ~ bp ~ cp ^^ { case a ~ b ~ c =>
       OffsetYMD(a, b, c)

@@ -33,7 +33,7 @@ case class SubmissionRef(value: String) extends AnyVal {
 object SubmissionRef {
   val radix = 36
   val digits = 11
-  val comb: Stream[Int] = Stream.continually(List(1, 3)).flatten
+  val comb: LazyList[Int] = LazyList.continually(List(1, 3)).flatten
 
   implicit val oformat: OFormat[SubmissionRef] = ValueClassFormat.oformat("submissionRef", SubmissionRef.apply, _.value)
   val vformat: Format[SubmissionRef] =
@@ -54,14 +54,14 @@ object SubmissionRef {
       unformattedString.grouped(4).mkString("-").toUpperCase
     } else { "" }
 
-  def calculate(value: BigInteger, radix: Int, digits: Int, comb: Stream[Int]): String = {
+  def calculate(value: BigInteger, radix: Int, digits: Int, comb: LazyList[Int]): String = {
     val modulus: BigInteger = BigInteger.valueOf(pow(radix.toDouble, digits.toDouble).toLong)
     val derivedDigits = (value.mod(modulus) add modulus).toString(radix).takeRight(digits)
     val checkCharacter = BigInteger.valueOf(calculateCheckCharacter(derivedDigits, radix, comb).toLong).toString(radix)
     checkCharacter + derivedDigits
   }
 
-  private def calculateCheckCharacter(digits: String, radix: Int, comb: Stream[Int]): Int = {
+  private def calculateCheckCharacter(digits: String, radix: Int, comb: LazyList[Int]): Int = {
     val stringToInts = digits.toCharArray.map(i => Integer.parseInt(i.toString, radix))
     stringToInts.zip(comb).map(i => i._1 * i._2).sum % radix
   }
@@ -72,6 +72,6 @@ object SubmissionRef {
       case _       => false
     }
 
-  private def verify(reference: String, radix: Int, comb: Stream[Int]): Boolean =
+  private def verify(reference: String, radix: Int, comb: LazyList[Int]): Boolean =
     calculateCheckCharacter(reference.tail, radix, comb) == Integer.parseInt(reference.head.toString, radix)
 }

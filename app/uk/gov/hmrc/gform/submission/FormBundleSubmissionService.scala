@@ -74,11 +74,13 @@ class FormBundleSubmissionService[F[_]](
 
   private def workOutValidFormIds(tree: Tree[BundledFormTreeNode])(implicit hc: HeaderCarrier): F[Set[FormIdData]] =
     for {
-      formStatuses <- tree.toList.traverse(node =>
-                        formAlgebra.get(node.formIdData).map { form =>
-                          (node.formIdData, isInAnAppropriateState(form.status))
-                        }
-                      )
+      formStatuses <- tree
+                        .toList()
+                        .traverse(node =>
+                          formAlgebra.get(node.formIdData).map { form =>
+                            (node.formIdData, isInAnAppropriateState(form.status))
+                          }
+                        )
     } yield formStatuses.collect { case (id, true) => id }.toSet
 
   private def isInAnAppropriateState(status: FormStatus): Boolean =
@@ -116,9 +118,13 @@ class FormBundleSubmissionService[F[_]](
     modelTree: HandlebarsModelTree
   )(implicit hc: HeaderCarrier): F[Unit] = {
     def doTransitions =
-      modelTree.toList.tail.traverse { node =>
-        forceUpdateFormStatus(node.formId, Submitted)
-      }.void
+      modelTree
+        .toList()
+        .tail
+        .traverse { node =>
+          forceUpdateFormStatus(node.formId, Submitted)
+        }
+        .void
 
     formAlgebra
       .get(modelTree.value.formId)

@@ -56,7 +56,7 @@ class FormComponentMaker(json: JsValue) {
         case JsSuccess(emailVerification, _) => Right(emailVerification)
         case JsError(error)                  => Left(UnexpectedState(JsError.toJson(error).toString()))
       }
-    case JsUndefined() => Right(EmailVerification.noVerification)
+    case _: JsUndefined => Right(EmailVerification.noVerification)
   }
 
   lazy val optCompression: Opt[Boolean] = (json \ "compression") match {
@@ -69,7 +69,7 @@ class FormComponentMaker(json: JsValue) {
     case JsDefined(JsString("fileUpload")) => Right(FileUploadProvider.FileUploadFrontend)
     case JsDefined(unknown) =>
       Left(UnexpectedState(s"Unsupported file upload service '$unknown'. Only 'upscan' or 'fileUpload' are supported"))
-    case JsUndefined() => Right(FileUploadProvider.FileUploadFrontend)
+    case _: JsUndefined => Right(FileUploadProvider.FileUploadFrontend)
   }
 
   lazy val optMaybeFormatExpr
@@ -134,6 +134,7 @@ class FormComponentMaker(json: JsValue) {
   lazy val intervalMins: Option[Int] = (json \ "intervalMins").asOpt[Int]
   lazy val optInstruction: Opt[Option[Instruction]] =
     toOpt((json \ "instruction").validateOpt[Instruction], "/instruction")
+
   lazy val optSelectionCriteria: Opt[Option[List[SelectionCriteria]]] =
     json \ "selectionCriteria" match {
       case JsDefined(JsArray(selectionCriterias)) =>
@@ -154,7 +155,9 @@ class FormComponentMaker(json: JsValue) {
           case Left(e)  => Left(UnexpectedState(e.map(_.error).mkString(" ")))
         }
 
-      case JsUndefined() => Right(None)
+      case JsDefined(notAnArray) => Left(UnexpectedState(s"'selectionCriteria' needs to be an array, got: $notAnArray"))
+
+      case _: JsUndefined => Right(None)
     }
 
   lazy val dividerPositon: Option[DividerPosition] =
@@ -474,8 +477,8 @@ class FormComponentMaker(json: JsValue) {
     for {
       emailVerification <- optEmailVerification
       selectionCriteria <- optSelectionCriteria
-      fieldValues       <- fieldValuesOpt.right
-      format            <- optMaybeFormatExpr(roundingMode)(selectionCriteria)(emailVerification).right
+      fieldValues       <- fieldValuesOpt
+      format            <- optMaybeFormatExpr(roundingMode)(selectionCriteria)(emailVerification)
       repMax            <- optMaybeRepeatsMax
       repMin            <- optMaybeRepeatsMin
       group             <- validateRepeatsAndBuildGroup(repMax, repMin, fieldValues)
@@ -534,7 +537,7 @@ class FormComponentMaker(json: JsValue) {
                                        |""".stripMargin
                                  ).asLeft
                              }
-      result <- oChoice.right
+      result <- oChoice
     } yield result
   }
 
@@ -795,8 +798,8 @@ class FormComponentMaker(json: JsValue) {
     val optMaybeString: Opt[Option[T]] = toOpt((json \ path).validateOpt[T], path)
     import cats.implicits._
     for {
-      maybeString <- optMaybeString.right
-      res         <- maybeString.traverse[Opt, R](validate).right
+      maybeString <- optMaybeString
+      res         <- maybeString.traverse[Opt, R](validate)
 
     } yield res
   }

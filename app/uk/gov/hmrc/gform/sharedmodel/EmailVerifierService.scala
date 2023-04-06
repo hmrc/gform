@@ -56,7 +56,7 @@ object EmailVerifierService {
       case (JsDefined(_), JsUndefined()) => JsError(s"Missing field 'emailTemplateId' in json: $json")
       case (JsDefined(unknown), _) =>
         JsError(s"Unsupported email service '$unknown'. Only 'notify' or 'digitalContact' are supported")
-      case (JsUndefined(), _) => JsError(s"Missing email service. Specify one of 'notify' or 'digitalContact'")
+      case (_: JsUndefined, _) => JsError(s"Missing email service. Specify one of 'notify' or 'digitalContact'")
     }
   }
 

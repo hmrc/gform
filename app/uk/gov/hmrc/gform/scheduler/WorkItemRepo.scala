@@ -47,5 +47,5 @@ abstract class WorkItemRepo[N](
   private def permanentlyFailed(e: WorkItem[N]): Future[Boolean] = complete(e.id, PermanentlyFailed)
 
   def pullOutstanding(retryIntervalMillis: Long): Future[Option[WorkItem[N]]] =
-    super.pullOutstanding(now.minusMillis(retryIntervalMillis), now)
+    super.pullOutstanding(now().minusMillis(retryIntervalMillis), now())
 }

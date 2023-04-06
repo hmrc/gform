@@ -31,7 +31,6 @@ import play.api.libs.json._
 import play.api.mvc._
 
 import scala.concurrent.{ ExecutionContext, Future }
-import uk.gov.hmrc.BuildInfo
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.des.DesAlgebra
 import uk.gov.hmrc.gform.form.FormAlgebra
@@ -45,6 +44,7 @@ import uk.gov.hmrc.gform.sharedmodel.form.FormId
 import uk.gov.hmrc.gform.submission.destinations.DestinationsProcessorModelAlgebra
 import uk.gov.hmrc.gform.submission.{ DmsMetaData, Submission, SubmissionId }
 import uk.gov.hmrc.gform.submission.handlebars.{ FocussedHandlebarsModelTree, HandlebarsModelTree, RealHandlebarsTemplateProcessor }
+import uk.gov.hmrc.http.BuildInfo
 import uk.gov.hmrc.mongo.MongoComponent
 
 class TestOnlyController(
@@ -237,7 +237,7 @@ class TestOnlyController(
   }
 
   def buildInfo() = Action { r =>
-    Results.Ok(Json.toJson(BuildInfo.toMap.mapValues(_.toString)))
+    Results.Ok(Json.toJson(BuildInfo.toMap.view.mapValues(_.toString)))
 
   }
 

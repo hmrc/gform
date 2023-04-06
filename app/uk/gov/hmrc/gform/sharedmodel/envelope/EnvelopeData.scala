@@ -24,6 +24,8 @@ import uk.gov.hmrc.gform.core.UniqueIdGenerator
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 
+import scala.annotation.nowarn
+
 case class EnvelopeData(
   _id: EnvelopeId,
   files: List[EnvelopeFile]
@@ -103,6 +105,7 @@ object FileStatus {
 
   def unapply(status: FileStatus): String = status.value
 
+  @nowarn
   val reads: Reads[FileStatus] = for {
     value <- JsPath.read[String].map {
                case Quarantined.value => Quarantined

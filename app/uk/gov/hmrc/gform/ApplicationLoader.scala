@@ -27,7 +27,7 @@ import play.api.inject.{ Injector, SimpleInjector }
 import play.api.mvc.EssentialFilter
 import play.api.routing.Router
 import play.api.libs.ws.ahc.AhcWSComponents
-import uk.gov.hmrc.crypto.CryptoWithKeysFromConfig
+import uk.gov.hmrc.crypto.SymmetricCryptoFactory
 import uk.gov.hmrc.gform.akka.AkkaModule
 import uk.gov.hmrc.gform.auditing.AuditingModule
 import uk.gov.hmrc.gform.config.ConfigModule
@@ -127,9 +127,13 @@ class ApplicationModule(context: Context)
 
   val formMetadaModule = new FormMetadataModule(mongoModule)
 
-  val queryParameterCrypto =
-    new CryptoWithKeysFromConfig(baseConfigKey = "upscan.callback.encryption", configModule.typesafeConfig)
-  val jsonCrypto = new CryptoWithKeysFromConfig(baseConfigKey = "json.encryption", configModule.typesafeConfig)
+  val queryParameterCrypto = SymmetricCryptoFactory.aesCryptoFromConfig(
+    baseConfigKey = "upscan.callback.encryption",
+    configModule.typesafeConfig
+  )
+
+  val jsonCrypto =
+    SymmetricCryptoFactory.aesCryptoFromConfig(baseConfigKey = "json.encryption", configModule.typesafeConfig)
 
   val formMongoCache = new FormMongoCache(
     new MongoCacheRepository[String](

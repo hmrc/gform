@@ -220,7 +220,7 @@ class BooleanExprParserSpec extends AnyFlatSpec with Matchers with EitherValues 
 
   it should "fail to parse anything but an equals operator" in {
     val res = BooleanExprParser.validate("${abc|=form.amountA}")
-    res should be('left)
+    res should be(Symbol("left"))
     res.left.value shouldBe UnexpectedState("""Unable to parse expression ${abc|=form.amountA}.
                                               |Errors:
                                               |'}' expected but '|' found""".stripMargin)
@@ -230,7 +230,7 @@ class BooleanExprParserSpec extends AnyFlatSpec with Matchers with EitherValues 
   it should "fail to parse eeitt.businessUserx = XYZ}" in {
     val res = BooleanExprParser.validate("${eeitt.businessUserx=XYZ}")
 
-    res should be('left)
+    res should be(Symbol("left"))
 
     res.left.value match {
       case UnexpectedState(msg) =>
@@ -356,14 +356,14 @@ class BooleanExprParserSpec extends AnyFlatSpec with Matchers with EitherValues 
 
   it should "parse expression ${overseasAddress.country != 'United Kingdom'} from template-NETP" in {
     val res = BooleanExprParser.validate("${overseasAddress.country != 'United Kingdom'}")
-    res.right.value shouldBe Not(
+    res.toOption.value shouldBe Not(
       Equals(AddressLens(FormComponentId("overseasAddress"), Country), Constant("United Kingdom"))
     )
   }
 
   it should "parse single variable with prefix 'no' as boolean expression" in {
     val res = BooleanExprParser.validate("${noCompanyName}")
-    res.right.value shouldBe TopLevelRef(BooleanExprId("noCompanyName"))
+    res.toOption.value shouldBe TopLevelRef(BooleanExprId("noCompanyName"))
   }
 
   it should "parse after with HmrcTaxPeriodCtx" in {
@@ -379,16 +379,16 @@ class BooleanExprParserSpec extends AnyFlatSpec with Matchers with EitherValues 
 
   it should "parse expression ${addToList.first}" in {
     val res = BooleanExprParser.validate("${addToList.first}")
-    res.right.value shouldBe First(FormCtx(FormComponentId("addToList")))
+    res.toOption.value shouldBe First(FormCtx(FormComponentId("addToList")))
   }
 
   it should "parse expression ${auth.emailLogin}" in {
     val res = BooleanExprParser.validate("${auth.emailLogin}")
-    res.right.value shouldBe IsLogin(LoginInfo.EmailLogin)
+    res.toOption.value shouldBe IsLogin(LoginInfo.EmailLogin)
   }
 
   it should "parse expression ${auth.ggLogin}" in {
     val res = BooleanExprParser.validate("${auth.ggLogin}")
-    res.right.value shouldBe IsLogin(LoginInfo.GGLogin)
+    res.toOption.value shouldBe IsLogin(LoginInfo.GGLogin)
   }
 }

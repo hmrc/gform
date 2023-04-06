@@ -49,7 +49,7 @@ class FileUploadFrontendConnector(config: FUConfig, wSHttp: WSHttp)(implicit ex:
       wSHttp
         .POSTFile(url, fileName, body, Seq("CSRF-token" -> "nocheck"), contentType.value)
         .failWithNonSuccessStatusCodes(url),
-      Seq(10.milliseconds, 100.milliseconds, 2.seconds),
+      List(10.milliseconds, 100.milliseconds, 2.seconds),
       msg
     ).void
   }
