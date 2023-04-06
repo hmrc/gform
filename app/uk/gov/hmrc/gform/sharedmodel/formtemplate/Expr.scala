@@ -96,7 +96,7 @@ object OptionDataValue {
       ValueParser
         .validateWithParser(exprAsStr, ValueParser.optionDataValue)
         .fold(error => JsError(error.toString), JsSuccess(_))
-    case otherwise => JsError(s"Invalid expression. Expected 'TY_' with expr, got $otherwise")
+    case otherwise => JsError(s"Invalid expression. Expected string and expr, got $otherwise")
   }
 
   implicit val format: OFormat[OptionDataValue] = OFormatWithTemplateReadFallback(readsForTemplateJson)
