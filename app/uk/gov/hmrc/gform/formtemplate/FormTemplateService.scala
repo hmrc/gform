@@ -50,6 +50,8 @@ class FormTemplateService(
 
   def find(id: FormTemplateId): Future[Option[FormTemplate]] = formTemplateRepo.find(id.value)
 
+  def find(id: FormTemplateRawId): Future[Option[FormTemplateRaw]] = formTemplateRawRepo.find(id.value)
+
   def get(id: FormTemplateRawId): Future[FormTemplateRaw] =
     formTemplateRawRepo.getDocumentAsJson(id.value).map {
       case jsObject: JsObject => FormTemplateRaw(jsObject)

@@ -30,6 +30,7 @@ import play.api.libs.ws.ahc.AhcWSComponents
 import uk.gov.hmrc.crypto.SymmetricCryptoFactory
 import uk.gov.hmrc.gform.akka.AkkaModule
 import uk.gov.hmrc.gform.auditing.AuditingModule
+import uk.gov.hmrc.gform.builder.BuilderModule
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.employments.EmploymentsModule
 import uk.gov.hmrc.gform.formstatistics.FormStatisticsModule
@@ -270,6 +271,8 @@ class ApplicationModule(context: Context)
 
   val schedulerModule = new SchedulerModule(configModule, mongoModule, sdesModule, akkaModule)
 
+  val builderModule = new BuilderModule(controllerComponents, formTemplateModule.formTemplateService)
+
   val playComponentsModule = new PlayComponentsModule(
     playComponents,
     akkaModule,
@@ -294,7 +297,8 @@ class ApplicationModule(context: Context)
     objectStoreModule,
     sdesModule,
     notificationBannerModule,
-    schedulerModule
+    schedulerModule,
+    builderModule
   )
 
   override lazy val httpRequestHandler: HttpRequestHandler = playComponentsModule.httpRequestHandler
