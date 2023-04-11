@@ -444,6 +444,8 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
       | "itmpName" ^^^ AuthInfo.ItmpName
       | "itmpDateOfBirth" ^^^ AuthInfo.ItmpDateOfBirth
       | "itmpAddress" ^^^ AuthInfo.ItmpAddress
+      | "payeref" ^^^ AuthInfo.PayeRef
+      | "vrn" ^^^ AuthInfo.Vrn
   )
   lazy val rosmProp: Parser[RosmProp] = (
     "safeId" ^^^ RosmSafeId

@@ -139,4 +139,14 @@ class ValueParserSuite extends FunSuite {
     res.toOption.value shouldBe TextExpression(AuthCtx(AuthInfo.ItmpNameLens(ItmpNameFocus.FamilyName)))
   }
 
+  test("parse expression ${auth.payeref}") {
+    val res = ValueParser.validate("${auth.payeref}")
+    res.right.value shouldBe TextExpression(AuthCtx(AuthInfo.PayeRef))
+  }
+
+  test("parse expression ${auth.vrn}") {
+    val res = ValueParser.validate("${auth.vrn}")
+    res.right.value shouldBe TextExpression(AuthCtx(AuthInfo.Vrn))
+  }
+
 }
