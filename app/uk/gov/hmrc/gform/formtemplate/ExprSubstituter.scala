@@ -66,7 +66,6 @@ object ExprSubstituter extends Substituter[ExprSubstitutions, FormTemplate] {
         case StringOps(_, _)                 => t
         case Concat(exprs)                   => Concat(exprs.map(e => substitute(substitutions, e)))
         case CountryOfItmpAddress            => t
-        case OptionDataValue(_, _)           => t
       }
     }
 

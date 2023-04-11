@@ -281,14 +281,15 @@ trait Rewriter {
             case Choice(_, options, _, _, _, _, _, _, _, _) if isDynamic(options) =>
               invalidDynamicUsage(formComponentId, exprString)
             case Choice(_, options, _, _, _, _, _, _, _, _) =>
-              val possibleValues = options.collect { case OptionData.ValueBased(_, _, _, _, value) =>
-                value
+              val possibleValues = options.collect {
+                case OptionData.ValueBased(_, _, _, _, OptionDataValue.StringBased(value)) =>
+                  value
               }.toSet
               validate(c, possibleValues, options.size, formComponentId, exprString, "Choice").map(_ => be)
             case RevealingChoice(options, _) =>
               val possibleValues = options
                 .map(_.choice)
-                .collect { case OptionData.ValueBased(_, _, _, _, value) =>
+                .collect { case OptionData.ValueBased(_, _, _, _, OptionDataValue.StringBased(value)) =>
                   value
                 }
                 .toSet
@@ -312,8 +313,9 @@ trait Rewriter {
             case Choice(_, options, _, _, _, _, _, _, _, _) if isDynamic(options) =>
               invalidDynamicUsage(formComponentId, exprString)
             case Choice(Radio | YesNo, options, _, _, _, _, _, _, _, _) =>
-              val possibleValues = options.collect { case OptionData.ValueBased(_, _, _, _, value) =>
-                value
+              val possibleValues = options.collect {
+                case OptionData.ValueBased(_, _, _, _, OptionDataValue.StringBased(value)) =>
+                  value
               }.toSet
               validate(c, possibleValues, options.size, formComponentId, exprString, "Choice").map(_ => rewriter)
             case Choice(Checkbox, _, _, _, _, _, _, _, _, _) => invalidUsage("choice")
@@ -321,7 +323,7 @@ trait Rewriter {
             case RevealingChoice(options, false) =>
               val possibleValues = options
                 .map(_.choice)
-                .collect { case OptionData.ValueBased(_, _, _, _, value) =>
+                .collect { case OptionData.ValueBased(_, _, _, _, OptionDataValue.StringBased(value)) =>
                   value
                 }
                 .toSet
@@ -398,14 +400,10 @@ trait Rewriter {
             )
           )
         case IsChoice(choice) =>
-          replaceFormComponent(formComponent).copy(
-            `type` = choice.copy(options = choice.options.map {
-              case OptionData.ValueBased(l, h, i, d, v) => OptionData.ValueBased(l, h, replaceIncludeIf(i), d, v)
-              case OptionData.IndexBased(l, h, i, d)    => OptionData.IndexBased(l, h, replaceIncludeIf(i), d)
-              case OptionData.ExprBased(l, h, i, d, v) =>
-                OptionData.ExprBased(l, h, replaceIncludeIf(i), d, v)
-            })
-          )
+          replaceFormComponent(formComponent).copy(`type` = choice.copy(options = choice.options.map {
+            case OptionData.ValueBased(l, h, i, d, v) => OptionData.ValueBased(l, h, replaceIncludeIf(i), d, v)
+            case OptionData.IndexBased(l, h, i, d)    => OptionData.IndexBased(l, h, replaceIncludeIf(i), d)
+          }))
         case otherwise => replaceFormComponent(formComponent)
       }
 

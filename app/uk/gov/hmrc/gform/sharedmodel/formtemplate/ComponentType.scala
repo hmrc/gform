@@ -219,24 +219,14 @@ object OptionData {
     hint: Option[SmartString],
     includeIf: Option[IncludeIf],
     dynamic: Option[Dynamic],
-    value: String
-  ) extends OptionData
-
-  case class ExprBased(
-    label: SmartString,
-    hint: Option[SmartString],
-    includeIf: Option[IncludeIf],
-    dynamic: Option[Dynamic],
     value: OptionDataValue
   ) extends OptionData
 
   private val templateReads: Reads[OptionData] = {
-
     val indexBasedReads: Reads[OptionData] = Json.reads[IndexBased].widen[OptionData]
-    val exprBasedReads: Reads[OptionData] = Json.reads[ExprBased].widen[OptionData]
     val valueBasedReads: Reads[OptionData] = Json.reads[ValueBased].widen[OptionData]
 
-    exprBasedReads | valueBasedReads | indexBasedReads
+    valueBasedReads | indexBasedReads
   }
 
   implicit val format: OFormat[OptionData] = OFormatWithTemplateReadFallback(templateReads)
@@ -253,12 +243,6 @@ object OptionData {
           LeafExpr(path + "hint", hint) ++
           LeafExpr(path + "includeIf", includeIf) ++
           LeafExpr(path + "dynamic", dynamic)
-      case OptionData.ExprBased(label, hint, includeIf, dynamic, value) =>
-        LeafExpr(path + "label", label) ++
-          LeafExpr(path + "hint", hint) ++
-          LeafExpr(path + "includeIf", includeIf) ++
-          LeafExpr(path + "dynamic", dynamic) ++
-          LeafExpr(path + "value", value)
     }
 }
 
