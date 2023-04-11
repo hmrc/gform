@@ -101,7 +101,14 @@ object Substituter {
   ): Substituter[A, OptionData] = (substitutions, t) =>
     t match {
       case o: OptionData.IndexBased => o.copy(label = o.label(substitutions), includeIf = o.includeIf(substitutions))
-      case o: OptionData.ValueBased => o.copy(label = o.label(substitutions), includeIf = o.includeIf(substitutions))
+      case o @ OptionData.ValueBased(_, _, _, _, OptionDataValue.StringBased(_)) =>
+        o.copy(label = o.label(substitutions), includeIf = o.includeIf(substitutions))
+      case o @ OptionData.ValueBased(_, _, _, _, OptionDataValue.ExprBased(prefix, expr)) =>
+        o.copy(
+          label = o.label(substitutions),
+          includeIf = o.includeIf(substitutions),
+          value = OptionDataValue.ExprBased(prefix, expr(substitutions))
+        )
     }
 
   implicit def revealingChoiceElementSubstituter[A](implicit

@@ -219,11 +219,10 @@ object OptionData {
     hint: Option[SmartString],
     includeIf: Option[IncludeIf],
     dynamic: Option[Dynamic],
-    value: String
+    value: OptionDataValue
   ) extends OptionData
 
   private val templateReads: Reads[OptionData] = {
-
     val indexBasedReads: Reads[OptionData] = Json.reads[IndexBased].widen[OptionData]
     val valueBasedReads: Reads[OptionData] = Json.reads[ValueBased].widen[OptionData]
 

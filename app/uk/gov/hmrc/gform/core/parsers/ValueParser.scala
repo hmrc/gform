@@ -570,6 +570,11 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
         SelectionCriteriaSimpleValue(List(value))
       }
 
+  lazy val optionDataValue: Parser[OptionDataValue] =
+    alphabeticOnly ~ expr ^^ { case prefix ~ expr =>
+      OptionDataValue.ExprBased(prefix, expr)
+    } | alphabeticOnly ^^ { case str => OptionDataValue.StringBased(str) }
+
 }
 
 object ValueParser extends ValueParser with PackratParsingHelper {

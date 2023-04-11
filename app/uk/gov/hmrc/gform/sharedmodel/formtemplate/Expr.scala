@@ -20,7 +20,6 @@ import julienrf.json.derived
 import play.api.libs.json._
 import uk.gov.hmrc.gform.core.parsers.ExprParsers
 import uk.gov.hmrc.gform.sharedmodel.{ DataRetrieve, DataRetrieveId }
-
 import uk.gov.hmrc.gform.translation.TranslatableConstant
 
 sealed trait Expr {
@@ -97,7 +96,7 @@ object SizeRefType {
   case class IndexBased(index: Int) extends SizeRefType
   case class ValueBased(value: String) extends SizeRefType
 
-  val regex = "[-_a-zA-Z0-9]+".r
+  val regex = "[-_$a-zA-Z0-9{}]+".r
 
   implicit val format: OFormat[SizeRefType] = derived.oformat()
 }

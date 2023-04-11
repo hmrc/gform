@@ -64,7 +64,7 @@ trait ComponentTypeGen {
   def optionDataValueBasedGen: Gen[OptionData.ValueBased] = for {
     label <- SmartStringGen.smartStringGen
     value <- PrimitiveGen.nonEmptyAlphaNumStrGen
-  } yield OptionData.ValueBased(label, None, None, None, value)
+  } yield OptionData.ValueBased(label, None, None, None, OptionDataValue.StringBased(value))
 
   def optionDataGen: Gen[NonEmptyList[OptionData]] =
     Gen.oneOf(
