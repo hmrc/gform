@@ -18,6 +18,7 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
+import uk.gov.hmrc.gform.sharedmodel.LocalisedString
 
 case class EmailParameter(emailTemplateVariable: String, value: Expr)
 object EmailParameter {
@@ -52,4 +53,9 @@ object EmailParametersRecalculated {
 
   implicit val format: OFormat[EmailParametersRecalculated] = Json.format[EmailParametersRecalculated]
 
+}
+
+case class EmailCodeParameter(emailTemplateVariable: String, value: LocalisedString)
+object EmailCodeParameter {
+  implicit val format: OFormat[EmailCodeParameter] = Json.format[EmailCodeParameter]
 }
