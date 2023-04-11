@@ -21,8 +21,14 @@ import uk.gov.hmrc.gform.notifier.NotifierModule
 import uk.gov.hmrc.gform.wshttp.WSHttpModule
 
 import scala.concurrent.ExecutionContext
+import uk.gov.hmrc.gform.formtemplate.FormTemplateModule
 
-class EmailModule(configModule: ConfigModule, wSHttpModule: WSHttpModule, notifierModule: NotifierModule)(implicit
+class EmailModule(
+  configModule: ConfigModule,
+  wSHttpModule: WSHttpModule,
+  notifierModule: NotifierModule,
+  formTemplateModule: FormTemplateModule
+)(implicit
   ec: ExecutionContext
 ) {
   val emailConnector = new EmailConnector(wSHttpModule.auditableWSHttp, configModule.serviceConfig.baseUrl("email"))
@@ -31,7 +37,8 @@ class EmailModule(configModule: ConfigModule, wSHttpModule: WSHttpModule, notifi
   val emailCodeVerificationController = new EmailCodeVerificationController(
     configModule.controllerComponents,
     notifierModule.fOptNotifierService,
-    emailLogic
+    emailLogic,
+    formTemplateModule.formTemplateService
   )
 
 }

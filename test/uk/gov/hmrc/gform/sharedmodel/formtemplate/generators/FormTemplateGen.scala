@@ -72,6 +72,16 @@ trait FormTemplateGen {
 
   def accessibilityUrlGen: Gen[AccessibilityUrl] = PrimitiveGen.urlGen.map(AccessibilityUrl(_))
 
+  def emailCodeParameterGen: Gen[EmailCodeParameter] =
+    for {
+      emailTemplateVariable <- Gen.alphaNumStr
+      value                 <- LocalisedStringGen.localisedStringGen
+
+    } yield EmailCodeParameter(emailTemplateVariable, value)
+
+  def emailCodeParameterListGen: Gen[Option[NonEmptyList[EmailCodeParameter]]] =
+    Gen.option(PrimitiveGen.oneOrMoreGen(emailCodeParameterGen))
+
   def formTemplateGen: Gen[FormTemplate] =
     for {
       id                       <- formTemplateIdGen
@@ -94,6 +104,8 @@ trait FormTemplateGen {
       displayHMRCLogo          <- PrimitiveGen.booleanGen
       userResearchUrl          <- Gen.option(userResearchUrlGen)
       accessibilityUrl         <- Gen.option(accessibilityUrlGen)
+      emailCodeParameters      <- emailCodeParameterListGen
+
     } yield FormTemplate(
       id,
       id,
@@ -124,7 +136,8 @@ trait FormTemplateGen {
       None,
       None,
       None,
-      None
+      None,
+      emailCodeParameters
     )
 }
 
