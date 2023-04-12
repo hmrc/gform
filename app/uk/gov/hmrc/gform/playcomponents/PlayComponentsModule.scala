@@ -23,6 +23,7 @@ import play.api.routing.Router
 import scala.concurrent.ExecutionContext
 import uk.gov.hmrc.gform.akka.AkkaModule
 import uk.gov.hmrc.gform.auditing.AuditingModule
+import uk.gov.hmrc.gform.builder.BuilderModule
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.formstatistics.FormStatisticsModule
 import uk.gov.hmrc.gform.dblookup.DbLookupModule
@@ -71,7 +72,8 @@ class PlayComponentsModule(
   objectStoreModule: ObjectStoreModule,
   sdesModule: SdesModule,
   notificationBannerModule: NotificationBannerModule,
-  schedulerModule: SchedulerModule
+  schedulerModule: SchedulerModule,
+  builderModule: BuilderModule
 )(implicit ec: ExecutionContext) {
   private val logger = LoggerFactory.getLogger(getClass)
 
@@ -108,6 +110,8 @@ class PlayComponentsModule(
       configModule.controllerComponents
     )
 
+  lazy val builderRoutes: builder.Routes = new builder.Routes(errorHandler, builderModule.builderController)
+
   lazy val prodRoutes: prod.Routes =
     new prod.Routes(errorHandler, appRoutes, healthController, metricsModule.metricsController)
 
@@ -115,6 +119,7 @@ class PlayComponentsModule(
     new testOnlyDoNotUseInAppConf.Routes(
       errorHandler,
       prodRoutes,
+      builderRoutes,
       testOnlyModule.testOnlyController,
       testOnlyModule.fUInterceptor,
       testOnlyModule.testOnlyObjectStoreController
