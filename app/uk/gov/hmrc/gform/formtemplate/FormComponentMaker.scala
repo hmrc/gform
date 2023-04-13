@@ -497,7 +497,7 @@ class FormComponentMaker(json: JsValue) {
         UnexpectedState(s"""repeatsMin in Group field cannot be a negative number""").asLeft
       case (_, repeatsMin) =>
         val fieldsMandatory =
-          if (repeatsMin.getOrElse(None) == 0) fields.map(field => field.copy(mandatory = false)) else fields
+          if (repeatsMin.getOrElse(0) === 0) fields.map(field => field.copy(mandatory = false)) else fields
         Group(fieldsMandatory, repMax, repMin, repeatLabel, repeatAddAnotherText).asRight
     }
 

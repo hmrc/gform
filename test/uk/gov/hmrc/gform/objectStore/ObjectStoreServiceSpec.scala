@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.objectStore
+package uk.gov.hmrc.gform.objectstore
 
 import akka.util.ByteString
 import org.scalamock.scalatest.MockFactory

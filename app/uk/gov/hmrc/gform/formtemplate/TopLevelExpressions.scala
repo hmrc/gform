@@ -62,7 +62,7 @@ object TopLevelExpressions {
 
   def toTopologicalSort(
     graph: Graph[ExpressionId, GraphEdge.DiEdge]
-  ): Either[graph.NodeT, Iterable[(Int, List[uk.gov.hmrc.gform.formtemplate.ExpressionId])]] = {
+  ): Either[graph.TopologicalSortFailure, Iterable[(Int, List[uk.gov.hmrc.gform.formtemplate.ExpressionId])]] = {
 
     def sortedOuterNodes(items: Iterable[graph.NodeT]) =
       items.toList
@@ -80,9 +80,9 @@ object TopLevelExpressions {
     val sort = toTopologicalSort(graph)
 
     sort.bimap(
-      nodeT =>
+      failure =>
         UnexpectedState(
-          s"Cycle detected in top level expressions. Violating node is '${nodeT.toOuter.id}'. Graph contains cycle: ${graph.findCycle}"
+          s"Cycle detected in top level expressions. Graph contains cycle: ${graph.findCycle}"
         ),
       iterable =>
         ExprSubstitutions(
