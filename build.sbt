@@ -4,7 +4,7 @@ import play.sbt.PlayImport.PlayKeys
 import play.sbt.routes.RoutesKeys.routesImport
 import sbt.Keys.{ resolvers, _ }
 import sbt._
-import uk.gov.hmrc.DefaultBuildSettings.{ targetJvm, addTestReportOption, defaultSettings, scalaSettings }
+import uk.gov.hmrc.DefaultBuildSettings.{ addTestReportOption, defaultSettings, scalaSettings, targetJvm }
 import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin
 import uk.gov.hmrc.versioning.SbtGitVersioning
 import uk.gov.hmrc.versioning.SbtGitVersioning.autoImport.majorVersion
@@ -32,12 +32,12 @@ lazy val microservice = (project in file("."))
     name := "gform",
     organization := "uk.gov.hmrc",
     majorVersion := 0,
-    targetJvm    := "jvm-11",
+    targetJvm := "jvm-11",
     PlayKeys.playDefaultPort := 9196,
     scalaSettings,
     defaultSettings(),
     scalafmtOnCompile := true,
-    scalaVersion := "2.13.8",
+    scalaVersion := "2.13.10",
     Test / testOptions := (Test / testOptions).value
       .map {
         // Default Argument added by https://github.com/hmrc/sbt-settings

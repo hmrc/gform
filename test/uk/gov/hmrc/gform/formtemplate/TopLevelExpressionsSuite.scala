@@ -33,7 +33,7 @@ class TopLevelExpressionsSuite extends FunSuite {
       )
     ) { exprSubstitutions =>
       val graph = TopLevelExpressions.toGraph(exprSubstitutions)
-      val res: Either[graph.NodeT, Iterable[(Int, List[ExpressionId])]] =
+      val res: Either[graph.TopologicalSortFailure, Iterable[(Int, List[ExpressionId])]] =
         TopLevelExpressions.toTopologicalSort(graph)
 
       res match {
@@ -254,7 +254,7 @@ class TopLevelExpressionsSuite extends FunSuite {
           assertEquals(
             node,
             UnexpectedState(
-              "Cycle detected in top level expressions. Violating node is 'bar'. Graph contains cycle: Some(Cycle(ExpressionId(bar), ExpressionId(bar)~>ExpressionId(baz), ExpressionId(baz), ExpressionId(baz)~>ExpressionId(foo), ExpressionId(foo), ExpressionId(foo)~>ExpressionId(bar), ExpressionId(bar)))"
+              "Cycle detected in top level expressions. Graph contains cycle: Some(Cycle(ExpressionId(bar), ExpressionId(bar)~>ExpressionId(baz), ExpressionId(baz), ExpressionId(baz)~>ExpressionId(foo), ExpressionId(foo), ExpressionId(foo)~>ExpressionId(bar), ExpressionId(bar)))"
             )
           )
         case Right(iterable) => fail("Failed cycle detection")
