@@ -323,12 +323,3 @@ class ApplicationModule(context: Context)
     s"Microservice $appName started in mode ${environment.mode} at port ${application.configuration.getOptional[String]("http.port")}"
   )
 }
-
-object ApplicationModuleHelper {
-
-  def tweak(applicationModule: ApplicationModule): Unit = {
-
-    // Since core libraries are using deprecated play.api.libs.ws.WS we need to add wsApi into injector
-
-  }
-}
