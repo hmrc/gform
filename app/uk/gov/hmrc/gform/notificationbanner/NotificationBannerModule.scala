@@ -28,12 +28,29 @@ class NotificationBannerModule(
 ) {
 
   private val notificationBannerRepository: NotificationBannerRepository = new NotificationBannerRepository(mongoModule)
+  private val notificationBannerFormTemplateRepository: NotificationBannerFormTemplateRepository =
+    new NotificationBannerFormTemplateRepository(mongoModule)
 
   private val notificationBannerService: NotificationBannerService =
     new NotificationBannerService(
       notificationBannerRepository
     )
 
+  private val notificationBannerFormTemplateService: NotificationBannerFormTemplateService =
+    new NotificationBannerFormTemplateService(
+      notificationBannerFormTemplateRepository
+    )
+
   val notificationBannerController: NotificationBannerController =
-    new NotificationBannerController(notificationBannerService, configModule.controllerComponents)
+    new NotificationBannerController(
+      notificationBannerService,
+      notificationBannerFormTemplateService,
+      configModule.controllerComponents
+    )
+
+  val notificationBannerFormTemplateController: NotificationBannerFormTemplateController =
+    new NotificationBannerFormTemplateController(
+      notificationBannerFormTemplateService,
+      configModule.controllerComponents
+    )
 }

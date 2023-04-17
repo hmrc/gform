@@ -98,6 +98,7 @@ class PlayComponentsModule(
     objectStoreModule.objectStoreController,
     translationModule.translationController,
     notificationBannerModule.notificationBannerController,
+    notificationBannerModule.notificationBannerFormTemplateController,
     sdesModule.sdesCallbackController,
     sdesModule.sdesController,
     sdesModule.sdesWorkItemController

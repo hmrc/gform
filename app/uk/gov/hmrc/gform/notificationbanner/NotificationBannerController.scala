@@ -16,24 +16,51 @@
 
 package uk.gov.hmrc.gform.notificationbanner
 
+import cats.implicits._
 import play.api.libs.json.Json
 import play.api.mvc.{ Action, AnyContent, ControllerComponents }
-import scala.concurrent.ExecutionContext
 import uk.gov.hmrc.gform.controllers.BaseController
+import uk.gov.hmrc.gform.sharedmodel.BannerId
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
+
+import scala.concurrent.{ ExecutionContext, Future }
 
 class NotificationBannerController(
   notificationBannerService: NotificationBannerService,
+  notificationBannerFormTemplateService: NotificationBannerFormTemplateService,
   controllerComponents: ControllerComponents
 )(implicit ec: ExecutionContext)
     extends BaseController(controllerComponents) {
 
-  def findNotificationBanner(): Action[AnyContent] =
+  def findAllNotificationBanners(): Action[AnyContent] =
+    Action.async { _ =>
+      notificationBannerService
+        .findAll()
+        .flatMap(notificationBanners =>
+          notificationBanners.traverse(notificationBanner =>
+            for {
+              res <- notificationBannerFormTemplateService.findByBannerId(notificationBanner._id)
+            } yield NotificationBannerView(
+              notificationBanner._id,
+              notificationBanner.message,
+              notificationBanner.isGlobal,
+              res.map(_._id)
+            )
+          )
+        )
+        .map(r => Ok(Json.toJson(r)))
+    }
+
+  def find(formTemplateId: FormTemplateId): Action[AnyContent] =
     Action.async { request =>
-      notificationBannerService.find().map { maybeNotificationBanner =>
-        maybeNotificationBanner.fold(NoContent) { notificationBanner =>
-          Ok(Json.toJson(notificationBanner))
-        }
-      }
+      for {
+        maybeNotificationBannerTemplate <- notificationBannerFormTemplateService.find(formTemplateId)
+        maybeGlobalNotificationBanner   <- notificationBannerService.findGlobal()
+        maybeNotificationBanner <-
+          maybeNotificationBannerTemplate.fold(Future.successful(maybeGlobalNotificationBanner))(template =>
+            notificationBannerService.find(template.bannerId)
+          )
+      } yield maybeNotificationBanner.fold(NoContent)(notificationBanner => Ok(Json.toJson(notificationBanner)))
     }
 
   def upsertNotificationBanner(): Action[NotificationBanner] =
@@ -44,10 +71,15 @@ class NotificationBannerController(
       }
     }
 
-  def deleteNotificationBanner(): Action[AnyContent] =
+  def deleteNotificationBanner(bannerId: BannerId): Action[AnyContent] =
     Action.async { request =>
-      notificationBannerService.delete().map { _ =>
-        NoContent
-      }
+      for {
+        _ <- notificationBannerFormTemplateService.findByBannerId(bannerId).map { bannerFormTemplates =>
+               bannerFormTemplates.traverse { bannerFormTemplate =>
+                 notificationBannerFormTemplateService.delete(bannerFormTemplate._id)
+               }
+             }
+        _ <- notificationBannerService.delete(bannerId)
+      } yield NoContent
     }
 }

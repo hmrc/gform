@@ -55,6 +55,7 @@ object ValueClassBinder {
     NotificationStatus.fromName
   )
   implicit val processingStatusBinder: QueryStringBindable[ProcessingStatus] = valueClassQueryBinder(_.name)
+  implicit val bannerIdBinder: PathBindable[BannerId] = valueClassBinder(_.value)
 
   implicit val reads: Reads[Crypted] = Reads {
     case JsString(str) => JsSuccess(Crypted(str))
