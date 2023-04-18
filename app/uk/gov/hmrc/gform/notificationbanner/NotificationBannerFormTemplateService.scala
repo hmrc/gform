@@ -17,26 +17,23 @@
 package uk.gov.hmrc.gform.notificationbanner
 
 import uk.gov.hmrc.gform.sharedmodel.BannerId
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 
 import scala.concurrent.{ ExecutionContext, Future }
 
-class NotificationBannerService(
-  notificationBannerRepository: NotificationBannerRepository
+class NotificationBannerFormTemplateService(
+  repo: NotificationBannerFormTemplateRepository
 )(implicit ec: ExecutionContext) {
 
-  def findAll(): Future[List[NotificationBanner]] =
-    notificationBannerRepository.findAll()
+  def upsert(notificationBannerFormTemplate: NotificationBannerFormTemplate): Future[Unit] =
+    repo.upsert(notificationBannerFormTemplate).map(_ => ())
 
-  def find(bannerId: BannerId): Future[Option[NotificationBanner]] =
-    notificationBannerRepository.find(bannerId)
+  def find(formTemplateId: FormTemplateId): Future[Option[NotificationBannerFormTemplate]] =
+    repo.find(formTemplateId)
 
-  def findGlobal(): Future[Option[NotificationBanner]] =
-    notificationBannerRepository.findGlobal()
+  def findByBannerId(bannerId: BannerId): Future[List[NotificationBannerFormTemplate]] =
+    repo.findByBannerId(bannerId)
 
-  def upsert(notificationBanner: NotificationBanner): Future[Unit] =
-    notificationBannerRepository.upsert(notificationBanner).map(_ => ())
-
-  def delete(bannerId: BannerId): Future[Unit] =
-    notificationBannerRepository.delete(bannerId).map(_ => ())
-
+  def delete(formTemplateId: FormTemplateId): Future[Unit] =
+    repo.delete(formTemplateId).map(_ => ())
 }

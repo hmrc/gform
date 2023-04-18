@@ -21,23 +21,15 @@ import play.api.libs.json.OFormat
 import uk.gov.hmrc.gform.sharedmodel.BannerId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 
-case class NotificationBanner(
-  _id: BannerId,
-  message: String,
-  isGlobal: Boolean
+case class NotificationBannerFormTemplate(
+  _id: FormTemplateId,
+  bannerId: BannerId
 )
 
-object NotificationBanner {
-  implicit val format: OFormat[NotificationBanner] = derived.oformat()
-}
-
-case class NotificationBannerView(
-  _id: BannerId,
-  message: String,
-  isGlobal: Boolean,
-  formTemplateIds: List[FormTemplateId]
-)
-
-object NotificationBannerView {
-  implicit val format: OFormat[NotificationBannerView] = derived.oformat()
+object NotificationBannerFormTemplate {
+  implicit val format: OFormat[NotificationBannerFormTemplate] = {
+    implicit val bannerIdFormat = BannerId.mongoV2format
+    implicit val formTemplateIdFormat = FormTemplateId.vformat
+    derived.oformat()
+  }
 }

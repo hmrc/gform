@@ -19,54 +19,50 @@ package uk.gov.hmrc.gform.notificationbanner
 import org.mongodb.scala.bson.Document
 import org.mongodb.scala.model.{ FindOneAndReplaceOptions, IndexModel, IndexOptions, Indexes }
 import org.mongodb.scala.result.DeleteResult
-
-import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.gform.mongo.MongoModule
 import uk.gov.hmrc.gform.sharedmodel.BannerId
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 
-class NotificationBannerRepository(mongoModule: MongoModule)(implicit ec: ExecutionContext)
-    extends PlayMongoRepository[NotificationBanner](
-      collectionName = "notificationBanner",
+import scala.concurrent.{ ExecutionContext, Future }
+
+class NotificationBannerFormTemplateRepository(mongoModule: MongoModule)(implicit ec: ExecutionContext)
+    extends PlayMongoRepository[NotificationBannerFormTemplate](
+      collectionName = "notificationBannerFormTemplate",
       mongoComponent = mongoModule.mongoComponent,
-      domainFormat = NotificationBanner.format,
+      domainFormat = NotificationBannerFormTemplate.format,
       indexes = Seq(
         IndexModel(
-          Indexes.ascending("isGlobal"),
+          Indexes.ascending("bannerId"),
           IndexOptions()
             .background(true)
-            .name("isGlobal")
+            .name("bannerId")
         )
       )
     ) {
 
-  def findAll(): Future[List[NotificationBanner]] =
+  def findByBannerId(bannerId: BannerId): Future[List[NotificationBannerFormTemplate]] =
     collection
-      .find()
+      .find(Document("bannerId" -> bannerId.value))
       .toFuture()
       .map(_.toList)
 
-  def find(bannerId: BannerId): Future[Option[NotificationBanner]] =
+  def find(formTemplateId: FormTemplateId): Future[Option[NotificationBannerFormTemplate]] =
     collection
-      .find(Document("_id" -> bannerId.value))
+      .find(Document("_id" -> formTemplateId.value))
       .headOption()
 
-  def findGlobal(): Future[Option[NotificationBanner]] =
-    collection
-      .find(Document("isGlobal" -> true))
-      .headOption()
-
-  def upsert(notificationBanner: NotificationBanner): Future[NotificationBanner] =
+  def upsert(notificationBannerFormTemplate: NotificationBannerFormTemplate): Future[NotificationBannerFormTemplate] =
     collection
       .findOneAndReplace(
-        Document("_id" -> notificationBanner._id.value),
-        notificationBanner,
+        Document("_id" -> notificationBannerFormTemplate._id.value),
+        notificationBannerFormTemplate,
         FindOneAndReplaceOptions().upsert(true)
       )
       .toFuture()
 
-  def delete(bannerId: BannerId): Future[DeleteResult] =
+  def delete(formTemplateId: FormTemplateId): Future[DeleteResult] =
     this.collection
-      .deleteOne(Document("_id" -> bannerId.value))
+      .deleteOne(Document("_id" -> formTemplateId.value))
       .toFuture()
 }
