@@ -50,8 +50,8 @@ class RealHandlebarsHttpApiSubmitter[F[_]](
     def parseAndProcessAsList(input: String): List[String] =
       Try(Json.parse(input)).toOption
         .flatMap {
-          case jsonArray: JsArray if destination.multiRequestPayload => Some(jsonArray.value.map(_.toString).toList)
-          case _                                                     => None
+          case jsonArray: JsArray => Some(jsonArray.value.map(_.toString).toList)
+          case _                  => None
         }
         .getOrElse(List(input))
         .map {
@@ -74,24 +74,51 @@ class RealHandlebarsHttpApiSubmitter[F[_]](
             TemplateType.Plain
           )
 
-        destination.method match {
-          case HttpMethod.GET => httpClient.get(uri)
-          case HttpMethod.POST =>
-            val bodies = destination.payload.fold(List(""))(body => parseAndProcessAsList(body))
-            callUntilError(
-              bodies.map((uri, _)),
-              httpClient.post,
-              modelTree.value.formId,
-              destination.id
-            )
-          case HttpMethod.PUT =>
-            val bodies = destination.payload.fold(List(""))(body => parseAndProcessAsList(body))
-            callUntilError(
-              bodies.map((uri, _)),
-              httpClient.put,
-              modelTree.value.formId,
-              destination.id
-            )
+        if (destination.multiRequestPayload) {
+          destination.method match {
+            case HttpMethod.GET => httpClient.get(uri)
+            case HttpMethod.POST =>
+              val bodies = destination.payload.fold(List(""))(body => parseAndProcessAsList(body))
+              callUntilError(
+                bodies.map((uri, _)),
+                httpClient.post,
+                modelTree.value.formId,
+                destination.id
+              )
+            case HttpMethod.PUT =>
+              val bodies = destination.payload.fold(List(""))(body => parseAndProcessAsList(body))
+              callUntilError(
+                bodies.map((uri, _)),
+                httpClient.put,
+                modelTree.value.formId,
+                destination.id
+              )
+          }
+        } else {
+          destination.method match {
+            case HttpMethod.GET => httpClient.get(uri)
+            case HttpMethod.POST =>
+              val body = destination.payload.fold("") {
+                handlebarsTemplateProcessor(
+                  _,
+                  accumulatedModel,
+                  FocussedHandlebarsModelTree(modelTree),
+                  destination.payloadType
+                )
+              }
+              httpClient.post(uri, body)
+            case HttpMethod.PUT =>
+              val body = destination.payload.fold("") {
+                handlebarsTemplateProcessor(
+                  _,
+                  accumulatedModel,
+                  FocussedHandlebarsModelTree(modelTree),
+                  destination.payloadType
+                )
+              }
+              httpClient.put(uri, body)
+          }
+
         }
       }
   }
