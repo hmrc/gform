@@ -85,6 +85,7 @@ package object destinations {
           |  "${Destination.typeDiscriminatorFieldName}": "${Destination.handlebarsHttpApi}",
           |  "profile": ${write(profile)},
           |  "uri": "$uri",
+          |  ${optionalField("multiRequestPayload", Option(handlebars.multiRequestPayload), false)}
           |  "method": ${write(method)}
           |}""".stripMargin
 

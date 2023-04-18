@@ -87,6 +87,197 @@ class HandlebarsHttpApiSubmitterSpec extends Spec with ScalaCheckDrivenPropertyC
     }
   }
 
+  it should "make multiple POSTs request when there is a JsArray payload and  multiRequestPayload = true " in {
+    val payload1 = """|  {
+                      |    "properties": [
+                      |      {
+                      |        "name": "dob",
+                      |        "value": "2000-12-13"
+                      |      }
+                      |    ]
+                      |  }""".stripMargin
+    val payload2 = """|  {
+                      |    "properties": [
+                      |      {
+                      |        "name": "dob",
+                      |        "value": "1999-11-15"
+                      |      }
+                      |    ]
+                      |  }""".stripMargin
+    val payload = "[" + payload1 + "," + payload2 + "]"
+    val d = destinationGen(HttpMethod.POST).sample.get
+    val httpClient = mock[HttpClient[Possible]]
+    val handlebarsTemplateProcessor = mock[HandlebarsTemplateProcessor]
+
+    val submitter =
+      new RealHandlebarsHttpApiSubmitter(Map(ProfileName("foo") -> httpClient), handlebarsTemplateProcessor)
+
+    val destination = d.copy(payload = Option(payload), payloadType = TemplateType.Plain, multiRequestPayload = true)
+    val processorModel = HandlebarsTemplateProcessorModel.empty
+    val expectedResponse = mock[HttpResponse]
+
+    (httpClient
+      .post(_: String, _: String)(_: HeaderCarrier))
+      .expects(where { (url, body, hc) =>
+        true
+      })
+      .returning(Right(expectedResponse))
+      .twice()
+
+    (handlebarsTemplateProcessor.apply _)
+      .expects(payload1.filterNot(_.isWhitespace), *, *, *)
+      .returning("foo")
+      .once()
+    (handlebarsTemplateProcessor.apply _)
+      .expects(payload2.filterNot(_.isWhitespace), *, *, *)
+      .returning("foo")
+      .once()
+    (handlebarsTemplateProcessor.apply _)
+      .expects(d.uri, *, *, *)
+      .returning("foo")
+      .once()
+
+    submitter
+      .apply(destination, HandlebarsTemplateProcessorModel.empty, tree(processorModel)) shouldBe Right(
+      expectedResponse
+    )
+  }
+
+  it should "make multiple POSTs request until the failure when there is a JsArray payload and  multiRequestPayload = true " in {
+    val payload1 = """|  {
+                      |    "properties": [
+                      |      {
+                      |        "name": "dob",
+                      |        "value": "2000-12-13"
+                      |      }
+                      |    ]
+                      |  }""".stripMargin
+    val payload2 = """|  {
+                      |    "properties": [
+                      |      {
+                      |        "name": "dob",
+                      |        "value": "1999-11-15"
+                      |      }
+                      |    ]
+                      |  }""".stripMargin
+
+    val payload3 = """|  {
+                      |    "properties": [
+                      |      {
+                      |        "name": "dob",
+                      |        "value": "1998-10-11"
+                      |      }
+                      |    ]
+                      |  }""".stripMargin
+
+    val payload = "[" + payload1 + "," + payload2 + "," + payload3 + "]"
+    val d = destinationGen(HttpMethod.POST).sample.get
+    val httpClient = mock[HttpClient[Possible]]
+    val handlebarsTemplateProcessor = mock[HandlebarsTemplateProcessor]
+
+    val submitter =
+      new RealHandlebarsHttpApiSubmitter(Map(ProfileName("foo") -> httpClient), handlebarsTemplateProcessor)
+
+    val destination = d.copy(payload = Option(payload), payloadType = TemplateType.Plain, multiRequestPayload = true)
+    val processorModel = HandlebarsTemplateProcessorModel.empty
+    val expectedResponse = mock[HttpResponse]
+
+    (() => expectedResponse.toString).expects().returning("response").anyNumberOfTimes()
+    (httpClient
+      .post(_: String, _: String)(_: HeaderCarrier))
+      .expects(where { (_, body, _) =>
+        body === "bad input"
+      })
+      .returning(Left("error response"))
+      .once()
+
+    (httpClient
+      .post(_: String, _: String)(_: HeaderCarrier))
+      .expects(where { (url, body, hc) =>
+        true
+      })
+      .returning(Right(expectedResponse))
+      .once()
+
+    (handlebarsTemplateProcessor.apply _)
+      .expects(payload1.filterNot(_.isWhitespace), *, *, *)
+      .returning("foo")
+      .once()
+    (handlebarsTemplateProcessor.apply _)
+      .expects(payload2.filterNot(_.isWhitespace), *, *, *)
+      .returning("bad input")
+      .once()
+
+    (handlebarsTemplateProcessor.apply _)
+      .expects(payload3.filterNot(_.isWhitespace), *, *, *)
+      .returning("foo")
+      .once()
+
+    (handlebarsTemplateProcessor.apply _)
+      .expects(d.uri, *, *, *)
+      .returning("foo")
+      .once()
+
+    submitter
+      .apply(destination, HandlebarsTemplateProcessorModel.empty, tree(processorModel)) shouldBe Left("error response")
+  }
+
+  it should "make one POST request when there is a JsArray payload multiRequestPayload = false " in {
+    val payload1 = """|  {
+                      |    "properties": [
+                      |      {
+                      |        "name": "dob",
+                      |        "value": "2000-12-13"
+                      |      }
+                      |    ]
+                      |  }""".stripMargin
+    val payload2 = """|  {
+                      |    "properties": [
+                      |      {
+                      |        "name": "dob",
+                      |        "value": "1999-11-15"
+                      |      }
+                      |    ]
+                      |  }""".stripMargin
+    val payload = "[" + payload1 + "," + payload2 + "]"
+    val d = destinationGen(HttpMethod.POST).sample.get
+    val httpClient = mock[HttpClient[Possible]]
+    val handlebarsTemplateProcessor = mock[HandlebarsTemplateProcessor]
+
+    val submitter =
+      new RealHandlebarsHttpApiSubmitter(Map(ProfileName("foo") -> httpClient), handlebarsTemplateProcessor)
+
+    val destination = d.copy(payload = Option(payload), payloadType = TemplateType.Plain, multiRequestPayload = false)
+    val processorModel = HandlebarsTemplateProcessorModel.empty
+    val expectedResponse = mock[HttpResponse]
+
+    (httpClient
+      .post(_: String, _: String)(_: HeaderCarrier))
+      .expects(where { (url, body, hc) =>
+        true
+      })
+      .returning(Right(expectedResponse))
+      .once()
+
+    (handlebarsTemplateProcessor.apply _)
+      .expects(
+        where { (actualPayload, _, _, _) =>
+          actualPayload.filterNot(_.isWhitespace) === payload.filterNot(_.isWhitespace)
+        }
+      )
+      .returning("foo")
+      .once()
+    (handlebarsTemplateProcessor.apply _)
+      .expects(d.uri, *, *, *)
+      .returning("foo")
+      .once()
+
+    submitter
+      .apply(destination, HandlebarsTemplateProcessorModel.empty, tree(processorModel)) shouldBe Right(
+      expectedResponse
+    )
+  }
+
   "A PUT destination" should "make a PUT request when there is a payload" in {
     forAll(
       destinationGen(HttpMethod.PUT),
@@ -123,6 +314,118 @@ class HandlebarsHttpApiSubmitterSpec extends Spec with ScalaCheckDrivenPropertyC
           expectedResponse
         )
     }
+  }
+
+  it should "make multiple PUTs request when there is a JsArray payload and  multiRequestPayload = true " in {
+    val payload1 = """|  {
+                      |    "properties": [
+                      |      {
+                      |        "name": "dob",
+                      |        "value": "2000-12-13"
+                      |      }
+                      |    ]
+                      |  }""".stripMargin
+    val payload2 = """|  {
+                      |    "properties": [
+                      |      {
+                      |        "name": "dob",
+                      |        "value": "1999-11-15"
+                      |      }
+                      |    ]
+                      |  }""".stripMargin
+    val payload = "[" + payload1 + "," + payload2 + "]"
+    val d = destinationGen(HttpMethod.PUT).sample.get
+    val httpClient = mock[HttpClient[Possible]]
+    val handlebarsTemplateProcessor = mock[HandlebarsTemplateProcessor]
+
+    val submitter =
+      new RealHandlebarsHttpApiSubmitter(Map(ProfileName("foo") -> httpClient), handlebarsTemplateProcessor)
+
+    val destination = d.copy(payload = Option(payload), payloadType = TemplateType.Plain, multiRequestPayload = true)
+    val processorModel = HandlebarsTemplateProcessorModel.empty
+    val expectedResponse = mock[HttpResponse]
+
+    (httpClient
+      .put(_: String, _: String)(_: HeaderCarrier))
+      .expects(where { (url, body, hc) =>
+        true
+      })
+      .returning(Right(expectedResponse))
+      .twice()
+
+    (handlebarsTemplateProcessor.apply _)
+      .expects(payload1.filterNot(_.isWhitespace), *, *, *)
+      .returning("foo")
+      .once()
+    (handlebarsTemplateProcessor.apply _)
+      .expects(payload2.filterNot(_.isWhitespace), *, *, *)
+      .returning("foo")
+      .once()
+    (handlebarsTemplateProcessor.apply _)
+      .expects(d.uri, *, *, *)
+      .returning("foo")
+      .once()
+
+    submitter
+      .apply(destination, HandlebarsTemplateProcessorModel.empty, tree(processorModel)) shouldBe Right(
+      expectedResponse
+    )
+  }
+
+  it should "make one PUT request when there is a JsArray payload multiRequestPayload = false " in {
+    val payload1 = """|  {
+                      |    "properties": [
+                      |      {
+                      |        "name": "dob",
+                      |        "value": "2000-12-13"
+                      |      }
+                      |    ]
+                      |  }""".stripMargin
+    val payload2 = """|  {
+                      |    "properties": [
+                      |      {
+                      |        "name": "dob",
+                      |        "value": "1999-11-15"
+                      |      }
+                      |    ]
+                      |  }""".stripMargin
+    val payload = "[" + payload1 + "," + payload2 + "]"
+    val d = destinationGen(HttpMethod.PUT).sample.get
+    val httpClient = mock[HttpClient[Possible]]
+    val handlebarsTemplateProcessor = mock[HandlebarsTemplateProcessor]
+
+    val submitter =
+      new RealHandlebarsHttpApiSubmitter(Map(ProfileName("foo") -> httpClient), handlebarsTemplateProcessor)
+
+    val destination = d.copy(payload = Option(payload), payloadType = TemplateType.Plain, multiRequestPayload = false)
+    val processorModel = HandlebarsTemplateProcessorModel.empty
+    val expectedResponse = mock[HttpResponse]
+
+    (httpClient
+      .put(_: String, _: String)(_: HeaderCarrier))
+      .expects(where { (url, body, hc) =>
+        true
+      })
+      .returning(Right(expectedResponse))
+      .once()
+
+    (handlebarsTemplateProcessor.apply _)
+      .expects(
+        where { (actualPayload, _, _, _) =>
+          actualPayload.filterNot(_.isWhitespace) === payload.filterNot(_.isWhitespace)
+        }
+      )
+      .returning("foo")
+      .once()
+    (handlebarsTemplateProcessor.apply _)
+      .expects(d.uri, *, *, *)
+      .returning("foo")
+      .once()
+
+    submitter
+      .apply(destination, HandlebarsTemplateProcessorModel.empty, tree(processorModel)) shouldBe Right(
+      expectedResponse
+    )
   }
 
   case class SubmitterParts[F[_]](
