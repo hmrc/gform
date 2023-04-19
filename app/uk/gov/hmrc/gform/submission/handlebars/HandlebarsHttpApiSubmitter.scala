@@ -24,7 +24,6 @@ import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 import play.api.libs.json._
 import cats.syntax.all._
 import scala.util.Try
-import uk.gov.hmrc.gform.sharedmodel.form.FormId
 import uk.gov.hmrc.gform.logging.Loggers
 
 trait HandlebarsHttpApiSubmitter[F[_]] {
@@ -58,12 +57,10 @@ class RealHandlebarsHttpApiSubmitter[F[_]](
 
     def callUntilError(
       uri: String,
-      destination: Destination.HandlebarsHttpApi,
-      verb: (String, String) => F[HttpResponse],
-      formId: FormId,
-      destinationId: DestinationId
+      verb: (String, String) => F[HttpResponse]
     ): F[HttpResponse] = {
-
+      val destinationId = destination.id
+      val formId = modelTree.value.formId
       val input: List[String] = destination.payload.fold(List(""))(body => parseAndProcessAsList(body))
 
       def logAndRaiseError(message: String): F[HttpResponse] =
@@ -114,23 +111,9 @@ class RealHandlebarsHttpApiSubmitter[F[_]](
 
         if (destination.multiRequestPayload) {
           destination.method match {
-            case HttpMethod.GET => httpClient.get(uri)
-            case HttpMethod.POST =>
-              callUntilError(
-                uri,
-                destination,
-                httpClient.post,
-                modelTree.value.formId,
-                destination.id
-              )
-            case HttpMethod.PUT =>
-              callUntilError(
-                uri,
-                destination,
-                httpClient.put,
-                modelTree.value.formId,
-                destination.id
-              )
+            case HttpMethod.GET  => httpClient.get(uri)
+            case HttpMethod.POST => callUntilError(uri, httpClient.post)
+            case HttpMethod.PUT  => callUntilError(uri, httpClient.put)
           }
         } else {
           destination.method match {
