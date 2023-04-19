@@ -17,11 +17,14 @@
 package uk.gov.hmrc.gform.submission.handlebars
 
 import cats.MonadError
-import cats.syntax.applicative._
-import cats.syntax.flatMap._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations._
+import uk.gov.hmrc.gform.submission.destinations._
 import uk.gov.hmrc.gform.wshttp.HttpClient
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
+import play.api.libs.json._
+import cats.syntax.all._
+import scala.util.Try
+import uk.gov.hmrc.gform.logging.Loggers
 
 trait HandlebarsHttpApiSubmitter[F[_]] {
   def apply(
@@ -34,14 +37,67 @@ trait HandlebarsHttpApiSubmitter[F[_]] {
 class RealHandlebarsHttpApiSubmitter[F[_]](
   httpClients: Map[ProfileName, HttpClient[F]],
   handlebarsTemplateProcessor: HandlebarsTemplateProcessor = RealHandlebarsTemplateProcessor
-)(implicit me: MonadError[F, String])
+)(implicit monadError: MonadError[F, String])
     extends HandlebarsHttpApiSubmitter[F] {
 
   def apply(
     destination: Destination.HandlebarsHttpApi,
     accumulatedModel: HandlebarsTemplateProcessorModel,
     modelTree: HandlebarsModelTree
-  )(implicit hc: HeaderCarrier): F[HttpResponse] =
+  )(implicit hc: HeaderCarrier): F[HttpResponse] = {
+
+    def parseAndProcessAsList(input: String): List[String] =
+      Try(Json.parse(input)).toOption
+        .flatMap {
+          case jsonArray: JsArray => Some(jsonArray.value.map(_.toString).toList)
+          case _                  => None
+        }
+        .getOrElse(List(input))
+        .map(processPayload)
+
+    def callUntilError(
+      uri: String,
+      verb: (String, String) => F[HttpResponse]
+    ): F[HttpResponse] = {
+      val destinationId = destination.id
+      val formId = modelTree.value.formId
+      val input: List[String] = destination.payload.fold(List(""))(body => parseAndProcessAsList(body))
+
+      def logAndRaiseError(message: String): F[HttpResponse] =
+        logError(message) *> monadError.raiseError(message)
+
+      def logInfo(message: String): F[Unit] =
+        monadError.pure(Loggers.destinations.info(genericLogMessage(formId, destinationId, message)))
+
+      def logError(message: String): F[Unit] =
+        monadError.pure(Loggers.destinations.error(genericLogMessage(formId, destinationId, message)))
+
+      def callUrlBodyPairs(uri: String, bodies: List[String], lastResult: Option[HttpResponse]): F[HttpResponse] =
+        bodies match {
+          case Nil => lastResult.fold(logAndRaiseError("No input provided"))(monadError.pure)
+          case body :: rest =>
+            val resultOrError = for {
+              result <- monadError.attempt(verb(uri, body))
+              _      <- lastResult.fold(monadError.pure(()))(_ => logInfo("Successfully applied verb method"))
+            } yield result
+
+            resultOrError.flatMap {
+              case Right(result) => callUrlBodyPairs(uri, rest, Some(result))
+              case Left(error)   => logAndRaiseError(error)
+            }
+        }
+
+      callUrlBodyPairs(uri, input, None)
+    }
+
+    def processPayload(template: String): String =
+      handlebarsTemplateProcessor(
+        template,
+        accumulatedModel,
+        FocussedHandlebarsModelTree(modelTree),
+        destination.payloadType
+      )
+
     RealHandlebarsHttpApiSubmitter
       .selectHttpClient(destination.profile, destination.payloadType, httpClients)
       .flatMap { httpClient =>
@@ -52,30 +108,27 @@ class RealHandlebarsHttpApiSubmitter[F[_]](
             FocussedHandlebarsModelTree(modelTree),
             TemplateType.Plain
           )
-        destination.method match {
-          case HttpMethod.GET => httpClient.get(uri)
-          case HttpMethod.POST =>
-            val body = destination.payload.fold("") {
-              handlebarsTemplateProcessor(
-                _,
-                accumulatedModel,
-                FocussedHandlebarsModelTree(modelTree),
-                destination.payloadType
-              )
-            }
-            httpClient.post(uri, body)
-          case HttpMethod.PUT =>
-            val body = destination.payload.fold("") {
-              handlebarsTemplateProcessor(
-                _,
-                accumulatedModel,
-                FocussedHandlebarsModelTree(modelTree),
-                destination.payloadType
-              )
-            }
-            httpClient.put(uri, body)
+
+        if (destination.multiRequestPayload) {
+          destination.method match {
+            case HttpMethod.GET  => httpClient.get(uri)
+            case HttpMethod.POST => callUntilError(uri, httpClient.post)
+            case HttpMethod.PUT  => callUntilError(uri, httpClient.put)
+          }
+        } else {
+          destination.method match {
+            case HttpMethod.GET => httpClient.get(uri)
+            case HttpMethod.POST =>
+              val body = destination.payload.fold("")(processPayload)
+              httpClient.post(uri, body)
+            case HttpMethod.PUT =>
+              val body = destination.payload.fold("")(processPayload)
+              httpClient.put(uri, body)
+          }
         }
       }
+  }
+
 }
 
 object RealHandlebarsHttpApiSubmitter {
