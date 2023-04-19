@@ -573,7 +573,7 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
   lazy val optionDataValue: Parser[OptionDataValue] =
     alphabeticOnly ~ expr ^^ { case prefix ~ expr =>
       OptionDataValue.ExprBased(prefix, expr)
-    } | alphabeticOnly ^^ { case str => OptionDataValue.StringBased(str) }
+    } | formatParserAlphabeticOnly ^^ { case str => OptionDataValue.StringBased(str) }
 
 }
 
