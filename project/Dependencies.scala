@@ -21,6 +21,7 @@ object Dependencies {
     "uk.gov.hmrc"                  %% "domain"                            % "8.2.0-play-28",
     "org.scala-lang.modules"       %% "scala-parser-combinators"          % "1.1.2",
     "org.julienrf"                 %% "play-json-derived-codecs"          % "10.1.0",
+    "com.dripower"                 %% "play-circe"                        % "2814.1",
     "org.typelevel"                %% "cats-core"                         % "2.9.0",
     "org.typelevel"                %% "case-insensitive"                  % "1.3.0",
     "com.openhtmltopdf"             % "openhtmltopdf-pdfbox"              % "1.0.10",
