@@ -181,13 +181,13 @@ object Substituter {
           displayCharCount
         )
 
-      case d @ Date(_, _, _)                        => d
-      case CalendarDate                             => CalendarDate
-      case TaxPeriodDate                            => TaxPeriodDate
-      case a @ Address(_, _, _, Some(expr))         => a.copy(value = Some(expr(substitutions)))
-      case a @ Address(_, _, _, _)                  => a
-      case o @ OverseasAddress(_, _, _, Some(expr)) => o.copy(value = Some(expr(substitutions)))
-      case o @ OverseasAddress(_, _, _, _)          => o
+      case d @ Date(_, _, _)                           => d
+      case CalendarDate                                => CalendarDate
+      case TaxPeriodDate                               => TaxPeriodDate
+      case a @ Address(_, _, _, Some(expr))            => a.copy(value = Some(expr(substitutions)))
+      case a @ Address(_, _, _, _)                     => a
+      case o @ OverseasAddress(_, _, _, Some(expr), _) => o.copy(value = Some(expr(substitutions)))
+      case o @ OverseasAddress(_, _, _, _, _)          => o
 
       case Choice(
             tpe,
