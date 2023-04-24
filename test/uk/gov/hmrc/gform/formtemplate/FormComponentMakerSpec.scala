@@ -663,7 +663,8 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
       List(Mandatory.Line2, Mandatory.Postcode),
       List(Optional.City),
       true,
-      Some(FormCtx(FormComponentId("userAddress")))
+      Some(FormCtx(FormComponentId("userAddress"))),
+      true
     )
     result shouldBe Right(expected)
   }
@@ -685,7 +686,8 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
       List(Mandatory.Line2, Mandatory.Postcode),
       List(Optional.City),
       true,
-      Some(AuthCtx(AuthInfo.ItmpAddress))
+      Some(AuthCtx(AuthInfo.ItmpAddress)),
+      true
     )
     result shouldBe Right(expected)
   }

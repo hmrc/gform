@@ -31,14 +31,16 @@ class ComponentTypeSpec extends FunSuite {
                          |  "label": "",
                          |  "line2Mandatory": "true",
                          |  "cityMandatory": "false",
-                         |  "postcodeMandatory": "true"
+                         |  "postcodeMandatory": "true",
+                         |  "countryDisplayed": "false"
                          |}""")
 
     val expected = OverseasAddress(
       List(Mandatory.Line2, Mandatory.Postcode),
       List(Optional.City),
       true,
-      None
+      None,
+      false
     )
 
     assertEquals(componentType, expected)
@@ -56,7 +58,7 @@ class ComponentTypeSpec extends FunSuite {
                          |  "postcodeMandatory": "false"
                          |}""")
 
-    val expected = OverseasAddress(Nil, Nil, true, None)
+    val expected = OverseasAddress(Nil, Nil, true, None, true)
 
     assertEquals(componentType, expected)
 
@@ -70,7 +72,7 @@ class ComponentTypeSpec extends FunSuite {
                          |  "label": ""
                          |}""")
 
-    val expected = OverseasAddress(Nil, Nil, true, None)
+    val expected = OverseasAddress(Nil, Nil, true, None, true)
 
     assertEquals(componentType, expected)
 
@@ -85,7 +87,23 @@ class ComponentTypeSpec extends FunSuite {
                          |  "countryLookup": "false"
                          |}""")
 
-    val expected = OverseasAddress(Nil, Nil, false, None)
+    val expected = OverseasAddress(Nil, Nil, false, None, true)
+
+    assertEquals(componentType, expected)
+
+  }
+
+  test("Overseas address with countryDisplayed") {
+    val componentType =
+      toComponentType("""|{
+           |  "type": "overseasAddress",
+           |  "id": "colombiaAddress",
+           |  "label": "",
+           |  "countryLookup": "false",
+           |  "countryDisplayed": "false"
+           |}""")
+
+    val expected = OverseasAddress(Nil, Nil, false, None, false)
 
     assertEquals(componentType, expected)
 

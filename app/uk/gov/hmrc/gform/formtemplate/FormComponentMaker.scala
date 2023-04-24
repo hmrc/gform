@@ -177,6 +177,7 @@ class FormComponentMaker(json: JsValue) {
     parse("labelSize", LabelSizeParser.validate)
 
   lazy val optCountryLookup: Option[Boolean] = (json \ "countryLookup").asOpt[String].map(_.toBoolean)
+  lazy val optCountryDisplayed: Option[Boolean] = (json \ "countryDisplayed").asOpt[String].map(_.toBoolean)
   lazy val optCountyDisplayed: Option[Boolean] = (json \ "countyDisplayed").asOpt[String].map(_.toBoolean)
   private def getValueRow(json: JsValue): Opt[MiniSummaryRow] =
     for {
@@ -693,7 +694,13 @@ class FormComponentMaker(json: JsValue) {
       val mandatoryFields: List[Mandatory] = List(line2, postcode).flatten
       val optionalFields: List[Optional] = List(city).flatten
 
-      OverseasAddress(mandatoryFields, optionalFields, optCountryLookup.getOrElse(true), value)
+      OverseasAddress(
+        mandatoryFields,
+        optionalFields,
+        optCountryLookup.getOrElse(true),
+        value,
+        optCountryDisplayed.getOrElse(true)
+      )
     }
   }
 
