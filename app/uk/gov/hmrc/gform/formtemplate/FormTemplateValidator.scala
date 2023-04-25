@@ -1294,6 +1294,16 @@ object FormTemplateValidator {
       if (formTemplate.displayWidth.isDefined) Invalid("displayWidth property can only be used with task list")
       else Valid
     )(_ => Valid)
+
+  def validateDataThreshold(sectionsList: List[Page]): ValidationResult = {
+    val textAreaFieldIds = allFormComponents(sectionsList).collect {
+      case fc @ IsTextArea(textArea) if textArea.dataThreshold.fold(false)(v => v > 100) => fc.id
+    }
+
+    textAreaFieldIds.isEmpty.validationResult(
+      "'dataThreshold' is a percentage with a maximum of 100 for component Ids :" + textAreaFieldIds.mkString(",")
+    )
+  }
 }
 
 object IsEmailVerifiedBy {

@@ -31,6 +31,7 @@ object FormComponentMakerService {
     maybeFormatExpr: Option[FormatExpr],
     maybeValueExpr: Option[ValueExpr],
     multiLine: Option[String],
+    dataThreshold: Option[Int],
     maybeDisplayWidth: Option[String],
     toUpperCase: UpperCaseBoolean,
     maybePrefix: Option[SmartString],
@@ -39,12 +40,21 @@ object FormComponentMakerService {
     displayCharCount: Boolean,
     json: JsValue
   ): Either[UnexpectedState, ComponentType] =
-    (maybeFormatExpr, maybeValueExpr, multiLine) match {
-      case (Some(formatExpr), _, IsNotMultiline()) =>
+    (maybeFormatExpr, maybeValueExpr, multiLine, dataThreshold) match {
+      case (Some(formatExpr), _, IsNotMultiline(), None) =>
         createTextObject(formatExpr, maybeValueExpr, maybeDisplayWidth, toUpperCase, maybePrefix, maybeSuffix, json)
-      case (Some(formatExpr), _, IsMultiline()) =>
-        createTextAreaObject(formatExpr, maybeValueExpr, maybeDisplayWidth, multiLine, rows, displayCharCount, json)
-      case _ => createError(maybeFormatExpr, maybeValueExpr, multiLine, json).asLeft
+      case (Some(formatExpr), _, IsMultiline(), _) =>
+        createTextAreaObject(
+          formatExpr,
+          maybeValueExpr,
+          maybeDisplayWidth,
+          multiLine,
+          dataThreshold,
+          rows,
+          displayCharCount,
+          json
+        )
+      case _ => createError(maybeFormatExpr, maybeValueExpr, multiLine, json, dataThreshold).asLeft
     }
 
   def createTextObject(
@@ -60,7 +70,7 @@ object FormComponentMakerService {
       Text(f, expr, DisplayWidth.DEFAULT, toUpperCase, maybePrefix, maybeSuffix).asRight
     case (TextFormat(f), HasTextExpression(expr), HasDisplayWidth(dw)) =>
       Text(f, expr, dw, toUpperCase, maybePrefix, maybeSuffix).asRight
-    case _ => createError(Some(formatExpr), maybeValueExpr, None, json).asLeft
+    case _ => createError(Some(formatExpr), maybeValueExpr, None, json, None).asLeft
   }
 
   def createTextAreaObject(
@@ -68,16 +78,17 @@ object FormComponentMakerService {
     maybeValueExpr: Option[ValueExpr],
     displayWidth: Option[String],
     multiLine: Option[String],
+    dataThreshold: Option[Int],
     rows: Int,
     displayCharCount: Boolean,
     json: JsValue
   ) =
     (formatExpr, maybeValueExpr, displayWidth) match {
       case (TextFormat(f), HasTextExpression(expr), None) =>
-        TextArea(f, expr, rows = rows, displayCharCount = displayCharCount).asRight
+        TextArea(f, expr, rows = rows, displayCharCount = displayCharCount, dataThreshold = dataThreshold).asRight
       case (TextFormat(f), HasTextExpression(expr), HasDisplayWidth(dw)) =>
-        TextArea(f, expr, dw, rows, displayCharCount).asRight
-      case _ => createError(Some(formatExpr), maybeValueExpr, multiLine, json).asLeft
+        TextArea(f, expr, dw, rows, displayCharCount, dataThreshold).asRight
+      case _ => createError(Some(formatExpr), maybeValueExpr, multiLine, json, dataThreshold).asLeft
     }
 
   @nowarn
@@ -85,18 +96,21 @@ object FormComponentMakerService {
     maybeFormatExpr: Option[FormatExpr],
     maybeValueExpr: Option[ValueExpr],
     multiLine: Option[String],
-    json: JsValue
+    json: JsValue,
+    dataThreshold: Option[Int]
   ): UnexpectedState = {
 
     val formComponentMaker = new FormComponentMaker(json)
-    (maybeFormatExpr, maybeValueExpr, multiLine) match {
-      case (maybeInvalidFormat, maybeValue, IsNotMultiline()) =>
+    (maybeFormatExpr, maybeValueExpr, multiLine, dataThreshold) match {
+      case (maybeInvalidFormat, maybeValue, IsNotMultiline(), None) =>
         UnexpectedState(s"""|Missing or invalid format for text field
                             |Id: ${formComponentMaker.id}
                             |Format: $maybeInvalidFormat
                             |Value: $maybeValue
                             |""".stripMargin)
-      case (maybeInvalidFormat, maybeValue, IsMultiline()) =>
+      case (_, _, IsNotMultiline(), Some(_)) =>
+        UnexpectedState(s"'dataThreshold' only applies to multline text area for id: ${formComponentMaker.id}")
+      case (maybeInvalidFormat, maybeValue, IsMultiline(), _) =>
         UnexpectedState(s"""|Missing or invalid format for multiline text field
                             |Id: ${formComponentMaker.id}
                             |Format: $maybeInvalidFormat

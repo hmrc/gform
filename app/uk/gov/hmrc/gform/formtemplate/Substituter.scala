@@ -172,13 +172,14 @@ object Substituter {
           prefix(substitutions),
           suffix(substitutions)
         )
-      case TextArea(constraint, value, displayWidth, rows, displayCharCount) =>
+      case TextArea(constraint, value, displayWidth, rows, displayCharCount, dataThreshold) =>
         TextArea(
           constraint,
           value(substitutions),
           displayWidth,
           rows,
-          displayCharCount
+          displayCharCount,
+          dataThreshold
         )
 
       case d @ Date(_, _, _)                           => d

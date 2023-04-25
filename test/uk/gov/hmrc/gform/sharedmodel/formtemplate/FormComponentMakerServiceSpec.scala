@@ -146,11 +146,12 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
           Some(TextExpression(expr)),
           None,
           Some("yes"),
+          None,
           defaultRows,
           defaultDisplayCharCount,
           Json.obj()
         ),
-        TextArea(textConstraint, expr, defaultDisplayWidth).asRight
+        TextArea(textConstraint, expr, defaultDisplayWidth, dataThreshold = None).asRight
       ),
       (
         createTextAreaObject(
@@ -158,11 +159,12 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
           Some(TextExpression(expr)),
           Some("xs"),
           Some("true"),
+          Some(10),
           defaultRows,
           defaultDisplayCharCount,
           Json.obj()
         ),
-        TextArea(textConstraint, expr, xsDisplayWidth).asRight
+        TextArea(textConstraint, expr, xsDisplayWidth, dataThreshold = Some(10)).asRight
       ),
       (
         createTextAreaObject(
@@ -170,11 +172,12 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
           Some(TextExpression(expr)),
           Some("xs"),
           Some("true"),
+          None,
           10,
           defaultDisplayCharCount,
           Json.obj()
         ),
-        TextArea(textConstraint, expr, xsDisplayWidth, 10).asRight
+        TextArea(textConstraint, expr, xsDisplayWidth, 10, dataThreshold = None).asRight
       ),
       (
         createTextAreaObject(
@@ -182,11 +185,12 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
           Some(TextExpression(expr)),
           None,
           Some("yes"),
+          None,
           defaultRows,
           false,
           Json.obj()
         ),
-        TextArea(textConstraint, expr, defaultDisplayWidth, displayCharCount = false).asRight
+        TextArea(textConstraint, expr, defaultDisplayWidth, displayCharCount = false, dataThreshold = None).asRight
       ),
       (
         createTextAreaObject(
@@ -194,11 +198,12 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
           Some(TextExpression(expr)),
           None,
           Some("yes"),
+          None,
           defaultRows,
           true,
           Json.obj()
         ),
-        TextArea(textConstraint, expr, defaultDisplayWidth).asRight
+        TextArea(textConstraint, expr, defaultDisplayWidth, dataThreshold = None).asRight
       )
     )
     table.forEvery({ case (expected, result) => expected shouldBe result })
@@ -211,6 +216,7 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
         None,
         None,
         isMultiline,
+        None,
         None,
         IsNotUpperCase,
         None,
@@ -234,6 +240,7 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
         None,
         isMultiline,
         None,
+        None,
         IsNotUpperCase,
         None,
         None,
@@ -256,6 +263,7 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
         None,
         isMultiline,
         None,
+        None,
         IsNotUpperCase,
         None,
         None,
@@ -273,6 +281,7 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
   it should "return error when format is invalid for text type" in {
     val result = createObject(
       Some(OrientationFormat("xxx")),
+      None,
       None,
       None,
       None,
@@ -296,6 +305,7 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
       None,
       Some("yes"),
       None,
+      None,
       IsNotUpperCase,
       None,
       None,
@@ -315,6 +325,7 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
       Some(OrientationFormat("xxx")),
       None,
       Some("yes"),
+      None,
       None,
       IsNotUpperCase,
       None,

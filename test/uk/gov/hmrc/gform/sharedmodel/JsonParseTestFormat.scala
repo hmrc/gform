@@ -74,10 +74,10 @@ class JsonParseTestFormat extends Spec with TableDrivenPropertyChecks {
     val multilineCombinations = Table(
       // format: off
       ("multiline", "expected"),
-      ("yes",  TextArea(ShortText.default, Value)),
-      ("Yes",  TextArea(ShortText.default, Value)),
-      ("true", TextArea(ShortText.default, Value)),
-      ("True", TextArea(ShortText.default, Value))
+      ("yes",  TextArea(ShortText.default, Value,dataThreshold = None)),
+      ("Yes",  TextArea(ShortText.default, Value,dataThreshold = None)),
+      ("true", TextArea(ShortText.default, Value,dataThreshold = None)),
+      ("True", TextArea(ShortText.default, Value,dataThreshold = None))
       // format: on
     )
 
@@ -137,12 +137,12 @@ class JsonParseTestFormat extends Spec with TableDrivenPropertyChecks {
     val displayWidthOptions = Table(
       // format: off
       ("displayWidth", "expected"),
-      (DisplayWidth.XS.toString.toLowerCase,  TextArea(ShortText.default, Value, DisplayWidth.XS)),
-      (DisplayWidth.S.toString.toLowerCase,   TextArea(ShortText.default, Value, DisplayWidth.S)),
-      (DisplayWidth.M.toString.toLowerCase,   TextArea(ShortText.default, Value, DisplayWidth.M)),
-      (DisplayWidth.L.toString.toLowerCase,   TextArea(ShortText.default, Value, DisplayWidth.L)),
-      (DisplayWidth.XL.toString.toLowerCase,  TextArea(ShortText.default, Value, DisplayWidth.XL)),
-      (DisplayWidth.XXL.toString.toLowerCase, TextArea(ShortText.default, Value, DisplayWidth.XXL))
+      (DisplayWidth.XS.toString.toLowerCase,  TextArea(ShortText.default, Value, DisplayWidth.XS, dataThreshold = None)),
+      (DisplayWidth.S.toString.toLowerCase,   TextArea(ShortText.default, Value, DisplayWidth.S, dataThreshold = None)),
+      (DisplayWidth.M.toString.toLowerCase,   TextArea(ShortText.default, Value, DisplayWidth.M, dataThreshold = None)),
+      (DisplayWidth.L.toString.toLowerCase,   TextArea(ShortText.default, Value, DisplayWidth.L, dataThreshold = None)),
+      (DisplayWidth.XL.toString.toLowerCase,  TextArea(ShortText.default, Value, DisplayWidth.XL, dataThreshold = None)),
+      (DisplayWidth.XXL.toString.toLowerCase, TextArea(ShortText.default, Value, DisplayWidth.XXL, dataThreshold = None))
       // format: on
     )
 
@@ -194,7 +194,7 @@ class JsonParseTestFormat extends Spec with TableDrivenPropertyChecks {
         .reads(Json.parse(startOfJson + s""", "format" : "shortText", "multiline" : "yes", "rows" : 101 }"""))
 
     jsResult shouldBe a[JsSuccess[_]]
-    jsResult.map(fv => fv.`type` shouldBe TextArea(ShortText.default, Value, rows = 101))
+    jsResult.map(fv => fv.`type` shouldBe TextArea(ShortText.default, Value, rows = 101, dataThreshold = None))
   }
 
   "A text area component without a no of rows" should "parse correctly to default no of rows" in {
@@ -204,7 +204,7 @@ class JsonParseTestFormat extends Spec with TableDrivenPropertyChecks {
         .reads(Json.parse(startOfJson + s""", "format" : "shortText", "multiline" : "yes"}"""))
 
     jsResult shouldBe a[JsSuccess[_]]
-    jsResult.map(fv => fv.`type` shouldBe TextArea(ShortText.default, Value))
+    jsResult.map(fv => fv.`type` shouldBe TextArea(ShortText.default, Value, dataThreshold = None))
   }
 
   "A text area component with a non positive no of rows" should "fail to parse" in {

@@ -60,7 +60,8 @@ case class TextArea(
   value: Expr,
   displayWidth: DisplayWidth = DisplayWidth.DEFAULT,
   rows: Int = TextArea.defaultRows,
-  displayCharCount: Boolean = TextArea.defaultDisplayCharCount
+  displayCharCount: Boolean = TextArea.defaultDisplayCharCount,
+  dataThreshold: Option[Int]
 ) extends ComponentType
 
 object TextArea {
@@ -519,7 +520,7 @@ object ComponentType {
           LeafExpr(path + "prefix", prefix) ++
           LeafExpr(path + "suffix", suffix) ++
           LeafExpr(path + "format", constraint)
-      case TextArea(constraint, expr, _, _, _)     => ExprWithPath(path, expr) :: LeafExpr(path, constraint)
+      case TextArea(constraint, expr, _, _, _, _)  => ExprWithPath(path, expr) :: LeafExpr(path, constraint)
       case Date(_, _, _)                           => Nil
       case CalendarDate                            => Nil
       case PostcodeLookup                          => Nil

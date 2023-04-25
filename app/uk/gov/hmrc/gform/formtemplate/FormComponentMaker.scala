@@ -110,6 +110,7 @@ class FormComponentMaker(json: JsValue) {
   lazy val mandatoryCity: Option[String] = (json \ "cityMandatory").asOpt[String]
   lazy val mandatoryPostcode: Option[String] = (json \ "postcodeMandatory").asOpt[String]
   lazy val multiline: Option[String] = (json \ "multiline").asOpt[String]
+  lazy val dataThreshold: Option[Int] = (json \ "dataThreshold").asOpt[Int]
   lazy val optRows: Opt[Option[Int]] = parse("rows", BasicParsers.validateNonZeroPositiveNumber)
   lazy val displayCharCount: Option[String] = (json \ "displayCharCount").asOpt[String]
   lazy val displayWidth: Option[String] = (json \ "displayWidth").asOpt[String]
@@ -366,6 +367,7 @@ class FormComponentMaker(json: JsValue) {
                   maybeFormatExpr,
                   maybeValueExpr,
                   multiline,
+                  dataThreshold,
                   displayWidth,
                   toUpperCase,
                   prefix,
