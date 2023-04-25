@@ -41,7 +41,7 @@ trait ComponentTypeGen {
       value        <- ExprGen.exprGen()
       displayWidth <- displayWidthGen
       rows         <- rowsGen
-    } yield TextArea(constraint, value, displayWidth, rows)
+    } yield TextArea(constraint, value, displayWidth, rows, dataThreshold = None)
 
   def dateGen: Gen[Date] =
     for {

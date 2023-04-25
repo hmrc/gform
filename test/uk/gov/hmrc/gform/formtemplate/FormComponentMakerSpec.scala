@@ -145,7 +145,7 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
                                                                  |}
                                                                  |""".stripMargin))
     val result = formComponentMaker.textOpt
-    result shouldBe Right(TextArea(TextWithRestrictions(0, 1000), Value))
+    result shouldBe Right(TextArea(TextWithRestrictions(0, 1000), Value, dataThreshold = None))
   }
 
   it should "parse multiline text component with no of rows" in {
@@ -160,7 +160,7 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
                                                                  |}
                                                                  |""".stripMargin))
     val result = formComponentMaker.textOpt
-    result shouldBe Right(TextArea(TextWithRestrictions(0, 1000), Value, rows = 7))
+    result shouldBe Right(TextArea(TextWithRestrictions(0, 1000), Value, rows = 7, dataThreshold = None))
   }
 
   it should "parse multiline text component with displayCharCount false" in {
@@ -175,7 +175,9 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
                                                                  |}
                                                                  |""".stripMargin))
     val result = formComponentMaker.textOpt
-    result shouldBe Right(TextArea(TextWithRestrictions(0, 1000), Value, displayCharCount = false))
+    result shouldBe Right(
+      TextArea(TextWithRestrictions(0, 1000), Value, displayCharCount = false, dataThreshold = None)
+    )
   }
 
   it should "parse multiline text component with displayCharCount no" in {
@@ -190,7 +192,9 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
                                                                  |}
                                                                  |""".stripMargin))
     val result = formComponentMaker.textOpt
-    result shouldBe Right(TextArea(TextWithRestrictions(0, 1000), Value, displayCharCount = false))
+    result shouldBe Right(
+      TextArea(TextWithRestrictions(0, 1000), Value, displayCharCount = false, dataThreshold = None)
+    )
   }
 
   it should "parse multiline text component with displayCharCount nO" in {
@@ -205,7 +209,9 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
                                                                  |}
                                                                  |""".stripMargin))
     val result = formComponentMaker.textOpt
-    result shouldBe Right(TextArea(TextWithRestrictions(0, 1000), Value, displayCharCount = false))
+    result shouldBe Right(
+      TextArea(TextWithRestrictions(0, 1000), Value, displayCharCount = false, dataThreshold = None)
+    )
   }
 
   it should "parse multiline text component with displayCharCount fAlSe" in {
@@ -220,7 +226,9 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
                                                                  |}
                                                                  |""".stripMargin))
     val result = formComponentMaker.textOpt
-    result shouldBe Right(TextArea(TextWithRestrictions(0, 1000), Value, displayCharCount = false))
+    result shouldBe Right(
+      TextArea(TextWithRestrictions(0, 1000), Value, displayCharCount = false, dataThreshold = None)
+    )
   }
 
   it should "parse multiline text component with displayCharCount true" in {
@@ -235,7 +243,7 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
                                                                  |}
                                                                  |""".stripMargin))
     val result = formComponentMaker.textOpt
-    result shouldBe Right(TextArea(TextWithRestrictions(0, 1000), Value))
+    result shouldBe Right(TextArea(TextWithRestrictions(0, 1000), Value, dataThreshold = None))
   }
 
   it should "parse multiline text component with displayCharCount tRUe" in {
@@ -250,7 +258,7 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
                                                                  |}
                                                                  |""".stripMargin))
     val result = formComponentMaker.textOpt
-    result shouldBe Right(TextArea(TextWithRestrictions(0, 1000), Value))
+    result shouldBe Right(TextArea(TextWithRestrictions(0, 1000), Value, dataThreshold = None))
   }
 
   it should "parse multiline text component with displayCharCount noTrurOrFalse" in {
@@ -265,7 +273,7 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
                                                                  |}
                                                                  |""".stripMargin))
     val result = formComponentMaker.textOpt
-    result shouldBe Right(TextArea(TextWithRestrictions(0, 1000), Value))
+    result shouldBe Right(TextArea(TextWithRestrictions(0, 1000), Value, dataThreshold = None))
   }
 
   it should "parse multiline text component without displayCharCount" in {
@@ -279,7 +287,7 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
                                                                  |}
                                                                  |""".stripMargin))
     val result = formComponentMaker.textOpt
-    result shouldBe Right(TextArea(TextWithRestrictions(0, 1000), Value))
+    result shouldBe Right(TextArea(TextWithRestrictions(0, 1000), Value, dataThreshold = None))
   }
 
   it should "return error when format is not valid for multiline text" in {
