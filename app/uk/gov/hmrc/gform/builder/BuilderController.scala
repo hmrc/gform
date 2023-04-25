@@ -17,7 +17,7 @@
 package uk.gov.hmrc.gform.builder
 
 import cats.implicits._
-import io.circe.{ CursorOp, ParsingFailure }
+import io.circe._
 import io.circe.CursorOp._
 import io.circe.Json
 import play.api.libs.circe.Circe
@@ -68,6 +68,47 @@ object BuilderSupport {
     json.hcursor.replay(history).withFocus(_.deepMerge(sectionData)).root.focus.get
   }
 
+  def modifyFormComponentData(
+    json: Json,
+    sectionNumber: Int,
+    formComponentId: FormComponentId,
+    sectionData: Json
+  ): Json =
+    sectionData.hcursor
+      .downField("label")
+      .focus
+      .flatMap { labelValue =>
+        val sectionPath: List[CursorOp] = (0 until sectionNumber).foldRight(List[CursorOp](DownArray)) {
+          case (_, acc) =>
+            MoveRight :: acc
+        }
+
+        val history: List[CursorOp] =
+          DownArray :: DownField("fields") :: sectionPath ::: DownField("sections") :: Nil
+
+        val array = json.hcursor.replay(history)
+
+        array.success.flatMap { hcursor =>
+          hcursor
+            .find { json =>
+              json.hcursor.downField("id").focus.flatMap(_.asString).contains(formComponentId.value)
+            }
+            .downField("label")
+            .set(labelValue)
+            .root
+            .focus
+        }
+      }
+      .getOrElse(json)
+
+  def updateFormComponent(
+    formTemplateRaw: FormTemplateRaw,
+    sectionNumber: Int,
+    sectionData: Json,
+    formComponentId: FormComponentId
+  ): Either[BuilderError, FormTemplateRaw] =
+    modifyJson(formTemplateRaw)(modifyFormComponentData(_, sectionNumber, formComponentId, sectionData))
+
   def updateSectionByIndex(
     formTemplateRaw: FormTemplateRaw,
     sectionNumber: Int,
@@ -114,6 +155,13 @@ class BuilderController(controllerComponents: ControllerComponents, formTemplate
     updateAction(formTemplateRawId) { (formTemplateRaw, requestBody) =>
       BuilderSupport
         .updateSectionByIndex(formTemplateRaw, sectionNumber, requestBody)
+        .map(formTemplateRaw => (formTemplateRaw, Results.Ok(formTemplateRaw.value)))
+    }
+
+  def updateFormComponent(formTemplateRawId: FormTemplateRawId, sectionNumber: Int, formComponentId: FormComponentId) =
+    updateAction(formTemplateRawId) { (formTemplateRaw, requestBody) =>
+      BuilderSupport
+        .updateFormComponent(formTemplateRaw, sectionNumber, requestBody, formComponentId)
         .map(formTemplateRaw => (formTemplateRaw, Results.Ok(formTemplateRaw.value)))
     }
 }
