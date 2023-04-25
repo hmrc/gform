@@ -1296,22 +1296,13 @@ object FormTemplateValidator {
     )(_ => Valid)
 
   def validateDataThreshold(sectionsList: List[Page]): ValidationResult = {
-    def check(textArea: TextArea): Boolean = textArea match {
-      case TextArea(_, _, _, _, _, Some(value)) if value > 100 => true
-      case _                                                   => false
+    val textAreaFieldIds = allFormComponents(sectionsList).collect {
+      case fc @ IsTextArea(textArea) if textArea.dataThreshold.fold(false)(v => v > 100) => fc.id
     }
-
-    val textAreaFieldIds = allFormComponents(sectionsList)
-      .map(fv => (fv.id, fv.`type`))
-      .collect {
-        case (fId, textArea: TextArea) if check(textArea) =>
-          fId
-      }
 
     textAreaFieldIds.isEmpty.validationResult(
       "'dataThreshold' is a percentage with a maximum of 100 for component Ids :" + textAreaFieldIds.mkString(",")
     )
-
   }
 }
 
