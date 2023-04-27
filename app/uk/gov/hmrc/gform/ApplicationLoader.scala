@@ -46,6 +46,7 @@ import uk.gov.hmrc.gform.graphite.GraphiteModule
 import uk.gov.hmrc.gform.metrics.MetricsModule
 import uk.gov.hmrc.gform.mongo.MongoModule
 import uk.gov.hmrc.gform.notificationbanner.NotificationBannerModule
+import uk.gov.hmrc.gform.shutter.ShutterModule
 import uk.gov.hmrc.gform.notifier.NotifierModule
 import uk.gov.hmrc.gform.objectstore.ObjectStoreModule
 import uk.gov.hmrc.gform.pdfgenerator.PdfGeneratorModule
@@ -124,6 +125,7 @@ class ApplicationModule(context: Context)
   private val emailModule = new EmailModule(configModule, wSHttpModule, notifierModule, formTemplateModule)
   private val translationModule = new TranslationModule(formTemplateModule, configModule)
   private val notificationBannerModule = new NotificationBannerModule(mongoModule, configModule)
+  private val shutterModule = new ShutterModule(mongoModule, configModule)
   val pdfGeneratorModule = new PdfGeneratorModule()
 
   val formMetadaModule = new FormMetadataModule(mongoModule)
@@ -298,7 +300,8 @@ class ApplicationModule(context: Context)
     sdesModule,
     notificationBannerModule,
     schedulerModule,
-    builderModule
+    builderModule,
+    shutterModule
   )
 
   override lazy val httpRequestHandler: HttpRequestHandler = playComponentsModule.httpRequestHandler

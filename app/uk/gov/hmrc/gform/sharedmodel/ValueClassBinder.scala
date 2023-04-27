@@ -56,6 +56,7 @@ object ValueClassBinder {
   )
   implicit val processingStatusBinder: QueryStringBindable[ProcessingStatus] = valueClassQueryBinder(_.name)
   implicit val bannerIdBinder: PathBindable[BannerId] = valueClassBinder(_.value)
+  implicit val shutterMessageIdBinder: PathBindable[ShutterMessageId] = valueClassBinder(_.value)
 
   implicit val reads: Reads[Crypted] = Reads {
     case JsString(str) => JsSuccess(Crypted(str))

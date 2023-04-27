@@ -47,6 +47,7 @@ import uk.gov.hmrc.gform.upscan.UpscanModule
 import uk.gov.hmrc.play.bootstrap.backend.filters.BackendMdcFilter
 import uk.gov.hmrc.play.bootstrap.filters.{ CacheControlConfig, CacheControlFilter, DefaultLoggingFilter }
 import uk.gov.hmrc.play.health.HealthController
+import uk.gov.hmrc.gform.shutter.ShutterModule
 
 class PlayComponentsModule(
   playComponents: PlayComponents,
@@ -73,7 +74,8 @@ class PlayComponentsModule(
   sdesModule: SdesModule,
   notificationBannerModule: NotificationBannerModule,
   schedulerModule: SchedulerModule,
-  builderModule: BuilderModule
+  builderModule: BuilderModule,
+  shutterModule: ShutterModule
 )(implicit ec: ExecutionContext) {
   private val logger = LoggerFactory.getLogger(getClass)
 
@@ -99,6 +101,8 @@ class PlayComponentsModule(
     translationModule.translationController,
     notificationBannerModule.notificationBannerController,
     notificationBannerModule.notificationBannerFormTemplateController,
+    shutterModule.shutterController,
+    shutterModule.shutterFormTemplateController,
     sdesModule.sdesCallbackController,
     sdesModule.sdesController,
     sdesModule.sdesWorkItemController
