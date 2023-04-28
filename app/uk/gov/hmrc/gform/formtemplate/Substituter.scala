@@ -274,7 +274,9 @@ object Substituter {
       errorMessage = t.errorMessage(substitutions),
       validators = t.validators(substitutions),
       instruction = t.instruction(substitutions),
-      errorShortName = t.errorShortName(substitutions)
+      errorShortName = t.errorShortName(substitutions),
+      errorShortNameStart = t.errorShortNameStart(substitutions),
+      errorExample = t.errorExample(substitutions)
     )
 
   implicit def pageSubstituter[A](implicit

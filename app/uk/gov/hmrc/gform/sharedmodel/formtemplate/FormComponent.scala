@@ -41,13 +41,17 @@ case class FormComponent(
   validators: List[FormComponentValidator] = Nil,
   instruction: Option[Instruction] = None,
   labelSize: Option[LabelSize] = None,
-  errorShortName: Option[SmartString] = None
+  errorShortName: Option[SmartString] = None,
+  errorShortNameStart: Option[SmartString] = None,
+  errorExample: Option[SmartString] = None
 ) {
   private def updateField(i: Int, fc: FormComponent): FormComponent =
     fc.copy(
       label = LabelHelper.buildRepeatingLabel(fc.label, i),
       shortName = LabelHelper.buildRepeatingLabel(fc.shortName, i),
-      errorShortName = LabelHelper.buildRepeatingLabel(fc.errorShortName, i)
+      errorShortName = LabelHelper.buildRepeatingLabel(fc.errorShortName, i),
+      errorShortNameStart = LabelHelper.buildRepeatingLabel(fc.errorShortNameStart, i),
+      errorExample = LabelHelper.buildRepeatingLabel(fc.errorExample, i)
     )
 
   private def loop(fc: FormComponent): List[FormComponent] =
