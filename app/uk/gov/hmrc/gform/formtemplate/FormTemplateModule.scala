@@ -24,8 +24,13 @@ import uk.gov.hmrc.gform.repo.Repo
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplate, FormTemplateId, FormTemplateRaw }
 
 import scala.concurrent.ExecutionContext
+import uk.gov.hmrc.gform.shutter.ShutterModule
 
-class FormTemplateModule(controllerComponents: ControllerComponents, mongoModule: MongoModule)(implicit
+class FormTemplateModule(
+  controllerComponents: ControllerComponents,
+  mongoModule: MongoModule,
+  shutterModule: ShutterModule
+)(implicit
   ex: ExecutionContext
 ) {
 
@@ -41,7 +46,12 @@ class FormTemplateModule(controllerComponents: ControllerComponents, mongoModule
   val formRedirectService: FormRedirectService =
     new FormRedirectService(formRedirectRepo)
   val formTemplatesController: FormTemplatesController =
-    new FormTemplatesController(controllerComponents, formTemplateService, formRedirectService)
+    new FormTemplatesController(
+      controllerComponents,
+      formTemplateService,
+      formRedirectService,
+      shutterModule.shutterService
+    )
 
   val fOptFormTemplateAlgebra: FormTemplateAlgebra[FOpt] = new FormTemplateAlgebra[FOpt] {
     override def get(id: FormTemplateId): FOpt[FormTemplate] = fromFutureA(formTemplateService.get(id))

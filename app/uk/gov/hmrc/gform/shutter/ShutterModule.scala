@@ -31,7 +31,7 @@ class ShutterModule(
   private val shutterFormTemplateRepository: ShutterFormTemplateRepository =
     new ShutterFormTemplateRepository(mongoModule)
 
-  private val shutterService: ShutterService =
+  val shutterService: ShutterService =
     new ShutterService(
       shutterRepository,
       shutterFormTemplateRepository

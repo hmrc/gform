@@ -25,13 +25,15 @@ import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.formredirect.FormRedirectService
 import uk.gov.hmrc.gform.formtemplate.FormTemplatePIIRefsHelper.PIIDetailsResponse
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplate, FormTemplateId, FormTemplateRaw, FormTemplateRawId, FormTemplateWithRedirects }
+import uk.gov.hmrc.gform.shutter.ShutterService
 
 import scala.concurrent.{ ExecutionContext, Future }
 
 class FormTemplatesController(
   controllerComponents: ControllerComponents,
   formTemplateService: FormTemplateService,
-  formRedirectService: FormRedirectService
+  formRedirectService: FormRedirectService,
+  shutterService: ShutterService
 )(implicit
   ex: ExecutionContext
 ) extends BaseController(controllerComponents) {
@@ -74,7 +76,8 @@ class FormTemplatesController(
       for {
         formTemplate <- findLatestFormTemplate(id)
         redirects    <- formRedirectService.find(formTemplate._id)
-      } yield FormTemplateWithRedirects(formTemplate, redirects.map(_.redirect))
+        mayBeShutter <- shutterService.find(formTemplate._id)
+      } yield FormTemplateWithRedirects(formTemplate, redirects.map(_.redirect), mayBeShutter)
     formTemplateWithRedirects.asOkJson
   }
 

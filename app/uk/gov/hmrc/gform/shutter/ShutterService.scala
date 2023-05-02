@@ -50,14 +50,13 @@ class ShutterService(
   def deleteFormTemplateShutter(formTemplateId: FormTemplateId): Future[Unit] =
     shutterFormTemplateRepository.delete(formTemplateId).map(_ => ())
 
-
   def find(formTemplateId: FormTemplateId): Future[Option[Shutter]] =
-      for {
-        maybeShutterTemplate <- findFormTemplateShutter(formTemplateId)
-        maybeShutter <-
-          maybeShutterTemplate.fold(Future.successful(Option.empty[Shutter]))(template =>
-            findShutter(template.shutterMessageId)
-          )
-      } yield maybeShutter
+    for {
+      maybeShutterTemplate <- findFormTemplateShutter(formTemplateId)
+      maybeShutter <-
+        maybeShutterTemplate.fold(Future.successful(Option.empty[Shutter]))(template =>
+          findShutter(template.shutterMessageId)
+        )
+    } yield maybeShutter
 
 }
