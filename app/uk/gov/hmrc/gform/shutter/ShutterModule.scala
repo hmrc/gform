@@ -42,10 +42,4 @@ class ShutterModule(
       shutterService,
       configModule.controllerComponents
     )
-
-  // val shutterFormTemplateController: ShutterFormTemplateController =
-  //   new ShutterFormTemplateController(
-  //     shutterFormTemplateService,
-  //     configModule.controllerComponents
-  //   )
 }
