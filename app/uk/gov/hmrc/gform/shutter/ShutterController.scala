@@ -27,7 +27,6 @@ import scala.concurrent.{ ExecutionContext, Future }
 
 class ShutterController(
   shutterService: ShutterService,
-  shutterFormTemplateService: ShutterFormTemplateService,
   controllerComponents: ControllerComponents
 )(implicit ec: ExecutionContext)
     extends BaseController(controllerComponents) {
@@ -35,11 +34,11 @@ class ShutterController(
   def findAllShutters(): Action[AnyContent] =
     Action.async { _ =>
       shutterService
-        .findAll()
+        .findAllShutters()
         .flatMap(shutters =>
           shutters.traverse(shutter =>
             for {
-              res <- shutterFormTemplateService.findByShutterMessageId(shutter._id)
+              res <- shutterService.findByShutterMessageId(shutter._id)
             } yield ShutterView(
               shutter._id,
               shutter.message,
@@ -52,10 +51,10 @@ class ShutterController(
   def find(formTemplateId: FormTemplateId): Action[AnyContent] =
     Action.async { request =>
       for {
-        maybeShutterTemplate <- shutterFormTemplateService.find(formTemplateId)
+        maybeShutterTemplate <- shutterService.findFormTemplateShutter(formTemplateId)
         maybeShutter <-
           maybeShutterTemplate.fold(Future.successful(Option.empty[Shutter]))(template =>
-            shutterService.find(template.shutterMessageId)
+            shutterService.findShutter(template.shutterMessageId)
           )
       } yield maybeShutter.fold(NoContent)(shutter => Ok(Json.toJson(shutter)))
     }
@@ -63,7 +62,7 @@ class ShutterController(
   def upsertShutter(): Action[Shutter] =
     Action.async(parse.json[Shutter]) { request =>
       val shutter = request.body
-      shutterService.upsert(shutter).map { _ =>
+      shutterService.upsertShutter(shutter).map { _ =>
         NoContent
       }
     }
@@ -71,12 +70,27 @@ class ShutterController(
   def deleteShutter(shutterMessageId: ShutterMessageId): Action[AnyContent] =
     Action.async { request =>
       for {
-        _ <- shutterFormTemplateService.findByShutterMessageId(shutterMessageId).map { shutterMessageFormTemplates =>
+        _ <- shutterService.findByShutterMessageId(shutterMessageId).map { shutterMessageFormTemplates =>
                shutterMessageFormTemplates.traverse { shutterMessageFormTemplate =>
-                 shutterFormTemplateService.delete(shutterMessageFormTemplate._id)
+                 shutterService.deleteFormTemplateShutter(shutterMessageFormTemplate._id)
                }
              }
-        _ <- shutterService.delete(shutterMessageId)
+        _ <- shutterService.deleteShutter(shutterMessageId)
       } yield NoContent
+    }
+
+  def upsertFormTemplateShutter(): Action[ShutterFormTemplate] =
+    Action.async(parse.json[ShutterFormTemplate]) { request =>
+      val shutterFormTemplate = request.body
+      shutterService.upsertFormTemplateShutter(shutterFormTemplate).map { _ =>
+        NoContent
+      }
+    }
+
+  def deleteFormTemplateShutter(formTemplateId: FormTemplateId): Action[AnyContent] =
+    Action.async { request =>
+      shutterService.deleteFormTemplateShutter(formTemplateId).map { _ =>
+        NoContent
+      }
     }
 }

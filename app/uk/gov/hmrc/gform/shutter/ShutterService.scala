@@ -17,23 +17,37 @@
 package uk.gov.hmrc.gform.shutter
 
 import uk.gov.hmrc.gform.sharedmodel.ShutterMessageId
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 
 import scala.concurrent.{ ExecutionContext, Future }
 
 class ShutterService(
-  shutterRepository: ShutterRepository
+  shutterRepository: ShutterRepository,
+  shutterFormTemplateRepository: ShutterFormTemplateRepository
 )(implicit ec: ExecutionContext) {
 
-  def findAll(): Future[List[Shutter]] =
+  def findAllShutters(): Future[List[Shutter]] =
     shutterRepository.findAll()
 
-  def find(shutterMessageId: ShutterMessageId): Future[Option[Shutter]] =
+  def findShutter(shutterMessageId: ShutterMessageId): Future[Option[Shutter]] =
     shutterRepository.find(shutterMessageId)
 
-  def upsert(shutter: Shutter): Future[Unit] =
+  def upsertShutter(shutter: Shutter): Future[Unit] =
     shutterRepository.upsert(shutter).map(_ => ())
 
-  def delete(shutterMessageId: ShutterMessageId): Future[Unit] =
+  def deleteShutter(shutterMessageId: ShutterMessageId): Future[Unit] =
     shutterRepository.delete(shutterMessageId).map(_ => ())
+
+  def upsertFormTemplateShutter(shutterFormTemplate: ShutterFormTemplate): Future[Unit] =
+    shutterFormTemplateRepository.upsert(shutterFormTemplate).map(_ => ())
+
+  def findFormTemplateShutter(formTemplateId: FormTemplateId): Future[Option[ShutterFormTemplate]] =
+    shutterFormTemplateRepository.find(formTemplateId)
+
+  def findByShutterMessageId(shutterMessageId: ShutterMessageId): Future[List[ShutterFormTemplate]] =
+    shutterFormTemplateRepository.findByShutterMessageId(shutterMessageId)
+
+  def deleteFormTemplateShutter(formTemplateId: FormTemplateId): Future[Unit] =
+    shutterFormTemplateRepository.delete(formTemplateId).map(_ => ())
 
 }

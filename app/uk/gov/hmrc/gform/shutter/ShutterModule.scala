@@ -33,24 +33,19 @@ class ShutterModule(
 
   private val shutterService: ShutterService =
     new ShutterService(
-      shutterRepository
-    )
-
-  private val shutterFormTemplateService: ShutterFormTemplateService =
-    new ShutterFormTemplateService(
+      shutterRepository,
       shutterFormTemplateRepository
     )
 
   val shutterController: ShutterController =
     new ShutterController(
       shutterService,
-      shutterFormTemplateService,
       configModule.controllerComponents
     )
 
-  val shutterFormTemplateController: ShutterFormTemplateController =
-    new ShutterFormTemplateController(
-      shutterFormTemplateService,
-      configModule.controllerComponents
-    )
+  // val shutterFormTemplateController: ShutterFormTemplateController =
+  //   new ShutterFormTemplateController(
+  //     shutterFormTemplateService,
+  //     configModule.controllerComponents
+  //   )
 }
