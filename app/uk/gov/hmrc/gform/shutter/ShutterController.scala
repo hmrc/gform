@@ -23,7 +23,7 @@ import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.sharedmodel.ShutterMessageId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.ExecutionContext
 
 class ShutterController(
   shutterService: ShutterService,
@@ -49,14 +49,10 @@ class ShutterController(
         .map(r => Ok(Json.toJson(r)))
     }
   def find(formTemplateId: FormTemplateId): Action[AnyContent] =
-    Action.async { request =>
-      for {
-        maybeShutterTemplate <- shutterService.findFormTemplateShutter(formTemplateId)
-        maybeShutter <-
-          maybeShutterTemplate.fold(Future.successful(Option.empty[Shutter]))(template =>
-            shutterService.findShutter(template.shutterMessageId)
-          )
-      } yield maybeShutter.fold(NoContent)(shutter => Ok(Json.toJson(shutter)))
+    Action.async { _ =>
+      shutterService
+        .find(formTemplateId)
+        .map(maybeShutter => maybeShutter.fold(NoContent)(shutter => Ok(Json.toJson(shutter))))
     }
 
   def upsertShutter(): Action[Shutter] =
