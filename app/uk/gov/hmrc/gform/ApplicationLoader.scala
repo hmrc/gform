@@ -122,10 +122,11 @@ class ApplicationModule(context: Context)
       sdesModule
     )
   private val shutterModule = new ShutterModule(mongoModule, configModule)
-  val formTemplateModule = new FormTemplateModule(controllerComponents, mongoModule, shutterModule)
+  private val notificationBannerModule = new NotificationBannerModule(mongoModule, configModule)
+  val formTemplateModule =
+    new FormTemplateModule(controllerComponents, mongoModule, shutterModule, notificationBannerModule)
   private val emailModule = new EmailModule(configModule, wSHttpModule, notifierModule, formTemplateModule)
   private val translationModule = new TranslationModule(formTemplateModule, configModule)
-  private val notificationBannerModule = new NotificationBannerModule(mongoModule, configModule)
   val pdfGeneratorModule = new PdfGeneratorModule()
 
   val formMetadaModule = new FormMetadataModule(mongoModule)

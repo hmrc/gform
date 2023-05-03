@@ -25,11 +25,13 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplate, FormTemplateId
 
 import scala.concurrent.ExecutionContext
 import uk.gov.hmrc.gform.shutter.ShutterModule
+import uk.gov.hmrc.gform.notificationbanner.NotificationBannerModule
 
 class FormTemplateModule(
   controllerComponents: ControllerComponents,
   mongoModule: MongoModule,
-  shutterModule: ShutterModule
+  shutterModule: ShutterModule,
+  notificationBannerModule: NotificationBannerModule
 )(implicit
   ex: ExecutionContext
 ) {
@@ -50,7 +52,8 @@ class FormTemplateModule(
       controllerComponents,
       formTemplateService,
       formRedirectService,
-      shutterModule.shutterService
+      shutterModule.shutterService,
+      notificationBannerModule.notificationService
     )
 
   val fOptFormTemplateAlgebra: FormTemplateAlgebra[FOpt] = new FormTemplateAlgebra[FOpt] {

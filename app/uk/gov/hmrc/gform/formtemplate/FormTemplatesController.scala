@@ -28,12 +28,14 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplate, FormTemplateId
 import uk.gov.hmrc.gform.shutter.ShutterService
 
 import scala.concurrent.{ ExecutionContext, Future }
+import uk.gov.hmrc.gform.notificationbanner.NotificationService
 
 class FormTemplatesController(
   controllerComponents: ControllerComponents,
   formTemplateService: FormTemplateService,
   formRedirectService: FormRedirectService,
-  shutterService: ShutterService
+  shutterService: ShutterService,
+  notificationService: NotificationService
 )(implicit
   ex: ExecutionContext
 ) extends BaseController(controllerComponents) {
@@ -74,10 +76,11 @@ class FormTemplatesController(
   def getWithRedirects(id: FormTemplateId) = formTemplateAction("getWithRedirects", id) { _ =>
     val formTemplateWithRedirects =
       for {
-        formTemplate <- findLatestFormTemplate(id)
-        redirects    <- formRedirectService.find(formTemplate._id)
-        mayBeShutter <- shutterService.find(formTemplate._id)
-      } yield FormTemplateWithRedirects(formTemplate, redirects.map(_.redirect), mayBeShutter)
+        formTemplate            <- findLatestFormTemplate(id)
+        redirects               <- formRedirectService.find(formTemplate._id)
+        mayBeShutter            <- shutterService.find(formTemplate._id)
+        maybeNotificationBanner <- notificationService.find(formTemplate._id)
+      } yield FormTemplateWithRedirects(formTemplate, redirects.map(_.redirect), mayBeShutter, maybeNotificationBanner)
     formTemplateWithRedirects.asOkJson
   }
 

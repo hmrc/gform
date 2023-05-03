@@ -19,11 +19,13 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate
 import julienrf.json.derived
 import play.api.libs.json.OFormat
 import uk.gov.hmrc.gform.shutter.Shutter
+import uk.gov.hmrc.gform.notificationbanner.NotificationBanner
 
 final case class FormTemplateWithRedirects(
   formTemplate: FormTemplate,
   redirects: Option[FormTemplateId], // FormTemplateId which has formTemplate._id in its legacyIds
-  shutter: Option[Shutter] = None
+  shutter: Option[Shutter] = None,
+  notificationBanner: Option[NotificationBanner] = None
 )
 
 object FormTemplateWithRedirects {
