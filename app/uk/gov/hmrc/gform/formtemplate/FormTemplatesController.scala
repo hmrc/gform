@@ -74,14 +74,14 @@ class FormTemplatesController(
   }
 
   def getWithRedirects(id: FormTemplateId) = formTemplateAction("getWithRedirects", id) { _ =>
-    val formTemplateWithRedirects =
+    val formTemplateContext =
       for {
         formTemplate            <- findLatestFormTemplate(id)
         redirects               <- formRedirectService.find(formTemplate._id)
         mayBeShutter            <- shutterService.find(formTemplate._id)
         maybeNotificationBanner <- notificationService.find(formTemplate._id)
       } yield FormTemplateContext(formTemplate, redirects.map(_.redirect), mayBeShutter, maybeNotificationBanner)
-    formTemplateWithRedirects.asOkJson
+    formTemplateContext.asOkJson
   }
 
   private def findFormTemplate(id: FormTemplateId): Future[FormTemplate] =
