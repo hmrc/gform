@@ -21,13 +21,13 @@ import play.api.libs.json.OFormat
 import uk.gov.hmrc.gform.shutter.Shutter
 import uk.gov.hmrc.gform.notificationbanner.NotificationBanner
 
-final case class FormTemplateWithRedirects(
+final case class FormTemplateContext(
   formTemplate: FormTemplate,
   redirects: Option[FormTemplateId], // FormTemplateId which has formTemplate._id in its legacyIds
   shutter: Option[Shutter] = None,
   notificationBanner: Option[NotificationBanner] = None
 )
 
-object FormTemplateWithRedirects {
-  implicit val format: OFormat[FormTemplateWithRedirects] = derived.oformat()
+object FormTemplateContext {
+  implicit val format: OFormat[FormTemplateContext] = derived.oformat()
 }
