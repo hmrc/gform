@@ -74,32 +74,34 @@ object BuilderSupport {
     formComponentId: FormComponentId,
     sectionData: Json
   ): Json =
-    sectionData.hcursor
-      .downField("label")
-      .focus
-      .flatMap { labelValue =>
-        val sectionPath: List[CursorOp] = (0 until sectionNumber).foldRight(List[CursorOp](DownArray)) {
-          case (_, acc) =>
-            MoveRight :: acc
+    List("label", "helpText").foldRight(json) { case (property, accJson) =>
+      sectionData.hcursor
+        .downField(property)
+        .focus
+        .flatMap { propertyValue =>
+          val sectionPath: List[CursorOp] = (0 until sectionNumber).foldRight(List[CursorOp](DownArray)) {
+            case (_, acc) =>
+              MoveRight :: acc
+          }
+
+          val history: List[CursorOp] =
+            DownArray :: DownField("fields") :: sectionPath ::: DownField("sections") :: Nil
+
+          val array = accJson.hcursor.replay(history)
+
+          array.success.flatMap { hcursor =>
+            hcursor
+              .find { json =>
+                json.hcursor.downField("id").focus.flatMap(_.asString).contains(formComponentId.value)
+              }
+              .downField(property)
+              .set(propertyValue)
+              .root
+              .focus
+          }
         }
-
-        val history: List[CursorOp] =
-          DownArray :: DownField("fields") :: sectionPath ::: DownField("sections") :: Nil
-
-        val array = json.hcursor.replay(history)
-
-        array.success.flatMap { hcursor =>
-          hcursor
-            .find { json =>
-              json.hcursor.downField("id").focus.flatMap(_.asString).contains(formComponentId.value)
-            }
-            .downField("label")
-            .set(labelValue)
-            .root
-            .focus
-        }
-      }
-      .getOrElse(json)
+        .getOrElse(accJson)
+    }
 
   def updateFormComponent(
     formTemplateRaw: FormTemplateRaw,

@@ -214,7 +214,8 @@ class BuilderControllerSuite extends FunSuite {
               "type": "text",
               "label": "First name",
               "format": "text",
-              "labelSize": "s"
+              "labelSize": "s",
+              "helpText": ""
             },
             {
               "id": "lastName",
@@ -271,7 +272,66 @@ class BuilderControllerSuite extends FunSuite {
               "type": "text",
               "label": "First name 22",
               "format": "text",
+              "labelSize": "s",
+              "helpText": ""
+            },
+            {
+              "id": "lastName",
+              "type": "text",
+              "label": "Last name",
+              "format": "text",
               "labelSize": "s"
+            }
+          ]
+        }
+      ],
+      "declarationSection": {
+        "title": "Declaration",
+        "fields": []
+      },
+      "acknowledgementSection": {
+        "title": "Acknowledgement Page",
+        "fields": []
+      },
+      "destinations": [
+        {
+          "id": "transitionToSubmitted",
+          "type": "stateTransition",
+          "requiredState": "Submitted"
+        }
+      ]
+    }"""
+
+  val formComponentUpdateHelpTextJsonExpected: Json = json"""
+    {
+      "_id": "gform-builder",
+      "formName": "Gform Builder",
+      "emailTemplateId": "confirmation",
+      "authConfig": {
+        "authModule": "anonymous"
+      },
+      "sections": [
+        {
+          "title": "Page 1",
+          "fields": [
+            {
+              "id": "first",
+              "type": "text",
+              "label": "First",
+              "format": "sterling"
+            }
+          ]
+        },
+        {
+          "title": "Page 2",
+          "fields": [
+            {
+              "id": "firstName",
+              "type": "text",
+              "label": "First name",
+              "format": "text",
+              "labelSize": "s",
+              "helpText": "I'm help text"
             },
             {
               "id": "lastName",
@@ -308,5 +368,15 @@ class BuilderControllerSuite extends FunSuite {
     val result: Json = BuilderSupport.modifyFormComponentData(formComponentUpdateJson, 1, formComponentId, patch)
 
     assertEquals(result, formComponentUpdateJsonExpected)
+  }
+
+  test("Update field helpText (1)") {
+    val formComponentId = FormComponentId("firstName")
+
+    val patch: Json = Json.obj("helpText" := "I'm help text")
+
+    val result: Json = BuilderSupport.modifyFormComponentData(formComponentUpdateJson, 1, formComponentId, patch)
+
+    assertEquals(result, formComponentUpdateHelpTextJsonExpected)
   }
 }
