@@ -158,8 +158,7 @@ trait FormatParser extends ValueParser {
   }
 
   lazy val governmentIdFormat: Parser[TextFormat] = {
-    "utr" ^^^ TextFormat(UTR) |
-      "saUtr" ^^^ TextFormat(SaUTR) |
+    "saUtr" ^^^ TextFormat(SaUTR) |
       "ctUtr" ^^^ TextFormat(CtUTR) |
       "nino" ^^^ TextFormat(NINO) |
       "ukVrn" ^^^ TextFormat(UkVrn) |

@@ -40,7 +40,6 @@ class FormatValidationSpec extends Spec {
   it should "return ukBankAccountNumber" in createTest("ukBankAccountNumber", UkBankAccountNumber)
   it should "return telephoneNumber" in createTest("telephoneNumber", TelephoneNumber)
   it should "return email" in createTest("email", Email)
-  it should "return utr" in createTest("utr", UTR)
   it should "return saUtr" in createTest("saUtr", SaUTR)
   it should "return ctUtr" in createTest("ctUtr", CtUTR)
   it should "return nino" in createTest("nino", NINO)
