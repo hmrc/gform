@@ -161,6 +161,8 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
     InternalLink.newSession
   } | "signOut" ^^ { _ =>
     InternalLink.signOut
+  } | "download" ~ "." ~ alphabeticOnly ~ "." ~ fileExtension ^^ { case _ ~ _ ~ fileName ~ _ ~ extension =>
+    InternalLink.DownloadFile(fileName, extension)
   } | PageId.unanchoredIdValidation ^^ { id =>
     PageLink(PageId(id))
   }
@@ -456,6 +458,10 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
   lazy val loginInfo: Parser[LoginInfo] = (
     "ggLogin" ^^^ LoginInfo.GGLogin
       | "emailLogin" ^^^ LoginInfo.EmailLogin
+  )
+  lazy val fileExtension: Parser[FileExtension] = (
+    "xlsx" ^^^ FileExtension.Xlsx
+      | "ods" ^^^ FileExtension.Ods
   )
 
   //================= boolean parsers =========

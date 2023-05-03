@@ -307,3 +307,11 @@ object StringFnc {
   case class SubString(beginIndex: Int, endIndex: Int) extends StringFnc
   implicit val format: OFormat[StringFnc] = derived.oformat()
 }
+
+sealed trait FileExtension
+
+object FileExtension {
+  case object Xlsx extends FileExtension
+  case object Ods extends FileExtension
+  implicit val format: OFormat[FileExtension] = derived.oformat()
+}
