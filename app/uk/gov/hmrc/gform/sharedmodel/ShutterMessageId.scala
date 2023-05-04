@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.sharedmodel.formtemplate
+package uk.gov.hmrc.gform.sharedmodel
 
-import julienrf.json.derived
-import play.api.libs.json.OFormat
+import play.api.libs.json.{ Format, JsString, OFormat }
 
-final case class FormTemplateWithRedirects(
-  formTemplate: FormTemplate,
-  redirects: Option[FormTemplateId] // FormTemplateId which has formTemplate._id in its legacyIds
-)
+case class ShutterMessageId(value: String)
 
-object FormTemplateWithRedirects {
-  implicit val format: OFormat[FormTemplateWithRedirects] = derived.oformat()
+object ShutterMessageId {
+  implicit val mongoVformat: Format[ShutterMessageId] =
+    ValueClassFormat.vformat("_id", ShutterMessageId.apply, x => JsString(x.value))
+  val mongoV2format: Format[ShutterMessageId] =
+    ValueClassFormat.vformat("shutterMessageId", ShutterMessageId.apply, x => JsString(x.value))
+  val oformat: OFormat[ShutterMessageId] = ValueClassFormat.oformat("shutterMessageId", ShutterMessageId.apply, _.value)
 }

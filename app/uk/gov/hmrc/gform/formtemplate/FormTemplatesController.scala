@@ -24,14 +24,18 @@ import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.formredirect.FormRedirectService
 import uk.gov.hmrc.gform.formtemplate.FormTemplatePIIRefsHelper.PIIDetailsResponse
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplate, FormTemplateId, FormTemplateRaw, FormTemplateRawId, FormTemplateWithRedirects }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplate, FormTemplateContext, FormTemplateId, FormTemplateRaw, FormTemplateRawId }
+import uk.gov.hmrc.gform.shutter.ShutterService
 
 import scala.concurrent.{ ExecutionContext, Future }
+import uk.gov.hmrc.gform.notificationbanner.NotificationService
 
 class FormTemplatesController(
   controllerComponents: ControllerComponents,
   formTemplateService: FormTemplateService,
-  formRedirectService: FormRedirectService
+  formRedirectService: FormRedirectService,
+  shutterService: ShutterService,
+  notificationService: NotificationService
 )(implicit
   ex: ExecutionContext
 ) extends BaseController(controllerComponents) {
@@ -70,12 +74,14 @@ class FormTemplatesController(
   }
 
   def getWithRedirects(id: FormTemplateId) = formTemplateAction("getWithRedirects", id) { _ =>
-    val formTemplateWithRedirects =
+    val formTemplateContext =
       for {
-        formTemplate <- findLatestFormTemplate(id)
-        redirects    <- formRedirectService.find(formTemplate._id)
-      } yield FormTemplateWithRedirects(formTemplate, redirects.map(_.redirect))
-    formTemplateWithRedirects.asOkJson
+        formTemplate            <- findLatestFormTemplate(id)
+        redirects               <- formRedirectService.find(formTemplate._id)
+        mayBeShutter            <- shutterService.find(formTemplate._id)
+        maybeNotificationBanner <- notificationService.find(formTemplate._id)
+      } yield FormTemplateContext(formTemplate, redirects.map(_.redirect), mayBeShutter, maybeNotificationBanner)
+    formTemplateContext.asOkJson
   }
 
   private def findFormTemplate(id: FormTemplateId): Future[FormTemplate] =

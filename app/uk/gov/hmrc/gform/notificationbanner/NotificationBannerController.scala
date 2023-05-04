@@ -23,11 +23,12 @@ import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.sharedmodel.BannerId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.ExecutionContext
 
 class NotificationBannerController(
   notificationBannerService: NotificationBannerService,
   notificationBannerFormTemplateService: NotificationBannerFormTemplateService,
+  notificationService: NotificationService,
   controllerComponents: ControllerComponents
 )(implicit ec: ExecutionContext)
     extends BaseController(controllerComponents) {
@@ -53,14 +54,9 @@ class NotificationBannerController(
 
   def find(formTemplateId: FormTemplateId): Action[AnyContent] =
     Action.async { request =>
-      for {
-        maybeNotificationBannerTemplate <- notificationBannerFormTemplateService.find(formTemplateId)
-        maybeGlobalNotificationBanner   <- notificationBannerService.findGlobal()
-        maybeNotificationBanner <-
-          maybeNotificationBannerTemplate.fold(Future.successful(maybeGlobalNotificationBanner))(template =>
-            notificationBannerService.find(template.bannerId)
-          )
-      } yield maybeNotificationBanner.fold(NoContent)(notificationBanner => Ok(Json.toJson(notificationBanner)))
+      notificationService
+        .find(formTemplateId)
+        .map(_.fold(NoContent)(notificationBanner => Ok(Json.toJson(notificationBanner))))
     }
 
   def upsertNotificationBanner(): Action[NotificationBanner] =

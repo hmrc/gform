@@ -40,11 +40,17 @@ class NotificationBannerModule(
     new NotificationBannerFormTemplateService(
       notificationBannerFormTemplateRepository
     )
+  val notificationService: NotificationService =
+    new NotificationService(
+      notificationBannerService,
+      notificationBannerFormTemplateService
+    )
 
   val notificationBannerController: NotificationBannerController =
     new NotificationBannerController(
       notificationBannerService,
       notificationBannerFormTemplateService,
+      notificationService,
       configModule.controllerComponents
     )
 
