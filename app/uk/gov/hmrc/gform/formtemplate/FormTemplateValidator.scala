@@ -1304,6 +1304,24 @@ object FormTemplateValidator {
       "'dataThreshold' is a percentage with a maximum of 100 for component Ids :" + textAreaFieldIds.mkString(",")
     )
   }
+
+  def validateDownloadInternalLink(allExpressions: List[ExprWithPath]): ValidationResult = {
+    val allowedFileNames: NonEmptyList[String] =
+      NonEmptyList.of("nipClaimScheduleTemplate.xlsx", "nipClaimScheduleTemplate.ods")
+    val fileNames = allExpressions.map(_.expr).collect { case LinkCtx(InternalLink.Download(fileName)) =>
+      fileName
+    }
+
+    fileNames
+      .map(file =>
+        if (allowedFileNames.exists(_ === file)) Valid
+        else
+          Invalid(
+            s"Download link $file is not supported, and can only be used `${allowedFileNames.toList.mkString(",")}`"
+          )
+      )
+      .combineAll
+  }
 }
 
 object IsEmailVerifiedBy {

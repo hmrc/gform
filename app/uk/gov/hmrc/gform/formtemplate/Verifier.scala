@@ -98,6 +98,7 @@ trait Verifier {
       _ <- fromOptA(DestinationsValidator.validateDestinationIncludeIfs(formTemplate.destinations).toEither)
       _ <- fromOptA(FormTemplateValidator.validateTaskListDisplayWidth(formTemplate).toEither)
       _ <- fromOptA(FormTemplateValidator.validateDataThreshold(pages).toEither)
+      _ <- fromOptA(FormTemplateValidator.validateDownloadInternalLink(allExpressions).toEither)
     } yield ()
 
   }

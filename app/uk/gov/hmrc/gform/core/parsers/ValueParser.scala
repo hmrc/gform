@@ -161,6 +161,8 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
     InternalLink.newSession
   } | "signOut" ^^ { _ =>
     InternalLink.signOut
+  } | "download" ~ "." ~ alphabeticOnly ~ "." ~ alphabeticOnly ^^ { case _ ~ _ ~ fileName ~ _ ~ extension =>
+    InternalLink.Download(s"$fileName.$extension")
   } | PageId.unanchoredIdValidation ^^ { id =>
     PageLink(PageId(id))
   }
