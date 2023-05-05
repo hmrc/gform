@@ -175,7 +175,7 @@ trait FormatParser extends ValueParser {
   lazy val moneyFormat: RoundingMode => Parser[TextFormat] = rm => {
     "sterling" ^^^ TextFormat(Sterling(rm, false)) |
       "positiveSterling" ^^^ TextFormat(Sterling(rm, true)) |
-      "wholePositiveSterling" ^^^ TextFormat(WholeSterling(true)) |
+      "positiveWholeSterling" ^^^ TextFormat(WholeSterling(true)) |
       "ukBankAccountNumber" ^^^ TextFormat(UkBankAccountNumber) |
       "ukSortCode" ^^^ TextFormat(UkSortCodeFormat)
   }
