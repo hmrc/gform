@@ -125,6 +125,8 @@ class FormComponentMaker(json: JsValue) {
   lazy val infoType: Option[String] = (json \ "infoType").asOpt[String]
   lazy val shortName: Option[SmartString] = (json \ "shortName").asOpt[SmartString]
   lazy val errorShortName: Option[SmartString] = (json \ "errorShortName").asOpt[SmartString]
+  lazy val errorShortNameStart: Option[SmartString] = (json \ "errorShortNameStart").asOpt[SmartString]
+  lazy val errorExample: Option[SmartString] = (json \ "errorExample").asOpt[SmartString]
   lazy val optMaybeRepeatsMax: Opt[Option[Int]] = toOpt((json \ "repeatsMax").validateOpt[Int], "/repeatsMax")
   lazy val optMaybeRepeatsMin: Opt[Option[Int]] = toOpt((json \ "repeatsMin").validateOpt[Int], "/repeatsMin")
   lazy val repeatLabel: Option[SmartString] = (json \ "repeatLabel").asOpt[SmartString]
@@ -314,7 +316,9 @@ class FormComponentMaker(json: JsValue) {
       validators = validators,
       instruction = instruction,
       labelSize = labelSize,
-      errorShortName = errorShortName
+      errorShortName = errorShortName,
+      errorShortNameStart = errorShortNameStart,
+      errorExample = errorExample
     )
 
   private lazy val optMES: Opt[MES] = (submitMode, mandatory, optMaybeValueExpr) match {

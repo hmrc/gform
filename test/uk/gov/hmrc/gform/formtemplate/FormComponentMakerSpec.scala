@@ -713,4 +713,34 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
     formComponentMaker.optFieldValue().map(_.errorShortName) shouldBe Right(Some(toSmartString("error short name")))
   }
 
+  it should "parse text component with errorShortNameStart" in {
+    val formComponentMaker = new FormComponentMaker(Json.parse("""
+                                                                 |{
+                                                                 |   "id": "id1",
+                                                                 |   "type": "text",
+                                                                 |   "label": "Field 1",
+                                                                 |   "format": "text",
+                                                                 |   "errorShortNameStart": "error short name start"
+                                                                 |}
+                                                                 |""".stripMargin))
+    formComponentMaker.optFieldValue().map(_.errorShortNameStart) shouldBe Right(
+      Some(toSmartString("error short name start"))
+    )
+  }
+
+  it should "parse text component with errorExample" in {
+    val formComponentMaker = new FormComponentMaker(Json.parse("""
+                                                                 |{
+                                                                 |   "id": "id1",
+                                                                 |   "type": "text",
+                                                                 |   "label": "Field 1",
+                                                                 |   "format": "text",
+                                                                 |   "errorExample": "error example"
+                                                                 |}
+                                                                 |""".stripMargin))
+    formComponentMaker.optFieldValue().map(_.errorExample) shouldBe Right(
+      Some(toSmartString("error example"))
+    )
+  }
+
 }
