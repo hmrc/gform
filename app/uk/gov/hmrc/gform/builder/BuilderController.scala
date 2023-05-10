@@ -59,14 +59,33 @@ object BuilderSupport {
     }
   }
 
-  def modifySectionData(json: Json, sectionNumber: Int, sectionData: Json): Json = {
-    val sectionPath: List[CursorOp] = (0 until sectionNumber).foldRight(List[CursorOp](DownArray)) { case (_, acc) =>
-      MoveRight :: acc
-    }
+  def modifySectionData(json: Json, sectionNumber: Int, sectionData: Json): Json =
+    List("title", "caption", "description", "shortName", "continueLabel", "presentationHint").foldRight(json) {
+      case (property, accJson) =>
+        sectionData.hcursor
+          .downField(property)
+          .focus
+          .flatMap { propertyValue =>
+            val sectionPath: List[CursorOp] = (0 until sectionNumber).foldRight(List[CursorOp](DownArray)) {
+              case (_, acc) =>
+                MoveRight :: acc
+            }
 
-    val history: List[CursorOp] = sectionPath ::: DownField("sections") :: Nil
-    json.hcursor.replay(history).withFocus(_.deepMerge(sectionData)).root.focus.get
-  }
+            val history: List[CursorOp] = sectionPath ::: DownField("sections") :: Nil
+
+            val array = accJson.hcursor.replay(history)
+
+            array.success.flatMap { hcursor =>
+              hcursor
+                .downField(property)
+                .set(propertyValue)
+                .root
+                .focus
+            }
+          }
+          .getOrElse(accJson)
+
+    }
 
   def modifyFormComponentData(
     json: Json,
@@ -141,7 +160,12 @@ class BuilderController(controllerComponents: ControllerComponents, formTemplate
 
     jsResult.flatMap {
       case Right((templateRaw, result)) =>
-        requestHandler.handleRequest(templateRaw).fold(_.asBadRequest, _ => result)
+        requestHandler
+          .handleRequest(templateRaw)
+          .fold(
+            _.asBadRequest,
+            _ => result
+          )
       case Left(error) => BadRequest(error.toString).pure[Future]
     }
   }
