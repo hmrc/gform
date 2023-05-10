@@ -117,6 +117,7 @@ class UploadableDestinationSpec extends Spec with ScalaCheckDrivenPropertyChecks
       uri,
       method,
       payload,
+      payloadUrl,
       Some(payloadType),
       convertSingleQuotes,
       Some(includeIf),

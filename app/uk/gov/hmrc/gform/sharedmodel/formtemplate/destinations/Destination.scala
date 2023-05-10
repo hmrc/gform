@@ -32,6 +32,9 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationInclud
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.SubmissionConsolidator
 import uk.gov.hmrc.gform.sharedmodel.notifier.NotifierPersonalisationFieldId
 
+import java.nio.file.Paths
+import scala.io.Source
+
 sealed trait DestinationWithCustomerId {
   def customerId(): Expr
 }
@@ -47,7 +50,7 @@ object DestinationIncludeIf {
         BooleanExprParser.validate(exprAsStr) fold (_ => JsSuccess(HandlebarValue(exprAsStr)), expr =>
           JsSuccess(IncludeIfValue(IncludeIf(expr))))
       case JsNull => JsSuccess(HandlebarValue(true.toString))
-      case _      => JsError("Dsdsssss")
+      case _      => JsError("Unsupported includeIf expression in destination")
     }
   }
 
@@ -81,6 +84,7 @@ object Destination {
     uri: String,
     method: HttpMethod,
     payload: Option[String],
+    payloadUrl: Option[String],
     payloadType: TemplateType,
     includeIf: DestinationIncludeIf,
     failOnError: Boolean,
@@ -298,18 +302,25 @@ case class UploadableHandlebarsHttpApiDestination(
   uri: String,
   method: HttpMethod,
   payload: Option[String],
+  payloadUrl: Option[String],
   payloadType: Option[TemplateType],
   convertSingleQuotes: Option[Boolean],
   includeIf: Option[DestinationIncludeIf],
   failOnError: Option[Boolean],
   multiRequestPayload: Option[Boolean]
 ) {
-
   def toHandlebarsHttpApiDestination: Either[String, Destination.HandlebarsHttpApi] =
     for {
-      cvp   <- addErrorInfo(id, "payload")(conditionAndValidate(convertSingleQuotes, payload))
-      cvii  <- addErrorInfo(id, convertSingleQuotes, includeIf)
-      cvuri <- addErrorInfo(id, "uri")(condition(convertSingleQuotes, uri))
+      cvp <- payloadUrl.fold(addErrorInfo(id, "payload")(conditionAndValidate(convertSingleQuotes, payload))) { url =>
+               if (payload.isDefined)
+                 throw new Exception(
+                   s"`payload` in the ${id.id} destination is not valid. When `payloadUrl` is present, the `payload` should not be included."
+                 )
+               addErrorInfo(id, "payloadUrl")(conditionAndValidate(convertSingleQuotes, readFromURL(id, url)))
+             }
+      cvpUrl <- addErrorInfo(id, "payloadUrl")(Right(payloadUrl))
+      cvii   <- addErrorInfo(id, convertSingleQuotes, includeIf)
+      cvuri  <- addErrorInfo(id, "uri")(condition(convertSingleQuotes, uri))
     } yield Destination
       .HandlebarsHttpApi(
         id,
@@ -317,6 +328,7 @@ case class UploadableHandlebarsHttpApiDestination(
         cvuri,
         method,
         cvp,
+        cvpUrl,
         payloadType.getOrElse(TemplateType.JSON),
         cvii,
         failOnError.getOrElse(true),
@@ -411,4 +423,28 @@ object UploadableConditioning {
 
   def conditionAndValidate(convertSingleQuotes: Option[Boolean], os: Option[String]): Either[String, Option[String]] =
     os map (conditionAndValidate(convertSingleQuotes, _) map (_.some)) getOrElse Right(None)
+
+  def readFromURL(id: DestinationId, url: String) = {
+    if (!isRelativePath(url))
+      throw new Exception(
+        s"`payloadUrl` in the ${id.id} destination is not valid. The `payloadUrl` must be specified as a relative path."
+      )
+    val path = Paths.get(url).normalize().toAbsolutePath().toString()
+    val source = Source.fromFile(path)
+    try Some(source.mkString)
+    catch {
+      case ex: Exception =>
+        throw new RuntimeException(
+          s"An error occurs when attempting to read the file from $path in the ${id.id} destination with exception : $ex"
+        )
+    } finally source.close()
+  }
+
+  private def isRelativePath(uri: String): Boolean = {
+    val relPathPattern = """^(\.\.?|[^/]+)(/\.\.?|/[^/]+)*$""".r
+    uri match {
+      case relPathPattern(_*) => true
+      case _                  => false
+    }
+  }
 }
