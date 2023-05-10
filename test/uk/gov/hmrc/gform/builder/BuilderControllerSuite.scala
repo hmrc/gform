@@ -186,6 +186,114 @@ class BuilderControllerSuite extends FunSuite {
     assertEquals(result, expectedJson2)
   }
 
+  val sectionCaptionJson: Json = json"""
+    {
+      "_id": "gform-builder",
+      "formName": "Gform Builder",
+      "emailTemplateId": "confirmation",
+      "authConfig": {
+        "authModule": "anonymous"
+      },
+      "sections": [
+        {
+          "title": "Page 1",
+          "caption": "I'm caption",
+          "fields": [
+            {
+              "id": "first",
+              "type": "text",
+              "label": "First",
+              "format": "sterling"
+            }
+          ]
+        },
+        {
+          "title": "Page 2",
+          "fields": [
+            {
+              "id": "second",
+              "type": "text",
+              "label": "Second",
+              "format": "sterling"
+            }
+          ]
+        }
+      ],
+      "declarationSection": {
+        "title": "Declaration",
+        "fields": []
+      },
+      "acknowledgementSection": {
+        "title": "Acknowledgement Page",
+        "fields": []
+      },
+      "destinations": [
+        {
+          "id": "transitionToSubmitted",
+          "type": "stateTransition",
+          "requiredState": "Submitted"
+        }
+      ]
+    }"""
+
+  val expectedSectionCaptionJson: Json = json"""
+    {
+      "_id": "gform-builder",
+      "formName": "Gform Builder",
+      "emailTemplateId": "confirmation",
+      "authConfig": {
+        "authModule": "anonymous"
+      },
+      "sections": [
+        {
+          "title": "Page 1",
+          "caption": "I'm caption AA",
+          "fields": [
+            {
+              "id": "first",
+              "type": "text",
+              "label": "First",
+              "format": "sterling"
+            }
+          ]
+        },
+        {
+          "title": "Page 2",
+          "fields": [
+            {
+              "id": "second",
+              "type": "text",
+              "label": "Second",
+              "format": "sterling"
+            }
+          ]
+        }
+      ],
+      "declarationSection": {
+        "title": "Declaration",
+        "fields": []
+      },
+      "acknowledgementSection": {
+        "title": "Acknowledgement Page",
+        "fields": []
+      },
+      "destinations": [
+        {
+          "id": "transitionToSubmitted",
+          "type": "stateTransition",
+          "requiredState": "Submitted"
+        }
+      ]
+    }"""
+
+  test("Update section caption (1)") {
+    val patch: Json = Json.obj("caption" := "I'm caption AA")
+
+    val result = BuilderSupport.modifySectionData(sectionCaptionJson, 0, patch)
+
+    assertEquals(result.spaces2, expectedSectionCaptionJson.spaces2)
+  }
+
   val formComponentUpdateJson: Json = json"""
     {
       "_id": "gform-builder",
