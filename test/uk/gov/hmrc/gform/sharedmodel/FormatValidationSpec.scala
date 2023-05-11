@@ -34,7 +34,7 @@ class FormatValidationSpec extends Spec {
     Sterling(RoundingMode.defaultRoundingMode, true)
   )
   it should "return WholeSterling with positive=true" in createTest(
-    "wholePositiveSterling",
+    "positiveWholeSterling",
     WholeSterling(true)
   )
   it should "return ukBankAccountNumber" in createTest("ukBankAccountNumber", UkBankAccountNumber)
