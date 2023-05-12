@@ -23,7 +23,8 @@ import org.scalatest.wordspec.AnyWordSpec
 import play.api.libs.json._
 import uk.gov.hmrc.gform.core.{ FOpt, fromFutureA }
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplate, FormTemplateRaw }
+import uk.gov.hmrc.gform.handlebarspayload.HandlebarsPayloadAlgebra
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplate, FormTemplateRaw, _factory, mock }
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -398,8 +399,11 @@ class FormTemplatesControllerRequestHandlerTest extends AnyWordSpec with Matcher
     val sideEffect: FOpt[Unit] = fromFutureA(Future.successful(()))
     val templateRaw = implicitly[Reads[FormTemplateRaw]].reads(json).get
     val formTemplate: Option[FormTemplate] = FormTemplate.transformAndReads(json).asOpt
+    val handlebarsPayloadAlgebra = mock[HandlebarsPayloadAlgebra[Future]]
     val verifySideEffect: Option[FOpt[Unit]] =
-      formTemplate.map(formTemplate => new Verifier {}.verify(formTemplate)(ExprSubstitutions.empty))
+      formTemplate.map(formTemplate =>
+        new Verifier {}.verify(formTemplate, handlebarsPayloadAlgebra)(ExprSubstitutions.empty)
+      )
 
     f(sideEffect, verifySideEffect, templateRaw)
   }

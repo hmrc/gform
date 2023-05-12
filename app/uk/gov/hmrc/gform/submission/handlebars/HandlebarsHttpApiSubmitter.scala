@@ -23,8 +23,11 @@ import uk.gov.hmrc.gform.wshttp.HttpClient
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 import play.api.libs.json._
 import cats.syntax.all._
+import uk.gov.hmrc.gform.handlebarspayload.HandlebarsPayloadAlgebra
+
 import scala.util.Try
 import uk.gov.hmrc.gform.logging.Loggers
+import uk.gov.hmrc.gform.sharedmodel.HandlebarsPayloadId
 
 trait HandlebarsHttpApiSubmitter[F[_]] {
   def apply(
@@ -36,6 +39,7 @@ trait HandlebarsHttpApiSubmitter[F[_]] {
 
 class RealHandlebarsHttpApiSubmitter[F[_]](
   httpClients: Map[ProfileName, HttpClient[F]],
+  handlebarsPayloadAlgebra: HandlebarsPayloadAlgebra[F],
   handlebarsTemplateProcessor: HandlebarsTemplateProcessor = RealHandlebarsTemplateProcessor
 )(implicit monadError: MonadError[F, String])
     extends HandlebarsHttpApiSubmitter[F] {
@@ -61,7 +65,6 @@ class RealHandlebarsHttpApiSubmitter[F[_]](
     ): F[HttpResponse] = {
       val destinationId = destination.id
       val formId = modelTree.value.formId
-      val input: List[String] = destination.payload.fold(List(""))(body => parseAndProcessAsList(body))
 
       def logAndRaiseError(message: String): F[HttpResponse] =
         logError(message) *> monadError.raiseError(message)
@@ -87,8 +90,33 @@ class RealHandlebarsHttpApiSubmitter[F[_]](
             }
         }
 
-      callUrlBodyPairs(uri, input, None)
+      for {
+        input <-
+          destination.payloadName.fold(destination.payload.fold(List(""))(parseAndProcessAsList).pure[F])(name =>
+            handlebarsPayloadAlgebra
+              .get(HandlebarsPayloadId(name))
+              .map(_.payload)
+              .map(payload =>
+                UploadableConditioning.conditionAndValidate(destination.convertSingleQuotes, payload).getOrElse("")
+              )
+              .map(parseAndProcessAsList)
+          )
+        res <- callUrlBodyPairs(uri, input, None)
+      } yield res
     }
+
+    def getPayload: F[String] =
+      destination.payloadName.fold(destination.payload.fold("")(processPayload).pure[F]) { name =>
+        handlebarsPayloadAlgebra
+          .get(HandlebarsPayloadId(name))
+          .map(_.payload)
+          .map(payload =>
+            UploadableConditioning
+              .conditionAndValidate(destination.convertSingleQuotes, payload)
+              .getOrElse("")
+          )
+          .map(processPayload)
+      }
 
     def processPayload(template: String): String =
       handlebarsTemplateProcessor(
@@ -119,11 +147,16 @@ class RealHandlebarsHttpApiSubmitter[F[_]](
           destination.method match {
             case HttpMethod.GET => httpClient.get(uri)
             case HttpMethod.POST =>
-              val body = destination.payload.fold("")(processPayload)
-              httpClient.post(uri, body)
+              for {
+                payload <- getPayload
+                res     <- httpClient.post(uri, payload)
+              } yield res
+
             case HttpMethod.PUT =>
-              val body = destination.payload.fold("")(processPayload)
-              httpClient.put(uri, body)
+              for {
+                payload <- getPayload
+                res     <- httpClient.put(uri, payload)
+              } yield res
           }
         }
       }

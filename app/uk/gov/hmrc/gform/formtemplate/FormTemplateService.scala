@@ -22,6 +22,7 @@ import play.api.libs.json.JsObject
 import uk.gov.hmrc.gform.core.{ FOpt, _ }
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.formredirect.FormRedirect
+import uk.gov.hmrc.gform.handlebarspayload.HandlebarsPayloadAlgebra
 import uk.gov.hmrc.gform.repo.Repo
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
@@ -36,7 +37,8 @@ trait FormTemplateAlgebra[F[_]] {
 class FormTemplateService(
   formTemplateRepo: Repo[FormTemplate],
   formTemplateRawRepo: Repo[FormTemplateRaw],
-  formRedirectRepo: Repo[FormRedirect]
+  formRedirectRepo: Repo[FormRedirect],
+  handlebarsPayloadAlgebra: HandlebarsPayloadAlgebra[Future]
 )(implicit
   ec: ExecutionContext
 ) extends Verifier with Rewriter with SubstituteExpressions with SubstituteBooleanExprs
@@ -98,7 +100,7 @@ class FormTemplateService(
             booleanExpressionsContext,
             expressionsContextSubstituted
           )
-        _                   <- verify(substitutedBooleanExprsFormTemplate)(expressionsContext)
+        _                   <- verify(substitutedBooleanExprsFormTemplate, handlebarsPayloadAlgebra)(expressionsContext)
         formTemplateUpdated <- rewrite(substitutedBooleanExprsFormTemplate)
       } yield formTemplateUpdated
 

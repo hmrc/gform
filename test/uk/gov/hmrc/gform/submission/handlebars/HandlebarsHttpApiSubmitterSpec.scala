@@ -19,6 +19,7 @@ package uk.gov.hmrc.gform.submission.handlebars
 import cats.MonadError
 import org.scalacheck.Gen
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
+import uk.gov.hmrc.gform.handlebarspayload.HandlebarsPayloadAlgebra
 import uk.gov.hmrc.gform.sharedmodel.PdfHtml
 import uk.gov.hmrc.gform.sharedmodel.form.FormId
 import uk.gov.hmrc.gform.{ Possible, Spec, possibleMonadError }
@@ -108,9 +109,14 @@ class HandlebarsHttpApiSubmitterSpec extends Spec with ScalaCheckDrivenPropertyC
     val d = destinationGen(HttpMethod.POST).sample.get
     val httpClient = mock[HttpClient[Possible]]
     val handlebarsTemplateProcessor = mock[HandlebarsTemplateProcessor]
+    val handlebarsPayloadAlgebra = mock[HandlebarsPayloadAlgebra[Possible]]
 
     val submitter =
-      new RealHandlebarsHttpApiSubmitter(Map(ProfileName("foo") -> httpClient), handlebarsTemplateProcessor)
+      new RealHandlebarsHttpApiSubmitter(
+        Map(ProfileName("foo") -> httpClient),
+        handlebarsPayloadAlgebra,
+        handlebarsTemplateProcessor
+      )
 
     val destination = d.copy(payload = Option(payload), payloadType = TemplateType.Plain, multiRequestPayload = true)
     val processorModel = HandlebarsTemplateProcessorModel.empty
@@ -174,9 +180,14 @@ class HandlebarsHttpApiSubmitterSpec extends Spec with ScalaCheckDrivenPropertyC
     val d = destinationGen(HttpMethod.POST).sample.get
     val httpClient = mock[HttpClient[Possible]]
     val handlebarsTemplateProcessor = mock[HandlebarsTemplateProcessor]
+    val handlebarsPayloadAlgebra = mock[HandlebarsPayloadAlgebra[Possible]]
 
     val submitter =
-      new RealHandlebarsHttpApiSubmitter(Map(ProfileName("foo") -> httpClient), handlebarsTemplateProcessor)
+      new RealHandlebarsHttpApiSubmitter(
+        Map(ProfileName("foo") -> httpClient),
+        handlebarsPayloadAlgebra,
+        handlebarsTemplateProcessor
+      )
 
     val destination = d.copy(payload = Option(payload), payloadType = TemplateType.Plain, multiRequestPayload = true)
     val processorModel = HandlebarsTemplateProcessorModel.empty
@@ -243,9 +254,14 @@ class HandlebarsHttpApiSubmitterSpec extends Spec with ScalaCheckDrivenPropertyC
     val d = destinationGen(HttpMethod.POST).sample.get
     val httpClient = mock[HttpClient[Possible]]
     val handlebarsTemplateProcessor = mock[HandlebarsTemplateProcessor]
+    val handlebarsPayloadAlgebra = mock[HandlebarsPayloadAlgebra[Possible]]
 
     val submitter =
-      new RealHandlebarsHttpApiSubmitter(Map(ProfileName("foo") -> httpClient), handlebarsTemplateProcessor)
+      new RealHandlebarsHttpApiSubmitter(
+        Map(ProfileName("foo") -> httpClient),
+        handlebarsPayloadAlgebra,
+        handlebarsTemplateProcessor
+      )
 
     val destination = d.copy(payload = Option(payload), payloadType = TemplateType.Plain, multiRequestPayload = false)
     val processorModel = HandlebarsTemplateProcessorModel.empty
@@ -337,9 +353,14 @@ class HandlebarsHttpApiSubmitterSpec extends Spec with ScalaCheckDrivenPropertyC
     val d = destinationGen(HttpMethod.PUT).sample.get
     val httpClient = mock[HttpClient[Possible]]
     val handlebarsTemplateProcessor = mock[HandlebarsTemplateProcessor]
+    val handlebarsPayloadAlgebra = mock[HandlebarsPayloadAlgebra[Possible]]
 
     val submitter =
-      new RealHandlebarsHttpApiSubmitter(Map(ProfileName("foo") -> httpClient), handlebarsTemplateProcessor)
+      new RealHandlebarsHttpApiSubmitter(
+        Map(ProfileName("foo") -> httpClient),
+        handlebarsPayloadAlgebra,
+        handlebarsTemplateProcessor
+      )
 
     val destination = d.copy(payload = Option(payload), payloadType = TemplateType.Plain, multiRequestPayload = true)
     val processorModel = HandlebarsTemplateProcessorModel.empty
@@ -393,9 +414,14 @@ class HandlebarsHttpApiSubmitterSpec extends Spec with ScalaCheckDrivenPropertyC
     val d = destinationGen(HttpMethod.PUT).sample.get
     val httpClient = mock[HttpClient[Possible]]
     val handlebarsTemplateProcessor = mock[HandlebarsTemplateProcessor]
+    val handlebarsPayloadAlgebra = mock[HandlebarsPayloadAlgebra[Possible]]
 
     val submitter =
-      new RealHandlebarsHttpApiSubmitter(Map(ProfileName("foo") -> httpClient), handlebarsTemplateProcessor)
+      new RealHandlebarsHttpApiSubmitter(
+        Map(ProfileName("foo") -> httpClient),
+        handlebarsPayloadAlgebra,
+        handlebarsTemplateProcessor
+      )
 
     val destination = d.copy(payload = Option(payload), payloadType = TemplateType.Plain, multiRequestPayload = false)
     val processorModel = HandlebarsTemplateProcessorModel.empty
@@ -500,9 +526,14 @@ class HandlebarsHttpApiSubmitterSpec extends Spec with ScalaCheckDrivenPropertyC
   private def submitterPartsGen[F[_]](implicit me: MonadError[F, String]): Gen[SubmitterParts[F]] = {
     val httpClient = mock[HttpClient[F]]
     val handlebarsTemplateProcessor = mock[HandlebarsTemplateProcessor]
+    val handlebarsPayloadAlgebra = mock[HandlebarsPayloadAlgebra[F]]
 
     val submitter =
-      new RealHandlebarsHttpApiSubmitter(Map(ProfileName("foo") -> httpClient), handlebarsTemplateProcessor)
+      new RealHandlebarsHttpApiSubmitter(
+        Map(ProfileName("foo") -> httpClient),
+        handlebarsPayloadAlgebra,
+        handlebarsTemplateProcessor
+      )
 
     SubmitterParts(submitter, httpClient, handlebarsTemplateProcessor)
   }

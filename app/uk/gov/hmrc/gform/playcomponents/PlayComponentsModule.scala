@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory
 import play.api.http.HttpErrorHandler
 import play.api.mvc.EssentialFilter
 import play.api.routing.Router
+
 import scala.concurrent.ExecutionContext
 import uk.gov.hmrc.gform.akka.AkkaModule
 import uk.gov.hmrc.gform.auditing.AuditingModule
@@ -33,6 +34,7 @@ import uk.gov.hmrc.gform.employments.EmploymentsModule
 import uk.gov.hmrc.gform.envelope.EnvelopeModule
 import uk.gov.hmrc.gform.form.FormModule
 import uk.gov.hmrc.gform.formtemplate.FormTemplateModule
+import uk.gov.hmrc.gform.handlebarspayload.HandlebarsPayloadModule
 import uk.gov.hmrc.gform.metrics.MetricsModule
 import uk.gov.hmrc.gform.notificationbanner.NotificationBannerModule
 import uk.gov.hmrc.gform.objectstore.ObjectStoreModule
@@ -75,7 +77,8 @@ class PlayComponentsModule(
   notificationBannerModule: NotificationBannerModule,
   schedulerModule: SchedulerModule,
   builderModule: BuilderModule,
-  shutterModule: ShutterModule
+  shutterModule: ShutterModule,
+  handlebarsPayloadModule: HandlebarsPayloadModule
 )(implicit ec: ExecutionContext) {
   private val logger = LoggerFactory.getLogger(getClass)
 
@@ -87,6 +90,7 @@ class PlayComponentsModule(
     submissionModule.submissionController,
     submissionModule.formBundleController,
     formTemplateModule.formTemplatesController,
+    handlebarsPayloadModule.handlebarPayloadController,
     configModule.configController,
     validationModule.validationController,
     dmsModule.dmsSubmissionController,

@@ -110,7 +110,8 @@ trait DestinationGen {
       payloadType,
       includeIf,
       failOnError,
-      multiRequestPayload
+      multiRequestPayload,
+      None
     )
 
   def handlebarsHttpApiGen(
