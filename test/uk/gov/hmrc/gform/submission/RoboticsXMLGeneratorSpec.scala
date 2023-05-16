@@ -18,6 +18,7 @@ package uk.gov.hmrc.gform.submission
 
 import java.time.{ Instant, LocalDate, ZoneId }
 import uk.gov.hmrc.gform.Spec
+import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.{ LangADT, SubmissionRef }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue._
@@ -124,13 +125,16 @@ case object RoboticsXMLGeneratorSpec extends Spec {
     val formId = FormTemplateId("formId")
     val dmsId = "dmsId"
     val submissionRef = SubmissionRef("submissionRef")
+    val envelopeId = EnvelopeId("envelopeId")
     val lEn = LangADT.En
     val lCy = LangADT.Cy
 
     val expected: Elem =
       <gform id={formId.value} dms-id={dmsId} submission-reference={submissionRef.value}>{
         removeWhitespace(expectedFields)
-      }<dateSubmitted>02/01/2019</dateSubmitted><datetimeSubmitted>2019-01-02T00:00:00Z</datetimeSubmitted><userLanguage>EN</userLanguage></gform>
+      }<dateSubmitted>02/01/2019</dateSubmitted><datetimeSubmitted>2019-01-02T00:00:00Z</datetimeSubmitted><userLanguage>EN</userLanguage><correlationId>{
+        envelopeId.value
+      }</correlationId></gform>
 
     val dateSubmitted = Instant.from(LocalDate.of(2019, 1, 2).atStartOfDay(ZoneId.of("Europe/London")))
 
@@ -139,12 +143,22 @@ case object RoboticsXMLGeneratorSpec extends Spec {
     val expectedBST: Elem =
       <gform id={formId.value} dms-id={dmsId} submission-reference={submissionRef.value}>{
         removeWhitespace(expectedFields)
-      }<dateSubmitted>01/06/2019</dateSubmitted><datetimeSubmitted>2019-06-01T00:00:00+01:00</datetimeSubmitted><userLanguage>CY</userLanguage></gform>
+      }<dateSubmitted>01/06/2019</dateSubmitted><datetimeSubmitted>2019-06-01T00:00:00+01:00</datetimeSubmitted><userLanguage>CY</userLanguage><correlationId>{
+        envelopeId.value
+      }</correlationId></gform>
 
     RoboticsXMLGenerator
-      .apply(formId, dmsId, submissionRef, objectStructure, dateSubmitted, lEn) shouldBe expected
+      .apply(formId, dmsId, submissionRef, objectStructure, dateSubmitted, lEn, Some(envelopeId)) shouldBe expected
     RoboticsXMLGenerator
-      .apply(formId, dmsId, submissionRef, objectStructure, dateSubmittedBST, lCy) shouldBe expectedBST
+      .apply(
+        formId,
+        dmsId,
+        submissionRef,
+        objectStructure,
+        dateSubmittedBST,
+        lCy,
+        Some(envelopeId)
+      ) shouldBe expectedBST
   }
 
   def removeWhitespace(ns: NodeSeq): NodeSeq = ns.map {
