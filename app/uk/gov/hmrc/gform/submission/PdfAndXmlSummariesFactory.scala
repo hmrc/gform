@@ -20,7 +20,7 @@ import org.apache.pdfbox.pdmodel.PDDocument
 import org.json4s.native.JsonMethods
 import org.json4s.native.Printer.compact
 import uk.gov.hmrc.gform.pdfgenerator.{ PdfGeneratorService, XmlGeneratorService }
-import uk.gov.hmrc.gform.sharedmodel.form.Form
+import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, Form }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DataOutputFormat
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
@@ -65,9 +65,10 @@ object PdfAndXmlSummariesFactory {
       } yield PdfAndXmlSummaries(
         pdfSummary = createPdfSummary(pdf),
         instructionPdfSummary = instructionPdf.map(createPdfSummary),
-        roboticsFile = createRoboticsFile(formTemplate, structuredFormData, hmrcDms, submissionRef, l),
+        roboticsFile =
+          createRoboticsFile(formTemplate, structuredFormData, hmrcDms, submissionRef, l, Some(form.envelopeId)),
         roboticsFileExtension = hmrcDms.dataOutputFormat.map(_.content),
-        formDataXml = createFormdataXml(formTemplate, structuredFormData, hmrcDms, submissionRef, l)
+        formDataXml = createFormdataXml(formTemplate, structuredFormData, hmrcDms, submissionRef, l, None)
       )
 
     private def createPdfSummary(pdf: Array[Byte]) = {
@@ -81,10 +82,19 @@ object PdfAndXmlSummariesFactory {
       structuredFormData: StructuredFormValue.ObjectStructure,
       hmrcDms: HmrcDms,
       submissionRef: SubmissionRef,
-      l: LangADT
+      l: LangADT,
+      envelopeId: Option[EnvelopeId]
     )(implicit now: Instant): Option[String] =
       if (hmrcDms.formdataXml)
-        generateRoboticsFile(formTemplate, structuredFormData, hmrcDms, submissionRef, Some(DataOutputFormat.XML), l)
+        generateRoboticsFile(
+          formTemplate,
+          structuredFormData,
+          hmrcDms,
+          submissionRef,
+          Some(DataOutputFormat.XML),
+          l,
+          envelopeId
+        )
       else None
 
     private def createRoboticsFile(
@@ -92,9 +102,18 @@ object PdfAndXmlSummariesFactory {
       structuredFormData: StructuredFormValue.ObjectStructure,
       hmrcDms: HmrcDms,
       submissionRef: SubmissionRef,
-      l: LangADT
+      l: LangADT,
+      envelopeId: Option[EnvelopeId]
     )(implicit now: Instant): Option[String] =
-      generateRoboticsFile(formTemplate, structuredFormData, hmrcDms, submissionRef, hmrcDms.dataOutputFormat, l)
+      generateRoboticsFile(
+        formTemplate,
+        structuredFormData,
+        hmrcDms,
+        submissionRef,
+        hmrcDms.dataOutputFormat,
+        l,
+        envelopeId
+      )
 
     private def generateRoboticsFile(
       formTemplate: FormTemplate,
@@ -102,20 +121,39 @@ object PdfAndXmlSummariesFactory {
       hmrcDms: HmrcDms,
       submissionRef: SubmissionRef,
       dataOutputFormat: Option[DataOutputFormat],
-      l: LangADT
+      l: LangADT,
+      envelopeId: Option[EnvelopeId]
     )(implicit now: Instant): Option[String] =
       dataOutputFormat.flatMap {
         case DataOutputFormat.XML =>
-          Some(RoboticsXMLGenerator(formTemplate._id, hmrcDms.dmsFormId, submissionRef, structuredFormData, now, l))
-            .map(body =>
-              // No whitespace of anysort after xml declaration. Robot won't be able to process xml otherwise
-              XmlGeneratorService.xmlDec + <data xmlns:xfa="http://www.xfa.org/schema/xfa-data/1.0/">
-                {body}
-                </data>
+          Some(
+            RoboticsXMLGenerator(
+              formTemplate._id,
+              hmrcDms.dmsFormId,
+              submissionRef,
+              structuredFormData,
+              now,
+              l,
+              envelopeId
             )
+          ).map(body =>
+            // No whitespace of anysort after xml declaration. Robot won't be able to process xml otherwise
+            XmlGeneratorService.xmlDec + <data xmlns:xfa="http://www.xfa.org/schema/xfa-data/1.0/">
+                {body}
+              </data>
+          )
         case DataOutputFormat.JSON =>
-          Some(RoboticsXMLGenerator(formTemplate._id, hmrcDms.dmsFormId, submissionRef, structuredFormData, now, l))
-            .map(xml => compact(JsonMethods.render(org.json4s.Xml.toJson(xml))))
+          Some(
+            RoboticsXMLGenerator(
+              formTemplate._id,
+              hmrcDms.dmsFormId,
+              submissionRef,
+              structuredFormData,
+              now,
+              l,
+              envelopeId
+            )
+          ).map(xml => compact(JsonMethods.render(org.json4s.Xml.toJson(xml))))
       }
   }
 }

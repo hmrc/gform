@@ -15,6 +15,8 @@
  */
 
 package uk.gov.hmrc.gform.submission
+import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
+
 import java.time.{ Instant, ZoneId }
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME
@@ -33,11 +35,14 @@ object RoboticsXMLGenerator {
     submissionReference: SubmissionRef,
     structuredForm: ObjectStructure,
     now: Instant,
-    l: LangADT
+    l: LangADT,
+    maybeEnvelopeId: Option[EnvelopeId]
   ): NodeSeq =
     <gform id={formId.value} dms-id={dmsId} submission-reference={submissionReference.withoutHyphens}>{
       buildObjectStructureXml(structuredForm)
-    }{dateSubmitted(now)}{datetimeSubmitted(now)}{userLanguage(l)}</gform>
+    }{dateSubmitted(now)}{datetimeSubmitted(now)}{userLanguage(l)}{
+      maybeEnvelopeId.map(correlationId).getOrElse("")
+    }</gform>
 
   private val dateSubmittedFormater = DateTimeFormatter.ofPattern("dd/MM/yyyy").withZone(ZoneId.of("Europe/London"))
 
@@ -84,5 +89,7 @@ object RoboticsXMLGenerator {
   }
 
   private def userLanguage(l: LangADT) = <userLanguage>{l.langADTToString.toUpperCase}</userLanguage>
+
+  private def correlationId(envelopeId: EnvelopeId) = <correlationId>{envelopeId.value}</correlationId>
 
 }
