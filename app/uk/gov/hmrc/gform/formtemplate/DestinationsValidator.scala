@@ -20,14 +20,10 @@ import cats.implicits._
 import cats.data.NonEmptyList
 import uk.gov.hmrc.gform.core.ValidationResult.BooleanToValidationResultSyntax
 import uk.gov.hmrc.gform.core.{ Invalid, Valid, ValidationResult }
-import uk.gov.hmrc.gform.handlebarspayload.HandlebarsPayloadAlgebra
-import uk.gov.hmrc.gform.sharedmodel.HandlebarsPayloadId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HandlebarsHttpApi
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationIncludeIf.{ HandlebarValue, IncludeIfValue }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponent, FormComponentId, FormTemplate, IsGroup }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationId, Destinations }
-
-import scala.concurrent.{ ExecutionContext, Future }
 
 object DestinationsValidator {
   def someDestinationIdsAreUsedMoreThanOnce(duplicates: Set[DestinationId]) =
@@ -95,21 +91,6 @@ object DestinationsValidator {
         case _ => Valid
       }.combineAll
     case _ => Valid
-  }
-
-  def verifyHandlebarsPayload(formTemplate: FormTemplate, handlebarsPayloadAlgebra: HandlebarsPayloadAlgebra[Future])(
-    implicit ec: ExecutionContext
-  ): Future[ValidationResult] = {
-    val ids = formTemplate.destinations match {
-      case destinationList: Destinations.DestinationList =>
-        destinationList.destinations.collect {
-          case h: HandlebarsHttpApi if h.payloadName.isDefined => h.id
-        }
-      case _ => List.empty[DestinationId]
-    }
-    for {
-      _ <- ids.traverse(id => handlebarsPayloadAlgebra.get(HandlebarsPayloadId(s"${formTemplate._id.value}-${id.id}")))
-    } yield Valid
   }
 
   def extractGroupComponentId(fcs: List[FormComponent]): Option[FormComponentId] =

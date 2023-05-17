@@ -25,10 +25,7 @@ import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.core.FOpt
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.formtemplate.{ ExprSubstitutions, Rewriter, Verifier }
-import uk.gov.hmrc.gform.handlebarspayload.HandlebarsPayloadAlgebra
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
-
-import scala.concurrent.Future
 
 class FormComponentRejectSpec extends Spec with TableDrivenPropertyChecks {
 
@@ -84,8 +81,7 @@ class FormComponentRejectSpec extends Spec with TableDrivenPropertyChecks {
       val jsResult = readAsFormTemplate(fileName)
       jsResult match {
         case JsSuccess(formTemplate, _) =>
-          val handlebarsPayloadAlgebra = mock[HandlebarsPayloadAlgebra[Future]]
-          val verificationResult: FOpt[Unit] = new Verifier {}.verify(formTemplate, handlebarsPayloadAlgebra)(ExprSubstitutions.empty)
+          val verificationResult: FOpt[Unit] = new Verifier {}.verify(formTemplate)(ExprSubstitutions.empty)
           verificationResult.value.futureValue shouldBe Left(UnexpectedState(expectedMessage))
         case JsError(errors) => fail("Invalid formTemplate definition: " + errors)
       }
@@ -140,9 +136,8 @@ class FormComponentRejectSpec extends Spec with TableDrivenPropertyChecks {
       val jsResult = readAsFormTemplate(fileName)
       jsResult match {
         case JsSuccess(formTemplate, _) =>
-          val handlebarsPayloadAlgebra = mock[HandlebarsPayloadAlgebra[Future]]
           val verificationResult: FOpt[Unit] =
-            new Verifier {}.verify(formTemplate, handlebarsPayloadAlgebra)(ExprSubstitutions.empty)
+            new Verifier {}.verify(formTemplate)(ExprSubstitutions.empty)
           verificationResult.value.futureValue shouldBe Left(UnexpectedState(expectedMessage))
         case JsError(errors) => fail("Invalid formTemplate definition: " + errors)
       }

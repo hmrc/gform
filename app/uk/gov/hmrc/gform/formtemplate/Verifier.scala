@@ -17,16 +17,14 @@
 package uk.gov.hmrc.gform.formtemplate
 
 import cats.implicits._
-import uk.gov.hmrc.gform.core.{ FOpt, fromFutureA, fromOptA }
-import uk.gov.hmrc.gform.handlebarspayload.HandlebarsPayloadAlgebra
+import uk.gov.hmrc.gform.core.{ FOpt, fromOptA }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.ExecutionContext
 
 trait Verifier {
   def verify(
-    formTemplate: FormTemplate,
-    handlebarsPayloadAlgebra: HandlebarsPayloadAlgebra[Future]
+    formTemplate: FormTemplate
   )(expressionsContext: ExprSubstitutions)(implicit ec: ExecutionContext): FOpt[Unit] = {
 
     val sections = formTemplate.formKind.allSections
@@ -86,7 +84,6 @@ trait Verifier {
       _ <- fromOptA(DestinationsValidator.validateUniqueDestinationIds(formTemplate.destinations).toEither)
       _ <- fromOptA(DestinationsValidator.validateNoGroupInDeclaration(formTemplate.destinations).toEither)
       _ <- fromOptA(DestinationsValidator.verifyHandlebarsHttpApiPayload(formTemplate).toEither)
-      _ <- fromFutureA(DestinationsValidator.verifyHandlebarsPayload(formTemplate, handlebarsPayloadAlgebra))
       _ <- fromOptA(FormTemplateValidator.validateDataRetrieve(pages).toEither)
       _ <- fromOptA(FormTemplateValidator.validateDataRetrieveFormCtxReferences(pages).toEither)
       _ <- fromOptA(FormTemplateValidator.validateDataRetrieveCtx(formTemplate, pages, allExpressions).toEither)

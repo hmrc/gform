@@ -205,7 +205,7 @@ class ApplicationModule(context: Context)
 
   val validationModule = new ValidationModule(wSHttpModule, configModule)
 
-  private val handlebarsModule = new HandlebarsHttpApiModule(wSHttpModule, configModule, handlebarsPayloadModule)
+  private val handlebarsModule = new HandlebarsHttpApiModule(wSHttpModule, configModule)
 
   private val submissionConsolidatorModule = new SubmissionConsolidatorModule(wSHttpModule, formModule, configModule)
 

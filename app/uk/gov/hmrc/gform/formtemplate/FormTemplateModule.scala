@@ -50,7 +50,7 @@ class FormTemplateModule(
       formTemplateRepo,
       formTemplateRawRepo,
       formRedirectRepo,
-      handlebarsPayloadModule.handlebarsPayloadService
+      handlebarsPayloadModule.foptHandlebarsPayloadService
     )
   val formRedirectService: FormRedirectService =
     new FormRedirectService(formRedirectRepo)
