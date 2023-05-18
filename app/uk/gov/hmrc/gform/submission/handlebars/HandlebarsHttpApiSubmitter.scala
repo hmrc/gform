@@ -120,7 +120,6 @@ class RealHandlebarsHttpApiSubmitter[F[_]](
             case HttpMethod.GET => httpClient.get(uri)
             case HttpMethod.POST =>
               val body = destination.payload.fold("")(processPayload)
-              println(s"body: $body")
               httpClient.post(uri, body)
             case HttpMethod.PUT =>
               val body = destination.payload.fold("")(processPayload)
