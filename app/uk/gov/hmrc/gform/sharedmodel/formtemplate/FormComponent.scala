@@ -134,7 +134,7 @@ object IsInformationMessage {
 }
 
 object IsPostcodeLookup {
-  def unapply(fc: FormComponent): Boolean = fc.`type`.cast[PostcodeLookup.type].isDefined
+  def unapply(fc: FormComponent): Option[PostcodeLookup] = fc.`type`.cast[PostcodeLookup]
 }
 
 object IsDate {
