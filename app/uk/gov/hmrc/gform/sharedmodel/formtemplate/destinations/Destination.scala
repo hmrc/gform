@@ -79,7 +79,6 @@ object Destination {
     uri: String,
     method: HttpMethod,
     payload: Option[String],
-    payloadName: Option[String],
     payloadType: TemplateType,
     includeIf: DestinationIncludeIf,
     failOnError: Boolean,
@@ -298,7 +297,6 @@ case class UploadableHandlebarsHttpApiDestination(
   uri: String,
   method: HttpMethod,
   payload: Option[String],
-  payloadName: Option[String],
   payloadType: Option[TemplateType],
   convertSingleQuotes: Option[Boolean],
   includeIf: Option[DestinationIncludeIf],
@@ -307,10 +305,9 @@ case class UploadableHandlebarsHttpApiDestination(
 ) {
   def toHandlebarsHttpApiDestination: Either[String, Destination.HandlebarsHttpApi] =
     for {
-      cvp     <- addErrorInfo(id, "payload")(conditionAndValidate(convertSingleQuotes, payload))
-      cvpName <- addErrorInfo(id, "payloadName")(Right(payloadName))
-      cvii    <- addErrorInfo(id, convertSingleQuotes, includeIf)
-      cvuri   <- addErrorInfo(id, "uri")(condition(convertSingleQuotes, uri))
+      cvp   <- addErrorInfo(id, "payload")(conditionAndValidate(convertSingleQuotes, payload))
+      cvii  <- addErrorInfo(id, convertSingleQuotes, includeIf)
+      cvuri <- addErrorInfo(id, "uri")(condition(convertSingleQuotes, uri))
     } yield Destination
       .HandlebarsHttpApi(
         id,
@@ -318,7 +315,6 @@ case class UploadableHandlebarsHttpApiDestination(
         cvuri,
         method,
         cvp,
-        cvpName,
         payloadType.getOrElse(TemplateType.JSON),
         cvii,
         failOnError.getOrElse(true),

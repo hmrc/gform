@@ -42,7 +42,7 @@ class HandlebarsPayloadModule(controllerComponents: ControllerComponents, mongoM
     override def save(handlebarsPayload: HandlebarsPayload): FOpt[Unit] =
       fromFutureA(handlebarsPayloadService.save(handlebarsPayload))
 
-    override def get(handlebarsPayloadName: HandlebarsPayloadId): FOpt[HandlebarsPayload] =
+    override def get(handlebarsPayloadName: HandlebarsPayloadId): FOpt[Option[HandlebarsPayload]] =
       fromFutureA(handlebarsPayloadService.get(handlebarsPayloadName))
   }
 

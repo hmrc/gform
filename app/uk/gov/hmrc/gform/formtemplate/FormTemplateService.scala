@@ -112,24 +112,32 @@ class FormTemplateService(
       val ids = formTemplate.destinations match {
         case destinationList: Destinations.DestinationList =>
           destinationList.destinations.collect {
-            case h: HandlebarsHttpApi if h.payloadName.isDefined => h.id
+            case h: HandlebarsHttpApi if h.payload.isEmpty => h.id
           }
         case _ => List.empty[DestinationId]
       }
 
       for {
-        destinationIdsPayloads <- ids.traverse(id =>
+        destinationIdsPayloads <- ids.traverse { id =>
+                                    val handlebarsPayloadId = HandlebarsPayloadId(s"${formTemplate._id.value}-${id.id}")
                                     handlebarsPayloadAlgebra
-                                      .get(HandlebarsPayloadId(s"${formTemplate._id.value}-${id.id}"))
+                                      .get(handlebarsPayloadId)
+                                      .map(
+                                        _.getOrElse(
+                                          throw new NoSuchElementException(
+                                            s"The ${id.id} destination is not valid. ${handlebarsPayloadId.value} payload not found"
+                                          )
+                                        )
+                                      )
                                       .map(r => id -> r.payload)
-                                  )
+                                  }
       } yield
         if (ids.size === 0) formTemplate
         else
           formTemplate.copy(destinations = formTemplate.destinations match {
             case destinationList: Destinations.DestinationList =>
               destinationList.copy(destinations = destinationList.destinations.map {
-                case h: HandlebarsHttpApi if h.payloadName.isDefined =>
+                case h: HandlebarsHttpApi if h.payload.isEmpty =>
                   val payload = destinationIdsPayloads
                     .find(_._1 === h.id)
                     .map(_._2)

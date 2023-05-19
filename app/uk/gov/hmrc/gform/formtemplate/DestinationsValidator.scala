@@ -16,13 +16,11 @@
 
 package uk.gov.hmrc.gform.formtemplate
 
-import cats.implicits._
 import cats.data.NonEmptyList
 import uk.gov.hmrc.gform.core.ValidationResult.BooleanToValidationResultSyntax
 import uk.gov.hmrc.gform.core.{ Invalid, Valid, ValidationResult }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HandlebarsHttpApi
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationIncludeIf.{ HandlebarValue, IncludeIfValue }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponent, FormComponentId, FormTemplate, IsGroup }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponent, FormComponentId, IsGroup }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationId, Destinations }
 
 object DestinationsValidator {
@@ -72,25 +70,6 @@ object DestinationsValidator {
         case Some(id) => Invalid(groupComponentInDeclaration(id))
         case None     => Valid
       }
-  }
-
-  def verifyHandlebarsHttpApiPayload(
-    formTemplate: FormTemplate
-  ): ValidationResult = formTemplate.destinations match {
-    case destinationList: Destinations.DestinationList =>
-      destinationList.destinations.map {
-        case h: HandlebarsHttpApi if h.payload.isDefined && h.payloadName.isDefined =>
-          Invalid(
-            s"`payload` in the ${h.id.id} destination is not valid. When `payloadUrl` is present, the `payload` should not be included."
-          )
-        case h: HandlebarsHttpApi
-            if h.payloadName.isDefined && !h.payloadName.exists(_ === s"${formTemplate._id.value}-${h.id.id}") =>
-          Invalid(
-            s"`payloadName` in the ${h.id.id} destination is not valid. `payloadName` should be ${formTemplate._id.value}-${h.id.id}"
-          )
-        case _ => Valid
-      }.combineAll
-    case _ => Valid
   }
 
   def extractGroupComponentId(fcs: List[FormComponent]): Option[FormComponentId] =

@@ -108,12 +108,12 @@ trait Rewriter {
         dl.acknowledgementSection.fields.flatMap(_.includeIf) ++ dl.declarationSection.fold(List.empty[IncludeIf])(
           _.fields.flatMap(_.includeIf)
         ) ++ dl.destinations.toList.collect {
-          case HmrcDms(_, _, _, _, _, IncludeIfValue(includeIf), _, _, _, _, _)           => includeIf
-          case HandlebarsHttpApi(_, _, _, _, _, _, _, IncludeIfValue(includeIf), _, _, _) => includeIf
-          case Destination.Composite(_, IncludeIfValue(includeIf), _)                     => includeIf
-          case StateTransition(_, _, IncludeIfValue(includeIf), _)                        => includeIf
-          case SubmissionConsolidator(_, _, _, _, IncludeIfValue(includeIf), _)           => includeIf
-          case Email(_, _, IncludeIfValue(includeIf), _, _, _)                            => includeIf
+          case HmrcDms(_, _, _, _, _, IncludeIfValue(includeIf), _, _, _, _, _)        => includeIf
+          case HandlebarsHttpApi(_, _, _, _, _, _, IncludeIfValue(includeIf), _, _, _) => includeIf
+          case Destination.Composite(_, IncludeIfValue(includeIf), _)                  => includeIf
+          case StateTransition(_, _, IncludeIfValue(includeIf), _)                     => includeIf
+          case SubmissionConsolidator(_, _, _, _, IncludeIfValue(includeIf), _)        => includeIf
+          case Email(_, _, IncludeIfValue(includeIf), _, _, _)                         => includeIf
         }
       case _ => Nil
     }

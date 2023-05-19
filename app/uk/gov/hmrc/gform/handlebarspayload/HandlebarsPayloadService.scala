@@ -28,7 +28,7 @@ import scala.concurrent.{ ExecutionContext, Future }
 trait HandlebarsPayloadAlgebra[F[_]] {
   def save(handlebarsPayload: HandlebarsPayload): F[Unit]
 
-  def get(handlebarsPayloadName: HandlebarsPayloadId): F[HandlebarsPayload]
+  def get(handlebarsPayloadName: HandlebarsPayloadId): F[Option[HandlebarsPayload]]
 }
 
 class HandlebarsPayloadService(repo: Repo[HandlebarsPayload])(implicit ec: ExecutionContext)
@@ -39,12 +39,6 @@ class HandlebarsPayloadService(repo: Repo[HandlebarsPayload])(implicit ec: Execu
     .toFuture
     .as(logger.info(s"HandlebarPayload.save(${handlebarsPayload._id.value}) - upserting $handlebarsPayload)"))
 
-  override def get(handlebarsPayloadId: HandlebarsPayloadId): Future[HandlebarsPayload] =
-    repo
-      .find(handlebarsPayloadId.value)
-      .map(
-        _.getOrElse(
-          throw new NoSuchElementException(s"`payloadName` is not valid. ${handlebarsPayloadId.value} not found")
-        )
-      )
+  override def get(handlebarsPayloadId: HandlebarsPayloadId): Future[Option[HandlebarsPayload]] =
+    repo.find(handlebarsPayloadId.value)
 }

@@ -16,9 +16,9 @@
 
 package uk.gov.hmrc.gform.formtemplate
 
-import cats.implicits._
 import uk.gov.hmrc.gform.core.{ FOpt, fromOptA }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
+import cats.implicits._
 
 import scala.concurrent.ExecutionContext
 
@@ -83,7 +83,6 @@ trait Verifier {
       _ <- fromOptA(FormTemplateValidator.validateAddToListInfoFields(formTemplate).toEither)
       _ <- fromOptA(DestinationsValidator.validateUniqueDestinationIds(formTemplate.destinations).toEither)
       _ <- fromOptA(DestinationsValidator.validateNoGroupInDeclaration(formTemplate.destinations).toEither)
-      _ <- fromOptA(DestinationsValidator.verifyHandlebarsHttpApiPayload(formTemplate).toEither)
       _ <- fromOptA(FormTemplateValidator.validateDataRetrieve(pages).toEither)
       _ <- fromOptA(FormTemplateValidator.validateDataRetrieveFormCtxReferences(pages).toEither)
       _ <- fromOptA(FormTemplateValidator.validateDataRetrieveCtx(formTemplate, pages, allExpressions).toEither)

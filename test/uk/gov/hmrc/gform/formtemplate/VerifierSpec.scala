@@ -44,6 +44,7 @@ class VerifierSpec extends AnyWordSpecLike with Matchers with ScalaFutures with 
           Some(Instruction(Some(toSmartString("section1 - instruction")), Some(-1)))
         )
       )
+
       val result = Verifier.verify(mkFormTemplate(sections))(ExprSubstitutions.empty)
 
       result.value.futureValue shouldBe Left(

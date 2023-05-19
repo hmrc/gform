@@ -106,7 +106,6 @@ trait DestinationGen {
       uri,
       method,
       payload,
-      None,
       payloadType,
       includeIf,
       failOnError,
