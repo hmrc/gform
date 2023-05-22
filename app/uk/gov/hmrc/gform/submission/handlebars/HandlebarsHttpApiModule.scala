@@ -24,7 +24,10 @@ import uk.gov.hmrc.gform.wshttp.HttpClient.HttpClientBuildingSyntax
 
 import scala.concurrent.ExecutionContext
 
-class HandlebarsHttpApiModule(wSHttpModule: WSHttpModule, configModule: ConfigModule)(implicit ec: ExecutionContext) {
+class HandlebarsHttpApiModule(
+  wSHttpModule: WSHttpModule,
+  configModule: ConfigModule
+)(implicit ec: ExecutionContext) {
 
   private val rootHttpClient: HttpClient[FOpt] = wSHttpModule.auditingHttpClient
 

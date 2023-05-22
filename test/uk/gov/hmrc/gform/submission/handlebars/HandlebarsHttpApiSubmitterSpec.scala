@@ -110,7 +110,10 @@ class HandlebarsHttpApiSubmitterSpec extends Spec with ScalaCheckDrivenPropertyC
     val handlebarsTemplateProcessor = mock[HandlebarsTemplateProcessor]
 
     val submitter =
-      new RealHandlebarsHttpApiSubmitter(Map(ProfileName("foo") -> httpClient), handlebarsTemplateProcessor)
+      new RealHandlebarsHttpApiSubmitter(
+        Map(ProfileName("foo") -> httpClient),
+        handlebarsTemplateProcessor
+      )
 
     val destination = d.copy(payload = Option(payload), payloadType = TemplateType.Plain, multiRequestPayload = true)
     val processorModel = HandlebarsTemplateProcessorModel.empty
@@ -176,7 +179,10 @@ class HandlebarsHttpApiSubmitterSpec extends Spec with ScalaCheckDrivenPropertyC
     val handlebarsTemplateProcessor = mock[HandlebarsTemplateProcessor]
 
     val submitter =
-      new RealHandlebarsHttpApiSubmitter(Map(ProfileName("foo") -> httpClient), handlebarsTemplateProcessor)
+      new RealHandlebarsHttpApiSubmitter(
+        Map(ProfileName("foo") -> httpClient),
+        handlebarsTemplateProcessor
+      )
 
     val destination = d.copy(payload = Option(payload), payloadType = TemplateType.Plain, multiRequestPayload = true)
     val processorModel = HandlebarsTemplateProcessorModel.empty
@@ -245,7 +251,10 @@ class HandlebarsHttpApiSubmitterSpec extends Spec with ScalaCheckDrivenPropertyC
     val handlebarsTemplateProcessor = mock[HandlebarsTemplateProcessor]
 
     val submitter =
-      new RealHandlebarsHttpApiSubmitter(Map(ProfileName("foo") -> httpClient), handlebarsTemplateProcessor)
+      new RealHandlebarsHttpApiSubmitter(
+        Map(ProfileName("foo") -> httpClient),
+        handlebarsTemplateProcessor
+      )
 
     val destination = d.copy(payload = Option(payload), payloadType = TemplateType.Plain, multiRequestPayload = false)
     val processorModel = HandlebarsTemplateProcessorModel.empty
@@ -339,7 +348,10 @@ class HandlebarsHttpApiSubmitterSpec extends Spec with ScalaCheckDrivenPropertyC
     val handlebarsTemplateProcessor = mock[HandlebarsTemplateProcessor]
 
     val submitter =
-      new RealHandlebarsHttpApiSubmitter(Map(ProfileName("foo") -> httpClient), handlebarsTemplateProcessor)
+      new RealHandlebarsHttpApiSubmitter(
+        Map(ProfileName("foo") -> httpClient),
+        handlebarsTemplateProcessor
+      )
 
     val destination = d.copy(payload = Option(payload), payloadType = TemplateType.Plain, multiRequestPayload = true)
     val processorModel = HandlebarsTemplateProcessorModel.empty
@@ -395,7 +407,10 @@ class HandlebarsHttpApiSubmitterSpec extends Spec with ScalaCheckDrivenPropertyC
     val handlebarsTemplateProcessor = mock[HandlebarsTemplateProcessor]
 
     val submitter =
-      new RealHandlebarsHttpApiSubmitter(Map(ProfileName("foo") -> httpClient), handlebarsTemplateProcessor)
+      new RealHandlebarsHttpApiSubmitter(
+        Map(ProfileName("foo") -> httpClient),
+        handlebarsTemplateProcessor
+      )
 
     val destination = d.copy(payload = Option(payload), payloadType = TemplateType.Plain, multiRequestPayload = false)
     val processorModel = HandlebarsTemplateProcessorModel.empty
@@ -502,7 +517,10 @@ class HandlebarsHttpApiSubmitterSpec extends Spec with ScalaCheckDrivenPropertyC
     val handlebarsTemplateProcessor = mock[HandlebarsTemplateProcessor]
 
     val submitter =
-      new RealHandlebarsHttpApiSubmitter(Map(ProfileName("foo") -> httpClient), handlebarsTemplateProcessor)
+      new RealHandlebarsHttpApiSubmitter(
+        Map(ProfileName("foo") -> httpClient),
+        handlebarsTemplateProcessor
+      )
 
     SubmitterParts(submitter, httpClient, handlebarsTemplateProcessor)
   }

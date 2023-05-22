@@ -22,8 +22,12 @@ import play.api.libs.json.JsObject
 import uk.gov.hmrc.gform.core.{ FOpt, _ }
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.formredirect.FormRedirect
+import uk.gov.hmrc.gform.handlebarspayload.HandlebarsPayloadAlgebra
 import uk.gov.hmrc.gform.repo.Repo
+import uk.gov.hmrc.gform.sharedmodel.HandlebarsPayloadId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HandlebarsHttpApi
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DestinationId, Destinations, UploadableConditioning }
 
 import scala.concurrent.{ ExecutionContext, Future }
 import java.time.Instant
@@ -36,7 +40,8 @@ trait FormTemplateAlgebra[F[_]] {
 class FormTemplateService(
   formTemplateRepo: Repo[FormTemplate],
   formTemplateRawRepo: Repo[FormTemplateRaw],
-  formRedirectRepo: Repo[FormRedirect]
+  formRedirectRepo: Repo[FormRedirect],
+  handlebarsPayloadAlgebra: HandlebarsPayloadAlgebra[FOpt]
 )(implicit
   ec: ExecutionContext
 ) extends Verifier with Rewriter with SubstituteExpressions with SubstituteBooleanExprs
@@ -98,9 +103,53 @@ class FormTemplateService(
             booleanExpressionsContext,
             expressionsContextSubstituted
           )
-        _                   <- verify(substitutedBooleanExprsFormTemplate)(expressionsContext)
-        formTemplateUpdated <- rewrite(substitutedBooleanExprsFormTemplate)
+        _                       <- verify(substitutedBooleanExprsFormTemplate)(expressionsContext)
+        substitutedDestinations <- substituteDestinations(formTemplate)
+        formTemplateUpdated     <- rewrite(substitutedDestinations)
       } yield formTemplateUpdated
+
+    def substituteDestinations(formTemplate: FormTemplate) = {
+      val ids = formTemplate.destinations match {
+        case destinationList: Destinations.DestinationList =>
+          destinationList.destinations.collect {
+            case h: HandlebarsHttpApi if h.payload.isEmpty => h.id
+          }
+        case _ => List.empty[DestinationId]
+      }
+
+      for {
+        destinationIdsPayloads <- ids.traverse { id =>
+                                    val handlebarsPayloadId = HandlebarsPayloadId(s"${formTemplate._id.value}-${id.id}")
+                                    handlebarsPayloadAlgebra
+                                      .get(handlebarsPayloadId)
+                                      .map(
+                                        _.getOrElse(
+                                          throw new NoSuchElementException(
+                                            s"The ${id.id} destination is not valid. ${handlebarsPayloadId.value} payload not found"
+                                          )
+                                        )
+                                      )
+                                      .map(r => id -> r.payload)
+                                  }
+      } yield
+        if (ids.size === 0) formTemplate
+        else
+          formTemplate.copy(destinations = formTemplate.destinations match {
+            case destinationList: Destinations.DestinationList =>
+              destinationList.copy(destinations = destinationList.destinations.map {
+                case h: HandlebarsHttpApi if h.payload.isEmpty =>
+                  val payload = destinationIdsPayloads
+                    .find(_._1 === h.id)
+                    .map(_._2)
+                    .map(payload =>
+                      UploadableConditioning.conditionAndValidate(h.convertSingleQuotes, payload).getOrElse("")
+                    )
+                  h.copy(payload = payload)
+                case other => other
+              })
+            case other => other
+          })
+    }
 
     for {
       formTemplateToSave <- substitute(formTemplate)

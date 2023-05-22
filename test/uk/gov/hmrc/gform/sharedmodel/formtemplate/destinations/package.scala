@@ -78,7 +78,7 @@ package object destinations {
       s"""|{
           |  "id": "${id.id}",
           |  ${optionalField("payload", payload)}
-          |  ${optionalField("convertSingleQuotes", Option(false))}
+          |  ${optionalField("convertSingleQuotes", Option(handlebars.convertSingleQuotes))}
           |  "includeIf":  "${getHandlebarValue(destination.includeIf)}",
           |  ${optionalField("failOnError", Option(destination.failOnError), true)}
           |  ${optionalField("payloadType", Option(handlebars.payloadType), TemplateType.JSON)}

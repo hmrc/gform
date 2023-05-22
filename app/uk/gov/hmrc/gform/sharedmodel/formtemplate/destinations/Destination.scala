@@ -41,14 +41,12 @@ sealed trait DestinationIncludeIf extends Product with Serializable
 object DestinationIncludeIf {
   case class HandlebarValue(value: String) extends DestinationIncludeIf
   case class IncludeIfValue(value: IncludeIf) extends DestinationIncludeIf
-  private val templateReads: Reads[DestinationIncludeIf] = Reads { json =>
-    json match {
-      case JsString(exprAsStr) =>
-        BooleanExprParser.validate(exprAsStr) fold (_ => JsSuccess(HandlebarValue(exprAsStr)), expr =>
-          JsSuccess(IncludeIfValue(IncludeIf(expr))))
-      case JsNull => JsSuccess(HandlebarValue(true.toString))
-      case _      => JsError("Dsdsssss")
-    }
+  private val templateReads: Reads[DestinationIncludeIf] = Reads {
+    case JsString(exprAsStr) =>
+      BooleanExprParser.validate(exprAsStr) fold (_ => JsSuccess(HandlebarValue(exprAsStr)), expr =>
+        JsSuccess(IncludeIfValue(IncludeIf(expr))))
+    case JsNull => JsSuccess(HandlebarValue(true.toString))
+    case _      => JsError("Unsupported includeIf expression in destination")
   }
 
   implicit val format: OFormat[DestinationIncludeIf] = OFormatWithTemplateReadFallback(templateReads)
@@ -84,7 +82,8 @@ object Destination {
     payloadType: TemplateType,
     includeIf: DestinationIncludeIf,
     failOnError: Boolean,
-    multiRequestPayload: Boolean
+    multiRequestPayload: Boolean,
+    convertSingleQuotes: Option[Boolean]
   ) extends Destination
 
   case class Composite(id: DestinationId, includeIf: DestinationIncludeIf, destinations: NonEmptyList[Destination])
@@ -304,7 +303,6 @@ case class UploadableHandlebarsHttpApiDestination(
   failOnError: Option[Boolean],
   multiRequestPayload: Option[Boolean]
 ) {
-
   def toHandlebarsHttpApiDestination: Either[String, Destination.HandlebarsHttpApi] =
     for {
       cvp   <- addErrorInfo(id, "payload")(conditionAndValidate(convertSingleQuotes, payload))
@@ -320,7 +318,8 @@ case class UploadableHandlebarsHttpApiDestination(
         payloadType.getOrElse(TemplateType.JSON),
         cvii,
         failOnError.getOrElse(true),
-        multiRequestPayload.getOrElse(false)
+        multiRequestPayload.getOrElse(false),
+        convertSingleQuotes
       )
 }
 
