@@ -627,14 +627,14 @@ object FormTemplateValidator {
 
   def validatePostcodeLookup(sectionsList: List[Page]): ValidationResult = {
     val pagesWithPostcodeLookups: List[(FormComponentId, Page)] = sectionsList.flatMap { page =>
-      page.fields.collect { case fc @ IsPostcodeLookup() =>
+      page.fields.collect { case fc @ IsPostcodeLookup(_) =>
         fc.id -> page
       }
     }
     val noOtherComponentsAllowed: ValidationResult = pagesWithPostcodeLookups.foldMap { case (postcodeId, page) =>
       val filteredFields = page.fields.filter {
-        case IsPostcodeLookup() | IsInformationMessage(_) => true
-        case _                                            => false
+        case IsPostcodeLookup(_) | IsInformationMessage(_) => true
+        case _                                             => false
       }
       if (filteredFields.size === page.fields.size) {
         Valid
@@ -650,7 +650,7 @@ object FormTemplateValidator {
           case IsRevealingChoice(revealingChoice) => revealingChoice.options.toList.flatMap(_.revealingFields)
         }.flatten
       }
-      .collectFirst { case fc @ IsPostcodeLookup() =>
+      .collectFirst { case fc @ IsPostcodeLookup(_) =>
         fc
       }
       .fold[ValidationResult](Valid)(fc =>
@@ -658,7 +658,7 @@ object FormTemplateValidator {
       )
 
     val postcodeLookups: List[List[FormComponentId]] = sectionsList.map { page =>
-      page.allFormComponents.collect { case fc @ IsPostcodeLookup() =>
+      page.allFormComponents.collect { case fc @ IsPostcodeLookup(_) =>
         fc.id
       }
     }
@@ -856,7 +856,7 @@ object FormTemplateValidator {
     case Time(_, _)                              => Valid
     case OverseasAddress(_, _, _, Some(expr), _) => validateOverseasAddressValue(expr, formTemplate)
     case OverseasAddress(_, _, _, _, _)          => Valid
-    case PostcodeLookup                          => Valid
+    case PostcodeLookup(_, _)                    => Valid
     case MiniSummaryList(ls)                     => validateMiniSummaryList(ls, formTemplate)
     case t: TableComp                            => TableCompValidator.validateTableComp(t)
   }
