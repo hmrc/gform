@@ -46,7 +46,7 @@ class FormComponentMaker(json: JsValue) {
 
   lazy val id: FormComponentId = (json \ "id").as[FormComponentId]
   lazy val `type`: Option[ComponentTypeRaw] = (json \ "type").asOpt[ComponentTypeRaw]
-  lazy val label: SmartString = (json \ "label").as[SmartString]
+  lazy val optLabel: Opt[SmartString] = toOpt((json \ "label").validate[SmartString], "/label")
 
   lazy val optMaybeValueExpr: Opt[Option[ValueExpr]] = parse("value", ValueParser.validate)
 
@@ -79,7 +79,7 @@ class FormComponentMaker(json: JsValue) {
   lazy val optMaybePresentationHintExpr: Opt[Option[List[PresentationHint]]] =
     parse("presentationHint", PresentationHintParser.validate)
 
-  lazy val helpText: Option[SmartString] = (json \ "helpText").asOpt[SmartString]
+  lazy val optHelpText: Opt[Option[SmartString]] = toOpt((json \ "helpText").validateOpt[SmartString], "/helpText")
   lazy val optionHints: Option[NonEmptyList[SmartString]] =
     (json \ "hints").asOpt[NonEmptyList[SmartString]]
   lazy val optionHelpText: Option[NonEmptyList[SmartString]] =
@@ -269,6 +269,8 @@ class FormComponentMaker(json: JsValue) {
 
   def optFieldValue(): Opt[FormComponent] =
     for {
+      label       <- optLabel
+      helpText    <- optHelpText
       presHint    <- optMaybePresentationHintExpr
       mes         <- optMES
       ct          <- componentTypeOpt
@@ -277,7 +279,7 @@ class FormComponentMaker(json: JsValue) {
       includeIf   <- optIncludeIf
       validIf     <- optValidIf
       labelSize   <- optLabelSize
-    } yield mkFieldValue(presHint, mes, ct, validators, instruction, includeIf, validIf, labelSize)
+    } yield mkFieldValue(label, helpText, presHint, mes, ct, validators, instruction, includeIf, validIf, labelSize)
 
   private def toOpt[A](result: JsResult[A], pathPrefix: String): Opt[A] =
     result match {
@@ -293,6 +295,8 @@ class FormComponentMaker(json: JsValue) {
     }
 
   private def mkFieldValue(
+    label: SmartString,
+    helpText: Option[SmartString],
     presHint: Option[List[PresentationHint]],
     mes: MES,
     ct: ComponentType,

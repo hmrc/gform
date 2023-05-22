@@ -39,6 +39,25 @@ object BuilderError {
   final case class PlayJsonError(message: String) extends BuilderError
 }
 
+sealed trait PropertyBehaviour extends Product with Serializable
+
+object PropertyBehaviour {
+  // Set property to whatever value has been received from the client
+  case object Normal extends PropertyBehaviour
+  // Remove property if received value from client is empty
+  case object PurgeWhenEmpty extends PropertyBehaviour
+}
+
+case class Property(
+  name: String,
+  behaviour: PropertyBehaviour
+)
+
+object Property {
+  def apply(name: String): Property =
+    Property(name, PropertyBehaviour.Normal)
+}
+
 object BuilderSupport {
 
   private def modifyJson(
@@ -60,30 +79,54 @@ object BuilderSupport {
   }
 
   def modifySectionData(json: Json, sectionNumber: Int, sectionData: Json): Json =
-    List("title", "caption", "description", "shortName", "continueLabel", "presentationHint").foldRight(json) {
-      case (property, accJson) =>
-        sectionData.hcursor
-          .downField(property)
-          .focus
-          .flatMap { propertyValue =>
-            val sectionPath: List[CursorOp] = (0 until sectionNumber).foldRight(List[CursorOp](DownArray)) {
-              case (_, acc) =>
-                MoveRight :: acc
-            }
+    List(
+      Property("title"),
+      Property("caption"),
+      Property("description"),
+      Property("shortName", PropertyBehaviour.PurgeWhenEmpty),
+      Property("continueLabel"),
+      Property("presentationHint", PropertyBehaviour.PurgeWhenEmpty)
+    ).foldRight(json) { case (property, accJson) =>
+      sectionData.hcursor
+        .downField(property.name)
+        .focus
+        .flatMap { propertyValue =>
+          val sectionPath: List[CursorOp] = (0 until sectionNumber).foldRight(List[CursorOp](DownArray)) {
+            case (_, acc) =>
+              MoveRight :: acc
+          }
 
-            val history: List[CursorOp] = sectionPath ::: DownField("sections") :: Nil
+          val history: List[CursorOp] = sectionPath ::: DownField("sections") :: Nil
 
-            val array = accJson.hcursor.replay(history)
+          val array = accJson.hcursor.replay(history)
 
-            array.success.flatMap { hcursor =>
-              hcursor
-                .downField(property)
-                .set(propertyValue)
-                .root
-                .focus
+          val isValueAsStringEmpty = propertyValue
+            .as[String]
+            .toOption
+            .fold(false)(_.trim.isEmpty())
+
+          array.success.flatMap { hcursor =>
+            property.behaviour match {
+              case PropertyBehaviour.PurgeWhenEmpty if isValueAsStringEmpty =>
+                hcursor
+                  .downField(property.name)
+                  .delete
+                  .root
+                  .focus
+              case _ =>
+                val propertyField = hcursor.downField(property.name)
+                if (propertyField.succeeded) {
+                  propertyField
+                    .set(propertyValue)
+                    .root
+                    .focus
+                } else {
+                  hcursor.withFocus(json => json.deepMerge(Json.obj(property.name -> propertyValue))).root.focus
+                }
             }
           }
-          .getOrElse(accJson)
+        }
+        .getOrElse(accJson)
 
     }
 

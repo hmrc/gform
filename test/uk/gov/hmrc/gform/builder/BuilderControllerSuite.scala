@@ -25,12 +25,6 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormComponentId
 class BuilderControllerSuite extends FunSuite {
   val json: Json = json"""
     {
-      "_id": "gform-builder",
-      "formName": "Gform Builder",
-      "emailTemplateId": "confirmation",
-      "authConfig": {
-        "authModule": "anonymous"
-      },
       "sections": [
         {
           "title": "Page 1",
@@ -53,33 +47,12 @@ class BuilderControllerSuite extends FunSuite {
               "format": "sterling"
             }
           ]
-        }
-      ],
-      "declarationSection": {
-        "title": "Declaration",
-        "fields": []
-      },
-      "acknowledgementSection": {
-        "title": "Acknowledgement Page",
-        "fields": []
-      },
-      "destinations": [
-        {
-          "id": "transitionToSubmitted",
-          "type": "stateTransition",
-          "requiredState": "Submitted"
         }
       ]
     }"""
 
   val expectedJson: Json = json"""
     {
-      "_id": "gform-builder",
-      "formName": "Gform Builder",
-      "emailTemplateId": "confirmation",
-      "authConfig": {
-        "authModule": "anonymous"
-      },
       "sections": [
         {
           "title": "Page AA",
@@ -103,32 +76,11 @@ class BuilderControllerSuite extends FunSuite {
             }
           ]
         }
-      ],
-      "declarationSection": {
-        "title": "Declaration",
-        "fields": []
-      },
-      "acknowledgementSection": {
-        "title": "Acknowledgement Page",
-        "fields": []
-      },
-      "destinations": [
-        {
-          "id": "transitionToSubmitted",
-          "type": "stateTransition",
-          "requiredState": "Submitted"
-        }
       ]
     }"""
 
   val expectedJson2: Json = json"""
     {
-      "_id": "gform-builder",
-      "formName": "Gform Builder",
-      "emailTemplateId": "confirmation",
-      "authConfig": {
-        "authModule": "anonymous"
-      },
       "sections": [
         {
           "title": "Page 1",
@@ -151,21 +103,6 @@ class BuilderControllerSuite extends FunSuite {
               "format": "sterling"
             }
           ]
-        }
-      ],
-      "declarationSection": {
-        "title": "Declaration",
-        "fields": []
-      },
-      "acknowledgementSection": {
-        "title": "Acknowledgement Page",
-        "fields": []
-      },
-      "destinations": [
-        {
-          "id": "transitionToSubmitted",
-          "type": "stateTransition",
-          "requiredState": "Submitted"
         }
       ]
     }"""
@@ -188,12 +125,6 @@ class BuilderControllerSuite extends FunSuite {
 
   val sectionCaptionJson: Json = json"""
     {
-      "_id": "gform-builder",
-      "formName": "Gform Builder",
-      "emailTemplateId": "confirmation",
-      "authConfig": {
-        "authModule": "anonymous"
-      },
       "sections": [
         {
           "title": "Page 1",
@@ -218,32 +149,11 @@ class BuilderControllerSuite extends FunSuite {
             }
           ]
         }
-      ],
-      "declarationSection": {
-        "title": "Declaration",
-        "fields": []
-      },
-      "acknowledgementSection": {
-        "title": "Acknowledgement Page",
-        "fields": []
-      },
-      "destinations": [
-        {
-          "id": "transitionToSubmitted",
-          "type": "stateTransition",
-          "requiredState": "Submitted"
-        }
       ]
     }"""
 
   val expectedSectionCaptionJson: Json = json"""
     {
-      "_id": "gform-builder",
-      "formName": "Gform Builder",
-      "emailTemplateId": "confirmation",
-      "authConfig": {
-        "authModule": "anonymous"
-      },
       "sections": [
         {
           "title": "Page 1",
@@ -268,21 +178,6 @@ class BuilderControllerSuite extends FunSuite {
             }
           ]
         }
-      ],
-      "declarationSection": {
-        "title": "Declaration",
-        "fields": []
-      },
-      "acknowledgementSection": {
-        "title": "Acknowledgement Page",
-        "fields": []
-      },
-      "destinations": [
-        {
-          "id": "transitionToSubmitted",
-          "type": "stateTransition",
-          "requiredState": "Submitted"
-        }
       ]
     }"""
 
@@ -294,14 +189,98 @@ class BuilderControllerSuite extends FunSuite {
     assertEquals(result.spaces2, expectedSectionCaptionJson.spaces2)
   }
 
+  val sectionPresentationHintJson: Json = json"""
+    {
+      "sections": [
+        {
+          "title": "Page 1",
+          "caption": "I'm caption",
+          "presentationHint": "invisiblePageTitle",
+          "fields": [
+            {
+              "id": "first",
+              "type": "text",
+              "label": "First",
+              "format": "sterling"
+            }
+          ]
+        }
+      ]
+    }"""
+
+  val expectedSectionPresentationHintJson: Json = json"""
+    {
+      "sections": [
+        {
+          "title": "Page 1",
+          "caption": "I'm caption",
+          "fields": [
+            {
+              "id": "first",
+              "type": "text",
+              "label": "First",
+              "format": "sterling"
+            }
+          ]
+        }
+      ]
+    }"""
+
+  test("Purge section's presentationHint when empty (1)") {
+    val patch: Json = Json.obj("presentationHint" := "")
+
+    val result = BuilderSupport.modifySectionData(sectionPresentationHintJson, 0, patch)
+
+    assertEquals(result, expectedSectionPresentationHintJson)
+  }
+
+  val sectionPresentationHintJson2: Json = json"""
+    {
+      "sections": [
+        {
+          "title": "Page 1",
+          "caption": "I'm caption",
+          "fields": [
+            {
+              "id": "first",
+              "type": "text",
+              "label": "First",
+              "format": "sterling"
+            }
+          ]
+        }
+      ]
+    }"""
+
+  val expectedSectionPresentationHintJson2: Json = json"""
+    {
+      "sections": [
+        {
+          "title": "Page 1",
+          "caption": "I'm caption",
+          "presentationHint": "abc",
+          "fields": [
+            {
+              "id": "first",
+              "type": "text",
+              "label": "First",
+              "format": "sterling"
+            }
+          ]
+        }
+      ]
+    }"""
+
+  test("Set section's presentationHint when empty (1)") {
+    val patch: Json = Json.obj("presentationHint" := "abc")
+
+    val result = BuilderSupport.modifySectionData(sectionPresentationHintJson2, 0, patch)
+
+    assertEquals(result, expectedSectionPresentationHintJson2)
+  }
+
   val formComponentUpdateJson: Json = json"""
     {
-      "_id": "gform-builder",
-      "formName": "Gform Builder",
-      "emailTemplateId": "confirmation",
-      "authConfig": {
-        "authModule": "anonymous"
-      },
       "sections": [
         {
           "title": "Page 1",
@@ -334,32 +313,11 @@ class BuilderControllerSuite extends FunSuite {
             }
           ]
         }
-      ],
-      "declarationSection": {
-        "title": "Declaration",
-        "fields": []
-      },
-      "acknowledgementSection": {
-        "title": "Acknowledgement Page",
-        "fields": []
-      },
-      "destinations": [
-        {
-          "id": "transitionToSubmitted",
-          "type": "stateTransition",
-          "requiredState": "Submitted"
-        }
       ]
     }"""
 
   val formComponentUpdateJsonExpected: Json = json"""
     {
-      "_id": "gform-builder",
-      "formName": "Gform Builder",
-      "emailTemplateId": "confirmation",
-      "authConfig": {
-        "authModule": "anonymous"
-      },
       "sections": [
         {
           "title": "Page 1",
@@ -392,32 +350,11 @@ class BuilderControllerSuite extends FunSuite {
             }
           ]
         }
-      ],
-      "declarationSection": {
-        "title": "Declaration",
-        "fields": []
-      },
-      "acknowledgementSection": {
-        "title": "Acknowledgement Page",
-        "fields": []
-      },
-      "destinations": [
-        {
-          "id": "transitionToSubmitted",
-          "type": "stateTransition",
-          "requiredState": "Submitted"
-        }
       ]
     }"""
 
   val formComponentUpdateHelpTextJsonExpected: Json = json"""
     {
-      "_id": "gform-builder",
-      "formName": "Gform Builder",
-      "emailTemplateId": "confirmation",
-      "authConfig": {
-        "authModule": "anonymous"
-      },
       "sections": [
         {
           "title": "Page 1",
@@ -449,21 +386,6 @@ class BuilderControllerSuite extends FunSuite {
               "labelSize": "s"
             }
           ]
-        }
-      ],
-      "declarationSection": {
-        "title": "Declaration",
-        "fields": []
-      },
-      "acknowledgementSection": {
-        "title": "Acknowledgement Page",
-        "fields": []
-      },
-      "destinations": [
-        {
-          "id": "transitionToSubmitted",
-          "type": "stateTransition",
-          "requiredState": "Submitted"
         }
       ]
     }"""
