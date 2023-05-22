@@ -67,15 +67,13 @@ class ErrorHandler(environment: Environment, configuration: Configuration, sourc
   }
 
   override def onServerError(request: RequestHeader, exception: Throwable): Future[Result] = exception match {
-    // format: OFF
-     case e: UpstreamErrorResponse             => onUpstreamErrorResponse(e)
-     case e: NotFoundException                 => onNotFoundException(e)
-     case e: java.util.NoSuchElementException  => onNotFoundException(e)
-     case e: HttpException                     => onHttpException(e)
-     case e: JsValidationException             => onJsValidationException(e)
-     case e: JsResultException                 => onJsResultException(e)
-     case e: Throwable                         => onOtherException(e)
-     // format: ON
+    case e: UpstreamErrorResponse            => onUpstreamErrorResponse(e)
+    case e: NotFoundException                => onNotFoundException(e)
+    case e: java.util.NoSuchElementException => onNotFoundException(e)
+    case e: HttpException                    => onHttpException(e)
+    case e: JsValidationException            => onJsValidationException(e)
+    case e: JsResultException                => onJsResultException(e)
+    case e: Throwable                        => onOtherException(e)
   }
 
   private def onHttpException(e: HttpException) = {
