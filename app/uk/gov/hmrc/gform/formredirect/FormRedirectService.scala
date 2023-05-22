@@ -16,17 +16,36 @@
 
 package uk.gov.hmrc.gform.formredirect
 
+import org.mongodb.scala.model.Filters.equal
 import uk.gov.hmrc.gform.repo.Repo
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 
-import scala.concurrent.Future
+import scala.concurrent.{ ExecutionContext, Future }
 
 trait FormRedirectAlgebra[F[_]] {
   def find(id: FormTemplateId): F[Option[FormRedirect]]
+
+  def findAllPaginated(page: Int, pageSize: Int): F[FormRedirectPageData]
 }
 
-class FormRedirectService(formRedirectRepo: Repo[FormRedirect]) extends FormRedirectAlgebra[Future] {
+class FormRedirectService(formRedirectRepo: Repo[FormRedirect])(implicit ec: ExecutionContext)
+    extends FormRedirectAlgebra[Future] {
 
   override def find(id: FormTemplateId): Future[Option[FormRedirect]] =
     formRedirectRepo.find(id.value)
+
+  override def findAllPaginated(page: Int, pageSize: Int): Future[FormRedirectPageData] = {
+    val sort = equal("redirect", -1)
+    val skip = page * pageSize
+    for {
+      formRedirects <- formRedirectRepo.collection
+                         .find()
+                         .sort(sort)
+                         .skip(skip)
+                         .limit(pageSize)
+                         .toFuture()
+                         .map(_.toList)
+      count <- formRedirectRepo.countAll()
+    } yield FormRedirectPageData(formRedirects, count)
+  }
 }
