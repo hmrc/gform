@@ -96,16 +96,16 @@ class FormTemplateService(
     def substitute(template: FormTemplate) =
       for {
         expressionsContextSubstituted <- fromOptA(exprSubstitutionsResolved)
-        substitutedFormTemplate = substituteExpressions(template, expressionsContextSubstituted)
-        substitutedBooleanExprsFormTemplate =
+        substitutedFormTemplateExprs = substituteExpressions(template, expressionsContextSubstituted)
+        substitutedFormTemplateBooleanExprs =
           substituteBooleanExprs(
-            substitutedFormTemplate,
+            substitutedFormTemplateExprs,
             booleanExpressionsContext,
             expressionsContextSubstituted
           )
-        _                       <- verify(substitutedBooleanExprsFormTemplate)(expressionsContext)
-        substitutedDestinations <- substituteDestinations(formTemplate)
-        formTemplateUpdated     <- rewrite(substitutedDestinations)
+        substitutedFormTemplate <- substituteDestinations(substitutedFormTemplateBooleanExprs)
+        _                       <- verify(substitutedFormTemplate)(expressionsContext)
+        formTemplateUpdated     <- rewrite(substitutedFormTemplate)
       } yield formTemplateUpdated
 
     def substituteDestinations(formTemplate: FormTemplate) = {
