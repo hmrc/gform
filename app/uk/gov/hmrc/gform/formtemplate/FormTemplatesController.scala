@@ -146,4 +146,8 @@ class FormTemplatesController(
 
     formTemplateService.list().asOkJson
   }
+
+  def getRedirects(page: Int, pageSize: Int) = Action.async { _ =>
+    formRedirectService.findAllPaginated(page, pageSize).asOkJson
+  }
 }
