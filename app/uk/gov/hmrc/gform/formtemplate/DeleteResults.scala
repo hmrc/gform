@@ -21,9 +21,10 @@ import play.api.libs.json.OFormat
 import uk.gov.hmrc.gform.repo.DeleteResult
 
 case class DeleteResults(
-  prod: DeleteResult,
-  prodSpecimen: DeleteResult,
-  raw: DeleteResult
+  formTemplate: DeleteResult,
+  formTemplateSpecimen: DeleteResult,
+  formTemplateRaw: DeleteResult,
+  formRedirect: DeleteResult
 )
 
 object DeleteResults {

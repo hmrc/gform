@@ -173,7 +173,8 @@ class FormTemplatesIT extends ITSpec with FormTemplateSample with BeforeAndAfter
     Json.parse(result.body).as[DeleteResults] shouldBe DeleteResults(
       DeleteResult("basic", true),
       DeleteResult("specimen-basic", true),
-      DeleteResult("basic", true)
+      DeleteResult("basic", true),
+      DeleteResult("basic", false)
     )
     val getTemplateResponse = get("/formtemplates/basic").send()
     getTemplateResponse.status shouldBe StatusCodes.NotFound.intValue
