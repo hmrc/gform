@@ -65,11 +65,16 @@ class FormTemplateService(
 
   def delete(formTemplateId: FormTemplateId): FOpt[DeleteResults] =
     for {
-      _                   <- formRedirectRepo.deleteByFieldName("redirect", formTemplateId.value)
-      prodDeleted         <- formTemplateRepo.delete(formTemplateId.value)
-      prodSpecimenDeleted <- formTemplateRepo.delete("specimen-" + formTemplateId.value)
-      rawDeleted          <- formTemplateRawRepo.delete(formTemplateId.value)
-    } yield DeleteResults(prodDeleted, prodSpecimenDeleted, rawDeleted)
+      formRedirectDeleteResult    <- formRedirectRepo.deleteByFieldName("redirect", formTemplateId.value)
+      formTemplateDeleteResult    <- formTemplateRepo.delete(formTemplateId.value)
+      specimenDeleteResult        <- formTemplateRepo.delete("specimen-" + formTemplateId.value)
+      formTemplateRawDeleteResult <- formTemplateRawRepo.delete(formTemplateId.value)
+    } yield DeleteResults(
+      formTemplateDeleteResult,
+      specimenDeleteResult,
+      formTemplateRawDeleteResult,
+      formRedirectDeleteResult
+    )
 
   def list(): Future[List[String]] =
     formTemplateRepo
