@@ -409,4 +409,116 @@ class BuilderControllerSuite extends FunSuite {
 
     assertEquals(result, formComponentUpdateHelpTextJsonExpected)
   }
+
+  test("Update field shortName - set") {
+
+    val input: Json = json"""
+    {
+      "sections": [
+        {
+          "fields": [
+            {
+              "id": "first",
+              "type": "text",
+              "label": "First",
+              "format": "sterling"
+            },
+            {
+              "id": "second",
+              "type": "text",
+              "label": "Second",
+              "format": "sterling"
+            }
+          ]
+        }
+      ]
+    }"""
+
+    val expected: Json = json"""
+    {
+      "sections": [
+        {
+          "fields": [
+            {
+              "id": "first",
+              "type": "text",
+              "label": "First",
+              "format": "sterling"
+            },
+            {
+              "id": "second",
+              "type": "text",
+              "label": "Second",
+              "format": "sterling",
+              "shortName": "I'm shortName"
+            }
+          ]
+        }
+      ]
+    }"""
+
+    val formComponentId = FormComponentId("second")
+
+    val patch: Json = Json.obj("shortName" := "I'm shortName")
+
+    val result: Json = BuilderSupport.modifyFormComponentData(input, 0, formComponentId, patch)
+
+    assertEquals(result, expected)
+  }
+
+  test("Update field shortName - delete") {
+
+    val input: Json = json"""
+    {
+      "sections": [
+        {
+          "fields": [
+            {
+              "id": "first",
+              "type": "text",
+              "label": "First",
+              "format": "sterling"
+            },
+            {
+              "id": "second",
+              "type": "text",
+              "label": "Second",
+              "format": "sterling",
+              "shortName": "I'm shortName"
+            }
+          ]
+        }
+      ]
+    }"""
+
+    val expected: Json = json"""
+    {
+      "sections": [
+        {
+          "fields": [
+            {
+              "id": "first",
+              "type": "text",
+              "label": "First",
+              "format": "sterling"
+            },
+            {
+              "id": "second",
+              "type": "text",
+              "label": "Second",
+              "format": "sterling"
+            }
+          ]
+        }
+      ]
+    }"""
+
+    val formComponentId = FormComponentId("second")
+
+    val patch: Json = Json.obj("shortName" := "")
+
+    val result: Json = BuilderSupport.modifyFormComponentData(input, 0, formComponentId, patch)
+
+    assertEquals(result, expected)
+  }
 }

@@ -136,34 +136,77 @@ object BuilderSupport {
     formComponentId: FormComponentId,
     sectionData: Json
   ): Json =
-    List("label", "helpText").foldRight(json) { case (property, accJson) =>
-      sectionData.hcursor
-        .downField(property)
-        .focus
-        .flatMap { propertyValue =>
-          val sectionPath: List[CursorOp] = (0 until sectionNumber).foldRight(List[CursorOp](DownArray)) {
-            case (_, acc) =>
-              MoveRight :: acc
-          }
-
-          val history: List[CursorOp] =
-            DownArray :: DownField("fields") :: sectionPath ::: DownField("sections") :: Nil
-
-          val array = accJson.hcursor.replay(history)
-
-          array.success.flatMap { hcursor =>
-            hcursor
-              .find { json =>
-                json.hcursor.downField("id").focus.flatMap(_.asString).contains(formComponentId.value)
-              }
-              .downField(property)
-              .set(propertyValue)
-              .root
-              .focus
-          }
+    List(
+      Property("label"),
+      Property("helpText"),
+      Property("shortName", PropertyBehaviour.PurgeWhenEmpty),
+      Property("format"),
+      Property("errorShortName", PropertyBehaviour.PurgeWhenEmpty),
+      Property("errorShortNameStart", PropertyBehaviour.PurgeWhenEmpty),
+      Property("errorExample", PropertyBehaviour.PurgeWhenEmpty),
+      Property("errorMessage", PropertyBehaviour.PurgeWhenEmpty),
+      Property("displayWidth", PropertyBehaviour.PurgeWhenEmpty),
+      Property("mandatory", PropertyBehaviour.PurgeWhenEmpty)
+    )
+      .foldRight(json) { case (property, accJson) =>
+        val sectionPath: List[CursorOp] = (0 until sectionNumber).foldRight(List[CursorOp](DownArray)) {
+          case (_, acc) =>
+            MoveRight :: acc
         }
-        .getOrElse(accJson)
-    }
+
+        val history: List[CursorOp] =
+          DownArray :: DownField("fields") :: sectionPath ::: DownField("sections") :: Nil
+
+        sectionData.hcursor
+          .downField(property.name)
+          .focus
+          .flatMap { propertyValue =>
+            val array = accJson.hcursor.replay(history)
+
+            val isValueAsStringEmpty = propertyValue
+              .as[String]
+              .toOption
+              .fold(false)(_.trim.isEmpty())
+
+            array.success.flatMap { hcursor =>
+              val formComponentCursor = hcursor
+                .find { json =>
+                  json.hcursor.downField("id").focus.flatMap(_.asString).contains(formComponentId.value)
+                }
+
+              if (formComponentCursor.succeeded) {
+
+                val propertyField = formComponentCursor.downField(property.name)
+
+                property.behaviour match {
+                  case PropertyBehaviour.PurgeWhenEmpty if isValueAsStringEmpty =>
+                    if (propertyField.succeeded) {
+                      propertyField.delete.root.focus
+                    } else {
+                      hcursor.root.focus
+                    }
+
+                  case _ =>
+                    if (propertyField.succeeded) {
+                      propertyField
+                        .set(propertyValue)
+                        .root
+                        .focus
+                    } else {
+                      formComponentCursor
+                        .withFocus(json => json.deepMerge(Json.obj(property.name -> propertyValue)))
+                        .root
+                        .focus
+                    }
+                }
+              } else {
+                // Do nothing. Invalid formComponentId used, it doesn't exist in this section.
+                Some(accJson)
+              }
+            }
+          }
+          .getOrElse(accJson)
+      }
 
   def updateFormComponent(
     formTemplateRaw: FormTemplateRaw,
