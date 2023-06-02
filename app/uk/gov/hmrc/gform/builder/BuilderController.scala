@@ -146,7 +146,9 @@ object BuilderSupport {
       Property("errorExample", PropertyBehaviour.PurgeWhenEmpty),
       Property("errorMessage", PropertyBehaviour.PurgeWhenEmpty),
       Property("displayWidth", PropertyBehaviour.PurgeWhenEmpty),
-      Property("mandatory", PropertyBehaviour.PurgeWhenEmpty)
+      Property("mandatory", PropertyBehaviour.PurgeWhenEmpty),
+      Property("infoText"),
+      Property("infoType")
     )
       .foldRight(json) { case (property, accJson) =>
         val sectionPath: List[CursorOp] = (0 until sectionNumber).foldRight(List[CursorOp](DownArray)) {
