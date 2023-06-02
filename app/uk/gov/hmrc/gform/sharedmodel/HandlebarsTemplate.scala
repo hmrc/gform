@@ -17,12 +17,11 @@
 package uk.gov.hmrc.gform.sharedmodel
 
 import play.api.libs.json.{ Format, Json, OFormat }
+case class HandlebarsTemplate(_id: HandlebarsTemplateId, payload: String)
 
-case class HandlebarsPayload(_id: HandlebarsPayloadId, payload: String)
-
-object HandlebarsPayload {
-  implicit val format: OFormat[HandlebarsPayload] = {
-    implicit val handlebarsPayloadName: Format[HandlebarsPayloadId] = HandlebarsPayloadId.vformat
+object HandlebarsTemplate {
+  implicit val format: OFormat[HandlebarsTemplate] = {
+    implicit val handlebarsTemplateIdFormat: Format[HandlebarsTemplateId] = HandlebarsTemplateId.vformat
     Json.format
   }
 }

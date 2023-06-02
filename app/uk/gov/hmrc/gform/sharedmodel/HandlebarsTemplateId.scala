@@ -16,17 +16,14 @@
 
 package uk.gov.hmrc.gform.sharedmodel
 
-import cats.Eq
 import play.api.libs.json._
 
-case class HandlebarsPayloadId(value: String) extends AnyVal
+case class HandlebarsTemplateId(value: String) extends AnyVal
 
-object HandlebarsPayloadId {
-  implicit val catsEq: Eq[HandlebarsPayloadId] = Eq.fromUniversalEquals
+object HandlebarsTemplateId {
+  val vformat: Format[HandlebarsTemplateId] =
+    ValueClassFormat.vformat("formTemplateId", HandlebarsTemplateId.apply, x => JsString(x.value))
 
-  implicit val vformat: Format[HandlebarsPayloadId] =
-    ValueClassFormat.vformat("handleBarsPayloadId", HandlebarsPayloadId.apply, x => JsString(x.value))
-
-  implicit val oformat: OFormat[HandlebarsPayloadId] =
-    ValueClassFormat.oformat("_id", HandlebarsPayloadId.apply, _.value)
+  implicit val mongoVformat: Format[HandlebarsTemplateId] =
+    ValueClassFormat.vformat("_id", HandlebarsTemplateId.apply, x => JsString(x.value))
 }

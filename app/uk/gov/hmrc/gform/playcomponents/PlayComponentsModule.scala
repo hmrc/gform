@@ -34,7 +34,7 @@ import uk.gov.hmrc.gform.employments.EmploymentsModule
 import uk.gov.hmrc.gform.envelope.EnvelopeModule
 import uk.gov.hmrc.gform.form.FormModule
 import uk.gov.hmrc.gform.formtemplate.FormTemplateModule
-import uk.gov.hmrc.gform.handlebarspayload.HandlebarsPayloadModule
+import uk.gov.hmrc.gform.handlebarstemplate.HandlebarsTemplateModule
 import uk.gov.hmrc.gform.metrics.MetricsModule
 import uk.gov.hmrc.gform.notificationbanner.NotificationBannerModule
 import uk.gov.hmrc.gform.objectstore.ObjectStoreModule
@@ -78,7 +78,7 @@ class PlayComponentsModule(
   schedulerModule: SchedulerModule,
   builderModule: BuilderModule,
   shutterModule: ShutterModule,
-  handlebarsPayloadModule: HandlebarsPayloadModule
+  handlebarsPayloadModule: HandlebarsTemplateModule
 )(implicit ec: ExecutionContext) {
   private val logger = LoggerFactory.getLogger(getClass)
 
@@ -90,7 +90,7 @@ class PlayComponentsModule(
     submissionModule.submissionController,
     submissionModule.formBundleController,
     formTemplateModule.formTemplatesController,
-    handlebarsPayloadModule.handlebarPayloadController,
+    handlebarsPayloadModule.handlebarTemplateController,
     configModule.configController,
     validationModule.validationController,
     dmsModule.dmsSubmissionController,

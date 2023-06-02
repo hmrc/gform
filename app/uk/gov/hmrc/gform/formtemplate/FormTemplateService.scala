@@ -19,12 +19,12 @@ package uk.gov.hmrc.gform.formtemplate
 import cats.implicits._
 import org.slf4j.LoggerFactory
 import play.api.libs.json.JsObject
-import uk.gov.hmrc.gform.core.{ FOpt, _ }
+import uk.gov.hmrc.gform.core._
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.formredirect.FormRedirect
-import uk.gov.hmrc.gform.handlebarspayload.HandlebarsPayloadAlgebra
+import uk.gov.hmrc.gform.handlebarstemplate.HandlebarsTemplateAlgebra
 import uk.gov.hmrc.gform.repo.Repo
-import uk.gov.hmrc.gform.sharedmodel.HandlebarsPayloadId
+import uk.gov.hmrc.gform.sharedmodel.HandlebarsTemplateId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HandlebarsHttpApi
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DestinationId, Destinations, UploadableConditioning }
@@ -41,7 +41,7 @@ class FormTemplateService(
   formTemplateRepo: Repo[FormTemplate],
   formTemplateRawRepo: Repo[FormTemplateRaw],
   formRedirectRepo: Repo[FormRedirect],
-  handlebarsPayloadAlgebra: HandlebarsPayloadAlgebra[FOpt]
+  handlebarsTemplateAlgebra: HandlebarsTemplateAlgebra[FOpt]
 )(implicit
   ec: ExecutionContext
 ) extends Verifier with Rewriter with SubstituteExpressions with SubstituteBooleanExprs
@@ -88,6 +88,18 @@ class FormTemplateService(
         }
       })
 
+  def getFormTemplateHandlebars(formTemplateId: FormTemplateId): Future[List[HandlebarsTemplateId]] =
+    for {
+      formTemplate <- formTemplateRepo.get(formTemplateId.value)
+      handlebarsPayloadIds = formTemplate.destinations match {
+                               case destinationList: Destinations.DestinationList =>
+                                 destinationList.destinations.collect { case h: HandlebarsHttpApi =>
+                                   HandlebarsTemplateId(s"${formTemplate._id.value}-${h.id.id}")
+                                 }
+                               case _ => List.empty[HandlebarsTemplateId]
+                             }
+    } yield handlebarsPayloadIds.sortBy(_.value)
+
   def verifyAndSave(
     formTemplate: FormTemplate
   )(
@@ -114,7 +126,7 @@ class FormTemplateService(
       } yield formTemplateUpdated
 
     def substituteDestinations(formTemplate: FormTemplate) = {
-      val ids = formTemplate.destinations match {
+      val destIds = formTemplate.destinations match {
         case destinationList: Destinations.DestinationList =>
           destinationList.destinations.collect {
             case h: HandlebarsHttpApi if h.payload.isEmpty => h.id
@@ -123,21 +135,21 @@ class FormTemplateService(
       }
 
       for {
-        destinationIdsPayloads <- ids.traverse { id =>
-                                    val handlebarsPayloadId = HandlebarsPayloadId(s"${formTemplate._id.value}-${id.id}")
-                                    handlebarsPayloadAlgebra
-                                      .get(handlebarsPayloadId)
+        destinationIdsPayloads <- destIds.traverse { destId =>
+                                    val templateId = HandlebarsTemplateId(s"${formTemplate._id.value}-${destId.id}")
+                                    handlebarsTemplateAlgebra
+                                      .get(templateId)
                                       .map(
                                         _.getOrElse(
                                           throw new NoSuchElementException(
-                                            s"The ${id.id} destination is not valid. ${handlebarsPayloadId.value} payload not found"
+                                            s"The ${destId.id} destination is not valid. ${templateId.value} payload not found"
                                           )
                                         )
                                       )
-                                      .map(r => id -> r.payload)
+                                      .map(r => destId -> r.payload)
                                   }
       } yield
-        if (ids.size === 0) formTemplate
+        if (destIds.size === 0) formTemplate
         else
           formTemplate.copy(destinations = formTemplate.destinations match {
             case destinationList: Destinations.DestinationList =>
