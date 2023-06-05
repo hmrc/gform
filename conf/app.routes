@@ -46,8 +46,14 @@ GET           /formtemplates/:formTemplateId                                    
 DELETE        /formtemplates/:formTemplateId/sensitive                                                  uk.gov.hmrc.gform.formtemplate.FormTemplatesController.removeSensitive(formTemplateId: String)
 DELETE        /formtemplates/:formTemplateId                                                            uk.gov.hmrc.gform.formtemplate.FormTemplatesController.remove(formTemplateId: FormTemplateId)
 GET           /formtemplates-with-redirects/:formTemplateId                                             uk.gov.hmrc.gform.formtemplate.FormTemplatesController.getWithRedirects(formTemplateId: FormTemplateId)
-POST          /formtemplates/handlebars-payload/:handlebarsPayloadId                                    uk.gov.hmrc.gform.handlebarspayload.HandlebarsPayloadController.upsert(handlebarsPayloadId: HandlebarsPayloadId)
 GET           /formtemplates-redirects/:page/:pageSize                                                  uk.gov.hmrc.gform.formtemplate.FormTemplatesController.getRedirects(page: Int, pageSize: Int)
+GET           /formtemplates-with-handlebars/:formTemplateId                                            uk.gov.hmrc.gform.formtemplate.FormTemplatesController.getHandlebarsTemplateIds(formTemplateId: FormTemplateId)
+
+GET           /handlebarstemplates                                                                      uk.gov.hmrc.gform.handlebarstemplate.HandlebarsTemplateController.all
+POST          /handlebarstemplates/:handlebarsTemplateId                                                uk.gov.hmrc.gform.handlebarstemplate.HandlebarsTemplateController.upsert(handlebarsTemplateId: HandlebarsTemplateId)
+GET           /handlebarstemplates/:handlebarsTemplateId                                                uk.gov.hmrc.gform.handlebarstemplate.HandlebarsTemplateController.get(handlebarsTemplateId: HandlebarsTemplateId)
+GET           /handlebarstemplates/:handlebarsTemplateId/raw                                            uk.gov.hmrc.gform.handlebarstemplate.HandlebarsTemplateController.getRaw(handlebarsTemplateId: HandlebarsTemplateId)
+DELETE        /handlebarstemplates/:handlebarsTemplateId                                                uk.gov.hmrc.gform.handlebarstemplate.HandlebarsTemplateController.delete(handlebarsTemplateId: HandlebarsTemplateId)
 
 GET           /exposed-config                                                                           uk.gov.hmrc.gform.config.ConfigController.exposedConfig()
 

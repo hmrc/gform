@@ -51,7 +51,7 @@ object ValueClassBinder {
   implicit val fileIdBinder: PathBindable[FileId] = valueClassBinder(_.value)
   implicit val dbLookupIdBinder: PathBindable[DbLookupId] = valueClassBinder(_.id)
   implicit val collectionNameBinder: PathBindable[CollectionName] = valueClassBinder(_.name)
-  implicit val handlebarsPayloadNameBinder: PathBindable[HandlebarsPayloadId] = valueClassBinder(_.value)
+  implicit val handlebarsPayloadNameBinder: PathBindable[HandlebarsTemplateId] = valueClassBinder(_.value)
   implicit val notificationStatusBinder: QueryStringBindable[NotificationStatus] = valueClassQueryBinder(
     NotificationStatus.fromName
   )

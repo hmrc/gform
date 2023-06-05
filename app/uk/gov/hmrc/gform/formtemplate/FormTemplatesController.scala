@@ -150,4 +150,9 @@ class FormTemplatesController(
   def getRedirects(page: Int, pageSize: Int) = Action.async { _ =>
     formRedirectService.findAllPaginated(page, pageSize).asOkJson
   }
+
+  def getHandlebarsTemplateIds(formTemplateId: FormTemplateId) = Action.async { implicit request =>
+    logger.info(s"FormTemplatesController.getAllHandlebarsIds, ${loggingHelpers.cleanHeaders(request.headers)}")
+    formTemplateService.getFormTemplateHandlebars(formTemplateId).map(_.map(_.value)).asOkJson
+  }
 }

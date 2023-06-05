@@ -43,7 +43,7 @@ import uk.gov.hmrc.gform.form.{ FormModule, FormService }
 import uk.gov.hmrc.gform.formmetadata.FormMetadataModule
 import uk.gov.hmrc.gform.formtemplate.FormTemplateModule
 import uk.gov.hmrc.gform.graphite.GraphiteModule
-import uk.gov.hmrc.gform.handlebarspayload.HandlebarsPayloadModule
+import uk.gov.hmrc.gform.handlebarstemplate.HandlebarsTemplateModule
 import uk.gov.hmrc.gform.metrics.MetricsModule
 import uk.gov.hmrc.gform.mongo.MongoModule
 import uk.gov.hmrc.gform.notificationbanner.NotificationBannerModule
@@ -124,7 +124,7 @@ class ApplicationModule(context: Context)
     )
   private val shutterModule = new ShutterModule(mongoModule, configModule)
   private val notificationBannerModule = new NotificationBannerModule(mongoModule, configModule)
-  private val handlebarsPayloadModule = new HandlebarsPayloadModule(controllerComponents, mongoModule)
+  private val handlebarsPayloadModule = new HandlebarsTemplateModule(controllerComponents, mongoModule)
   val formTemplateModule =
     new FormTemplateModule(
       controllerComponents,
