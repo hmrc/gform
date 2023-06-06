@@ -30,6 +30,8 @@ trait EnvelopeAlgebra[F[_]] {
   def save(envelope: EnvelopeData): F[Unit]
 
   def get(envelopeId: EnvelopeId): F[EnvelopeData]
+
+  def find(envelopeId: EnvelopeId): F[Option[EnvelopeData]]
 }
 
 class EnvelopeService(envelopeRepo: Repo[EnvelopeData])(implicit
@@ -43,4 +45,6 @@ class EnvelopeService(envelopeRepo: Repo[EnvelopeData])(implicit
     .as(logger.info(s"EnvelopeAlgebra.save(${envelope._id.value}) - upserting $envelope)"))
 
   override def get(envelopeId: EnvelopeId): Future[EnvelopeData] = envelopeRepo.get(envelopeId.value)
+
+  override def find(envelopeId: EnvelopeId): Future[Option[EnvelopeData]] = envelopeRepo.find(envelopeId.value)
 }

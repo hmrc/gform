@@ -135,7 +135,8 @@ class UpscanController(
                   file <- upscanService.download(upscanCallbackSuccess.downloadUrl)
                   compressedFile = ImageCompressor.compressIfSupported(file, upscanCallbackSuccess, compression)
                   uploadDetails = upscanCallbackSuccess.uploadDetails
-                  _ <- if (formTemplate.isObjectStore) {
+                  isObjectStore <- objectStoreAlgebra.isObjectStore(envelopeId)
+                  _ <- if (isObjectStore) {
                          val fileName = fileId.value + "_" + uploadDetails.fileName
                          objectStoreAlgebra.uploadFile(
                            envelopeId,
