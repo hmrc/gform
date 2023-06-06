@@ -32,6 +32,7 @@ import uk.gov.hmrc.gform.sharedmodel.graph.DependencyGraph._
 import uk.gov.hmrc.gform.formtemplate.FormTemplateValidatorHelper._
 import uk.gov.hmrc.gform.models.constraints.ReferenceInfo.{ DataRetrieveCountExpr, DataRetrieveCtxExpr, DateFunctionExpr, FormCtxExpr, PeriodExpr, PeriodExtExpr, SizeExpr }
 import shapeless.syntax.typeable._
+import uk.gov.hmrc.gform.config.AppConfig
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.PageLink
 
 import scala.Function.const
@@ -851,7 +852,7 @@ object FormTemplateValidator {
       validate(revealingChoiceElements.toList.flatMap(_.revealingFields.map(_.`type`)), formTemplate)
     case HmrcTaxPeriod(_, _, _)                  => Valid
     case Group(fvs, _, _, _, _)                  => validate(fvs.map(_.`type`), formTemplate)
-    case FileUpload(_)                           => Valid
+    case FileUpload(_, _, _)                     => Valid
     case InformationMessage(_, _)                => Valid
     case Time(_, _)                              => Valid
     case OverseasAddress(_, _, _, Some(expr), _) => validateOverseasAddressValue(expr, formTemplate)
@@ -1321,6 +1322,36 @@ object FormTemplateValidator {
           )
       )
       .combineAll
+  }
+
+  def validateFileUpload(formTemplate: FormTemplate, appConfig: AppConfig): ValidationResult = {
+    val formFileSizeLimit = formTemplate.fileSizeLimit.getOrElse(appConfig.formMaxAttachmentSizeMB)
+    val formAllowedFileTypes = formTemplate.allowedFileTypes
+
+    val fileUploads: List[(FormComponent, FileUpload)] = formTemplate.formComponents { case fc @ IsFileUpload(fu) =>
+      fc -> fu
+    }
+
+    val fileSizeValidation: List[ValidationResult] = fileUploads.map { case (fc, fileUpload) =>
+      fileUpload.fileSizeLimit
+        .collect {
+          case fileSizeLimit if fileSizeLimit > formFileSizeLimit =>
+            Invalid(s"`${fc.id}` fileSizeLimit is larger than form fileSizeLimit of ${formFileSizeLimit}MB")
+        }
+        .getOrElse(Valid)
+    }
+
+    val allowedFileTypesValidation: List[ValidationResult] = fileUploads.map { case (fc, fileUpload) =>
+      fileUpload.allowedFileTypes
+        .collect {
+          case allowedFileTypes
+              if allowedFileTypes.fileExtensions.exists(!formAllowedFileTypes.fileExtensions.toList.contains(_)) =>
+            Invalid(s"`${fc.id}` allowedFileTypes specify files not allowed at form level")
+        }
+        .getOrElse(Valid)
+    }
+
+    (fileSizeValidation ++ allowedFileTypesValidation).combineAll
   }
 }
 
