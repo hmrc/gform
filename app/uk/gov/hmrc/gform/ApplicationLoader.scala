@@ -131,7 +131,8 @@ class ApplicationModule(context: Context)
       mongoModule,
       shutterModule,
       notificationBannerModule,
-      handlebarsPayloadModule
+      handlebarsPayloadModule,
+      configModule
     )
   private val emailModule = new EmailModule(configModule, wSHttpModule, notifierModule, formTemplateModule)
   private val translationModule = new TranslationModule(formTemplateModule, configModule)

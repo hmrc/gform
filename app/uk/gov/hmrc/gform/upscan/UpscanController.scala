@@ -109,8 +109,16 @@ class UpscanController(
             logger.info(
               s"Upscan callback successful, fcId: $formComponentId, reference: ${upscanCallbackSuccess.reference}, fileMimeType: ${upscanCallbackSuccess.uploadDetails.fileMimeType}, fileName: ${upscanCallbackSuccess.uploadDetails.fileName}, size: ${upscanCallbackSuccess.uploadDetails.size}"
             )
-            val allowedFileTypes: AllowedFileTypes = formTemplate.allowedFileTypes
-            val fileSizeLimit = formTemplate.fileSizeLimit.getOrElse(appConfig.formMaxAttachments)
+            val maybeFileUpload: Option[FileUpload] = formTemplate.formComponents {
+              case fc @ IsFileUpload(fileupload) if fc.id === formComponentId => fileupload
+            }.headOption
+
+            val allowedFileTypes: AllowedFileTypes =
+              maybeFileUpload.flatMap(_.allowedFileTypes).getOrElse(formTemplate.allowedFileTypes)
+            val fileSizeLimit = maybeFileUpload
+              .flatMap(_.fileSizeLimit)
+              .getOrElse(formTemplate.fileSizeLimit.getOrElse(appConfig.formMaxAttachmentSizeMB))
+
             val validated: Validated[UpscanValidationFailure, Unit] =
               validateFile(allowedFileTypes, fileSizeLimit, upscanCallbackSuccess.uploadDetails)
 
@@ -124,12 +132,9 @@ class UpscanController(
                        )
                 } yield NoContent
               case Valid(_) =>
-                val maybeFileUpload: Option[FileUpload] = formTemplate.formComponents {
-                  case fc @ IsFileUpload(fileupload) if fc.id === formComponentId => fileupload
-                }.headOption
                 val compression: Boolean = maybeFileUpload.fold(false) {
-                  case FileUpload(FileUploadProvider.Upscan(true)) => true
-                  case _                                           => false
+                  case FileUpload(FileUploadProvider.Upscan(true), _, _) => true
+                  case _                                                 => false
                 }
                 for {
                   file <- upscanService.download(upscanCallbackSuccess.downloadUrl)

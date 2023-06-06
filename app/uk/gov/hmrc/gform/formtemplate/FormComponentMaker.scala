@@ -658,9 +658,11 @@ class FormComponentMaker(json: JsValue) {
   }
 
   private lazy val fileUploadOpt: Opt[FileUpload] = for {
-    compression        <- optCompression
-    fileUploadProvider <- optFileUploadProvider(compression)
-  } yield FileUpload(fileUploadProvider)
+    compression           <- optCompression
+    fileUploadProvider    <- optFileUploadProvider(compression)
+    maybeFileSizeLimit    <- toOpt((json \ "fileSizeLimit").validateOpt[Int], "/fileSizeLimit")
+    maybeAllowedFileTypes <- toOpt((json \ "allowedFileTypes").validateOpt[AllowedFileTypes], "/allowedFileTypes")
+  } yield FileUpload(fileUploadProvider, maybeFileSizeLimit, maybeAllowedFileTypes)
 
   private lazy val infoOpt: Opt[InformationMessage] = (infoType, infoText) match {
     case (IsInfoType(StandardInfo), Some(infText))  => InformationMessage(StandardInfo, infText).asRight

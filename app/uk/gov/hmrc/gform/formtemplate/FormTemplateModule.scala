@@ -17,6 +17,7 @@
 package uk.gov.hmrc.gform.formtemplate
 
 import play.api.mvc.ControllerComponents
+import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.core.{ FOpt, fromFutureA }
 import uk.gov.hmrc.gform.formredirect.{ FormRedirect, FormRedirectService }
 import uk.gov.hmrc.gform.handlebarstemplate.HandlebarsTemplateModule
@@ -33,7 +34,8 @@ class FormTemplateModule(
   mongoModule: MongoModule,
   shutterModule: ShutterModule,
   notificationBannerModule: NotificationBannerModule,
-  handlebarsPayloadModule: HandlebarsTemplateModule
+  handlebarsPayloadModule: HandlebarsTemplateModule,
+  configModule: ConfigModule
 )(implicit
   ex: ExecutionContext
 ) {
@@ -50,7 +52,8 @@ class FormTemplateModule(
       formTemplateRepo,
       formTemplateRawRepo,
       formRedirectRepo,
-      handlebarsPayloadModule.foptHandlebarsPayloadService
+      handlebarsPayloadModule.foptHandlebarsPayloadService,
+      configModule.appConfig
     )
   val formRedirectService: FormRedirectService =
     new FormRedirectService(formRedirectRepo)
