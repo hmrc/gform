@@ -43,5 +43,8 @@ class EnvelopeModule(mongoModule: MongoModule, configModule: ConfigModule)(impli
 
     override def get(envelopeId: EnvelopeId): FOpt[EnvelopeData] =
       fromFutureA(envelopeService.get(envelopeId))
+
+    override def find(envelopeId: EnvelopeId): FOpt[Option[EnvelopeData]] =
+      fromFutureA(envelopeService.find(envelopeId))
   }
 }
