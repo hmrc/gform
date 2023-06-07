@@ -42,7 +42,7 @@ class EnvelopeService(envelopeRepo: Repo[EnvelopeData])(implicit
   override def save(envelope: EnvelopeData): Future[Unit] = envelopeRepo
     .upsert(envelope)
     .toFuture
-    .as(logger.info(s"EnvelopeAlgebra.save(${envelope._id.value}) - upserting $envelope)"))
+    .as(logger.info(s"EnvelopeAlgebra.save(${envelope._id.value}) -upserting $envelope)"))
 
   override def get(envelopeId: EnvelopeId): Future[EnvelopeData] = envelopeRepo.get(envelopeId.value)
 
