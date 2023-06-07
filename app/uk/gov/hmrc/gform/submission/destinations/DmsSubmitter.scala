@@ -62,17 +62,18 @@ class DmsSubmitter(
                        .withPdf(pdfGeneratorService, pdfData, instructionPdfData)
                        .apply(form, formTemplate, structuredFormData, customerId, submission.submissionRef, hmrcDms, l)
                    )
+      maybeEnvelope <- envelopeAlgebra.find(submission.envelopeId)
       res <-
         fromFutureA(
-          fileUploadService.submitEnvelope(submission, summaries, hmrcDms, formTemplate.isObjectStore, formTemplate._id)
+          fileUploadService.submitEnvelope(submission, summaries, hmrcDms, maybeEnvelope.isDefined, formTemplate._id)
         )
-      envelopeDetails <- if (formTemplate.isObjectStore) {
-                           envelopeAlgebra.get(submission.envelopeId).map { ed =>
+      envelopeDetails <- maybeEnvelope match {
+                           case Some(envelope) =>
                              val files: List[File] =
-                               ed.files.map(f => File(FileId(f.fileId), Available, f.fileName, f.length))
-                             Envelope(files)
-                           }
-                         } else fromFutureA(fileUploadService.getEnvelope(submission.envelopeId))
+                               envelope.files.map(f => File(FileId(f.fileId), Available, f.fileName, f.length))
+                             success(Envelope(files))
+                           case None => fromFutureA(fileUploadService.getEnvelope(submission.envelopeId))
+                         }
       _ <- success(logFileSizeBreach(submission.envelopeId, envelopeDetails.files))
       _ <- formService.updateFormStatus(submissionInfo.formId, Submitted)
     } yield res

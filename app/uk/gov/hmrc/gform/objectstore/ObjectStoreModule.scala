@@ -100,5 +100,8 @@ class ObjectStoreModule(
       envelopeId: EnvelopeId
     )(implicit hc: HeaderCarrier, m: Materializer): FOpt[Option[client.Object[Source[ByteString, NotUsed]]]] =
       fromFutureA(objectStoreService.getZipFile(envelopeId))
+
+    override def isObjectStore(envelopeId: EnvelopeId): FOpt[Boolean] =
+      fromFutureA(objectStoreService.isObjectStore(envelopeId))
   }
 }

@@ -51,6 +51,8 @@ trait ObjectStoreAlgebra[F[_]] {
 
   def getEnvelope(envelopeId: EnvelopeId): F[EnvelopeData]
 
+  def isObjectStore(envelopeId: EnvelopeId): F[Boolean]
+
   def allUploadedFiles(envelopeId: EnvelopeId)(implicit F: Monad[F], hc: HeaderCarrier): F[List[UploadedFile]] =
     for {
       env  <- getEnvelope(envelopeId)
@@ -148,4 +150,7 @@ class ObjectStoreService(objectStoreConnector: ObjectStoreConnector, envelopeSer
     envelopeId: EnvelopeId
   )(implicit hc: HeaderCarrier, m: Materializer): Future[Option[client.Object[Source[ByteString, NotUsed]]]] =
     objectStoreConnector.getZipFile(envelopeId)
+
+  override def isObjectStore(envelopeId: EnvelopeId): Future[Boolean] =
+    envelopeService.find(envelopeId).map(e => e.isDefined)
 }
