@@ -89,6 +89,29 @@ object BooleanExpr {
     loop(be)
 
   }
+
+  private def toBooleanExprIds(xs: BooleanExpr*): List[BooleanExprId] = xs.toList.flatMap(x => resolveBooleanExprIds(x))
+  def resolveBooleanExprIds(t: BooleanExpr): List[BooleanExprId] = t match {
+    case Not(e: BooleanExpr)                        => resolveBooleanExprIds(e)
+    case Or(left: BooleanExpr, right: BooleanExpr)  => toBooleanExprIds(left, right)
+    case And(left: BooleanExpr, right: BooleanExpr) => toBooleanExprIds(left, right)
+    case TopLevelRef(booleanExprId)                 => List(booleanExprId)
+    case Equals(_, _)                               => Nil
+    case GreaterThan(_, _)                          => Nil
+    case GreaterThanOrEquals(_, _)                  => Nil
+    case LessThan(_, _)                             => Nil
+    case LessThanOrEquals(_, _)                     => Nil
+    case IsTrue                                     => Nil
+    case IsFalse                                    => Nil
+    case FormPhase(_)                               => Nil
+    case IsLogin(_)                                 => Nil
+    case Contains(_, _)                             => Nil
+    case In(_, _)                                   => Nil
+    case MatchRegex(_, _)                           => Nil
+    case DateBefore(_, _)                           => Nil
+    case DateAfter(_, _)                            => Nil
+    case First(_)                                   => Nil
+  }
 }
 
 object EqualsWithConstant {

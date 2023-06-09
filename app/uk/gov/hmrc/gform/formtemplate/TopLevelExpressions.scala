@@ -185,4 +185,60 @@ object TopLevelExpressions {
       expressions + (expressionId -> loop(expr))
     }
   }
+
+  def resolveFormComponentIds(expression: Expr): List[FormComponentId] = {
+    def loopDateExpr(dateExpr: DateExpr): List[FormComponentId] =
+      dateExpr match {
+        case DateValueExpr(_)                   => Nil
+        case DateFormCtxVar(FormCtx(fcId))      => List(fcId)
+        case HmrcTaxPeriodCtx(FormCtx(fcId), _) => List(fcId)
+        case DateExprWithOffset(dExpr, _)       => loopDateExpr(dExpr)
+        case DateIfElse(_, field1, field2)      => (field1, field2).toList.flatMap(x => loopDateExpr(x))
+        case DateOrElse(dExpr1, dExpr2)         => (dExpr1, dExpr2).toList.flatMap(x => loopDateExpr(x))
+      }
+
+    def toFormComponentIds(xs: Expr*): List[FormComponentId] = xs.toList.flatMap(x => loop(x))
+    def loop(e: Expr): List[FormComponentId] =
+      e match {
+        case Else(l, r)                       => toFormComponentIds(l, r)
+        case Add(l, r)                        => toFormComponentIds(l, r)
+        case Multiply(l, r)                   => toFormComponentIds(l, r)
+        case Subtraction(l, r)                => toFormComponentIds(l, r)
+        case Divide(l, r)                     => toFormComponentIds(l, r)
+        case Period(l, r)                     => toFormComponentIds(l, r)
+        case Sum(l)                           => loop(l)
+        case PeriodExt(p, _)                  => loop(p)
+        case DateCtx(dateExpr)                => loopDateExpr(dateExpr)
+        case DateFunction(_)                  => Nil
+        case IfElse(_, l, r)                  => toFormComponentIds(l, r)
+        case FormCtx(fcId)                    => List(fcId)
+        case AddressLens(fcId, _)             => List(fcId)
+        case AuthCtx(_)                       => Nil
+        case Constant(_)                      => Nil
+        case Count(_)                         => Nil
+        case FormTemplateCtx(_)               => Nil
+        case HmrcRosmRegistrationCheck(_)     => Nil
+        case LangCtx                          => Nil
+        case LinkCtx(_)                       => Nil
+        case ParamCtx(_)                      => Nil
+        case PeriodValue(_)                   => Nil
+        case UserCtx(_)                       => Nil
+        case Value                            => Nil
+        case DataRetrieveCtx(_, _)            => Nil
+        case DataRetrieveCount(_)             => Nil
+        case CsvCountryCheck(fcId, _)         => List(fcId)
+        case CsvOverseasCountryCheck(fcId, _) => List(fcId)
+        case CsvCountryCountCheck(fcId, _, _) => List(fcId)
+        case Size(fcId, _)                    => List(fcId)
+        case Typed(expr, _)                   => loop(expr)
+        case IndexOf(fcId, _)                 => List(fcId)
+        case IndexOfDataRetrieveCtx(_, _)     => Nil
+        case NumberedList(fcId)               => List(fcId)
+        case BulletedList(fcId)               => List(fcId)
+        case StringOps(expr, _)               => loop(expr)
+        case Concat(exprs)                    => exprs.flatMap(loop)
+        case CountryOfItmpAddress             => Nil
+      }
+    loop(expression)
+  }
 }

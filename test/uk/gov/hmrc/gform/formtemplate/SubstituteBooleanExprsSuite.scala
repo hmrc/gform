@@ -21,6 +21,7 @@ import play.api.libs.json.{ JsError, JsObject, JsSuccess, Json }
 import scala.language.implicitConversions
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
+import uk.gov.hmrc.gform.exceptions.UnexpectedState
 
 class SubstituteBooleanExprsSuite extends FunSuite with FormTemplateSupport {
 
@@ -115,5 +116,26 @@ class SubstituteBooleanExprsSuite extends FunSuite with FormTemplateSupport {
           case Right(result)         => result
         }
     }
+  }
+
+  private def toSubstitutions(jsonStr: String): Opt[BooleanExprSubstitutions] = {
+    val json: JsObject = Json.parse(jsonStr).as[JsObject]
+
+    BooleanExprSubstitutions.from(FormTemplateRaw(json))
+  }
+
+  test("BooleanExprSubstitutions.from should fail when the boolean expression id is defined in the expression") {
+    val inputJson =
+      """|{
+         |  "booleanExpressions": {
+         |     "check": "agent || emailLogin || check"
+         |  }
+         |}""".stripMargin
+
+    val res: Opt[BooleanExprSubstitutions] = toSubstitutions(inputJson)
+
+    val expected = Left(UnexpectedState("The booleanExpression check cannot reference itself"))
+
+    assertEquals(res, expected)
   }
 }

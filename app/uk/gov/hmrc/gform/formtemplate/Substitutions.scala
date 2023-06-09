@@ -20,11 +20,10 @@ import cats.implicits._
 import julienrf.json.derived
 import play.api.libs.json.{ JsDefined, JsError, JsObject, JsString, JsSuccess, JsUndefined, JsValue, OFormat, Reads }
 import uk.gov.hmrc.gform.core.parsers.BooleanExprParser
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ ADTFormat, BooleanExpr, RoundingMode, TextConstraint }
-import uk.gov.hmrc.gform.core.Opt
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ ADTFormat, BooleanExpr, ExplicitExprType, Expr, FormComponentId, FormTemplateRaw, RoundingMode, TextConstraint, TextExpression, Typed, ValueExpr }
+import uk.gov.hmrc.gform.core.{ Invalid, Opt, Valid, ValidationResult }
 import uk.gov.hmrc.gform.core.parsers.ValueParser
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ ExplicitExprType, Expr, FormTemplateRaw, TextExpression, Typed, ValueExpr }
 
 sealed trait Substitutions[K, V] {
 
@@ -132,10 +131,34 @@ object ExprSubstitutions extends Substitutions[ExpressionId, Expr] {
       case JsSuccess(expr, _) => Right(expr)
     }
 
+  private def validateIds(
+    optExprSubstitutions: Either[UnexpectedState, ExprSubstitutions]
+  ): Either[UnexpectedState, ExprSubstitutions] = {
+    val validationResult: ValidationResult = optExprSubstitutions
+      .map { substitutions =>
+        substitutions.expressions
+          .map { case (id, expr) =>
+            val fcIds: List[FormComponentId] = TopLevelExpressions.resolveFormComponentIds(expr)
+            if (fcIds.exists(_.value == id.id)) Invalid(s"The expression ${id.id} cannot reference itself")
+            else Valid
+          }
+          .toList
+          .combineAll
+      }
+      .getOrElse(Valid)
+
+    validationResult match {
+      case Valid          => optExprSubstitutions
+      case Invalid(error) => Left(UnexpectedState(error))
+    }
+  }
+
   def from(templateRaw: FormTemplateRaw): Opt[ExprSubstitutions] =
     templateRaw.value \ fieldName match {
       case JsDefined(json) =>
-        fromJsValue(json)(ExpressionId.apply)(toExpression)(toExpressionFromObj).map(ExprSubstitutions.apply)
+        val optExprSubstitutions =
+          fromJsValue(json)(ExpressionId.apply)(toExpression)(toExpressionFromObj).map(ExprSubstitutions.apply)
+        validateIds(optExprSubstitutions)
       case _: JsUndefined => Right(ExprSubstitutions.empty)
     }
 }
@@ -153,16 +176,39 @@ object BooleanExprSubstitutions extends Substitutions[BooleanExprId, BooleanExpr
 
   def toBooleanExpression(booleanExpr: String): Opt[BooleanExpr] = BooleanExprParser.validate("${" + booleanExpr + "}")
 
+  private def validateExprIds(
+    optBooleanExprSubstitutions: Either[UnexpectedState, BooleanExprSubstitutions]
+  ): Either[UnexpectedState, BooleanExprSubstitutions] = {
+    val validationResult: ValidationResult = optBooleanExprSubstitutions
+      .map { substitutions =>
+        substitutions.expressions
+          .map { case (id, expr) =>
+            val booleanExprIds: List[BooleanExprId] = BooleanExpr.resolveBooleanExprIds(expr)
+            if (booleanExprIds.contains(id)) Invalid(s"The booleanExpression ${id.id} cannot reference itself")
+            else Valid
+          }
+          .toList
+          .combineAll
+      }
+      .getOrElse(Valid)
+
+    validationResult match {
+      case Valid          => optBooleanExprSubstitutions
+      case Invalid(error) => Left(UnexpectedState(error))
+    }
+  }
   def from(templateRaw: FormTemplateRaw): Opt[BooleanExprSubstitutions] =
     templateRaw.value \ "booleanExpressions" match {
       case JsDefined(json) =>
-        fromJsValue(json)(BooleanExprId.apply)(toBooleanExpression)(obj =>
-          Left(
-            UnexpectedState(
-              s"Expected JsString, but got " + obj.getClass.getSimpleName + ": " + obj
+        val optBooleanExprSubstitutions: Either[UnexpectedState, BooleanExprSubstitutions] =
+          fromJsValue(json)(BooleanExprId.apply)(toBooleanExpression)(obj =>
+            Left(
+              UnexpectedState(
+                s"Expected JsString, but got " + obj.getClass.getSimpleName + ": " + obj
+              )
             )
-          )
-        ).map(BooleanExprSubstitutions.apply)
+          ).map(BooleanExprSubstitutions.apply)
+        validateExprIds(optBooleanExprSubstitutions)
 
       case _: JsUndefined => Right(BooleanExprSubstitutions.empty)
     }
