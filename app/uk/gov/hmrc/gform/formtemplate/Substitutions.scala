@@ -16,12 +16,13 @@
 
 package uk.gov.hmrc.gform.formtemplate
 
+import cats.Eq
 import cats.implicits._
 import julienrf.json.derived
 import play.api.libs.json.{ JsDefined, JsError, JsObject, JsString, JsSuccess, JsUndefined, JsValue, OFormat, Reads }
 import uk.gov.hmrc.gform.core.parsers.BooleanExprParser
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ ADTFormat, BooleanExpr, ExplicitExprType, Expr, FormComponentId, FormTemplateRaw, RoundingMode, TextConstraint, TextExpression, Typed, ValueExpr }
-import uk.gov.hmrc.gform.core.{ Invalid, Opt, Valid, ValidationResult }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ ADTFormat, BooleanExpr, ExplicitExprType, Expr, FormTemplateRaw, RoundingMode, TextConstraint, TextExpression, Typed, ValueExpr }
+import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.core.parsers.ValueParser
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 
@@ -101,6 +102,7 @@ sealed trait Substitutions[K, V] {
 case class ExpressionId(id: String) extends AnyVal
 object ExpressionId {
   implicit val format: OFormat[ExpressionId] = derived.oformat()
+  implicit val equal: Eq[ExpressionId] = Eq.fromUniversalEquals
 }
 case class BooleanExprId(id: String) extends AnyVal
 
@@ -131,43 +133,22 @@ object ExprSubstitutions extends Substitutions[ExpressionId, Expr] {
       case JsSuccess(expr, _) => Right(expr)
     }
 
-  private def validateIds(
-    optExprSubstitutions: Either[UnexpectedState, ExprSubstitutions]
-  ): Either[UnexpectedState, ExprSubstitutions] = {
-    val validationResult: ValidationResult = optExprSubstitutions
-      .map { substitutions =>
-        substitutions.expressions
-          .map { case (id, expr) =>
-            val fcIds: List[FormComponentId] = TopLevelExpressions.resolveFormComponentIds(expr)
-            if (fcIds.exists(_.value == id.id)) Invalid(s"The expression ${id.id} cannot reference itself")
-            else Valid
-          }
-          .toList
-          .combineAll
-      }
-      .getOrElse(Valid)
-
-    validationResult match {
-      case Valid          => optExprSubstitutions
-      case Invalid(error) => Left(UnexpectedState(error))
-    }
-  }
-
   def from(templateRaw: FormTemplateRaw): Opt[ExprSubstitutions] =
     templateRaw.value \ fieldName match {
       case JsDefined(json) =>
-        val optExprSubstitutions =
-          fromJsValue(json)(ExpressionId.apply)(toExpression)(toExpressionFromObj).map(ExprSubstitutions.apply)
-        validateIds(optExprSubstitutions)
+        fromJsValue(json)(ExpressionId.apply)(toExpression)(toExpressionFromObj).map(ExprSubstitutions.apply)
       case _: JsUndefined => Right(ExprSubstitutions.empty)
     }
 }
 
 object BooleanExprId {
   implicit val format: OFormat[BooleanExprId] = derived.oformat()
+  implicit val equal: Eq[BooleanExprId] = Eq.fromUniversalEquals
 }
 
-case class BooleanExprSubstitutions(expressions: Map[BooleanExprId, BooleanExpr])
+case class BooleanExprSubstitutions(expressions: Map[BooleanExprId, BooleanExpr]) {
+  def resolveSelfReferences: Either[UnexpectedState, BooleanExprSubstitutions] = BooleanExpr.resolveReferences(this)
+}
 object BooleanExprSubstitutions extends Substitutions[BooleanExprId, BooleanExpr] {
 
   override val fieldName = "booleanExpressions"
@@ -176,40 +157,16 @@ object BooleanExprSubstitutions extends Substitutions[BooleanExprId, BooleanExpr
 
   def toBooleanExpression(booleanExpr: String): Opt[BooleanExpr] = BooleanExprParser.validate("${" + booleanExpr + "}")
 
-  private def validateExprIds(
-    optBooleanExprSubstitutions: Either[UnexpectedState, BooleanExprSubstitutions]
-  ): Either[UnexpectedState, BooleanExprSubstitutions] = {
-    val validationResult: ValidationResult = optBooleanExprSubstitutions
-      .map { substitutions =>
-        substitutions.expressions
-          .map { case (id, expr) =>
-            val booleanExprIds: List[BooleanExprId] = BooleanExpr.resolveBooleanExprIds(expr)
-            if (booleanExprIds.contains(id)) Invalid(s"The booleanExpression ${id.id} cannot reference itself")
-            else Valid
-          }
-          .toList
-          .combineAll
-      }
-      .getOrElse(Valid)
-
-    validationResult match {
-      case Valid          => optBooleanExprSubstitutions
-      case Invalid(error) => Left(UnexpectedState(error))
-    }
-  }
   def from(templateRaw: FormTemplateRaw): Opt[BooleanExprSubstitutions] =
     templateRaw.value \ "booleanExpressions" match {
       case JsDefined(json) =>
-        val optBooleanExprSubstitutions: Either[UnexpectedState, BooleanExprSubstitutions] =
-          fromJsValue(json)(BooleanExprId.apply)(toBooleanExpression)(obj =>
-            Left(
-              UnexpectedState(
-                s"Expected JsString, but got " + obj.getClass.getSimpleName + ": " + obj
-              )
+        fromJsValue(json)(BooleanExprId.apply)(toBooleanExpression)(obj =>
+          Left(
+            UnexpectedState(
+              s"Expected JsString, but got " + obj.getClass.getSimpleName + ": " + obj
             )
-          ).map(BooleanExprSubstitutions.apply)
-        validateExprIds(optBooleanExprSubstitutions)
-
+          )
+        ).map(BooleanExprSubstitutions.apply)
       case _: JsUndefined => Right(BooleanExprSubstitutions.empty)
     }
 }

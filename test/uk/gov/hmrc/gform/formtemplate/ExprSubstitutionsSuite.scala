@@ -120,19 +120,4 @@ class ExprSubstitutionsSuite extends FunSuite {
 
     assertEquals(res, expected)
   }
-
-  test("ExprSubstitutions.from should fail when the expression id is defined in the expression") {
-    val inputJson =
-      """|{
-         |  "expressions": {
-         |     "userType": "if agent = 0 then 'Agent' else userType"
-         |  }
-         |}""".stripMargin
-
-    val res: Opt[ExprSubstitutions] = toSubstitutions(inputJson)
-
-    val expected = Left(UnexpectedState("The expression userType cannot reference itself"))
-
-    assertEquals(res, expected)
-  }
 }

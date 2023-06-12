@@ -112,14 +112,18 @@ class FormTemplateService(
 
     val exprSubstitutionsResolved: Either[UnexpectedState, ExprSubstitutions] = expressionsContext.resolveSelfReferences
 
+    val exprBooleanSubstitutionsResolved: Either[UnexpectedState, BooleanExprSubstitutions] =
+      booleanExpressionsContext.resolveSelfReferences
+
     def substitute(template: FormTemplate) =
       for {
-        expressionsContextSubstituted <- fromOptA(exprSubstitutionsResolved)
+        expressionsContextSubstituted        <- fromOptA(exprSubstitutionsResolved)
+        booleanExpressionsContextSubstituted <- fromOptA(exprBooleanSubstitutionsResolved)
         substitutedFormTemplateExprs = substituteExpressions(template, expressionsContextSubstituted)
         substitutedFormTemplateBooleanExprs =
           substituteBooleanExprs(
             substitutedFormTemplateExprs,
-            booleanExpressionsContext,
+            booleanExpressionsContextSubstituted,
             expressionsContextSubstituted
           )
         substitutedFormTemplate <- substituteDestinations(substitutedFormTemplateBooleanExprs)
