@@ -102,6 +102,7 @@ trait Verifier {
       _ <- fromOptA(FormTemplateValidator.validateDataThreshold(pages).toEither)
       _ <- fromOptA(FormTemplateValidator.validateDownloadInternalLink(allExpressions).toEither)
       _ <- fromOptA(FormTemplateValidator.validateFileUpload(formTemplate, appConfig).toEither)
+      _ <- fromOptA(FormTemplateValidator.validateChoicesRevealedField(formTemplate).toEither)
     } yield ()
 
   }

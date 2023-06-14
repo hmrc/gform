@@ -44,4 +44,6 @@ object ReferenceInfo {
   final case class NumberedListExpr(path: TemplatePath, numberedList: NumberedList) extends ReferenceInfo
   final case class BulletedListExpr(path: TemplatePath, numberedList: BulletedList) extends ReferenceInfo
   final case class StringOpsExpr(path: TemplatePath, stringOps: StringOps) extends ReferenceInfo
+  final case class ChoicesRevealedFieldExpr(path: TemplatePath, choicesRevealedField: ChoicesRevealedField)
+      extends ReferenceInfo
 }

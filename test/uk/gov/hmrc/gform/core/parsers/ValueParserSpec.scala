@@ -1139,4 +1139,11 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     )
   }
 
+  it should "parse choicesRevealedField function" in {
+    val res = ValueParser.validate("${choicesRevealedField(fieldId)}")
+    res.toOption.value should be(
+      TextExpression(ChoicesRevealedField(FormComponentId("fieldId")))
+    )
+  }
+
 }
