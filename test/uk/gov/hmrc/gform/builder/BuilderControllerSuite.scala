@@ -110,7 +110,7 @@ class BuilderControllerSuite extends FunSuite {
   test("Update section title (1)") {
     val patch: Json = Json.obj("title" := "Page AA")
 
-    val result = BuilderSupport.modifySectionData(json, 0, patch)
+    val result = BuilderSupport.modifySectionData(json, ".sections[0]", patch)
 
     assertEquals(result, expectedJson)
   }
@@ -118,7 +118,7 @@ class BuilderControllerSuite extends FunSuite {
   test("Update section title (2)") {
     val patch: Json = Json.obj("title" := "Page AA")
 
-    val result = BuilderSupport.modifySectionData(json, 1, patch)
+    val result = BuilderSupport.modifySectionData(json, ".sections[1]", patch)
 
     assertEquals(result, expectedJson2)
   }
@@ -184,7 +184,7 @@ class BuilderControllerSuite extends FunSuite {
   test("Update section caption (1)") {
     val patch: Json = Json.obj("caption" := "I'm caption AA")
 
-    val result = BuilderSupport.modifySectionData(sectionCaptionJson, 0, patch)
+    val result = BuilderSupport.modifySectionData(sectionCaptionJson, ".sections[0]", patch)
 
     assertEquals(result.spaces2, expectedSectionCaptionJson.spaces2)
   }
@@ -229,7 +229,7 @@ class BuilderControllerSuite extends FunSuite {
   test("Purge section's presentationHint when empty (1)") {
     val patch: Json = Json.obj("presentationHint" := "")
 
-    val result = BuilderSupport.modifySectionData(sectionPresentationHintJson, 0, patch)
+    val result = BuilderSupport.modifySectionData(sectionPresentationHintJson, ".sections[0]", patch)
 
     assertEquals(result, expectedSectionPresentationHintJson)
   }
@@ -274,7 +274,7 @@ class BuilderControllerSuite extends FunSuite {
   test("Set section's presentationHint when empty (1)") {
     val patch: Json = Json.obj("presentationHint" := "abc")
 
-    val result = BuilderSupport.modifySectionData(sectionPresentationHintJson2, 0, patch)
+    val result = BuilderSupport.modifySectionData(sectionPresentationHintJson2, ".sections[0]", patch)
 
     assertEquals(result, expectedSectionPresentationHintJson2)
   }
@@ -395,7 +395,7 @@ class BuilderControllerSuite extends FunSuite {
 
     val patch: Json = Json.obj("label" := "First name 22")
 
-    val result: Json = BuilderSupport.modifyFormComponentData(formComponentUpdateJson, 1, formComponentId, patch)
+    val result: Json = BuilderSupport.modifyFormComponentData(formComponentUpdateJson, formComponentId, patch)
 
     assertEquals(result, formComponentUpdateJsonExpected)
   }
@@ -405,7 +405,7 @@ class BuilderControllerSuite extends FunSuite {
 
     val patch: Json = Json.obj("helpText" := "I'm help text")
 
-    val result: Json = BuilderSupport.modifyFormComponentData(formComponentUpdateJson, 1, formComponentId, patch)
+    val result: Json = BuilderSupport.modifyFormComponentData(formComponentUpdateJson, formComponentId, patch)
 
     assertEquals(result, formComponentUpdateHelpTextJsonExpected)
   }
@@ -461,7 +461,7 @@ class BuilderControllerSuite extends FunSuite {
 
     val patch: Json = Json.obj("shortName" := "I'm shortName")
 
-    val result: Json = BuilderSupport.modifyFormComponentData(input, 0, formComponentId, patch)
+    val result: Json = BuilderSupport.modifyFormComponentData(input, formComponentId, patch)
 
     assertEquals(result, expected)
   }
@@ -517,8 +517,209 @@ class BuilderControllerSuite extends FunSuite {
 
     val patch: Json = Json.obj("shortName" := "")
 
-    val result: Json = BuilderSupport.modifyFormComponentData(input, 0, formComponentId, patch)
+    val result: Json = BuilderSupport.modifyFormComponentData(input, formComponentId, patch)
 
     assertEquals(result, expected)
+  }
+
+  val atlJson = json"""
+    {
+      "sections": [
+        {
+          "title": "What is your non-UK address?",
+          "fields": [
+            {
+              "id": "overseasAddress",
+              "type": "overseasAddress",
+              "shortName": "Non-UK address",
+              "label": "What is your non-UK address?",
+              "helpText": "overseas address help",
+              "mandatory": "false"
+            }
+          ]
+        },
+        {
+          "title": "Page A title",
+          "fields": [
+            {
+              "id": "second",
+              "type": "text",
+              "label": "Component A label",
+              "format": "sterling"
+            }
+          ]
+        },
+        {
+          "type": "addToList",
+          "title": "Notifications you have added",
+          "addAnotherQuestion": {
+            "type": "choice",
+            "label": "Do you want to add another notification?",
+            "id": "page1",
+            "format": "yesno",
+            "errorMessage": "Select yes if you want to add another notification"
+          },
+          "pages": [
+            {
+              "title": "What type of notification are you telling HMRC about?",
+              "caption": "Trade mark",
+              "shortName": "What type of notification",
+              "fields": [
+                {
+                  "type": "choice",
+                  "id": "whatNotification2",
+                  "label": "XX What type of notification are you telling HMRC about?",
+                  "errorMessage": "Select what type of notification you are telling us about",
+                  "shortName": "Notification type",
+                  "mandatory": "yes",
+                  "choices": [
+                    "New ramping up period for an existing QAHC regime",
+                    "Company does not expect to meet the ownership condition",
+                    "Exit the regime after breaching a condition"
+                  ],
+                  "hints": [
+                    "This is for companies which previously met all entry conditions",
+                    "This is during an existing ramping up period",
+                    "Also known as 'breach and exit'"
+                  ]
+                }
+              ]
+            },
+            {
+              "title": "Who are the contacts?",
+              "caption": "test",
+              "fields": [
+                {
+                  "id": "agentFullName",
+                  "type": "text",
+                  "format": "shortText",
+                  "label": "Name of agent",
+                  "shortName": "Agent name"
+                },
+                {
+                  "id": "whatNotification",
+                  "type": "text",
+                  "format": "shortText",
+                  "label": "Name of owner",
+                  "shortName": "Owner name"
+                },
+                {
+                  "id": "agentFullName2",
+                  "type": "text",
+                  "format": "shortText",
+                  "label": "Name of owner",
+                  "shortName": "Owner name"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }"""
+
+  val expectedAtlJson = json"""
+    {
+      "sections": [
+        {
+          "title": "What is your non-UK address?",
+          "fields": [
+            {
+              "id": "overseasAddress",
+              "type": "overseasAddress",
+              "shortName": "Non-UK address",
+              "label": "What is your non-UK address?",
+              "helpText": "overseas address help",
+              "mandatory": "false"
+            }
+          ]
+        },
+        {
+          "title": "Page A title",
+          "fields": [
+            {
+              "id": "second",
+              "type": "text",
+              "label": "Component A label",
+              "format": "sterling"
+            }
+          ]
+        },
+        {
+          "type": "addToList",
+          "title": "Notifications you have added",
+          "addAnotherQuestion": {
+            "type": "choice",
+            "label": "Do you want to add another notification?",
+            "id": "page1",
+            "format": "yesno",
+            "errorMessage": "Select yes if you want to add another notification"
+          },
+          "pages": [
+            {
+              "title": "What type of notification are you telling HMRC about?",
+              "caption": "Trade mark",
+              "shortName": "What type of notification",
+              "fields": [
+                {
+                  "type": "choice",
+                  "id": "whatNotification2",
+                  "label": "XX What type of notification are you telling HMRC about?",
+                  "errorMessage": "Select what type of notification you are telling us about",
+                  "shortName": "Notification type",
+                  "mandatory": "yes",
+                  "choices": [
+                    "New ramping up period for an existing QAHC regime",
+                    "Company does not expect to meet the ownership condition",
+                    "Exit the regime after breaching a condition"
+                  ],
+                  "hints": [
+                    "This is for companies which previously met all entry conditions",
+                    "This is during an existing ramping up period",
+                    "Also known as 'breach and exit'"
+                  ]
+                }
+              ]
+            },
+            {
+              "title": "Who are the contacts?",
+              "caption": "test",
+              "fields": [
+                {
+                  "id": "agentFullName",
+                  "type": "text",
+                  "format": "shortText",
+                  "label": "Name of agent",
+                  "shortName": "Agent name"
+                },
+                {
+                  "helpText": "Help text 22",
+                  "id": "whatNotification",
+                  "type": "text",
+                  "format": "shortText",
+                  "label": "First name 22",
+                  "shortName": "Owner name"
+                },
+                {
+                  "id": "agentFullName2",
+                  "type": "text",
+                  "format": "shortText",
+                  "label": "Name of owner",
+                  "shortName": "Owner name"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    } """
+
+  test("Update field label in addToList") {
+    val formComponentId = FormComponentId("whatNotification")
+
+    val patch: Json = Json.obj("label" := "First name 22", "helpText" := "Help text 22")
+
+    val result: Json = BuilderSupport.modifyFormComponentData(atlJson, formComponentId, patch)
+
+    assertEquals(result.spaces2, expectedAtlJson.spaces2)
   }
 }

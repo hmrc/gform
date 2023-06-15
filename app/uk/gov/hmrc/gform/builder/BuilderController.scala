@@ -25,6 +25,7 @@ import play.api.libs.json.JsObject
 import play.api.libs.json.{ Json => PlayJson }
 import play.api.mvc.{ ControllerComponents, Result, Results }
 import scala.concurrent.Future
+import scala.util.matching.Regex
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.core._
 import uk.gov.hmrc.gform.formtemplate.{ FormTemplateService, FormTemplatesControllerRequestHandler, RequestHandlerAlg }
@@ -78,7 +79,19 @@ object BuilderSupport {
     }
   }
 
-  def modifySectionData(json: Json, sectionNumber: Int, sectionData: Json): Json =
+  private val sectionPattern: Regex = """^\.sections\[(\d)\]""".r
+  private val atlPagePattern: Regex = """^\.sections\[(\d)\]\.pages\[(\d)\]$""".r
+
+  def modifySectionData(json: Json, sectionPath: String, sectionData: Json): Json = {
+    val history: List[CursorOp] =
+      sectionPath match {
+        case sectionPattern(sectionIndex) =>
+          List.fill(sectionIndex.toInt)(MoveRight) ::: List(DownArray, DownField("sections"))
+        case atlPagePattern(sectionIndex, pageIndex) =>
+          List.fill(pageIndex.toInt)(MoveRight) ::: List(DownArray, DownField("pages")) ::: List
+            .fill(sectionIndex.toInt)(MoveRight) ::: List(DownArray, DownField("sections"))
+        case _ => Nil
+      }
     List(
       Property("title"),
       Property("caption"),
@@ -91,13 +104,6 @@ object BuilderSupport {
         .downField(property.name)
         .focus
         .flatMap { propertyValue =>
-          val sectionPath: List[CursorOp] = (0 until sectionNumber).foldRight(List[CursorOp](DownArray)) {
-            case (_, acc) =>
-              MoveRight :: acc
-          }
-
-          val history: List[CursorOp] = sectionPath ::: DownField("sections") :: Nil
-
           val array = accJson.hcursor.replay(history)
 
           val isValueAsStringEmpty = propertyValue
@@ -127,14 +133,13 @@ object BuilderSupport {
           }
         }
         .getOrElse(accJson)
-
     }
+  }
 
-  def modifyFormComponentData(
-    json: Json,
-    sectionNumber: Int,
-    formComponentId: FormComponentId,
-    sectionData: Json
+  def updateFormComponent(
+    formComponent: Json,
+    sectionData: Json,
+    formComponentId: FormComponentId
   ): Json =
     List(
       Property("label"),
@@ -150,80 +155,115 @@ object BuilderSupport {
       Property("infoText"),
       Property("infoType")
     )
-      .foldRight(json) { case (property, accJson) =>
-        val sectionPath: List[CursorOp] = (0 until sectionNumber).foldRight(List[CursorOp](DownArray)) {
-          case (_, acc) =>
-            MoveRight :: acc
-        }
-
-        val history: List[CursorOp] =
-          DownArray :: DownField("fields") :: sectionPath ::: DownField("sections") :: Nil
-
+      .foldRight(formComponent) { case (property, accJson) =>
         sectionData.hcursor
           .downField(property.name)
           .focus
           .flatMap { propertyValue =>
-            val array = accJson.hcursor.replay(history)
-
             val isValueAsStringEmpty = propertyValue
               .as[String]
               .toOption
               .fold(false)(_.trim.isEmpty())
 
-            array.success.flatMap { hcursor =>
-              val formComponentCursor = hcursor
-                .find { json =>
-                  json.hcursor.downField("id").focus.flatMap(_.asString).contains(formComponentId.value)
+            val propertyField = accJson.hcursor.downField(property.name)
+
+            property.behaviour match {
+              case PropertyBehaviour.PurgeWhenEmpty if isValueAsStringEmpty =>
+                if (propertyField.succeeded) {
+                  propertyField.delete.root.focus
+                } else {
+                  Some(accJson)
                 }
 
-              if (formComponentCursor.succeeded) {
+              case _ =>
+                if (propertyField.succeeded) {
+                  propertyField
+                    .set(propertyValue)
+                    .root
+                    .focus
 
-                val propertyField = formComponentCursor.downField(property.name)
-
-                property.behaviour match {
-                  case PropertyBehaviour.PurgeWhenEmpty if isValueAsStringEmpty =>
-                    if (propertyField.succeeded) {
-                      propertyField.delete.root.focus
-                    } else {
-                      hcursor.root.focus
-                    }
-
-                  case _ =>
-                    if (propertyField.succeeded) {
-                      propertyField
-                        .set(propertyValue)
-                        .root
-                        .focus
-                    } else {
-                      formComponentCursor
-                        .withFocus(json => json.deepMerge(Json.obj(property.name -> propertyValue)))
-                        .root
-                        .focus
-                    }
+                } else {
+                  accJson.hcursor
+                    .withFocus(json => json.deepMerge(Json.obj(property.name -> propertyValue)))
+                    .root
+                    .focus
                 }
-              } else {
-                // Do nothing. Invalid formComponentId used, it doesn't exist in this section.
-                Some(accJson)
-              }
             }
           }
           .getOrElse(accJson)
       }
 
+  def modifyFormComponentData(
+    json: Json,
+    formComponentId: FormComponentId,
+    sectionData: Json
+  ): Json = {
+
+    val maybeHistory = json.hcursor
+      .downField("sections")
+      .values
+      .flatMap { sections =>
+        val abc = sections.zipWithIndex.map { case (section, sectionIndex) =>
+          val fieldHit: Option[List[CursorOp]] = section.hcursor.downField("fields").values.flatMap { fields =>
+            fields.zipWithIndex
+              .find { case (field, _) =>
+                field.hcursor.downField("id").focus.contains(Json.fromString(formComponentId.value))
+              }
+              .map { case (_, fieldHitIndex) =>
+                List.fill(fieldHitIndex)(MoveRight) ::: List(DownArray, DownField("fields")) ::: List
+                  .fill(sectionIndex)(MoveRight) ::: List(DownArray, DownField("sections"))
+              }
+          }
+
+          val addToListHit2: Option[Iterable[Option[List[CursorOp]]]] =
+            section.hcursor.downField("pages").values.map { pages =>
+              pages.zipWithIndex.flatMap { case (page, pageHitIndex) =>
+                page.hcursor.downField("fields").values.map { fields =>
+                  fields.zipWithIndex
+                    .find { case (field, _) =>
+                      field.hcursor.downField("id").focus.contains(Json.fromString(formComponentId.value))
+                    }
+                    .map { case (_, fieldHitIndex) =>
+                      List.fill(fieldHitIndex)(MoveRight) ::: List(DownArray, DownField("fields")) :::
+                        List.fill(pageHitIndex)(MoveRight) ::: List(DownArray, DownField("pages")) ::: List
+                          .fill(sectionIndex)(MoveRight) ::: List(DownArray, DownField("sections"))
+                    }
+                }
+              }
+            }
+
+          val addToListHit = addToListHit2.toList.flatten.collectFirst { case Some(history) => history }
+
+          fieldHit.orElse(addToListHit)
+        }
+
+        abc.collectFirst { case Some(history) => history }
+      }
+
+    maybeHistory
+      .flatMap { history =>
+        json.hcursor
+          .replay(history)
+          .withFocus(field => updateFormComponent(field, sectionData, formComponentId))
+          .root
+          .focus
+      }
+      .getOrElse(json)
+  }
+
   def updateFormComponent(
     formTemplateRaw: FormTemplateRaw,
-    sectionNumber: Int,
     sectionData: Json,
     formComponentId: FormComponentId
   ): Either[BuilderError, FormTemplateRaw] =
-    modifyJson(formTemplateRaw)(modifyFormComponentData(_, sectionNumber, formComponentId, sectionData))
+    modifyJson(formTemplateRaw)(modifyFormComponentData(_, formComponentId, sectionData))
 
-  def updateSectionByIndex(
+  def updateSectionByPath(
     formTemplateRaw: FormTemplateRaw,
-    sectionNumber: Int,
+    sectionPath: String,
     sectionData: Json
   ): Either[BuilderError, FormTemplateRaw] =
-    modifyJson(formTemplateRaw)(modifySectionData(_, sectionNumber, sectionData))
+    modifyJson(formTemplateRaw)(modifySectionData(_, sectionPath, sectionData))
 }
 
 class BuilderController(controllerComponents: ControllerComponents, formTemplateService: FormTemplateService)(implicit
@@ -265,17 +305,17 @@ class BuilderController(controllerComponents: ControllerComponents, formTemplate
       applyUpdateFunction(formTemplateRawId)(formTemplateRaw => updateFunction(formTemplateRaw, request.body))
     }
 
-  def updateSectionByIndex(formTemplateRawId: FormTemplateRawId, sectionNumber: Int) =
+  def updateSection(formTemplateRawId: FormTemplateRawId, sectionPath: String) =
     updateAction(formTemplateRawId) { (formTemplateRaw, requestBody) =>
       BuilderSupport
-        .updateSectionByIndex(formTemplateRaw, sectionNumber, requestBody)
+        .updateSectionByPath(formTemplateRaw, sectionPath, requestBody)
         .map(formTemplateRaw => (formTemplateRaw, Results.Ok(formTemplateRaw.value)))
     }
 
-  def updateFormComponent(formTemplateRawId: FormTemplateRawId, sectionNumber: Int, formComponentId: FormComponentId) =
+  def updateFormComponent(formTemplateRawId: FormTemplateRawId, formComponentId: FormComponentId) =
     updateAction(formTemplateRawId) { (formTemplateRaw, requestBody) =>
       BuilderSupport
-        .updateFormComponent(formTemplateRaw, sectionNumber, requestBody, formComponentId)
+        .updateFormComponent(formTemplateRaw, requestBody, formComponentId)
         .map(formTemplateRaw => (formTemplateRaw, Results.Ok(formTemplateRaw.value)))
     }
 }
