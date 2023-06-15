@@ -421,6 +421,27 @@ class TopLevelExpressionsSuite extends FunSuite {
     )
   }
 
+  test("TopLevelExpressions - self-referencing") {
+    expressionsContextFromJson(
+      Json.obj(
+        "foo" -> "bar",
+        "bar" -> "bar",
+        "baz" -> "foo"
+      )
+    ) { exprSubstitutions =>
+      TopLevelExpressions.resolveReferences(exprSubstitutions) match {
+        case Left(node) =>
+          assertEquals(
+            node,
+            UnexpectedState(
+              "The expression bar cannot reference itself"
+            )
+          )
+        case Right(iterable) => fail("Failed self-referencing detection")
+      }
+    }
+  }
+
   private def check(json: JsValue, expressions: Map[ExpressionId, Expr]) =
     expressionsContextFromJson(json) { exprSubstitutions =>
       val exprSubstitutionsE = TopLevelExpressions.resolveReferences(exprSubstitutions)

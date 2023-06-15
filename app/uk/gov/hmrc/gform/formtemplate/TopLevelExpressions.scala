@@ -76,23 +76,29 @@ object TopLevelExpressions {
   def resolveReferences(exprSubstitutions: ExprSubstitutions): Either[UnexpectedState, ExprSubstitutions] = {
 
     val graph: Graph[ExpressionId, GraphEdge.DiEdge] = toGraph(exprSubstitutions)
+    val selfReferencingExpressions =
+      graph.edges.filter(edge => edge.source == edge.target).flatMap(_.value.map(_.value))
 
-    val sort = toTopologicalSort(graph)
+    if (selfReferencingExpressions.nonEmpty)
+      Left(UnexpectedState(s"The expression ${selfReferencingExpressions.head.id} cannot reference itself"))
+    else {
+      val sort = toTopologicalSort(graph)
 
-    sort.bimap(
-      failure =>
-        UnexpectedState(
-          s"Cycle detected in top level expressions. Graph contains cycle: ${graph.findCycle}"
-        ),
-      iterable =>
-        ExprSubstitutions(
-          iterable.toList.reverse.foldLeft(exprSubstitutions.expressions) { case (acc0, (index, layerNodes)) =>
-            layerNodes.foldLeft(acc0) { case (acc, expr) =>
-              resolveExpr(acc, expr)
+      sort.bimap(
+        failure =>
+          UnexpectedState(
+            s"Cycle detected in top level expressions. Graph contains cycle: ${graph.findCycle}"
+          ),
+        iterable =>
+          ExprSubstitutions(
+            iterable.toList.reverse.foldLeft(exprSubstitutions.expressions) { case (acc0, (index, layerNodes)) =>
+              layerNodes.foldLeft(acc0) { case (acc, expr) =>
+                resolveExpr(acc, expr)
+              }
             }
-          }
-        )
-    )
+          )
+      )
+    }
   }
 
   def resolveExpr(expressions: Map[ExpressionId, Expr], expressionId: ExpressionId): Map[ExpressionId, Expr] = {

@@ -16,9 +16,13 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
-import uk.gov.hmrc.gform.formtemplate.BooleanExprId
+import scalax.collection.GraphPredef._
+import uk.gov.hmrc.gform.formtemplate.{ BooleanExprId, BooleanExprSubstitutions }
 import julienrf.json.derived
 import play.api.libs.json._
+import scalax.collection.{ Graph, GraphEdge }
+import uk.gov.hmrc.gform.exceptions.UnexpectedState
+
 import scala.util.matching.Regex
 
 sealed trait BooleanExpr
@@ -88,6 +92,50 @@ object BooleanExpr {
     }
     loop(be)
 
+  }
+
+  private def toGraph(booleanExprSubstitutions: BooleanExprSubstitutions): Graph[BooleanExprId, GraphEdge.DiEdge] = {
+    val layers: Iterable[GraphEdge.DiEdge[BooleanExprId]] =
+      booleanExprSubstitutions.expressions.flatMap { case (expressionId, expr) =>
+        resolveReferences(expr).map(referenceId => expressionId ~> referenceId)
+      }
+    layers.foldLeft(Graph.empty[BooleanExprId, GraphEdge.DiEdge])(_ union Set(_))
+  }
+
+  def resolveReferences(
+    booleanExprSubstitutions: BooleanExprSubstitutions
+  ): Either[UnexpectedState, BooleanExprSubstitutions] = {
+    val graph: Graph[BooleanExprId, GraphEdge.DiEdge] = toGraph(booleanExprSubstitutions)
+    val selfReferencingExpressions =
+      graph.edges.filter(edge => edge.source == edge.target).flatMap(_.value.map(_.value))
+    if (selfReferencingExpressions.nonEmpty)
+      Left(UnexpectedState(s"The booleanExpression ${selfReferencingExpressions.head.id} cannot reference itself"))
+    else
+      Right(booleanExprSubstitutions)
+  }
+
+  private def toBooleanExprIds(xs: BooleanExpr*): List[BooleanExprId] = xs.toList.flatMap(x => resolveReferences(x))
+
+  private def resolveReferences(t: BooleanExpr): List[BooleanExprId] = t match {
+    case Not(e: BooleanExpr)                        => resolveReferences(e)
+    case Or(left: BooleanExpr, right: BooleanExpr)  => toBooleanExprIds(left, right)
+    case And(left: BooleanExpr, right: BooleanExpr) => toBooleanExprIds(left, right)
+    case TopLevelRef(booleanExprId)                 => List(booleanExprId)
+    case Equals(_, _)                               => Nil
+    case GreaterThan(_, _)                          => Nil
+    case GreaterThanOrEquals(_, _)                  => Nil
+    case LessThan(_, _)                             => Nil
+    case LessThanOrEquals(_, _)                     => Nil
+    case IsTrue                                     => Nil
+    case IsFalse                                    => Nil
+    case FormPhase(_)                               => Nil
+    case IsLogin(_)                                 => Nil
+    case Contains(_, _)                             => Nil
+    case In(_, _)                                   => Nil
+    case MatchRegex(_, _)                           => Nil
+    case DateBefore(_, _)                           => Nil
+    case DateAfter(_, _)                            => Nil
+    case First(_)                                   => Nil
   }
 }
 

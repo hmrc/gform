@@ -16,15 +16,15 @@
 
 package uk.gov.hmrc.gform.formtemplate
 
+import cats.Eq
 import cats.implicits._
 import julienrf.json.derived
 import play.api.libs.json.{ JsDefined, JsError, JsObject, JsString, JsSuccess, JsUndefined, JsValue, OFormat, Reads }
 import uk.gov.hmrc.gform.core.parsers.BooleanExprParser
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ ADTFormat, BooleanExpr, RoundingMode, TextConstraint }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ ADTFormat, BooleanExpr, ExplicitExprType, Expr, FormTemplateRaw, RoundingMode, TextConstraint, TextExpression, Typed, ValueExpr }
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.core.parsers.ValueParser
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ ExplicitExprType, Expr, FormTemplateRaw, TextExpression, Typed, ValueExpr }
 
 sealed trait Substitutions[K, V] {
 
@@ -102,6 +102,7 @@ sealed trait Substitutions[K, V] {
 case class ExpressionId(id: String) extends AnyVal
 object ExpressionId {
   implicit val format: OFormat[ExpressionId] = derived.oformat()
+  implicit val equal: Eq[ExpressionId] = Eq.fromUniversalEquals
 }
 case class BooleanExprId(id: String) extends AnyVal
 
@@ -142,9 +143,12 @@ object ExprSubstitutions extends Substitutions[ExpressionId, Expr] {
 
 object BooleanExprId {
   implicit val format: OFormat[BooleanExprId] = derived.oformat()
+  implicit val equal: Eq[BooleanExprId] = Eq.fromUniversalEquals
 }
 
-case class BooleanExprSubstitutions(expressions: Map[BooleanExprId, BooleanExpr])
+case class BooleanExprSubstitutions(expressions: Map[BooleanExprId, BooleanExpr]) {
+  def resolveSelfReferences: Either[UnexpectedState, BooleanExprSubstitutions] = BooleanExpr.resolveReferences(this)
+}
 object BooleanExprSubstitutions extends Substitutions[BooleanExprId, BooleanExpr] {
 
   override val fieldName = "booleanExpressions"
@@ -163,7 +167,6 @@ object BooleanExprSubstitutions extends Substitutions[BooleanExprId, BooleanExpr
             )
           )
         ).map(BooleanExprSubstitutions.apply)
-
       case _: JsUndefined => Right(BooleanExprSubstitutions.empty)
     }
 }
