@@ -186,6 +186,7 @@ object TopLevelExpressions {
         case StringOps(_, _)               => e
         case Concat(exprs)                 => Concat(exprs.map(loop))
         case CountryOfItmpAddress          => e
+        case ChoicesRevealedField(_)       => e
       }
     expressions.get(expressionId).fold(expressions) { expr =>
       expressions + (expressionId -> loop(expr))

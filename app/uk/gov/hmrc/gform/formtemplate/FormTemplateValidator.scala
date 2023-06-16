@@ -231,6 +231,16 @@ object FormTemplateValidator {
         Invalid(s"${path.path}: $formComponentId is not AddToList Id")
       case ReferenceInfo.StringOpsExpr(path, StringOps(FormCtx(formComponentId), _)) if !allFcIds(formComponentId) =>
         invalid(path, formComponentId)
+      case ReferenceInfo.ChoicesRevealedFieldExpr(path, ChoicesRevealedField(formComponentId))
+          if !SectionHelper
+            .addToListFormComponents(formTemplate.formKind.allSections)
+            .collect({ case fc @ IsRevealingChoice(_) => fc })
+            .find(_.id === formComponentId)
+            .exists {
+              case IsRevealingChoice(_) => true
+              case _                    => false
+            } =>
+        Invalid(s"${path.path}: $formComponentId is not a Revealing Choice in ATL")
       case _ => Valid
     }
 
@@ -997,6 +1007,7 @@ object FormTemplateValidator {
       case StringOps(_, _)              => Valid
       case Concat(exprs)                => Monoid.combineAll(exprs.map(e => validate(e, sections)))
       case CountryOfItmpAddress         => Valid
+      case ChoicesRevealedField(_)      => Valid
     }
   }
 
@@ -1352,6 +1363,33 @@ object FormTemplateValidator {
     }
 
     (fileSizeValidation ++ allowedFileTypesValidation).combineAll
+  }
+
+  def validateChoicesRevealedField(formTemplate: FormTemplate): ValidationResult = {
+
+    val allRevealingChoices = SectionHelper
+      .addToListFormComponents(formTemplate.formKind.allSections)
+      .collect({ case fc @ IsRevealingChoice(_) => fc })
+      .map(_.id)
+
+    formTemplate.formKind.allSections.map {
+      case a: Section.NonRepeatingPage =>
+        LeafExpr(TemplatePath.root, a)
+          .flatMap(_.referenceInfos)
+          .map {
+            case ReferenceInfo.ChoicesRevealedFieldExpr(TemplatePath(path), ChoicesRevealedField(fcId)) =>
+              Invalid(
+                s"$path: choicesRevealedField($fcId) is not invalid. Add to list choices cannot be replayed outside of Add to list"
+              )
+            case ReferenceInfo.FormCtxExpr(TemplatePath(path), FormCtx(fcId)) if allRevealingChoices.contains(fcId) =>
+              Invalid(
+                s"$path: $fcId is not invalid. Add to list choices cannot be replayed outside of Add to list"
+              )
+            case _ => Valid
+          }
+          .combineAll
+      case _ => Valid
+    }.combineAll
   }
 }
 
