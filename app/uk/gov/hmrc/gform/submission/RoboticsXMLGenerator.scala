@@ -44,6 +44,9 @@ object RoboticsXMLGenerator {
       maybeEnvelopeId.map(correlationId).getOrElse("")
     }</gform>
 
+  private val replacements =
+    Map('<' -> "&lt;", '>' -> "&gt;", '&' -> "&#38;", ']' -> "&#93;", '\'' -> "&#39;", '"' -> "&#34;")
+
   private val dateSubmittedFormater = DateTimeFormatter.ofPattern("dd/MM/yyyy").withZone(ZoneId.of("Europe/London"))
 
   private def dateSubmitted(now: Instant): NodeSeq =
@@ -70,7 +73,7 @@ object RoboticsXMLGenerator {
     }
 
   private def textNodeTag(content: String, field: Field, index: Option[Int]): Elem =
-    <new>{content}</new>.copy(label = getRoboticsXmlName(field), attributes = getAttribute(index))
+    <new>{sanitizeContent(content)}</new>.copy(label = getRoboticsXmlName(field), attributes = getAttribute(index))
 
   private def getRoboticsXmlName(field: Field) =
     field.nameFor(RoboticsXml).name
@@ -91,5 +94,13 @@ object RoboticsXMLGenerator {
   private def userLanguage(l: LangADT) = <userLanguage>{l.langADTToString.toUpperCase}</userLanguage>
 
   private def correlationId(envelopeId: EnvelopeId) = <correlationId>{envelopeId.value}</correlationId>
+
+  private def sanitizeContent(content: String): String =
+    content.foldLeft("") { (acc, char) =>
+      replacements.getOrElse(char, char.toString) match {
+        case replacement: String => acc + replacement
+        case _                   => acc
+      }
+    }
 
 }
