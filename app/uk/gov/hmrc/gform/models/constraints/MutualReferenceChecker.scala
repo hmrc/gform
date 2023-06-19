@@ -49,20 +49,6 @@ class MutualReferenceChecker(formTemplate: FormTemplate) {
     .flatten
     .toSet
 
-  private val addToListRefs: Set[ReferenceWithPath[ReferenceKind.AddToList]] = formTemplate.formKind.allSections
-    .collect { case a: Section.AddToList =>
-      LeafExpr(TemplatePath.root, a).flatMap(_.referenceInfos).collect {
-        case ReferenceInfo.FormCtxExpr(path, FormCtx(fcId)) =>
-          ReferenceWithPath(path, Reference(ReferenceKind.AddToList(a.addAnotherQuestion.id), fcId))
-      }
-    }
-    .flatten
-    .toSet
-
-  private val validAddToListReferences: ValidReferences[ReferenceKind.AddToList] = ValidReferences.addToList(
-    formTemplate.formKind.allSections.collect { case s: Section.AddToList => s }
-  )
-
   private val repeatingPageRefs: Set[ReferenceWithPath[ReferenceKind.RepeatingPage]] =
     formTemplate.formKind.allSections.zipWithIndex
       .collect { case (s: Section.RepeatingPage, index) =>
@@ -83,7 +69,6 @@ class MutualReferenceChecker(formTemplate: FormTemplate) {
   val result: ValidationResult = Monoid.combineAll(
     List(
       validGroupReferences.check(actualGroupRefs),
-      validAddToListReferences.check(addToListRefs),
       validRepeatedSectionReferences.check(repeatingPageRefs)
     )
   )

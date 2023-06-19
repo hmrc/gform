@@ -109,6 +109,11 @@ object Substituter {
           includeIf = o.includeIf(substitutions),
           value = OptionDataValue.ExprBased(prefix, expr(substitutions))
         )
+      case o @ OptionData.ValueBased(_, _, _, _, OptionDataValue.FormCtxBased(_)) =>
+        o.copy(
+          label = o.label(substitutions),
+          includeIf = o.includeIf(substitutions)
+        )
     }
 
   implicit def revealingChoiceElementSubstituter[A](implicit

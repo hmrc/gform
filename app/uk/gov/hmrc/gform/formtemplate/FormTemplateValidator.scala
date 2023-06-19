@@ -518,10 +518,19 @@ object FormTemplateValidator {
 
   def validateChoiceOptions(sectionsList: List[Page]): ValidationResult = {
     def checkUniformness(choice: Choice): Boolean = {
-      val indexed = choice.options.collect { case o: OptionData.IndexBased =>
-        o
+      val dynamicOptionExists: Boolean = choice.options.exists {
+        case o: OptionData.ValueBased => o.dynamic.isDefined
+        case o: OptionData.IndexBased => o.dynamic.isDefined
+        case _                        => false
       }
-      indexed.size =!= 0 && indexed.size =!= choice.options.size
+      //If one of the option values is dynamic, uniformness validation is not required.
+      if (dynamicOptionExists) false
+      else {
+        val indexed = choice.options.collect { case o: OptionData.IndexBased =>
+          o
+        }
+        indexed.size =!= 0 && indexed.size =!= choice.options.size
+      }
     }
 
     def checkUnique(choice: Choice): Boolean = {
@@ -1390,6 +1399,28 @@ object FormTemplateValidator {
           .combineAll
       case _ => Valid
     }.combineAll
+  }
+
+  def validateChoiceFormCtxOptionValues(sectionsList: List[Page], formTemplate: FormTemplate): ValidationResult = {
+    val atlIds: List[FormComponentId] =
+      SectionHelper.addToListFormComponents(formTemplate.formKind.allSections).map(_.id)
+
+    def choiceFormCtxIds(choice: Choice): List[FormComponentId] = choice.options.collect {
+      case OptionData.ValueBased(_, _, _, _, OptionDataValue.FormCtxBased(formCtx)) =>
+        formCtx.formComponentId
+    }
+
+    allFormComponents(sectionsList)
+      .map(fv => (fv.id, fv.`type`))
+      .map {
+        case (fId, choice: Choice)
+            if choiceFormCtxIds(choice).nonEmpty && !choiceFormCtxIds(choice).exists(atlIds.contains) =>
+          Invalid(
+            s"The value of '$fId' is not valid. The component expression value must be within the scope of an ATL."
+          )
+        case _ => Valid
+      }
+      .combineAll
   }
 }
 

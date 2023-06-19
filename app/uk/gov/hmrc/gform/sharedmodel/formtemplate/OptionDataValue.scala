@@ -24,28 +24,28 @@ sealed trait OptionDataValue extends Product with Serializable
 object OptionDataValue {
   case class StringBased(value: String) extends OptionDataValue
   case class ExprBased(prefix: String, expr: Expr) extends OptionDataValue
+  case class FormCtxBased(formCtx: FormCtx) extends OptionDataValue
 
-  private def readsForTemplateJson: Reads[OptionDataValue] = Reads { json =>
-    json match {
-      case JsString(exprAsStr) =>
-        if (exprAsStr.contains("${") && (exprAsStr.indexOf("${") =!= exprAsStr.lastIndexOf("${"))) {
-          throw new IllegalArgumentException(
-            s"Invalid expression. Value $exprAsStr has more than one expression. Expected string with only one expression. "
-          )
-        } else {
-          ValueParser
-            .validateWithParser(exprAsStr, ValueParser.optionDataValue)
-            .fold(e => JsError(e.error), r => JsSuccess(r))
-        }
-      case otherwise => JsError(s"Invalid expression. Expected string or string with expr, got $otherwise")
-    }
+  private def readsForTemplateJson: Reads[OptionDataValue] = Reads {
+    case JsString(exprAsStr) =>
+      if (exprAsStr.contains("${") && (exprAsStr.indexOf("${") =!= exprAsStr.lastIndexOf("${"))) {
+        throw new IllegalArgumentException(
+          s"Invalid expression. Value $exprAsStr has more than one expression. Expected string with only one expression. "
+        )
+      } else {
+        ValueParser
+          .validateWithParser(exprAsStr, ValueParser.optionDataValue)
+          .fold(e => JsError(e.error), r => JsSuccess(r))
+      }
+    case otherwise => JsError(s"Invalid expression. Expected string or string with expr, got $otherwise")
   }
 
   implicit val format: OFormat[OptionDataValue] = OFormatWithTemplateReadFallback(readsForTemplateJson)
 
   implicit val leafExprs: LeafExpr[OptionDataValue] = (path: TemplatePath, t: OptionDataValue) =>
     t match {
-      case StringBased(_)     => Nil
-      case ExprBased(_, expr) => List(ExprWithPath(path, expr))
+      case StringBased(_)        => Nil
+      case ExprBased(_, expr)    => List(ExprWithPath(path, expr))
+      case FormCtxBased(formCtx) => List(ExprWithPath(path, formCtx))
     }
 }

@@ -245,11 +245,12 @@ object OptionData {
           LeafExpr(path + "hint", hint) ++
           LeafExpr(path + "includeIf", includeIf) ++
           LeafExpr(path + "dynamic", dynamic)
-      case OptionData.ValueBased(label, hint, includeIf, dynamic, _) =>
+      case OptionData.ValueBased(label, hint, includeIf, dynamic, value) =>
         LeafExpr(path + "label", label) ++
           LeafExpr(path + "hint", hint) ++
           LeafExpr(path + "includeIf", includeIf) ++
-          LeafExpr(path + "dynamic", dynamic)
+          LeafExpr(path + "dynamic", dynamic) ++
+          LeafExpr(path + "value", value)
     }
 }
 
