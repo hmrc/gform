@@ -75,7 +75,9 @@ class FormComponentRejectSpec extends Spec with TableDrivenPropertyChecks {
       ("revealing-choice-options-unique",           "Revealing choice component choices 'value's needs to be unique: companyName"),
       ("choice-index-size-expr-with-value",         "Expression 'hasDifferentName.0.size' can't use numeric index: 0. hasDifferentName has these values: foo, bar"),
       ("choice-value-size-expr-with-index",         "Expression 'hasDifferentName.A.size' can't use value index: A. Use numeric index from 0 to 1"),
-      ("choice-value-size-expr-wrong-value",        "Expression 'hasDifferentName.baz.size' has wrong value baz. hasDifferentName has these values: foo, bar")
+      ("choice-value-size-expr-wrong-value",        "Expression 'hasDifferentName.baz.size' has wrong value baz. hasDifferentName has these values: foo, bar"),
+      ("choice-options-value-expr-not-in-atl",      "The value of 'choiceId' is not valid. The component expression value must be within the scope of an ATL.")
+
       // format: on",
     )
     val appConfig = AppConfig.loadOrThrow(ConfigFactory.load())
@@ -123,7 +125,6 @@ class FormComponentRejectSpec extends Spec with TableDrivenPropertyChecks {
       ("json",                                     "expectedMessage"),
       ("invalid-count-usage",                      "sections.fields.[id=lastInfo].infoText: textA cannot be use with .count function. Only AddToList id can be used with .count"),
       ("invalid-sum-usage",                        "sections.fields.[id=lastInfo].infoText: textA cannot be use with .sum function. Only numeric fields from Group component, Repeated section or AddToList section can be used with .sum function"),
-      ("invalid-addtolist-cross-reference",        "title: fieldA belongs to different Add To List section"),
       ("invalid-repeated-section-cross-reference", "fields.[id=fieldB].label: fieldA belongs to different Repeated section"),
       ("invalid-group-cross-reference",            "fields.[id=groupB].[id=fieldB].label: fieldA belongs to different Group component"),
       ("nonexistent-field-reference-in-if-else",   "sections.fields.[id=textA].label: foo doesn't exist in the form"),
