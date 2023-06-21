@@ -148,7 +148,16 @@ case object RoboticsXMLGeneratorSpec extends Spec {
       }</correlationId></gform>
 
     RoboticsXMLGenerator
-      .apply(formId, dmsId, submissionRef, objectStructure, dateSubmitted, lEn, Some(envelopeId)) shouldBe expected
+      .apply(
+        formId,
+        dmsId,
+        submissionRef,
+        objectStructure,
+        dateSubmitted,
+        lEn,
+        Some(envelopeId),
+        sanitizeRequired = false
+      ) shouldBe expected
     RoboticsXMLGenerator
       .apply(
         formId,
@@ -157,7 +166,8 @@ case object RoboticsXMLGeneratorSpec extends Spec {
         objectStructure,
         dateSubmittedBST,
         lCy,
-        Some(envelopeId)
+        Some(envelopeId),
+        sanitizeRequired = false
       ) shouldBe expectedBST
   }
 
