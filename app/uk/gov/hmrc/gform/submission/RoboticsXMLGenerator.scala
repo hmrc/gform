@@ -36,10 +36,11 @@ object RoboticsXMLGenerator {
     structuredForm: ObjectStructure,
     now: Instant,
     l: LangADT,
-    maybeEnvelopeId: Option[EnvelopeId]
+    maybeEnvelopeId: Option[EnvelopeId],
+    sanitizeRequired: Boolean
   ): NodeSeq =
     <gform id={formId.value} dms-id={dmsId} submission-reference={submissionReference.withoutHyphens}>{
-      buildObjectStructureXml(structuredForm)
+      buildObjectStructureXml(structuredForm, sanitizeRequired)
     }{dateSubmitted(now)}{datetimeSubmitted(now)}{userLanguage(l)}{
       maybeEnvelopeId.map(correlationId).getOrElse("")
     }</gform>
@@ -57,33 +58,44 @@ object RoboticsXMLGenerator {
   private def datetimeSubmitted(now: Instant): NodeSeq =
     <datetimeSubmitted>{datetimeSubmittedFormater.format(now.atZone(ZoneId.of("Europe/London")))}</datetimeSubmitted>
 
-  private def buildStructuredValueXml(field: Field, value: StructuredFormValue, index: Option[Int] = None): NodeSeq =
+  private def buildStructuredValueXml(
+    field: Field,
+    value: StructuredFormValue,
+    sanitizeRequired: Boolean,
+    index: Option[Int] = None
+  ): NodeSeq =
     value match {
-      case TextNode(content)                => textNodeTag(content, field, index)
-      case objectStructure: ObjectStructure => objectStructureTag(objectStructure, field, index)
-      case arrayNode: ArrayNode             => arrayNodeTag(arrayNode, field, index)
+      case TextNode(content)                => textNodeTag(content, field, sanitizeRequired, index)
+      case objectStructure: ObjectStructure => objectStructureTag(objectStructure, field, sanitizeRequired, index)
+      case arrayNode: ArrayNode             => arrayNodeTag(arrayNode, field, sanitizeRequired, index)
     }
 
-  private def buildObjectStructureXml(value: ObjectStructure): NodeSeq =
-    value.fields.flatMap(field => buildStructuredValueXml(field, field.value))
+  private def buildObjectStructureXml(value: ObjectStructure, sanitizeRequired: Boolean): NodeSeq =
+    value.fields.flatMap(field => buildStructuredValueXml(field, field.value, sanitizeRequired))
 
-  private def buildArrayNodeXml(field: Field, arrayNode: ArrayNode): NodeSeq =
+  private def buildArrayNodeXml(field: Field, arrayNode: ArrayNode, sanitizeRequired: Boolean): NodeSeq =
     arrayNode.elements.zipWithIndex.flatMap { case (structuredFormValue: StructuredFormValue, index: Int) =>
-      buildStructuredValueXml(field, structuredFormValue, Some(index))
+      buildStructuredValueXml(field, structuredFormValue, sanitizeRequired, Some(index))
     }
 
-  private def textNodeTag(content: String, field: Field, index: Option[Int]): Elem =
-    <new>{sanitizeContent(content)}</new>.copy(label = getRoboticsXmlName(field), attributes = getAttribute(index))
+  private def textNodeTag(content: String, field: Field, sanitizeRequired: Boolean, index: Option[Int]): Elem =
+    <new>{if (sanitizeRequired) sanitizeContent(content) else content}</new>
+      .copy(label = getRoboticsXmlName(field), attributes = getAttribute(index))
 
   private def getRoboticsXmlName(field: Field) =
     field.nameFor(RoboticsXml).name
 
-  private def objectStructureTag(objectStructure: ObjectStructure, field: Field, index: Option[Int]): Elem =
-    <new>{buildObjectStructureXml(objectStructure)}</new>
+  private def objectStructureTag(
+    objectStructure: ObjectStructure,
+    field: Field,
+    sanitizeRequired: Boolean,
+    index: Option[Int]
+  ): Elem =
+    <new>{buildObjectStructureXml(objectStructure, sanitizeRequired)}</new>
       .copy(label = getRoboticsXmlName(field), attributes = getAttribute(index))
 
-  private def arrayNodeTag(arrayNode: ArrayNode, field: Field, index: Option[Int]): Elem =
-    <new>{buildArrayNodeXml(field, arrayNode)}</new>
+  private def arrayNodeTag(arrayNode: ArrayNode, field: Field, sanitizeRequired: Boolean, index: Option[Int]): Elem =
+    <new>{buildArrayNodeXml(field, arrayNode, sanitizeRequired)}</new>
       .copy(label = getRoboticsXmlName(field) + "s", attributes = getAttribute(index))
 
   private def getAttribute(index: Option[Int]) = index match {

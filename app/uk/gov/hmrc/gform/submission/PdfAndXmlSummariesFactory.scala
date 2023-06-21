@@ -134,14 +134,16 @@ object PdfAndXmlSummariesFactory {
               structuredFormData,
               now,
               l,
-              envelopeId
+              envelopeId,
+              sanitizeRequired = true
             )
-          ).map(body =>
+          ).map { body =>
             // No whitespace of anysort after xml declaration. Robot won't be able to process xml otherwise
-            XmlGeneratorService.xmlDec + <data xmlns:xfa="http://www.xfa.org/schema/xfa-data/1.0/">
-                {body}
-              </data>
-          )
+            val xml = XmlGeneratorService.xmlDec + <data xmlns:xfa="http://www.xfa.org/schema/xfa-data/1.0/">
+              {body}
+            </data>
+            org.apache.commons.text.StringEscapeUtils.unescapeXml(xml)
+          }
         case DataOutputFormat.JSON =>
           Some(
             RoboticsXMLGenerator(
@@ -151,7 +153,8 @@ object PdfAndXmlSummariesFactory {
               structuredFormData,
               now,
               l,
-              envelopeId
+              envelopeId,
+              sanitizeRequired = false
             )
           ).map(xml => compact(JsonMethods.render(org.json4s.Xml.toJson(xml))))
       }
