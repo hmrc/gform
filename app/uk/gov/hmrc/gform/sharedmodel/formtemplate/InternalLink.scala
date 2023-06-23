@@ -29,6 +29,7 @@ object InternalLink {
   case object NewSession extends InternalLink
   case object SignOut extends InternalLink
   case class PageLink(id: PageId) extends InternalLink
+  case class Download(fileName: String) extends InternalLink
 
   val printAcknowledgementPdf: InternalLink = PrintAcknowledgementPdf
   val printSummaryPdf: InternalLink = PrintSummaryPdf

@@ -1128,4 +1128,18 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     )
   }
 
+  it should "parse link.download.nipClaimScheduleTemplate.xlsx function" in {
+    val res = ValueParser.validate("${link.download.nipClaimScheduleTemplate.xlsx}")
+    res.toOption.value should be(
+      TextExpression(LinkCtx(InternalLink.Download("nipClaimScheduleTemplate.xlsx")))
+    )
+  }
+
+  it should "parse link.download.nipClaimScheduleTemplate.ods function" in {
+    val res = ValueParser.validate("${link.download.nipClaimScheduleTemplate.ods}")
+    res.toOption.value should be(
+      TextExpression(LinkCtx(InternalLink.Download("nipClaimScheduleTemplate.ods")))
+    )
+  }
+
 }

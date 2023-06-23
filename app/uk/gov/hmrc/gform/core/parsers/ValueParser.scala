@@ -158,6 +158,8 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
     InternalLink.newSession
   } | "signOut" ^^ { _ =>
     InternalLink.signOut
+  } | "download" ~ "." ~ alphabeticWithHyphen ~ "." ~ alphabeticOnly ^^ { case _ ~ _ ~ fileName ~ _ ~ extension =>
+    InternalLink.Download(s"$fileName.$extension")
   } | PageId.unanchoredIdValidation ^^ { id =>
     PageLink(PageId(id))
   }
@@ -359,6 +361,10 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
   val _factor: PackratParser[Expr] = contextField | "(" ~> _expr1 <~ ")"
 
   lazy val alphabeticOnly: Parser[String] = """[a-zA-Z]\w*""".r ^^ { str =>
+    str
+  }
+
+  lazy val alphabeticWithHyphen: Parser[String] = """[a-zA-Z][-_\w]*""".r ^^ { str =>
     str
   }
 
