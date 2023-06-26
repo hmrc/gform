@@ -82,7 +82,12 @@ object Date {
 }
 
 case object CalendarDate extends ComponentType
-case object PostcodeLookup extends ComponentType
+case class PostcodeLookup(chooseAddressLabel: Option[SmartString], confirmAddressLabel: Option[SmartString])
+    extends ComponentType
+
+object PostcodeLookup {
+  implicit val format: OFormat[PostcodeLookup] = derived.oformat()
+}
 
 case object TaxPeriodDate extends ComponentType
 
@@ -522,7 +527,7 @@ object ComponentType {
       case TextArea(constraint, expr, _, _, _)  => ExprWithPath(path, expr) :: LeafExpr(path, constraint)
       case Date(_, _, _)                        => Nil
       case CalendarDate                         => Nil
-      case PostcodeLookup                       => Nil
+      case PostcodeLookup(_, _)                 => Nil
       case TaxPeriodDate                        => Nil
       case Address(_, _, _, Some(expr))         => List(ExprWithPath(path, expr))
       case Address(_, _, _, _)                  => Nil

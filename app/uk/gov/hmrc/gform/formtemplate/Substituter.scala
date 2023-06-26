@@ -227,10 +227,10 @@ object Substituter {
 
       case InformationMessage(infoType, infoText) =>
         InformationMessage(infoType, infoText(substitutions))
-      case f @ FileUpload(_)     => f
-      case t @ Time(_, _)        => t
-      case PostcodeLookup        => PostcodeLookup
-      case MiniSummaryList(rows) => MiniSummaryList(rows(substitutions))
+      case f @ FileUpload(_)        => f
+      case t @ Time(_, _)           => t
+      case p @ PostcodeLookup(_, _) => p
+      case MiniSummaryList(rows)    => MiniSummaryList(rows(substitutions))
       case t: TableComp =>
         t.copy(
           header = t.header(substitutions),
