@@ -152,6 +152,7 @@ object BuilderSupport {
       Property("errorExample", PropertyBehaviour.PurgeWhenEmpty),
       Property("errorMessage", PropertyBehaviour.PurgeWhenEmpty),
       Property("displayWidth", PropertyBehaviour.PurgeWhenEmpty),
+      Property("labelSize", PropertyBehaviour.PurgeWhenEmpty),
       Property("mandatory", PropertyBehaviour.PurgeWhenEmpty),
       Property("infoText"),
       Property("infoType")
