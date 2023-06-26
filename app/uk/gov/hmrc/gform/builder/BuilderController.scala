@@ -98,7 +98,8 @@ object BuilderSupport {
       Property("description"),
       Property("shortName", PropertyBehaviour.PurgeWhenEmpty),
       Property("continueLabel"),
-      Property("presentationHint", PropertyBehaviour.PurgeWhenEmpty)
+      Property("presentationHint", PropertyBehaviour.PurgeWhenEmpty),
+      Property("note", PropertyBehaviour.PurgeWhenEmpty)
     ).foldRight(json) { case (property, accJson) =>
       sectionData.hcursor
         .downField(property.name)
