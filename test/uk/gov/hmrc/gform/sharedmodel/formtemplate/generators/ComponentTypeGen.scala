@@ -132,7 +132,9 @@ trait ComponentTypeGen {
     } yield InformationMessage(infoType, infoText)
 
   def fileUploadGen: Gen[FileUpload] = PrimitiveGen.booleanGen.flatMap(compression =>
-    Gen.oneOf(FileUploadProvider.FileUploadFrontend, FileUploadProvider.Upscan(compression)).map(FileUpload(_))
+    Gen
+      .oneOf(FileUploadProvider.FileUploadFrontend, FileUploadProvider.Upscan(compression))
+      .map(FileUpload(_, None, None))
   )
 
   def localTimeGen(baseTime: LocalTime): Gen[LocalTime] =

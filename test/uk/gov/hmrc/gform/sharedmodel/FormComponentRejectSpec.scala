@@ -16,12 +16,14 @@
 
 package uk.gov.hmrc.gform.sharedmodel
 
+import com.typesafe.config.ConfigFactory
 import org.scalatest.prop.TableDrivenPropertyChecks
 import org.scalatest.time.{ Millis, Seconds, Span }
 import play.api.libs.json.{ JsError, JsResult, JsSuccess, Json }
 
 import scala.io.Source
 import uk.gov.hmrc.gform.Spec
+import uk.gov.hmrc.gform.config.AppConfig
 import uk.gov.hmrc.gform.core.FOpt
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.formtemplate.{ ExprSubstitutions, Rewriter, Verifier }
@@ -76,12 +78,12 @@ class FormComponentRejectSpec extends Spec with TableDrivenPropertyChecks {
       ("choice-value-size-expr-wrong-value",        "Expression 'hasDifferentName.baz.size' has wrong value baz. hasDifferentName has these values: foo, bar")
       // format: on",
     )
-
+    val appConfig = AppConfig.loadOrThrow(ConfigFactory.load())
     forAll(table) { case (fileName, expectedMessage) =>
       val jsResult = readAsFormTemplate(fileName)
       jsResult match {
         case JsSuccess(formTemplate, _) =>
-          val verificationResult: FOpt[Unit] = new Verifier {}.verify(formTemplate)(ExprSubstitutions.empty)
+          val verificationResult: FOpt[Unit] = new Verifier {}.verify(formTemplate, appConfig)(ExprSubstitutions.empty)
           verificationResult.value.futureValue shouldBe Left(UnexpectedState(expectedMessage))
         case JsError(errors) => fail("Invalid formTemplate definition: " + errors)
       }
@@ -131,12 +133,12 @@ class FormComponentRejectSpec extends Spec with TableDrivenPropertyChecks {
       ("empty-shortname-add-to-list",              "shortName is empty for title: 'Page $n'. If you want to hide page title on summary page, use 'presentationHint': 'invisiblePageTitle' instead."),
       // format: on
     )
-
+    val appConfig = AppConfig.loadOrThrow(ConfigFactory.load())
     forAll(table) { case (fileName, expectedMessage) =>
       val jsResult = readAsFormTemplate(fileName)
       jsResult match {
         case JsSuccess(formTemplate, _) =>
-          val verificationResult: FOpt[Unit] = new Verifier {}.verify(formTemplate)(ExprSubstitutions.empty)
+          val verificationResult: FOpt[Unit] = new Verifier {}.verify(formTemplate, appConfig)(ExprSubstitutions.empty)
           verificationResult.value.futureValue shouldBe Left(UnexpectedState(expectedMessage))
         case JsError(errors) => fail("Invalid formTemplate definition: " + errors)
       }

@@ -16,11 +16,13 @@
 
 package uk.gov.hmrc.gform.formtemplate
 
+import com.typesafe.config.ConfigFactory
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.time.{ Millis, Seconds, Span }
 import org.scalatest.wordspec.AnyWordSpec
 import play.api.libs.json._
+import uk.gov.hmrc.gform.config.AppConfig
 import uk.gov.hmrc.gform.core.{ FOpt, fromFutureA }
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplate, FormTemplateRaw }
@@ -398,8 +400,9 @@ class FormTemplatesControllerRequestHandlerTest extends AnyWordSpec with Matcher
     val sideEffect: FOpt[Unit] = fromFutureA(Future.successful(()))
     val templateRaw = implicitly[Reads[FormTemplateRaw]].reads(json).get
     val formTemplate: Option[FormTemplate] = FormTemplate.transformAndReads(json).asOpt
+    val appConfig = AppConfig.loadOrThrow(ConfigFactory.load())
     val verifySideEffect: Option[FOpt[Unit]] =
-      formTemplate.map(formTemplate => new Verifier {}.verify(formTemplate)(ExprSubstitutions.empty))
+      formTemplate.map(formTemplate => new Verifier {}.verify(formTemplate, appConfig)(ExprSubstitutions.empty))
 
     f(sideEffect, verifySideEffect, templateRaw)
   }

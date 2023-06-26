@@ -384,7 +384,9 @@ object FileUploadProvider {
 }
 
 case class FileUpload(
-  fileUploadProvider: FileUploadProvider
+  fileUploadProvider: FileUploadProvider,
+  fileSizeLimit: Option[Int],
+  allowedFileTypes: Option[AllowedFileTypes]
 ) extends ComponentType
 
 case class StartTime(time: LocalTime) extends AnyVal
@@ -544,7 +546,7 @@ object ComponentType {
           LeafExpr(path + "repeatLabel", repeatLabel) ++
           LeafExpr(path + "repeatAddAnotherText", addAnotherText)
       case InformationMessage(_, infoText) => LeafExpr(path + "infoText", infoText)
-      case FileUpload(_)                   => Nil
+      case FileUpload(_, _, _)             => Nil
       case Time(_, _)                      => Nil
       case MiniSummaryList(rows)           => LeafExpr(path + "rows", rows)
       case t: TableComp =>

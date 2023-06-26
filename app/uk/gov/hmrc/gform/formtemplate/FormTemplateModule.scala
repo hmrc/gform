@@ -17,6 +17,7 @@
 package uk.gov.hmrc.gform.formtemplate
 
 import play.api.mvc.ControllerComponents
+import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.core.{ FOpt, fromFutureA }
 import uk.gov.hmrc.gform.formredirect.{ FormRedirect, FormRedirectService }
 import uk.gov.hmrc.gform.mongo.MongoModule
@@ -25,7 +26,11 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplate, FormTemplateId
 
 import scala.concurrent.ExecutionContext
 
-class FormTemplateModule(controllerComponents: ControllerComponents, mongoModule: MongoModule)(implicit
+class FormTemplateModule(
+  controllerComponents: ControllerComponents,
+  mongoModule: MongoModule,
+  configModule: ConfigModule
+)(implicit
   ex: ExecutionContext
 ) {
 
@@ -37,7 +42,7 @@ class FormTemplateModule(controllerComponents: ControllerComponents, mongoModule
     new Repo[FormRedirect]("formRedirect", mongoModule.mongoComponent, _._id.value)
 
   val formTemplateService: FormTemplateService =
-    new FormTemplateService(formTemplateRepo, formTemplateRawRepo, formRedirectRepo)
+    new FormTemplateService(formTemplateRepo, formTemplateRawRepo, formRedirectRepo, configModule.appConfig)
   val formRedirectService: FormRedirectService =
     new FormRedirectService(formRedirectRepo)
   val formTemplatesController: FormTemplatesController =

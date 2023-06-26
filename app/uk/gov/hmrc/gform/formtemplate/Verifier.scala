@@ -19,12 +19,14 @@ package uk.gov.hmrc.gform.formtemplate
 import uk.gov.hmrc.gform.core.{ FOpt, fromOptA }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import cats.implicits._
+import uk.gov.hmrc.gform.config.AppConfig
 
 import scala.concurrent.ExecutionContext
 
 trait Verifier {
   def verify(
-    formTemplate: FormTemplate
+    formTemplate: FormTemplate,
+    appConfig: AppConfig
   )(expressionsContext: ExprSubstitutions)(implicit ec: ExecutionContext): FOpt[Unit] = {
 
     val sections = formTemplate.formKind.allSections
@@ -97,6 +99,7 @@ trait Verifier {
       _ <- fromOptA(FormTemplateValidator.validatePageRedirects(pages).toEither)
       _ <- fromOptA(DestinationsValidator.validateDestinationIncludeIfs(formTemplate.destinations).toEither)
       _ <- fromOptA(FormTemplateValidator.validateTaskListDisplayWidth(formTemplate).toEither)
+      _ <- fromOptA(FormTemplateValidator.validateFileUpload(formTemplate, appConfig).toEither)
     } yield ()
 
   }

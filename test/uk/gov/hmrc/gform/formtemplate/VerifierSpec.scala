@@ -16,11 +16,13 @@
 
 package uk.gov.hmrc.gform.formtemplate
 
+import com.typesafe.config.ConfigFactory
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.time.{ Millis, Seconds, Span }
 import org.scalatest.wordspec.AnyWordSpecLike
 import uk.gov.hmrc.gform.Helpers.toSmartString
+import uk.gov.hmrc.gform.config.AppConfig
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.Instruction
 
@@ -45,7 +47,8 @@ class VerifierSpec extends AnyWordSpecLike with Matchers with ScalaFutures with 
         )
       )
 
-      val result = Verifier.verify(mkFormTemplate(sections))(ExprSubstitutions.empty)
+      val appConfig = AppConfig.loadOrThrow(ConfigFactory.load())
+      val result = Verifier.verify(mkFormTemplate(sections), appConfig)(ExprSubstitutions.empty)
 
       result.value.futureValue shouldBe Left(
         UnexpectedState("One or more sections have instruction attribute with negative order")
