@@ -23,7 +23,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 class AddressLensChecker(formTemplate: FormTemplate, allExpressions: List[ExprWithPath]) {
 
   private val allAddressIds: Set[FormComponentId] = formTemplate.formComponents {
-    case fc @ (IsAddress(_) | IsOverseasAddress(_)) =>
+    case fc @ (IsAddress(_) | IsOverseasAddress(_) | IsPostcodeLookup(_)) =>
       fc.id
   }.toSet
 
