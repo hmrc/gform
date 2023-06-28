@@ -141,6 +141,8 @@ class FormComponentMaker(json: JsValue) {
     toOpt((json \ "chooseAddressLabel").validateOpt[SmartString], "/chooseAddressLabel")
   lazy val optConfirmAddressLabel: Opt[Option[SmartString]] =
     toOpt((json \ "confirmAddressLabel").validateOpt[SmartString], "/confirmAddressLabel")
+  lazy val optEnterAddressLabel: Opt[Option[SmartString]] =
+    toOpt((json \ "enterAddressLabel").validateOpt[SmartString], "/enterAddressLabel")
 
   lazy val optSelectionCriteria: Opt[Option[List[SelectionCriteria]]] =
     json \ "selectionCriteria" match {
@@ -440,7 +442,8 @@ class FormComponentMaker(json: JsValue) {
   private lazy val postcodeLookupOpt: Opt[PostcodeLookup] = for {
     chooseAddressLabel  <- optChooseAddressLabel
     confirmAddressLabel <- optConfirmAddressLabel
-  } yield PostcodeLookup(chooseAddressLabel, confirmAddressLabel)
+    enterAddressLabel   <- optEnterAddressLabel
+  } yield PostcodeLookup(chooseAddressLabel, confirmAddressLabel, enterAddressLabel)
 
   private lazy val dateOpt: Opt[Date] = {
 
