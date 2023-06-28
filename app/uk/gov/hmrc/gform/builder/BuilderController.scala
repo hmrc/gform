@@ -79,8 +79,8 @@ object BuilderSupport {
     }
   }
 
-  private val sectionPattern: Regex = """^\.sections\[(\d)\]""".r
-  private val atlPagePattern: Regex = """^\.sections\[(\d)\]\.pages\[(\d)\]$""".r
+  private val sectionPattern: Regex = """^\.sections\[(\d+)\]""".r
+  private val atlPagePattern: Regex = """^\.sections\[(\d+)\]\.pages\[(\d+)\]$""".r
 
   def modifySectionData(json: Json, sectionPath: String, sectionData: Json): Json = {
     val history: List[CursorOp] =
