@@ -319,14 +319,15 @@ object FormTemplateValidator {
   ) =
     fcIdToComponentType
       .get(formComponentId)
-      .fold[ValidationResult](Invalid(s"${path.path}: Form component $formComponentId is invalid"))(
-        _.cast[Date]
-          .fold[ValidationResult](
+      .fold[ValidationResult](Invalid(s"${path.path}: Form component $formComponentId is invalid")) { componentType =>
+        (componentType.cast[Date], componentType.cast[CalendarDate.type]) match {
+          case (Some(_), _) | (_, Some(_)) => Valid
+          case _ =>
             Invalid(
               s"${path.path}: Form component '$formComponentId' used in $functionName function should be date type"
             )
-          )(_ => Valid)
-      )
+        }
+      }
 
   def validateDateFunctionReferenceConstraints(
     formTemplate: FormTemplate,
