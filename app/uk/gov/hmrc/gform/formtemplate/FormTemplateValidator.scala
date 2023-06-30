@@ -907,10 +907,22 @@ object FormTemplateValidator {
   }
 
   def validateMiniSummaryList(rows: List[MiniSummaryRow], formTemplate: FormTemplate): ValidationResult = {
-    val atlIds = SectionHelper.addToListIds(formTemplate.formKind.allSections).map(_.id)
+    val atlIds = SectionHelper.addToListIds(formTemplate.formKind.allSections).map(_.id.value)
+
+    val pageIds: List[PageId] =
+      formTemplate.formKind.allSections.flatMap(
+        _.fold(_.page.id.toList)(_.page.id.toList)(p =>
+          p.defaultPage.flatMap(_.id).toList ++ p.pages.toList.flatMap(_.id)
+        )
+      ) ++ atlIds.map(PageId(_))
+
     Monoid.combineAll(rows.map {
       case MiniSummaryRow.ATLRow(atlId, _, _) =>
         if (atlIds.contains(atlId)) Valid else Invalid(s"$atlId is not AddToList Id")
+      case MiniSummaryRow.ValueRow(_, _, _, Some(pageId)) if !pageIds.contains(pageId) =>
+        Invalid(s"${pageId.id} is not a Page Id")
+      case MiniSummaryRow.SmartStringRow(_, _, _, Some(pageId)) if !pageIds.contains(pageId) =>
+        Invalid(s"${pageId.id} is not a Page Id")
       case _ => Valid
     })
   }

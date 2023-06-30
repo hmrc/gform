@@ -193,16 +193,16 @@ class FormComponentMaker(json: JsValue) {
       key       <- toOpt((json \ "key").validateOpt[SmartString], "/key")
       value     <- toOpt((json \ "value").validate[String], "/value").flatMap(SummaryListParser.validate)
       includeIf <- toOpt((json \ "includeIf").validateOpt[IncludeIf], "/includeIf")
-
-    } yield MiniSummaryRow.ValueRow(key, value, includeIf)
+      pageId    <- toOpt((json \ "pageId").validateOpt[PageId], "/pageId")
+    } yield MiniSummaryRow.ValueRow(key, value, includeIf, pageId)
 
   private def getSmartStringRow(json: JsValue): Opt[MiniSummaryRow] =
     for {
       key       <- toOpt((json \ "key").validateOpt[SmartString], "/key")
       value     <- toOpt((json \ "value").validate[SmartString], "/value")
       includeIf <- toOpt((json \ "includeIf").validateOpt[IncludeIf], "/includeIf")
-
-    } yield MiniSummaryRow.SmartStringRow(key, value, includeIf)
+      pageId    <- toOpt((json \ "pageId").validateOpt[PageId], "/pageId")
+    } yield MiniSummaryRow.SmartStringRow(key, value, includeIf, pageId)
 
   private def getHeaderRow(json: JsValue): Opt[MiniSummaryRow] =
     for {

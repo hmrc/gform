@@ -148,8 +148,8 @@ trait Rewriter {
         .formComponents { case IsMiniSummaryList(summaryList) => summaryList.rows }
         .flatten
         .collect {
-          case MiniSummaryRow.ValueRow(_, _, Some(includeIf))       => includeIf
-          case MiniSummaryRow.SmartStringRow(_, _, Some(includeIf)) => includeIf
+          case MiniSummaryRow.ValueRow(_, _, Some(includeIf), _)       => includeIf
+          case MiniSummaryRow.SmartStringRow(_, _, Some(includeIf), _) => includeIf
         }
     }
 
