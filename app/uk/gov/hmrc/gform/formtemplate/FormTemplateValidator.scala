@@ -1357,13 +1357,7 @@ object FormTemplateValidator {
     (fileSizeValidation ++ allowedFileTypesValidation).combineAll
   }
 
-  def validateChoicesRevealedField(formTemplate: FormTemplate): ValidationResult = {
-
-    val allRevealingChoices = SectionHelper
-      .addToListFormComponents(formTemplate.formKind.allSections)
-      .collect({ case fc @ IsRevealingChoice(_) => fc })
-      .map(_.id)
-
+  def validateChoicesRevealedField(formTemplate: FormTemplate): ValidationResult =
     formTemplate.formKind.allSections.map {
       case a: Section.NonRepeatingPage =>
         LeafExpr(TemplatePath.root, a)
@@ -1373,16 +1367,11 @@ object FormTemplateValidator {
               Invalid(
                 s"$path: choicesRevealedField($fcId) is not invalid. Add to list choices cannot be replayed outside of Add to list"
               )
-            case ReferenceInfo.FormCtxExpr(TemplatePath(path), FormCtx(fcId)) if allRevealingChoices.contains(fcId) =>
-              Invalid(
-                s"$path: $fcId is not invalid. Add to list choices cannot be replayed outside of Add to list"
-              )
             case _ => Valid
           }
           .combineAll
       case _ => Valid
     }.combineAll
-  }
 
   def validateChoiceFormCtxOptionValues(sectionsList: List[Page], formTemplate: FormTemplate): ValidationResult = {
     val atlIds: List[FormComponentId] =
