@@ -33,7 +33,10 @@ class EnvelopeController(
 
   def getEnvelope(envelopeId: EnvelopeId) = Action.async { _ =>
     logger.info(s"get envelope, envelopeId: '${envelopeId.value}'")
-    envelopeService.get(envelopeId).map(envelope => Ok(Json.toJson(envelope)))
+    envelopeService.find(envelopeId).map {
+      case None           => NotFound
+      case Some(envelope) => Ok(Json.toJson(envelope))
+    }
   }
 
 }
