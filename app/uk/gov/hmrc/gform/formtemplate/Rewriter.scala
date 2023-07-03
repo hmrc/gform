@@ -257,10 +257,8 @@ trait Rewriter {
 
     def isDynamic(options: NonEmptyList[OptionData]): Boolean =
       options.exists {
-        case OptionData.IndexBased(_, _, _, Some(_))                                  => true
-        case OptionData.ValueBased(_, _, _, Some(_), OptionDataValue.FormCtxBased(_)) => false
-        case OptionData.ValueBased(_, _, _, Some(_), _)                               => true
-        case _                                                                        => false
+        case OptionData.IndexBased(_, _, _, Some(_)) => true
+        case _                                       => false
       }
 
     def rewrite(booleanExpr: BooleanExpr): Either[UnexpectedState, BooleanExpr] = booleanExpr match {
