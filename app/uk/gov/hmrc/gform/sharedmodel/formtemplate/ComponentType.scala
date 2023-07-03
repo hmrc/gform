@@ -436,13 +436,15 @@ object MiniSummaryRow {
   case class ValueRow(
     key: Option[SmartString],
     value: MiniSummaryListValue,
-    includeIf: Option[IncludeIf]
+    includeIf: Option[IncludeIf],
+    pageId: Option[PageId]
   ) extends MiniSummaryRow
 
   case class SmartStringRow(
     key: Option[SmartString],
     value: SmartString,
-    includeIf: Option[IncludeIf]
+    includeIf: Option[IncludeIf],
+    pageId: Option[PageId]
   ) extends MiniSummaryRow
 
   case class HeaderRow(

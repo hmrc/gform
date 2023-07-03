@@ -369,6 +369,11 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
                                        |              "value": "${2 + 3}"
                                        |            },
                                        |            {
+                                       |              "includeIf": "${11 = 11}",
+                                       |              "value": "${2 + 3}",
+                                       |              "pageId": "atlId"
+                                       |            },
+                                       |            {
                                        |              "atlId": "atlID",
                                        |              "repeat": [
                                        |                {
@@ -395,7 +400,8 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
             MiniSummaryRow.ValueRow(
               Some(SmartString(LocalisedString(Map(LangADT.En -> "Sort Code")), List())),
               MiniSummaryListValue.Reference(FormCtx(FormComponentId("sortCode"))),
-              Some(IncludeIf(Equals(Constant("2"), Constant("3"))))
+              Some(IncludeIf(Equals(Constant("2"), Constant("3")))),
+              None
             ),
             MiniSummaryRow.HeaderRow(
               SmartString(LocalisedString(Map(LangADT.En -> "test header")), List())
@@ -403,7 +409,14 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
             MiniSummaryRow.ValueRow(
               None,
               MiniSummaryListValue.AnyExpr(Add(Constant("2"), Constant("3"))),
-              Some(IncludeIf(Equals(Constant("15"), Constant("11"))))
+              Some(IncludeIf(Equals(Constant("15"), Constant("11")))),
+              None
+            ),
+            MiniSummaryRow.ValueRow(
+              None,
+              MiniSummaryListValue.AnyExpr(Add(Constant("2"), Constant("3"))),
+              Some(IncludeIf(Equals(Constant("11"), Constant("11")))),
+              Some(PageId("atlId"))
             ),
             MiniSummaryRow.ATLRow(
               FormComponentId("atlID"),
@@ -420,7 +433,8 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
                 LocalisedString(Map(LangADT.En -> "{0} - {1}")),
                 List(FormCtx(FormComponentId("numericAmount")), FormCtx(FormComponentId("enteredDate")))
               ),
-              Some(IncludeIf(Equals(Constant("1"), Constant("1"))))
+              Some(IncludeIf(Equals(Constant("1"), Constant("1")))),
+              None
             )
           )
         ),
