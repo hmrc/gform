@@ -907,14 +907,14 @@ object FormTemplateValidator {
   }
 
   def validateMiniSummaryList(rows: List[MiniSummaryRow], formTemplate: FormTemplate): ValidationResult = {
-    val atlIds = SectionHelper.addToListIds(formTemplate.formKind.allSections).map(_.id.value)
+    val atlIds = SectionHelper.addToListIds(formTemplate.formKind.allSections).map(_.id)
 
     val pageIds: List[PageId] =
       formTemplate.formKind.allSections.flatMap(
         _.fold(_.page.id.toList)(_.page.id.toList)(p =>
           p.defaultPage.flatMap(_.id).toList ++ p.pages.toList.flatMap(_.id)
         )
-      ) ++ atlIds.map(PageId(_))
+      ) ++ atlIds.map(fcId => PageId(fcId.value))
 
     Monoid.combineAll(rows.map {
       case MiniSummaryRow.ATLRow(atlId, _, _) =>
