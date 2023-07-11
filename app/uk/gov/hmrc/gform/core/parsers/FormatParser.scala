@@ -111,6 +111,7 @@ trait FormatParser extends ValueParser {
         "lookup(" ~> register ~ ")" ^^ { case register ~ _ =>
           TextFormat(Lookup(register, selectionCriteria))
         } | "submissionRef" ^^^ TextFormat(SubmissionRefFormat) |
+        "year" ^^^ TextFormat(YearFormat) |
         "referenceNumber(" ~> positiveInteger <~ ")" ^^ { min =>
           TextFormat(ReferenceNumber(min, min))
         } | "referenceNumber(" ~> positiveInteger ~ "," ~ positiveInteger <~ ")" ^^ { case min ~ _ ~ max =>

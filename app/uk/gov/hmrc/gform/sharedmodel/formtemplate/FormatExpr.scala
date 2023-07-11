@@ -167,6 +167,7 @@ case class ReferenceNumber(min: Int, max: Int) extends TextConstraint
 case object UkBankAccountNumber extends TextConstraint
 case object UkSortCodeFormat extends TextConstraint
 case object SubmissionRefFormat extends TextConstraint
+case object YearFormat extends TextConstraint
 
 case object TelephoneNumber extends TextConstraint {
   val minimumLength = 4
