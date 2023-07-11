@@ -101,7 +101,7 @@ class FormBundleSubmissionService[F[_]](
       _          <- logger.info(show"Built model tree").pure[F]
       submission <- submissionRepoAlgebra.get(rootFormIdData.toFormId.value)
       _          <- logger.info(show"Got submission for rootForm").pure[F]
-      submissionInfo = DestinationSubmissionInfo("", submission, rootFormIdData.formTemplateId)
+      submissionInfo = DestinationSubmissionInfo("", submission)
       _ <- destinationsSubmitterAlgebra.send(
              submissionInfo,
              modelTree,

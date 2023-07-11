@@ -36,8 +36,7 @@ trait DestinationSubmissionInfoGen {
                     }
     } yield DestinationSubmissionInfo(
       customerId,
-      submission,
-      formTemplate._id
+      submission
     )
 }
 

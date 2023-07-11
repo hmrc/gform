@@ -77,7 +77,7 @@ class SubmissionService(
       formTemplate      <- fromFutureA(formTemplateService.get(form.formTemplateId))
       _                 <- removeOldFormData(formIdData, maybeFormRedirect)
       submission        <- findSubmission(SubmissionId(formIdData.toFormId, form.envelopeId))
-      submissionInfo = DestinationSubmissionInfo(customerId, submission, form.formTemplateId)
+      submissionInfo = DestinationSubmissionInfo(customerId, submission)
       modelTree <- createModelTreeForSingleFormSubmission(form, formTemplate, submissionData, submission.submissionRef)
       _ <-
         destinationsSubmitter

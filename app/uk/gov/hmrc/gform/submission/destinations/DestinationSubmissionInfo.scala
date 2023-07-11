@@ -17,13 +17,11 @@
 package uk.gov.hmrc.gform.submission.destinations
 
 import uk.gov.hmrc.gform.sharedmodel.form.FormId
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.gform.submission.Submission
 
 case class DestinationSubmissionInfo(
   customerId: String,
-  submission: Submission,
-  formTemplateId: FormTemplateId
+  submission: Submission
 ) {
   def formId: FormId = submission._id.formId
 }

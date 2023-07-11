@@ -63,7 +63,7 @@ class DataStoreSubmitter(
         JsonMethods.render(
           org.json4s.Xml.toJson(
             RoboticsXMLGenerator(
-              submissionInfo.formTemplateId,
+              submission.dmsMetaData.formTemplateId,
               dataStore.formId.value,
               submission.submissionRef,
               structuredFormData,
@@ -100,7 +100,7 @@ class DataStoreSubmitter(
       objWithSummary <- objectStoreAlgebra.zipFiles(submission.envelopeId, basePath)
       _ <- dataStoreWorkItemAlgebra.pushWorkItem(
              submission.envelopeId,
-             submissionInfo.formTemplateId,
+             submission.dmsMetaData.formTemplateId,
              submission.submissionRef,
              objWithSummary
            )
