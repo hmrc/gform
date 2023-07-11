@@ -52,5 +52,6 @@ case class UserSession(
 
 object UserSession {
   val empty = UserSession("", "", "", "", "", None, "", "", Nil)
+
   implicit val format: OFormat[UserSession] = Json.format[UserSession]
 }

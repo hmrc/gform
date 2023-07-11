@@ -16,45 +16,50 @@
 
 package uk.gov.hmrc.gform.submission
 
-import io.circe.{ Json, parser }
-import play.api.libs.json.JsValue
+import play.api.libs.json._
 import uk.gov.hmrc.gform.sharedmodel.{ DataStoreMetaData, UserSession }
 
 object DataStoreFileGenerator {
-  def apply(userSession: UserSession, metaData: DataStoreMetaData, gform: String) = {
+  def apply(
+    userSession: UserSession,
+    metaData: DataStoreMetaData,
+    gform: String,
+    includeSessionInfo: Boolean
+  ): String = {
 
-    def playJsonToCirce(jsValue: JsValue): Json = {
-      val jsonString = play.api.libs.json.Json.stringify(play.api.libs.json.Json.toJson(jsValue))
-      io.circe.parser.parse(jsonString).getOrElse(throw new RuntimeException("Failed to parse enrolments JSON"))
+    val metaDataJson: JsObject = Json.obj(
+      "formId"         -> JsString(metaData.formId),
+      "version"        -> JsString(metaData.version),
+      "mdtpXrefId"     -> JsString(""),
+      "regime"         -> JsString(metaData.regime),
+      "taxpayerId"     -> JsString(metaData.taxpayerId),
+      "submissionDate" -> JsString(metaData.submissionDate),
+      "submissionTime" -> JsString(metaData.submissionTime)
+    )
+
+    val gformJson: JsValue = Json.parse(gform)
+
+    val dataStoreJson: JsObject = if (includeSessionInfo) {
+      val userSessionJson: JsObject = Json.obj(
+        "clientIp"      -> JsString(userSession.clientIp),
+        "deviceId"      -> JsString(userSession.deviceId),
+        "userAgent"     -> JsString(userSession.userAgent),
+        "relativePath"  -> JsString(userSession.relativePath),
+        "credentialId"  -> JsString(userSession.credentialId),
+        "affinityGroup" -> JsString(userSession.affinityGroup.map(_.toString).getOrElse("")),
+        "authEmail"     -> JsString(userSession.authEmail),
+        "authPhone"     -> JsString(userSession.authPhone),
+        "enrolments"    -> JsArray(userSession.enrolments.map(Json.toJson(_)))
+      )
+
+      Json.obj(
+        "metaData"    -> metaDataJson,
+        "userSession" -> userSessionJson
+      )
+    } else {
+      Json.obj("metaData" -> metaDataJson)
     }
 
-    val metaDataJson: Json = Json.obj(
-      "formId"         -> Json.fromString(metaData.formId),
-      "version"        -> Json.fromString(metaData.version),
-      "mdtpXrefId"     -> Json.fromString(""),
-      "regime"         -> Json.fromString(metaData.regime),
-      "taxpayerId"     -> Json.fromString(metaData.taxpayerId),
-      "submissionDate" -> Json.fromString(metaData.submissionDate),
-      "submissionTime" -> Json.fromString(metaData.submissionTime)
-    )
-
-    val userSessionJson: Json = Json.obj(
-      "clientIp"      -> Json.fromString(userSession.clientIp),
-      "deviceId"      -> Json.fromString(userSession.deviceId),
-      "userAgent"     -> Json.fromString(userSession.userAgent),
-      "relativePath"  -> Json.fromString(userSession.relativePath),
-      "credentialId"  -> Json.fromString(userSession.credentialId),
-      "affinityGroup" -> Json.fromString(userSession.affinityGroup.map(_.toString).getOrElse("")),
-      "authEmail"     -> Json.fromString(userSession.authEmail),
-      "authPhone"     -> Json.fromString(userSession.authPhone),
-      "enrolments"    -> Json.arr(userSession.enrolments.map(playJsonToCirce): _*)
-    )
-
-    val gformJson: Json = parser.parse(gform).getOrElse(throw new RuntimeException("Failed to parse gform JSON"))
-    val resultJson = Json.obj(
-      "metaData"    -> metaDataJson,
-      "userSession" -> userSessionJson
-    )
-    gformJson.deepMerge(resultJson).noSpaces
+    (dataStoreJson ++ gformJson.as[JsObject]).toString()
   }
 }

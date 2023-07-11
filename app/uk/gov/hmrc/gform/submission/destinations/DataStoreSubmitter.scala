@@ -86,7 +86,7 @@ class DataStoreSubmitter(
       submission.submittedDate.toLocalTime.toString
     )
 
-    val dataStoreJson = DataStoreFileGenerator(userSession, dataStoreMetaData, gform)
+    val dataStoreJson = DataStoreFileGenerator(userSession, dataStoreMetaData, gform, dataStore.includeSessionInfo)
 
     for {
       _ <- objectStoreAlgebra.uploadFile(
