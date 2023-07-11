@@ -14,24 +14,25 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.scheduler.sdes
+package uk.gov.hmrc.gform.scheduler.dms
 
 import org.slf4j.{ Logger, LoggerFactory }
 import uk.gov.hmrc.gform.core.FutureSyntax
 import uk.gov.hmrc.gform.scheduler.{ QueueAlgebra, WorkItemRepo }
 import uk.gov.hmrc.gform.sdes.SdesAlgebra
+import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination.Dms
 import uk.gov.hmrc.gform.sharedmodel.sdes.SdesWorkItem
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.mongo.workitem.WorkItem
 
 import scala.concurrent.{ ExecutionContext, Future }
 
-class SdesQueueService(
+class DmsQueueService(
   sdesAlgebra: SdesAlgebra[Future],
-  sdesNotificationRepository: SdesWorkItemRepo,
-  sdesPollerLimit: Int,
-  sdesMaxFailureCount: Int,
-  sdesRetryIntervalMillis: Long
+  dmsNotificationRepository: DmsWorkItemRepo,
+  dmsPollerLimit: Int,
+  dmsMaxFailureCount: Int,
+  dmsRetryIntervalMillis: Long
 )(implicit ec: ExecutionContext)
     extends QueueAlgebra[SdesWorkItem] {
   private val logger: Logger = LoggerFactory.getLogger(getClass)
@@ -39,7 +40,7 @@ class SdesQueueService(
   override def sendWorkItem(sdesWorkItem: WorkItem[SdesWorkItem]): Future[Unit] = {
     implicit val hc = HeaderCarrier()
     val workItem = sdesWorkItem.item
-    this.logger.debug(s"sending a notification ${workItem.sdesNotifyRequest} in sendWorkItem.")
+    this.logger.debug(s"sending a notification ${workItem.sdesNotifyRequest} in sendWorkItem for dms")
 
     sdesAlgebra
       .notifySDES(
@@ -47,14 +48,15 @@ class SdesQueueService(
         workItem.envelopeId,
         workItem.formTemplateId,
         workItem.submissionRef,
-        workItem.sdesNotifyRequest
+        workItem.sdesNotifyRequest,
+        Dms
       )
       .void(ec)
   }
 
-  override val repo: WorkItemRepo[SdesWorkItem] = sdesNotificationRepository
-  override val pollLimit: Int = sdesPollerLimit
+  override val repo: WorkItemRepo[SdesWorkItem] = dmsNotificationRepository
+  override val pollLimit: Int = dmsPollerLimit
   override implicit val executionContext: ExecutionContext = ec
-  override val maxFailureCount: Int = sdesMaxFailureCount
-  override val retryIntervalMillis: Long = sdesRetryIntervalMillis
+  override val maxFailureCount: Int = dmsMaxFailureCount
+  override val retryIntervalMillis: Long = dmsRetryIntervalMillis
 }

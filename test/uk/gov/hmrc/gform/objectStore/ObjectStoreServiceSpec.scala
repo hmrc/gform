@@ -95,12 +95,13 @@ class ObjectStoreServiceSpec extends AnyFlatSpec with Matchers with ScalaFutures
 
     def expectGetFileBytes(envelopeId: EnvelopeId, fileName: String): Fixture = {
       (objectStoreConnector
-        .getFileBytes(_: EnvelopeId, _: String)(
+        .getFileBytes(_: EnvelopeId, _: String, _: String)(
           _: HeaderCarrier
         ))
         .expects(
           envelopeId,
           fileName,
+          "",
           hc
         )
         .returning(Future.successful(byteString))
@@ -124,10 +125,10 @@ class ObjectStoreServiceSpec extends AnyFlatSpec with Matchers with ScalaFutures
       contentType: Option[String]
     ): Fixture = {
       (objectStoreConnector
-        .uploadFile(_: EnvelopeId, _: String, _: ByteString, _: Option[String])(
+        .uploadFile(_: EnvelopeId, _: String, _: ByteString, _: Option[String], _: String)(
           _: HeaderCarrier
         ))
-        .expects(envelopeId, fileName, content, contentType, hc)
+        .expects(envelopeId, fileName, content, contentType, "", hc)
         .returning(Future.successful(expectedObjectSummary))
 
       this
@@ -144,10 +145,10 @@ class ObjectStoreServiceSpec extends AnyFlatSpec with Matchers with ScalaFutures
 
     def expectDeleteFile(envelopeId: EnvelopeId, fileName: String): Fixture = {
       (objectStoreConnector
-        .deleteFile(_: EnvelopeId, _: String)(
+        .deleteFile(_: EnvelopeId, _: String, _: String)(
           _: HeaderCarrier
         ))
-        .expects(envelopeId, fileName, hc)
+        .expects(envelopeId, fileName, "", hc)
         .returning(Future.unit)
 
       this

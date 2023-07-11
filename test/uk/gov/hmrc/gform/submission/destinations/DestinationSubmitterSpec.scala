@@ -21,7 +21,7 @@ import cats.{ Applicative, MonadError }
 import org.scalacheck.Gen
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import uk.gov.hmrc.gform.notifier.NotifierAlgebra
-import uk.gov.hmrc.gform.sharedmodel.{ DestinationEvaluation, DestinationResult, LangADT, PdfHtml, SubmissionRef }
+import uk.gov.hmrc.gform.sharedmodel.{ DestinationEvaluation, DestinationResult, LangADT, PdfHtml, SubmissionRef, UserSession }
 import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormData, FormId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationIncludeIf.HandlebarValue
@@ -91,7 +91,8 @@ class DestinationSubmitterSpec
           submitter,
           None,
           LangADT.En,
-          DestinationEvaluation.empty
+          DestinationEvaluation.empty,
+          UserSession.empty
         ) shouldBe Right(HandlebarsDestinationResponse(handlebarsHttpApi, httpResponse).some)
     }
   }
@@ -124,7 +125,8 @@ class DestinationSubmitterSpec
           submitter,
           None,
           LangADT.En,
-          DestinationEvaluation.empty
+          DestinationEvaluation.empty,
+          UserSession.empty
         ) shouldBe Right(None)
     }
   }
@@ -171,7 +173,8 @@ class DestinationSubmitterSpec
           submitter,
           None,
           LangADT.En,
-          DestinationEvaluation.empty
+          DestinationEvaluation.empty,
+          UserSession.empty
         ) shouldBe Right(HandlebarsDestinationResponse(handlebarsHttpApi, httpResponse).some)
     }
   }
@@ -216,7 +219,8 @@ class DestinationSubmitterSpec
           submitter,
           None,
           LangADT.En,
-          DestinationEvaluation.empty
+          DestinationEvaluation.empty,
+          UserSession.empty
         ) shouldBe Left(
         genericLogMessage(
           si.formId,
@@ -258,7 +262,8 @@ class DestinationSubmitterSpec
           submitter,
           None,
           LangADT.En,
-          DestinationEvaluation.empty
+          DestinationEvaluation.empty,
+          UserSession.empty
         ) shouldBe Right(None)
     }
   }
@@ -294,7 +299,8 @@ class DestinationSubmitterSpec
           submitter,
           None,
           LangADT.En,
-          DestinationEvaluation(List(DestinationResult(hmrcDms.id, None, Some(si.customerId))))
+          DestinationEvaluation(List(DestinationResult(hmrcDms.id, None, Some(si.customerId), None))),
+          UserSession.empty
         ) shouldBe Right(None)
     }
   }
@@ -328,7 +334,8 @@ class DestinationSubmitterSpec
           submitter,
           None,
           LangADT.En,
-          DestinationEvaluation.empty
+          DestinationEvaluation.empty,
+          UserSession.empty
         ) shouldBe Right(None)
     }
   }
@@ -372,7 +379,8 @@ class DestinationSubmitterSpec
           submitter,
           None,
           LangADT.En,
-          DestinationEvaluation(List(DestinationResult(hmrcDms.id, None, Some(si.customerId))))
+          DestinationEvaluation(List(DestinationResult(hmrcDms.id, None, Some(si.customerId), None))),
+          UserSession.empty
         ) shouldBe Right(None)
     }
   }
@@ -415,7 +423,8 @@ class DestinationSubmitterSpec
           submitter,
           None,
           LangADT.En,
-          DestinationEvaluation(List(DestinationResult(hmrcDms.id, None, Some(si.customerId))))
+          DestinationEvaluation(List(DestinationResult(hmrcDms.id, None, Some(si.customerId), None))),
+          UserSession.empty
         ) shouldBe Left(
         genericLogMessage(si.formId, hmrcDms.id, "an error")
       )
@@ -467,8 +476,9 @@ class DestinationSubmitterSpec
           Some(formData),
           LangADT.En,
           DestinationEvaluation(
-            List(DestinationResult(submissionConsolidator.id, None, Some(submissionInfo.customerId)))
-          )
+            List(DestinationResult(submissionConsolidator.id, None, Some(submissionInfo.customerId), None))
+          ),
+          UserSession.empty
         ) shouldBe Right(None)
     }
   }
@@ -506,7 +516,8 @@ class DestinationSubmitterSpec
           submitter,
           Some(formData),
           LangADT.En,
-          DestinationEvaluation.empty
+          DestinationEvaluation.empty,
+          UserSession.empty
         ) shouldBe Right(None)
     }
   }
@@ -564,8 +575,9 @@ class DestinationSubmitterSpec
           Some(formData),
           LangADT.En,
           DestinationEvaluation(
-            List(DestinationResult(submissionConsolidator.id, None, Some(submissionInfo.customerId)))
-          )
+            List(DestinationResult(submissionConsolidator.id, None, Some(submissionInfo.customerId), None))
+          ),
+          UserSession.empty
         ) shouldBe Right(None)
     }
   }
@@ -612,8 +624,9 @@ class DestinationSubmitterSpec
           Some(formData),
           LangADT.En,
           DestinationEvaluation(
-            List(DestinationResult(submissionConsolidator.id, None, Some(submissionInfo.customerId)))
-          )
+            List(DestinationResult(submissionConsolidator.id, None, Some(submissionInfo.customerId), None))
+          ),
+          UserSession.empty
         ) shouldBe Left(genericLogMessage(submissionInfo.formId, submissionConsolidator.id, "some error"))
     }
   }
@@ -787,6 +800,7 @@ class DestinationSubmitterSpec
     val notifierService = mock[NotifierAlgebra[Possible]]
     val destinationAuditer = mock[DestinationAuditAlgebra[Possible]]
     val submissionConsolidator = mock[SubmissionConsolidatorAlgebra[Possible]]
+    val dataStoreSubmitter = mock[DataStoreSubmitterAlgebra[Possible]]
     val submitter =
       new DestinationSubmitter[Possible](
         dmsSubmitter,
@@ -795,6 +809,7 @@ class DestinationSubmitterSpec
         notifierService,
         Some(destinationAuditer),
         submissionConsolidator,
+        dataStoreSubmitter,
         handlebarsTemplateProcessor
       )
 

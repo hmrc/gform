@@ -103,13 +103,21 @@ POST          /shutter                                                          
 DELETE        /shutter/:shutterMessageId                                                                uk.gov.hmrc.gform.shutter.ShutterController.deleteShutter(shutterMessageId: ShutterMessageId)
 POST          /shutter-form-template                                                                    uk.gov.hmrc.gform.shutter.ShutterController.upsertFormTemplateShutter()
 DELETE        /shutter-form-template/:formTemplateId                                                    uk.gov.hmrc.gform.shutter.ShutterController.deleteFormTemplateShutter(formTemplateId: FormTemplateId)
-POST          /sdes/callback                                                                            uk.gov.hmrc.gform.sdes.SdesCallbackController.callback
-GET           /sdes/search/:page/:pageSize                                                              uk.gov.hmrc.gform.sdes.SdesController.search(page: Int, pageSize: Int, processed: Option[Boolean],formTemplateId: Option[FormTemplateId], status: Option[NotificationStatus], showBeforeAt: Option[Boolean])
+
+POST          /sdes/callback                                                                            uk.gov.hmrc.gform.sdes.dms.DmsCallbackController.callback
+POST          /data-store/callback                                                                      uk.gov.hmrc.gform.sdes.datastore.DataStoreCallbackController.callback
+
+GET           /sdes/search/:page/:pageSize                                                              uk.gov.hmrc.gform.sdes.SdesController.search(page: Int, pageSize: Int, processed: Option[Boolean],formTemplateId: Option[FormTemplateId], status: Option[NotificationStatus], showBeforeAt: Option[Boolean], destination: Option[SdesDestination])
 GET           /sdes/:correlationId                                                                      uk.gov.hmrc.gform.sdes.SdesController.find(correlationId: CorrelationId)
 POST          /sdes/notify/:correlationId                                                               uk.gov.hmrc.gform.sdes.SdesController.notifySDES(correlationId: CorrelationId)
 DELETE        /sdes/:correlationId                                                                      uk.gov.hmrc.gform.sdes.SdesController.remove(correlationId: CorrelationId)
 
-GET           /sdes-work-item/search/:page/:pageSize                                                    uk.gov.hmrc.gform.sdes.SdesWorkItemController.search(page: Int, pageSize: Int, formTemplateId: Option[FormTemplateId], status: Option[ProcessingStatus])
-POST          /sdes-work-item/enqueue/:id                                                               uk.gov.hmrc.gform.sdes.SdesWorkItemController.enqueue(id: String)
-GET           /sdes-work-item/:id                                                                       uk.gov.hmrc.gform.sdes.SdesWorkItemController.get(id: String)
-DELETE        /sdes-work-item/:id                                                                       uk.gov.hmrc.gform.sdes.SdesWorkItemController.delete(id: String)
+GET           /dms-work-item/search/:page/:pageSize                                                     uk.gov.hmrc.gform.sdes.dms.DmsWorkItemController.search(page: Int, pageSize: Int, formTemplateId: Option[FormTemplateId], status: Option[ProcessingStatus])
+POST          /dms-work-item/enqueue/:id                                                                uk.gov.hmrc.gform.sdes.dms.DmsWorkItemController.enqueue(id: String)
+GET           /dms-work-item/:id                                                                        uk.gov.hmrc.gform.sdes.dms.DmsWorkItemController.get(id: String)
+DELETE        /dms-work-item/:id                                                                        uk.gov.hmrc.gform.sdes.dms.DmsWorkItemController.delete(id: String)
+
+GET           /data-store-work-item/search/:page/:pageSize                                              uk.gov.hmrc.gform.sdes.datastore.DataStoreWorkItemController.search(page: Int, pageSize: Int, formTemplateId: Option[FormTemplateId], status: Option[ProcessingStatus])
+POST          /data-store-work-item/enqueue/:id                                                         uk.gov.hmrc.gform.sdes.datastore.DataStoreWorkItemController.enqueue(id: String)
+GET           /data-store-work-item/:id                                                                 uk.gov.hmrc.gform.sdes.datastore.DataStoreWorkItemController.get(id: String)
+DELETE        /data-store-work-item/:id                                                                 uk.gov.hmrc.gform.sdes.datastore.DataStoreWorkItemController.delete(id: String)

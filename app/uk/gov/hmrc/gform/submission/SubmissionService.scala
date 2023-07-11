@@ -64,7 +64,11 @@ class SubmissionService(
       .map(_ => submission)
   }
 
-  def submitForm(formIdData: FormIdData, customerId: String, submissionData: SubmissionData)(implicit
+  def submitForm(
+    formIdData: FormIdData,
+    customerId: String,
+    submissionData: SubmissionData
+  )(implicit
     hc: HeaderCarrier
   ): FOpt[Unit] =
     for {
@@ -73,7 +77,7 @@ class SubmissionService(
       formTemplate      <- fromFutureA(formTemplateService.get(form.formTemplateId))
       _                 <- removeOldFormData(formIdData, maybeFormRedirect)
       submission        <- findSubmission(SubmissionId(formIdData.toFormId, form.envelopeId))
-      submissionInfo = DestinationSubmissionInfo(customerId, submission)
+      submissionInfo = DestinationSubmissionInfo(customerId, submission, form.formTemplateId)
       modelTree <- createModelTreeForSingleFormSubmission(form, formTemplate, submissionData, submission.submissionRef)
       _ <-
         destinationsSubmitter
@@ -82,7 +86,8 @@ class SubmissionService(
             modelTree,
             Some(form.formData),
             submissionData.l,
-            submissionData.destinationEvaluation
+            submissionData.destinationEvaluation,
+            submissionData.userSession
           )
       emailAddress = email.getEmailAddress(form, submissionData.maybeEmailAddress)
       _ <- fromFutureA(

@@ -34,7 +34,7 @@ import uk.gov.hmrc.gform.notifier.NotifierModule
 import uk.gov.hmrc.gform.objectstore.ObjectStoreModule
 import uk.gov.hmrc.gform.repo.{ Repo, RepoAlgebra }
 import uk.gov.hmrc.gform.sdes.SdesModule
-import uk.gov.hmrc.gform.submission.destinations.{ DestinationModule, DestinationSubmitter, DestinationsSubmitter, DestinationsSubmitterAlgebra, DmsSubmitter, StateTransitionService }
+import uk.gov.hmrc.gform.submission.destinations.{ DataStoreSubmitter, DestinationModule, DestinationSubmitter, DestinationsSubmitter, DestinationsSubmitterAlgebra, DmsSubmitter, StateTransitionService }
 import uk.gov.hmrc.gform.submissionconsolidator.SubmissionConsolidatorModule
 
 import scala.concurrent.ExecutionContext
@@ -78,6 +78,15 @@ class SubmissionModule(
     envelopeModule.foptEnvelopeService
   )
 
+  private val dataStoreBasePath = configModule.serviceConfig.getString("object-store.data-store.base-path")
+
+  private val dataStoreSubmitter = new DataStoreSubmitter(
+    objectStoreModule.foptObjectStoreService,
+    sdesModule.foptDataStoreWorkItemService,
+    dataStoreBasePath,
+    timeModule.timeProvider
+  )
+
   private val stateTransitionService = new StateTransitionService(formModule.fOptFormService)
 
   private val realDestinationSubmitter = new DestinationSubmitter(
@@ -86,7 +95,8 @@ class SubmissionModule(
     stateTransitionService,
     notifierModule.fOptNotifierService,
     destinationModule.destinationAuditer,
-    submissionConsolidatorModule.submissionConsolidator
+    submissionConsolidatorModule.submissionConsolidator,
+    dataStoreSubmitter
   )
 
   private val destinationsSubmitter: DestinationsSubmitterAlgebra[FOpt] = new DestinationsSubmitter(

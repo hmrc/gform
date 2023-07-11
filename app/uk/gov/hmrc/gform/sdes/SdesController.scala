@@ -21,14 +21,16 @@ import play.api.mvc.ControllerComponents
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.objectstore.ObjectStoreAlgebra
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
-import uk.gov.hmrc.gform.sharedmodel.sdes.{ CorrelationId, NotificationStatus, SdesSubmissionData }
+import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination.DataStore
+import uk.gov.hmrc.gform.sharedmodel.sdes.{ CorrelationId, NotificationStatus, SdesDestination, SdesSubmissionData }
 
 import scala.concurrent.{ ExecutionContext, Future }
 
 class SdesController(
   cc: ControllerComponents,
   sdesAlgebra: SdesAlgebra[Future],
-  objectStoreAlgebra: ObjectStoreAlgebra[Future]
+  objectStoreAlgebra: ObjectStoreAlgebra[Future],
+  dataStoreBasePath: String
 )(implicit
   ex: ExecutionContext
 ) extends BaseController(cc) {
@@ -39,10 +41,11 @@ class SdesController(
     processed: Option[Boolean],
     formTemplateId: Option[FormTemplateId],
     status: Option[NotificationStatus],
-    showBeforeAt: Option[Boolean]
+    showBeforeAt: Option[Boolean],
+    destination: Option[SdesDestination]
   ) = Action.async { _ =>
     sdesAlgebra
-      .search(page, pageSize, processed, formTemplateId, status, showBeforeAt)
+      .search(page, pageSize, processed, formTemplateId, status, showBeforeAt, destination)
       .map(pageData => Ok(Json.toJson(pageData)))
   }
 
@@ -59,8 +62,12 @@ class SdesController(
       result <- sdesSubmission match {
                   case Some(submission) =>
                     for {
-                      objSummary <- objectStoreAlgebra.zipFiles(submission.envelopeId)
-                      res        <- sdesAlgebra.notifySDES(submission, objSummary)
+                      objSummary <- submission.destination match {
+                                      case Some(DataStore) =>
+                                        objectStoreAlgebra.zipFiles(submission.envelopeId, dataStoreBasePath)
+                                      case _ => objectStoreAlgebra.zipFiles(submission.envelopeId)
+                                    }
+                      res <- sdesAlgebra.notifySDES(submission, objSummary)
                     } yield res
                   case None =>
                     Future.failed(

@@ -20,6 +20,7 @@ import play.api.libs.json.{ Format, Json, OFormat }
 import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
+import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination.Dms
 
 import java.time.Instant
 
@@ -42,7 +43,8 @@ case class SdesSubmissionData(
   status: NotificationStatus,
   failureReason: String,
   lastUpdated: Option[Instant],
-  numberOfFiles: Int
+  numberOfFiles: Int,
+  destination: SdesDestination
 )
 
 object SdesSubmissionData {
@@ -56,7 +58,8 @@ object SdesSubmissionData {
     sdesSubmission.status,
     sdesSubmission.failureReason.getOrElse(""),
     sdesSubmission.lastUpdated,
-    numberOfFiles
+    numberOfFiles,
+    sdesSubmission.destination.getOrElse(Dms)
   )
 
   implicit val correlationIdFormat: Format[CorrelationId] = CorrelationId.vformat

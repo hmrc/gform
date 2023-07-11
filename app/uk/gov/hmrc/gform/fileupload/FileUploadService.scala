@@ -22,7 +22,7 @@ import uk.gov.hmrc.gform.core.FutureSyntax
 import uk.gov.hmrc.gform.dms.FileAttachment
 import uk.gov.hmrc.gform.fileupload.FileUploadService.FileIds._
 import uk.gov.hmrc.gform.objectstore.ObjectStoreAlgebra
-import uk.gov.hmrc.gform.sdes.SdesAlgebra
+import uk.gov.hmrc.gform.sdes.dms.DmsWorkItemAlgebra
 import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
@@ -42,7 +42,7 @@ class FileUploadService(
   fileUploadFrontendConnector: FileUploadFrontendConnector,
   timeModule: TimeProvider = new TimeProvider,
   objectStoreService: ObjectStoreAlgebra[Future],
-  sdesAlgebra: SdesAlgebra[Future]
+  dmsWorkItemAlgebra: DmsWorkItemAlgebra[Future]
 )(implicit ex: ExecutionContext)
     extends FileUploadAlgebra[Future] with FileDownloadAlgebra[Future] {
   private val logger = LoggerFactory.getLogger(getClass)
@@ -214,7 +214,7 @@ class FileUploadService(
   ): Future[Unit] =
     for {
       objectSummary <- objectStoreService.zipFiles(envelopeId)
-      _             <- sdesAlgebra.pushWorkItem(envelopeId, formTemplateId, submissionRef, objectSummary)
+      _             <- dmsWorkItemAlgebra.pushWorkItem(envelopeId, formTemplateId, submissionRef, objectSummary)
     } yield ()
 }
 
@@ -226,6 +226,7 @@ object FileUploadService {
     val customerSummaryPdf = FileId("customerSummaryPdf")
     val formdataXml = FileId("formdataXml")
     val xml = FileId("xmlDocument")
+    val dataStore = FileId("dataStore")
     def roboticsFileId(extension: String) = FileId(s"robotics${extension.capitalize}")
   }
 }

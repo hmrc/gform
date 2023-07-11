@@ -30,7 +30,7 @@ import play.api.libs.json.JsObject
 import uk.gov.hmrc.gform.form.{ BundledFormTreeNode, FormAlgebra }
 import uk.gov.hmrc.gform.formtemplate.FormTemplateAlgebra
 import uk.gov.hmrc.gform.repo.RepoAlgebra
-import uk.gov.hmrc.gform.sharedmodel.{ BundledFormSubmissionData, DestinationEvaluation, FrontEndSubmissionVariables, LangADT, PdfHtml, SubmissionRef }
+import uk.gov.hmrc.gform.sharedmodel.{ BundledFormSubmissionData, DestinationEvaluation, FrontEndSubmissionVariables, LangADT, PdfHtml, SubmissionRef, UserSession }
 import uk.gov.hmrc.gform.sharedmodel.form._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplate, FormTemplateId }
 import uk.gov.hmrc.gform.submission.destinations.{ DestinationAuditAlgebra, DestinationSubmissionInfo, DestinationsProcessorModelAlgebra, DestinationsSubmitterAlgebra, FormTreeAlgebra, PdfSummaryAlgebra }
@@ -101,13 +101,14 @@ class FormBundleSubmissionService[F[_]](
       _          <- logger.info(show"Built model tree").pure[F]
       submission <- submissionRepoAlgebra.get(rootFormIdData.toFormId.value)
       _          <- logger.info(show"Got submission for rootForm").pure[F]
-      submissionInfo = DestinationSubmissionInfo("", submission)
+      submissionInfo = DestinationSubmissionInfo("", submission, rootFormIdData.formTemplateId)
       _ <- destinationsSubmitterAlgebra.send(
              submissionInfo,
              modelTree,
              None,
              LangADT.En,
-             DestinationEvaluation(submissionData.toList.flatMap(_.destinationEvaluation.evaluation))
+             DestinationEvaluation(submissionData.toList.flatMap(_.destinationEvaluation.evaluation)),
+             UserSession.empty
            )
       _ <- logger.info(show"Ran submitter").pure[F]
       _ <- transitionAllChildNodesToSubmitted(modelTree)

@@ -23,7 +23,7 @@ import cats.syntax.flatMap._
 import cats.syntax.functor._
 import uk.gov.hmrc.gform.logging.Loggers
 import uk.gov.hmrc.gform.notifier.NotifierAlgebra
-import uk.gov.hmrc.gform.sharedmodel.{ DestinationEvaluation, EmailVerifierService, LangADT, PdfHtml }
+import uk.gov.hmrc.gform.sharedmodel.{ DestinationEvaluation, DestinationResult, EmailVerifierService, LangADT, PdfHtml, UserSession }
 import uk.gov.hmrc.gform.sharedmodel.form.{ FormData, FormId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations._
 import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
@@ -39,6 +39,7 @@ class DestinationSubmitter[M[_]](
   notifier: NotifierAlgebra[M],
   destinationAuditer: Option[DestinationAuditAlgebra[M]],
   submissionConsolidator: SubmissionConsolidatorAlgebra[M],
+  dataStore: DataStoreSubmitterAlgebra[M],
   handlebarsTemplateProcessor: HandlebarsTemplateProcessor = RealHandlebarsTemplateProcessor
 )(implicit monadError: MonadError[M, String])
     extends DestinationSubmitterAlgebra[M] {
@@ -51,7 +52,8 @@ class DestinationSubmitter[M[_]](
     submitter: DestinationsSubmitterAlgebra[M],
     formData: Option[FormData],
     l: LangADT,
-    destinationEvaluation: DestinationEvaluation
+    destinationEvaluation: DestinationEvaluation,
+    userSession: UserSession
   )(implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]] =
     monadError.pure(
       DestinationSubmitterAlgebra
@@ -78,7 +80,8 @@ class DestinationSubmitter[M[_]](
               submitter,
               formData,
               l,
-              destinationEvaluation
+              destinationEvaluation,
+              userSession
             )
           _ <- audit(destination, result.map(_.status), None, submissionInfo, modelTree)
         } yield result
@@ -128,7 +131,8 @@ class DestinationSubmitter[M[_]](
     submitter: DestinationsSubmitterAlgebra[M],
     formData: Option[FormData],
     l: LangADT,
-    destinationEvaluation: DestinationEvaluation
+    destinationEvaluation: DestinationEvaluation,
+    userSession: UserSession
   )(implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]] =
     destination match {
       case d: Destination.HmrcDms =>
@@ -140,6 +144,15 @@ class DestinationSubmitter[M[_]](
           d,
           l
         ).map(_ => None)
+      case d: Destination.DataStore =>
+        submitToDataStore(
+          submissionInfo,
+          modelTree.value.structuredFormData,
+          d,
+          l,
+          userSession,
+          destinationEvaluation.evaluation.find(_.destinationId === d.id)
+        ).map(_ => None)
       case d: Destination.HandlebarsHttpApi => submitToHandlebars(d, accumulatedModel, modelTree, submissionInfo)
       case d: Destination.Composite =>
         submitter
@@ -150,7 +163,8 @@ class DestinationSubmitter[M[_]](
             modelTree,
             formData,
             l,
-            destinationEvaluation
+            destinationEvaluation,
+            userSession
           )
       case d: Destination.StateTransition => stateTransitionAlgebra(d, submissionInfo.formId).map(_ => None)
       case d: Destination.Log             => log(d, accumulatedModel, modelTree).map(_ => None)
@@ -235,6 +249,24 @@ class DestinationSubmitter[M[_]](
     l: LangADT
   )(implicit hc: HeaderCarrier): M[Unit] =
     monadError.handleErrorWith(dms(submissionInfo, pdfData, instructionPdfData, structuredFormData, d, l)) { msg =>
+      if (d.failOnError)
+        raiseError(submissionInfo.formId, d.id, msg)
+      else {
+        logErrorInMonad(submissionInfo.formId, d.id, "Failed execution but has 'failOnError' set to false. Ignoring.")
+      }
+    }
+
+  def submitToDataStore(
+    submissionInfo: DestinationSubmissionInfo,
+    structuredFormData: StructuredFormValue.ObjectStructure,
+    d: Destination.DataStore,
+    l: LangADT,
+    userSession: UserSession,
+    destinationResult: Option[DestinationResult]
+  ): M[Unit] =
+    monadError.handleErrorWith(
+      dataStore(submissionInfo, structuredFormData, d, l, userSession, destinationResult.flatMap(_.taxpayerId))
+    ) { msg =>
       if (d.failOnError)
         raiseError(submissionInfo.formId, d.id, msg)
       else {

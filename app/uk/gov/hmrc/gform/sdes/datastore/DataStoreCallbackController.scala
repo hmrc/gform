@@ -14,23 +14,25 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.sdes
+package uk.gov.hmrc.gform.sdes.datastore
 
 import cats.syntax.eq._
 import org.slf4j.LoggerFactory
 import play.api.mvc.{ Action, ControllerComponents }
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.objectstore.ObjectStoreAlgebra
+import uk.gov.hmrc.gform.sdes.SdesAlgebra
 import uk.gov.hmrc.gform.sharedmodel.sdes.NotificationStatus.FileProcessed
 import uk.gov.hmrc.gform.sharedmodel.sdes.{ CallBackNotification, CorrelationId }
 
 import java.time.Instant
 import scala.concurrent.{ ExecutionContext, Future }
 
-class SdesCallbackController(
+class DataStoreCallbackController(
   cc: ControllerComponents,
   sdesAlgebra: SdesAlgebra[Future],
-  objectStoreAlgebra: ObjectStoreAlgebra[Future]
+  objectStoreAlgebra: ObjectStoreAlgebra[Future],
+  basePath: String
 )(implicit ex: ExecutionContext)
     extends BaseController(cc) {
   private val logger = LoggerFactory.getLogger(getClass)
@@ -38,7 +40,7 @@ class SdesCallbackController(
   def callback: Action[CallBackNotification] = Action.async(parse.json[CallBackNotification]) { implicit request =>
     val CallBackNotification(responseStatus, fileName, correlationID, responseFailureReason) = request.body
     logger.info(
-      s"Received SDES callback for fileName: $fileName, correlationId : $correlationID, status : $responseStatus and failedReason: ${responseFailureReason
+      s"SDES: Received data-store callback for fileName: $fileName, correlationId : $correlationID, status : $responseStatus and failedReason: ${responseFailureReason
         .getOrElse("")} "
     )
 
@@ -54,7 +56,8 @@ class SdesCallbackController(
                )
                for {
                  _ <- sdesAlgebra.saveSdesSubmission(updatedSdesSubmission)
-                 _ <- if (responseStatus === FileProcessed) objectStoreAlgebra.deleteZipFile(sdesSubmission.envelopeId)
+                 _ <- if (responseStatus === FileProcessed)
+                        objectStoreAlgebra.deleteZipFile(sdesSubmission.envelopeId, basePath)
                       else Future.unit
                } yield ()
              case None =>

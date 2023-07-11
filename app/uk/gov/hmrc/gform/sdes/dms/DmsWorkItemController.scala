@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.sdes
+package uk.gov.hmrc.gform.sdes.dms
 
 import play.api.libs.json.Json
 import play.api.mvc.ControllerComponents
@@ -25,9 +25,9 @@ import uk.gov.hmrc.mongo.workitem.ProcessingStatus
 
 import scala.concurrent.{ ExecutionContext, Future }
 
-class SdesWorkItemController(
+class DmsWorkItemController(
   cc: ControllerComponents,
-  sdesWorkItemAlgebra: SdesWorkItemAlgebra[Future]
+  dmsWorkItemAlgebra: DmsWorkItemAlgebra[Future]
 )(implicit
   ex: ExecutionContext
 ) extends BaseController(cc) {
@@ -38,26 +38,26 @@ class SdesWorkItemController(
     formTemplateId: Option[FormTemplateId],
     status: Option[ProcessingStatus]
   ) = Action.async { _ =>
-    sdesWorkItemAlgebra
+    dmsWorkItemAlgebra
       .search(page, pageSize, formTemplateId, status)
       .map(pageData => Ok(Json.toJson(pageData)))
   }
 
   def enqueue(id: String) = Action.async { _ =>
-    sdesWorkItemAlgebra.enqueue(id).map { _ =>
+    dmsWorkItemAlgebra.enqueue(id).map { _ =>
       Ok
     }
   }
 
   def get(id: String) = Action.async { _ =>
-    sdesWorkItemAlgebra.find(id).flatMap {
+    dmsWorkItemAlgebra.find(id).flatMap {
       case Some(w) => Future.successful(Ok(Json.toJson(SdesWorkItemData.fromWorkItem(w))))
       case None    => Future.failed(new RuntimeException(s"Object id [$id] not found in mongo collection"))
     }
   }
 
   def delete(id: String) = Action.async { _ =>
-    sdesWorkItemAlgebra.delete(id).map { _ =>
+    dmsWorkItemAlgebra.delete(id).map { _ =>
       NoContent
     }
   }

@@ -23,7 +23,7 @@ import uk.gov.hmrc.gform.fileupload.RouteEnvelopeRequest
 import uk.gov.hmrc.gform.sharedmodel.email.LocalisedEmailTemplateId
 import uk.gov.hmrc.gform.sharedmodel.form._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.{ DataStore, HmrcDms }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DestinationList
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DataOutputFormat, DestinationId, DestinationIncludeIf }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.DestinationGen
@@ -50,6 +50,17 @@ trait ExampleAuthConfig extends DestinationGen {
     Some(DataOutputFormat.XML),
     true,
     Some(true),
+    true
+  )
+
+  val dataStore = DataStore(
+    DestinationId("TestDataStoreId"),
+    DestinationIncludeIf.HandlebarValue(""),
+    true,
+    FormId("TestHmrcDmsFormId"),
+    FormTemplateVersion("1"),
+    Constant("TestTaxpayerId"),
+    "TestRegime",
     true
   )
 

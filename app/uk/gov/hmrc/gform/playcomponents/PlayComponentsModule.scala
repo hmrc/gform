@@ -106,9 +106,11 @@ class PlayComponentsModule(
     notificationBannerModule.notificationBannerController,
     notificationBannerModule.notificationBannerFormTemplateController,
     shutterModule.shutterController,
-    sdesModule.sdesCallbackController,
+    sdesModule.dmsCallbackController,
+    sdesModule.dataStoreCallbackController,
     sdesModule.sdesController,
-    sdesModule.sdesWorkItemController
+    sdesModule.dmsWorkItemController,
+    sdesModule.dataStoreWorkItemController
   )
 
   private val healthController =
