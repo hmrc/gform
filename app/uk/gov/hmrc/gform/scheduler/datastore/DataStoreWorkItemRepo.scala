@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.scheduler.sdes
+package uk.gov.hmrc.gform.scheduler.datastore
 
 import org.mongodb.scala.model.{ IndexModel, IndexOptions, Indexes }
 import uk.gov.hmrc.gform.scheduler.WorkItemRepo
@@ -23,11 +23,10 @@ import uk.gov.hmrc.mongo.MongoComponent
 
 import scala.concurrent.ExecutionContext
 
-class SdesWorkItemRepo(mongoComponent: MongoComponent)(implicit
-  ec: ExecutionContext
-) extends WorkItemRepo[SdesWorkItem](
+class DataStoreWorkItemRepo(mongoComponent: MongoComponent)(implicit ec: ExecutionContext)
+    extends WorkItemRepo[SdesWorkItem](
       mongoComponent,
-      "sdesWorkItem",
+      "dataStoreWorkItem",
       extraIndexes = Seq(
         IndexModel(
           Indexes.ascending("item.formTemplateId"),

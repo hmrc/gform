@@ -46,7 +46,8 @@ trait ObjectStoreAlgebra[F[_]] {
     fileId: FileId,
     fileName: String,
     content: ByteString,
-    contentType: ContentType
+    contentType: ContentType,
+    path: String = ""
   )(implicit hc: HeaderCarrier): F[ObjectSummaryWithMd5]
 
   def getEnvelope(envelopeId: EnvelopeId): F[EnvelopeData]
@@ -75,12 +76,13 @@ trait ObjectStoreAlgebra[F[_]] {
 
   def deleteFile(envelopeId: EnvelopeId, fileIds: FileId)(implicit hc: HeaderCarrier): F[Unit]
 
-  def zipFiles(envelopeId: EnvelopeId)(implicit hc: HeaderCarrier): F[ObjectSummaryWithMd5]
+  def zipFiles(envelopeId: EnvelopeId, path: String = "")(implicit hc: HeaderCarrier): F[ObjectSummaryWithMd5]
 
-  def deleteZipFile(envelopeId: EnvelopeId)(implicit hc: HeaderCarrier): F[Unit]
+  def deleteZipFile(envelopeId: EnvelopeId, path: String = "")(implicit hc: HeaderCarrier): F[Unit]
 
   def getZipFile(
-    envelopeId: EnvelopeId
+    envelopeId: EnvelopeId,
+    path: String = ""
   )(implicit hc: HeaderCarrier, m: Materializer): F[Option[client.Object[Source[ByteString, NotUsed]]]]
 }
 
@@ -89,14 +91,15 @@ class ObjectStoreService(objectStoreConnector: ObjectStoreConnector, envelopeSer
 ) extends ObjectStoreAlgebra[Future] {
   private val logger = LoggerFactory.getLogger(getClass)
   override def getFileBytes(envelopeId: EnvelopeId, fileName: String)(implicit hc: HeaderCarrier): Future[ByteString] =
-    objectStoreConnector.getFileBytes(envelopeId, fileName)
+    objectStoreConnector.getFileBytes(envelopeId, fileName, "")
 
   override def uploadFile(
     envelopeId: EnvelopeId,
     fileId: FileId,
     fileName: String,
     content: ByteString,
-    contentType: ContentType
+    contentType: ContentType,
+    path: String
   )(implicit hc: HeaderCarrier): Future[ObjectSummaryWithMd5] = {
     logger.info(s"upload file, envelopeId: ' ${envelopeId.value}', fileId: '${fileId.value}', fileName: '$fileName")
 
@@ -106,7 +109,8 @@ class ObjectStoreService(objectStoreConnector: ObjectStoreConnector, envelopeSer
                envelopeId,
                fileName,
                content,
-               Some(contentType.value)
+               Some(contentType.value),
+               path
              )
       _ <- {
         val newFiles =
@@ -132,7 +136,7 @@ class ObjectStoreService(objectStoreConnector: ObjectStoreConnector, envelopeSer
       envelope <- envelopeService.get(envelopeId)
       maybeFileName = envelope.files.find(_.fileId === fileId.value).map(_.fileName)
       _ <- maybeFileName match {
-             case Some(fileName) => objectStoreConnector.deleteFile(envelopeId, fileName)
+             case Some(fileName) => objectStoreConnector.deleteFile(envelopeId, fileName, "")
              case None           => Future.failed(new RuntimeException(s"FileId $fileId not found in mongo"))
            }
       newEnvelope = envelope.copy(files = envelope.files.filterNot(_.fileId == fileId.value))
@@ -140,16 +144,21 @@ class ObjectStoreService(objectStoreConnector: ObjectStoreConnector, envelopeSer
     } yield ()
   }
 
-  override def zipFiles(envelopeId: EnvelopeId)(implicit hc: HeaderCarrier): Future[ObjectSummaryWithMd5] =
-    objectStoreConnector.zipFiles(envelopeId)
+  override def zipFiles(envelopeId: EnvelopeId, path: String)(implicit
+    hc: HeaderCarrier
+  ): Future[ObjectSummaryWithMd5] =
+    objectStoreConnector.zipFiles(envelopeId, path)
 
-  override def deleteZipFile(envelopeId: EnvelopeId)(implicit hc: HeaderCarrier): Future[Unit] =
-    objectStoreConnector.deleteZipFile(envelopeId)
+  override def deleteZipFile(envelopeId: EnvelopeId, path: String)(implicit
+    hc: HeaderCarrier
+  ): Future[Unit] =
+    objectStoreConnector.deleteZipFile(envelopeId, path)
 
   override def getZipFile(
-    envelopeId: EnvelopeId
+    envelopeId: EnvelopeId,
+    path: String
   )(implicit hc: HeaderCarrier, m: Materializer): Future[Option[client.Object[Source[ByteString, NotUsed]]]] =
-    objectStoreConnector.getZipFile(envelopeId)
+    objectStoreConnector.getZipFile(envelopeId, path)
 
   override def isObjectStore(envelopeId: EnvelopeId): Future[Boolean] =
     envelopeService.find(envelopeId).map(e => e.isDefined)

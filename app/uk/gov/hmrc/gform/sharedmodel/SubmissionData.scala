@@ -30,7 +30,8 @@ case class SubmissionData(
   attachments: Attachments,
   l: LangADT,
   maybeEmailAddress: Option[String],
-  destinationEvaluation: DestinationEvaluation
+  destinationEvaluation: DestinationEvaluation,
+  userSession: UserSession
 )
 
 object SubmissionData {

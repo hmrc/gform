@@ -38,4 +38,8 @@ object FormTemplateVersion {
   val vformat: Format[FormTemplateVersion] =
     ValueClassFormat
       .vformat[FormTemplateVersion]("formTemplateVersion", FormTemplateVersion.apply, x => JsString(x.version))
+
+  val destformat: Format[FormTemplateVersion] =
+    ValueClassFormat
+      .vformat[FormTemplateVersion]("version", FormTemplateVersion.apply, x => JsString(x.version))
 }

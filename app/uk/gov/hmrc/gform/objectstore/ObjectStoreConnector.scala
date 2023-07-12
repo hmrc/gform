@@ -39,23 +39,31 @@ class ObjectStoreConnector(
 
   private val zipExtension = ".zip"
 
-  private def directory(folderName: String): Path.Directory =
-    Path.Directory(s"envelopes/$folderName")
+  private def directory(path: String, folderName: String): Path.Directory =
+    Path.Directory(s"${path}envelopes/$folderName")
 
-  def uploadFile(envelopeId: EnvelopeId, fileName: String, content: ByteString, contentType: Option[String])(implicit
+  def uploadFile(
+    envelopeId: EnvelopeId,
+    fileName: String,
+    content: ByteString,
+    contentType: Option[String],
+    path: String
+  )(implicit
     hc: HeaderCarrier
   ): Future[ObjectSummaryWithMd5] =
     objectStoreClient
       .putObject(
-        path = directory(envelopeId.value).file(fileName),
+        path = directory(path, envelopeId.value).file(fileName),
         content = toSource(content),
         contentType = contentType
       )
 
-  def getFileBytes(envelopeId: EnvelopeId, fileName: String)(implicit hc: HeaderCarrier): Future[ByteString] =
+  def getFileBytes(envelopeId: EnvelopeId, fileName: String, path: String)(implicit
+    hc: HeaderCarrier
+  ): Future[ByteString] =
     objectStoreClient
       .getObject[Source[ByteString, NotUsed]](
-        path = directory(envelopeId.value).file(fileName)
+        path = directory(path, envelopeId.value).file(fileName)
       )
       .flatMap {
         case Some(o) =>
@@ -64,29 +72,33 @@ class ObjectStoreConnector(
             res     <- Future.successful(ByteString(content.getBytes()))
           } yield res
         case _ =>
-          Future.failed(new RuntimeException(s"File $fileName not found in path: ${directory(envelopeId.value)}"))
+          Future.failed(new RuntimeException(s"File $fileName not found in path: ${directory(path, envelopeId.value)}"))
       }
 
-  def deleteFile(envelopeId: EnvelopeId, fileName: String)(implicit hc: HeaderCarrier): Future[Unit] =
+  def deleteFile(envelopeId: EnvelopeId, fileName: String, path: String)(implicit
+    hc: HeaderCarrier
+  ): Future[Unit] =
     objectStoreClient.deleteObject(
-      path = directory(envelopeId.value).file(fileName)
+      path = directory(path, envelopeId.value).file(fileName)
     )
 
-  def zipFiles(envelopeId: EnvelopeId)(implicit hc: HeaderCarrier): Future[ObjectSummaryWithMd5] =
+  def zipFiles(envelopeId: EnvelopeId, path: String)(implicit
+    hc: HeaderCarrier
+  ): Future[ObjectSummaryWithMd5] =
     objectStoreClient.zip(
-      from = directory(envelopeId.value),
-      to = Path.Directory(zipDirectory).file(s"${envelopeId.value}$zipExtension")
+      from = directory(path, envelopeId.value),
+      to = Path.Directory(s"$path$zipDirectory").file(s"${envelopeId.value}$zipExtension")
     )
 
-  def deleteZipFile(envelopeId: EnvelopeId)(implicit hc: HeaderCarrier): Future[Unit] =
+  def deleteZipFile(envelopeId: EnvelopeId, path: String)(implicit hc: HeaderCarrier): Future[Unit] =
     objectStoreClient.deleteObject(
-      path = Path.Directory(zipDirectory).file(s"${envelopeId.value}$zipExtension")
+      path = Path.Directory(s"$path$zipDirectory").file(s"${envelopeId.value}$zipExtension")
     )
 
-  def getZipFile(envelopeId: EnvelopeId)(implicit
+  def getZipFile(envelopeId: EnvelopeId, path: String)(implicit
     hc: HeaderCarrier
   ): Future[Option[client.Object[Source[ByteString, NotUsed]]]] =
     objectStoreClient
-      .getObject(path = Path.Directory(zipDirectory).file(s"${envelopeId.value}$zipExtension"))
+      .getObject(path = Path.Directory(s"$path$zipDirectory").file(s"${envelopeId.value}$zipExtension"))
 
 }

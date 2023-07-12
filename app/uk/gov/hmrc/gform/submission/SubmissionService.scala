@@ -64,7 +64,11 @@ class SubmissionService(
       .map(_ => submission)
   }
 
-  def submitForm(formIdData: FormIdData, customerId: String, submissionData: SubmissionData)(implicit
+  def submitForm(
+    formIdData: FormIdData,
+    customerId: String,
+    submissionData: SubmissionData
+  )(implicit
     hc: HeaderCarrier
   ): FOpt[Unit] =
     for {
@@ -82,7 +86,8 @@ class SubmissionService(
             modelTree,
             Some(form.formData),
             submissionData.l,
-            submissionData.destinationEvaluation
+            submissionData.destinationEvaluation,
+            submissionData.userSession
           )
       emailAddress = email.getEmailAddress(form, submissionData.maybeEmailAddress)
       _ <- fromFutureA(

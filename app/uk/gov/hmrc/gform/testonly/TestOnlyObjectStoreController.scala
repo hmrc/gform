@@ -26,14 +26,30 @@ import scala.concurrent.{ ExecutionContext, Future }
 
 class TestOnlyObjectStoreController(
   controllerComponents: ControllerComponents,
-  objectStoreAlgebra: ObjectStoreAlgebra[Future]
+  objectStoreAlgebra: ObjectStoreAlgebra[Future],
+  dataStoreBasePath: String
 )(implicit
   ex: ExecutionContext,
   m: Materializer
 ) extends BaseController(controllerComponents) {
 
-  def downloadZip(envelopeId: EnvelopeId) = Action.async { implicit request =>
+  def downloadDmsFiles(envelopeId: EnvelopeId) = Action.async { implicit request =>
     objectStoreAlgebra.getZipFile(envelopeId) map {
+      case Some(objectSource) =>
+        Ok.streamed(
+          objectSource.content,
+          contentLength = Some(objectSource.metadata.contentLength),
+          contentType = Some(objectSource.metadata.contentType)
+        ).as("application/zip")
+          .withHeaders(
+            Results.contentDispositionHeader(inline = false, name = Some(s"${envelopeId.value}.zip")).toList: _*
+          )
+      case None => BadRequest(s"Envelope with id: $envelopeId not found")
+    }
+  }
+
+  def downloadDataStoreFiles(envelopeId: EnvelopeId) = Action.async { implicit request =>
+    objectStoreAlgebra.getZipFile(envelopeId, dataStoreBasePath) map {
       case Some(objectSource) =>
         Ok.streamed(
           objectSource.content,

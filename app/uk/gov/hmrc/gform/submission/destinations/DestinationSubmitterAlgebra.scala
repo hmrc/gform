@@ -18,7 +18,7 @@ package uk.gov.hmrc.gform.submission.destinations
 
 import cats.instances.string._
 import cats.syntax.eq._
-import uk.gov.hmrc.gform.sharedmodel.{ DestinationEvaluation, LangADT, PdfHtml }
+import uk.gov.hmrc.gform.sharedmodel.{ DestinationEvaluation, LangADT, PdfHtml, UserSession }
 import uk.gov.hmrc.gform.sharedmodel.form.FormData
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations._
@@ -35,7 +35,8 @@ trait DestinationSubmitterAlgebra[M[_]] {
     submitter: DestinationsSubmitterAlgebra[M],
     formData: Option[FormData],
     l: LangADT,
-    destinationEvaluation: DestinationEvaluation
+    destinationEvaluation: DestinationEvaluation,
+    userSession: UserSession
   )(implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]]
 
   def submitToDms(

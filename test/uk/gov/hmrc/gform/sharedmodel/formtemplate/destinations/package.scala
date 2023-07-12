@@ -62,6 +62,23 @@ package object destinations {
           |  "businessArea": "$businessArea"
           |}""".stripMargin
 
+    case dataStore: Destination.DataStore =>
+      import hmrcDms._
+      s"""|{
+          |  "id": "${id.id}",
+          |  "includeIf":  "${getHandlebarValue(destination.includeIf)}",
+          |  ${optionalField("failOnError", Option(destination.failOnError), true)}
+          |  "${Destination.typeDiscriminatorFieldName}": "${Destination.hmrcDms}",
+          |  "dmsFormId": "$dmsFormId",
+          |  "customerId": ${TextExpression.format.writes(TextExpression(customerId))},
+          |  "classificationType": "$classificationType",
+          |  ${optionalField("dataOutputFormat", Option("xml"))}
+          |  ${optionalField("closedStatus", Option(backscan), None)}
+          |  ${optionalField("formdataXml", Option(formdataXml), false)}
+          |  ${optionalField("includeInstructionPdf", Option(includeInstructionPdf), false)}
+          |  "businessArea": "$businessArea"
+          |}""".stripMargin
+
     case submissionConsolidator: Destination.SubmissionConsolidator =>
       s"""|{
           |  "id": "${submissionConsolidator.id.id}",

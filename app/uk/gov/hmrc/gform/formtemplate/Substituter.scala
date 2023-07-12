@@ -426,6 +426,8 @@ object Substituter {
     t match {
       case d: Destination.HmrcDms =>
         d.copy(customerId = d.customerId(substitutions), includeIf = d.includeIf(substitutions))
+      case d: Destination.DataStore =>
+        d.copy(taxpayerId = d.taxpayerId(substitutions), includeIf = d.includeIf(substitutions))
       case d: Destination.Composite =>
         d.copy(destinations = d.destinations(substitutions), includeIf = d.includeIf(substitutions))
       case d: Destination.SubmissionConsolidator =>

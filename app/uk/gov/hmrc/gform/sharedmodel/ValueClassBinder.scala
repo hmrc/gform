@@ -55,6 +55,9 @@ object ValueClassBinder {
   implicit val notificationStatusBinder: QueryStringBindable[NotificationStatus] = valueClassQueryBinder(
     NotificationStatus.fromName
   )
+  implicit val sdesDestinationBinder: QueryStringBindable[SdesDestination] = valueClassQueryBinder(
+    SdesDestination.fromName
+  )
   implicit val processingStatusBinder: QueryStringBindable[ProcessingStatus] = valueClassQueryBinder(_.name)
   implicit val bannerIdBinder: PathBindable[BannerId] = valueClassBinder(_.value)
   implicit val shutterMessageIdBinder: PathBindable[ShutterMessageId] = valueClassBinder(_.value)

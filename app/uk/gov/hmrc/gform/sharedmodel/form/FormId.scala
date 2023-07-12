@@ -34,6 +34,7 @@ object FormId {
   implicit val format: OFormat[FormId] = ValueClassFormat.oformat("_id", FormId.apply, _.value)
 
   val vformat: Format[FormId] = ValueClassFormat.vformat("_id", FormId.apply, x => JsString(x.value))
+  val destformat: Format[FormId] = ValueClassFormat.vformat("formId", FormId.apply, x => JsString(x.value))
 
   implicit val equal: Eq[FormId] = Eq.fromUniversalEquals[FormId]
 

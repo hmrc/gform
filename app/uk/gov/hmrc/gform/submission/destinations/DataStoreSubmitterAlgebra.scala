@@ -16,12 +16,17 @@
 
 package uk.gov.hmrc.gform.submission.destinations
 
-import uk.gov.hmrc.gform.sharedmodel.form.FormId
-import uk.gov.hmrc.gform.submission.Submission
+import uk.gov.hmrc.gform.sharedmodel.{ LangADT, UserSession }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.DataStore
+import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
 
-case class DestinationSubmissionInfo(
-  customerId: String,
-  submission: Submission
-) {
-  def formId: FormId = submission._id.formId
+trait DataStoreSubmitterAlgebra[F[_]] {
+  def apply(
+    submissionInfo: DestinationSubmissionInfo,
+    structuredFormData: StructuredFormValue.ObjectStructure,
+    dataStore: DataStore,
+    l: LangADT,
+    userSession: UserSession,
+    taxpayerId: Option[String]
+  ): F[Unit]
 }

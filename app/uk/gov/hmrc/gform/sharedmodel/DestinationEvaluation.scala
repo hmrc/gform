@@ -19,7 +19,12 @@ package uk.gov.hmrc.gform.sharedmodel
 import play.api.libs.json.{ Format, Json, OFormat }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationId
 
-case class DestinationResult(destinationId: DestinationId, includeIf: Option[Boolean], customerId: Option[String])
+case class DestinationResult(
+  destinationId: DestinationId,
+  includeIf: Option[Boolean],
+  customerId: Option[String],
+  taxpayerId: Option[String]
+)
 
 object DestinationResult {
   implicit val format: Format[DestinationResult] = Json.format[DestinationResult]

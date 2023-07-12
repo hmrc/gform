@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.gform.sdes
 
+import cats.syntax.eq._
 import cats.syntax.traverse._
 import cats.syntax.functor._
 import cats.syntax.show._
@@ -25,34 +26,31 @@ import org.slf4j.LoggerFactory
 import uk.gov.hmrc.gform.core._
 import uk.gov.hmrc.gform.envelope.EnvelopeAlgebra
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
+import uk.gov.hmrc.gform.fileupload.FileUploadService
 import uk.gov.hmrc.gform.repo.Repo
-import uk.gov.hmrc.gform.scheduler.sdes.SdesWorkItemRepo
+import uk.gov.hmrc.gform.sdes.datastore.DataStoreWorkItemAlgebra
+import uk.gov.hmrc.gform.sdes.dms.DmsWorkItemAlgebra
 import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.gform.sharedmodel.sdes.NotificationStatus.{ FileReady, fromName }
+import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination.{ DataStore, Dms }
 import uk.gov.hmrc.gform.sharedmodel.sdes._
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 import uk.gov.hmrc.objectstore.client.ObjectSummaryWithMd5
 
 import java.time.{ Instant, LocalDateTime }
-import java.util.{ Base64, UUID }
 import scala.concurrent.{ ExecutionContext, Future }
 
 trait SdesAlgebra[F[_]] {
 
-  def pushWorkItem(
-    envelopeId: EnvelopeId,
-    formTemplateId: FormTemplateId,
-    submissionRef: SubmissionRef,
-    objWithSummary: ObjectSummaryWithMd5
-  ): F[Unit]
   def notifySDES(
     correlationId: CorrelationId,
     envelopeId: EnvelopeId,
     formTemplateId: FormTemplateId,
     submissionRef: SubmissionRef,
-    notifyRequest: SdesNotifyRequest
+    notifyRequest: SdesNotifyRequest,
+    destination: SdesDestination
   )(implicit
     hc: HeaderCarrier
   ): F[HttpResponse]
@@ -71,70 +69,43 @@ trait SdesAlgebra[F[_]] {
     processed: Option[Boolean],
     formTemplateId: Option[FormTemplateId],
     status: Option[NotificationStatus],
-    showBeforeAt: Option[Boolean]
+    showBeforeAt: Option[Boolean],
+    destination: Option[SdesDestination]
   ): F[SdesSubmissionPageData]
 
   def deleteSdesSubmission(correlation: CorrelationId): F[Unit]
 }
 
 class SdesService(
-  sdesConnector: SdesConnector,
+  dmsConnector: SdesConnector,
+  dataStoreConnector: SdesConnector,
   repoSdesSubmission: Repo[SdesSubmission],
-  informationType: String,
-  recipientOrSender: String,
-  fileLocationUrl: String,
-  sdesNotificationRepository: SdesWorkItemRepo,
+  dmsWorkItemAlgebra: DmsWorkItemAlgebra[Future],
+  dataStoreWorkItemAlgebra: DataStoreWorkItemAlgebra[Future],
   envelopeAlgebra: EnvelopeAlgebra[Future]
 )(implicit
   ec: ExecutionContext
 ) extends SdesAlgebra[Future] {
   private val logger = LoggerFactory.getLogger(getClass)
 
-  override def pushWorkItem(
-    envelopeId: EnvelopeId,
-    formTemplateId: FormTemplateId,
-    submissionRef: SubmissionRef,
-    objWithSummary: ObjectSummaryWithMd5
-  ): Future[Unit] = {
-    val correlationId = UUID.randomUUID().toString
-    val sdesNotifyRequest = createNotifyRequest(objWithSummary, correlationId)
-    val sdesWorkItem =
-      SdesWorkItem(CorrelationId(correlationId), envelopeId, formTemplateId, submissionRef, sdesNotifyRequest)
-    sdesNotificationRepository.pushNew(sdesWorkItem).void
-  }
-
   override def notifySDES(
     correlationId: CorrelationId,
     envelopeId: EnvelopeId,
     formTemplateId: FormTemplateId,
     submissionRef: SubmissionRef,
-    notifyRequest: SdesNotifyRequest
+    notifyRequest: SdesNotifyRequest,
+    destination: SdesDestination
   )(implicit
     hc: HeaderCarrier
   ): Future[HttpResponse] = {
-    val sdesSubmission = SdesSubmission.createSdesSubmission(correlationId, envelopeId, formTemplateId, submissionRef)
+    val sdesSubmission =
+      SdesSubmission.createSdesSubmission(correlationId, envelopeId, formTemplateId, submissionRef, destination)
     for {
-      res <- sdesConnector.notifySDES(notifyRequest)
-      _   <- saveSdesSubmission(sdesSubmission.copy(submittedAt = Some(Instant.now), status = FileReady))
+      res <- if (destination === DataStore) dataStoreConnector.notifySDES(notifyRequest)
+             else dmsConnector.notifySDES(notifyRequest)
+      _ <- saveSdesSubmission(sdesSubmission.copy(submittedAt = Some(Instant.now), status = FileReady))
     } yield res
   }
-
-  private def createNotifyRequest(
-    objSummary: ObjectSummaryWithMd5,
-    correlationId: String
-  ): SdesNotifyRequest =
-    SdesNotifyRequest(
-      informationType,
-      FileMetaData(
-        recipientOrSender,
-        objSummary.location.fileName,
-        s"$fileLocationUrl${objSummary.location.asUri}",
-        FileChecksum(value = Base64.getDecoder.decode(objSummary.contentMd5.value).map("%02x".format(_)).mkString),
-        objSummary.contentLength,
-        List()
-      ),
-      FileAudit(correlationId)
-    )
 
   override def saveSdesSubmission(sdesSubmission: SdesSubmission): Future[Unit] =
     repoSdesSubmission.upsert(sdesSubmission).toFuture
@@ -148,7 +119,8 @@ class SdesService(
     processed: Option[Boolean],
     formTemplateId: Option[FormTemplateId],
     status: Option[NotificationStatus],
-    showBeforeAt: Option[Boolean]
+    showBeforeAt: Option[Boolean],
+    destination: Option[SdesDestination]
   ): Future[SdesSubmissionPageData] = {
 
     val queryByTemplateId =
@@ -157,10 +129,14 @@ class SdesService(
       processed.fold(queryByTemplateId)(p => Filters.and(equal("isProcessed", p), queryByTemplateId))
     val queryByStatus =
       status.fold(queryByProcessed)(s => Filters.and(equal("status", fromName(s)), queryByProcessed))
+    val queryByDestination =
+      destination.fold(queryByStatus)(d =>
+        Filters.and(equal("destination", SdesDestination.fromName(d)), queryByStatus)
+      )
     val query = if (showBeforeAt.getOrElse(false)) {
-      Filters.and(queryByStatus, lt("createdAt", LocalDateTime.now().minusHours(10)))
+      Filters.and(queryByDestination, lt("createdAt", LocalDateTime.now().minusHours(10)))
     } else {
-      queryByStatus
+      queryByDestination
     }
 
     val queryNotProcessed = Filters.and(equal("isProcessed", false), queryByTemplateId)
@@ -172,7 +148,14 @@ class SdesService(
       sdesSubmissions <- repoSdesSubmission.page(query, sort, skip, pageSize)
       sdesSubmissionData <- sdesSubmissions.traverse(sdesSubmission =>
                               for {
-                                numberOfFiles <- envelopeAlgebra.get(sdesSubmission.envelopeId).map(_.files.size)
+                                numberOfFiles <-
+                                  sdesSubmission.destination match {
+                                    case Some(Dms) =>
+                                      envelopeAlgebra
+                                        .get(sdesSubmission.envelopeId)
+                                        .map(_.files.count(_.fileId =!= FileUploadService.FileIds.dataStore.value))
+                                    case _ => Future.successful(1)
+                                  }
                               } yield SdesSubmissionData.fromSdesSubmission(sdesSubmission, numberOfFiles)
                             )
       count    <- repoSdesSubmission.count(queryNotProcessed)
@@ -183,10 +166,17 @@ class SdesService(
 
   override def notifySDES(sdesSubmission: SdesSubmission, objWithSummary: ObjectSummaryWithMd5)(implicit
     hc: HeaderCarrier
-  ): Future[HttpResponse] = {
-    val notifyRequest = createNotifyRequest(objWithSummary, sdesSubmission._id.value)
+  ): Future[HttpResponse] =
     for {
-      res <- sdesConnector.notifySDES(notifyRequest)
+      res <- sdesSubmission.destination match {
+               case Some(DataStore) =>
+                 val notifyRequest =
+                   dataStoreWorkItemAlgebra.createNotifyRequest(objWithSummary, sdesSubmission._id.value)
+                 dataStoreConnector.notifySDES(notifyRequest)
+               case _ =>
+                 val notifyRequest = dmsWorkItemAlgebra.createNotifyRequest(objWithSummary, sdesSubmission._id.value)
+                 dmsConnector.notifySDES(notifyRequest)
+             }
       _ <-
         saveSdesSubmission(
           sdesSubmission.copy(
@@ -199,7 +189,6 @@ class SdesService(
           )
         )
     } yield res
-  }
 
   override def deleteSdesSubmission(correlationId: CorrelationId): Future[Unit] =
     repoSdesSubmission

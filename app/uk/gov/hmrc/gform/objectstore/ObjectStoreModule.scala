@@ -80,9 +80,10 @@ class ObjectStoreModule(
       fileId: FileId,
       fileName: String,
       content: ByteString,
-      contentType: ContentType
+      contentType: ContentType,
+      path: String
     )(implicit hc: HeaderCarrier): FOpt[ObjectSummaryWithMd5] =
-      fromFutureA(objectStoreService.uploadFile(envelopeId, fileId, fileName, content, contentType))
+      fromFutureA(objectStoreService.uploadFile(envelopeId, fileId, fileName, content, contentType, path))
 
     override def getEnvelope(envelopeId: EnvelopeId): FOpt[EnvelopeData] =
       fromFutureA(objectStoreService.getEnvelope(envelopeId))
@@ -90,16 +91,19 @@ class ObjectStoreModule(
     override def deleteFile(envelopeId: EnvelopeId, fileId: FileId)(implicit hc: HeaderCarrier): FOpt[Unit] =
       fromFutureA(objectStoreService.deleteFile(envelopeId, fileId))
 
-    override def zipFiles(envelopeId: EnvelopeId)(implicit hc: HeaderCarrier): FOpt[ObjectSummaryWithMd5] =
-      fromFutureA(objectStoreService.zipFiles(envelopeId))
+    override def zipFiles(envelopeId: EnvelopeId, path: String)(implicit
+      hc: HeaderCarrier
+    ): FOpt[ObjectSummaryWithMd5] =
+      fromFutureA(objectStoreService.zipFiles(envelopeId, path))
 
-    override def deleteZipFile(envelopeId: EnvelopeId)(implicit hc: HeaderCarrier): FOpt[Unit] =
-      fromFutureA(objectStoreService.deleteZipFile(envelopeId))
+    override def deleteZipFile(envelopeId: EnvelopeId, path: String)(implicit hc: HeaderCarrier): FOpt[Unit] =
+      fromFutureA(objectStoreService.deleteZipFile(envelopeId, path))
 
-    override def getZipFile(
-      envelopeId: EnvelopeId
-    )(implicit hc: HeaderCarrier, m: Materializer): FOpt[Option[client.Object[Source[ByteString, NotUsed]]]] =
-      fromFutureA(objectStoreService.getZipFile(envelopeId))
+    override def getZipFile(envelopeId: EnvelopeId, path: String)(implicit
+      hc: HeaderCarrier,
+      m: Materializer
+    ): FOpt[Option[client.Object[Source[ByteString, NotUsed]]]] =
+      fromFutureA(objectStoreService.getZipFile(envelopeId, path))
 
     override def isObjectStore(envelopeId: EnvelopeId): FOpt[Boolean] =
       fromFutureA(objectStoreService.isObjectStore(envelopeId))

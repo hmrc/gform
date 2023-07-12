@@ -24,7 +24,7 @@ import cats.syntax.flatMap._
 import cats.syntax.functor._
 import uk.gov.hmrc.gform.sharedmodel.form.FormData
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations._
-import uk.gov.hmrc.gform.sharedmodel.{ DestinationEvaluation, LangADT }
+import uk.gov.hmrc.gform.sharedmodel.{ DestinationEvaluation, LangADT, UserSession }
 import uk.gov.hmrc.gform.submission.handlebars.HandlebarsModelTree
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -36,7 +36,8 @@ class DestinationsSubmitter[M[_]: Monad](destinationSubmitter: DestinationSubmit
     modelTree: HandlebarsModelTree,
     formData: Option[FormData],
     l: LangADT,
-    destinationEvaluation: DestinationEvaluation
+    destinationEvaluation: DestinationEvaluation,
+    userSession: UserSession
   )(implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]] =
     modelTree.value.formTemplate.destinations match {
       case list: Destinations.DestinationList =>
@@ -47,7 +48,8 @@ class DestinationsSubmitter[M[_]: Monad](destinationSubmitter: DestinationSubmit
           modelTree,
           formData,
           l,
-          destinationEvaluation
+          destinationEvaluation,
+          userSession
         )
 
       case _ => Option.empty[HandlebarsDestinationResponse].pure[M]
@@ -60,7 +62,8 @@ class DestinationsSubmitter[M[_]: Monad](destinationSubmitter: DestinationSubmit
     modelTree: HandlebarsModelTree,
     formData: Option[FormData],
     l: LangADT,
-    destinationEvaluation: DestinationEvaluation
+    destinationEvaluation: DestinationEvaluation,
+    userSession: UserSession
   )(implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]] = {
     case class TailRecParameter(
       remainingDestinations: List[Destination],
@@ -79,7 +82,8 @@ class DestinationsSubmitter[M[_]: Monad](destinationSubmitter: DestinationSubmit
             this,
             formData,
             l,
-            destinationEvaluation
+            destinationEvaluation,
+            userSession
           )
           .map(submitterResult =>
             TailRecParameter(

@@ -58,8 +58,7 @@ lazy val microservice = (project in file("."))
       "uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations._",
       "uk.gov.hmrc.gform.sharedmodel.dblookup._",
       "uk.gov.hmrc.gform.upscan.UpscanReference",
-      "uk.gov.hmrc.gform.sharedmodel.sdes.CorrelationId",
-      "uk.gov.hmrc.gform.sharedmodel.sdes.NotificationStatus",
+      "uk.gov.hmrc.gform.sharedmodel.sdes._",
       "uk.gov.hmrc.mongo.workitem.ProcessingStatus"
     ),
     resolvers ++= Seq(

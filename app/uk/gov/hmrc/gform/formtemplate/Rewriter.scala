@@ -25,7 +25,7 @@ import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationIncludeIf, Destinations }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationIncludeIf.IncludeIfValue
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.{ Email, HandlebarsHttpApi, HmrcDms, Log, StateTransition, SubmissionConsolidator }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.{ DataStore, Email, HandlebarsHttpApi, HmrcDms, Log, StateTransition, SubmissionConsolidator }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DestinationList
 
 trait Rewriter {
@@ -114,6 +114,7 @@ trait Rewriter {
           case StateTransition(_, _, IncludeIfValue(includeIf), _)                     => includeIf
           case SubmissionConsolidator(_, _, _, _, IncludeIfValue(includeIf), _)        => includeIf
           case Email(_, _, IncludeIfValue(includeIf), _, _, _)                         => includeIf
+          case DataStore(_, IncludeIfValue(includeIf), _, _, _, _, _, _)               => includeIf
         }
       case _ => Nil
     }
@@ -449,6 +450,7 @@ trait Rewriter {
           case l: Log                    => l
           case s: StateTransition        => s.copy(includeIf = replaceDesIncludeIf(s.includeIf))
           case s: SubmissionConsolidator => s.copy(includeIf = replaceDesIncludeIf(s.includeIf))
+          case d: DataStore              => d.copy(includeIf = replaceDesIncludeIf(d.includeIf))
         }
 
       def replaceDesIncludeIf(desIncludeIfValue: DestinationIncludeIf) = desIncludeIfValue match {

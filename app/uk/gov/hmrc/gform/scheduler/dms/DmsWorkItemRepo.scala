@@ -14,27 +14,26 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.scheduler.sdes
+package uk.gov.hmrc.gform.scheduler.dms
 
-import akka.actor.ActorSystem
-import uk.gov.hmrc.gform.scheduler.PollingService
+import org.mongodb.scala.model.{ IndexModel, IndexOptions, Indexes }
+import uk.gov.hmrc.gform.scheduler.WorkItemRepo
 import uk.gov.hmrc.gform.sharedmodel.sdes.SdesWorkItem
+import uk.gov.hmrc.mongo.MongoComponent
 
 import scala.concurrent.ExecutionContext
-import scala.concurrent.duration.FiniteDuration
 
-class SdesQueuePollingService(
-  actorSystem: ActorSystem,
-  pollerInitialDelay: FiniteDuration,
-  pollerInterval: FiniteDuration,
-  pollerToggle: Boolean,
-  sdesQueueService: SdesQueueService
-)(implicit ec: ExecutionContext)
-    extends PollingService[SdesWorkItem](actorSystem, sdesQueueService, pollerToggle) {
-
-  override def name: String = "SdesPollingService"
-
-  override def initialDelay: FiniteDuration = pollerInitialDelay
-
-  override def interval: FiniteDuration = pollerInterval
-}
+class DmsWorkItemRepo(mongoComponent: MongoComponent)(implicit
+  ec: ExecutionContext
+) extends WorkItemRepo[SdesWorkItem](
+      mongoComponent,
+      "dmsWorkItem",
+      extraIndexes = Seq(
+        IndexModel(
+          Indexes.ascending("item.formTemplateId"),
+          IndexOptions()
+            .background(true)
+            .name("item.formTemplateId")
+        )
+      )
+    )
