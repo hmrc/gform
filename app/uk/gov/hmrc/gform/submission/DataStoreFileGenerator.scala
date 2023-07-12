@@ -49,7 +49,7 @@ object DataStoreFileGenerator {
         "affinityGroup" -> JsString(userSession.affinityGroup.map(_.toString).getOrElse("")),
         "authEmail"     -> JsString(userSession.authEmail),
         "authPhone"     -> JsString(userSession.authPhone),
-        "enrolments"    -> JsArray(userSession.enrolments.map(Json.toJson(_)))
+        "enrolments"    -> JsArray(userSession.enrolments)
       )
 
       Json.obj(
