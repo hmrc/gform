@@ -145,10 +145,10 @@ class ObjectStoreServiceSpec extends AnyFlatSpec with Matchers with ScalaFutures
 
     def expectDeleteFile(envelopeId: EnvelopeId, fileName: String): Fixture = {
       (objectStoreConnector
-        .deleteFile(_: EnvelopeId, _: String, _: String)(
+        .deleteFile(_: String, _: EnvelopeId, _: String)(
           _: HeaderCarrier
         ))
-        .expects(envelopeId, fileName, "", hc)
+        .expects("", envelopeId, fileName, hc)
         .returning(Future.unit)
 
       this
@@ -169,7 +169,7 @@ class ObjectStoreServiceSpec extends AnyFlatSpec with Matchers with ScalaFutures
     val envelopeAlgebra = mock[EnvelopeAlgebra[Future]]
 
     Fixture(
-      new ObjectStoreService(objectStoreConnector, envelopeAlgebra),
+      new ObjectStoreService(objectStoreConnector, envelopeAlgebra, ""),
       objectStoreConnector,
       envelopeAlgebra
     )
