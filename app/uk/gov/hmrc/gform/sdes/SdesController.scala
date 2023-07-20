@@ -30,6 +30,7 @@ class SdesController(
   cc: ControllerComponents,
   sdesAlgebra: SdesAlgebra[Future],
   objectStoreAlgebra: ObjectStoreAlgebra[Future],
+  dmsBasePath: String,
   dataStoreBasePath: String
 )(implicit
   ex: ExecutionContext
@@ -64,8 +65,8 @@ class SdesController(
                     for {
                       objSummary <- submission.destination match {
                                       case Some(DataStore) =>
-                                        objectStoreAlgebra.zipFiles(submission.envelopeId, dataStoreBasePath)
-                                      case _ => objectStoreAlgebra.zipFiles(submission.envelopeId)
+                                        objectStoreAlgebra.zipFiles(dataStoreBasePath, submission.envelopeId)
+                                      case _ => objectStoreAlgebra.zipFiles(dmsBasePath, submission.envelopeId)
                                     }
                       res <- sdesAlgebra.notifySDES(submission, objSummary)
                     } yield res

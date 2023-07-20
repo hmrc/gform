@@ -48,7 +48,7 @@ class ObjectStoreModule(
   private val defaultRetentionPeriod = RetentionPeriod
     .parse(configModule.typesafeConfig.getString("object-store.default-retention-period"))
     .fold(m => throw new IllegalStateException(m), identity)
-  private val zipDirectory = configModule.typesafeConfig.getString("object-store.zip-directory")
+  private val sdesBasePath = configModule.typesafeConfig.getString("object-store.base-filepath.sdes")
 
   private val objectStoreClientConfig = ObjectStoreClientConfig(
     baseUrl,
@@ -60,13 +60,15 @@ class ObjectStoreModule(
   val objectStoreClient = new PlayObjectStoreClient(wsClient, objectStoreClientConfig)(akkaModule.materializer, ex)
 
   val objectStoreConnector: ObjectStoreConnector =
-    new ObjectStoreConnector(objectStoreClient, objectStoreClientConfig, zipDirectory)(
+    new ObjectStoreConnector(objectStoreClient, objectStoreClientConfig, sdesBasePath)(
       ex,
       akkaModule.actorSystem
     )
 
+  private val dmsBasePath = configModule.typesafeConfig.getString("object-store.base-filepath.dms")
+
   val objectStoreService: ObjectStoreAlgebra[Future] =
-    new ObjectStoreService(objectStoreConnector, envelopeModule.envelopeService)
+    new ObjectStoreService(objectStoreConnector, envelopeModule.envelopeService, dmsBasePath)
 
   val objectStoreController: ObjectStoreController =
     new ObjectStoreController(configModule.controllerComponents, objectStoreService)
@@ -91,19 +93,19 @@ class ObjectStoreModule(
     override def deleteFile(envelopeId: EnvelopeId, fileId: FileId)(implicit hc: HeaderCarrier): FOpt[Unit] =
       fromFutureA(objectStoreService.deleteFile(envelopeId, fileId))
 
-    override def zipFiles(envelopeId: EnvelopeId, path: String)(implicit
+    override def zipFiles(path: String, envelopeId: EnvelopeId)(implicit
       hc: HeaderCarrier
     ): FOpt[ObjectSummaryWithMd5] =
-      fromFutureA(objectStoreService.zipFiles(envelopeId, path))
+      fromFutureA(objectStoreService.zipFiles(path: String, envelopeId))
 
-    override def deleteZipFile(envelopeId: EnvelopeId, path: String)(implicit hc: HeaderCarrier): FOpt[Unit] =
-      fromFutureA(objectStoreService.deleteZipFile(envelopeId, path))
+    override def deleteZipFile(path: String, envelopeId: EnvelopeId)(implicit hc: HeaderCarrier): FOpt[Unit] =
+      fromFutureA(objectStoreService.deleteZipFile(path: String, envelopeId))
 
-    override def getZipFile(envelopeId: EnvelopeId, path: String)(implicit
+    override def getZipFile(path: String, envelopeId: EnvelopeId)(implicit
       hc: HeaderCarrier,
       m: Materializer
     ): FOpt[Option[client.Object[Source[ByteString, NotUsed]]]] =
-      fromFutureA(objectStoreService.getZipFile(envelopeId, path))
+      fromFutureA(objectStoreService.getZipFile(path, envelopeId))
 
     override def isObjectStore(envelopeId: EnvelopeId): FOpt[Boolean] =
       fromFutureA(objectStoreService.isObjectStore(envelopeId))

@@ -16,11 +16,12 @@
 
 package uk.gov.hmrc.gform.formtemplate
 
+import cats.implicits._
 import cats.data.NonEmptyList
 import uk.gov.hmrc.gform.core.ValidationResult.BooleanToValidationResultSyntax
 import uk.gov.hmrc.gform.core.{ Invalid, Valid, ValidationResult }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationIncludeIf.{ HandlebarValue, IncludeIfValue }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponent, FormComponentId, IsGroup }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponent, FormComponentId, FormTemplate, IsGroup }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationId, Destinations }
 
 object DestinationsValidator {
@@ -70,6 +71,16 @@ object DestinationsValidator {
         case Some(id) => Invalid(groupComponentInDeclaration(id))
         case None     => Valid
       }
+  }
+
+  def validateDataStoreDestination(formTemplate: FormTemplate): ValidationResult = formTemplate.destinations match {
+    case destinationList: Destinations.DestinationList =>
+      destinationList.destinations.map {
+        case _: Destination.DataStore if !formTemplate.isObjectStore =>
+          Invalid("The destination type is invalid. 'hmrcIlluminate' can only be used for object-store.")
+        case _ => Valid
+      }.combineAll
+    case _ => Valid
   }
 
   def extractGroupComponentId(fcs: List[FormComponent]): Option[FormComponentId] =

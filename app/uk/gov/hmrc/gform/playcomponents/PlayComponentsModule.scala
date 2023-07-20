@@ -106,8 +106,7 @@ class PlayComponentsModule(
     notificationBannerModule.notificationBannerController,
     notificationBannerModule.notificationBannerFormTemplateController,
     shutterModule.shutterController,
-    sdesModule.dmsCallbackController,
-    sdesModule.dataStoreCallbackController,
+    sdesModule.sdesCallbackController,
     sdesModule.sdesController,
     sdesModule.dmsWorkItemController,
     sdesModule.dataStoreWorkItemController

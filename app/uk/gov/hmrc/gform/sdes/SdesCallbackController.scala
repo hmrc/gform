@@ -14,25 +14,26 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.sdes.datastore
+package uk.gov.hmrc.gform.sdes
 
 import cats.syntax.eq._
 import org.slf4j.LoggerFactory
 import play.api.mvc.{ Action, ControllerComponents }
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.objectstore.ObjectStoreAlgebra
-import uk.gov.hmrc.gform.sdes.SdesAlgebra
 import uk.gov.hmrc.gform.sharedmodel.sdes.NotificationStatus.FileProcessed
+import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination.DataStore
 import uk.gov.hmrc.gform.sharedmodel.sdes.{ CallBackNotification, CorrelationId }
 
 import java.time.Instant
 import scala.concurrent.{ ExecutionContext, Future }
 
-class DataStoreCallbackController(
+class SdesCallbackController(
   cc: ControllerComponents,
   sdesAlgebra: SdesAlgebra[Future],
   objectStoreAlgebra: ObjectStoreAlgebra[Future],
-  basePath: String
+  dmsBasePath: String,
+  dataStoreBasePath: String
 )(implicit ex: ExecutionContext)
     extends BaseController(cc) {
   private val logger = LoggerFactory.getLogger(getClass)
@@ -40,7 +41,7 @@ class DataStoreCallbackController(
   def callback: Action[CallBackNotification] = Action.async(parse.json[CallBackNotification]) { implicit request =>
     val CallBackNotification(responseStatus, fileName, correlationID, responseFailureReason) = request.body
     logger.info(
-      s"SDES: Received data-store callback for fileName: $fileName, correlationId : $correlationID, status : $responseStatus and failedReason: ${responseFailureReason
+      s"SDES: Received callback for fileName: $fileName, correlationId : $correlationID, status : $responseStatus and failedReason: ${responseFailureReason
         .getOrElse("")} "
     )
 
@@ -48,16 +49,21 @@ class DataStoreCallbackController(
       maybeSdesSubmission <- sdesAlgebra.findSdesSubmission(CorrelationId(correlationID))
       _ <- maybeSdesSubmission match {
              case Some(sdesSubmission) =>
+               logger.info(
+                 s"Received callback for envelopeId: ${sdesSubmission.envelopeId.value}, destination: ${sdesSubmission.destination
+                   .getOrElse("dms")}"
+               )
                val updatedSdesSubmission = sdesSubmission.copy(
                  isProcessed = responseStatus === FileProcessed,
                  status = responseStatus,
                  confirmedAt = Some(Instant.now),
                  failureReason = responseFailureReason
                )
+               val basePath = if (sdesSubmission.destination.exists(_ === DataStore)) dataStoreBasePath else dmsBasePath
                for {
                  _ <- sdesAlgebra.saveSdesSubmission(updatedSdesSubmission)
                  _ <- if (responseStatus === FileProcessed)
-                        objectStoreAlgebra.deleteZipFile(sdesSubmission.envelopeId, basePath)
+                        objectStoreAlgebra.deleteZipFile(basePath, sdesSubmission.envelopeId)
                       else Future.unit
                } yield ()
              case None =>

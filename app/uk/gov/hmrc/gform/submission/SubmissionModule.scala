@@ -78,7 +78,7 @@ class SubmissionModule(
     envelopeModule.foptEnvelopeService
   )
 
-  private val dataStoreBasePath = configModule.serviceConfig.getString("object-store.data-store.base-path")
+  private val dataStoreBasePath = configModule.serviceConfig.getString("object-store.base-filepath.data-store")
 
   private val dataStoreSubmitter = new DataStoreSubmitter(
     objectStoreModule.foptObjectStoreService,
