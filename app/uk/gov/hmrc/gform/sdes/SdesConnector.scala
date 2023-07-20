@@ -33,7 +33,7 @@ class SdesConnector(wSHttp: WSHttp, sdesBaseUrl: String, sdesBasePath: String, h
     HttpReadsInstances.throwOnFailure(HttpReadsInstances.readEitherOf(HttpReadsInstances.readRaw))
 
   def notifySDES(payload: SdesNotifyRequest)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
-    logger.debug(s"SDES notification request: ${Json.stringify(Json.toJson(payload))}")
+    logger.info(s"SDES notification request: ${Json.stringify(Json.toJson(payload))}")
     val url = s"$sdesBaseUrl$sdesBasePath/notification/fileready"
     wSHttp
       .POST[SdesNotifyRequest, HttpResponse](url, payload, headers)

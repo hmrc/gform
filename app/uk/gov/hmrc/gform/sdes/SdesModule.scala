@@ -26,8 +26,8 @@ import uk.gov.hmrc.gform.objectstore.ObjectStoreModule
 import uk.gov.hmrc.gform.repo.Repo
 import uk.gov.hmrc.gform.scheduler.datastore.DataStoreWorkItemRepo
 import uk.gov.hmrc.gform.scheduler.dms.DmsWorkItemRepo
-import uk.gov.hmrc.gform.sdes.datastore.{ DataStoreCallbackController, DataStoreWorkItemAlgebra, DataStoreWorkItemController, DataStoreWorkItemService }
-import uk.gov.hmrc.gform.sdes.dms.{ DmsCallbackController, DmsWorkItemAlgebra, DmsWorkItemController, DmsWorkItemService }
+import uk.gov.hmrc.gform.sdes.datastore.{ DataStoreWorkItemAlgebra, DataStoreWorkItemController, DataStoreWorkItemService }
+import uk.gov.hmrc.gform.sdes.dms.{ DmsWorkItemAlgebra, DmsWorkItemController, DmsWorkItemService }
 import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
@@ -133,17 +133,15 @@ class SdesModule(
       envelopeModule.envelopeService
     )
 
-  val dmsCallbackController: DmsCallbackController =
-    new DmsCallbackController(configModule.controllerComponents, sdesService, objectStoreModule.objectStoreService)
+  private val dataStoreBasePath = configModule.serviceConfig.getString("object-store.base-filepath.data-store")
+  private val dmsBasePath = configModule.serviceConfig.getString("object-store.base-filepath.dms")
 
-  private val dataStoreBasePath =
-    configModule.serviceConfig.getString("object-store.data-store.base-path")
-
-  val dataStoreCallbackController: DataStoreCallbackController =
-    new DataStoreCallbackController(
+  val sdesCallbackController: SdesCallbackController =
+    new SdesCallbackController(
       configModule.controllerComponents,
       sdesService,
       objectStoreModule.objectStoreService,
+      dmsBasePath,
       dataStoreBasePath
     )
 
@@ -152,6 +150,7 @@ class SdesModule(
       configModule.controllerComponents,
       sdesService,
       objectStoreModule.objectStoreService,
+      dmsBasePath,
       dataStoreBasePath
     )
 

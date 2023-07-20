@@ -97,7 +97,7 @@ class DataStoreSubmitter(
              ContentType.`application/json`,
              basePath
            )
-      objWithSummary <- objectStoreAlgebra.zipFiles(submission.envelopeId, basePath)
+      objWithSummary <- objectStoreAlgebra.zipFiles(basePath, submission.envelopeId)
       _ <- dataStoreWorkItemAlgebra.pushWorkItem(
              submission.envelopeId,
              submission.dmsMetaData.formTemplateId,

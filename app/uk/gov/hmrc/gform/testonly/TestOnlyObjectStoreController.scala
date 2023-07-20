@@ -27,6 +27,7 @@ import scala.concurrent.{ ExecutionContext, Future }
 class TestOnlyObjectStoreController(
   controllerComponents: ControllerComponents,
   objectStoreAlgebra: ObjectStoreAlgebra[Future],
+  dmsBasePath: String,
   dataStoreBasePath: String
 )(implicit
   ex: ExecutionContext,
@@ -34,7 +35,7 @@ class TestOnlyObjectStoreController(
 ) extends BaseController(controllerComponents) {
 
   def downloadDmsFiles(envelopeId: EnvelopeId) = Action.async { implicit request =>
-    objectStoreAlgebra.getZipFile(envelopeId) map {
+    objectStoreAlgebra.getZipFile(dmsBasePath, envelopeId) map {
       case Some(objectSource) =>
         Ok.streamed(
           objectSource.content,
@@ -49,7 +50,7 @@ class TestOnlyObjectStoreController(
   }
 
   def downloadDataStoreFiles(envelopeId: EnvelopeId) = Action.async { implicit request =>
-    objectStoreAlgebra.getZipFile(envelopeId, dataStoreBasePath) map {
+    objectStoreAlgebra.getZipFile(dataStoreBasePath, envelopeId) map {
       case Some(objectSource) =>
         Ok.streamed(
           objectSource.content,

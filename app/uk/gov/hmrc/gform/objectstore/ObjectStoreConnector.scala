@@ -34,7 +34,7 @@ import scala.concurrent.{ ExecutionContext, Future }
 class ObjectStoreConnector(
   objectStoreClient: PlayObjectStoreClient,
   objectStoreClientConfig: ObjectStoreClientConfig,
-  zipDirectory: String
+  sdesBasePath: String
 )(implicit ex: ExecutionContext, actorSystem: ActorSystem) {
 
   private val zipExtension = ".zip"
@@ -75,30 +75,30 @@ class ObjectStoreConnector(
           Future.failed(new RuntimeException(s"File $fileName not found in path: ${directory(path, envelopeId.value)}"))
       }
 
-  def deleteFile(envelopeId: EnvelopeId, fileName: String, path: String)(implicit
+  def deleteFile(path: String, envelopeId: EnvelopeId, fileName: String)(implicit
     hc: HeaderCarrier
   ): Future[Unit] =
     objectStoreClient.deleteObject(
       path = directory(path, envelopeId.value).file(fileName)
     )
 
-  def zipFiles(envelopeId: EnvelopeId, path: String)(implicit
+  def zipFiles(path: String, envelopeId: EnvelopeId)(implicit
     hc: HeaderCarrier
   ): Future[ObjectSummaryWithMd5] =
     objectStoreClient.zip(
       from = directory(path, envelopeId.value),
-      to = Path.Directory(s"$path$zipDirectory").file(s"${envelopeId.value}$zipExtension")
+      to = Path.Directory(s"$sdesBasePath$path").file(s"${envelopeId.value}$zipExtension")
     )
 
-  def deleteZipFile(envelopeId: EnvelopeId, path: String)(implicit hc: HeaderCarrier): Future[Unit] =
+  def deleteZipFile(path: String, envelopeId: EnvelopeId)(implicit hc: HeaderCarrier): Future[Unit] =
     objectStoreClient.deleteObject(
-      path = Path.Directory(s"$path$zipDirectory").file(s"${envelopeId.value}$zipExtension")
+      path = Path.Directory(s"$sdesBasePath$path").file(s"${envelopeId.value}$zipExtension")
     )
 
-  def getZipFile(envelopeId: EnvelopeId, path: String)(implicit
+  def getZipFile(path: String, envelopeId: EnvelopeId)(implicit
     hc: HeaderCarrier
   ): Future[Option[client.Object[Source[ByteString, NotUsed]]]] =
     objectStoreClient
-      .getObject(path = Path.Directory(s"$path$zipDirectory").file(s"${envelopeId.value}$zipExtension"))
+      .getObject(path = Path.Directory(s"$sdesBasePath$path").file(s"${envelopeId.value}$zipExtension"))
 
 }

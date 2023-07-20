@@ -34,16 +34,19 @@ class SchedulerModule(
   akkaModule: AkkaModule
 )(implicit ex: ExecutionContext) {
 
-  private val dmsRetryAfter: Long = configModule.configuration.getMillis("sdes.dms.queue.retryAfter")
-  private val dmsPollLerLimit = configModule.typesafeConfig.getInt("sdes.dms.poller.pollLimit")
+  private val dmsRetryAfter: Long = configModule.configuration.getMillis("work-item.sdes.dms.queue.retryAfter")
+  private val dmsPollLerLimit = configModule.typesafeConfig.getInt("work-item.sdes.dms.poller.pollLimit")
   private val dmsPollerInitialDelay: FiniteDuration = FiniteDuration(
-    configModule.typesafeConfig.getDuration("sdes.dms.poller.initialDelay").toNanos,
+    configModule.typesafeConfig.getDuration("work-item.sdes.dms.poller.initialDelay").toNanos,
     TimeUnit.NANOSECONDS
   )
   private val dmsPollerInterval: FiniteDuration =
-    FiniteDuration(configModule.typesafeConfig.getDuration("sdes.dms.poller.interval").toNanos, TimeUnit.NANOSECONDS)
-  private val dmsPollerEnabled: Boolean = configModule.typesafeConfig.getBoolean(s"sdes.dms.poller.enabled")
-  private val dmsMaxFailureCount = configModule.typesafeConfig.getInt(s"sdes.dms.queue.maxFailureCount")
+    FiniteDuration(
+      configModule.typesafeConfig.getDuration("work-item.sdes.dms.poller.interval").toNanos,
+      TimeUnit.NANOSECONDS
+    )
+  private val dmsPollerEnabled: Boolean = configModule.typesafeConfig.getBoolean("work-item.sdes.dms.poller.enabled")
+  private val dmsMaxFailureCount = configModule.typesafeConfig.getInt("work-item.sdes.dms.queue.maxFailureCount")
 
   private val dmsNotificationRepository = new DmsWorkItemRepo(mongoModule.mongoComponent)
 
@@ -64,21 +67,23 @@ class SchedulerModule(
     dmsQueueService
   )
 
-  private val dataStoreRetryAfter: Long = configModule.configuration.getMillis("sdes.data-store.queue.retryAfter")
-  private val dataStorePollLerLimit = configModule.typesafeConfig.getInt("sdes.data-store.poller.pollLimit")
+  private val dataStoreRetryAfter: Long =
+    configModule.configuration.getMillis("work-item.sdes.data-store.queue.retryAfter")
+  private val dataStorePollLerLimit = configModule.typesafeConfig.getInt("work-item.sdes.data-store.poller.pollLimit")
   private val dataStorePollerInitialDelay: FiniteDuration =
     FiniteDuration(
-      configModule.typesafeConfig.getDuration("sdes.data-store.poller.initialDelay").toNanos,
+      configModule.typesafeConfig.getDuration("work-item.sdes.data-store.poller.initialDelay").toNanos,
       TimeUnit.NANOSECONDS
     )
   private val dataStorePollerInterval: FiniteDuration =
     FiniteDuration(
-      configModule.typesafeConfig.getDuration("sdes.data-store.poller.interval").toNanos,
+      configModule.typesafeConfig.getDuration("work-item.sdes.data-store.poller.interval").toNanos,
       TimeUnit.NANOSECONDS
     )
   private val dataStorePollerEnabled: Boolean =
-    configModule.typesafeConfig.getBoolean(s"sdes.data-store.poller.enabled")
-  private val dataStoreMaxFailureCount = configModule.typesafeConfig.getInt(s"sdes.data-store.queue.maxFailureCount")
+    configModule.typesafeConfig.getBoolean("work-item.sdes.data-store.poller.enabled")
+  private val dataStoreMaxFailureCount =
+    configModule.typesafeConfig.getInt("work-item.sdes.data-store.queue.maxFailureCount")
 
   private val dataStoreNotificationRepository = new DataStoreWorkItemRepo(mongoModule.mongoComponent)
 
