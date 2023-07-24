@@ -36,10 +36,11 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.gform.sharedmodel.sdes.NotificationStatus.{ FileReady, fromName }
 import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination.{ DataStore, Dms }
 import uk.gov.hmrc.gform.sharedmodel.sdes._
+import uk.gov.hmrc.gform.time.TimeProvider
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 import uk.gov.hmrc.objectstore.client.ObjectSummaryWithMd5
 
-import java.time.{ Instant, LocalDateTime }
+import java.time.LocalDateTime
 import scala.concurrent.{ ExecutionContext, Future }
 
 trait SdesAlgebra[F[_]] {
@@ -82,7 +83,8 @@ class SdesService(
   repoSdesSubmission: Repo[SdesSubmission],
   dmsWorkItemAlgebra: DmsWorkItemAlgebra[Future],
   dataStoreWorkItemAlgebra: DataStoreWorkItemAlgebra[Future],
-  envelopeAlgebra: EnvelopeAlgebra[Future]
+  envelopeAlgebra: EnvelopeAlgebra[Future],
+  timeProvider: TimeProvider
 )(implicit
   ec: ExecutionContext
 ) extends SdesAlgebra[Future] {
@@ -99,11 +101,18 @@ class SdesService(
     hc: HeaderCarrier
   ): Future[HttpResponse] = {
     val sdesSubmission =
-      SdesSubmission.createSdesSubmission(correlationId, envelopeId, formTemplateId, submissionRef, destination)
+      SdesSubmission.createSdesSubmission(
+        correlationId,
+        envelopeId,
+        formTemplateId,
+        submissionRef,
+        destination,
+        timeProvider.instantLocal()
+      )
     for {
       res <- if (destination === DataStore) dataStoreConnector.notifySDES(notifyRequest)
              else dmsConnector.notifySDES(notifyRequest)
-      _ <- saveSdesSubmission(sdesSubmission.copy(submittedAt = Some(Instant.now), status = FileReady))
+      _ <- saveSdesSubmission(sdesSubmission.copy(submittedAt = Some(timeProvider.instantLocal()), status = FileReady))
     } yield res
   }
 
@@ -180,8 +189,8 @@ class SdesService(
       _ <-
         saveSdesSubmission(
           sdesSubmission.copy(
-            submittedAt = Some(sdesSubmission.submittedAt.getOrElse(Instant.now)),
-            lastUpdated = Some(Instant.now),
+            submittedAt = Some(sdesSubmission.submittedAt.getOrElse(timeProvider.instantLocal())),
+            lastUpdated = Some(timeProvider.instantLocal()),
             isProcessed = false,
             status = FileReady,
             failureReason = None,

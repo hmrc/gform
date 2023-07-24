@@ -28,7 +28,8 @@ import scala.concurrent.{ ExecutionContext, Future }
 abstract class WorkItemRepo[N](
   mongoComponent: MongoComponent,
   collectionName: String,
-  extraIndexes: Seq[IndexModel]
+  extraIndexes: Seq[IndexModel],
+  now: Instant
 )(implicit ec: ExecutionContext, format: OFormat[N])
     extends WorkItemRepository[N](
       collectionName = collectionName,
@@ -37,7 +38,7 @@ abstract class WorkItemRepo[N](
       workItemFields = WorkItemFields.default,
       extraIndexes = extraIndexes
     ) {
-  override def now(): Instant = Instant.now()
+  override def now(): Instant = now
 
   override val inProgressRetryAfter: Duration = Duration.ofMinutes(1)
 

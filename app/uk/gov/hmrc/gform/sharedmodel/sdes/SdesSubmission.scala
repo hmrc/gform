@@ -37,7 +37,7 @@ final case class SdesSubmission(
   status: NotificationStatus,
   failureReason: Option[String] = None,
   confirmedAt: Option[Instant] = None,
-  createdAt: Instant = Instant.now,
+  createdAt: Instant,
   lastUpdated: Option[Instant] = None,
   destination: Option[SdesDestination]
 )
@@ -48,7 +48,8 @@ object SdesSubmission {
     envelopeId: EnvelopeId,
     formTemplateId: FormTemplateId,
     submissionRef: SubmissionRef,
-    destination: SdesDestination
+    destination: SdesDestination,
+    createdAt: Instant
   ) =
     SdesSubmission(
       correlationId,
@@ -56,7 +57,8 @@ object SdesSubmission {
       formTemplateId,
       submissionRef,
       status = FileReady,
-      destination = Some(destination)
+      destination = Some(destination),
+      createdAt = createdAt
     )
 
   implicit val formatUUID: Format[UUID] =

@@ -22,6 +22,7 @@ import uk.gov.hmrc.gform.mongo.MongoModule
 import uk.gov.hmrc.gform.scheduler.datastore.{ DataStoreQueuePollingService, DataStoreQueueService, DataStoreWorkItemRepo }
 import uk.gov.hmrc.gform.scheduler.dms.{ DmsQueuePollingService, DmsQueueService, DmsWorkItemRepo }
 import uk.gov.hmrc.gform.sdes.SdesModule
+import uk.gov.hmrc.gform.time.TimeModule
 
 import java.util.concurrent.TimeUnit
 import scala.concurrent.ExecutionContext
@@ -31,7 +32,8 @@ class SchedulerModule(
   configModule: ConfigModule,
   mongoModule: MongoModule,
   sdesModule: SdesModule,
-  akkaModule: AkkaModule
+  akkaModule: AkkaModule,
+  timeModule: TimeModule
 )(implicit ex: ExecutionContext) {
 
   private val dmsRetryAfter: Long = configModule.configuration.getMillis("work-item.sdes.dms.queue.retryAfter")
@@ -48,7 +50,7 @@ class SchedulerModule(
   private val dmsPollerEnabled: Boolean = configModule.typesafeConfig.getBoolean("work-item.sdes.dms.poller.enabled")
   private val dmsMaxFailureCount = configModule.typesafeConfig.getInt("work-item.sdes.dms.queue.maxFailureCount")
 
-  private val dmsNotificationRepository = new DmsWorkItemRepo(mongoModule.mongoComponent)
+  private val dmsNotificationRepository = new DmsWorkItemRepo(mongoModule.mongoComponent, timeModule.timeProvider)
 
   val dmsQueueService =
     new DmsQueueService(
@@ -85,7 +87,8 @@ class SchedulerModule(
   private val dataStoreMaxFailureCount =
     configModule.typesafeConfig.getInt("work-item.sdes.data-store.queue.maxFailureCount")
 
-  private val dataStoreNotificationRepository = new DataStoreWorkItemRepo(mongoModule.mongoComponent)
+  private val dataStoreNotificationRepository =
+    new DataStoreWorkItemRepo(mongoModule.mongoComponent, timeModule.timeProvider)
 
   val dataStoreQueueService =
     new DataStoreQueueService(

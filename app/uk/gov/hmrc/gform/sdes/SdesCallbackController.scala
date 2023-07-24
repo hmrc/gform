@@ -24,9 +24,9 @@ import uk.gov.hmrc.gform.objectstore.ObjectStoreAlgebra
 import uk.gov.hmrc.gform.sharedmodel.sdes.NotificationStatus.FileProcessed
 import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination.DataStore
 import uk.gov.hmrc.gform.sharedmodel.sdes.{ CallBackNotification, CorrelationId }
+import uk.gov.hmrc.gform.time.TimeProvider
 import uk.gov.hmrc.objectstore.client.Path
 
-import java.time.Instant
 import scala.concurrent.{ ExecutionContext, Future }
 
 class SdesCallbackController(
@@ -34,7 +34,8 @@ class SdesCallbackController(
   sdesAlgebra: SdesAlgebra[Future],
   objectStoreAlgebra: ObjectStoreAlgebra[Future],
   sdesFileBasePath: String,
-  dataStoreFileBasePath: String
+  dataStoreFileBasePath: String,
+  timeProvider: TimeProvider
 )(implicit ex: ExecutionContext)
     extends BaseController(cc) {
   private val logger = LoggerFactory.getLogger(getClass)
@@ -57,7 +58,7 @@ class SdesCallbackController(
                val updatedSdesSubmission = sdesSubmission.copy(
                  isProcessed = responseStatus === FileProcessed,
                  status = responseStatus,
-                 confirmedAt = Some(Instant.now),
+                 confirmedAt = Some(timeProvider.instantLocal()),
                  failureReason = responseFailureReason
                )
                for {

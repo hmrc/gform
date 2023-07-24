@@ -19,11 +19,12 @@ package uk.gov.hmrc.gform.scheduler.dms
 import org.mongodb.scala.model.{ IndexModel, IndexOptions, Indexes }
 import uk.gov.hmrc.gform.scheduler.WorkItemRepo
 import uk.gov.hmrc.gform.sharedmodel.sdes.SdesWorkItem
+import uk.gov.hmrc.gform.time.TimeProvider
 import uk.gov.hmrc.mongo.MongoComponent
 
 import scala.concurrent.ExecutionContext
 
-class DmsWorkItemRepo(mongoComponent: MongoComponent)(implicit
+class DmsWorkItemRepo(mongoComponent: MongoComponent, timeProvider: TimeProvider)(implicit
   ec: ExecutionContext
 ) extends WorkItemRepo[SdesWorkItem](
       mongoComponent,
@@ -35,5 +36,6 @@ class DmsWorkItemRepo(mongoComponent: MongoComponent)(implicit
             .background(true)
             .name("item.formTemplateId")
         )
-      )
+      ),
+      timeProvider.instantLocal()
     )

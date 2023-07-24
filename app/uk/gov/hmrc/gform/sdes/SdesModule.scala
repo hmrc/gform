@@ -32,6 +32,7 @@ import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.gform.sharedmodel.sdes._
+import uk.gov.hmrc.gform.time.TimeModule
 import uk.gov.hmrc.gform.wshttp.WSHttpModule
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 import uk.gov.hmrc.mongo.workitem.{ ProcessingStatus, WorkItem }
@@ -45,7 +46,8 @@ class SdesModule(
   mongoModule: MongoModule,
   objectStoreModule: ObjectStoreModule,
   akkaModule: AkkaModule,
-  envelopeModule: EnvelopeModule
+  envelopeModule: EnvelopeModule,
+  timeModule: TimeModule
 )(implicit ex: ExecutionContext) {
 
   private val sdesBaseUrl = configModule.serviceConfig.baseUrl("sdes")
@@ -82,7 +84,7 @@ class SdesModule(
   val dmsConnector: SdesConnector =
     new SdesConnector(wSHttpModule.auditableWSHttp, sdesBaseUrl, sdesBasePath, dmsHeaders)
 
-  val dmsWorkItemRepo = new DmsWorkItemRepo(mongoModule.mongoComponent)
+  val dmsWorkItemRepo = new DmsWorkItemRepo(mongoModule.mongoComponent, timeModule.timeProvider)
 
   val dmsWorkItemService: DmsWorkItemAlgebra[Future] = new DmsWorkItemService(
     dmsWorkItemRepo,
@@ -110,7 +112,7 @@ class SdesModule(
   val dataStoreConnector: SdesConnector =
     new SdesConnector(wSHttpModule.auditableWSHttp, sdesBaseUrl, sdesBasePath, dataStoreHeaders)
 
-  val dataStoreWorkItemRepo = new DataStoreWorkItemRepo(mongoModule.mongoComponent)
+  val dataStoreWorkItemRepo = new DataStoreWorkItemRepo(mongoModule.mongoComponent, timeModule.timeProvider)
 
   val dataStoreWorkItemService: DataStoreWorkItemAlgebra[Future] = new DataStoreWorkItemService(
     dataStoreWorkItemRepo,
@@ -130,7 +132,8 @@ class SdesModule(
       repoSdesSubmission,
       dmsWorkItemService,
       dataStoreWorkItemService,
-      envelopeModule.envelopeService
+      envelopeModule.envelopeService,
+      timeModule.timeProvider
     )
 
   private val dataStoreFileBasePath = configModule.serviceConfig.getString("object-store.base-filepath.data-store")
@@ -142,7 +145,8 @@ class SdesModule(
       sdesService,
       objectStoreModule.objectStoreService,
       sdesFileBasePath,
-      dataStoreFileBasePath
+      dataStoreFileBasePath,
+      timeModule.timeProvider
     )
 
   val sdesController: SdesController =

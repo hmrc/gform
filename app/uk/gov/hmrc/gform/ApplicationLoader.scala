@@ -111,7 +111,7 @@ class ApplicationModule(context: Context)
   private val envelopeModule = new EnvelopeModule(mongoModule, configModule)
   private val objectStoreModule = new ObjectStoreModule(configModule, wsClient, akkaModule, envelopeModule)
   private val sdesModule =
-    new SdesModule(configModule, wSHttpModule, mongoModule, objectStoreModule, akkaModule, envelopeModule)
+    new SdesModule(configModule, wSHttpModule, mongoModule, objectStoreModule, akkaModule, envelopeModule, timeModule)
   val fileUploadModule =
     new FileUploadModule(
       configModule,
@@ -281,7 +281,7 @@ class ApplicationModule(context: Context)
     playComponents.context.devContext.map(_.sourceMapper)
   )
 
-  val schedulerModule = new SchedulerModule(configModule, mongoModule, sdesModule, akkaModule)
+  val schedulerModule = new SchedulerModule(configModule, mongoModule, sdesModule, akkaModule, timeModule)
 
   val builderModule = new BuilderModule(controllerComponents, formTemplateModule.formTemplateService)
 
