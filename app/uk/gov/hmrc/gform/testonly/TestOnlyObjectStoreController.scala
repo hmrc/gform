@@ -20,14 +20,15 @@ import akka.stream.Materializer
 import play.api.mvc.{ ControllerComponents, Results }
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.objectstore.ObjectStoreAlgebra
+import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
+import uk.gov.hmrc.objectstore.client.Path
 
 import scala.concurrent.{ ExecutionContext, Future }
 
 class TestOnlyObjectStoreController(
   controllerComponents: ControllerComponents,
   objectStoreAlgebra: ObjectStoreAlgebra[Future],
-  dmsBasePath: String,
   dataStoreBasePath: String
 )(implicit
   ex: ExecutionContext,
@@ -35,7 +36,7 @@ class TestOnlyObjectStoreController(
 ) extends BaseController(controllerComponents) {
 
   def downloadDmsFiles(envelopeId: EnvelopeId) = Action.async { implicit request =>
-    objectStoreAlgebra.getZipFile(dmsBasePath, envelopeId) map {
+    objectStoreAlgebra.getZipFile(envelopeId) map {
       case Some(objectSource) =>
         Ok.streamed(
           objectSource.content,
@@ -49,16 +50,19 @@ class TestOnlyObjectStoreController(
     }
   }
 
-  def downloadDataStoreFiles(envelopeId: EnvelopeId) = Action.async { implicit request =>
-    objectStoreAlgebra.getZipFile(dataStoreBasePath, envelopeId) map {
+  def downloadDataStoreFile(envelopeId: EnvelopeId) = Action.async { implicit request =>
+    objectStoreAlgebra.getFile(
+      Path.Directory(s"${dataStoreBasePath}envelopes/${envelopeId.value}"),
+      s"${envelopeId.value}.json"
+    ) map {
       case Some(objectSource) =>
         Ok.streamed(
           objectSource.content,
           contentLength = Some(objectSource.metadata.contentLength),
           contentType = Some(objectSource.metadata.contentType)
-        ).as("application/zip")
+        ).as(ContentType.`application/json`.value)
           .withHeaders(
-            Results.contentDispositionHeader(inline = false, name = Some(s"${envelopeId.value}.zip")).toList: _*
+            Results.contentDispositionHeader(inline = false, name = Some(s"${envelopeId.value}.json")).toList: _*
           )
       case None => BadRequest(s"Envelope with id: $envelopeId not found")
     }

@@ -51,16 +51,13 @@ class FileUploadModule(
   val fileUploadFrontendConnector: FileUploadFrontendConnector =
     new FileUploadFrontendConnector(config, wSHttpModule.auditableWSHttp)(ex, akkaModule.actorSystem.scheduler)
 
-  private val dmsBasePath = configModule.typesafeConfig.getString("object-store.base-filepath.dms")
-
   val fileUploadService: FileUploadService =
     new FileUploadService(
       fileUploadConnector,
       fileUploadFrontendConnector,
       timeModule.timeProvider,
       objectStoreModule.objectStoreService,
-      sdesModule.dmsWorkItemService,
-      dmsBasePath
+      sdesModule.dmsWorkItemService
     )
 
   val foptFileDownloadService = new FileDownloadAlgebra[FOpt] {

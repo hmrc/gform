@@ -24,6 +24,7 @@ import uk.gov.hmrc.gform.objectstore.ObjectStoreAlgebra
 import uk.gov.hmrc.gform.sharedmodel.sdes.NotificationStatus.FileProcessed
 import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination.DataStore
 import uk.gov.hmrc.gform.sharedmodel.sdes.{ CallBackNotification, CorrelationId }
+import uk.gov.hmrc.objectstore.client.Path
 
 import java.time.Instant
 import scala.concurrent.{ ExecutionContext, Future }
@@ -32,8 +33,8 @@ class SdesCallbackController(
   cc: ControllerComponents,
   sdesAlgebra: SdesAlgebra[Future],
   objectStoreAlgebra: ObjectStoreAlgebra[Future],
-  dmsBasePath: String,
-  dataStoreBasePath: String
+  sdesFileBasePath: String,
+  dataStoreFileBasePath: String
 )(implicit ex: ExecutionContext)
     extends BaseController(cc) {
   private val logger = LoggerFactory.getLogger(getClass)
@@ -59,12 +60,18 @@ class SdesCallbackController(
                  confirmedAt = Some(Instant.now),
                  failureReason = responseFailureReason
                )
-               val basePath = if (sdesSubmission.destination.exists(_ === DataStore)) dataStoreBasePath else dmsBasePath
                for {
                  _ <- sdesAlgebra.saveSdesSubmission(updatedSdesSubmission)
-                 _ <- if (responseStatus === FileProcessed)
-                        objectStoreAlgebra.deleteZipFile(basePath, sdesSubmission.envelopeId)
-                      else Future.unit
+                 _ <- if (responseStatus === FileProcessed) {
+                        sdesSubmission.destination match {
+                          case Some(DataStore) =>
+                            objectStoreAlgebra.deleteFile(
+                              Path.Directory(s"$sdesFileBasePath$dataStoreFileBasePath"),
+                              fileName
+                            )
+                          case _ => objectStoreAlgebra.deleteZipFile(sdesSubmission.envelopeId)
+                        }
+                      } else Future.unit
                } yield ()
              case None =>
                Future.failed(new RuntimeException(s"Correlation id [$correlationID] not found in mongo collection"))

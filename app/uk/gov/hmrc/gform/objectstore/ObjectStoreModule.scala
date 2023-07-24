@@ -32,7 +32,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.objectstore.client
 import uk.gov.hmrc.objectstore.client.config.ObjectStoreClientConfig
 import uk.gov.hmrc.objectstore.client.play.PlayObjectStoreClient
-import uk.gov.hmrc.objectstore.client.{ ObjectSummaryWithMd5, RetentionPeriod }
+import uk.gov.hmrc.objectstore.client.{ ObjectSummaryWithMd5, Path, RetentionPeriod }
 
 import scala.concurrent.{ ExecutionContext, Future }
 
@@ -65,10 +65,8 @@ class ObjectStoreModule(
       akkaModule.actorSystem
     )
 
-  private val dmsBasePath = configModule.typesafeConfig.getString("object-store.base-filepath.dms")
-
   val objectStoreService: ObjectStoreAlgebra[Future] =
-    new ObjectStoreService(objectStoreConnector, envelopeModule.envelopeService, dmsBasePath)
+    new ObjectStoreService(objectStoreConnector, envelopeModule.envelopeService)
 
   val objectStoreController: ObjectStoreController =
     new ObjectStoreController(configModule.controllerComponents, objectStoreService)
@@ -82,10 +80,9 @@ class ObjectStoreModule(
       fileId: FileId,
       fileName: String,
       content: ByteString,
-      contentType: ContentType,
-      path: String
+      contentType: ContentType
     )(implicit hc: HeaderCarrier): FOpt[ObjectSummaryWithMd5] =
-      fromFutureA(objectStoreService.uploadFile(envelopeId, fileId, fileName, content, contentType, path))
+      fromFutureA(objectStoreService.uploadFile(envelopeId, fileId, fileName, content, contentType))
 
     override def getEnvelope(envelopeId: EnvelopeId): FOpt[EnvelopeData] =
       fromFutureA(objectStoreService.getEnvelope(envelopeId))
@@ -93,21 +90,37 @@ class ObjectStoreModule(
     override def deleteFile(envelopeId: EnvelopeId, fileId: FileId)(implicit hc: HeaderCarrier): FOpt[Unit] =
       fromFutureA(objectStoreService.deleteFile(envelopeId, fileId))
 
-    override def zipFiles(path: String, envelopeId: EnvelopeId)(implicit
+    override def zipFiles(envelopeId: EnvelopeId)(implicit
       hc: HeaderCarrier
     ): FOpt[ObjectSummaryWithMd5] =
-      fromFutureA(objectStoreService.zipFiles(path: String, envelopeId))
+      fromFutureA(objectStoreService.zipFiles(envelopeId))
 
-    override def deleteZipFile(path: String, envelopeId: EnvelopeId)(implicit hc: HeaderCarrier): FOpt[Unit] =
-      fromFutureA(objectStoreService.deleteZipFile(path: String, envelopeId))
+    override def deleteZipFile(envelopeId: EnvelopeId)(implicit hc: HeaderCarrier): FOpt[Unit] =
+      fromFutureA(objectStoreService.deleteZipFile(envelopeId))
 
-    override def getZipFile(path: String, envelopeId: EnvelopeId)(implicit
+    override def getZipFile(envelopeId: EnvelopeId)(implicit
       hc: HeaderCarrier,
       m: Materializer
     ): FOpt[Option[client.Object[Source[ByteString, NotUsed]]]] =
-      fromFutureA(objectStoreService.getZipFile(path, envelopeId))
+      fromFutureA(objectStoreService.getZipFile(envelopeId))
 
     override def isObjectStore(envelopeId: EnvelopeId): FOpt[Boolean] =
       fromFutureA(objectStoreService.isObjectStore(envelopeId))
+
+    override def uploadFile(
+      path: Path.Directory,
+      fileName: String,
+      content: ByteString,
+      contentType: ContentType
+    )(implicit hc: HeaderCarrier): FOpt[ObjectSummaryWithMd5] =
+      fromFutureA(objectStoreService.uploadFile(path, fileName, content, contentType))
+
+    override def deleteFile(directory: Path.Directory, fileName: String)(implicit hc: HeaderCarrier): FOpt[Unit] =
+      fromFutureA(objectStoreService.deleteFile(directory, fileName))
+
+    override def getFile(directory: Path.Directory, fileName: String)(implicit
+      hc: HeaderCarrier
+    ): FOpt[Option[client.Object[Source[ByteString, NotUsed]]]] =
+      fromFutureA(objectStoreService.getFile(directory, fileName))
   }
 }
