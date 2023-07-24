@@ -16,13 +16,17 @@
 
 package uk.gov.hmrc.gform.sdes
 
+import akka.stream.Materializer
+import akka.util.ByteString
 import play.api.libs.json.Json
 import play.api.mvc.ControllerComponents
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.objectstore.ObjectStoreAlgebra
+import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination.DataStore
 import uk.gov.hmrc.gform.sharedmodel.sdes.{ CorrelationId, NotificationStatus, SdesDestination, SdesSubmissionData }
+import uk.gov.hmrc.objectstore.client.Path
 
 import scala.concurrent.{ ExecutionContext, Future }
 
@@ -30,10 +34,11 @@ class SdesController(
   cc: ControllerComponents,
   sdesAlgebra: SdesAlgebra[Future],
   objectStoreAlgebra: ObjectStoreAlgebra[Future],
-  dmsBasePath: String,
-  dataStoreBasePath: String
+  sdesBasePath: String,
+  dataStorebasePath: String
 )(implicit
-  ex: ExecutionContext
+  ex: ExecutionContext,
+  m: Materializer
 ) extends BaseController(cc) {
 
   def search(
@@ -65,8 +70,37 @@ class SdesController(
                     for {
                       objSummary <- submission.destination match {
                                       case Some(DataStore) =>
-                                        objectStoreAlgebra.zipFiles(dataStoreBasePath, submission.envelopeId)
-                                      case _ => objectStoreAlgebra.zipFiles(dmsBasePath, submission.envelopeId)
+                                        val fileName = s"${submission.envelopeId.value}.json"
+                                        val envelopeDirectory = Path.Directory(
+                                          s"${dataStorebasePath}envelopes/${submission.envelopeId.value}"
+                                        )
+
+                                        for {
+                                          maybeObject <- objectStoreAlgebra.getFile(envelopeDirectory, fileName)
+                                          objSummary <- maybeObject match {
+                                                          case Some(obj) =>
+                                                            val byteStringFuture: Future[ByteString] =
+                                                              obj.content.runFold(ByteString.empty)(_ ++ _)
+
+                                                            byteStringFuture.flatMap { concatenatedByteString =>
+                                                              objectStoreAlgebra.uploadFile(
+                                                                Path.Directory(
+                                                                  s"$sdesBasePath$dataStorebasePath"
+                                                                ),
+                                                                fileName,
+                                                                concatenatedByteString,
+                                                                ContentType.`application/json`
+                                                              )
+                                                            }
+                                                          case None =>
+                                                            Future.failed(
+                                                              new Exception(
+                                                                s"File ${submission.envelopeId.value}.json not found in the object store."
+                                                              )
+                                                            )
+                                                        }
+                                        } yield objSummary
+                                      case _ => objectStoreAlgebra.zipFiles(submission.envelopeId)
                                     }
                       res <- sdesAlgebra.notifySDES(submission, objSummary)
                     } yield res

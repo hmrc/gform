@@ -133,16 +133,16 @@ class SdesModule(
       envelopeModule.envelopeService
     )
 
-  private val dataStoreBasePath = configModule.serviceConfig.getString("object-store.base-filepath.data-store")
-  private val dmsBasePath = configModule.serviceConfig.getString("object-store.base-filepath.dms")
+  private val dataStoreFileBasePath = configModule.serviceConfig.getString("object-store.base-filepath.data-store")
+  private val sdesFileBasePath = configModule.serviceConfig.getString("object-store.base-filepath.sdes")
 
   val sdesCallbackController: SdesCallbackController =
     new SdesCallbackController(
       configModule.controllerComponents,
       sdesService,
       objectStoreModule.objectStoreService,
-      dmsBasePath,
-      dataStoreBasePath
+      sdesFileBasePath,
+      dataStoreFileBasePath
     )
 
   val sdesController: SdesController =
@@ -150,9 +150,9 @@ class SdesModule(
       configModule.controllerComponents,
       sdesService,
       objectStoreModule.objectStoreService,
-      dmsBasePath,
-      dataStoreBasePath
-    )
+      sdesFileBasePath,
+      dataStoreFileBasePath
+    )(ex, akkaModule.materializer)
 
   val foptSdesService: SdesAlgebra[FOpt] = new SdesAlgebra[FOpt] {
 

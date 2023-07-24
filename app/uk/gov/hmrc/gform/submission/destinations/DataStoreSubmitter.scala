@@ -24,12 +24,12 @@ import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
 import uk.gov.hmrc.gform.submission.{ DataStoreFileGenerator, RoboticsXMLGenerator }
 import org.json4s.native.JsonMethods
 import org.json4s.native.Printer.compact
-import uk.gov.hmrc.gform.fileupload.FileUploadService
 import uk.gov.hmrc.gform.objectstore.ObjectStoreAlgebra
 import uk.gov.hmrc.gform.sdes.datastore.DataStoreWorkItemAlgebra
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 import uk.gov.hmrc.gform.time.TimeProvider
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.objectstore.client.Path
 
 import java.time.{ Instant, ZoneId }
 import java.time.format.DateTimeFormatter
@@ -38,8 +38,9 @@ import scala.concurrent.ExecutionContext
 class DataStoreSubmitter(
   objectStoreAlgebra: ObjectStoreAlgebra[FOpt],
   dataStoreWorkItemAlgebra: DataStoreWorkItemAlgebra[FOpt],
-  basePath: String,
-  timeProvider: TimeProvider
+  timeProvider: TimeProvider,
+  dataStorebasePath: String,
+  sdesBasePath: String
 )(implicit
   ec: ExecutionContext
 ) extends DataStoreSubmitterAlgebra[FOpt] {
@@ -53,10 +54,7 @@ class DataStoreSubmitter(
   ): FOpt[Unit] = {
     implicit val hc = new HeaderCarrier
     val dateSubmittedFormater = DateTimeFormatter.ofPattern("dd/MM/yyyy").withZone(ZoneId.of("Europe/London"))
-    val date = timeProvider.localDateTime().format(DateTimeFormatter.ofPattern("yyyyMMdd"))
     val submission = submissionInfo.submission
-
-    val fileNamePrefix = s"${submission.submissionRef.withoutHyphens}-$date"
 
     val gform: String =
       compact(
@@ -87,17 +85,21 @@ class DataStoreSubmitter(
     )
 
     val dataStoreJson = DataStoreFileGenerator(userSession, dataStoreMetaData, gform, dataStore.includeSessionInfo)
-
+    val fileName = s"${submission.envelopeId.value}.json"
     for {
       _ <- objectStoreAlgebra.uploadFile(
-             submission.envelopeId,
-             FileUploadService.FileIds.dataStore,
-             s"$fileNamePrefix-datastore.json",
+             Path.Directory(s"${dataStorebasePath}envelopes/${submission.envelopeId.value}"),
+             fileName,
              ByteString(dataStoreJson.getBytes),
-             ContentType.`application/json`,
-             basePath
+             ContentType.`application/json`
            )
-      objWithSummary <- objectStoreAlgebra.zipFiles(basePath, submission.envelopeId)
+
+      objWithSummary <- objectStoreAlgebra.uploadFile(
+                          Path.Directory(s"$sdesBasePath$dataStorebasePath"),
+                          fileName,
+                          ByteString(dataStoreJson.getBytes),
+                          ContentType.`application/json`
+                        )
       _ <- dataStoreWorkItemAlgebra.pushWorkItem(
              submission.envelopeId,
              submission.dmsMetaData.formTemplateId,

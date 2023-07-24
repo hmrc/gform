@@ -42,8 +42,7 @@ class FileUploadService(
   fileUploadFrontendConnector: FileUploadFrontendConnector,
   timeModule: TimeProvider = new TimeProvider,
   objectStoreService: ObjectStoreAlgebra[Future],
-  dmsWorkItemAlgebra: DmsWorkItemAlgebra[Future],
-  dmsBasePath: String
+  dmsWorkItemAlgebra: DmsWorkItemAlgebra[Future]
 )(implicit ex: ExecutionContext)
     extends FileUploadAlgebra[Future] with FileDownloadAlgebra[Future] {
   private val logger = LoggerFactory.getLogger(getClass)
@@ -214,7 +213,7 @@ class FileUploadService(
     implicit hc: HeaderCarrier
   ): Future[Unit] =
     for {
-      objectSummary <- objectStoreService.zipFiles(dmsBasePath, envelopeId)
+      objectSummary <- objectStoreService.zipFiles(envelopeId)
       _             <- dmsWorkItemAlgebra.pushWorkItem(envelopeId, formTemplateId, submissionRef, objectSummary)
     } yield ()
 }

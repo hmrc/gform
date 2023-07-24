@@ -83,13 +83,11 @@ class TestOnlyModule(
       proxyActions
     )
 
-  private val dmsBasePath = configModule.serviceConfig.getString("object-store.base-filepath.dms")
   private val dataStoreBasePath = configModule.serviceConfig.getString("object-store.base-filepath.data-store")
 
   val testOnlyObjectStoreController: TestOnlyObjectStoreController = new TestOnlyObjectStoreController(
     configModule.controllerComponents,
     objectStoreModule.objectStoreService,
-    dmsBasePath,
     dataStoreBasePath
   )(ex, akkaModule.materializer)
 }
