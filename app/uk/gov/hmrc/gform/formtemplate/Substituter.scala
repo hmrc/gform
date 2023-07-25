@@ -324,6 +324,7 @@ object Substituter {
         pages = addToList.pages(substitutions),
         repeatsUntil = addToList.repeatsUntil(substitutions),
         repeatsWhile = addToList.repeatsWhile(substitutions),
+        repeaterContinueLabel = addToList.repeaterContinueLabel(substitutions),
         addAnotherQuestion = addToList.addAnotherQuestion(substitutions),
         instruction = addToList.instruction(substitutions),
         infoMessage = addToList.infoMessage(substitutions),
