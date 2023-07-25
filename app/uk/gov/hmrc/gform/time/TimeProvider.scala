@@ -20,7 +20,7 @@ import java.time._
 class TimeProvider {
   def localDateTime(): LocalDateTime = LocalDateTime.now(ZoneId.of("Europe/London"))
   def instant(): Instant = Instant.now
-  def instantLocal(): Instant = localDateTime().toInstant(ZoneOffset.UTC)
+  def instantLocal(): Instant = LocalDateTime.now().atZone(ZoneId.of("Europe/London")).toInstant
 }
 
 class TimeModule {
