@@ -61,6 +61,7 @@ object Section {
     pages: NonEmptyList[Page],
     repeatsUntil: Option[IncludeIf],
     repeatsWhile: Option[IncludeIf],
+    repeaterContinueLabel: Option[SmartString],
     addAnotherQuestion: FormComponent,
     instruction: Option[Instruction],
     presentationHint: Option[PresentationHint],
@@ -94,6 +95,7 @@ object Section {
           LeafExpr(path + "pages", a.pages) ++
           LeafExpr(path + "repeatsUntil", a.repeatsUntil) ++
           LeafExpr(path + "repeatsWhile", a.repeatsWhile) ++
+          LeafExpr(path + "repeaterContinueLabel", a.repeaterContinueLabel) ++
           LeafExpr(path + "addAnotherQuestion", a.addAnotherQuestion) ++
           LeafExpr(path + "instruction", a.instruction) ++
           LeafExpr(path + "infoMessage", a.infoMessage) ++

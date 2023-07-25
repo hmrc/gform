@@ -131,24 +131,25 @@ trait SectionGen {
 
   def addToListSectionGen: Gen[Section.AddToList] =
     for {
-      title              <- smartStringGen
-      caption            <- Gen.option(smartStringGen)
-      noPIITitle         <- Gen.option(smartStringGen)
-      description        <- smartStringGen
-      summaryDescription <- smartStringGen
-      shortName          <- smartStringGen
-      summaryName        <- smartStringGen
-      includeIf          <- Gen.option(IncludeIfGen.includeIfGen)
-      pages              <- PrimitiveGen.oneOrMoreGen(pageGen)
-      repeatsUntil       <- Gen.option(IncludeIfGen.includeIfGen)
-      repeatsWhile       <- Gen.option(IncludeIfGen.includeIfGen)
-      formComponent      <- FormComponentGen.formComponentGen(0)
-      choice             <- ComponentTypeGen.choiceGen
-      instruction        <- Gen.option(InstructionGen.instructionGen)
-      presentationHint   <- Gen.option(PresentationHintGen.presentationHintGen)
-      infoMessage        <- Gen.option(smartStringGen)
-      errorMessage       <- Gen.option(smartStringGen)
-      maybePageId        <- Gen.option(PageIdGen.pageIdGen)
+      title                 <- smartStringGen
+      caption               <- Gen.option(smartStringGen)
+      noPIITitle            <- Gen.option(smartStringGen)
+      description           <- smartStringGen
+      summaryDescription    <- smartStringGen
+      shortName             <- smartStringGen
+      summaryName           <- smartStringGen
+      includeIf             <- Gen.option(IncludeIfGen.includeIfGen)
+      pages                 <- PrimitiveGen.oneOrMoreGen(pageGen)
+      repeatsUntil          <- Gen.option(IncludeIfGen.includeIfGen)
+      repeatsWhile          <- Gen.option(IncludeIfGen.includeIfGen)
+      repeaterContinueLabel <- Gen.option(smartStringGen)
+      formComponent         <- FormComponentGen.formComponentGen(0)
+      choice                <- ComponentTypeGen.choiceGen
+      instruction           <- Gen.option(InstructionGen.instructionGen)
+      presentationHint      <- Gen.option(PresentationHintGen.presentationHintGen)
+      infoMessage           <- Gen.option(smartStringGen)
+      errorMessage          <- Gen.option(smartStringGen)
+      maybePageId           <- Gen.option(PageIdGen.pageIdGen)
     } yield Section
       .AddToList(
         title,
@@ -162,6 +163,7 @@ trait SectionGen {
         pages,
         repeatsUntil,
         repeatsWhile,
+        repeaterContinueLabel,
         formComponent.copy(`type` = choice),
         instruction,
         presentationHint,
