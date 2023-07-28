@@ -107,6 +107,10 @@ object DataRetrieveDefinitions {
         AttributeInstruction(
           DataRetrieve.Attribute("sortCodeSupportsDirectCredit"),
           ConstructAttribute.AsIs(Fetch(List("sortCodeSupportsDirectCredit")))
+        ),
+        AttributeInstruction(
+          DataRetrieve.Attribute("accountName"),
+          ConstructAttribute.AsIs(Fetch(List("accountName")))
         )
       )
     ),
