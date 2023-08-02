@@ -139,7 +139,7 @@ class SdesService(
       queryByDestination
     }
 
-    val queryNotProcessed = Filters.and(equal("isProcessed", false), queryByTemplateId)
+    val queryNotProcessed = Filters.and(equal("isProcessed", false), query)
 
     val sort = equal("createdAt", -1)
 
@@ -159,7 +159,7 @@ class SdesService(
                               } yield SdesSubmissionData.fromSdesSubmission(sdesSubmission, numberOfFiles)
                             )
       count    <- repoSdesSubmission.count(queryNotProcessed)
-      countAll <- repoSdesSubmission.count(queryByTemplateId)
+      countAll <- repoSdesSubmission.count(query)
     } yield SdesSubmissionPageData(sdesSubmissionData, count, countAll)
 
   }

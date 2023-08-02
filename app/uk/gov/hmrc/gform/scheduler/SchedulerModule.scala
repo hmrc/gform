@@ -18,10 +18,16 @@ package uk.gov.hmrc.gform.scheduler
 
 import uk.gov.hmrc.gform.akka.AkkaModule
 import uk.gov.hmrc.gform.config.ConfigModule
+import uk.gov.hmrc.gform.email.EmailModule
 import uk.gov.hmrc.gform.mongo.MongoModule
+import uk.gov.hmrc.gform.repo.Repo
+import uk.gov.hmrc.gform.scheduler.alert.Alert
+import uk.gov.hmrc.gform.scheduler.alert.sdes.{ SdesAlertPollingService, SdesAlertService }
 import uk.gov.hmrc.gform.scheduler.datastore.{ DataStoreQueuePollingService, DataStoreQueueService, DataStoreWorkItemRepo }
 import uk.gov.hmrc.gform.scheduler.dms.{ DmsQueuePollingService, DmsQueueService, DmsWorkItemRepo }
 import uk.gov.hmrc.gform.sdes.SdesModule
+import uk.gov.hmrc.gform.sharedmodel.email.EmailTemplateId
+import uk.gov.hmrc.gform.sharedmodel.notifier.NotifierEmailAddress
 
 import java.util.concurrent.TimeUnit
 import scala.concurrent.ExecutionContext
@@ -31,7 +37,8 @@ class SchedulerModule(
   configModule: ConfigModule,
   mongoModule: MongoModule,
   sdesModule: SdesModule,
-  akkaModule: AkkaModule
+  akkaModule: AkkaModule,
+  emailModule: EmailModule
 )(implicit ex: ExecutionContext) {
 
   private val dmsRetryAfter: Long = configModule.configuration.getMillis("work-item.sdes.dms.queue.retryAfter")
@@ -102,5 +109,48 @@ class SchedulerModule(
     dataStorePollerInterval,
     dataStorePollerEnabled,
     dataStoreQueueService
+  )
+
+  private val alertSdesInitialDelay: FiniteDuration =
+    FiniteDuration(
+      configModule.typesafeConfig.getDuration("alert.sdes.initialDelay").toNanos,
+      TimeUnit.NANOSECONDS
+    )
+  private val alertSdesInterval: FiniteDuration =
+    FiniteDuration(
+      configModule.typesafeConfig.getDuration("alert.sdes.interval").toNanos,
+      TimeUnit.NANOSECONDS
+    )
+  private val alertSdesEnabled: Boolean = configModule.typesafeConfig.getBoolean("alert.sdes.enabled")
+  private val alertSdesThresholdLimit: Int = configModule.typesafeConfig.getInt("alert.sdes.thresholdLimit")
+  private val alertSdesDestination = configModule.configuration.getOptional[String]("alert.sdes.destination")
+  private val alertSdesNotifierEmailAddress: String =
+    configModule.typesafeConfig.getString("alert.sdes.notifierEmailAddress")
+  private val alertSdesEmailTemplateId: String = configModule.typesafeConfig.getString("alert.sdes.emailTemplateId")
+
+  private val repoAlert: Repo[Alert] =
+    new Repo[Alert](
+      "alert",
+      mongoModule.mongoComponent,
+      _.name.toString,
+      replaceIndexes = true
+    )
+
+  val sdesAlertService = new SdesAlertService(
+    sdesModule.sdesService,
+    alertSdesThresholdLimit,
+    alertSdesDestination,
+    NotifierEmailAddress(alertSdesNotifierEmailAddress),
+    EmailTemplateId(alertSdesEmailTemplateId),
+    emailModule.emailLogic,
+    repoAlert
+  )
+
+  new SdesAlertPollingService(
+    akkaModule.actorSystem,
+    alertSdesInitialDelay,
+    alertSdesInterval,
+    alertSdesEnabled,
+    sdesAlertService
   )
 }

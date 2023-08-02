@@ -281,7 +281,7 @@ class ApplicationModule(context: Context)
     playComponents.context.devContext.map(_.sourceMapper)
   )
 
-  val schedulerModule = new SchedulerModule(configModule, mongoModule, sdesModule, akkaModule)
+  val schedulerModule = new SchedulerModule(configModule, mongoModule, sdesModule, akkaModule, emailModule)
 
   val builderModule = new BuilderModule(controllerComponents, formTemplateModule.formTemplateService)
 

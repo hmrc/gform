@@ -37,4 +37,9 @@ object SdesDestination {
     case Dms       => "Dms"
     case DataStore => "DataStore"
   }
+
+  def fromString(destination: String): SdesDestination = destination match {
+    case "Dms"       => Dms
+    case "DataStore" => DataStore
+  }
 }
