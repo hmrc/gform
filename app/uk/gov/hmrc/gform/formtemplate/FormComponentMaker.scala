@@ -64,6 +64,11 @@ class FormComponentMaker(json: JsValue) {
     case _                                => Right(false)
   }
 
+  lazy val optNotPII: Opt[Boolean] = (json \ "notPII") match {
+    case JsDefined(JsString(IsTrueish())) => Right(true)
+    case _                                => Right(false)
+  }
+
   def optFileUploadProvider(compression: Boolean): Opt[FileUploadProvider] = (json \ "service") match {
     case JsDefined(JsString("upscan"))     => Right(FileUploadProvider.Upscan(compression))
     case JsDefined(JsString("fileUpload")) => Right(FileUploadProvider.FileUploadFrontend)
@@ -281,7 +286,20 @@ class FormComponentMaker(json: JsValue) {
       includeIf   <- optIncludeIf
       validIf     <- optValidIf
       labelSize   <- optLabelSize
-    } yield mkFieldValue(label, helpText, presHint, mes, ct, validators, instruction, includeIf, validIf, labelSize)
+      notPII      <- optNotPII
+    } yield mkFieldValue(
+      label,
+      helpText,
+      presHint,
+      mes,
+      ct,
+      validators,
+      instruction,
+      includeIf,
+      validIf,
+      labelSize,
+      notPII
+    )
 
   private def toOpt[A](result: JsResult[A], pathPrefix: String): Opt[A] =
     result match {
@@ -306,7 +324,8 @@ class FormComponentMaker(json: JsValue) {
     instruction: Option[Instruction],
     includeIf: Option[IncludeIf],
     validIf: Option[ValidIf],
-    labelSize: Option[LabelSize]
+    labelSize: Option[LabelSize],
+    notPII: Boolean
   ): FormComponent =
     FormComponent(
       id = id,
@@ -328,7 +347,8 @@ class FormComponentMaker(json: JsValue) {
       labelSize = labelSize,
       errorShortName = errorShortName,
       errorShortNameStart = errorShortNameStart,
-      errorExample = errorExample
+      errorExample = errorExample,
+      notPII = notPII
     )
 
   private lazy val optMES: Opt[MES] = (submitMode, mandatory, optMaybeValueExpr) match {
