@@ -335,7 +335,7 @@ object FormTemplateValidator {
     formTemplate.formKind.allSections
       .flatMap(
         _.fold(n => check(n.page.title, n.page.noPIITitle, titleMessage))(r =>
-          check(r.title, r.page.noPIITitle, titleMessage)
+          check(r.title(), r.page.noPIITitle, titleMessage)
         )(a =>
           check(a.title, a.noPIITitle, titleMessage)
             ++ a.defaultPage.toList.flatMap(p => check(p.title, p.noPIITitle, titleMessage))

@@ -287,7 +287,19 @@ class FormComponentMaker(json: JsValue) {
       validIf     <- optValidIf
       labelSize   <- optLabelSize
       notPII      <- optNotPII
-    } yield mkFieldValue(label, helpText, presHint, mes, ct, validators, instruction, includeIf, validIf, labelSize)
+    } yield mkFieldValue(
+      label,
+      helpText,
+      presHint,
+      mes,
+      ct,
+      validators,
+      instruction,
+      includeIf,
+      validIf,
+      labelSize,
+      notPII
+    )
 
   private def toOpt[A](result: JsResult[A], pathPrefix: String): Opt[A] =
     result match {
