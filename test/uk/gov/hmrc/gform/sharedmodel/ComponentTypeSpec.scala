@@ -21,6 +21,9 @@ import play.api.libs.json.{ JsError, JsSuccess, Json, Reads }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ ComponentType, FormComponent, OverseasAddress }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.OverseasAddress.Configurable._
 
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.SelectionCriteriaValue._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate._
+
 class ComponentTypeSpec extends FunSuite {
 
   test("Overseas address with all available customization") {
@@ -104,6 +107,44 @@ class ComponentTypeSpec extends FunSuite {
            |}""")
 
     val expected = OverseasAddress(Nil, Nil, false, None, false)
+
+    assertEquals(componentType, expected)
+
+  }
+
+  test("Overseas address with all available customization") {
+    val componentType =
+      toComponentType("""|{
+                         |  "type": "overseasAddress",
+                         |  "id": "colombiaAddress",
+                         |  "label": "",
+                         |  "line2Mandatory": "true",
+                         |  "cityMandatory": "false",
+                         |  "postcodeMandatory": "true",
+                         |  "countryDisplayed": "false",
+                         |  "selectionCriteria": [
+                         |    {
+                         |      "column": "Region",
+                         |      "value": [
+                         |        "3",
+                         |        "5"
+                         |      ]
+                         |    }
+                         |  ]
+                         |}""")
+
+    val expected = OverseasAddress(
+      List(Mandatory.Line2, Mandatory.Postcode),
+      List(Optional.City),
+      true,
+      None,
+      false,
+      Some(
+        List(
+          SelectionCriteria(CsvColumnName("Region"), SelectionCriteriaSimpleValue(List("3", "5")))
+        )
+      )
+    )
 
     assertEquals(componentType, expected)
 
