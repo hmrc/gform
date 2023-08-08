@@ -46,9 +46,9 @@ case class Page(
   def formComponents[A](predicate: PartialFunction[FormComponent, A]): List[A] = allFormComponents.collect(predicate)
 
   val allFormComponents: List[FormComponent] = fields.flatMap {
-    case IsGroup(group)                     => group.fields
-    case IsRevealingChoice(revealingChoice) => revealingChoice.options.toList.flatMap(_.revealingFields)
-    case otherwise                          => otherwise :: Nil
+    case IsGroup(group)                          => group.fields
+    case fc @ IsRevealingChoice(revealingChoice) => fc :: revealingChoice.options.toList.flatMap(_.revealingFields)
+    case otherwise                               => otherwise :: Nil
   }
   val allFormComponentIds: List[FormComponentId] = (fields ++ fields
     .flatMap {
