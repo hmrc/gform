@@ -129,7 +129,8 @@ case class OverseasAddress(
   optionalFields: List[OverseasAddress.Configurable.Optional],
   countryLookup: Boolean,
   value: Option[Expr],
-  countryDisplayed: Boolean
+  countryDisplayed: Boolean,
+  selectionCriteria: Option[List[SelectionCriteria]] = None
 ) extends ComponentType
 
 object OverseasAddress {
@@ -533,15 +534,15 @@ object ComponentType {
           LeafExpr(path + "prefix", prefix) ++
           LeafExpr(path + "suffix", suffix) ++
           LeafExpr(path + "format", constraint)
-      case TextArea(constraint, expr, _, _, _, _)  => ExprWithPath(path, expr) :: LeafExpr(path, constraint)
-      case Date(_, _, _)                           => Nil
-      case CalendarDate                            => Nil
-      case PostcodeLookup(_, _, _)                 => Nil
-      case TaxPeriodDate                           => Nil
-      case Address(_, _, _, Some(expr))            => List(ExprWithPath(path, expr))
-      case Address(_, _, _, _)                     => Nil
-      case OverseasAddress(_, _, _, Some(expr), _) => List(ExprWithPath(path, expr))
-      case OverseasAddress(_, _, _, _, _)          => Nil
+      case TextArea(constraint, expr, _, _, _, _)     => ExprWithPath(path, expr) :: LeafExpr(path, constraint)
+      case Date(_, _, _)                              => Nil
+      case CalendarDate                               => Nil
+      case PostcodeLookup(_, _, _)                    => Nil
+      case TaxPeriodDate                              => Nil
+      case Address(_, _, _, Some(expr))               => List(ExprWithPath(path, expr))
+      case Address(_, _, _, _)                        => Nil
+      case OverseasAddress(_, _, _, Some(expr), _, _) => List(ExprWithPath(path, expr))
+      case OverseasAddress(_, _, _, _, _, _)          => Nil
       case Choice(_, options, _, _, hints, optionHelpText, _, _, _, _) =>
         LeafExpr(path + "choices", options) ++
           LeafExpr(path + "hints", hints) ++

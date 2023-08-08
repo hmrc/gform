@@ -728,10 +728,11 @@ class FormComponentMaker(json: JsValue) {
 
     import OverseasAddress.Configurable._
     for {
-      line2    <- OverseasAddressParser.mandatoryField(mandatoryLine2, Mandatory.Line2)
-      city     <- OverseasAddressParser.optionalField(mandatoryCity, Optional.City)
-      postcode <- OverseasAddressParser.mandatoryField(mandatoryPostcode, Mandatory.Postcode)
-      value    <- valueOpt
+      line2             <- OverseasAddressParser.mandatoryField(mandatoryLine2, Mandatory.Line2)
+      city              <- OverseasAddressParser.optionalField(mandatoryCity, Optional.City)
+      postcode          <- OverseasAddressParser.mandatoryField(mandatoryPostcode, Mandatory.Postcode)
+      value             <- valueOpt
+      selectionCriteria <- optSelectionCriteria
     } yield {
       val mandatoryFields: List[Mandatory] = List(line2, postcode).flatten
       val optionalFields: List[Optional] = List(city).flatten
@@ -741,7 +742,8 @@ class FormComponentMaker(json: JsValue) {
         optionalFields,
         optCountryLookup.getOrElse(true),
         value,
-        optCountryDisplayed.getOrElse(true)
+        optCountryDisplayed.getOrElse(true),
+        selectionCriteria
       )
     }
   }
