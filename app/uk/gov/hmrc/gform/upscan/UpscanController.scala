@@ -23,6 +23,7 @@ import cats.instances.long._
 import cats.syntax.eq._
 import cats.syntax.either._
 import cats.syntax.applicative._
+import java.nio.charset.StandardCharsets
 import org.slf4j.{ Logger, LoggerFactory }
 import org.typelevel.ci.CIString
 import play.api.libs.json.{ JsResult, JsValue, Json }
@@ -193,6 +194,7 @@ class UpscanController(
     Valid(uploadDetails)
       .ensure(UpscanValidationFailure.EntityTooSmall)(_.size =!= 0)
       .ensure(UpscanValidationFailure.EntityTooLarge)(_ => validateFileSize(fileSizeLimit, uploadDetails.size))
+      .ensure(UpscanValidationFailure.FileNameTooLong)(_ => validateFileNameLength(uploadDetails.fileName) < 255)
       .ensure(
         UpscanValidationFailure.InvalidFileType(
           "fileName: " + uploadDetails.fileName + " - " + fileNameCheckResult + ", fileMimeType: " + uploadDetails.fileMimeType + " - " + fileMimeTypeResult,
@@ -201,6 +203,9 @@ class UpscanController(
       )(_ => fileNameCheckResult && fileMimeTypeResult)
       .map(_ => ())
   }
+
+  private def validateFileNameLength(fileName: String): Int =
+    java.net.URLEncoder.encode(fileName, StandardCharsets.UTF_8.toString()).size
 
   private def getFileExtension(fileName: String): Option[String] =
     fileName.split("\\.").tail.lastOption
