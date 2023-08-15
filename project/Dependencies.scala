@@ -16,7 +16,6 @@ object Dependencies {
   val compile = Seq(
     "com.github.pureconfig"        %% "pureconfig"                        % "0.17.2",
     "uk.gov.hmrc.mongo"            %% "hmrc-mongo-work-item-repo-play-28" % hmrcMongoVersion,
-    "uk.gov.hmrc"                  %% "http-caching-client"               % "10.0.0-play-28",
     "uk.gov.hmrc"                  %% "bootstrap-backend-play-28"         % bootstrapVersion,
     "uk.gov.hmrc"                  %% "domain"                            % "8.2.0-play-28",
     "org.scala-lang.modules"       %% "scala-parser-combinators"          % "1.1.2",
