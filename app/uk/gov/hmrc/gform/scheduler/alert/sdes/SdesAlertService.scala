@@ -49,7 +49,7 @@ class SdesAlertService(
     for {
       submissionCount <-
         sdesAlgebra
-          .search(0, thresholdLimit + 1, None, None, None, None, destination.map(SdesDestination.fromString))
+          .search(0, thresholdLimit + 1, Some(false), None, None, None, destination.map(SdesDestination.fromString))
           .map(_.count)
       _ <- if (submissionCount >= thresholdLimit) {
              logger.info(s"$submissionCount submissions have not been processed.Threshold limit is $thresholdLimit")

@@ -228,5 +228,7 @@ object FileUploadService {
     val xml = FileId("xmlDocument")
     val dataStore = FileId("dataStore")
     def roboticsFileId(extension: String) = FileId(s"robotics${extension.capitalize}")
+    val generatedFileIds =
+      List(pdf, xml, dataStore, formdataXml, customerSummaryPdf, roboticsFileId("json"), roboticsFileId("xml"))
   }
 }
