@@ -144,7 +144,7 @@ object BuilderSupport {
   ): Json =
     List(
       Property("label"),
-      Property("helpText"),
+      Property("helpText", PropertyBehaviour.PurgeWhenEmpty),
       Property("shortName", PropertyBehaviour.PurgeWhenEmpty),
       Property("format"),
       Property("errorShortName", PropertyBehaviour.PurgeWhenEmpty),
@@ -154,6 +154,7 @@ object BuilderSupport {
       Property("displayWidth", PropertyBehaviour.PurgeWhenEmpty),
       Property("labelSize", PropertyBehaviour.PurgeWhenEmpty),
       Property("mandatory", PropertyBehaviour.PurgeWhenEmpty),
+      Property("multiline", PropertyBehaviour.PurgeWhenEmpty),
       Property("infoText"),
       Property("infoType")
     )
