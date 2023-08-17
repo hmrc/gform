@@ -1146,4 +1146,11 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     )
   }
 
+  it should "parse link.'https://www.gov.uk' function" in {
+    val res = ValueParser.validate("${link.'https://www.gov.uk'}")
+    res.toOption.value should be(
+      TextExpression(LinkCtx(InternalLink.UrlLink("https://www.gov.uk")))
+    )
+  }
+
 }

@@ -165,6 +165,8 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
     InternalLink.Download(s"$fileName.$extension")
   } | PageId.unanchoredIdValidation ^^ { id =>
     PageLink(PageId(id))
+  } | "'" ~ formatUrl ~ "'" ^^ { case _ ~ url ~ _ =>
+    InternalLink.UrlLink(url)
   }
 
   private lazy val periodFun = "period(" ~ dateExpr ~ "," ~ dateExpr ~ ")"
@@ -367,6 +369,10 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
   val _factor: PackratParser[Expr] = contextField | "(" ~> _expr1 <~ ")"
 
   lazy val alphabeticOnly: Parser[String] = """[a-zA-Z]\w*""".r ^^ { str =>
+    str
+  }
+
+  lazy val formatUrl: Parser[String] = """\bhttps?://[^\s/$.?#]+\.[^\s]*\b""".r ^^ { str =>
     str
   }
 
