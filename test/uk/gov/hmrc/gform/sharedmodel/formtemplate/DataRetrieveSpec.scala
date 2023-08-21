@@ -438,6 +438,67 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
     )
   }
 
+  it should "parse json as hmrcRosmRegistrationCheck with if" in {
+    Json
+      .parse("""
+               |{
+               |  "type": "hmrcRosmRegistrationCheck",
+               |  "id": "hmrcRosmCheck",
+               |  "parameters": {
+               |    "regime": "${'APD'}",
+               |    "utr": "${utr}"
+               |  }
+               |}
+               |""".stripMargin)
+      .as[DataRetrieve] shouldBe DataRetrieve(
+      DataRetrieve.Type("hmrcRosmRegistrationCheck"),
+      DataRetrieveId("hmrcRosmCheck"),
+      Attr.FromObject(
+        List(
+          AttributeInstruction(
+            DataRetrieve.Attribute("postalCode"),
+            ConstructAttribute.Concat(
+              List(
+                Fetch(List("det", "address", "InternationalAddress", "postalCode")),
+                Fetch(List("det", "address", "UkAddress", "postalCode"))
+              )
+            )
+          ),
+          AttributeInstruction(
+            DataRetrieve.Attribute("safeId"),
+            ConstructAttribute.AsIs(Fetch(List("det", "safeId")))
+          ),
+          AttributeInstruction(
+            DataRetrieve.Attribute("organisationName"),
+            ConstructAttribute.AsIs(Fetch(List("det", "orgOrInd", "Organisation", "organisationName")))
+          ),
+          AttributeInstruction(
+            DataRetrieve.Attribute("organisationType"),
+            ConstructAttribute.AsIs(Fetch(List("det", "orgOrInd", "Organisation", "organisationType")))
+          ),
+          AttributeInstruction(
+            DataRetrieve.Attribute("isAGroup"),
+            ConstructAttribute.AsIs(Fetch(List("det", "orgOrInd", "Organisation", "isAGroup")))
+          )
+        )
+      ),
+      Map.empty,
+      List(
+        DataRetrieve
+          .ParamExpr(
+            DataRetrieve.Parameter("regime", List(), DataRetrieve.ParamType.String),
+            Constant("APD")
+          ),
+        DataRetrieve
+          .ParamExpr(
+            DataRetrieve.Parameter("utr", List(), DataRetrieve.ParamType.String),
+            FormCtx(FormComponentId("utr"))
+          )
+      ),
+      None
+    )
+  }
+
   it should "return error when name, firstName and lastName are missing for PersonalBankAccountExistence" in {
     Json
       .parse("""
