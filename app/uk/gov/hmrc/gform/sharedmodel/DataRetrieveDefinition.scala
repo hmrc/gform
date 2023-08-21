@@ -319,6 +319,43 @@ object DataRetrieveDefinitions {
     Map(DataRetrieve.Attribute("sequenceNumber") -> DataRetrieve.AttrType.Integer)
   )
 
+  val hmrcRosmRegistrationCheck = DataRetrieveDefinition(
+    DataRetrieve.Type("hmrcRosmRegistrationCheck"),
+    Attr.FromObject(
+      List(
+        AttributeInstruction(
+          DataRetrieve.Attribute("postalCode"),
+          ConstructAttribute.Concat(
+            List(
+              Fetch(List("det", "address", "InternationalAddress", "postalCode")),
+              Fetch(List("det", "address", "UkAddress", "postalCode"))
+            )
+          )
+        ),
+        AttributeInstruction(
+          DataRetrieve.Attribute("safeId"),
+          ConstructAttribute.AsIs(Fetch(List("det", "safeId")))
+        ),
+        AttributeInstruction(
+          DataRetrieve.Attribute("organisationName"),
+          ConstructAttribute.AsIs(Fetch(List("det", "orgOrInd", "Organisation", "organisationName")))
+        ),
+        AttributeInstruction(
+          DataRetrieve.Attribute("organisationType"),
+          ConstructAttribute.AsIs(Fetch(List("det", "orgOrInd", "Organisation", "organisationType")))
+        ),
+        AttributeInstruction(
+          DataRetrieve.Attribute("isAGroup"),
+          ConstructAttribute.AsIs(Fetch(List("det", "orgOrInd", "Organisation", "isAGroup")))
+        )
+      )
+    ),
+    List(
+      Parameter("regime"),
+      Parameter("utr")
+    )
+  )
+
   val staticDefinitions = DataRetrieveDefinitions(
     List(
       validateBankDetails,
@@ -328,7 +365,8 @@ object DataRetrieveDefinitions {
       companyRegistrationNumber,
       ninoInsights,
       bankAccountInsights,
-      employments
+      employments,
+      hmrcRosmRegistrationCheck
     )
   )
 

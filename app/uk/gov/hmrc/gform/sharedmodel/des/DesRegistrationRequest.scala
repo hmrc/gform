@@ -16,10 +16,23 @@
 
 package uk.gov.hmrc.gform.sharedmodel.des
 
-import play.api.libs.json.Json
+import play.api.libs.json.{ Format, JsResult, JsSuccess, JsValue, Json }
 
 case class DesRegistrationRequest(regime: String, requiresNameMatch: Boolean, isAnAgent: Boolean)
 
 object DesRegistrationRequest {
-  implicit val format = Json.format[DesRegistrationRequest]
+  implicit val format: Format[DesRegistrationRequest] = new Format[DesRegistrationRequest] {
+    override def writes(req: DesRegistrationRequest): JsValue = Json.obj(
+      "regime"            -> req.regime,
+      "requiresNameMatch" -> req.requiresNameMatch,
+      "isAnAgent"         -> req.isAnAgent
+    )
+
+    override def reads(json: JsValue): JsResult[DesRegistrationRequest] = {
+      val regime = (json \ "regime").as[String]
+      val requiresNameMatch = (json \ "requiresNameMatch").asOpt[Boolean].getOrElse(false)
+      val isAnAgent = (json \ "isAnAgent").asOpt[Boolean].getOrElse(false)
+      JsSuccess(DesRegistrationRequest(regime, requiresNameMatch, isAnAgent))
+    }
+  }
 }
