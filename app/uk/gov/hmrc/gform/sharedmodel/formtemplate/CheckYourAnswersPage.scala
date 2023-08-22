@@ -28,7 +28,8 @@ case class CheckYourAnswersPage(
   header: Option[SmartString],
   footer: Option[SmartString],
   continueLabel: Option[SmartString],
-  presentationHint: Option[PresentationHint]
+  presentationHint: Option[PresentationHint],
+  removeItemIf: Option[RemoveItemIf]
 )
 
 object CheckYourAnswersPage {
@@ -42,5 +43,7 @@ object CheckYourAnswersPage {
       LeafExpr(path + "noPIIUpdateTitle", t.noPIIUpdateTitle) ++
       LeafExpr(path + "header", t.header) ++
       LeafExpr(path + "footer", t.footer) ++
-      LeafExpr(path + "continueLabel", t.continueLabel)
+      LeafExpr(path + "continueLabel", t.continueLabel) ++
+      LeafExpr(path + "removeItemIf", t.removeItemIf)
+
 }

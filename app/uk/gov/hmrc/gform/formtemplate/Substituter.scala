@@ -87,6 +87,10 @@ object Substituter {
     ev: Substituter[A, BooleanExpr]
   ): Substituter[A, ValidIf] = (substitutions, t) => t.copy(booleanExpr = t.booleanExpr(substitutions))
 
+  implicit def removeItemIfSubstituter[A](implicit
+    ev: Substituter[A, BooleanExpr]
+  ): Substituter[A, RemoveItemIf] = (substitutions, t) => t.copy(booleanExpr = t.booleanExpr(substitutions))
+
   implicit def validatorSubstituter[A](implicit
     ev: Substituter[A, Expr]
   ): Substituter[A, Validator] = (substitutions, t) =>
@@ -300,7 +304,8 @@ object Substituter {
       fields = t.fields(substitutions),
       continueLabel = t.continueLabel(substitutions),
       instruction = t.instruction(substitutions),
-      redirects = t.redirects(substitutions)
+      redirects = t.redirects(substitutions),
+      removeItemIf = t.removeItemIf(substitutions)
     )
 
   implicit def sectionSubstituter[A](implicit
@@ -487,7 +492,8 @@ object Substituter {
     )
 
   implicit def cyaPageSubstituter[A](implicit
-    ev: Substituter[A, Expr]
+    ev: Substituter[A, Expr],
+    ev2: Substituter[A, BooleanExpr]
   ): Substituter[A, CheckYourAnswersPage] = (substitutions, t) =>
     t.copy(
       title = t.title(substitutions),
@@ -497,7 +503,8 @@ object Substituter {
       noPIIUpdateTitle = t.noPIIUpdateTitle(substitutions),
       header = t.header(substitutions),
       footer = t.footer(substitutions),
-      continueLabel = t.continueLabel(substitutions)
+      continueLabel = t.continueLabel(substitutions),
+      removeItemIf = t.removeItemIf(substitutions)
     )
 
   implicit def emailParameterSubstituter[A](implicit

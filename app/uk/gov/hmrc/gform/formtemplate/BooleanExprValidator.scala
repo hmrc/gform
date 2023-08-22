@@ -103,16 +103,19 @@ class BooleanExprValidator(
 sealed trait BooleanExprWrapperType {
   import BooleanExprWrapperType._
   def isForwardReference(idx1: Int, idx2: Int): Boolean = this match {
-    case ValidIf   => idx1 <= idx2
-    case IncludeIf => idx1 < idx2
+    case ValidIf      => idx1 <= idx2
+    case IncludeIf    => idx1 < idx2
+    case RemoveItemIf => idx1 <= idx2
   }
 
   override def toString: String = this match {
-    case ValidIf   => "validIf"
-    case IncludeIf => "includeIf"
+    case ValidIf      => "validIf"
+    case IncludeIf    => "includeIf"
+    case RemoveItemIf => "removeItemIf"
   }
 }
 object BooleanExprWrapperType {
   case object ValidIf extends BooleanExprWrapperType
   case object IncludeIf extends BooleanExprWrapperType
+  case object RemoveItemIf extends BooleanExprWrapperType
 }

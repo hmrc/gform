@@ -39,7 +39,8 @@ case class Page(
   dataRetrieve: Option[NonEmptyList[DataRetrieve]],
   confirmation: Option[Confirmation],
   redirects: Option[NonEmptyList[RedirectCtx]],
-  hideSaveAndComeBackButton: Option[Boolean]
+  hideSaveAndComeBackButton: Option[Boolean],
+  removeItemIf: Option[RemoveItemIf]
 ) {
   lazy val expandedFormComponents: List[FormComponent] = fields.flatMap(_.expandedFormComponents)
 
@@ -82,6 +83,7 @@ object Page {
       LeafExpr(path + "instruction", t.instruction) ++
       LeafExpr(path + "confirmation", t.confirmation) ++
       LeafExpr(path + "redirects", t.redirects) ++
-      LeafExpr(path + "dataRetrieve", t.dataRetrieve)
+      LeafExpr(path + "dataRetrieve", t.dataRetrieve) ++
+      LeafExpr(path + "removeItemIf", t.removeItemIf)
 
 }

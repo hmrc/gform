@@ -77,6 +77,7 @@ trait FormTemplateSupport {
         None,
         None,
         None,
+        None,
         None
       )
     )
@@ -243,6 +244,7 @@ trait FormTemplateSupport {
         None,
         None,
         None,
+        None,
         None
       )
     )
@@ -263,6 +265,7 @@ trait FormTemplateSupport {
         None,
         None,
         formComponents,
+        None,
         None,
         None,
         None,

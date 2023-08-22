@@ -552,6 +552,27 @@ class TemplateValidatorSpec extends Spec {
     }
   }
 
+  it should "detect valid removeItemIf references in an In expression" in {
+
+    val formComponentsA = List(mkFormComponent("fieldA", Value))
+    val formComponentsB = List(mkFormComponent("fieldB", Value))
+    val baseSectionA = mkSection("sectionA", formComponentsA)
+    val baseSectionB = mkSection("sectionB", formComponentsB)
+
+    val table =
+      Table(
+        ("expr", "expected"),
+        (In(FormCtx(FormComponentId("fieldA")), SeissEligible), Valid),
+        (In(AuthCtx(AuthInfo.SaUtr), SeissEligible), Valid),
+        (In(ParamCtx(QueryParam("test")), SeissEligible), Valid)
+      )
+    forAll(table) { case (booleanExpr, expected) =>
+      val sectionB = baseSectionB.copy(page = baseSectionB.page.copy(removeItemIf = Some(RemoveItemIf(booleanExpr))))
+      val res = FormTemplateValidator.validateForwardReference(baseSectionA :: sectionB :: Nil)
+      res shouldBe expected
+    }
+  }
+
   it should "detect invalid references/forward references in an IncludeIf Boolean Expression" in {
 
     val formComponentsA = List(mkFormComponent("fieldA", Value))
@@ -590,6 +611,50 @@ class TemplateValidatorSpec extends Spec {
       )
     forAll(table) { case (booleanExpr, expected) =>
       val sectionA = baseSectionA.copy(page = baseSectionA.page.copy(includeIf = Some(IncludeIf(booleanExpr))))
+      val res = FormTemplateValidator.validateForwardReference(sectionA :: baseSectionB :: Nil)
+      res shouldBe expected
+    }
+  }
+
+  it should "detect invalid references/forward references in an RemoveItemIf Boolean Expression" in {
+
+    val formComponentsA = List(mkFormComponent("fieldA", Value))
+    val formComponentsB = List(mkFormComponent("fieldB", Value))
+    val baseSectionA = mkSection("sectionA", formComponentsA)
+    val baseSectionB = mkSection("sectionB", formComponentsB)
+    val constant = Constant("c")
+    val forwardRef = FormCtx(FormComponentId("fieldB"))
+    val invalidRef = FormCtx(FormComponentId("a"))
+    val forwardReferenceError =
+      Invalid("id 'fieldB' named in removeItemIf is forward reference, which is not permitted")
+    val invalidReferenceError = Invalid("id 'a' named in removeItemIf expression does not exist in the form")
+    val table =
+      Table(
+        // format: off
+        ("booleanExpr",                             "expected"),
+        (Equals              (forwardRef, constant), forwardReferenceError),
+        (GreaterThan         (forwardRef, constant), forwardReferenceError),
+        (GreaterThanOrEquals (forwardRef, constant), forwardReferenceError),
+        (LessThan            (forwardRef, constant), forwardReferenceError),
+        (LessThanOrEquals    (forwardRef, constant), forwardReferenceError),
+        (Not(Equals(forwardRef, constant)),          forwardReferenceError),
+        (And(Equals(forwardRef, constant), IsTrue),  forwardReferenceError),
+        (Or (Equals(forwardRef, constant), IsTrue),  forwardReferenceError),
+        (Equals              (invalidRef, constant), invalidReferenceError),
+        (GreaterThan         (invalidRef, constant), invalidReferenceError),
+        (GreaterThanOrEquals (invalidRef, constant), invalidReferenceError),
+        (LessThan            (invalidRef, constant), invalidReferenceError),
+        (LessThanOrEquals    (invalidRef, constant), invalidReferenceError),
+        (Not(Equals(invalidRef, constant)),          invalidReferenceError),
+        (And(Equals(invalidRef, constant), IsTrue),  invalidReferenceError),
+        (Or (Equals(invalidRef, constant), IsTrue),  invalidReferenceError),
+        (IsTrue,  Valid),
+        (IsFalse, Valid),
+        (In (invalidRef, SeissEligible),  invalidReferenceError)
+        // format: on
+      )
+    forAll(table) { case (booleanExpr, expected) =>
+      val sectionA = baseSectionA.copy(page = baseSectionA.page.copy(removeItemIf = Some(RemoveItemIf(booleanExpr))))
       val res = FormTemplateValidator.validateForwardReference(sectionA :: baseSectionB :: Nil)
       res shouldBe expected
     }
@@ -708,6 +773,7 @@ class TemplateValidatorSpec extends Spec {
         None,
         None,
         formComponents,
+        None,
         None,
         None,
         None,
