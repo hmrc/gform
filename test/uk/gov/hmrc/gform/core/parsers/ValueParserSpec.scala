@@ -553,6 +553,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
       None,
       None,
       None,
+      None,
       None
     )
   )

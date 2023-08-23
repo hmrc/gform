@@ -84,6 +84,31 @@ trait SectionGen {
       fields        <- PrimitiveGen.oneOrMoreGen(FormComponentGen.formComponentGen())
     } yield DeclarationSection(title, noPIITitle, description, shortName, continueLabel, fields.toList)
 
+  def checkYourAnswerPageGen: Gen[CheckYourAnswersPage] =
+    for {
+      title            <- Gen.option(smartStringGen)
+      caption          <- Gen.option(smartStringGen)
+      updateTitle      <- smartStringGen
+      noPIITitle       <- Gen.option(smartStringGen)
+      noPIIUpdateTitle <- Gen.option(smartStringGen)
+      header           <- Gen.option(smartStringGen)
+      footer           <- Gen.option(smartStringGen)
+      continueLabel    <- Gen.option(smartStringGen)
+      presentationHint <- Gen.option(PresentationHintGen.presentationHintGen)
+      removeItemIf     <- Gen.option(RemoveItemIfGen.removeItemIfGen)
+    } yield CheckYourAnswersPage(
+      title,
+      caption,
+      updateTitle,
+      noPIITitle,
+      noPIIUpdateTitle,
+      header,
+      footer,
+      continueLabel,
+      presentationHint,
+      removeItemIf
+    )
+
   def pageGen: Gen[Page] =
     for {
       title            <- smartStringGen
@@ -101,6 +126,7 @@ trait SectionGen {
       presentationHint <- Gen.option(PresentationHintGen.presentationHintGen)
       confirmation     <- Gen.option(ConfirmationGen.confirmationGen)
       redirects        <- Gen.option(RedirectGen.redirectGen)
+      removeItemIf     <- Gen.option(RemoveItemIfGen.removeItemIfGen)
     } yield Page(
       title,
       id,
@@ -118,7 +144,8 @@ trait SectionGen {
       None,
       confirmation,
       redirects.map(NonEmptyList.one(_)),
-      None
+      None,
+      removeItemIf
     )
 
   def nonRepeatingPageSectionGen: Gen[Section.NonRepeatingPage] = pageGen.map(Section.NonRepeatingPage)
@@ -150,6 +177,7 @@ trait SectionGen {
       infoMessage           <- Gen.option(smartStringGen)
       errorMessage          <- Gen.option(smartStringGen)
       maybePageId           <- Gen.option(PageIdGen.pageIdGen)
+      cyaPage               <- Gen.option(checkYourAnswerPageGen)
     } yield Section
       .AddToList(
         title,
@@ -169,7 +197,8 @@ trait SectionGen {
         presentationHint,
         infoMessage,
         errorMessage,
-        pageIdToDisplayAfterRemove = maybePageId
+        pageIdToDisplayAfterRemove = maybePageId,
+        cyaPage = cyaPage
       )
 
   def sectionGen: Gen[Section] = Gen.oneOf(nonRepeatingPageSectionGen, repeatingPageSectionGen, addToListSectionGen)

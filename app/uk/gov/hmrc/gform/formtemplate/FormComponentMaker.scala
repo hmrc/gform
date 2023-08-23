@@ -195,10 +195,11 @@ class FormComponentMaker(json: JsValue) {
   lazy val optCountyDisplayed: Option[Boolean] = (json \ "countyDisplayed").asOpt[String].map(_.toBoolean)
   private def getValueRow(json: JsValue): Opt[MiniSummaryRow] =
     for {
-      key       <- toOpt((json \ "key").validateOpt[SmartString], "/key")
-      value     <- toOpt((json \ "value").validate[String], "/value").flatMap(SummaryListParser.validate)
-      includeIf <- toOpt((json \ "includeIf").validateOpt[IncludeIf], "/includeIf")
-      pageId    <- toOpt((json \ "pageId").validateOpt[PageId], "/pageId")
+      key          <- toOpt((json \ "key").validateOpt[SmartString], "/key")
+      value        <- toOpt((json \ "value").validate[String], "/value").flatMap(SummaryListParser.validate)
+      includeIf    <- toOpt((json \ "includeIf").validateOpt[IncludeIf], "/includeIf")
+      pageId       <- toOpt((json \ "pageId").validateOpt[PageId], "/pageId")
+      removeItemIf <- toOpt((json \ "removeItemIf").validateOpt[RemoveItemIf], "/removeItemIf")
     } yield MiniSummaryRow.ValueRow(key, value, includeIf, pageId)
 
   private def getSmartStringRow(json: JsValue): Opt[MiniSummaryRow] =

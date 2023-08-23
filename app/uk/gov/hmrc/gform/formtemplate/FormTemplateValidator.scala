@@ -993,6 +993,7 @@ object FormTemplateValidator {
     val addToListIds: List[FormComponentId] = SectionHelper.addToListIds(sections).map(_.id)
     val verifyValidIf = new BooleanExprValidator(indexLookup, BooleanExprWrapperType.ValidIf, addToListIds)(_)
     val verifyIncludeIf = new BooleanExprValidator(indexLookup, BooleanExprWrapperType.IncludeIf, addToListIds)(_)
+    val verifyRemoveItemIf = new BooleanExprValidator(indexLookup, BooleanExprWrapperType.RemoveItemIf, addToListIds)(_)
     Monoid[ValidationResult]
       .combineAll(
         SectionHelper
@@ -1011,6 +1012,11 @@ object FormTemplateValidator {
               .map(verifyIncludeIf(idx).apply)
               .getOrElse(List(Valid))
 
+            val verifiedRemoveItemIf = page.removeItemIf
+              .map(_.booleanExpr)
+              .map(verifyRemoveItemIf(idx).apply)
+              .getOrElse(List(Valid))
+
             val verifiedDataRetrieveIncludeIf =
               for {
                 dataRetrieve <- page.dataRetrieves()
@@ -1018,7 +1024,7 @@ object FormTemplateValidator {
                 result       <- verifyIncludeIf(idx).apply(iff.booleanExpr)
               } yield result
 
-            verifiedValidIf ++ verifiedIncludeIf ++ verifiedComponentIncludeIfs ++ verifiedDataRetrieveIncludeIf
+            verifiedValidIf ++ verifiedIncludeIf ++ verifiedComponentIncludeIfs ++ verifiedDataRetrieveIncludeIf ++ verifiedRemoveItemIf
           }
       )
   }
