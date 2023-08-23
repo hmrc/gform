@@ -26,8 +26,7 @@ import java.time.Instant
 
 case class SdesSubmissionPageData(
   sdesSubmissions: List[SdesSubmissionData],
-  count: Long,
-  countAll: Long
+  count: Long
 )
 
 object SdesSubmissionPageData {
@@ -44,23 +43,28 @@ case class SdesSubmissionData(
   failureReason: String,
   lastUpdated: Option[Instant],
   numberOfFiles: Int,
+  uploadCount: Int,
+  size: Long,
   destination: SdesDestination
 )
 
 object SdesSubmissionData {
 
-  def fromSdesSubmission(sdesSubmission: SdesSubmission, numberOfFiles: Int = 0) = SdesSubmissionData(
-    sdesSubmission._id,
-    sdesSubmission.envelopeId,
-    sdesSubmission.formTemplateId,
-    sdesSubmission.submissionRef,
-    sdesSubmission.submittedAt,
-    sdesSubmission.status,
-    sdesSubmission.failureReason.getOrElse(""),
-    sdesSubmission.lastUpdated,
-    numberOfFiles,
-    sdesSubmission.destination.getOrElse(Dms)
-  )
+  def fromSdesSubmission(sdesSubmission: SdesSubmission, numberOfFiles: Int = 0, uploadCount: Int = 0, size: Long = 0) =
+    SdesSubmissionData(
+      sdesSubmission._id,
+      sdesSubmission.envelopeId,
+      sdesSubmission.formTemplateId,
+      sdesSubmission.submissionRef,
+      sdesSubmission.submittedAt,
+      sdesSubmission.status,
+      sdesSubmission.failureReason.getOrElse(""),
+      sdesSubmission.lastUpdated,
+      numberOfFiles,
+      uploadCount,
+      size,
+      sdesSubmission.destination.getOrElse(Dms)
+    )
 
   implicit val correlationIdFormat: Format[CorrelationId] = CorrelationId.vformat
   implicit val envelopeIdFormat: Format[EnvelopeId] = EnvelopeId.vformat

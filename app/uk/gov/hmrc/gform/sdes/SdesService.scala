@@ -35,7 +35,7 @@ import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.gform.sharedmodel.sdes.NotificationStatus.{ FileReady, fromName }
 import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination.{ DataStore, Dms }
-import uk.gov.hmrc.gform.sharedmodel.sdes._
+import uk.gov.hmrc.gform.sharedmodel.sdes.{ SdesSubmissionData, _ }
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 import uk.gov.hmrc.objectstore.client.ObjectSummaryWithMd5
 
@@ -134,34 +134,39 @@ class SdesService(
         Filters.and(equal("destination", SdesDestination.fromName(d)), queryByStatus)
       )
     val query = if (showBeforeAt.getOrElse(false)) {
-      Filters.and(queryByDestination, lt("createdAt", LocalDateTime.now().minusHours(10)))
+      Filters.and(
+        queryByDestination,
+        Filters.and(lt("createdAt", LocalDateTime.now().minusHours(10)), equal("isProcessed", false))
+      )
     } else {
       queryByDestination
     }
-
-    val queryNotProcessed = Filters.and(equal("isProcessed", false), queryByTemplateId)
 
     val sort = equal("createdAt", -1)
 
     val skip = page * pageSize
     for {
       sdesSubmissions <- repoSdesSubmission.page(query, sort, skip, pageSize)
-      sdesSubmissionData <- sdesSubmissions.traverse(sdesSubmission =>
-                              for {
-                                numberOfFiles <-
-                                  sdesSubmission.destination match {
-                                    case Some(Dms) =>
-                                      envelopeAlgebra
-                                        .get(sdesSubmission.envelopeId)
-                                        .map(_.files.count(_.fileId =!= FileUploadService.FileIds.dataStore.value))
-                                    case _ => Future.successful(1)
-                                  }
-                              } yield SdesSubmissionData.fromSdesSubmission(sdesSubmission, numberOfFiles)
-                            )
-      count    <- repoSdesSubmission.count(queryNotProcessed)
-      countAll <- repoSdesSubmission.count(queryByTemplateId)
-    } yield SdesSubmissionPageData(sdesSubmissionData, count, countAll)
-
+      sdesSubmissionData <-
+        sdesSubmissions.traverse(sdesSubmission =>
+          for {
+            (numberOfFiles, uploadCount, size) <-
+              sdesSubmission.destination match {
+                case Some(Dms) =>
+                  val envelope = envelopeAlgebra.get(sdesSubmission.envelopeId)
+                  envelope.map(e =>
+                    (
+                      e.files.count(f => f.fileId =!= FileUploadService.FileIds.dataStore.value),
+                      e.files.count(f => !FileUploadService.FileIds.generatedFileIds.map(_.value).contains(f.fileId)),
+                      e.files.map(_.length).sum
+                    )
+                  )
+                case _ => Future.successful((1, 0, 0L))
+              }
+          } yield SdesSubmissionData.fromSdesSubmission(sdesSubmission, numberOfFiles, uploadCount, size)
+        )
+      count <- repoSdesSubmission.count(query)
+    } yield SdesSubmissionPageData(sdesSubmissionData, count)
   }
 
   override def notifySDES(sdesSubmission: SdesSubmission, objWithSummary: ObjectSummaryWithMd5)(implicit
