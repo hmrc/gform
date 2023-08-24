@@ -364,7 +364,7 @@ trait ExampleValidator {
 trait ExampleSection { dependecies: ExampleFieldId with ExampleFieldValue with ExampleValidator =>
   def nonRepeatingPageSection(
     title: String = "About you",
-    validators: Option[Validator] = Some(defaultValidator),
+    validators: Option[Validators] = Some(defaultValidator),
     fields: List[FormComponent] = List(`fieldValue - firstName`, `fieldValue - surname`, `fieldValue - facePhoto`),
     includeIf: Option[IncludeIf] = None
   ) =
@@ -377,6 +377,7 @@ trait ExampleSection { dependecies: ExampleFieldId with ExampleFieldValue with E
         None,
         None,
         includeIf,
+        None,
         validators,
         fields,
         None,
@@ -405,6 +406,7 @@ trait ExampleSection { dependecies: ExampleFieldId with ExampleFieldValue with E
     Section.RepeatingPage(
       Page(
         toSmartString("Repeating section"),
+        None,
         None,
         None,
         None,
