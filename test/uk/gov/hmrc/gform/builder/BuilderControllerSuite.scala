@@ -711,7 +711,7 @@ class BuilderControllerSuite extends FunSuite {
           ]
         }
       ]
-    } """
+    }"""
 
   test("Update field label in addToList") {
     val formComponentId = FormComponentId("whatNotification")
@@ -722,4 +722,245 @@ class BuilderControllerSuite extends FunSuite {
 
     assertEquals(result.spaces2, expectedAtlJson.spaces2)
   }
+
+  val taskListJson = json"""
+    {
+      "sections": [
+        {
+          "title": "Check before you start",
+          "tasks": [
+            {
+              "title": "Check eligibility",
+              "sections": [
+                {
+                  "title": "Applicants age details page 1",
+                  "fields": [
+                    {
+                      "id": "foo",
+                      "type": "text",
+                      "notPII": "true",
+                      "format": "text",
+                      "label": "Foo"
+                    },
+                    {
+                      "id": "bar",
+                      "type": "text",
+                      "notPII": "true",
+                      "format": "text",
+                      "label": "Bar"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Apply",
+          "tasks": [
+            {
+              "title": "Submit and pay",
+              "sections": [
+                {
+                  "title": "Page",
+                  "fields": [
+                    {
+                      "id": "name",
+                      "type": "text",
+                      "format": "text",
+                      "label": "Name"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }"""
+
+  val expectedTaskListJson = json"""
+    {
+      "sections": [
+        {
+          "title": "Check before you start",
+          "tasks": [
+            {
+              "title": "Check eligibility",
+              "sections": [
+                {
+                  "title": "Applicants age details page 1",
+                  "fields": [
+                    {
+                      "id": "foo",
+                      "type": "text",
+                      "notPII": "true",
+                      "format": "text",
+                      "label": "Foo"
+                    },
+                    {
+                      "id": "bar",
+                      "type": "text",
+                      "notPII": "true",
+                      "format": "text",
+                      "label": "Bar 2"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Apply",
+          "tasks": [
+            {
+              "title": "Submit and pay",
+              "sections": [
+                {
+                  "title": "Page",
+                  "fields": [
+                    {
+                      "id": "name",
+                      "type": "text",
+                      "format": "text",
+                      "label": "Name"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }"""
+
+  test("Update field label in tasklist") {
+    val formComponentId = FormComponentId("bar")
+
+    val patch: Json = Json.obj("label" := "Bar 2")
+
+    val result: Json = BuilderSupport.modifyFormComponentData(taskListJson, formComponentId, patch)
+
+    assertEquals(result.spaces2, expectedTaskListJson.spaces2)
+  }
+
+  val taskListWithAtlJson = json"""
+    {
+      "sections": [
+        {
+          "title": "Check before you start",
+          "tasks": [
+            {
+              "title": "Check eligibility",
+              "sections": [
+                {
+                  "title": "Applicants age details",
+                  "fields": [
+                    {
+                      "id": "foo",
+                      "type": "text",
+                      "notPII": "true",
+                      "format": "text",
+                      "label": "Foo"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Prepare pet application",
+          "tasks": [
+            {
+              "title": "Pet information",
+              "sections": [
+                {
+                  "type": "addToList",
+                  "pages": [
+                    {
+                      "title": "Pet details",
+                      "fields": [
+                        {
+                          "id": "petName",
+                          "label": "Pet name",
+                          "type": "text",
+                          "format": "text"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }"""
+
+  val expectedTaskListWithAtlJson = json"""
+    {
+      "sections": [
+        {
+          "title": "Check before you start",
+          "tasks": [
+            {
+              "title": "Check eligibility",
+              "sections": [
+                {
+                  "title": "Applicants age details",
+                  "fields": [
+                    {
+                      "id": "foo",
+                      "type": "text",
+                      "notPII": "true",
+                      "format": "text",
+                      "label": "Foo"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Prepare pet application",
+          "tasks": [
+            {
+              "title": "Pet information",
+              "sections": [
+                {
+                  "type": "addToList",
+                  "pages": [
+                    {
+                      "title": "Pet details",
+                      "fields": [
+                        {
+                          "id": "petName",
+                          "label": "Pet name 2",
+                          "type": "text",
+                          "format": "text"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }"""
+
+  test("Update field label in atl in tasklist") {
+    val formComponentId = FormComponentId("petName")
+
+    val patch: Json = Json.obj("label" := "Pet name 2")
+
+    val result: Json = BuilderSupport.modifyFormComponentData(taskListWithAtlJson, formComponentId, patch)
+
+    assertEquals(result.spaces2, expectedTaskListWithAtlJson.spaces2)
+  }
+
 }

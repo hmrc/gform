@@ -79,18 +79,43 @@ object BuilderSupport {
     }
   }
 
+  private def nonRepeatedHistory(sectionIndex: Int) =
+    List.fill(sectionIndex)(MoveRight) ::: List(DownArray, DownField("sections"))
+
+  private def nonRepeatedATLHistory(pageIndex: Int, sectionIndex: Int) =
+    List.fill(pageIndex)(MoveRight) ::: List(DownArray, DownField("pages")) :::
+      List.fill(sectionIndex)(MoveRight) ::: List(DownArray, DownField("sections"))
+
+  private def taskListHistory(sectionIndex: Int, taskIndex: Int, taskSectionIndex: Int) =
+    List.fill(sectionIndex)(MoveRight) ::: List(DownArray, DownField("sections")) :::
+      List.fill(taskIndex)(MoveRight) ::: List(DownArray, DownField("tasks")) :::
+      List.fill(taskSectionIndex)(MoveRight) ::: List(DownArray, DownField("sections"))
+
+  private def taskListATLHistory(pageIndex: Int, sectionIndex: Int, taskIndex: Int, taskSectionIndex: Int) =
+    List.fill(pageIndex)(MoveRight) ::: List(DownArray, DownField("pages")) :::
+      List.fill(sectionIndex)(MoveRight) ::: List(DownArray, DownField("sections")) :::
+      List.fill(taskIndex)(MoveRight) ::: List(DownArray, DownField("tasks")) :::
+      List.fill(taskSectionIndex)(MoveRight) ::: List(DownArray, DownField("sections"))
+
   private val sectionPattern: Regex = """^\.sections\[(\d+)\]""".r
   private val atlPagePattern: Regex = """^\.sections\[(\d+)\]\.pages\[(\d+)\]$""".r
+  private val taskListSectionPattern: Regex = """^\.sections\[(\d+)\]\.tasks\[(\d+)\]\.sections\[(\d+)\]$""".r
+  private val taskListAtlPagePattern: Regex =
+    """^\.sections\[(\d+)\]\.tasks\[(\d+)\]\.sections\[(\d+)\]\.pages\[(\d+)\]$""".r
 
   def modifySectionData(json: Json, sectionPath: String, sectionData: Json): Json = {
     val history: List[CursorOp] =
       sectionPath match {
         case sectionPattern(sectionIndex) =>
-          List.fill(sectionIndex.toInt)(MoveRight) ::: List(DownArray, DownField("sections"))
+          nonRepeatedHistory(sectionIndex.toInt)
         case atlPagePattern(sectionIndex, pageIndex) =>
-          List.fill(pageIndex.toInt)(MoveRight) ::: List(DownArray, DownField("pages")) ::: List
-            .fill(sectionIndex.toInt)(MoveRight) ::: List(DownArray, DownField("sections"))
-        case _ => Nil
+          nonRepeatedATLHistory(pageIndex.toInt, sectionIndex.toInt)
+        case taskListSectionPattern(taskSectionIndex, taskIndex, sectionIndex) =>
+          taskListHistory(sectionIndex.toInt, taskIndex.toInt, taskSectionIndex.toInt)
+        case taskListAtlPagePattern(taskSectionIndex, taskIndex, sectionIndex, pageIndex) =>
+          taskListATLHistory(pageIndex.toInt, sectionIndex.toInt, taskIndex.toInt, taskSectionIndex.toInt)
+        case _ =>
+          Nil
       }
     List(
       Property("title"),
@@ -202,45 +227,60 @@ object BuilderSupport {
     sectionData: Json
   ): Json = {
 
+    val id = Json.fromString(formComponentId.value)
     val maybeHistory = json.hcursor
       .downField("sections")
       .values
       .flatMap { sections =>
-        val abc = sections.zipWithIndex.map { case (section, sectionIndex) =>
-          val fieldHit: Option[List[CursorOp]] = section.hcursor.downField("fields").values.flatMap { fields =>
-            fields.zipWithIndex
-              .find { case (field, _) =>
-                field.hcursor.downField("id").focus.contains(Json.fromString(formComponentId.value))
-              }
-              .map { case (_, fieldHitIndex) =>
-                List.fill(fieldHitIndex)(MoveRight) ::: List(DownArray, DownField("fields")) ::: List
-                  .fill(sectionIndex)(MoveRight) ::: List(DownArray, DownField("sections"))
-              }
+        val histories: Iterable[Option[List[CursorOp]]] = sections.zipWithIndex.map { case (section, sectionIndex) =>
+          val fieldHit: Option[List[CursorOp]] = {
+            val historySuffix = nonRepeatedHistory(sectionIndex)
+            fieldHistory(section, id, historySuffix)
           }
 
-          val addToListHit2: Option[Iterable[Option[List[CursorOp]]]] =
-            section.hcursor.downField("pages").values.map { pages =>
-              pages.zipWithIndex.flatMap { case (page, pageHitIndex) =>
-                page.hcursor.downField("fields").values.map { fields =>
-                  fields.zipWithIndex
-                    .find { case (field, _) =>
-                      field.hcursor.downField("id").focus.contains(Json.fromString(formComponentId.value))
-                    }
-                    .map { case (_, fieldHitIndex) =>
-                      List.fill(fieldHitIndex)(MoveRight) ::: List(DownArray, DownField("fields")) :::
-                        List.fill(pageHitIndex)(MoveRight) ::: List(DownArray, DownField("pages")) ::: List
-                          .fill(sectionIndex)(MoveRight) ::: List(DownArray, DownField("sections"))
-                    }
+          val addToListHit: List[Option[List[CursorOp]]] =
+            section.hcursor.downField("pages").values.toList.flatMap { pages =>
+              pages.zipWithIndex.map { case (page, pageHitIndex) =>
+                val historySuffix = nonRepeatedATLHistory(pageHitIndex, sectionIndex)
+                fieldHistory(page, id, historySuffix)
+              }
+            }
+
+          val taskListHit: List[Option[List[CursorOp]]] =
+            section.hcursor.downField("tasks").values.toList.flatMap { tasks =>
+              tasks.zipWithIndex.flatMap { case (task, taskHitIndex) =>
+                task.hcursor.downField("sections").values.toList.flatMap { sections =>
+                  sections.zipWithIndex.map { case (section, sectionHitIndex) =>
+                    val historySuffix = taskListHistory(sectionHitIndex, taskHitIndex, sectionIndex)
+                    fieldHistory(section, id, historySuffix)
+                  }
                 }
               }
             }
 
-          val addToListHit = addToListHit2.toList.flatten.collectFirst { case Some(history) => history }
+          val taskListAddToListHit: List[Option[List[CursorOp]]] =
+            section.hcursor.downField("tasks").values.toList.flatMap { tasks =>
+              tasks.zipWithIndex.flatMap { case (task, taskHitIndex) =>
+                task.hcursor.downField("sections").values.toList.flatMap { sections =>
+                  sections.zipWithIndex.flatMap { case (section, sectionHitIndex) =>
+                    section.hcursor.downField("pages").values.toList.flatMap { pages =>
+                      pages.zipWithIndex.map { case (page, pageHitIndex) =>
+                        val historySuffix =
+                          taskListATLHistory(pageHitIndex, sectionHitIndex, taskHitIndex, sectionIndex)
+                        fieldHistory(page, id, historySuffix)
+                      }
+                    }
+                  }
+                }
+              }
+            }
 
-          fieldHit.orElse(addToListHit)
+          (fieldHit :: addToListHit ::: taskListHit ::: taskListAddToListHit).collectFirst { case Some(history) =>
+            history
+          }
         }
 
-        abc.collectFirst { case Some(history) => history }
+        histories.collectFirst { case Some(history) => history }
       }
 
     maybeHistory
@@ -253,6 +293,17 @@ object BuilderSupport {
       }
       .getOrElse(json)
   }
+
+  private def fieldHistory(json: Json, id: Json, historySuffix: List[CursorOp]): Option[List[CursorOp]] =
+    json.hcursor.downField("fields").values.flatMap { fields =>
+      fields.zipWithIndex
+        .find { case (field, _) =>
+          field.hcursor.downField("id").focus.contains(id)
+        }
+        .map { case (_, fieldHitIndex) =>
+          List.fill(fieldHitIndex)(MoveRight) ::: List(DownArray, DownField("fields")) ::: historySuffix
+        }
+    }
 
   def updateFormComponent(
     formTemplateRaw: FormTemplateRaw,
