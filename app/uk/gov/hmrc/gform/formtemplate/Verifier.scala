@@ -156,7 +156,7 @@ trait Verifier {
     )
 
   private def noValidators(section: Page): Page =
-    section.copy(validator = None, validators = None)
+    section.copy(validators = None)
 
   private def mkOptional(fcs: List[FormComponent]): List[FormComponent] = fcs.map {
     case fc @ IsGroup(group) =>

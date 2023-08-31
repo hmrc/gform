@@ -16,15 +16,20 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate.generators
 import org.scalacheck.Gen
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.Validator
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ HmrcRosmRegistrationCheckValidator, Validator }
+import ExprGen.formCtxGen
+import SmartStringGen.smartStringGen
 
 trait ValidatorGen {
-
-  def validatorGen: Gen[Validator] =
+  def hMRCUTRPostcodeCheckValidatorGen: Gen[HmrcRosmRegistrationCheckValidator] =
     for {
-      validIf                 <- ValidIfGen.validIfGen
-      errorMessageSmartString <- SmartStringGen.smartStringGen
-    } yield Validator(validIf, errorMessageSmartString)
+      errorMessage <- smartStringGen
+      regime       <- Gen.alphaNumStr
+      utr          <- formCtxGen
+      postcode     <- formCtxGen
+    } yield HmrcRosmRegistrationCheckValidator(errorMessage, regime, utr, postcode)
+
+  def validatorGen: Gen[Validator] = hMRCUTRPostcodeCheckValidatorGen
 }
 
 object ValidatorGen extends ValidatorGen

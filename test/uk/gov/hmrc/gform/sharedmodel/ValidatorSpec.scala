@@ -18,7 +18,7 @@ package uk.gov.hmrc.gform.sharedmodel
 
 import play.api.libs.json.{ JsString, JsValue, Json, OFormat }
 import uk.gov.hmrc.gform.Spec
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormCtx, Validators }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormCtx, Validator }
 
 class ValidatorSpec extends Spec {
 
@@ -37,13 +37,13 @@ class ValidatorSpec extends Spec {
           "postcode" -> customFormCtxJson(hMRCUTRPostcodeCheckValidator.postcode)
         )
       )
-      .as[Validators] shouldBe hMRCUTRPostcodeCheckValidator
+      .as[Validator] shouldBe hMRCUTRPostcodeCheckValidator
   }
 
-  private def verifyRoundTrip[T <: Validators: OFormat](t: T) = {
-    val json: JsValue = Json.parse(Validators.format.writes(t).toString)
-    val validators = json.as[Validators]
-    validators shouldBe t
+  private def verifyRoundTrip[T <: Validator: OFormat](t: T) = {
+    val json: JsValue = Json.parse(Validator.format.writes(t).toString)
+    val validator = json.as[Validator]
+    validator shouldBe t
   }
 
   private def customFormCtxJson(fc: FormCtx): JsString = JsString(s"""$${${fc.formComponentId.value}}""")
