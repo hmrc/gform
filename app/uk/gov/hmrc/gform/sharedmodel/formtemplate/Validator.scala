@@ -16,17 +16,45 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
-import julienrf.json.derived
 import play.api.libs.json._
+import play.api.libs.json.Reads._
+import play.api.libs.functional.syntax._
 import uk.gov.hmrc.gform.sharedmodel.SmartString
 
-case class Validator(validIf: ValidIf, errorMessage: SmartString)
+sealed trait Validator {
+  def errorMessage: SmartString
+}
 
-object Validator {
-
-  implicit val format: OFormat[Validator] = derived.oformat()
+case object Validator {
+  private val templateReads: Reads[Validator] = Reads { json =>
+    (json \ "validatorName").as[String] match {
+      case "hmrcRosmRegistrationCheck" => json.validate[HmrcRosmRegistrationCheckValidator]
+      case unsupported                 => JsError("Unsupported '" + unsupported + "' kind of validator.")
+    }
+  }
+  implicit val format: OFormat[Validator] = OFormatWithTemplateReadFallback(templateReads)
 
   implicit val leafExprs: LeafExpr[Validator] = (path: TemplatePath, t: Validator) =>
-    LeafExpr(path + "validIf", t.validIf) ++ LeafExpr(path + "errorMessage", t.errorMessage)
+    t match {
+      case HmrcRosmRegistrationCheckValidator(errorMessage, _, utr, postcode) =>
+        LeafExpr(path + "errorMessage", errorMessage) ++ List(utr, postcode).map(e => ExprWithPath(path, e))
+    }
+}
 
+case class HmrcRosmRegistrationCheckValidator(
+  errorMessage: SmartString,
+  regime: String,
+  utr: FormCtx,
+  postcode: FormCtx
+) extends Validator
+
+object HmrcRosmRegistrationCheckValidator {
+  private val readCustom: Reads[HmrcRosmRegistrationCheckValidator] =
+    ((JsPath \ "errorMessage").read[SmartString] and
+      (JsPath \ "parameters" \ "regime").read[String] and
+      (JsPath \ "parameters" \ "utr").read(FormCtx.readsForTemplateJson) and
+      (JsPath \ "parameters" \ "postcode")
+        .read(FormCtx.readsForTemplateJson))(HmrcRosmRegistrationCheckValidator.apply _)
+
+  implicit val format: OFormat[HmrcRosmRegistrationCheckValidator] = OFormatWithTemplateReadFallback(readCustom)
 }

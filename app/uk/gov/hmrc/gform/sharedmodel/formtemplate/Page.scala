@@ -30,8 +30,7 @@ case class Page(
   shortName: Option[SmartString],
   caption: Option[SmartString] = None,
   includeIf: Option[IncludeIf],
-  validator: Option[Validator],
-  validators: Option[Validators], //this will be removed by GFORMS-2279
+  validators: Option[Validator],
   fields: List[FormComponent],
   continueLabel: Option[SmartString],
   continueIf: Option[ContinueIf],
@@ -81,7 +80,6 @@ object Page {
       LeafExpr(path + "continueLabel", t.continueLabel) ++
       LeafExpr(path + "includeIf", t.includeIf) ++
       LeafExpr(path + "validators", t.validators) ++
-      LeafExpr(path + "validator", t.validator) ++
       LeafExpr(path + "instruction", t.instruction) ++
       LeafExpr(path + "confirmation", t.confirmation) ++
       LeafExpr(path + "redirects", t.redirects) ++
