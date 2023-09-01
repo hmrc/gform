@@ -171,7 +171,7 @@ object BuilderSupport {
       Property("label"),
       Property("helpText", PropertyBehaviour.PurgeWhenEmpty),
       Property("shortName", PropertyBehaviour.PurgeWhenEmpty),
-      Property("format"),
+      Property("format", PropertyBehaviour.PurgeWhenEmpty),
       Property("errorShortName", PropertyBehaviour.PurgeWhenEmpty),
       Property("errorShortNameStart", PropertyBehaviour.PurgeWhenEmpty),
       Property("errorExample", PropertyBehaviour.PurgeWhenEmpty),
@@ -181,7 +181,13 @@ object BuilderSupport {
       Property("mandatory", PropertyBehaviour.PurgeWhenEmpty),
       Property("multiline", PropertyBehaviour.PurgeWhenEmpty),
       Property("infoText"),
-      Property("infoType")
+      Property("infoType"),
+      Property("dividerPosition", PropertyBehaviour.PurgeWhenEmpty),
+      Property("dividerText", PropertyBehaviour.PurgeWhenEmpty),
+      Property("noneChoice", PropertyBehaviour.PurgeWhenEmpty),
+      Property("noneChoiceError", PropertyBehaviour.PurgeWhenEmpty),
+      Property("multivalue", PropertyBehaviour.PurgeWhenEmpty),
+      Property("choices", PropertyBehaviour.PurgeWhenEmpty)
     )
       .foldRight(formComponent) { case (property, accJson) =>
         sectionData.hcursor
