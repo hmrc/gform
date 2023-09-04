@@ -168,6 +168,7 @@ object BuilderSupport {
     formComponentId: FormComponentId
   ): Json =
     List(
+      Property("type"),
       Property("label"),
       Property("helpText", PropertyBehaviour.PurgeWhenEmpty),
       Property("shortName", PropertyBehaviour.PurgeWhenEmpty),
@@ -187,7 +188,13 @@ object BuilderSupport {
       Property("noneChoice", PropertyBehaviour.PurgeWhenEmpty),
       Property("noneChoiceError", PropertyBehaviour.PurgeWhenEmpty),
       Property("multivalue", PropertyBehaviour.PurgeWhenEmpty),
-      Property("choices", PropertyBehaviour.PurgeWhenEmpty)
+      Property("choices", PropertyBehaviour.PurgeWhenEmpty),
+      Property("cityMandatory", PropertyBehaviour.PurgeWhenEmpty),
+      Property("countyDisplayed", PropertyBehaviour.PurgeWhenEmpty),
+      Property("line2Mandatory", PropertyBehaviour.PurgeWhenEmpty),
+      Property("postcodeMandatory", PropertyBehaviour.PurgeWhenEmpty),
+      Property("countryLookup", PropertyBehaviour.PurgeWhenEmpty),
+      Property("countryDisplayed", PropertyBehaviour.PurgeWhenEmpty)
     )
       .foldRight(formComponent) { case (property, accJson) =>
         sectionData.hcursor
