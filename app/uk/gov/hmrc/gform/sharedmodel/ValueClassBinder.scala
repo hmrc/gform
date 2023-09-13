@@ -21,6 +21,7 @@ import play.api.libs.json.{ JsError, JsString, JsSuccess, Reads }
 import play.api.mvc.{ JavascriptLiteral, PathBindable, QueryStringBindable }
 import scala.util.Try
 import uk.gov.hmrc.crypto.Crypted
+import uk.gov.hmrc.gform.history.HistoryId
 import uk.gov.hmrc.gform.sharedmodel.dblookup.{ CollectionName, DbLookupId }
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId, FormId, FormStatus }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationId
@@ -43,6 +44,10 @@ object ValueClassBinder {
   implicit val formTemplateRawIdBinder: PathBindable[FormTemplateRawId] =
     caseInsensitive(FormTemplateRawId.apply, _.value)
 
+  implicit val historyIdBinder: PathBindable[HistoryId] = {
+    implicit val read: Reads[HistoryId] = HistoryId.flatReads
+    valueClassBinder(_.id)
+  }
   implicit val accessCodeBinder: PathBindable[AccessCode] = valueClassBinder(_.value)
   implicit val destinationIdBinder: PathBindable[DestinationId] = valueClassBinder(_.id)
   implicit val formIdBinder: PathBindable[FormId] = valueClassBinder(_.value)

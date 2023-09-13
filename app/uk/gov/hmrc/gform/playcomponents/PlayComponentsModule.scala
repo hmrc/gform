@@ -35,6 +35,7 @@ import uk.gov.hmrc.gform.envelope.EnvelopeModule
 import uk.gov.hmrc.gform.form.FormModule
 import uk.gov.hmrc.gform.formtemplate.FormTemplateModule
 import uk.gov.hmrc.gform.handlebarstemplate.HandlebarsTemplateModule
+import uk.gov.hmrc.gform.history.HistoryModule
 import uk.gov.hmrc.gform.metrics.MetricsModule
 import uk.gov.hmrc.gform.notificationbanner.NotificationBannerModule
 import uk.gov.hmrc.gform.objectstore.ObjectStoreModule
@@ -78,7 +79,8 @@ class PlayComponentsModule(
   schedulerModule: SchedulerModule,
   builderModule: BuilderModule,
   shutterModule: ShutterModule,
-  handlebarsPayloadModule: HandlebarsTemplateModule
+  handlebarsPayloadModule: HandlebarsTemplateModule,
+  historyModule: HistoryModule
 )(implicit ec: ExecutionContext) {
   private val logger = LoggerFactory.getLogger(getClass)
 
@@ -109,7 +111,8 @@ class PlayComponentsModule(
     sdesModule.sdesCallbackController,
     sdesModule.sdesController,
     sdesModule.dmsWorkItemController,
-    sdesModule.dataStoreWorkItemController
+    sdesModule.dataStoreWorkItemController,
+    historyModule.historyController
   )
 
   private val healthController =

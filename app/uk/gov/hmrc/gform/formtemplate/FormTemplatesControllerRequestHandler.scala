@@ -26,6 +26,7 @@ import scala.language.postfixOps
 import uk.gov.hmrc.gform.config.FileInfoConfig
 import uk.gov.hmrc.gform.core.{ FOpt, Opt, fromOptA }
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
+import uk.gov.hmrc.gform.history.FormTemplateHistory
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Default, Expr, ExpressionOutput, FormCategory, FormTemplate, FormTemplateRaw, SummarySection }
 
 trait RequestHandlerAlg[F[_]] {
@@ -34,7 +35,8 @@ trait RequestHandlerAlg[F[_]] {
 
 class FormTemplatesControllerRequestHandler[F[_]](
   verifyAndSave: FormTemplate => ExprSubstitutions => BooleanExprSubstitutions => FOpt[Unit],
-  save: FormTemplateRaw => FOpt[Unit]
+  save: FormTemplateRaw => FOpt[Unit],
+  saveHistory: FormTemplateHistory => FOpt[Unit]
 )(implicit ec: ExecutionContext) {
 
   val futureInterpreter = new RequestHandlerAlg[FOpt] {
@@ -100,6 +102,7 @@ class FormTemplatesControllerRequestHandler[F[_]](
       ft <- fromOptA(formTemplateOpt)
       _  <- verifyAndSave(ft._1)(ft._2)(ft._3)
       _  <- save(templateRaw)
+      _  <- saveHistory(FormTemplateHistory.fromFormTemplateRaw(templateRaw))
     } yield ()
 }
 

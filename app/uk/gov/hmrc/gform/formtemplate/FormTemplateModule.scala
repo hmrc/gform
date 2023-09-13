@@ -21,6 +21,7 @@ import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.core.{ FOpt, fromFutureA }
 import uk.gov.hmrc.gform.formredirect.{ FormRedirect, FormRedirectService }
 import uk.gov.hmrc.gform.handlebarstemplate.HandlebarsTemplateModule
+import uk.gov.hmrc.gform.history.HistoryModule
 import uk.gov.hmrc.gform.mongo.MongoModule
 import uk.gov.hmrc.gform.repo.Repo
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplate, FormTemplateId, FormTemplateRaw }
@@ -35,6 +36,7 @@ class FormTemplateModule(
   shutterModule: ShutterModule,
   notificationBannerModule: NotificationBannerModule,
   handlebarsPayloadModule: HandlebarsTemplateModule,
+  historyModule: HistoryModule,
   configModule: ConfigModule
 )(implicit
   ex: ExecutionContext
@@ -63,7 +65,8 @@ class FormTemplateModule(
       formTemplateService,
       formRedirectService,
       shutterModule.shutterService,
-      notificationBannerModule.notificationService
+      notificationBannerModule.notificationService,
+      historyModule.historyService
     )
 
   val fOptFormTemplateAlgebra: FormTemplateAlgebra[FOpt] = new FormTemplateAlgebra[FOpt] {

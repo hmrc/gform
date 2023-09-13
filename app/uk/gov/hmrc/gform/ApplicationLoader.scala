@@ -44,6 +44,7 @@ import uk.gov.hmrc.gform.formmetadata.FormMetadataModule
 import uk.gov.hmrc.gform.formtemplate.FormTemplateModule
 import uk.gov.hmrc.gform.graphite.GraphiteModule
 import uk.gov.hmrc.gform.handlebarstemplate.HandlebarsTemplateModule
+import uk.gov.hmrc.gform.history.HistoryModule
 import uk.gov.hmrc.gform.metrics.MetricsModule
 import uk.gov.hmrc.gform.mongo.MongoModule
 import uk.gov.hmrc.gform.notificationbanner.NotificationBannerModule
@@ -125,6 +126,8 @@ class ApplicationModule(context: Context)
   private val shutterModule = new ShutterModule(mongoModule, configModule)
   private val notificationBannerModule = new NotificationBannerModule(mongoModule, configModule)
   private val handlebarsPayloadModule = new HandlebarsTemplateModule(controllerComponents, mongoModule)
+
+  val historyModule = new HistoryModule(configModule, mongoModule)
   val formTemplateModule =
     new FormTemplateModule(
       controllerComponents,
@@ -132,10 +135,11 @@ class ApplicationModule(context: Context)
       shutterModule,
       notificationBannerModule,
       handlebarsPayloadModule,
+      historyModule,
       configModule
     )
   private val emailModule = new EmailModule(configModule, wSHttpModule, notifierModule, formTemplateModule)
-  private val translationModule = new TranslationModule(formTemplateModule, configModule)
+  private val translationModule = new TranslationModule(formTemplateModule, historyModule, configModule)
   val pdfGeneratorModule = new PdfGeneratorModule()
 
   val formMetadaModule = new FormMetadataModule(mongoModule)
@@ -283,7 +287,7 @@ class ApplicationModule(context: Context)
 
   val schedulerModule = new SchedulerModule(configModule, mongoModule, sdesModule, akkaModule, emailModule)
 
-  val builderModule = new BuilderModule(controllerComponents, formTemplateModule.formTemplateService)
+  val builderModule = new BuilderModule(controllerComponents, formTemplateModule.formTemplateService, historyModule)
 
   val playComponentsModule = new PlayComponentsModule(
     playComponents,
@@ -312,7 +316,8 @@ class ApplicationModule(context: Context)
     schedulerModule,
     builderModule,
     shutterModule,
-    handlebarsPayloadModule
+    handlebarsPayloadModule,
+    historyModule
   )
 
   override lazy val httpRequestHandler: HttpRequestHandler = playComponentsModule.httpRequestHandler

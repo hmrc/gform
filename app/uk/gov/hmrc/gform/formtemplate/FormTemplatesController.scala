@@ -24,6 +24,7 @@ import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.formredirect.FormRedirectService
 import uk.gov.hmrc.gform.formtemplate.FormTemplatePIIRefsHelper.PIIDetailsResponse
+import uk.gov.hmrc.gform.history.HistoryService
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplate, FormTemplateContext, FormTemplateId, FormTemplateRaw, FormTemplateRawId }
 import uk.gov.hmrc.gform.shutter.ShutterService
 
@@ -35,7 +36,8 @@ class FormTemplatesController(
   formTemplateService: FormTemplateService,
   formRedirectService: FormRedirectService,
   shutterService: ShutterService,
-  notificationService: NotificationService
+  notificationService: NotificationService,
+  historyService: HistoryService
 )(implicit
   ex: ExecutionContext
 ) extends BaseController(controllerComponents) {
@@ -48,7 +50,8 @@ class FormTemplatesController(
 
     new FormTemplatesControllerRequestHandler(
       formTemplateService.verifyAndSave,
-      formTemplateService.save
+      formTemplateService.save,
+      historyService.save
     ).futureInterpreter
       .handleRequest(templateRaw)
       .fold(_.asBadRequest, _ => Results.NoContent)
