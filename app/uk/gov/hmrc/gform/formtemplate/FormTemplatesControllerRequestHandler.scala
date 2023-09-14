@@ -346,7 +346,9 @@ object FormTemplatesControllerRequestHandler {
         })
 
       val updateTaskList =
-        (__ \ "sections").json.update(list((__ \ "tasks").json.update(list(updateSectionQuestions))))
+        (__ \ "sections").json.update(
+          list((__ \ "tasks").json.update(list(updateSectionQuestions andThen updatePageQuestions)))
+        )
 
       json.transform(
         updateTaskList andThen updatePageQuestions andThen updateSectionQuestions
