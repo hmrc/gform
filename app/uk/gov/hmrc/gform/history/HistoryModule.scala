@@ -14,21 +14,18 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.builder
-
-import play.api.mvc.ControllerComponents
-import uk.gov.hmrc.gform.formtemplate.FormTemplateService
-import uk.gov.hmrc.gform.history.HistoryModule
+package uk.gov.hmrc.gform.history
 
 import scala.concurrent.ExecutionContext
+import uk.gov.hmrc.gform.config.ConfigModule
+import uk.gov.hmrc.gform.mongo.MongoModule
 
-class BuilderModule(
-  controllerComponents: ControllerComponents,
-  formTemplateService: FormTemplateService,
-  historyModule: HistoryModule
-)(implicit ex: ExecutionContext) {
+class HistoryModule(configModule: ConfigModule, mongoModule: MongoModule)(implicit ex: ExecutionContext) {
+  private val formTemplateHistoryRepo: HistoryRepository =
+    new HistoryRepository(mongoModule)
 
-  val builderController: BuilderController =
-    new BuilderController(controllerComponents, formTemplateService, historyModule.historyService)
+  val historyService: HistoryService = new HistoryService(formTemplateHistoryRepo)
 
+  val historyController: HistoryController =
+    new HistoryController(configModule.controllerComponents, historyService)
 }

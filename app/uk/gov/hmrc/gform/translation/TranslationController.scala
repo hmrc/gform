@@ -24,17 +24,20 @@ import play.api.mvc.{ Action, AnyContent, ControllerComponents, Result }
 import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.formtemplate.{ FormTemplateService, FormTemplatesControllerRequestHandler }
+import uk.gov.hmrc.gform.history.HistoryService
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplateId, FormTemplateRaw, FormTemplateRawId }
 
 class TranslationController(
   formTemplateService: FormTemplateService,
+  historyService: HistoryService,
   controllerComponents: ControllerComponents
 )(implicit ec: ExecutionContext)
     extends BaseController(controllerComponents) {
 
   private val interpreter = new FormTemplatesControllerRequestHandler(
     formTemplateService.verifyAndSave,
-    formTemplateService.save
+    formTemplateService.save,
+    historyService.save
   ).futureInterpreter
 
   private def fileByteData(json: String, generate: (String, BufferedOutputStream) => Unit): ByteArrayInputStream = {

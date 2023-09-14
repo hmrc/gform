@@ -120,3 +120,9 @@ GET           /data-store-work-item/search/:page/:pageSize                      
 POST          /data-store-work-item/enqueue/:id                                                         uk.gov.hmrc.gform.sdes.datastore.DataStoreWorkItemController.enqueue(id: String)
 GET           /data-store-work-item/:id                                                                 uk.gov.hmrc.gform.sdes.datastore.DataStoreWorkItemController.get(id: String)
 DELETE        /data-store-work-item/:id                                                                 uk.gov.hmrc.gform.sdes.datastore.DataStoreWorkItemController.delete(id: String)
+
+GET           /history-all-ids                                                                          uk.gov.hmrc.gform.history.HistoryController.allFormTemplateIds()
+GET           /history/template/:historyId                                                              uk.gov.hmrc.gform.history.HistoryController.historyFor(historyId: HistoryId)
+GET           /history/overview/:formTemplateRawId                                                      uk.gov.hmrc.gform.history.HistoryController.formTemplateHistoryOverview(formTemplateRawId: FormTemplateRawId)
+POST          /history/filter                                                                           uk.gov.hmrc.gform.history.HistoryController.overviewWithFilter()
+GET           /history/next/:formTemplateRawId/:historyId                                               uk.gov.hmrc.gform.history.HistoryController.nextHistoryId(formTemplateRawId: FormTemplateRawId, historyId: HistoryId)

@@ -29,6 +29,7 @@ import scala.util.matching.Regex
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.core._
 import uk.gov.hmrc.gform.formtemplate.{ FormTemplateService, FormTemplatesControllerRequestHandler, RequestHandlerAlg }
+import uk.gov.hmrc.gform.history.HistoryService
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
 import scala.concurrent.ExecutionContext
@@ -333,14 +334,19 @@ object BuilderSupport {
     modifyJson(formTemplateRaw)(modifySectionData(_, sectionPath, sectionData))
 }
 
-class BuilderController(controllerComponents: ControllerComponents, formTemplateService: FormTemplateService)(implicit
+class BuilderController(
+  controllerComponents: ControllerComponents,
+  formTemplateService: FormTemplateService,
+  historyService: HistoryService
+)(implicit
   ex: ExecutionContext
 ) extends BaseController(controllerComponents) with Circe {
 
   private val requestHandler: RequestHandlerAlg[FOpt] =
     new FormTemplatesControllerRequestHandler(
       formTemplateService.verifyAndSave,
-      formTemplateService.save
+      formTemplateService.save,
+      historyService.save
     ).futureInterpreter
 
   private def applyUpdateFunction(
