@@ -345,7 +345,14 @@ object FormTemplatesControllerRequestHandler {
           )
         })
 
-      json.transform(updatePageQuestions andThen updateSectionQuestions) orElse JsSuccess(json)
+      val updateTaskList =
+        (__ \ "sections").json.update(
+          list((__ \ "tasks").json.update(list(updateSectionQuestions andThen updatePageQuestions)))
+        )
+
+      json.transform(
+        updateTaskList andThen updatePageQuestions andThen updateSectionQuestions
+      ) orElse JsSuccess(json)
     }
 
     val transformDestinations: Reads[JsValue] = Reads { json =>
