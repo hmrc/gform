@@ -125,4 +125,5 @@ GET           /history-all-ids                                                  
 GET           /history/template/:historyId                                                              uk.gov.hmrc.gform.history.HistoryController.historyFor(historyId: HistoryId)
 GET           /history/overview/:formTemplateRawId                                                      uk.gov.hmrc.gform.history.HistoryController.formTemplateHistoryOverview(formTemplateRawId: FormTemplateRawId)
 POST          /history/filter                                                                           uk.gov.hmrc.gform.history.HistoryController.overviewWithFilter()
+GET           /history/previous/:formTemplateRawId/:historyId                                           uk.gov.hmrc.gform.history.HistoryController.previousHistoryId(formTemplateRawId: FormTemplateRawId, historyId: HistoryId)
 GET           /history/next/:formTemplateRawId/:historyId                                               uk.gov.hmrc.gform.history.HistoryController.nextHistoryId(formTemplateRawId: FormTemplateRawId, historyId: HistoryId)

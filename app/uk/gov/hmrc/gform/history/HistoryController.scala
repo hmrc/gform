@@ -55,6 +55,18 @@ class HistoryController(controllerComponents: ControllerComponents, historyServi
         }
     }
 
+  def previousHistoryId(
+    formTemplateRawId: FormTemplateRawId,
+    historyId: HistoryId
+  ) =
+    Action.async { request =>
+      historyService
+        .previousHistoryId(formTemplateRawId, historyId)
+        .map { maybeHistoryId =>
+          maybeHistoryId.fold[Result](NotFound)(historyId => Ok(Json.toJson(historyId)))
+        }
+    }
+
   def nextHistoryId(
     formTemplateRawId: FormTemplateRawId,
     historyId: HistoryId
