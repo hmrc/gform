@@ -39,6 +39,14 @@ class HistoryService(
   def overviewWithFilter(historyFilter: HistoryFilter): Future[Seq[HistoryOverviewFull]] =
     historyRepo.overviewWithFilter(historyFilter)
 
+  def previousHistoryId(formTemplateRawId: FormTemplateRawId, historyId: HistoryId): Future[Option[HistoryId]] =
+    formTemplateHistoryOverview(formTemplateRawId).map { historyOverviews =>
+      historyOverviews
+        .sliding(2)
+        .toList
+        .collectFirst { case previousId :: currentId :: Nil if currentId._id === historyId => previousId._id }
+    }
+
   def nextHistoryId(formTemplateRawId: FormTemplateRawId, historyId: HistoryId): Future[Option[HistoryId]] =
     formTemplateHistoryOverview(formTemplateRawId).map { historyOverviews =>
       historyOverviews
