@@ -1,6 +1,7 @@
 {
   "_id": "group-include-group",
   "formName": "Group",
+  "version": "1",
   "description": "",
   "emailTemplateId": "",
   "authConfig": {

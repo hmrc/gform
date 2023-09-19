@@ -425,7 +425,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
   val plainFormTemplate = FormTemplate(
     FormTemplateId("ipt100"),
     FormTemplateId("IPT100"),
-    None,
+    FormTemplateVersion("1"),
     Some(
       NonEmptyList.of(
         FormTemplateId("ipt099")

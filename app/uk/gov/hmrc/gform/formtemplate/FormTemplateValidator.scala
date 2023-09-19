@@ -46,7 +46,7 @@ object FormTemplateValidator {
   ): ValidationResult = {
     val _id = formTemplate._id.value
     val legacyFormIds = formTemplate.legacyFormIds.fold(List.empty[String])(_.map(_.value).toList)
-    val version = formTemplate.version.fold("")(_.version)
+    val version = formTemplate.version.version
     if (_id =!= _id.toLowerCase) {
       Invalid(
         "_id must be lowercase. Found: " + _id

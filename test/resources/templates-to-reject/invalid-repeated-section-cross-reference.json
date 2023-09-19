@@ -1,6 +1,7 @@
 {
   "_id": "invalid-repeated-section-cross-reference",
   "formName": "Forbidden reference",
+  "version": "1",
   "sections": [
     {
       "title": "Repeated section Page",

@@ -50,7 +50,7 @@ trait FormGen {
       envelopeId,
       userId,
       formTemplateId,
-      formTemplateVersion,
+      Some(formTemplateVersion),
       formData,
       status,
       visitIndex,

@@ -1,6 +1,7 @@
 {
   "_id": "email-verification-forward-reference",
   "formName": "Email verification forward reference",
+  "version": "1",
   "description": "Testing enrolment journey",
   "authConfig": {
     "authModule": "hmrc"

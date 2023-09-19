@@ -502,7 +502,7 @@ trait ExampleFormTemplate {
   def formTemplate = FormTemplate(
     formTemplateId,
     formTemplateId,
-    None,
+    FormTemplateVersion("1"),
     legacyFormIds,
     formName,
     Some(ResearchBanner),

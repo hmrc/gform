@@ -9,6 +9,7 @@ trait FormTemplateSample {
                   |{
                   |    "_id": "$id",
                   |    "formName": "Test form name",
+                  |    "version": "1",
                   |    "description": "Test form description",
                   |    "authConfig": {
                   |        "authModule": "anonymous"

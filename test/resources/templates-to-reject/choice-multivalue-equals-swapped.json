@@ -1,6 +1,7 @@
 {
   "_id": "choice-multivalue-equals-swapped",
   "formName": "Choice multivalue",
+  "version": "1",
   "description": "",
   "emailTemplateId": "",
   "authConfig": {

@@ -492,7 +492,8 @@ class FormTemplatesControllerRequestHandlerTest extends AnyWordSpec with Matcher
        |  "formName": "Testing section change label tttt",
        |  "description": "Testing the form change label",
        |  ${draftRetrievalMethod.getOrElse("")}
-       |  "languages":["en"],
+       |  "languages": ["en"],
+       |  "version": "1",
        |  "destinations": [
        |    {
        |      "id": "HMRCDMS",
@@ -549,8 +550,9 @@ class FormTemplatesControllerRequestHandlerTest extends AnyWordSpec with Matcher
     s"""{
        |  "_id": "newfield",
        |  "formName": "Testing section change label tttt",
+       |  "languages": ["en"],
        |  "description": "Testing the form change label",
-       |  "languages":["en"],
+       |  "version": "1",
        |    "printSection": {
        |        "page": {
        |            "title": "Test Title",
@@ -600,7 +602,8 @@ class FormTemplatesControllerRequestHandlerTest extends AnyWordSpec with Matcher
        |  "_id": "newfield",
        |  "formName": "Testing section change label tttt",
        |  "description": "Testing the form change label",
-       |  "languages":["en"],
+       |  "languages": ["en"],
+       |  "version": "1",
        |    "printSection": {
        |        "page": {
        |            "title": "Test Title",
@@ -650,7 +653,8 @@ class FormTemplatesControllerRequestHandlerTest extends AnyWordSpec with Matcher
        |  "_id": "newfield",
        |  "formName": "Testing section change label tttt",
        |  "description": "Testing the form change label",
-       |  "languages":["en"],
+       |  "languages": ["en"],
+       |  "version": "1",
        |    "printSection": {
        |        "page": {
        |            "title": "Test Title",
@@ -695,7 +699,8 @@ class FormTemplatesControllerRequestHandlerTest extends AnyWordSpec with Matcher
        |  "_id": "newfield",
        |  "formName": "Testing section change label tttt",
        |  "description": "Testing the form change label",
-       |  "languages":["en"],
+       |  "languages": ["en"],
+       |  "version": "1",
        |    "printSection": {
        |        "page": {
        |            "title": "Test Title",
@@ -891,7 +896,8 @@ class FormTemplatesControllerRequestHandlerTest extends AnyWordSpec with Matcher
        |  "_id": "newfield",
        |  "formName": "Testing section change label tttt",
        |  "description": "Testing the form change label",
-       |  "languages":["en"],
+       |  "languages": ["en"],
+       |  "version": "1",
        |  "destinations": [
        |    {
        |      "id": "HMRCDMS",
@@ -1041,7 +1047,8 @@ class FormTemplatesControllerRequestHandlerTest extends AnyWordSpec with Matcher
        |  "_id": "newfield",
        |  "formName": "Testing section change label tttt",
        |  "description": "Testing the form change label",
-       |  "languages":["en"],
+       |  "languages": ["en"],
+       |  "version": "1",
        |  "destinations": [
        |    {
        |      "id": "HMRCDMS1",

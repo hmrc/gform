@@ -1,6 +1,7 @@
 {
   "_id": "group-include-revealing-choice",
   "formName": "Group",
+  "version": "1",
   "description": "",
   "emailTemplateId": "",
   "authConfig": {

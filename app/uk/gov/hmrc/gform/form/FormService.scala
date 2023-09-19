@@ -119,7 +119,7 @@ class FormService[F[_]: Monad](
                envelopeId,
                userId,
                lowerCased.formTemplateId,
-               formTemplate.version,
+               Some(formTemplate.version),
                FormData(fields = Seq.empty),
                InProgress,
                VisitIndex.empty(formTemplate.formKind),

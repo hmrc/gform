@@ -1,6 +1,7 @@
 {
   "_id": "revealing-choice-unique-ids",
   "formName": "Revealing choice",
+  "version": "1",
   "description": "",
   "emailTemplateId": "",
   "authConfig": {

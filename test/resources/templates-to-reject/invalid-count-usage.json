@@ -1,6 +1,7 @@
 {
   "_id": "invalid-count-usage",
   "formName": "Forbidden reference",
+  "version": "1",
   "sections": [
     {
       "title": "Page A",

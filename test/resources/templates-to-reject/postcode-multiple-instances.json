@@ -1,6 +1,7 @@
 {
   "_id": "postcode-multiple-instances",
   "formName": "Postcode",
+  "version": "1",
   "description": "",
   "emailTemplateId": "al_registration_confirmation",
   "authConfig": {

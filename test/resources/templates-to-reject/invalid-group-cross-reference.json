@@ -1,6 +1,7 @@
 {
   "_id": "invalid-group-cross-reference",
   "formName": "Forbidden reference",
+  "version": "1",
   "sections": [
     {
       "title": "First Page",
