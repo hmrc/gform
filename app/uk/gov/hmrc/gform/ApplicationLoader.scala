@@ -35,6 +35,7 @@ import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.employments.EmploymentsModule
 import uk.gov.hmrc.gform.formstatistics.FormStatisticsModule
 import uk.gov.hmrc.gform.dblookup.DbLookupModule
+import uk.gov.hmrc.gform.des.DesModule
 import uk.gov.hmrc.gform.dms.DmsModule
 import uk.gov.hmrc.gform.email.EmailModule
 import uk.gov.hmrc.gform.envelope.EnvelopeModule
@@ -61,7 +62,6 @@ import uk.gov.hmrc.gform.testonly.TestOnlyModule
 import uk.gov.hmrc.gform.time.TimeModule
 import uk.gov.hmrc.gform.translation.TranslationModule
 import uk.gov.hmrc.gform.upscan.UpscanModule
-import uk.gov.hmrc.gform.validation.ValidationModule
 import uk.gov.hmrc.gform.wshttp.WSHttpModule
 import uk.gov.hmrc.gform.obligation.ObligationModule
 import uk.gov.hmrc.gform.scheduler.SchedulerModule
@@ -208,7 +208,7 @@ class ApplicationModule(context: Context)
   val destinationModule =
     new DestinationModule(configModule, mongoModule, formModule, fileUploadModule, formMetadaModule, objectStoreModule)
 
-  val validationModule = new ValidationModule(wSHttpModule, configModule)
+  val validationModule = new DesModule(wSHttpModule, configModule)
 
   private val handlebarsModule = new HandlebarsHttpApiModule(wSHttpModule, configModule)
 

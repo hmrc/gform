@@ -28,6 +28,7 @@ import uk.gov.hmrc.gform.builder.BuilderModule
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.formstatistics.FormStatisticsModule
 import uk.gov.hmrc.gform.dblookup.DbLookupModule
+import uk.gov.hmrc.gform.des.DesModule
 import uk.gov.hmrc.gform.dms.DmsModule
 import uk.gov.hmrc.gform.email.EmailModule
 import uk.gov.hmrc.gform.employments.EmploymentsModule
@@ -45,7 +46,6 @@ import uk.gov.hmrc.gform.sdes.SdesModule
 import uk.gov.hmrc.gform.submission.SubmissionModule
 import uk.gov.hmrc.gform.testonly.TestOnlyModule
 import uk.gov.hmrc.gform.translation.TranslationModule
-import uk.gov.hmrc.gform.validation.ValidationModule
 import uk.gov.hmrc.gform.upscan.UpscanModule
 import uk.gov.hmrc.play.bootstrap.backend.filters.BackendMdcFilter
 import uk.gov.hmrc.play.bootstrap.filters.{ CacheControlConfig, CacheControlFilter, DefaultLoggingFilter }
@@ -62,7 +62,7 @@ class PlayComponentsModule(
   formTemplateModule: FormTemplateModule,
   testOnlyModule: TestOnlyModule,
   submissionModule: SubmissionModule,
-  validationModule: ValidationModule,
+  desModule: DesModule,
   dmsModule: DmsModule,
   obligationModule: ObligationModule,
   employmentsModule: EmploymentsModule,
@@ -94,7 +94,7 @@ class PlayComponentsModule(
     formTemplateModule.formTemplatesController,
     handlebarsPayloadModule.handlebarTemplateController,
     configModule.configController,
-    validationModule.validationController,
+    desModule.desController,
     dmsModule.dmsSubmissionController,
     obligationModule.obligationController,
     employmentsModule.employmentsController,

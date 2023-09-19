@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.validation
+package uk.gov.hmrc.gform.des
 
 import org.slf4j.LoggerFactory
 import play.api.libs.json.Json
@@ -25,14 +25,19 @@ import uk.gov.hmrc.gform.sharedmodel.des.DesRegistrationRequest
 
 import scala.concurrent.{ ExecutionContext, Future }
 
-class ValidationController(controllerComponents: ControllerComponents, validation: ValidationService[Future])(implicit
+class DesController(controllerComponents: ControllerComponents, desService: DesService[Future])(implicit
   ex: ExecutionContext
 ) extends BaseController(controllerComponents) {
 
   private val logger = LoggerFactory.getLogger(getClass)
 
-  def desRegistration(utr: String) = Action.async(parse.json[DesRegistrationRequest]) { implicit request =>
-    logger.info(s"validate Address At Des, ${loggingHelpers.cleanHeaders(request.headers)}")
-    validation.desRegistration(utr, request.body).map(a => Ok(Json.toJson(a)))
+  def organisation(utr: String) = Action.async(parse.json[DesRegistrationRequest]) { implicit request =>
+    logger.info(s"Get Address from DES, ${loggingHelpers.cleanHeaders(request.headers)}")
+    desService.organisation(utr, request.body).map(a => Ok(Json.toJson(a)))
+  }
+
+  def agentDetails(idType: String, idNumber: String) = Action.async { implicit request =>
+    logger.info(s"Get Agent Details from DES, ${loggingHelpers.cleanHeaders(request.headers)}")
+    desService.agentDetails(idType, idNumber).map(a => Ok(Json.toJson(a)))
   }
 }

@@ -14,17 +14,22 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.validation
+package uk.gov.hmrc.gform.des
 
 import cats.Functor
-import uk.gov.hmrc.gform.des.DesAlgebra
 import uk.gov.hmrc.gform.sharedmodel.ServiceCallResponse
-import uk.gov.hmrc.gform.sharedmodel.des.{ DesRegistrationRequest, DesRegistrationResponse }
+import uk.gov.hmrc.gform.sharedmodel.des.{ DesAgentDetailsResponse, DesRegistrationRequest, DesRegistrationResponse }
 
-class ValidationService[F[_]: Functor](des: DesAlgebra[F]) {
-  def desRegistration(
+class DesService[F[_]: Functor](des: DesAlgebra[F]) {
+  def organisation(
     utr: String,
     desRegistrationRequest: DesRegistrationRequest
   ): F[ServiceCallResponse[DesRegistrationResponse]] =
     des.lookupRegistration(utr, desRegistrationRequest)
+
+  def agentDetails(
+    idType: String,
+    idNumber: String
+  ): F[ServiceCallResponse[DesAgentDetailsResponse]] =
+    des.lookupAgentDetails(idType, idNumber)
 }

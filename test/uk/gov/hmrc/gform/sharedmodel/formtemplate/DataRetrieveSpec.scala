@@ -499,6 +499,66 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
     )
   }
 
+  it should "parse json as agentDetails with if" in {
+    Json
+      .parse("""
+               |{
+               |  "type": "agentDetails",
+               |  "id": "agencyInfo",
+               |  "parameters": {
+               |      "agentReferenceNumber": "${agentReferenceNumber}"
+               |  }
+               |}
+               |""".stripMargin)
+      .as[DataRetrieve] shouldBe DataRetrieve(
+      DataRetrieve.Type("agentDetails"),
+      DataRetrieveId("agencyInfo"),
+      Attr.FromObject(
+        List(
+          AttributeInstruction(
+            DataRetrieve.Attribute("agencyName"),
+            ConstructAttribute.AsIs(Fetch(List("det", "agencyDetails", "agencyName")))
+          ),
+          AttributeInstruction(
+            DataRetrieve.Attribute("agencyAddress"),
+            ConstructAttribute.Concat(
+              List(
+                Fetch(List("det", "agencyDetails", "agencyAddress", "UkAddress", "addressLine1")),
+                Fetch(List("det", "agencyDetails", "agencyAddress", "UkAddress", "addressLine2")),
+                Fetch(List("det", "agencyDetails", "agencyAddress", "UkAddress", "addressLine3")),
+                Fetch(List("det", "agencyDetails", "agencyAddress", "UkAddress", "addressLine4")),
+                Fetch(List("det", "agencyDetails", "agencyAddress", "UkAddress", "postalCode")),
+                Fetch(List("det", "agencyDetails", "agencyAddress", "InternationalAddress", "addressLine1")),
+                Fetch(List("det", "agencyDetails", "agencyAddress", "InternationalAddress", "addressLine2")),
+                Fetch(List("det", "agencyDetails", "agencyAddress", "InternationalAddress", "addressLine3")),
+                Fetch(List("det", "agencyDetails", "agencyAddress", "InternationalAddress", "addressLine4")),
+                Fetch(List("det", "agencyDetails", "agencyAddress", "InternationalAddress", "postalCode")),
+                Fetch(List("det", "agencyDetails", "agencyAddress", "InternationalAddress", "countryCode"))
+              )
+            )
+          ),
+          AttributeInstruction(
+            DataRetrieve.Attribute("agencyEmail"),
+            ConstructAttribute.AsIs(Fetch(List("det", "agencyDetails", "agencyEmail")))
+          ),
+          AttributeInstruction(
+            DataRetrieve.Attribute("agencyPhone"),
+            ConstructAttribute.AsIs(Fetch(List("det", "contactDetails", "phoneNumber")))
+          )
+        )
+      ),
+      Map.empty,
+      List(
+        DataRetrieve
+          .ParamExpr(
+            DataRetrieve.Parameter("agentReferenceNumber", List(), DataRetrieve.ParamType.String),
+            FormCtx(FormComponentId("agentReferenceNumber"))
+          )
+      ),
+      None
+    )
+  }
+
   it should "return error when name, firstName and lastName are missing for PersonalBankAccountExistence" in {
     Json
       .parse("""
