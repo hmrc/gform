@@ -57,7 +57,8 @@ DELETE        /handlebarstemplates/:handlebarsTemplateId                        
 
 GET           /exposed-config                                                                           uk.gov.hmrc.gform.config.ConfigController.exposedConfig()
 
-POST          /validate/des/:utr                                                                        uk.gov.hmrc.gform.validation.ValidationController.desRegistration(utr: String)
+POST          /des/organisation/:utr                                                                    uk.gov.hmrc.gform.des.DesController.organisation(utr: String)
+GET           /des/personal-details/:idType/:idNumber                                                   uk.gov.hmrc.gform.des.DesController.agentDetails(idType: String, idNumber: String)
 
 POST          /dms/submit                                                                               uk.gov.hmrc.gform.dms.DmsSubmissionController.submitToDms()
 POST          /dms/submit-pdf                                                                           uk.gov.hmrc.gform.dms.DmsSubmissionController.submitPdfToDms()

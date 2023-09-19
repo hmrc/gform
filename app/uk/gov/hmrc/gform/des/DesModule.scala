@@ -14,21 +14,20 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.validation
+package uk.gov.hmrc.gform.des
 
 import cats.instances.future._
 import uk.gov.hmrc.gform.config.ConfigModule
-import uk.gov.hmrc.gform.des.{ DesAlgebra, DesConnector }
 import uk.gov.hmrc.gform.wshttp.WSHttpModule
 
 import scala.concurrent.{ ExecutionContext, Future }
 
-class ValidationModule(wSHttpModule: WSHttpModule, configModule: ConfigModule)(implicit ex: ExecutionContext) {
+class DesModule(wSHttpModule: WSHttpModule, configModule: ConfigModule)(implicit ex: ExecutionContext) {
 
   private val desConfig = configModule.desConfig
   private val desConnector: DesAlgebra[Future] =
     new DesConnector(wSHttpModule.auditableWSHttp, configModule.serviceConfig.baseUrl("etmp-hod"), desConfig)
 
-  private val validationService = new ValidationService(desConnector)
-  val validationController = new ValidationController(configModule.controllerComponents, validationService)
+  private val desService = new DesService(desConnector)
+  val desController = new DesController(configModule.controllerComponents, desService)
 }

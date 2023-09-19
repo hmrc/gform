@@ -356,6 +356,47 @@ object DataRetrieveDefinitions {
     )
   )
 
+  val agentDetails = DataRetrieveDefinition(
+    DataRetrieve.Type("agentDetails"),
+    Attr.FromObject(
+      List(
+        AttributeInstruction(
+          DataRetrieve.Attribute("agencyName"),
+          ConstructAttribute.AsIs(Fetch(List("det", "agencyDetails", "agencyName")))
+        ),
+        AttributeInstruction(
+          DataRetrieve.Attribute("agencyAddress"),
+          ConstructAttribute.Concat(
+            List(
+              Fetch(List("det", "agencyDetails", "agencyAddress", "UkAddress", "addressLine1")),
+              Fetch(List("det", "agencyDetails", "agencyAddress", "UkAddress", "addressLine2")),
+              Fetch(List("det", "agencyDetails", "agencyAddress", "UkAddress", "addressLine3")),
+              Fetch(List("det", "agencyDetails", "agencyAddress", "UkAddress", "addressLine4")),
+              Fetch(List("det", "agencyDetails", "agencyAddress", "UkAddress", "postalCode")),
+              Fetch(List("det", "agencyDetails", "agencyAddress", "InternationalAddress", "addressLine1")),
+              Fetch(List("det", "agencyDetails", "agencyAddress", "InternationalAddress", "addressLine2")),
+              Fetch(List("det", "agencyDetails", "agencyAddress", "InternationalAddress", "addressLine3")),
+              Fetch(List("det", "agencyDetails", "agencyAddress", "InternationalAddress", "addressLine4")),
+              Fetch(List("det", "agencyDetails", "agencyAddress", "InternationalAddress", "postalCode")),
+              Fetch(List("det", "agencyDetails", "agencyAddress", "InternationalAddress", "countryCode"))
+            )
+          )
+        ),
+        AttributeInstruction(
+          DataRetrieve.Attribute("agencyEmail"),
+          ConstructAttribute.AsIs(Fetch(List("det", "agencyDetails", "agencyEmail")))
+        ),
+        AttributeInstruction(
+          DataRetrieve.Attribute("agencyPhone"),
+          ConstructAttribute.AsIs(Fetch(List("det", "contactDetails", "phoneNumber")))
+        )
+      )
+    ),
+    List(
+      Parameter("agentReferenceNumber")
+    )
+  )
+
   val staticDefinitions = DataRetrieveDefinitions(
     List(
       validateBankDetails,
@@ -366,7 +407,8 @@ object DataRetrieveDefinitions {
       ninoInsights,
       bankAccountInsights,
       employments,
-      hmrcRosmRegistrationCheck
+      hmrcRosmRegistrationCheck,
+      agentDetails
     )
   )
 
