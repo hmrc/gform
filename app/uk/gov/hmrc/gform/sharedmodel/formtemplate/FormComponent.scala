@@ -44,7 +44,8 @@ case class FormComponent(
   errorShortName: Option[SmartString] = None,
   errorShortNameStart: Option[SmartString] = None,
   errorExample: Option[SmartString] = None,
-  notPII: Boolean = false
+  notPII: Boolean = false,
+  extraLetterSpacing: Boolean = false
 ) {
   private def updateField(i: Int, fc: FormComponent): FormComponent =
     fc.copy(
