@@ -69,6 +69,11 @@ class FormComponentMaker(json: JsValue) {
     case _                                => Right(false)
   }
 
+  lazy val optExtraLetterSpacing: Opt[Boolean] = (json \ "extraLetterSpacing") match {
+    case JsDefined(JsString(IsTrueish())) => Right(true)
+    case _                                => Right(false)
+  }
+
   def optFileUploadProvider(compression: Boolean): Opt[FileUploadProvider] = (json \ "service") match {
     case JsDefined(JsString("upscan"))     => Right(FileUploadProvider.Upscan(compression))
     case JsDefined(JsString("fileUpload")) => Right(FileUploadProvider.FileUploadFrontend)
@@ -277,17 +282,18 @@ class FormComponentMaker(json: JsValue) {
 
   def optFieldValue(): Opt[FormComponent] =
     for {
-      label       <- optLabel
-      helpText    <- optHelpText
-      presHint    <- optMaybePresentationHintExpr
-      mes         <- optMES
-      ct          <- componentTypeOpt
-      validators  <- optValidators
-      instruction <- optInstruction
-      includeIf   <- optIncludeIf
-      validIf     <- optValidIf
-      labelSize   <- optLabelSize
-      notPII      <- optNotPII
+      label              <- optLabel
+      helpText           <- optHelpText
+      presHint           <- optMaybePresentationHintExpr
+      mes                <- optMES
+      ct                 <- componentTypeOpt
+      validators         <- optValidators
+      instruction        <- optInstruction
+      includeIf          <- optIncludeIf
+      validIf            <- optValidIf
+      labelSize          <- optLabelSize
+      notPII             <- optNotPII
+      extraLetterSpacing <- optExtraLetterSpacing
     } yield mkFieldValue(
       label,
       helpText,
@@ -299,7 +305,8 @@ class FormComponentMaker(json: JsValue) {
       includeIf,
       validIf,
       labelSize,
-      notPII
+      notPII,
+      extraLetterSpacing
     )
 
   private def toOpt[A](result: JsResult[A], pathPrefix: String): Opt[A] =
@@ -326,7 +333,8 @@ class FormComponentMaker(json: JsValue) {
     includeIf: Option[IncludeIf],
     validIf: Option[ValidIf],
     labelSize: Option[LabelSize],
-    notPII: Boolean
+    notPII: Boolean,
+    extraLetterSpacing: Boolean
   ): FormComponent =
     FormComponent(
       id = id,
@@ -349,7 +357,8 @@ class FormComponentMaker(json: JsValue) {
       errorShortName = errorShortName,
       errorShortNameStart = errorShortNameStart,
       errorExample = errorExample,
-      notPII = notPII
+      notPII = notPII,
+      extraLetterSpacing = extraLetterSpacing
     )
 
   private lazy val optMES: Opt[MES] = (submitMode, mandatory, optMaybeValueExpr) match {
