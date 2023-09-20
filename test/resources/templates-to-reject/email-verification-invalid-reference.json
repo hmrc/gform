@@ -1,6 +1,7 @@
 {
   "_id": "email-verification-invalid-reference",
   "formName": "Email verification invalid reference",
+  "version": "1",
   "description": "Testing enrolment journey",
   "authConfig": {
     "authModule": "hmrc"

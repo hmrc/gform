@@ -21,11 +21,10 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateVersion
 
 trait FormTemplateVersionGen {
 
-  def formTemplateVersionGen: Gen[Option[FormTemplateVersion]] =
+  def formTemplateVersionGen: Gen[FormTemplateVersion] =
     for {
-      version             <- PrimitiveGen.nonEmptyAlphaNumStrGen
-      formTemplateVersion <- Gen.option(FormTemplateVersion(version))
-    } yield formTemplateVersion
+      version <- PrimitiveGen.nonEmptyAlphaNumStrGen
+    } yield FormTemplateVersion(version)
 }
 
 object FormTemplateVersionGen extends FormTemplateVersionGen

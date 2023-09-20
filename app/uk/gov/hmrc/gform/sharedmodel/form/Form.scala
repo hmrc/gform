@@ -30,7 +30,9 @@ case class Form(
   envelopeId: EnvelopeId,
   userId: UserId,
   formTemplateId: FormTemplateId,
-  formTemplateVersion: Option[FormTemplateVersion],
+  formTemplateVersion: Option[
+    FormTemplateVersion
+  ], // TODO Make this field mandatory once we have "mandatory version on template level" for some time
   formData: FormData,
   status: FormStatus,
   visitsIndex: VisitIndex,

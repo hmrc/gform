@@ -1,6 +1,7 @@
 {
   "_id": "confirming-invalid-page-id",
   "formName": "Confirmation page",
+  "version": "1",
   "description": "",
   "emailTemplateId": "al_registration_confirmation",
   "authConfig": {

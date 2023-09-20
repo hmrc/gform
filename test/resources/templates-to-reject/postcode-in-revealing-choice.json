@@ -1,6 +1,7 @@
 {
   "_id": "postcode-in-revealing-choice",
   "formName": "Postcode",
+  "version": "1",
   "description": "",
   "emailTemplateId": "al_registration_confirmation",
   "authConfig": {

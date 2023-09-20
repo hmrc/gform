@@ -1,6 +1,7 @@
 {
   "_id": "choice-value-size-expr-wrong-value",
   "formName": "Choice",
+  "version": "1",
   "description": "",
   "emailTemplateId": "",
   "authConfig": {
