@@ -351,7 +351,7 @@ object FormTemplatesControllerRequestHandler {
         )
 
       json.transform(
-        updateTaskList andThen updatePageQuestions andThen updateSectionQuestions
+        updateTaskList orElse (updatePageQuestions andThen updateSectionQuestions)
       ) orElse JsSuccess(json)
     }
 
