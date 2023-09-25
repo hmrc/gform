@@ -1247,6 +1247,8 @@ object FormTemplateValidator {
 
   def validateSummarySection(formTemplate: FormTemplate): ValidationResult = {
 
+    val summarySection = formTemplate.summarySection
+
     def checkComponentTypes(fields: List[FormComponent]): List[ValidationResult] =
       fields.map {
         case IsInformationMessage(_) => Valid
@@ -1255,10 +1257,24 @@ object FormTemplateValidator {
       }
 
     val isNonInformationMessagePresent: List[ValidationResult] = checkComponentTypes(
-      formTemplate.summarySection.fields.fold(List.empty[FormComponent])(_.toList)
+      summarySection.fields.fold(List.empty[FormComponent])(_.toList)
     )
 
-    isNonInformationMessagePresent.combineAll
+    val smartStrings = summarySection.fields.fold(List.empty[SmartString])(f =>
+      f.collect { case IsInformationMessage(fc) =>
+        fc.infoText
+      }
+    ) :+ summarySection.footer :+ summarySection.header
+
+    val validateSmartStrings = smartStrings.map { s =>
+      if (s.localised.m.values.exists(_.contains("/submissions/summary/pdf/")))
+        Invalid(
+          "`/submissions/summary/pdf/${form.id}` is deprecated. Please use `${link.printSummaryPdf}` instead"
+        )
+      else Valid
+    }
+
+    (isNonInformationMessagePresent ++ validateSmartStrings).combineAll
   }
 
   def validateDataRetrieve(pages: List[Page]): ValidationResult = {
