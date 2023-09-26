@@ -6,7 +6,7 @@ resolvers += "HMRC-open-artefacts-maven2" at "https://open.artefacts.tax.service
 
 resolvers += "Typesafe Releases" at "https://repo.typesafe.com/typesafe/releases/"
 
-addSbtPlugin("uk.gov.hmrc" % "sbt-auto-build" % "3.13.0")
+addSbtPlugin("uk.gov.hmrc" % "sbt-auto-build" % "3.14.0")
 
 addSbtPlugin("uk.gov.hmrc" % "sbt-distributables" % "2.2.0")
 
