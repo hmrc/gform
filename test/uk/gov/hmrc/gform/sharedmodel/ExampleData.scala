@@ -490,7 +490,7 @@ trait ExampleFormTemplate {
     toSmartString("Footer"),
     Some(toSmartString("ContinueLabel")),
     None,
-    SummaryDisplayWidth.M,
+    LayoutDisplayWidth.M,
     None,
     None
   )

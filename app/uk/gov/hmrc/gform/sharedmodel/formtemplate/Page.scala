@@ -21,6 +21,7 @@ import julienrf.json.derived
 import play.api.libs.json.OFormat
 import uk.gov.hmrc.gform.sharedmodel.{ DataRetrieve, SmartString }
 import uk.gov.hmrc.gform.ops.FormComponentOps
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.LayoutDisplayWidth.LayoutDisplayWidth
 
 case class Page(
   title: SmartString,
@@ -40,7 +41,8 @@ case class Page(
   confirmation: Option[Confirmation],
   redirects: Option[NonEmptyList[RedirectCtx]],
   hideSaveAndComeBackButton: Option[Boolean],
-  removeItemIf: Option[RemoveItemIf]
+  removeItemIf: Option[RemoveItemIf],
+  displayWidth: Option[LayoutDisplayWidth] = None
 ) {
   lazy val expandedFormComponents: List[FormComponent] = fields.flatMap(_.expandedFormComponents)
 
