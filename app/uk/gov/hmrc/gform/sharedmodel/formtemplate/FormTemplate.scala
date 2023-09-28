@@ -21,7 +21,7 @@ import julienrf.json.derived
 import play.api.libs.json._
 import uk.gov.hmrc.gform.formtemplate.FormTemplatesControllerRequestHandler
 import uk.gov.hmrc.gform.sharedmodel.email.LocalisedEmailTemplateId
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.TaskListDisplayWidth.TaskListDisplayWidth
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.LayoutDisplayWidth.LayoutDisplayWidth
 import uk.gov.hmrc.gform.sharedmodel.{ AvailableLanguages, LocalisedString, formtemplate }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations
 
@@ -55,7 +55,7 @@ case class FormTemplate(
   exitPages: Option[NonEmptyList[ExitPage]],
   expressionsOutput: Option[ExpressionOutput],
   objectStore: Option[Boolean],
-  displayWidth: Option[TaskListDisplayWidth],
+  displayWidth: Option[LayoutDisplayWidth],
   emailCodeParameters: Option[NonEmptyList[EmailCodeParameter]]
 ) {
 

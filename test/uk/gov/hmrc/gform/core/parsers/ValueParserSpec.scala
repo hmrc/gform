@@ -487,7 +487,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
       toSmartString("Footer"),
       Some(toSmartString("ContinueLabel")),
       None,
-      SummaryDisplayWidth.M,
+      LayoutDisplayWidth.M,
       None,
       None
     ),

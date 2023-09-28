@@ -27,7 +27,7 @@ case class SummarySection(
   footer: SmartString,
   continueLabel: Option[SmartString],
   fields: Option[NonEmptyList[FormComponent]],
-  displayWidth: SummaryDisplayWidth.SummaryDisplayWidth = SummaryDisplayWidth.M,
+  displayWidth: LayoutDisplayWidth.LayoutDisplayWidth = LayoutDisplayWidth.M,
   includeIf: Option[IncludeIf],
   pdf: Option[PdfCtx]
 )
