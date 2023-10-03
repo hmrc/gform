@@ -56,9 +56,14 @@ object Form {
 
   val formTemplateVersionWithFallback: Reads[Option[FormTemplateVersion]] =
     (__ \ formTemplateVersion)
-      .readNullable[String]
-      .map(_.map(FormTemplateVersion.apply))
-      .orElse(JsonUtils.constReads(Option.empty[FormTemplateVersion]))
+      .read[Int]
+      .map(v => Option(FormTemplateVersion(v)))
+      .orElse(
+        (__ \ formTemplateVersion)
+          .readNullable[String]
+          .map(_.map(v => FormTemplateVersion(v.toInt)))
+          .orElse(JsonUtils.constReads(Option.empty[FormTemplateVersion]))
+      )
 
   val componentIdToFileIdWithFallback: Reads[FormComponentIdToFileIdMapping] =
     (__ \ componentIdToFileId)

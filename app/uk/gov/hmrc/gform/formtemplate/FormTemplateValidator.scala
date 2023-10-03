@@ -46,15 +46,12 @@ object FormTemplateValidator {
   ): ValidationResult = {
     val _id = formTemplate._id.value
     val legacyFormIds = formTemplate.legacyFormIds.fold(List.empty[String])(_.map(_.value).toList)
-    val version = formTemplate.version.version
     if (_id =!= _id.toLowerCase) {
       Invalid(
         "_id must be lowercase. Found: " + _id
       ) // TODO remove lowercasing logic from FormTemplateRaw for this to have an effect
     } else if (legacyFormIds =!= legacyFormIds.map(_.toLowerCase)) {
       Invalid("legacyFormIds must be lowercase. Found: " + legacyFormIds.mkString(", "))
-    } else if (version =!= version.toLowerCase) {
-      Invalid("version cannot contains uppercase letters. Found: " + version)
     } else {
       Valid
     }

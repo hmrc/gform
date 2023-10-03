@@ -58,7 +58,7 @@ trait ExampleAuthConfig extends DestinationGen {
     DestinationIncludeIf.HandlebarValue(""),
     true,
     FormId("TestHmrcDmsFormId"),
-    FormTemplateVersion("1"),
+    "1",
     Constant("TestTaxpayerId"),
     "TestRegime",
     true
@@ -502,7 +502,7 @@ trait ExampleFormTemplate {
   def formTemplate = FormTemplate(
     formTemplateId,
     formTemplateId,
-    FormTemplateVersion("1"),
+    FormTemplateVersion(1),
     legacyFormIds,
     formName,
     Some(ResearchBanner),

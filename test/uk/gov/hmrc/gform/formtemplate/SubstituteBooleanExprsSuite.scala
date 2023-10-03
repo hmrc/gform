@@ -33,7 +33,7 @@ class SubstituteBooleanExprsSuite extends FunSuite with FormTemplateSupport {
       """|{
          |  "_id": "top-level-expressions",
          |  "formName": "Top level",
-         |  "version": "1",
+         |  "version": 1,
          |  "description": "",
          |  "emailTemplateId": "",
          |  "authConfig": {

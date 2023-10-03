@@ -23,7 +23,7 @@ trait FormTemplateVersionGen {
 
   def formTemplateVersionGen: Gen[FormTemplateVersion] =
     for {
-      version <- PrimitiveGen.nonEmptyAlphaNumStrGen
+      version <- Gen.chooseNum(1, 100)
     } yield FormTemplateVersion(version)
 }
 

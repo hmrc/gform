@@ -493,7 +493,7 @@ class FormTemplatesControllerRequestHandlerTest extends AnyWordSpec with Matcher
        |  "description": "Testing the form change label",
        |  ${draftRetrievalMethod.getOrElse("")}
        |  "languages": ["en"],
-       |  "version": "1",
+       |  "version": 1,
        |  "destinations": [
        |    {
        |      "id": "HMRCDMS",
@@ -552,7 +552,7 @@ class FormTemplatesControllerRequestHandlerTest extends AnyWordSpec with Matcher
        |  "formName": "Testing section change label tttt",
        |  "languages": ["en"],
        |  "description": "Testing the form change label",
-       |  "version": "1",
+       |  "version": 1,
        |    "printSection": {
        |        "page": {
        |            "title": "Test Title",
@@ -603,7 +603,7 @@ class FormTemplatesControllerRequestHandlerTest extends AnyWordSpec with Matcher
        |  "formName": "Testing section change label tttt",
        |  "description": "Testing the form change label",
        |  "languages": ["en"],
-       |  "version": "1",
+       |  "version": 1,
        |    "printSection": {
        |        "page": {
        |            "title": "Test Title",
@@ -654,7 +654,7 @@ class FormTemplatesControllerRequestHandlerTest extends AnyWordSpec with Matcher
        |  "formName": "Testing section change label tttt",
        |  "description": "Testing the form change label",
        |  "languages": ["en"],
-       |  "version": "1",
+       |  "version": 1,
        |    "printSection": {
        |        "page": {
        |            "title": "Test Title",
@@ -700,7 +700,7 @@ class FormTemplatesControllerRequestHandlerTest extends AnyWordSpec with Matcher
        |  "formName": "Testing section change label tttt",
        |  "description": "Testing the form change label",
        |  "languages": ["en"],
-       |  "version": "1",
+       |  "version": 1,
        |    "printSection": {
        |        "page": {
        |            "title": "Test Title",
@@ -897,7 +897,7 @@ class FormTemplatesControllerRequestHandlerTest extends AnyWordSpec with Matcher
        |  "formName": "Testing section change label tttt",
        |  "description": "Testing the form change label",
        |  "languages": ["en"],
-       |  "version": "1",
+       |  "version": 1,
        |  "destinations": [
        |    {
        |      "id": "HMRCDMS",
@@ -1048,7 +1048,7 @@ class FormTemplatesControllerRequestHandlerTest extends AnyWordSpec with Matcher
        |  "formName": "Testing section change label tttt",
        |  "description": "Testing the form change label",
        |  "languages": ["en"],
-       |  "version": "1",
+       |  "version": 1,
        |  "destinations": [
        |    {
        |      "id": "HMRCDMS1",

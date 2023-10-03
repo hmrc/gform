@@ -1,7 +1,7 @@
 {
   "_id": "choice-options-unique",
   "formName": "Choice",
-  "version": "1",
+  "version": 1,
   "description": "",
   "emailTemplateId": "",
   "authConfig": {
