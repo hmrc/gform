@@ -1,7 +1,7 @@
 {
   "_id": "nonexistent-field-reference-in-if-else",
   "formName": "Forbidden reference",
-  "version": "1",
+  "version": 1,
   "sections": [
     {
       "title": "Page A",

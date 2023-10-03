@@ -1,7 +1,7 @@
 {
   "_id": "revealing-choice-wrong-index",
   "formName": "Choice wrong index",
-  "version": "1",
+  "version": 1,
   "description": "",
   "emailTemplateId": "",
   "authConfig": {

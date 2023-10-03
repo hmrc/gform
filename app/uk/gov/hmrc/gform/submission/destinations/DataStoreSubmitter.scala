@@ -76,7 +76,7 @@ class DataStoreSubmitter(
 
     val dataStoreMetaData = DataStoreMetaData(
       dataStore.formId.value,
-      dataStore.version.version,
+      dataStore.version,
       "",
       dataStore.regime,
       taxpayerId.getOrElse(""),

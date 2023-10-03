@@ -16,30 +16,16 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
-import play.api.libs.json.{ Format, JsError, JsString, JsSuccess, OFormat, Reads }
-import uk.gov.hmrc.gform.sharedmodel.ValueClassFormat
+import play.api.libs.json.{ JsError, JsNumber, JsSuccess, OFormat, Reads }
 
-final case class FormTemplateVersion(version: String) extends AnyVal
+final case class FormTemplateVersion(version: Int) extends AnyVal
 
 object FormTemplateVersion {
 
   private val templateReads: Reads[FormTemplateVersion] = Reads {
-    case JsString(version) =>
-      if (version.isEmpty) {
-        JsError("'formVersion' cannot be empty")
-      } else {
-        JsSuccess(FormTemplateVersion(version))
-      }
-    case unknown => JsError(s"'formVersion' needs to be String, got $unknown")
+    case JsNumber(version) => JsSuccess(FormTemplateVersion(version.toInt))
+    case unknown           => JsError(s"'version' needs to be Number, got $unknown")
   }
 
   implicit val oformat: OFormat[FormTemplateVersion] = OFormatWithTemplateReadFallback(templateReads)
-
-  val vformat: Format[FormTemplateVersion] =
-    ValueClassFormat
-      .vformat[FormTemplateVersion]("formTemplateVersion", FormTemplateVersion.apply, x => JsString(x.version))
-
-  val destformat: Format[FormTemplateVersion] =
-    ValueClassFormat
-      .vformat[FormTemplateVersion]("version", FormTemplateVersion.apply, x => JsString(x.version))
 }
