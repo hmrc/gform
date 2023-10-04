@@ -25,6 +25,7 @@ import play.api.mvc.{ RequestHeader, Result }
 import play.core.SourceMapper
 import uk.gov.hmrc.gform.controllers.ErrResponse
 import uk.gov.hmrc.gform.core.UniqueIdGenerator
+import uk.gov.hmrc.gform.sharedmodel.LatestFormTemplateNotFoundException
 
 import scala.concurrent.Future
 import uk.gov.hmrc.http.{ HttpException, JsValidationException, NotFoundException, UpstreamErrorResponse }
@@ -67,13 +68,14 @@ class ErrorHandler(environment: Environment, configuration: Configuration, sourc
   }
 
   override def onServerError(request: RequestHeader, exception: Throwable): Future[Result] = exception match {
-    case e: UpstreamErrorResponse            => onUpstreamErrorResponse(e)
-    case e: NotFoundException                => onNotFoundException(e)
-    case e: java.util.NoSuchElementException => onNotFoundException(e)
-    case e: HttpException                    => onHttpException(e)
-    case e: JsValidationException            => onJsValidationException(e)
-    case e: JsResultException                => onJsResultException(e)
-    case e: Throwable                        => onOtherException(e)
+    case e: UpstreamErrorResponse               => onUpstreamErrorResponse(e)
+    case e: NotFoundException                   => onNotFoundException(e)
+    case e: java.util.NoSuchElementException    => onNotFoundException(e)
+    case e: HttpException                       => onHttpException(e)
+    case e: JsValidationException               => onJsValidationException(e)
+    case e: JsResultException                   => onJsResultException(e)
+    case e: LatestFormTemplateNotFoundException => onLatestFormTemplateNotFound(e)
+    case e: Throwable                           => onOtherException(e)
   }
 
   private def onHttpException(e: HttpException) = {
@@ -100,6 +102,12 @@ class ErrorHandler(environment: Environment, configuration: Configuration, sourc
     val response = ErrResponse(s"${e.getMessage}")
     logger.error(response.toString, e)
     Future.successful(NotFound(Json.toJson(response)))
+  }
+
+  private def onLatestFormTemplateNotFound(e: Exception) = {
+    val response = ErrResponse(s"${e.getMessage}")
+    logger.warn(response.toString, e)
+    Future.successful(PreconditionFailed(Json.toJson(response)))
   }
 
   private def onJsValidationException(e: JsValidationException) = {

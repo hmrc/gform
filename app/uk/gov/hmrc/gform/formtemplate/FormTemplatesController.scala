@@ -29,6 +29,7 @@ import uk.gov.hmrc.gform.shutter.ShutterService
 
 import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.gform.notificationbanner.NotificationService
+import uk.gov.hmrc.gform.sharedmodel.LatestFormTemplateNotFoundException
 
 class FormTemplatesController(
   controllerComponents: ControllerComponents,
@@ -103,7 +104,7 @@ class FormTemplatesController(
           .find(id)
           .flatMap {
             case Some(ft) => Future.successful(ft)
-            case None     => Future.failed(new NoSuchElementException(s"Latest form template of '$id' not found"))
+            case None     => Future.failed(LatestFormTemplateNotFoundException(s"Latest form template of '$id' not found"))
           }
       )
 
