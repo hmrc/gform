@@ -107,7 +107,7 @@ class ErrorHandler(environment: Environment, configuration: Configuration, sourc
   private def onLatestFormTemplateNotFound(e: Exception) = {
     val response = ErrResponse(s"${e.getMessage}")
     logger.warn(response.toString, e)
-    Future.successful(NotFound(Json.toJson(response)))
+    Future.successful(PreconditionFailed(Json.toJson(response)))
   }
 
   private def onJsValidationException(e: JsValidationException) = {
