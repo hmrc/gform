@@ -31,6 +31,7 @@ import uk.gov.hmrc.gform.core._
 import uk.gov.hmrc.gform.formtemplate.{ FormTemplateService, FormTemplatesControllerRequestHandler, RequestHandlerAlg }
 import uk.gov.hmrc.gform.history.HistoryService
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
+import io.circe.generic.semiauto._
 
 import scala.concurrent.ExecutionContext
 
@@ -423,32 +424,23 @@ class BuilderController(
     }
 }
 
-case class SectionDetails(
-  sectionData: Json,
-  sectionPath: String
-)
-case class ComponentUpdateRequest(
-  payload: Json,
-  sectionDetails: Option[SectionDetails]
-)
+case class SectionDetails(sectionData: Json, sectionPath: String)
 
-case class ComponentDetails(
-  componentData: Json
-)
-case class SectionUpdateRequest(
-  payload: Json,
-  componentDetails: Option[ComponentDetails]
-)
+object SectionDetails {
+  implicit val decodeSectionDetails: Decoder[SectionDetails] = deriveDecoder[SectionDetails]
+}
+
+case class ComponentDetails(componentData: Json)
+
+object ComponentDetails {
+  implicit val decodeComponentDetails: Decoder[ComponentDetails] = deriveDecoder[ComponentDetails]
+}
+
+case class ComponentUpdateRequest(payload: Json, sectionDetails: Option[SectionDetails])
+
+case class SectionUpdateRequest(payload: Json, componentDetails: Option[ComponentDetails])
 
 object Decoders {
-  implicit val sectionDetailsDecoder: Decoder[SectionDetails] = new Decoder[SectionDetails] {
-    final def apply(cursor: HCursor): Decoder.Result[SectionDetails] =
-      for {
-        sectionData <- cursor.get[Json]("sectionData").map(_.dropNullValues)
-        sectionPath <- cursor.get[String]("sectionPath")
-      } yield SectionDetails(sectionData, sectionPath)
-  }
-
   implicit val componentUpdateDecoder: Decoder[ComponentUpdateRequest] = new Decoder[ComponentUpdateRequest] {
     final def apply(c: HCursor): Decoder.Result[ComponentUpdateRequest] = {
       val payload = c.downField("sectionDetails").delete.top.getOrElse(c.value)
@@ -456,12 +448,6 @@ object Decoders {
       sectionDetails.map(s => ComponentUpdateRequest(payload, s))
     }
   }
-
-  implicit val componentDetailsDecoder: Decoder[ComponentDetails] = new Decoder[ComponentDetails] {
-    final def apply(cursor: HCursor): Decoder.Result[ComponentDetails] =
-      cursor.get[Json]("componentData").map(p => ComponentDetails(p.dropNullValues))
-  }
-
   implicit val sectionUpdateDecoder: Decoder[SectionUpdateRequest] = new Decoder[SectionUpdateRequest] {
     final def apply(c: HCursor): Decoder.Result[SectionUpdateRequest] = {
       val payload = c.downField("componentDetails").delete.top.getOrElse(c.value)
