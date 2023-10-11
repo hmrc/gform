@@ -1274,8 +1274,9 @@ object FormTemplateValidator {
     (isNonInformationMessagePresent ++ validateSmartStrings).combineAll
   }
 
-  def validateDataRetrieve(pages: List[Page]): ValidationResult = {
-    val ids = pages.flatMap(_.dataRetrieves()).map(_.id)
+  def validateDataRetrieve(formTemplate: FormTemplate, pages: List[Page]): ValidationResult = {
+    val pageDataRetrieves = pages.flatMap(_.dataRetrieves()).map(_.id)
+    val ids = formTemplate.dataRetrieve.fold(pageDataRetrieves)(dr => pageDataRetrieves ++ dr.map(_.id).toList)
     val duplicates = ids.groupBy(identity).collect { case (fId, List(_, _, _*)) => fId }.toSet
     duplicates.isEmpty.validationResult(
       s"Some data retrieve ids are defined more than once: ${duplicates.toList.sortBy(_.value).map(_.value)}"
@@ -1307,8 +1308,11 @@ object FormTemplateValidator {
         d
       }
 
-    val dataRetrieves: Map[DataRetrieveId, DataRetrieve] =
+    val pageDataRetrieves: Map[DataRetrieveId, DataRetrieve] =
       pages.flatMap(p => p.dataRetrieves().map(d => (d.id, d))).toMap
+
+    val dataRetrieves =
+      formTemplate.dataRetrieve.fold(pageDataRetrieves)(d => pageDataRetrieves ++ d.toList.map(r => (r.id, r)).toMap)
 
     referenceInfos.map { r =>
       val maybeDataRetrieve = dataRetrieves.get(r.dataRetrieveCtx.id)
@@ -1336,7 +1340,10 @@ object FormTemplateValidator {
         d
       }
 
-    val dataRetrieves: Set[DataRetrieveId] = pages.flatMap(p => p.dataRetrieves().map(_.id)).toSet
+    val pageDataRetrieves: Set[DataRetrieveId] = pages.flatMap(p => p.dataRetrieves().map(_.id)).toSet
+
+    val dataRetrieves: Set[DataRetrieveId] =
+      formTemplate.dataRetrieve.fold(pageDataRetrieves)(d => pageDataRetrieves ++ d.toList.map(_.id))
 
     referenceInfos.map { r =>
       if (dataRetrieves(r.dataRetrieveCount.id))
