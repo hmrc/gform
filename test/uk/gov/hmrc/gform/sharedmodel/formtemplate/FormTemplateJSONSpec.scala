@@ -42,7 +42,7 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
                                              |  "originalId" : "FooBar",
                                              |  "draftRetrievalMethod": {
                                              |    "showContinueOrDeletePage": "true",
-                                             |    "value": "onePerUser"
+                                             |    "value": "formAccessCodeForAgents"
                                              |  },
                                              |  "formCategory": "default",
                                              |  "languages": [
