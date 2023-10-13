@@ -69,7 +69,7 @@ class FormTemplateJSONSuite extends FunSuite {
           """|{
              |  "draftRetrievalMethod": {
              |    "showContinueOrDeletePage": "true",
-             |    "value": "onePerUser"
+             |    "value": "formAccessCodeForAgents"
              |  },
              |  "formCategory": "default",
              |  "languages": [
@@ -197,7 +197,7 @@ class FormTemplateJSONSuite extends FunSuite {
           """|{
              |  "draftRetrievalMethod": {
              |    "showContinueOrDeletePage": "true",
-             |    "value": "onePerUser"
+             |    "value": "formAccessCodeForAgents"
              |  },
              |  "formCategory": "default",
              |  "languages": [

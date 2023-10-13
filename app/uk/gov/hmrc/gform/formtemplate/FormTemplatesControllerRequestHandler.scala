@@ -143,7 +143,7 @@ object FormTemplatesControllerRequestHandler {
 
     val drmValue =
       (__ \ "draftRetrievalMethod" \ "value").json
-        .copyFrom((__ \ "draftRetrievalMethod").json.pick orElse Reads.pure(JsString("onePerUser")))
+        .copyFrom((__ \ "draftRetrievalMethod").json.pick orElse Reads.pure(JsString("formAccessCodeForAgents")))
 
     val drmShowContinueOrDeletePage =
       (__ \ "draftRetrievalMethod" \ "showContinueOrDeletePage").json

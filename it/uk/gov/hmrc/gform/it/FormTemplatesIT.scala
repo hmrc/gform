@@ -32,7 +32,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.Section.NonRepeatingPage
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DestinationId, DestinationIncludeIf }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DestinationList
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AccessibilityUrl, AcknowledgementSection, Anonymous, AuthCtx, AuthInfo, ContinueOrDeletePage, DeclarationSection, Default, FormTemplate, FormTemplateRaw, LinkCtx, OnePerUser, Text, TextWithRestrictions, UserResearchUrl, Value }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AccessibilityUrl, AcknowledgementSection, Anonymous, AuthCtx, AuthInfo, ContinueOrDeletePage, DeclarationSection, Default, FormAccessCodeForAgents, FormTemplate, FormTemplateRaw, LinkCtx, Text, TextWithRestrictions, UserResearchUrl, Value }
 import uk.gov.hmrc.gform.sharedmodel.{ AvailableLanguages, LangADT, LocalisedString, SmartString }
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -204,7 +204,7 @@ class FormTemplatesIT extends ITSpec with FormTemplateSample with BeforeAndAfter
     nonRepeatingPageFields.head.label shouldBe toSmartString("Text field 1")
     nonRepeatingPageFields.head.validators shouldBe List.empty
     nonRepeatingPageFields.head.`type` shouldBe Text(TextWithRestrictions(0, 1000), Value)
-    formTemplate.draftRetrievalMethod shouldBe OnePerUser(ContinueOrDeletePage.Show)
+    formTemplate.draftRetrievalMethod shouldBe FormAccessCodeForAgents(ContinueOrDeletePage.Show)
     formTemplate.formCategory shouldBe Default
     formTemplate.languages shouldBe AvailableLanguages.default
     formTemplate.parentFormSubmissionRefs shouldBe List.empty
