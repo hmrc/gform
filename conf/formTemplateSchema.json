@@ -481,7 +481,7 @@
         },
         "mandatory": {
           "type": "string",
-          "pattern": "^(false|true)$"
+          "pattern": "^(false|true|no|yes)$"
         },
         "errorMessage": {
           "type": [
