@@ -18,7 +18,7 @@ package uk.gov.hmrc.gform.formtemplate
 
 import cats.implicits._
 import org.slf4j.LoggerFactory
-import play.api.libs.json.Json
+import play.api.libs.json.{ JsObject, Json }
 import play.api.mvc.{ ControllerComponents, Results }
 import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.controllers.BaseController
@@ -44,19 +44,37 @@ class FormTemplatesController(
 ) extends BaseController(controllerComponents) {
   private val logger = LoggerFactory.getLogger(getClass)
 
-  def upsert() = Action.async(parse.json[FormTemplateRaw]) { implicit request =>
-    val templateRaw: FormTemplateRaw = request.body
-    addFormTemplateIdToMdc(FormTemplateId(templateRaw._id.value))
-    logger.info(s"FormTemplatesController.upsert: ${loggingHelpers.cleanHeaders(request.headers)}")
+  private val handler = new FormTemplatesControllerRequestHandler(
+    formTemplateService.verifyAndSave,
+    formTemplateService.save,
+    historyService.save
+  ).futureInterpreter
 
-    new FormTemplatesControllerRequestHandler(
-      formTemplateService.verifyAndSave,
-      formTemplateService.save,
-      historyService.save
-    ).futureInterpreter
-      .handleRequest(templateRaw)
-      .fold(_.asBadRequest, _ => Results.NoContent)
+  def upsert() = Action.async(parse.tolerantText) { implicit request =>
+    val templateString: String = request.body
+
+    JsonSchemeValidator.checkSchema(templateString) match {
+      case Left(error) => error.asBadRequest.pure[Future]
+      case Right(()) =>
+        val jsValue: JsObject =
+          Json
+            .parse(templateString)
+            .as[JsObject] // This parsing should succeed since schema validation detected no errors
+        val formTemplateRaw = FormTemplateRaw(jsValue)
+        doUpsert(formTemplateRaw)
+    }
   }
+
+  // No Schema validation
+  def upsertFast() = Action.async(parse.json[FormTemplateRaw]) { implicit request =>
+    val formTemplateRaw: FormTemplateRaw = request.body
+    addFormTemplateIdToMdc(FormTemplateId(formTemplateRaw._id.value))
+    logger.info(s"FormTemplatesController.upsert: ${loggingHelpers.cleanHeaders(request.headers)}")
+    doUpsert(formTemplateRaw)
+  }
+
+  private def doUpsert(formTemplateRaw: FormTemplateRaw) =
+    handler.handleRequest(formTemplateRaw).fold(_.asBadRequest, _ => Results.NoContent)
 
   def getTitlesWithPII(formTemplateRawId: FormTemplateRawId, filters: Option[String], includeJson: Boolean) =
     Action.async { _ =>
