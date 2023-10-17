@@ -1,0 +1,699 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "gForm form config schema",
+  "description": "Validation of any form posted to gForm platform",
+  "type": "object",
+  "patternProperties": {
+    "^(comment|note|_)": {
+      "type": [
+        "string",
+        "object"
+      ]
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "_id": {
+      "type": "string",
+      "pattern": "^[a-zA-Z0-9-]+$"
+    },
+    "formName": {
+      "type": [
+        "string",
+        "object"
+      ]
+    },
+    "description": {
+      "type": [
+        "string",
+        "object"
+      ]
+    },
+    "formCategory": {
+      "type": "string",
+      "pattern": "^(hmrcClaimForm|hmrcReturnForm)$"
+    },
+    "version": {
+      "type": "integer"
+    },
+    "developmentPhase": {
+      "type": "string",
+      "pattern": "^(alpha|live)$"
+    },
+    "objectStore": {
+      "type": "boolean"
+    },
+    "allowedFileTypes": {
+      "type": "array"
+    },
+    "fileSizeLimit": {
+      "type": "integer"
+    },
+    "displayHMRCLogo": {
+      "description": "Defines whether the HMRC logo is displayed",
+      "type": "boolean"
+    },
+    "displayWidth": {
+      "type": "string",
+      "pattern": "^(m|l|xl)$"
+    },
+    "userResearchUrl": {
+      "type": "string"
+    },
+    "accessibilityUrl": {
+      "type": "string"
+    },
+    "languages": {
+      "type": "array"
+    },
+    "exitPages": {
+      "type": "array"
+    },
+    "draftRetrievalMethod": {
+      "type": "string",
+      "pattern": "^(formAccessCodeForAgents|notPermitted)$"
+    },
+    "showContinueOrDeletePage": {
+      "type": "string",
+      "pattern": "^(false)$"
+    },
+    "save4LaterInfoText": {
+      "type": [
+        "string",
+        "object"
+      ]
+    },
+    "note": {
+      "type": "string"
+    },
+    "emailTemplateId": {
+      "type": [
+        "string",
+        "object"
+      ]
+    },
+    "emailParameters": {
+      "type": "array",
+      "additionalProperties": false,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "value": {
+            "type": "string"
+          },
+          "emailTemplateVariable": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "emailCodeParameters": {
+      "type": "array",
+      "additionalProperties": false,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "value": {
+            "type": "string"
+          },
+          "emailTemplateVariable": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "expressions": {
+      "type": "object",
+      "patternProperties": {
+        "^.*$": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "object"
+            }
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "value": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string"
+            },
+            "fractionalDigits": {
+              "type": "integer"
+            },
+            "round": {
+              "type": "string",
+              "pattern": "^(Up|Down|HalfUp|HalfDown)$"
+            }
+          }
+        }
+      }
+    },
+    "expressionsOutput": {
+      "type": "array"
+    },
+    "booleanExpressions": {
+      "type": "object"
+    },
+    "legacyFormIds": {
+      "type": "array"
+    },
+    "referrerConfig": {
+      "type": "object",
+      "properties": {
+        "allowedReferrerUrls": {
+          "type": "array"
+        },
+        "exitMessage": {
+          "type": [
+            "string",
+            "object"
+          ]
+        }
+      }
+    },
+    "authConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "authModule": {
+          "type": "string",
+          "pattern": "^(hmrc|anonymous|composite|hmrcAny|hmrcVerified)$"
+        },
+        "configs": {
+          "type": "array"
+        },
+        "agentAccess": {
+          "type": "string"
+        },
+        "enrolmentCheck": {
+          "type": "string"
+        },
+        "serviceId": {
+          "type": "string"
+        },
+        "regimeId": {
+          "type": "string"
+        },
+        "legacyFcEnrolmentVerifier": {
+          "type": "string"
+        },
+        "enrolmentSection": {
+          "type": "object"
+        },
+        "ivFailure": {
+          "type": [
+            "string",
+            "object"
+          ]
+        },
+        "notAllowedIn": {
+          "type": [
+            "string",
+            "object"
+          ]
+        },
+        "minimumCL": {
+          "type": [
+            "string",
+            "object"
+          ]
+        }
+      }
+    },
+    "sections": {
+      "type": "array",
+      "additionalProperties": false,
+      "items": {
+        "$ref": "#/$defs/sections"
+      }
+    },
+    "submitSection": {
+      "type": "object"
+    },
+    "printSection": {
+      "type": "object"
+    },
+    "summarySection": {
+      "type": "object"
+    },
+    "declarationSection": {
+      "type": "object"
+    },
+    "acknowledgementSection": {
+      "type": "object"
+    },
+    "destinations": {
+      "type": "array"
+    }
+  },
+  "required": [
+    "_id",
+    "formName",
+    "description",
+    "version"
+  ],
+  "$defs": {
+    "sections": {
+      "type": "object",
+      "patternProperties": {
+        "^(comment|note|_)": {
+          "type": [
+            "string",
+            "object"
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "caption": {
+          "type": [
+            "string",
+            "object"
+          ]
+        },
+        "title": {
+          "type": [
+            "string",
+            "object"
+          ]
+        },
+        "description": {
+          "type": [
+            "string",
+            "object"
+          ]
+        },
+        "shortName": {
+          "type": [
+            "string",
+            "object"
+          ]
+        },
+        "noPIITitle": {
+          "type": [
+            "string",
+            "object"
+          ]
+        },
+        "includeIf": {
+          "type": "string"
+        },
+        "removeItemIf": {
+          "type": "string"
+        },
+        "continueIf": {
+          "type": "string"
+        },
+        "continueLabel": {
+          "type": [
+            "string",
+            "object"
+          ]
+        },
+        "presentationHint": {
+          "type": "string",
+          "pattern": "^(invisiblePageTitle)$"
+        },
+        "hideSaveAndComeBackButton": {
+          "type": "boolean"
+        },
+        "redirects": {
+          "type": "array"
+        },
+        "type": {
+          "type": "string"
+        },
+        "dataRetrieve": {
+          "type": "array"
+        },
+        "summaryName": {
+          "type": [
+            "string",
+            "object"
+          ]
+        },
+        "summaryDescription": {
+          "type": [
+            "string",
+            "object"
+          ]
+        },
+        "addAnotherQuestion": {
+          "type": "object"
+        },
+        "defaultPage": {
+          "type": "object"
+        },
+        "cyaPage": {
+          "type": "object"
+        },
+        "repeatsUntil": {
+          "type": "string"
+        },
+        "repeatsWhile": {
+          "type": "string"
+        },
+        "infoMessage": {
+          "type": [
+            "string",
+            "object"
+          ]
+        },
+        "pageIdToDisplayAfterRemove": {
+          "type": "string"
+        },
+        "repeatsMin": {
+          "type": "string"
+        },
+        "repeatsMax": {
+          "type": "string"
+        },
+        "validators": {
+          "type": "object"
+        },
+        "confirmation": {
+          "type": "object"
+        },
+        "instruction": {
+          "type": "object"
+        },
+        "tasks": {
+          "type": "array",
+          "additionalProperties": false,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "title": {
+                "type": [
+                  "string",
+                  "object"
+                ]
+              },
+              "summarySection": {
+                "type": "object"
+              },
+              "sections": {
+                "type": "array",
+                "additionalProperties": false,
+                "items": {
+                  "$ref": "#/$defs/sections"
+                }
+              }
+            }
+          }
+        },
+        "pages": {
+          "type": "array",
+          "additionalProperties": false,
+          "items": {
+            "$ref": "#/$defs/sections"
+          }
+        },
+        "fields": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/fields"
+          }
+        }
+      }
+    },
+    "fields": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "format": {
+          "type": "string"
+        },
+        "label": {
+          "type": [
+            "string",
+            "object"
+          ]
+        },
+        "shortName": {
+          "type": [
+            "string",
+            "object"
+          ]
+        },
+        "helpText": {
+          "type": [
+            "string",
+            "object"
+          ]
+        },
+        "includeIf": {
+          "type": "string"
+        },
+        "validIf": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        },
+        "notPII": {
+          "type": "string",
+          "pattern": "^(true)$"
+        },
+        "toUpperCase": {
+          "type": "string",
+          "pattern": "^(true)$"
+        },
+        "choices": {
+          "type": "array"
+        },
+        "mandatory": {
+          "type": "string",
+          "pattern": "^(false|true)$"
+        },
+        "errorMessage": {
+          "type": [
+            "string",
+            "object"
+          ]
+        },
+        "errorShortName": {
+          "type": [
+            "string",
+            "object"
+          ]
+        },
+        "errorShortNameStart": {
+          "type": [
+            "string",
+            "object"
+          ]
+        },
+        "displayWidth": {
+          "type": "string"
+        },
+        "validators": {
+          "type": "array"
+        },
+        "presentationHint": {
+          "type": "string"
+        },
+        "submitMode": {
+          "type": "string"
+        },
+        "multiline": {
+          "type": "string"
+        },
+        "multivalue": {
+          "type": "string"
+        },
+        "suffix": {
+          "type": "string"
+        },
+        "prefix": {
+          "type": "string"
+        },
+        "offset": {
+          "type": "string"
+        },
+        "displayCharCount": {
+          "type": "string"
+        },
+        "revealingFields": {
+          "type": "array",
+          "items": {
+            "items": {
+              "$ref": "#/$defs/fields"
+            }
+          }
+        },
+        "selectionCriteria": {
+          "type": "array"
+        },
+        "labelSize": {
+          "type": "string"
+        },
+        "countryDisplayed": {
+          "type": "string"
+        },
+        "countyDisplayed": {
+          "type": "string"
+        },
+        "cityMandatory": {
+          "type": "string"
+        },
+        "line2Mandatory": {
+          "type": "string"
+        },
+        "line3Mandatory": {
+          "type": "string"
+        },
+        "postcodeMandatory": {
+          "type": "string"
+        },
+        "service": {
+          "type": "string"
+        },
+        "rows": {
+          "type": [
+            "integer",
+            "array"
+          ]
+        },
+        "hints": {
+          "type": "array"
+        },
+        "optionHelpText": {
+          "type": "array"
+        },
+        "infoText": {
+          "type": [
+            "string",
+            "object"
+          ]
+        },
+        "infoType": {
+          "type": "string"
+        },
+        "instruction": {
+          "type": "object"
+        },
+        "idType": {
+          "type": "string"
+        },
+        "idNumber": {
+          "type": "string"
+        },
+        "regimeType": {
+          "type": "string"
+        },
+        "dividerPosition": {
+          "type": [
+            "integer",
+            "string"
+          ]
+        },
+        "noneChoice": {
+          "type": "integer"
+        },
+        "repeatsMin": {
+          "type": "integer"
+        },
+        "repeatsMax": {
+          "type": "integer"
+        },
+        "dataThreshold": {
+          "type": "integer"
+        },
+        "repeatLabel": {
+          "type": [
+            "string",
+            "object"
+          ]
+        },
+        "repeatAddAnotherText": {
+          "type": [
+            "string",
+            "object"
+          ]
+        },
+        "noneChoiceError": {
+          "type": [
+            "string",
+            "object"
+          ]
+        },
+        "dividerText": {
+          "type": [
+            "string",
+            "object"
+          ]
+        },
+        "summaryValue": {
+          "type": [
+            "string",
+            "object"
+          ]
+        },
+        "header": {
+          "type": "array"
+        },
+        "chooseAddressLabel": {
+          "type": [
+            "string",
+            "object"
+          ]
+        },
+        "confirmAddressLabel": {
+          "type": [
+            "string",
+            "object"
+          ]
+        },
+        "international": {
+          "type": "string"
+        },
+        "countryLookup": {
+          "type": "string"
+        },
+        "round": {
+          "type": "string",
+          "pattern": "^(Up|Down|HalfUp|HalfDown)$"
+        },
+        "allowedFileTypes": {
+          "type": "array"
+        },
+        "fileSizeLimit": {
+          "type": "integer"
+        },
+        "ranges": {
+          "type": "array"
+        },
+        "intervalMins": {
+          "type": "integer"
+        },
+        "size": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/fields"
+          }
+        }
+      }
+    }
+  }
+}
