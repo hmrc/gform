@@ -24,15 +24,14 @@ import org.scalatest.matchers.should.Matchers
 
 class UpdateRequestDecoderSpec extends AnyFlatSpec with Matchers {
 
-  import Decoders._
   "SectionDetails Decoder" should "decode correctly" in {
     val json = """
       {
-        "sectionData": {"field": "value"},
+        "section": {"field": "value"},
         "sectionPath": "test/path"
       }
     """
-    val expected = SectionDetails(Json.obj("field" -> "value".asJson), "test/path")
+    val expected = SectionDetails(Json.obj("field" := "value"), "test/path")
 
     decode[SectionDetails](json) shouldEqual Right(expected)
   }
@@ -40,41 +39,41 @@ class UpdateRequestDecoderSpec extends AnyFlatSpec with Matchers {
   "ComponentUpdateRequest Decoder" should "decode correctly" in {
     val json = """
       {
-        "field": "value",
+        "formComponent": {
+          "label": "bar"
+        },
         "sectionDetails": {
-          "sectionData": {"field": "value"},
+          "section": {
+            "title": "foo"
+          },
           "sectionPath": "test/path"
         }
       }
     """
-    val sectionDetails = SectionDetails(Json.obj("field" -> "value".asJson), "test/path")
-    val expected = ComponentUpdateRequest(Json.obj("field" -> "value".asJson), Some(sectionDetails))
+    val expected = ComponentUpdateRequest(
+      Json.obj("label" := "bar"),
+      Some(SectionDetails(Json.obj("title" := "foo"), "test/path"))
+    )
 
     decode[ComponentUpdateRequest](json) shouldEqual Right(expected)
-  }
-
-  "ComponentDetails Decoder" should "decode correctly" in {
-    val json = """
-      {
-        "componentData": {"field": "value"}
-      }
-    """
-    val expected = ComponentDetails(Json.obj("field" -> "value".asJson))
-
-    decode[ComponentDetails](json) shouldEqual Right(expected)
   }
 
   "SectionUpdateRequest Decoder" should "decode correctly" in {
     val json = """
       {
-        "field": "value",
-        "componentDetails": {
-          "componentData": {"field": "value"}
+        "sectionDetails": {
+          "section": {
+            "title": "foo"
+          },
+          "sectionPath": "test/path"
+        },
+        "formComponent": {
+          "label": "bar"
         }
       }
     """
-    val componentDetails = ComponentDetails(Json.obj("field" -> "value".asJson))
-    val expected = SectionUpdateRequest(Json.obj("field" -> "value".asJson), Some(componentDetails))
+    val expected =
+      SectionUpdateRequest(SectionDetails(Json.obj("title" := "foo"), "test/path"), Some(Json.obj("label" := "bar")))
 
     decode[SectionUpdateRequest](json) shouldEqual Right(expected)
   }
