@@ -31,6 +31,7 @@ import uk.gov.hmrc.gform.core._
 import uk.gov.hmrc.gform.formtemplate.{ FormTemplateService, FormTemplatesControllerRequestHandler, RequestHandlerAlg }
 import uk.gov.hmrc.gform.history.HistoryService
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
+import io.circe.generic.semiauto._
 
 import scala.concurrent.ExecutionContext
 
@@ -38,6 +39,8 @@ sealed trait BuilderError extends Product with Serializable
 
 object BuilderError {
   final case class CirceError(failure: ParsingFailure) extends BuilderError
+  final case class CirceDecodingError(failure: DecodingFailure) extends BuilderError
+  final case class OtherBuilderError(message: String) extends BuilderError
   final case class PlayJsonError(message: String) extends BuilderError
 }
 
@@ -328,10 +331,9 @@ object BuilderSupport {
 
   def updateSectionByPath(
     formTemplateRaw: FormTemplateRaw,
-    sectionPath: String,
-    sectionData: Json
+    sectionDetails: SectionDetails
   ): Either[BuilderError, FormTemplateRaw] =
-    modifyJson(formTemplateRaw)(modifySectionData(_, sectionPath, sectionData))
+    modifyJson(formTemplateRaw)(modifySectionData(_, sectionDetails.sectionPath, sectionDetails.section))
 }
 
 class BuilderController(
@@ -378,17 +380,68 @@ class BuilderController(
       applyUpdateFunction(formTemplateRawId)(formTemplateRaw => updateFunction(formTemplateRaw, request.body))
     }
 
-  def updateSection(formTemplateRawId: FormTemplateRawId, sectionPath: String) =
+  def updateSection(formTemplateRawId: FormTemplateRawId) =
     updateAction(formTemplateRawId) { (formTemplateRaw, requestBody) =>
-      BuilderSupport
-        .updateSectionByPath(formTemplateRaw, sectionPath, requestBody)
-        .map(formTemplateRaw => (formTemplateRaw, Results.Ok(formTemplateRaw.value)))
+      for {
+        sectionUpdateRequest <-
+          requestBody.as[SectionUpdateRequest].leftMap(e => BuilderError.CirceDecodingError(e))
+        componentUpdatedFormTemplateRaw <-
+          sectionUpdateRequest.formComponent
+            .map(data =>
+              extractFormComponentId(data).flatMap(formComponentId =>
+                BuilderSupport.updateFormComponent(formTemplateRaw, data, formComponentId)
+              )
+            )
+            .getOrElse(Right(formTemplateRaw))
+        sectionUpdatedFormTemplateRaw <-
+          BuilderSupport
+            .updateSectionByPath(
+              componentUpdatedFormTemplateRaw,
+              sectionUpdateRequest.sectionDetails
+            )
+      } yield (sectionUpdatedFormTemplateRaw, Results.Ok(sectionUpdatedFormTemplateRaw.value))
+    }
+
+  private def extractFormComponentId(json: Json): Either[BuilderError, FormComponentId] =
+    json.hcursor.get[String]("id") match {
+      case Right(idValue) => Right(FormComponentId(idValue))
+      case Left(failure)  => Left(BuilderError.CirceDecodingError(failure))
     }
 
   def updateFormComponent(formTemplateRawId: FormTemplateRawId, formComponentId: FormComponentId) =
     updateAction(formTemplateRawId) { (formTemplateRaw, requestBody) =>
-      BuilderSupport
-        .updateFormComponent(formTemplateRaw, requestBody, formComponentId)
-        .map(formTemplateRaw => (formTemplateRaw, Results.Ok(formTemplateRaw.value)))
+      for {
+        componentUpdateRequest <-
+          requestBody.as[ComponentUpdateRequest].leftMap(e => BuilderError.CirceDecodingError(e))
+        sectionUpdatedFormTemplateRaw <-
+          componentUpdateRequest.sectionDetails
+            .map(s => BuilderSupport.updateSectionByPath(formTemplateRaw, s))
+            .getOrElse(Right(formTemplateRaw))
+        componentUpdatedFormTemplateRaw <-
+          BuilderSupport
+            .updateFormComponent(
+              sectionUpdatedFormTemplateRaw,
+              componentUpdateRequest.formComponent,
+              formComponentId
+            )
+      } yield (componentUpdatedFormTemplateRaw, Results.Ok(componentUpdatedFormTemplateRaw.value))
     }
+}
+
+final case class SectionDetails(section: Json, sectionPath: String)
+
+object SectionDetails {
+  implicit val decodeSectionDetails: Decoder[SectionDetails] = deriveDecoder[SectionDetails]
+}
+
+final case class SectionUpdateRequest(sectionDetails: SectionDetails, formComponent: Option[Json])
+
+object SectionUpdateRequest {
+  implicit val sectionUpdateRequest: Decoder[SectionUpdateRequest] = deriveDecoder[SectionUpdateRequest]
+}
+
+final case class ComponentUpdateRequest(formComponent: Json, sectionDetails: Option[SectionDetails])
+
+object ComponentUpdateRequest {
+  implicit val componentUpdateRequest: Decoder[ComponentUpdateRequest] = deriveDecoder[ComponentUpdateRequest]
 }
