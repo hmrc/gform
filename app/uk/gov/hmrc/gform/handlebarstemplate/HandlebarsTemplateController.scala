@@ -21,13 +21,22 @@ import play.api.libs.json.Json
 import play.api.mvc.ControllerComponents
 import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.controllers.BaseController
-import uk.gov.hmrc.gform.sharedmodel.{ HandlebarsTemplate, HandlebarsTemplateId }
+import uk.gov.hmrc.gform.core.FOpt
+import uk.gov.hmrc.gform.formtemplate.FormTemplateService
+import uk.gov.hmrc.gform.formtemplate.RequestHandlerAlg
+import uk.gov.hmrc.gform.sharedmodel.HandlebarsTemplate
+import uk.gov.hmrc.gform.sharedmodel.HandlebarsTemplateId
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateRaw
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateRawId
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
 
 class HandlebarsTemplateController(
   controllerComponents: ControllerComponents,
-  handlebarsTemplateAlgebra: HandlebarsTemplateAlgebra[Future]
+  handlebarsTemplateAlgebra: HandlebarsTemplateAlgebra[Future],
+  handler: RequestHandlerAlg[FOpt],
+  formTemplateService: FormTemplateService
 )(implicit
   ex: ExecutionContext
 ) extends BaseController(controllerComponents) {
@@ -36,10 +45,17 @@ class HandlebarsTemplateController(
   def upsert(handlebarsTemplateId: HandlebarsTemplateId) = Action.async(parse.text) { implicit request =>
     val handleBarsTemplate = HandlebarsTemplate(handlebarsTemplateId, request.body)
 
-    handlebarsTemplateAlgebra.save(handleBarsTemplate).map { _ =>
-      NoContent
-    }
+    val formTemplateIdStr = handlebarsTemplateId.value.replaceAll("-(\\w+)$", "")
+    val formTemplateRawId = FormTemplateRawId(formTemplateIdStr)
+    for {
+      formTemplateRaw <- formTemplateService.get(formTemplateRawId)
+      _               <- doTemplateUpsert(formTemplateRaw)
+      _               <- handlebarsTemplateAlgebra.save(handleBarsTemplate)
+    } yield NoContent
   }
+
+  private def doTemplateUpsert(formTemplateRaw: FormTemplateRaw) =
+    handler.handleRequest(formTemplateRaw).fold(_.asBadRequest, _ => NoContent)
 
   def getRaw(handlebarsTemplateId: HandlebarsTemplateId) = Action.async { _ =>
     handlebarsTemplateAlgebra
