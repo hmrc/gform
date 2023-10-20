@@ -48,9 +48,15 @@ class HandlebarsTemplateController(
     val formTemplateIdStr = handlebarsTemplateId.value.replaceAll("-(\\w+)$", "")
     val formTemplateRawId = FormTemplateRawId(formTemplateIdStr)
     for {
-      formTemplateRaw <- formTemplateService.get(formTemplateRawId)
-      _               <- doTemplateUpsert(formTemplateRaw)
-      _               <- handlebarsTemplateAlgebra.save(handleBarsTemplate)
+      formTemplateRawOpt <- formTemplateService.get(formTemplateRawId).map(Some(_)).recover {
+                              // do not reload template if this is the first upsert
+                              case _: NoSuchElementException => None
+                            }
+      _ <- formTemplateRawOpt match {
+             case Some(formTemplateRaw) => doTemplateUpsert(formTemplateRaw)
+             case None                  => Future.successful(())
+           }
+      _ <- handlebarsTemplateAlgebra.save(handleBarsTemplate)
     } yield NoContent
   }
 
