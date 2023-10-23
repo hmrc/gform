@@ -164,6 +164,9 @@
     "legacyFormIds": {
       "type": "array"
     },
+    "dataRetrieve": {
+      "type": "array"
+    },
     "referrerConfig": {
       "type": "object",
       "properties": {
