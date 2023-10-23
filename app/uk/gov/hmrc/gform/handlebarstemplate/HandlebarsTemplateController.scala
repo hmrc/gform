@@ -52,11 +52,11 @@ class HandlebarsTemplateController(
                               // do not reload template if this is the first upsert
                               case _: NoSuchElementException => None
                             }
+      _ <- handlebarsTemplateAlgebra.save(handleBarsTemplate)
       _ <- formTemplateRawOpt match {
              case Some(formTemplateRaw) => doTemplateUpsert(formTemplateRaw)
              case None                  => Future.successful(())
            }
-      _ <- handlebarsTemplateAlgebra.save(handleBarsTemplate)
     } yield NoContent
   }
 
