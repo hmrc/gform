@@ -17,66 +17,77 @@
 package uk.gov.hmrc.gform
 
 import cats.instances.future._
+import org.mongodb.scala.model.IndexModel
+import org.mongodb.scala.model.IndexOptions
+import org.mongodb.scala.model.Indexes
 import org.slf4j.LoggerFactory
-import org.mongodb.scala.model.{ IndexModel, IndexOptions, Indexes }
 import play.api.ApplicationLoader.Context
 import play.api._
 import play.api.http._
 import play.api.i18n.I18nComponents
-import play.api.inject.{ Injector, SimpleInjector }
+import play.api.inject.Injector
+import play.api.inject.SimpleInjector
+import play.api.libs.ws.ahc.AhcWSComponents
 import play.api.mvc.EssentialFilter
 import play.api.routing.Router
-import play.api.libs.ws.ahc.AhcWSComponents
 import uk.gov.hmrc.crypto.SymmetricCryptoFactory
 import uk.gov.hmrc.gform.akka.AkkaModule
 import uk.gov.hmrc.gform.auditing.AuditingModule
 import uk.gov.hmrc.gform.builder.BuilderModule
 import uk.gov.hmrc.gform.config.ConfigModule
-import uk.gov.hmrc.gform.employments.EmploymentsModule
-import uk.gov.hmrc.gform.formstatistics.FormStatisticsModule
 import uk.gov.hmrc.gform.dblookup.DbLookupModule
 import uk.gov.hmrc.gform.des.DesModule
 import uk.gov.hmrc.gform.dms.DmsModule
 import uk.gov.hmrc.gform.email.EmailModule
+import uk.gov.hmrc.gform.employments.EmploymentsModule
 import uk.gov.hmrc.gform.envelope.EnvelopeModule
-import uk.gov.hmrc.gform.fileupload.{ FileUploadFrontendAlgebra, FileUploadModule }
-import uk.gov.hmrc.gform.form.{ FormModule, FormService }
+import uk.gov.hmrc.gform.fileupload.FileUploadFrontendAlgebra
+import uk.gov.hmrc.gform.fileupload.FileUploadModule
+import uk.gov.hmrc.gform.form.FormModule
+import uk.gov.hmrc.gform.form.FormService
 import uk.gov.hmrc.gform.formmetadata.FormMetadataModule
+import uk.gov.hmrc.gform.formstatistics.FormStatisticsModule
 import uk.gov.hmrc.gform.formtemplate.FormTemplateModule
 import uk.gov.hmrc.gform.graphite.GraphiteModule
+import uk.gov.hmrc.gform.handlebarstemplate.HandlebarsTemplateAlgebra
 import uk.gov.hmrc.gform.handlebarstemplate.HandlebarsTemplateModule
+import uk.gov.hmrc.gform.handlebarstemplate.HandlebarsTemplateService
 import uk.gov.hmrc.gform.history.HistoryModule
 import uk.gov.hmrc.gform.metrics.MetricsModule
 import uk.gov.hmrc.gform.mongo.MongoModule
 import uk.gov.hmrc.gform.notificationbanner.NotificationBannerModule
-import uk.gov.hmrc.gform.shutter.ShutterModule
 import uk.gov.hmrc.gform.notifier.NotifierModule
 import uk.gov.hmrc.gform.objectstore.ObjectStoreModule
+import uk.gov.hmrc.gform.obligation.ObligationModule
 import uk.gov.hmrc.gform.pdfgenerator.PdfGeneratorModule
-import uk.gov.hmrc.gform.playcomponents.{ ErrorHandler, PlayComponents, PlayComponentsModule }
+import uk.gov.hmrc.gform.playcomponents.ErrorHandler
+import uk.gov.hmrc.gform.playcomponents.PlayComponents
+import uk.gov.hmrc.gform.playcomponents.PlayComponentsModule
 import uk.gov.hmrc.gform.proxy.ProxyModule
+import uk.gov.hmrc.gform.repo.Repo
 import uk.gov.hmrc.gform.save4later.FormMongoCache
+import uk.gov.hmrc.gform.scheduler.SchedulerModule
+import uk.gov.hmrc.gform.sdes.SdesModule
+import uk.gov.hmrc.gform.sharedmodel.HandlebarsTemplate
+import uk.gov.hmrc.gform.shutter.ShutterModule
 import uk.gov.hmrc.gform.submission.SubmissionModule
+import uk.gov.hmrc.gform.submission.destinations.DestinationModule
 import uk.gov.hmrc.gform.submission.handlebars.HandlebarsHttpApiModule
+import uk.gov.hmrc.gform.submissionconsolidator.SubmissionConsolidatorModule
 import uk.gov.hmrc.gform.testonly.TestOnlyModule
 import uk.gov.hmrc.gform.time.TimeModule
 import uk.gov.hmrc.gform.translation.TranslationModule
 import uk.gov.hmrc.gform.upscan.UpscanModule
 import uk.gov.hmrc.gform.wshttp.WSHttpModule
-import uk.gov.hmrc.gform.obligation.ObligationModule
-import uk.gov.hmrc.gform.scheduler.SchedulerModule
-import uk.gov.hmrc.gform.sdes.SdesModule
-import uk.gov.hmrc.gform.submission.destinations.DestinationModule
-import uk.gov.hmrc.gform.submissionconsolidator.SubmissionConsolidatorModule
 import uk.gov.hmrc.mongo.CurrentTimestampSupport
 import uk.gov.hmrc.mongo.MongoUtils
 import uk.gov.hmrc.mongo.cache.CacheIdType.SimpleCacheId
 import uk.gov.hmrc.mongo.cache.MongoCacheRepository
 import uk.gov.hmrc.play.bootstrap.config.AppName
 
-import scala.concurrent.duration._
-import scala.concurrent.Future
 import java.util.concurrent.TimeUnit
+import scala.concurrent.Future
+import scala.concurrent.duration._
 
 class ApplicationLoader extends play.api.ApplicationLoader {
   def load(context: Context): Application = {
@@ -125,19 +136,27 @@ class ApplicationModule(context: Context)
     )
   private val shutterModule = new ShutterModule(mongoModule, configModule)
   private val notificationBannerModule = new NotificationBannerModule(mongoModule, configModule)
-  private val handlebarsPayloadModule = new HandlebarsTemplateModule(controllerComponents, mongoModule)
-
+  private val handlebarsTemplateRepo: Repo[HandlebarsTemplate] =
+    new Repo[HandlebarsTemplate]("handlebarsTemplate", mongoModule.mongoComponent, _._id.value)
+  private val handlebarsTemplateService: HandlebarsTemplateAlgebra[Future] = new HandlebarsTemplateService(
+    handlebarsTemplateRepo
+  )
   val historyModule = new HistoryModule(configModule, mongoModule)
+
   val formTemplateModule =
     new FormTemplateModule(
       controllerComponents,
       mongoModule,
       shutterModule,
       notificationBannerModule,
-      handlebarsPayloadModule,
+      handlebarsTemplateService,
       historyModule,
       configModule
     )
+
+  private val handlebarsPayloadModule =
+    new HandlebarsTemplateModule(controllerComponents, mongoModule, handlebarsTemplateService, formTemplateModule)
+
   private val emailModule = new EmailModule(configModule, wSHttpModule, notifierModule, formTemplateModule)
   private val translationModule = new TranslationModule(formTemplateModule, historyModule, configModule)
   val pdfGeneratorModule = new PdfGeneratorModule()

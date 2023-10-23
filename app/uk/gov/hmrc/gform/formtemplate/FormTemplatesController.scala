@@ -27,6 +27,7 @@ import uk.gov.hmrc.gform.formtemplate.FormTemplatePIIRefsHelper.PIIDetailsRespon
 import uk.gov.hmrc.gform.history.HistoryService
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplate, FormTemplateContext, FormTemplateId, FormTemplateRaw, FormTemplateRawId }
 import uk.gov.hmrc.gform.shutter.ShutterService
+import uk.gov.hmrc.gform.core.FOpt
 
 import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.gform.notificationbanner.NotificationService
@@ -38,17 +39,12 @@ class FormTemplatesController(
   formRedirectService: FormRedirectService,
   shutterService: ShutterService,
   notificationService: NotificationService,
-  historyService: HistoryService
+  historyService: HistoryService,
+  handler: RequestHandlerAlg[FOpt]
 )(implicit
   ex: ExecutionContext
 ) extends BaseController(controllerComponents) {
   private val logger = LoggerFactory.getLogger(getClass)
-
-  private val handler = new FormTemplatesControllerRequestHandler(
-    formTemplateService.verifyAndSave,
-    formTemplateService.save,
-    historyService.save
-  ).futureInterpreter
 
   def upsert() = Action.async(parse.tolerantText) { implicit request =>
     val templateString: String = request.body
