@@ -11,6 +11,7 @@ trait FormTemplateSample {
                   |    "formName": "Test form name",
                   |    "version": 1,
                   |    "description": "Test form description",
+                  |    "objectStore": false,
                   |    "authConfig": {
                   |        "authModule": "anonymous"
                   |    },
