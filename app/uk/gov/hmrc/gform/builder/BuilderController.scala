@@ -95,6 +95,10 @@ object BuilderSupport {
       List.fill(taskIndex)(MoveRight) ::: List(DownArray, DownField("tasks")) :::
       List.fill(taskSectionIndex)(MoveRight) ::: List(DownArray, DownField("sections"))
 
+  private def taskHistory(sectionIndex: Int, taskIndex: Int) =
+    List.fill(taskIndex)(MoveRight) ::: List(DownArray, DownField("tasks")) :::
+      List.fill(sectionIndex)(MoveRight) ::: List(DownArray, DownField("sections"))
+
   private def taskListATLHistory(pageIndex: Int, sectionIndex: Int, taskIndex: Int, taskSectionIndex: Int) =
     List.fill(pageIndex)(MoveRight) ::: List(DownArray, DownField("pages")) :::
       List.fill(sectionIndex)(MoveRight) ::: List(DownArray, DownField("sections")) :::
@@ -106,6 +110,7 @@ object BuilderSupport {
   private val taskListSectionPattern: Regex = """^\.sections\[(\d+)\]\.tasks\[(\d+)\]\.sections\[(\d+)\]$""".r
   private val taskListAtlPagePattern: Regex =
     """^\.sections\[(\d+)\]\.tasks\[(\d+)\]\.sections\[(\d+)\]\.pages\[(\d+)\]$""".r
+  private val taskPattern: Regex = """^\.sections\[(\d+)\]\.tasks\[(\d+)\]$""".r
 
   def modifySectionData(json: Json, sectionPath: String, sectionData: Json): Json = {
     val history: List[CursorOp] =
@@ -114,6 +119,8 @@ object BuilderSupport {
           nonRepeatedHistory(sectionIndex.toInt)
         case atlPagePattern(sectionIndex, pageIndex) =>
           nonRepeatedATLHistory(pageIndex.toInt, sectionIndex.toInt)
+        case taskPattern(taskSectionIndex, taskIndex) =>
+          taskHistory(taskSectionIndex.toInt, taskIndex.toInt)
         case taskListSectionPattern(taskSectionIndex, taskIndex, sectionIndex) =>
           taskListHistory(sectionIndex.toInt, taskIndex.toInt, taskSectionIndex.toInt)
         case taskListAtlPagePattern(taskSectionIndex, taskIndex, sectionIndex, pageIndex) =>
@@ -128,7 +135,8 @@ object BuilderSupport {
       Property("shortName", PropertyBehaviour.PurgeWhenEmpty),
       Property("continueLabel"),
       Property("presentationHint", PropertyBehaviour.PurgeWhenEmpty),
-      Property("note", PropertyBehaviour.PurgeWhenEmpty)
+      Property("note", PropertyBehaviour.PurgeWhenEmpty),
+      Property("summarySection", PropertyBehaviour.PurgeWhenEmpty)
     ).foldRight(json) { case (property, accJson) =>
       sectionData.hcursor
         .downField(property.name)
@@ -202,6 +210,53 @@ object BuilderSupport {
     )
       .foldRight(formComponent) { case (property, accJson) =>
         sectionData.hcursor
+          .downField(property.name)
+          .focus
+          .flatMap { propertyValue =>
+            val isValueAsStringEmpty = propertyValue
+              .as[String]
+              .toOption
+              .fold(false)(_.trim.isEmpty())
+
+            val propertyField = accJson.hcursor.downField(property.name)
+
+            property.behaviour match {
+              case PropertyBehaviour.PurgeWhenEmpty if isValueAsStringEmpty =>
+                if (propertyField.succeeded) {
+                  propertyField.delete.root.focus
+                } else {
+                  Some(accJson)
+                }
+
+              case _ =>
+                if (propertyField.succeeded) {
+                  propertyField
+                    .set(propertyValue)
+                    .root
+                    .focus
+
+                } else {
+                  accJson.hcursor
+                    .withFocus(json => json.deepMerge(Json.obj(property.name -> propertyValue)))
+                    .root
+                    .focus
+                }
+            }
+          }
+          .getOrElse(accJson)
+      }
+
+  def modifyFormTemplate(
+    json: Json,
+    formTemplateData: Json
+  ): Json =
+    List(
+      Property("displayWidth", PropertyBehaviour.PurgeWhenEmpty),
+      Property("submitSection", PropertyBehaviour.PurgeWhenEmpty),
+      Property("note", PropertyBehaviour.PurgeWhenEmpty)
+    )
+      .foldRight(json) { case (property, accJson) =>
+        formTemplateData.hcursor
           .downField(property.name)
           .focus
           .flatMap { propertyValue =>
@@ -334,6 +389,12 @@ object BuilderSupport {
     sectionDetails: SectionDetails
   ): Either[BuilderError, FormTemplateRaw] =
     modifyJson(formTemplateRaw)(modifySectionData(_, sectionDetails.sectionPath, sectionDetails.section))
+
+  def updateFormTemplate(
+    formTemplateRaw: FormTemplateRaw,
+    formTempateData: Json
+  ): Either[BuilderError, FormTemplateRaw] =
+    modifyJson(formTemplateRaw)(modifyFormTemplate(_, formTempateData))
 }
 
 class BuilderController(
@@ -402,6 +463,20 @@ class BuilderController(
       } yield (sectionUpdatedFormTemplateRaw, Results.Ok(sectionUpdatedFormTemplateRaw.value))
     }
 
+  def updateFormTemplate(formTemplateRawId: FormTemplateRawId) =
+    updateAction(formTemplateRawId) { (formTemplateRaw, requestBody) =>
+      for {
+        formTemplateUpdateRequest <-
+          requestBody.as[FormTemplateUpdateRequest].leftMap(e => BuilderError.CirceDecodingError(e))
+        updatedFormTemplateRaw <-
+          BuilderSupport
+            .updateFormTemplate(
+              formTemplateRaw,
+              formTemplateUpdateRequest.formTemplate
+            )
+      } yield (updatedFormTemplateRaw, Results.Ok(updatedFormTemplateRaw.value))
+    }
+
   private def extractFormComponentId(json: Json): Either[BuilderError, FormComponentId] =
     json.hcursor.get[String]("id") match {
       case Right(idValue) => Right(FormComponentId(idValue))
@@ -444,4 +519,10 @@ final case class ComponentUpdateRequest(formComponent: Json, sectionDetails: Opt
 
 object ComponentUpdateRequest {
   implicit val componentUpdateRequest: Decoder[ComponentUpdateRequest] = deriveDecoder[ComponentUpdateRequest]
+}
+
+final case class FormTemplateUpdateRequest(formTemplate: Json)
+
+object FormTemplateUpdateRequest {
+  implicit val formTemplateUpdateRequest: Decoder[FormTemplateUpdateRequest] = deriveDecoder[FormTemplateUpdateRequest]
 }
