@@ -1141,6 +1141,13 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     )
   }
 
+  it should "parse link.image.imagename.png function" in {
+    val res = ValueParser.validate("${link.image.imagename.png}")
+    res.toOption.value should be(
+      TextExpression(LinkCtx(InternalLink.Image("imagename.png")))
+    )
+  }
+
   it should "parse choicesRevealedField function" in {
     val res = ValueParser.validate("${choicesRevealedField(fieldId)}")
     res.toOption.value should be(

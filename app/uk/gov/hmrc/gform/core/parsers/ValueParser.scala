@@ -163,6 +163,8 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
     InternalLink.signOut
   } | "download" ~ "." ~ alphabeticWithHyphen ~ "." ~ alphabeticOnly ^^ { case _ ~ _ ~ fileName ~ _ ~ extension =>
     InternalLink.Download(s"$fileName.$extension")
+  } | "image" ~ "." ~ alphabeticWithHyphen ~ "." ~ alphabeticOnly ^^ { case _ ~ _ ~ fileName ~ _ ~ extension =>
+    InternalLink.Image(s"$fileName.$extension")
   } | PageId.unanchoredIdValidation ^^ { id =>
     PageLink(PageId(id))
   } | "'" ~ formatUrl ~ "'" ^^ { case _ ~ url ~ _ =>
