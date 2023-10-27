@@ -1,2 +1,3 @@
 POST /update-header/:formTemplateId                           uk.gov.hmrc.gform.builder.BuilderController.updateSection(formTemplateId: FormTemplateRawId)
 POST /update-form-component/:formTemplateId/:formComponentId  uk.gov.hmrc.gform.builder.BuilderController.updateFormComponent(formTemplateId: FormTemplateRawId, formComponentId: FormComponentId)
+POST /update-form-template/:formTemplateId                    uk.gov.hmrc.gform.builder.BuilderController.updateFormTemplate(formTemplateId: FormTemplateRawId)
