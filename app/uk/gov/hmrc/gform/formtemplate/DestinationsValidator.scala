@@ -43,22 +43,36 @@ object DestinationsValidator {
 
   def validateDestinationIncludeIfs(destinations: Destinations): ValidationResult = destinations match {
     case destinationList: Destinations.DestinationList =>
-      val hasIncludeIfValue = destinationList.destinations.exists(_.includeIf match {
-        case IncludeIfValue(_) => true
-        case _                 => false
-      })
-      val hasHandlebarValue = destinationList.destinations.exists(_.includeIf match {
-        case HandlebarValue(_) => true
-        case _                 => false
-      })
+      def validateIncludeIfValues(
+        destinationType: String,
+        destinations: NonEmptyList[Destination]
+      ): ValidationResult = {
+        val hasIncludeIfValue = destinations.exists(_.includeIf.isInstanceOf[IncludeIfValue])
+        val hasHandlebarValue = destinations.exists(_.includeIf.isInstanceOf[HandlebarValue])
 
-      if (hasIncludeIfValue && hasHandlebarValue) {
-        Invalid(
-          "IncludeIf statements in destinations are not valid. Destinations 'includeIf' must be either all 'gform expressions' ie. ${...} or all 'handlebar expressions' ie. {{...}}. It cannot be mix of both."
-        )
-      } else {
-        Valid
+        if (hasIncludeIfValue && hasHandlebarValue) {
+          Invalid(
+            s"IncludeIf statements in $destinationType destinations are not valid. Destinations 'includeIf' must be either all 'gform expressions' ie. $${...} or all 'handlebar expressions' ie. {{...}}. It cannot be mix of both."
+          )
+        } else {
+          Valid
+        }
       }
+
+      destinationList.destinations
+        .groupBy {
+          case _: Destination.HmrcDms                => Destination.hmrcDms
+          case _: Destination.DataStore              => Destination.dataStore
+          case _: Destination.HandlebarsHttpApi      => Destination.handlebarsHttpApi
+          case _: Destination.Email                  => Destination.email
+          case _: Destination.StateTransition        => Destination.stateTransition
+          case _: Destination.SubmissionConsolidator => Destination.submissionConsolidator
+          case _: Destination.Log                    => Destination.log
+          case _: Destination.Composite              => Destination.composite
+        }
+        .map { case (destinationType, destinations) => validateIncludeIfValues(destinationType, destinations) }
+        .toList
+        .combineAll
 
     case _ => Valid
   }

@@ -91,7 +91,7 @@ class DestinationsValidatorSpec extends Spec with ScalaCheckDrivenPropertyChecks
     DestinationsValidator.validateDestinationIncludeIfs(
       destinationList.copy(destinations = destinations)
     ) shouldBe Invalid(
-      "IncludeIf statements in destinations are not valid. Destinations 'includeIf' must be either all 'gform expressions' ie. ${...} or all 'handlebar expressions' ie. {{...}}. It cannot be mix of both."
+      "IncludeIf statements in hmrcDms destinations are not valid. Destinations 'includeIf' must be either all 'gform expressions' ie. ${...} or all 'handlebar expressions' ie. {{...}}. It cannot be mix of both."
     )
   }
 
@@ -110,6 +110,18 @@ class DestinationsValidatorSpec extends Spec with ScalaCheckDrivenPropertyChecks
     val destinations = NonEmptyList.of(
       hmrcDms.copy(includeIf = HandlebarValue("{{isNotNull empName}}")),
       hmrcDms.copy(includeIf = HandlebarValue("{{isNull empName}}"))
+    )
+
+    DestinationsValidator.validateDestinationIncludeIfs(destinationList.copy(destinations = destinations)) should be(
+      Valid
+    )
+  }
+
+  "validateDestinationIncludeIfs" should "pass validation when both are handlebar statement in the same destination type" in {
+    val destinations = NonEmptyList.of(
+      hmrcDms.copy(includeIf = HandlebarValue("{{isNotNull empName}}")),
+      hmrcDms.copy(includeIf = HandlebarValue("{{isNull empName}}")),
+      dataStore.copy(includeIf = IncludeIfValue(IncludeIf(Equals(FormCtx(FormComponentId("fieldA")), Constant("1")))))
     )
 
     DestinationsValidator.validateDestinationIncludeIfs(destinationList.copy(destinations = destinations)) should be(
