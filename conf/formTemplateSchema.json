@@ -4,10 +4,19 @@
   "description": "Validation of any form posted to gForm platform",
   "type": "object",
   "patternProperties": {
-    "^(comment|note|_)": {
+    "^(comment)": {
       "type": [
         "string",
         "object"
+      ]
+    },
+    "^(_)": {
+      "type": [
+        "array",
+        "boolean",
+        "number",
+        "object",
+        "string"
       ]
     }
   },
