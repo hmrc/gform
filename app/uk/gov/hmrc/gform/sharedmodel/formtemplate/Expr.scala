@@ -90,6 +90,7 @@ final case class BulletedList(formComponentId: FormComponentId) extends Expr
 final case class Concat(exprs: List[Expr]) extends Expr
 final case class StringOps(field1: Expr, stringFnc: StringFnc) extends Expr
 final case class ChoicesRevealedField(formComponentId: FormComponentId) extends Expr
+final case class ChoiceLabel(formComponentId: FormComponentId) extends Expr
 
 sealed trait SizeRefType extends Product with Serializable
 
