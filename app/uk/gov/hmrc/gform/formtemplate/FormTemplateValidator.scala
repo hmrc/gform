@@ -183,6 +183,10 @@ object FormTemplateValidator {
       .toSet
       .flatten
 
+    val allChoiceIds: Set[FormComponentId] = formTemplate.formComponents { case fc @ IsChoice(_) =>
+      fc.id
+    }.toSet
+
     val allExprs: List[ExprWithPath] = FormTemplate.leafExprs.exprs(TemplatePath.root, formTemplate)
 
     def dateExprInvalidRefs(dateExpr: DateExpr*): Seq[FormComponentId] =
@@ -238,6 +242,8 @@ object FormTemplateValidator {
               case _                    => false
             } =>
         Invalid(s"${path.path}: $formComponentId is not a Revealing Choice in ATL")
+      case ReferenceInfo.ChoiceLabelExpr(path, ChoiceLabel(formComponentId)) if !allChoiceIds(formComponentId) =>
+        Invalid(s"${path.path}: $formComponentId is not a Choice in the form")
       case _ => Valid
     }
 
@@ -1094,6 +1100,7 @@ object FormTemplateValidator {
       case Concat(exprs)                => Monoid.combineAll(exprs.map(e => validate(e, sections)))
       case CountryOfItmpAddress         => Valid
       case ChoicesRevealedField(_)      => Valid
+      case ChoiceLabel(_)               => Valid
     }
   }
 
