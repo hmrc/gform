@@ -158,7 +158,8 @@ class ApplicationModule(context: Context)
     new HandlebarsTemplateModule(controllerComponents, mongoModule, handlebarsTemplateService, formTemplateModule)
 
   private val emailModule = new EmailModule(configModule, wSHttpModule, notifierModule, formTemplateModule)
-  private val translationModule = new TranslationModule(formTemplateModule, historyModule, configModule)
+  private val translationModule =
+    new TranslationModule(formTemplateModule, historyModule, configModule, formTemplateModule.handler)
   val pdfGeneratorModule = new PdfGeneratorModule()
 
   val formMetadaModule = new FormMetadataModule(mongoModule)
