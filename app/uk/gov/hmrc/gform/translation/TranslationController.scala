@@ -102,17 +102,17 @@ class TranslationController(
     }
   private def insertLanguages(json: JsObject): JsObject = {
     val fields = json.fields
-    val languagesValue = Json.toJson(Seq("en", "cy"))
+    val languages = ("languages", Json.toJson(Seq("en", "cy")))
     val updatedFields = if (fields.exists { case (key, _) => key === "languages" }) {
       fields.map {
-        case (key, value) if key == "languages" => (key, languagesValue)
-        case otherwise                          => otherwise
+        case (key, _) if key == "languages" => languages
+        case otherwise                      => otherwise
       }
     } else {
       val (before, after) = fields.span(_._1 =!= "version")
       after match {
-        case version :: as => before ++ Seq(version, ("languages", languagesValue)) ++ as
-        case _             => before ++ Seq(("languages", languagesValue))
+        case version :: as => before ++ Seq(version, languages) ++ as
+        case _             => before ++ Seq(languages)
       }
     }
     JsObject(updatedFields)
