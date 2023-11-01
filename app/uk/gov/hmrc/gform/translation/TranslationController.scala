@@ -105,8 +105,8 @@ class TranslationController(
     val languages = ("languages", Json.toJson(Seq("en", "cy")))
     val updatedFields = if (fields.exists { case (key, _) => key === "languages" }) {
       fields.map {
-        case (key, _) if key == "languages" => languages
-        case otherwise                      => otherwise
+        case (key, _) if key === "languages" => languages
+        case otherwise                       => otherwise
       }
     } else {
       val (before, after) = fields.span(_._1 =!= "version")
