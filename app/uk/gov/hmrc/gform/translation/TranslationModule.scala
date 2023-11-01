@@ -16,15 +16,19 @@
 
 package uk.gov.hmrc.gform.translation
 
-import scala.concurrent.ExecutionContext
 import uk.gov.hmrc.gform.config.ConfigModule
+import uk.gov.hmrc.gform.core.FOpt
 import uk.gov.hmrc.gform.formtemplate.FormTemplateModule
+import uk.gov.hmrc.gform.formtemplate.RequestHandlerAlg
 import uk.gov.hmrc.gform.history.HistoryModule
+
+import scala.concurrent.ExecutionContext
 
 class TranslationModule(
   formTemplateModule: FormTemplateModule,
   historyModule: HistoryModule,
-  configModule: ConfigModule
+  configModule: ConfigModule,
+  handler: RequestHandlerAlg[FOpt]
 )(implicit
   ex: ExecutionContext
 ) {
@@ -32,7 +36,8 @@ class TranslationModule(
     new TranslationController(
       formTemplateModule.formTemplateService,
       historyModule.historyService,
-      configModule.controllerComponents
+      configModule.controllerComponents,
+      handler
     )
 
 }
