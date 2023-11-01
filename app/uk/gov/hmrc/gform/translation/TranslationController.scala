@@ -90,8 +90,9 @@ class TranslationController(
       ) { csv =>
         formTemplateService
           .get(FormTemplateRawId(formTemplateId.value))
+          .map(json => insertLanguages(json.value))
           .flatMap { json =>
-            val jsonAsString = Json.prettyPrint(json.value)
+            val jsonAsString = Json.prettyPrint(json)
             val jsonToSave = Json.parse(TextExtractor.translateFile(csv, jsonAsString)).as[JsObject]
             interpreter
               .handleRequest(FormTemplateRaw(jsonToSave))
@@ -99,6 +100,21 @@ class TranslationController(
           }
       }
     }
+  private def insertLanguages(json: JsObject): JsObject = {
+    val fields = json.fields
+    val updatedFields = if (fields.exists { case (key, _) => key == "languages" }) {
+      fields.map {
+        case (key, value) if key == "languages" => (key, Json.toJson(Seq("en", "cy")))
+        case otherwise                          => otherwise
+      }
+    } else {
+      val (before, after) = fields.span(_._1 != "version")
+      before ++ (if (after.isEmpty) Seq.empty else Seq(after.head)) ++ Seq(
+        ("languages", Json.toJson(Seq("en", "cy")))
+      ) ++ after.tail
+    }
+    JsObject(updatedFields)
+  }
 
   def translateCsvDebug(
     formTemplateId: FormTemplateId
