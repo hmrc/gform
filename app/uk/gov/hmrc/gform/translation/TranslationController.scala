@@ -112,7 +112,7 @@ class TranslationController(
       val (before, after) = fields.span(_._1 =!= "version")
       after match {
         case version :: as => before ++ Seq(version, ("languages", languagesValue)) ++ as
-        case _             => before ++ Seq(("languages", Json.toJson(Seq("en", "cy"))))
+        case _             => before ++ Seq(("languages", languagesValue))
       }
     }
     JsObject(updatedFields)
