@@ -16,35 +16,21 @@
 
 package uk.gov.hmrc.gform.translation
 
-import akka.stream.scaladsl.StreamConverters
 import cats.implicits._
-import play.api.libs.json.JsObject
-import play.api.libs.json.Json
-import play.api.mvc.Action
-import play.api.mvc.AnyContent
-import play.api.mvc.ControllerComponents
-import play.api.mvc.Result
+import java.io.{ BufferedOutputStream, ByteArrayInputStream, ByteArrayOutputStream }
+import play.api.libs.json.{ JsObject, Json }
+import akka.stream.scaladsl.StreamConverters
+import play.api.mvc.{ Action, AnyContent, ControllerComponents, Result }
+import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.gform.controllers.BaseController
-import uk.gov.hmrc.gform.core.FOpt
-import uk.gov.hmrc.gform.formtemplate.FormTemplateService
-import uk.gov.hmrc.gform.formtemplate.FormTemplatesControllerRequestHandler
-import uk.gov.hmrc.gform.formtemplate.RequestHandlerAlg
+import uk.gov.hmrc.gform.formtemplate.{ FormTemplateService, FormTemplatesControllerRequestHandler }
 import uk.gov.hmrc.gform.history.HistoryService
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateRaw
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateRawId
-
-import java.io.BufferedOutputStream
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
-import scala.concurrent.ExecutionContext
-import scala.concurrent.Future
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplateId, FormTemplateRaw, FormTemplateRawId }
 
 class TranslationController(
   formTemplateService: FormTemplateService,
   historyService: HistoryService,
-  controllerComponents: ControllerComponents,
-  handler: RequestHandlerAlg[FOpt]
+  controllerComponents: ControllerComponents
 )(implicit ec: ExecutionContext)
     extends BaseController(controllerComponents) {
 
@@ -104,13 +90,6 @@ class TranslationController(
       ) { csv =>
         formTemplateService
           .get(FormTemplateRawId(formTemplateId.value))
-          .map(r => FormTemplateRaw(r.value + ("languages" -> Json.toJson(Seq("en", "cy")))))
-          .flatMap(t =>
-            handler.handleRequest(t).value.flatMap {
-              case Right(_)              => Future.successful(t)
-              case Left(unexpectedState) => Future.failed(new RuntimeException(unexpectedState.error))
-            }
-          )
           .flatMap { json =>
             val jsonAsString = Json.prettyPrint(json.value)
             val jsonToSave = Json.parse(TextExtractor.translateFile(csv, jsonAsString)).as[JsObject]
