@@ -109,9 +109,10 @@ class TranslationController(
       }
     } else {
       val (before, after) = fields.span(_._1 != "version")
-      before ++ (if (after.isEmpty) Seq.empty else Seq(after.head)) ++ Seq(
-        ("languages", Json.toJson(Seq("en", "cy")))
-      ) ++ after.tail
+      after match {
+        case version :: as => before ++ Seq(version, ("languages", Json.toJson(Seq("en", "cy")))) ++ as
+        case _             => before ++ Seq(("languages", Json.toJson(Seq("en", "cy"))))
+      }
     }
     JsObject(updatedFields)
   }
