@@ -49,6 +49,16 @@ case object Default extends FormCategory {
 }
 
 object FormCategory {
+
+  def fromString(s: String): Option[FormCategory] =
+    s match {
+      case "hmrcReturnForm" => Some(HMRCReturnForm)
+      case "hmrcClaimForm"  => Some(HMRCClaimForm)
+      case "ofstedDefault"  => Some(OfstedDefault)
+      case "default"        => Some(Default)
+      case _                => None
+    }
+
   implicit val format: Format[FormCategory] = new Format[FormCategory] {
     override def writes(o: FormCategory): JsValue = o match {
       case HMRCReturnForm => JsString("hmrcReturnForm")
@@ -59,14 +69,14 @@ object FormCategory {
 
     override def reads(json: JsValue): JsResult[FormCategory] =
       json match {
-        case JsString("hmrcReturnForm") => JsSuccess(HMRCReturnForm)
-        case JsString("hmrcClaimForm")  => JsSuccess(HMRCClaimForm)
-        case JsString("ofstedDefault")  => JsSuccess(OfstedDefault)
-        case JsString("default")        => JsSuccess(Default)
-        case JsString(err) =>
-          JsError(
-            s"only four valid categories, hmrcReturnForm, hmrcClaimForm, ofstedDefault or default $err is not valid"
-          )
+        case JsString(value) =>
+          fromString(value) match {
+            case Some(value) => JsSuccess(value)
+            case None =>
+              JsError(
+                s"only four valid categories, hmrcReturnForm, hmrcClaimForm, ofstedDefault or default $value is not valid"
+              )
+          }
         case _ => JsError("Failure")
       }
   }

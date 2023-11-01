@@ -963,4 +963,143 @@ class BuilderControllerSuite extends FunSuite {
     assertEquals(result.spaces2, expectedTaskListWithAtlJson.spaces2)
   }
 
+  val summarySectionJson: Json = json"""
+    {
+      "summarySection": {
+        "title": "This is 'title'",
+        "header": "#This is markdown *'header'*",
+        "footer": "#This is markdowm *'footer'*",
+        "displayWidth": "l",
+        "continueLabel": "Confirm"
+      }
+    }"""
+
+  val summarySectionJsonExpected: Json = json"""
+    {
+      "summarySection": {
+        "title": "Foo",
+        "header": "#This is markdown *'header'*",
+        "footer": "#This is markdowm *'footer'*",
+        "displayWidth": "l",
+        "continueLabel": "Confirm"
+      }
+    }"""
+
+  test("Update summary section title") {
+
+    val patch: Json = Json.obj("title" := "Foo")
+
+    val result: Json = BuilderSupport.modifySummarySectionData(summarySectionJson, patch)
+
+    assertEquals(result, summarySectionJsonExpected)
+  }
+
+  val noSummarySectionJson: Json = json"""
+    {
+      "formName": "Default summary section"
+    }"""
+
+  val noSummarySectionJsonExpected: Json = json"""
+    {
+      "formName": "Default summary section",
+      "summarySection": {
+        "title": "Foo",
+        "header": {
+          "en": "Make sure the information you have given is correct.",
+          "cy": "Gwnewch yn siŵr bod yr wybodaeth a roddwyd gennych yn gywir."
+        },
+        "footer": {
+          "en": "##Now send your form\n\nYou need to submit your form on the next screen.\n\nBefore you do this you can [print or save a PDF copy of your answers (opens in a new window or tab)]($${link.printSummaryPdf}).",
+          "cy": "##Nawr anfonwch eich ffurflen\n\nMae angen i chi gyflwyno’ch ffurflen ar y sgrin nesaf.\n\nCyn i chi wneud hyn gallwch [argraffu neu gadw copi PDF o’ch atebion (yn agor ffenestr neu dab newydd)]($${link.printSummaryPdf})."
+        }
+      }
+    }"""
+
+  test("Update summary section title (when summarySection is missing)") {
+
+    val patch: Json = Json.obj("title" := "Foo")
+
+    val result: Json = BuilderSupport.modifySummarySectionData(noSummarySectionJson, patch)
+
+    assertEquals(result, noSummarySectionJsonExpected)
+  }
+
+  val noSummarySectionWithFormCategoryJson: Json = json"""
+    {
+      "formName": "Default summary section",
+      "formCategory" : "hmrcReturnForm"
+    }"""
+
+  val noSummarySectionWithFormCategoryJsonExpected: Json = json"""
+    {
+      "formName": "Default summary section",
+      "formCategory": "hmrcReturnForm",
+      "summarySection": {
+        "title": "Foo",
+        "header": {
+          "en": "Make sure the information you have given is correct.",
+          "cy": "Gwnewch yn siŵr bod yr wybodaeth a roddwyd gennych yn gywir."
+        },
+        "footer": {
+          "en": "##Now send your return\n\nYou need to submit your return on the next screen.\n\nBefore you do this you can [print or save a PDF copy of your answers (opens in a new window or tab)]($${link.printSummaryPdf}).",
+          "cy": "##Nawr anfonwch eich datganiad\n\nMae angen i chi gyflwyno’ch datganiad ar y sgrin nesaf.\n\nCyn i chi wneud hyn gallwch [argraffu neu gadw copi PDF o’ch atebion (yn agor ffenestr neu dab newydd)]($${link.printSummaryPdf})."
+        }
+      }
+    }"""
+
+  test("Update summary section title (when summarySection is missing and formCategory is set)") {
+
+    val patch: Json = Json.obj("title" := "Foo")
+
+    val result: Json = BuilderSupport.modifySummarySectionData(noSummarySectionWithFormCategoryJson, patch)
+
+    assertEquals(result, noSummarySectionWithFormCategoryJsonExpected)
+  }
+
+  val summarySectionFieldsJson: Json = json"""
+    {
+      "summarySection": {
+        "title": "This is 'title'",
+        "header": "#This is markdown *'header'*",
+        "footer": "#This is markdowm *'footer'*",
+        "fields": [
+          {
+            "type": "info",
+            "id": "summaryDeclaration",
+            "label": "Acknowledgement copy",
+            "infoText": "thingy copy"
+          }
+        ]
+      }
+    }"""
+
+  val summarySectionFieldsJsonExpected: Json = json"""
+    {
+      "summarySection": {
+        "title": "This is 'title'",
+        "header": "#This is markdown *'header'*",
+        "footer": "#This is markdowm *'footer'*",
+        "fields": [
+          {
+            "type": "info",
+            "id": "summaryDeclaration",
+            "label": "Acknowledgement copy",
+            "infoText": "thingy copy bar"
+          }
+        ]
+      }
+    }"""
+
+  test("Update summary section field") {
+
+    val formComponentId = FormComponentId("summaryDeclaration")
+
+    val patch: Json = Json.obj("infoText" := "thingy copy bar")
+
+    val result: Json =
+      BuilderSupport.modifySummarySectionFormComponentData(summarySectionFieldsJson, formComponentId, patch)
+
+    assertEquals(result, summarySectionFieldsJsonExpected)
+  }
+
 }
