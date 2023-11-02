@@ -80,7 +80,7 @@
     },
     "draftRetrievalMethod": {
       "type": "string",
-      "pattern": "^(formAccessCodeForAgents|notPermitted)$"
+      "pattern": "^(formAccessCodeForAgents|notPermitted|onePerUser)$"
     },
     "showContinueOrDeletePage": {
       "type": "string",
