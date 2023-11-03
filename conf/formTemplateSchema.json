@@ -293,6 +293,10 @@
             "object"
           ]
         },
+        "displayWidth": {
+          "type": "string",
+          "pattern": "^(m|l|xl)$"
+        },
         "title": {
           "type": [
             "string",
