@@ -163,7 +163,11 @@ object FormTemplateValidator {
     Monoid.combineAll(results)
   }
 
-  def validateInvalidReferences(formTemplate: FormTemplate): ValidationResult = {
+  def validateInvalidReferences(
+    formTemplate: FormTemplate,
+    allExprs: List[ExprWithPath],
+    expressionIds: List[ExpressionId]
+  ): ValidationResult = {
 
     val allPageIds: List[PageId] =
       formTemplate.formKind.allSections.flatMap(
@@ -187,7 +191,7 @@ object FormTemplateValidator {
       fc.id
     }.toSet
 
-    val allExprs: List[ExprWithPath] = FormTemplate.leafExprs.exprs(TemplatePath.root, formTemplate)
+    val fcIdsWithExprs: Set[FormComponentId] = allFcIds ++ expressionIds.map(e => FormComponentId(e.id)).toSet
 
     def dateExprInvalidRefs(dateExpr: DateExpr*): Seq[FormComponentId] =
       dateExpr.flatMap(
@@ -198,7 +202,7 @@ object FormTemplateValidator {
       Invalid(s"${path.path}: ${formComponentIds.mkString(",")} doesn't exist in the form")
 
     val exprValidationResults: ValidationResult = allExprs.flatMap(_.referenceInfos).foldMap {
-      case ReferenceInfo.FormCtxExpr(path, FormCtx(formComponentId)) if !allFcIds(formComponentId) =>
+      case ReferenceInfo.FormCtxExpr(path, FormCtx(formComponentId)) if !fcIdsWithExprs(formComponentId) =>
         invalid(path, formComponentId)
       case ReferenceInfo.SumExpr(path, Sum(FormCtx(formComponentId))) if !allFcIds(formComponentId) =>
         invalid(path, formComponentId)

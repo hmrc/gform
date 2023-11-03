@@ -72,7 +72,9 @@ trait Verifier {
       _ <- fromOptA(FormTemplateValidator.validateRevealingChoiceHint(formTemplate).toEither)
       _ <- fromOptA(FormTemplateValidator.validateEmailVerification(formTemplate).toEither)
       _ <- fromOptA(FormTemplateValidator.validateInstructions(pages).toEither)
-      _ <- fromOptA(FormTemplateValidator.validateInvalidReferences(formTemplate).toEither)
+      _ <- fromOptA(
+             FormTemplateValidator.validateInvalidReferences(formTemplate, allExpressions, expressionIds).toEither
+           )
       _ <- fromOptA(FormTemplateValidator.validateReferencesConstraints(formTemplate, allExpressions).toEither)
       _ <- fromOptA(FormTemplateValidator.validateErrorMessageConstraints(formTemplate, allExpressions).toEither)
       _ <- fromOptA(FormTemplateValidator.validateNoPIITitleConstraints(formTemplate, allExpressions).toEither)
