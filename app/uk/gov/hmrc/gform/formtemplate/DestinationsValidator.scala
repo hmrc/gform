@@ -95,7 +95,7 @@ object DestinationsValidator {
   private def extractIds(destinations: NonEmptyList[Destination]): NonEmptyList[DestinationId] =
     destinations.flatMap(extractIds)
 
-  private def extractIds(destination: Destination): NonEmptyList[DestinationId] = destination match {
+  def extractIds(destination: Destination): NonEmptyList[DestinationId] = destination match {
     case c: Destination.Composite => c.id :: extractIds(c.destinations)
     case _                        => NonEmptyList.of(destination.id)
   }

@@ -57,7 +57,13 @@ class DestinationsValidatorSpec extends Spec with ScalaCheckDrivenPropertyChecks
 
   it should "not return an error when there are no duplicate ids" in {
     forAll(destinationGen, destinationGen) { (d1, d2) =>
-      whenever(d1.id != d2.id) {
+      val d1Ids = DestinationsValidator.extractIds(d1).toList
+      val d2Ids = DestinationsValidator.extractIds(d2).toList
+
+      val d1IdsSet = d1Ids.toSet
+      val d2IdsSet = d2Ids.toSet
+
+      whenever(d1Ids.size == d1IdsSet.size && d2Ids.size == d2IdsSet.size && d1IdsSet.intersect(d2IdsSet).isEmpty) {
         DestinationsValidator.validateUniqueDestinationIds(
           Destinations.DestinationList(NonEmptyList.of(d1, d2), ackSection, Some(decSection))
         ) should be(Valid)
