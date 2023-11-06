@@ -499,7 +499,13 @@ class FormTemplateValidatorSpec
         )
       )
       forAll(table) { (sections, expected) =>
-        FormTemplateValidator.validateInvalidReferences(mkFormTemplate(sections)) shouldBe expected
+        val formTemplate = mkFormTemplate(sections)
+        val allExprs: List[ExprWithPath] = LeafExpr(TemplatePath.root, formTemplate)
+        FormTemplateValidator.validateInvalidReferences(
+          mkFormTemplate(sections),
+          allExprs,
+          List.empty[ExpressionId]
+        ) shouldBe expected
       }
     }
   }
