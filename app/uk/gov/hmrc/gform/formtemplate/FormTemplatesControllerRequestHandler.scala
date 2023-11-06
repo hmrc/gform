@@ -262,18 +262,6 @@ object FormTemplatesControllerRequestHandler {
       }
     }
 
-    def revealingChoicesUpdater: Reads[JsValue] = Reads { json =>
-      json \ "type" match {
-        case JsDefined(JsString("revealingChoice")) =>
-          json.transform(
-            (__ \ "revealingFields").json.update(
-              list(list(choicesUpdater andThen revealingChoicesUpdater))
-            ) andThen updateChoicesField
-          )
-        case _ => JsSuccess(json)
-      }
-    }
-
     val fileUploadUpdater: Reads[JsValue] = Reads { json =>
       jsonValue \ "objectStore" match {
         case JsDefined(JsBoolean(bool)) if bool =>
@@ -282,6 +270,18 @@ object FormTemplatesControllerRequestHandler {
               json.validate(__.json.update((__ \ "service").json.put(JsString("upscan"))))
             case _ => JsSuccess(json)
           }
+        case _ => JsSuccess(json)
+      }
+    }
+
+    def revealingChoicesUpdater: Reads[JsValue] = Reads { json =>
+      json \ "type" match {
+        case JsDefined(JsString("revealingChoice")) =>
+          json.transform(
+            (__ \ "revealingFields").json.update(
+              list(list(choicesUpdater andThen revealingChoicesUpdater andThen fileUploadUpdater))
+            ) andThen updateChoicesField
+          )
         case _ => JsSuccess(json)
       }
     }
