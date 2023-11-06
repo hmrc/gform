@@ -1,0 +1,78 @@
+{
+  "draftRetrievalMethod": {
+    "showContinueOrDeletePage": "true",
+    "value": "formAccessCodeForAgents"
+  },
+  "formCategory": "default",
+  "languages": [
+    "en"
+  ],
+  "authConfig": {
+    "authModule": "anonymous"
+  },
+  "destinations": {
+    "destinations": [
+      {
+        "id": "transitionToSubmitted",
+        "type": "stateTransition",
+        "includeIf": "true",
+        "requiredState": "Submitted"
+      }
+    ],
+    "declarationSection": {
+      "title": "Declaration",
+      "fields": []
+    },
+    "acknowledgementSection": {
+      "title": "Your registration has been submitted Genesis",
+      "fields": [],
+      "displayFeedbackLink": true
+    }
+  },
+  "description": "",
+  "allowedFileTypes": [
+    "pdf",
+    "jpg",
+    "xlsx",
+    "ods",
+    "docx",
+    "odt",
+    "pptx",
+    "odp"
+  ],
+  "formKind": {
+    "type": "classic",
+    "sections": [
+      {
+        "title": "Page A",
+        "fields": [
+          {
+            "service": "upscan",
+            "id": "fileId",
+            "label": "Upload reference",
+            "type": "file"
+          }
+        ]
+      }
+    ]
+  },
+  "summarySection": {
+    "title": {
+      "en": "Check your answers",
+      "cy": "Gwiriwch eich atebion"
+    },
+    "header": {
+      "en": "Make sure the information you have given is correct.",
+      "cy": "Gwnewch yn siŵr bod yr wybodaeth a roddwyd gennych yn gywir."
+    },
+    "footer": {
+      "en": "##Now send your form\n\nYou need to submit your form on the next screen.\n\nBefore you do this you can [print or save a PDF copy of your answers (opens in a new window or tab)](${link.printSummaryPdf}).",
+      "cy": "##Nawr anfonwch eich ffurflen\n\nMae angen i chi gyflwyno’ch ffurflen ar y sgrin nesaf.\n\nCyn i chi wneud hyn gallwch [argraffu neu gadw copi PDF o’ch atebion (yn agor ffenestr neu dab newydd)](${link.printSummaryPdf})."
+    }
+  },
+  "formName": "file-upload-upscan-by-default",
+  "_id": "file-upload-upscan-by-default",
+  "originalId": "file-upload-upscan-by-default",
+  "displayHMRCLogo": false,
+  "parentFormSubmissionRefs": []
+}
