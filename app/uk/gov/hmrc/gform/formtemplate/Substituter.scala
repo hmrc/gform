@@ -488,7 +488,8 @@ object Substituter {
       footer = t.footer(substitutions),
       continueLabel = t.continueLabel(substitutions),
       fields = t.fields(substitutions),
-      includeIf = t.includeIf(substitutions)
+      includeIf = t.includeIf(substitutions),
+      pdf = t.pdf(substitutions)
     )
 
   implicit def cyaPageSubstituter[A](implicit
