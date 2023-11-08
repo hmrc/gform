@@ -20,7 +20,7 @@ import io.circe.Json
 import io.circe.literal.JsonStringContext
 import io.circe.syntax._
 import munit.FunSuite
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormComponentId
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Coordinates, FormComponentId, TaskNumber, TaskSectionNumber }
 
 class BuilderControllerSuite extends FunSuite {
   val json: Json = json"""
@@ -989,7 +989,7 @@ class BuilderControllerSuite extends FunSuite {
 
     val patch: Json = Json.obj("title" := "Foo")
 
-    val result: Json = BuilderSupport.modifySummarySectionData(summarySectionJson, patch)
+    val result: Json = BuilderSupport.modifySummarySectionData(summarySectionJson, patch, None)
 
     assertEquals(result, summarySectionJsonExpected)
   }
@@ -1019,7 +1019,7 @@ class BuilderControllerSuite extends FunSuite {
 
     val patch: Json = Json.obj("title" := "Foo")
 
-    val result: Json = BuilderSupport.modifySummarySectionData(noSummarySectionJson, patch)
+    val result: Json = BuilderSupport.modifySummarySectionData(noSummarySectionJson, patch, None)
 
     assertEquals(result, noSummarySectionJsonExpected)
   }
@@ -1051,7 +1051,7 @@ class BuilderControllerSuite extends FunSuite {
 
     val patch: Json = Json.obj("title" := "Foo")
 
-    val result: Json = BuilderSupport.modifySummarySectionData(noSummarySectionWithFormCategoryJson, patch)
+    val result: Json = BuilderSupport.modifySummarySectionData(noSummarySectionWithFormCategoryJson, patch, None)
 
     assertEquals(result, noSummarySectionWithFormCategoryJsonExpected)
   }
@@ -1097,9 +1097,123 @@ class BuilderControllerSuite extends FunSuite {
     val patch: Json = Json.obj("infoText" := "thingy copy bar")
 
     val result: Json =
-      BuilderSupport.modifySummarySectionFormComponentData(summarySectionFieldsJson, formComponentId, patch)
+      BuilderSupport.modifySummarySectionFormComponentData(summarySectionFieldsJson, formComponentId, patch, None)
 
     assertEquals(result, summarySectionFieldsJsonExpected)
+  }
+
+  val summarySectionTaskJson: Json = json"""
+    {
+      "sections": [
+        {
+          "tasks": [
+            {
+              "summarySection": {
+                "title": "title",
+                "header": "header",
+                "footer": "footer"
+              }
+            }
+          ]
+        }
+      ]
+    }"""
+
+  val summarySectionTaskJsonExpected: Json = json"""
+    {
+      "sections": [
+        {
+          "tasks": [
+            {
+              "summarySection": {
+                "title": "Foo",
+                "header": "header",
+                "footer": "footer"
+              }
+            }
+          ]
+        }
+      ]
+    }"""
+
+  test("Update summary section title of a task") {
+
+    val patch: Json = Json.obj("title" := "Foo")
+
+    val result: Json = BuilderSupport.modifySummarySectionData(
+      summarySectionTaskJson,
+      patch,
+      Some(Coordinates(TaskSectionNumber(0), TaskNumber(0)))
+    )
+
+    assertEquals(result, summarySectionTaskJsonExpected)
+  }
+
+  val summarySectionTaskFieldsJson: Json = json"""
+    {
+      "sections": [
+        {
+          "tasks": [
+            {
+              "summarySection": {
+                "title": "title",
+                "header": "header",
+                "footer": "footer",
+                "fields": [
+                  {
+                    "type": "info",
+                    "id": "summaryDeclaration",
+                    "label": "Acknowledgement copy",
+                    "infoText": "thingy copy"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }"""
+
+  val summarySectionTaskFieldsJsonExpected: Json = json"""
+    {
+      "sections": [
+        {
+          "tasks": [
+            {
+              "summarySection": {
+                "title": "title",
+                "header": "header",
+                "footer": "footer",
+                "fields": [
+                  {
+                    "type": "info",
+                    "id": "summaryDeclaration",
+                    "label": "Acknowledgement copy",
+                    "infoText": "thingy copy bar"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }"""
+
+  test("Update summary section field of a task") {
+
+    val formComponentId = FormComponentId("summaryDeclaration")
+
+    val patch: Json = Json.obj("infoText" := "thingy copy bar")
+
+    val result: Json =
+      BuilderSupport.modifySummarySectionFormComponentData(
+        summarySectionTaskFieldsJson,
+        formComponentId,
+        patch,
+        Some(Coordinates(TaskSectionNumber(0), TaskNumber(0)))
+      )
+
+    assertEquals(result, summarySectionTaskFieldsJsonExpected)
   }
 
 }

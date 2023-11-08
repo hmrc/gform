@@ -20,14 +20,14 @@ import cats.implicits._
 import play.api.libs.json.Reads._
 import play.api.libs.json._
 import scala.util.Try
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormKind, TaskNumber, TaskSectionNumber }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Coordinates, FormKind, TaskNumber, TaskSectionNumber }
 
 sealed trait VisitIndex extends Product with Serializable
 
 object VisitIndex {
 
   final case class Classic(visitsIndex: Set[Int]) extends VisitIndex
-  final case class TaskList(visitsIndex: Map[(TaskSectionNumber, TaskNumber), Set[Int]]) extends VisitIndex
+  final case class TaskList(visitsIndex: Map[Coordinates, Set[Int]]) extends VisitIndex
 
   val key: String = "visitsIndex"
 
@@ -40,10 +40,10 @@ object VisitIndex {
         case None             => JsError(s"Missing '$key' field. Failed to decode VisitIndex from: $jsValue")
         case Some(a: JsArray) => JsSuccess(Classic(a.value.map(_.as[Int]).toSet))
         case Some(o: JsObject) =>
-          val res: Try[List[((TaskSectionNumber, TaskNumber), Set[Int])]] =
+          val res: Try[List[(Coordinates, Set[Int])]] =
             o.value.toList.traverse { case (k, v) =>
               Try(k.split(",").toList.map(_.toInt)).collect { case taskSectionNumber :: taskNumber :: Nil =>
-                (TaskSectionNumber(taskSectionNumber) -> TaskNumber(taskNumber)) -> v.as[Set[Int]]
+                (Coordinates(TaskSectionNumber(taskSectionNumber), TaskNumber(taskNumber))) -> v.as[Set[Int]]
               }
             }
           res.fold(
@@ -57,7 +57,7 @@ object VisitIndex {
         case Classic(visitsIndex) => Json.obj(key -> Json.toJson(visitsIndex))
         case TaskList(visitsIndex) =>
           val s: Map[String, JsValue] = visitsIndex.toList.map {
-            case ((TaskSectionNumber(tsc), TaskNumber(tn)), indexes) =>
+            case (Coordinates(TaskSectionNumber(tsc), TaskNumber(tn)), indexes) =>
               List(tsc, tn).mkString(",") -> Json.toJson(indexes)
           }.toMap
           Json.obj(key -> Json.toJson(s))
