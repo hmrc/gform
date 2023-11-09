@@ -112,28 +112,35 @@ object BuilderSupport {
     """^\.sections\[(\d+)\]\.tasks\[(\d+)\]\.sections\[(\d+)\]\.pages\[(\d+)\]$""".r
   private val taskPattern: Regex = """^\.sections\[(\d+)\]\.tasks\[(\d+)\]$""".r
 
-  def modifySummarySectionData(json: Json, summarySection: Json): Json = {
+  def modifySummarySectionData(json: Json, summarySection: Json, maybeCoordinates: Option[Coordinates]): Json =
+    maybeCoordinates match {
+      case Some(coordinates) =>
+        val history = List(DownField("summarySection")) ++
+          taskHistory(coordinates.taskSectionNumber.value, coordinates.taskNumber.value)
+        updateSummary(json, summarySection, history)
+      case None =>
+        val noSummarySection: Boolean = json.hcursor.downField("summarySection").failed
 
-    val noSummarySection: Boolean = json.hcursor.downField("summarySection").failed
+        val jsonWithSummarySection = if (noSummarySection) {
 
-    val jsonWithSummarySection = if (noSummarySection) {
+          val formCategory = json.hcursor.downField("formCategory").focus.flatMap(_.asString) match {
+            case None               => Default
+            case Some(formCategory) => FormCategory.fromString(formCategory).getOrElse(Default)
+          }
 
-      val formCategory = json.hcursor.downField("formCategory").focus.flatMap(_.asString) match {
-        case None               => Default
-        case Some(formCategory) => FormCategory.fromString(formCategory).getOrElse(Default)
-      }
-
-      io.circe.parser.parse(PlayJson.stringify(SummarySection.defaultJson(formCategory))) match {
-        case Left(_) => json
-        case Right(defaultSummarySection) =>
-          json.deepMerge(Json.obj("summarySection" -> defaultSummarySection))
-      }
-    } else {
-      json
+          io.circe.parser.parse(PlayJson.stringify(SummarySection.defaultJson(formCategory))) match {
+            case Left(_) => json
+            case Right(defaultSummarySection) =>
+              json.deepMerge(Json.obj("summarySection" -> defaultSummarySection))
+          }
+        } else {
+          json
+        }
+        val history = List(DownField("summarySection"))
+        updateSummary(jsonWithSummarySection, summarySection, history)
     }
 
-    val history = List(DownField("summarySection"))
-
+  private def updateSummary(json: Json, summarySection: Json, history: List[CursorOp]): Json =
     List(
       Property("note"),
       Property("title"),
@@ -141,7 +148,7 @@ object BuilderSupport {
       Property("footer"),
       Property("continueLabel", PropertyBehaviour.PurgeWhenEmpty),
       Property("displayWidth", PropertyBehaviour.PurgeWhenEmpty)
-    ).foldRight(jsonWithSummarySection) { case (property, accJson) =>
+    ).foldRight(json) { case (property, accJson) =>
       summarySection.hcursor
         .downField(property.name)
         .focus
@@ -150,7 +157,6 @@ object BuilderSupport {
         }
         .getOrElse(accJson)
     }
-  }
 
   private def updateProperty(property: Property, propertyValue: Json, history: List[CursorOp], accJson: Json) = {
     val target = accJson.hcursor.replay(history)
@@ -405,16 +411,25 @@ object BuilderSupport {
   def modifySummarySectionFormComponentData(
     json: Json,
     formComponentId: FormComponentId,
-    formComponentData: Json
+    formComponentData: Json,
+    maybeCoordinates: Option[Coordinates]
   ): Json = {
 
     val id = Json.fromString(formComponentId.value)
 
+    val history = maybeCoordinates match {
+      case Some(coordinates) =>
+        List(DownField("summarySection")) ++
+          taskHistory(coordinates.taskSectionNumber.value, coordinates.taskNumber.value)
+      case None =>
+        List(DownField("summarySection"))
+    }
+
     val maybeHistory: Option[List[CursorOp]] = json.hcursor
-      .downField("summarySection")
+      .replay(history)
       .focus
       .flatMap { summarySection =>
-        fieldHistory(summarySection, id, List(DownField("summarySection")))
+        fieldHistory(summarySection, id, history)
       }
 
     patchFormComponent(maybeHistory, json, formComponentData)
@@ -463,16 +478,20 @@ object BuilderSupport {
 
   def updateSummarySection(
     formTemplateRaw: FormTemplateRaw,
-    summarySectionData: Json
+    summarySectionData: Json,
+    maybeCoordinates: Option[Coordinates]
   ): Either[BuilderError, FormTemplateRaw] =
-    modifyJson(formTemplateRaw)(modifySummarySectionData(_, summarySectionData))
+    modifyJson(formTemplateRaw)(modifySummarySectionData(_, summarySectionData, maybeCoordinates))
 
   def updateSummarySectionFormComponent(
     formTemplateRaw: FormTemplateRaw,
     sectionData: Json,
-    formComponentId: FormComponentId
+    formComponentId: FormComponentId,
+    maybeCoordinates: Option[Coordinates]
   ): Either[BuilderError, FormTemplateRaw] =
-    modifyJson(formTemplateRaw)(modifySummarySectionFormComponentData(_, formComponentId, sectionData))
+    modifyJson(formTemplateRaw)(
+      modifySummarySectionFormComponentData(_, formComponentId, sectionData, maybeCoordinates)
+    )
 }
 
 class BuilderController(
@@ -519,10 +538,10 @@ class BuilderController(
       applyUpdateFunction(formTemplateRawId)(formTemplateRaw => updateFunction(formTemplateRaw, request.body))
     }
 
-  def updateSummarySection(formTemplateRawId: FormTemplateRawId) =
+  def updateSummarySection(formTemplateRawId: FormTemplateRawId, maybeCoordinates: Option[Coordinates]) =
     updateAction(formTemplateRawId) { (formTemplateRaw, requestBody) =>
       BuilderSupport
-        .updateSummarySection(formTemplateRaw, requestBody)
+        .updateSummarySection(formTemplateRaw, requestBody, maybeCoordinates)
         .map(formTemplateRaw => (formTemplateRaw, Results.Ok(formTemplateRaw.value)))
     }
 
@@ -568,14 +587,23 @@ class BuilderController(
       case Left(failure)  => Left(BuilderError.CirceDecodingError(failure))
     }
 
-  def updateSummarySectionFormComponent(formTemplateRawId: FormTemplateRawId, formComponentId: FormComponentId) =
+  def updateSummarySectionFormComponent(
+    formTemplateRawId: FormTemplateRawId,
+    formComponentId: FormComponentId,
+    maybeCoordinates: Option[Coordinates]
+  ) =
     updateAction(formTemplateRawId) { (formTemplateRaw, requestBody) =>
       for {
         componentUpdateRequest <-
           requestBody.as[ComponentUpdateRequest].leftMap(e => BuilderError.CirceDecodingError(e))
         formTemplateRaw <-
           BuilderSupport
-            .updateSummarySectionFormComponent(formTemplateRaw, componentUpdateRequest.formComponent, formComponentId)
+            .updateSummarySectionFormComponent(
+              formTemplateRaw,
+              componentUpdateRequest.formComponent,
+              formComponentId,
+              maybeCoordinates
+            )
       } yield (formTemplateRaw, Results.Ok(formTemplateRaw.value))
 
     }

@@ -25,7 +25,7 @@ import uk.gov.hmrc.gform.history.HistoryId
 import uk.gov.hmrc.gform.sharedmodel.dblookup.{ CollectionName, DbLookupId }
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId, FormId, FormStatus }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationId
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplateId, FormTemplateRawId, SectionNumber }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Coordinates, FormTemplateId, FormTemplateRawId, SectionNumber }
 import uk.gov.hmrc.gform.sharedmodel.notifier.NotifierEmailAddress
 import uk.gov.hmrc.gform.sharedmodel.sdes._
 import uk.gov.hmrc.mongo.workitem.ProcessingStatus
@@ -87,6 +87,20 @@ object ValueClassBinder {
       }
 
     override def unbind(key: String, value: FormStatus): String = value.toString
+  }
+
+  implicit val coordinatesQueryBinder: QueryStringBindable[Coordinates] = new QueryStringBindable[Coordinates] {
+
+    override def bind(key: String, params: Map[String, Seq[String]]): Option[Either[String, Coordinates]] =
+      params.get(key).flatMap(_.headOption).map { value =>
+        Coordinates
+          .parse(value)
+          .map(_.asRight)
+          .getOrElse(s"No valid value in path $key: $value".asLeft)
+      }
+
+    override def unbind(key: String, coordinates: Coordinates): String =
+      s"""$key=${coordinates.value.toString}"""
   }
 
   def valueClassBinder[A: Reads](fromAtoString: A => String)(implicit stringBinder: PathBindable[String]) = {

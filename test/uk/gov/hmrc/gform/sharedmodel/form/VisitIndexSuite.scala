@@ -18,7 +18,7 @@ package uk.gov.hmrc.gform.sharedmodel.form
 
 import munit.FunSuite
 import play.api.libs.json.{ JsError, JsResult, JsSuccess, Json, JsonValidationError }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ TaskNumber, TaskSectionNumber }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Coordinates, TaskNumber, TaskSectionNumber }
 
 class VisitIndexSuite extends FunSuite {
 
@@ -52,7 +52,7 @@ class VisitIndexSuite extends FunSuite {
     val expected = JsSuccess(
       VisitIndex.TaskList(
         Map(
-          (TaskSectionNumber(0), TaskNumber(0)) -> Set()
+          Coordinates(TaskSectionNumber(0), TaskNumber(0)) -> Set()
         )
       )
     )
@@ -76,8 +76,8 @@ class VisitIndexSuite extends FunSuite {
     val expected = JsSuccess(
       VisitIndex.TaskList(
         Map(
-          (TaskSectionNumber(1), TaskNumber(0)) -> Set(1, 2, 3),
-          (TaskSectionNumber(1), TaskNumber(1)) -> Set(3, 4, 5)
+          Coordinates(TaskSectionNumber(1), TaskNumber(0)) -> Set(1, 2, 3),
+          Coordinates(TaskSectionNumber(1), TaskNumber(1)) -> Set(3, 4, 5)
         )
       )
     )
@@ -151,8 +151,8 @@ class VisitIndexSuite extends FunSuite {
   test("VisitIndex.TaskList to Json") {
     val taskList: VisitIndex = VisitIndex.TaskList(
       Map(
-        (TaskSectionNumber(1), TaskNumber(0)) -> Set(1, 2, 3),
-        (TaskSectionNumber(1), TaskNumber(1)) -> Set(3, 4, 5)
+        Coordinates(TaskSectionNumber(1), TaskNumber(0)) -> Set(1, 2, 3),
+        Coordinates(TaskSectionNumber(1), TaskNumber(1)) -> Set(3, 4, 5)
       )
     )
     val json = Json.toJson(taskList)
