@@ -23,7 +23,7 @@ import uk.gov.hmrc.gform.core.{ FOpt, fromFutureA }
 import uk.gov.hmrc.gform.formtemplate.FormTemplateModule
 import uk.gov.hmrc.gform.mongo.MongoModule
 import uk.gov.hmrc.gform.repo.Repo
-import uk.gov.hmrc.gform.sharedmodel.form.{ Form, SavedForm, SavedFormDetail, SignedFormDetails }
+import uk.gov.hmrc.gform.sharedmodel.form.{ AllSavedVersions, Form, SavedFormDetail, SignedFormDetails, VersionStats }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 
 import scala.concurrent.{ ExecutionContext, Future }
@@ -53,7 +53,10 @@ class FormStatisticsModule(
     new FormStatisticsController(configModule.controllerComponents, formStatisticsService)
 
   val foptFormStatisticsService: FormStatisticsAlgebra[FOpt] = new FormStatisticsAlgebra[FOpt] {
-    override def getSavedFormCount(formTemplateId: FormTemplateId): FOpt[SavedForm] =
+    override def getAllSavedVersions(): FOpt[AllSavedVersions] =
+      fromFutureA(formStatisticsService.getAllSavedVersions())
+
+    override def getSavedFormCount(formTemplateId: FormTemplateId): FOpt[Seq[VersionStats]] =
       fromFutureA(formStatisticsService.getSavedFormCount(formTemplateId))
 
     override def getSavedFormDetails(formTemplateId: FormTemplateId): FOpt[Seq[SavedFormDetail]] =
