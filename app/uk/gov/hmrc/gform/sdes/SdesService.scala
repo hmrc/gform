@@ -25,7 +25,6 @@ import org.mongodb.scala.model.Filters.{ equal, exists, lt }
 import org.slf4j.LoggerFactory
 import uk.gov.hmrc.gform.core._
 import uk.gov.hmrc.gform.envelope.EnvelopeAlgebra
-import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.fileupload.FileUploadService
 import uk.gov.hmrc.gform.repo.Repo
 import uk.gov.hmrc.gform.sdes.datastore.DataStoreWorkItemAlgebra
@@ -73,7 +72,7 @@ trait SdesAlgebra[F[_]] {
     destination: Option[SdesDestination]
   ): F[SdesSubmissionPageData]
 
-  def deleteSdesSubmission(correlation: CorrelationId): F[Unit]
+  def updateAsManualConfirmed(correlation: CorrelationId): F[Unit]
 }
 
 class SdesService(
@@ -196,13 +195,18 @@ class SdesService(
         )
     } yield res
 
-  override def deleteSdesSubmission(correlationId: CorrelationId): Future[Unit] =
-    repoSdesSubmission
-      .delete(correlationId.value)
-      .as(logger.info(show"SdesService.deleteSdesSubmission(${correlationId.value}) - deleting)"))
-      .value
-      .flatMap {
-        case Left(UnexpectedState(error)) => Future.failed(new Exception(error))
-        case Right(unit)                  => Future.successful(unit)
-      }
+  override def updateAsManualConfirmed(
+    correlationId: CorrelationId
+  ): Future[Unit] =
+    for {
+      sdesSubmission <- repoSdesSubmission.get(correlationId.value)
+      _ <- saveSdesSubmission(
+             sdesSubmission.copy(
+               status = NotificationStatus.FileProcessedManualConfirmed,
+               lastUpdated = Some(Instant.now),
+               isProcessed = true,
+               confirmedAt = Some(Instant.now)
+             )
+           ).as(logger.info(show"SdesService.updateAsManualConfirmed(${correlationId.value}) - updated manually)"))
+    } yield ()
 }

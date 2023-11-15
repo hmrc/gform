@@ -49,20 +49,25 @@ object NotificationStatus {
   case object FileProcessed
       extends NotificationStatus //The file has passed all integrity checks and have been delivered to the recipient system in HMRC
 
+  case object FileProcessedManualConfirmed
+      extends NotificationStatus //The file has confirmed manually by an administrator
+
   implicit val catsEq: Eq[NotificationStatus] = Eq.fromUniversalEquals
 
   implicit val format: Format[NotificationStatus] =
     ADTFormat.formatEnumeration(
-      "FileReady"             -> FileReady,
-      "FileReceived"          -> FileReceived,
-      "FileProcessingFailure" -> FileProcessingFailure,
-      "FileProcessed"         -> FileProcessed
+      "FileReady"                    -> FileReady,
+      "FileReceived"                 -> FileReceived,
+      "FileProcessingFailure"        -> FileProcessingFailure,
+      "FileProcessed"                -> FileProcessed,
+      "FileProcessedManualConfirmed" -> FileProcessedManualConfirmed
     )
 
   def fromName(notificationStatus: NotificationStatus): String = notificationStatus match {
-    case FileReady             => "FileReady"
-    case FileReceived          => "FileReceived"
-    case FileProcessingFailure => "FileProcessingFailure"
-    case FileProcessed         => "FileProcessed"
+    case FileReady                    => "FileReady"
+    case FileReceived                 => "FileReceived"
+    case FileProcessingFailure        => "FileProcessingFailure"
+    case FileProcessed                => "FileProcessed"
+    case FileProcessedManualConfirmed => "FileProcessedManualConfirmed"
   }
 }

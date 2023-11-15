@@ -119,8 +119,8 @@ class SdesController(
     }
   }
 
-  def remove(correlationId: CorrelationId) = Action.async { _ =>
-    sdesAlgebra.deleteSdesSubmission(correlationId).map { _ =>
+  def updateAsManualConfirmed(correlationId: CorrelationId) = Action.async { _ =>
+    sdesAlgebra.updateAsManualConfirmed(correlationId).map { _ =>
       NoContent
     }
   }

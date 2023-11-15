@@ -192,8 +192,8 @@ class SdesModule(
     ): FOpt[SdesSubmissionPageData] =
       fromFutureA(sdesService.search(page, pageSize, processed, formTemplateId, status, showBeforeAt, destination))
 
-    override def deleteSdesSubmission(correlation: CorrelationId): FOpt[Unit] =
-      fromFutureA(sdesService.deleteSdesSubmission(correlation))
+    override def updateAsManualConfirmed(correlation: CorrelationId): FOpt[Unit] =
+      fromFutureA(sdesService.updateAsManualConfirmed(correlation))
 
   }
 
