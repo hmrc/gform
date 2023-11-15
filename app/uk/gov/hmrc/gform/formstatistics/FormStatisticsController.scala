@@ -30,6 +30,12 @@ class FormStatisticsController(
   ex: ExecutionContext
 ) extends BaseController(controllerComponents) {
 
+  def getAllSavedVersions() = Action.async { _ =>
+    formStatisticsService
+      .getAllSavedVersions()
+      .map(allSavedVersion => Ok(Json.toJson(allSavedVersion)))
+  }
+
   def getFormCount(formTemplateId: FormTemplateId) = Action.async { _ =>
     formStatisticsService
       .getSavedFormCount(formTemplateId)

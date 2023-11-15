@@ -16,20 +16,34 @@
 
 package uk.gov.hmrc.gform.sharedmodel.form
 
-import play.api.libs.json.{ Format, JsString, Json, OFormat, Reads, Writes }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
+import play.api.libs.json.{ Format, JsString, JsValue, Json, OFormat, Reads, Writes }
 
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
-case class SavedForm(
-  formTemplateId: FormTemplateId,
-  emailCount: Long,
-  ggCount: Long
+final case class AllSavedVersions(stats: Seq[JsValue])
+
+object AllSavedVersions {
+  val empty = AllSavedVersions(Seq.empty[JsValue])
+  implicit val format: OFormat[AllSavedVersions] = Json.format
+}
+
+final case class VersionStats(
+  version: JsValue, // TODO change to Long, once we don't have version of type String in mongodb
+  stats: List[CountData]
 )
 
-object SavedForm {
-  implicit val format: OFormat[SavedForm] = Json.format
+object VersionStats {
+  implicit val format: OFormat[VersionStats] = Json.format
+}
+
+final case class CountData(
+  count: Long,
+  isEmail: Boolean
+)
+
+object CountData {
+  implicit val format: OFormat[CountData] = Json.format
 }
 
 case class SavedFormDetail(
