@@ -8,7 +8,7 @@ object Dependencies {
 
   val parsebackVersion = "0.3"
   val handlebarsVersion = "4.2.0"
-  val hmrcMongoVersion = "1.3.0"
+  val hmrcMongoVersion = "0.74.0"
   val bootstrapVersion = "7.15.0"
   val json4sVersion = "3.6.12"
   val circeVersion = "0.14.5"

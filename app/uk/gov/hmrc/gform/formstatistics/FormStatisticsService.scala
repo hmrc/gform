@@ -84,16 +84,19 @@ class FormStatisticsService(formRepo: Repo[Form], formTemplateService: FormTempl
     val matchStage = Aggregates.filter(
       Filters.regex("data.form.userId", "^(?!anonymous-session).*")
     )
+
     val groupStage = Aggregates.group(
       equal("version", "$data.form.version")
     )
+
     val sortStage = Aggregates.sort(descending("_id.version"))
 
     val groupStage2 = Aggregates.group(
       null,
       Accumulators.push("stats", "$_id.version")
     )
-    val unsetStage = Aggregates.unset("_id")
+
+    val unsetStage = BsonDocument("$unset" -> BsonArray("_id"))
 
     val pipeline: List[Bson] =
       List(matchStage, groupStage, sortStage, groupStage2, unsetStage)
@@ -200,7 +203,7 @@ class FormStatisticsService(formRepo: Repo[Form], formTemplateService: FormTempl
       Field("version", "$_id.version")
     )
 
-    val unsetStage1 = Aggregates.unset("_id")
+    val unsetStage1 = BsonDocument("$unset" -> BsonArray("_id"))
 
     val groupStage2 = Aggregates.group("$version", Accumulators.push("stats", "$$ROOT"))
 
@@ -208,7 +211,7 @@ class FormStatisticsService(formRepo: Repo[Form], formTemplateService: FormTempl
       Field("version", "$_id")
     )
 
-    val unsetStage2 = Aggregates.unset("_id", "stats.version")
+    val unsetStage2 = BsonDocument("$unset" -> BsonArray("stats.version"))
 
     val sort = Aggregates.sort(descending("version"))
 
