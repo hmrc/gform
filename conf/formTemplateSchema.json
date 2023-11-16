@@ -47,7 +47,7 @@
     },
     "developmentPhase": {
       "type": "string",
-      "pattern": "^(alpha|live)$"
+      "pattern": "^(alpha|research|live)$"
     },
     "objectStore": {
       "type": "boolean"
