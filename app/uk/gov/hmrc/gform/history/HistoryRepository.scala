@@ -136,7 +136,9 @@ class HistoryRepository(mongoModule: MongoModule)(implicit ec: ExecutionContext)
 
     val sort = Aggregates.sort(descending("createdAt"))
 
-    val pipeline = List(filter, project, sort)
+    val limit = Aggregates.limit(1000)
+
+    val pipeline = List(filter, project, sort, limit)
 
     collection
       .aggregate[BsonValue](pipeline)
