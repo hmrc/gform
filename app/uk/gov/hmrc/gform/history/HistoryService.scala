@@ -31,7 +31,9 @@ class HistoryService(
     historyRepo.find(historyId).map(_.map(_.content))
 
   def save(formTemplateHistory: FormTemplateHistory): FOpt[Unit] =
-    historyRepo.upsert(formTemplateHistory)
+    if (formTemplateHistory.id.value.trim.toLowerCase === "tst123") ().pure[FOpt]
+    else
+      historyRepo.upsert(formTemplateHistory)
 
   def formTemplateHistoryOverview(formTemplateRawId: FormTemplateRawId): Future[Seq[HistoryOverview]] =
     historyRepo.overviewFor(formTemplateRawId)
