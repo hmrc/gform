@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.scheduler.alert
+package uk.gov.hmrc.gform.scheduler.quartz
 
-import scala.concurrent.Future
+import scala.concurrent.{ ExecutionContext, Future }
 
-trait AlertAlgebra {
-  def execute: Future[Unit]
+trait QScheduledService[R] {
+  def invoke(implicit ec: ExecutionContext): Future[R]
 }

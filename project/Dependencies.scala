@@ -41,7 +41,8 @@ object Dependencies {
     "org.json4s"                   %% "json4s-core"                       % json4sVersion,
     "org.json4s"                   %% "json4s-native"                     % json4sVersion,
     "org.json4s"                   %% "json4s-xml"                        % json4sVersion,
-    "com.fasterxml.jackson.module" %% "jackson-module-scala"              % "2.12.2"
+    "com.fasterxml.jackson.module" %% "jackson-module-scala"              % "2.12.2",
+    "com.enragedginger"            %% "akka-quartz-scheduler"             % "1.9.2-akka-2.6.x"
   )
 
   def test(scope: String = "test,it") = Seq(

@@ -20,17 +20,21 @@ import org.mongodb.scala.model.{ IndexModel, IndexOptions, Indexes }
 import uk.gov.hmrc.gform.akka.AkkaModule
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.core.{ FOpt, fromFutureA }
+import uk.gov.hmrc.gform.email.EmailModule
 import uk.gov.hmrc.gform.envelope.EnvelopeModule
 import uk.gov.hmrc.gform.mongo.MongoModule
 import uk.gov.hmrc.gform.objectstore.ObjectStoreModule
 import uk.gov.hmrc.gform.repo.Repo
 import uk.gov.hmrc.gform.scheduler.datastore.DataStoreWorkItemRepo
 import uk.gov.hmrc.gform.scheduler.dms.DmsWorkItemRepo
+import uk.gov.hmrc.gform.sdes.alert.SdesAlertService
 import uk.gov.hmrc.gform.sdes.datastore.{ DataStoreWorkItemAlgebra, DataStoreWorkItemController, DataStoreWorkItemService }
 import uk.gov.hmrc.gform.sdes.dms.{ DmsWorkItemAlgebra, DmsWorkItemController, DmsWorkItemService }
 import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
+import uk.gov.hmrc.gform.sharedmodel.email.EmailTemplateId
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
+import uk.gov.hmrc.gform.sharedmodel.notifier.NotifierEmailAddress
 import uk.gov.hmrc.gform.sharedmodel.sdes._
 import uk.gov.hmrc.gform.wshttp.WSHttpModule
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
@@ -45,7 +49,8 @@ class SdesModule(
   mongoModule: MongoModule,
   objectStoreModule: ObjectStoreModule,
   akkaModule: AkkaModule,
-  envelopeModule: EnvelopeModule
+  envelopeModule: EnvelopeModule,
+  emailModule: EmailModule
 )(implicit ex: ExecutionContext) {
 
   private val sdesBaseUrl = configModule.serviceConfig.baseUrl("sdes")
@@ -63,6 +68,12 @@ class SdesModule(
           IndexOptions()
             .background(false)
             .name("confirmedAtIndex")
+        ),
+        IndexModel(
+          Indexes.ascending("isProcessed"),
+          IndexOptions()
+            .background(false)
+            .name("isProcessed")
         )
       ),
       replaceIndexes = true
@@ -132,6 +143,19 @@ class SdesModule(
       dataStoreWorkItemService,
       envelopeModule.envelopeService
     )
+
+  private val alertSdesDestination = configModule.configuration.getOptional[String]("alert.sdes.destination")
+  private val alertSdesNotifierEmailAddress: String =
+    configModule.typesafeConfig.getString("alert.sdes.notifierEmailAddress")
+  private val alertSdesEmailTemplateId: String = configModule.typesafeConfig.getString("alert.sdes.emailTemplateId")
+
+  val sdesAlertService = new SdesAlertService(
+    alertSdesDestination,
+    NotifierEmailAddress(alertSdesNotifierEmailAddress),
+    EmailTemplateId(alertSdesEmailTemplateId),
+    emailModule.emailLogic,
+    repoSdesSubmission
+  )
 
   private val dataStoreFileBasePath = configModule.serviceConfig.getString("object-store.base-filepath.data-store")
   private val sdesFileBasePath = configModule.serviceConfig.getString("object-store.base-filepath.sdes")

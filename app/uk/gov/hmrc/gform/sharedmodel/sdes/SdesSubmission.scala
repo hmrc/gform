@@ -39,7 +39,8 @@ final case class SdesSubmission(
   confirmedAt: Option[Instant] = None,
   createdAt: Instant = Instant.now,
   lastUpdated: Option[Instant] = None,
-  destination: Option[SdesDestination]
+  destination: Option[SdesDestination],
+  isAlerted: Option[Boolean] = None
 )
 
 object SdesSubmission {
