@@ -122,18 +122,7 @@ class ApplicationModule(context: Context)
   private val mongoModule = new MongoModule(configModule)
   private val envelopeModule = new EnvelopeModule(mongoModule, configModule)
   private val objectStoreModule = new ObjectStoreModule(configModule, wsClient, akkaModule, envelopeModule)
-  private val sdesModule =
-    new SdesModule(configModule, wSHttpModule, mongoModule, objectStoreModule, akkaModule, envelopeModule)
-  val fileUploadModule =
-    new FileUploadModule(
-      configModule,
-      wSHttpModule,
-      timeModule,
-      akkaModule,
-      envelopeModule,
-      objectStoreModule,
-      sdesModule
-    )
+
   private val shutterModule = new ShutterModule(mongoModule, configModule)
   private val notificationBannerModule = new NotificationBannerModule(mongoModule, configModule)
   private val handlebarsTemplateRepo: Repo[HandlebarsTemplate] =
@@ -160,6 +149,19 @@ class ApplicationModule(context: Context)
   private val emailModule = new EmailModule(configModule, wSHttpModule, notifierModule, formTemplateModule)
   private val translationModule = new TranslationModule(formTemplateModule, historyModule, configModule)
   val pdfGeneratorModule = new PdfGeneratorModule()
+
+  private val sdesModule =
+    new SdesModule(configModule, wSHttpModule, mongoModule, objectStoreModule, akkaModule, envelopeModule, emailModule)
+  val fileUploadModule =
+    new FileUploadModule(
+      configModule,
+      wSHttpModule,
+      timeModule,
+      akkaModule,
+      envelopeModule,
+      objectStoreModule,
+      sdesModule
+    )
 
   val formMetadaModule = new FormMetadataModule(mongoModule)
 
@@ -304,7 +306,8 @@ class ApplicationModule(context: Context)
     playComponents.context.devContext.map(_.sourceMapper)
   )
 
-  val schedulerModule = new SchedulerModule(configModule, mongoModule, sdesModule, akkaModule, emailModule)
+  val schedulerModule =
+    new SchedulerModule(configModule, mongoModule, sdesModule, akkaModule, applicationLifecycle)
 
   val builderModule = new BuilderModule(controllerComponents, formTemplateModule.formTemplateService, historyModule)
 
