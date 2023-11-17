@@ -120,8 +120,10 @@ class UpscanController(
               .flatMap(_.fileSizeLimit)
               .getOrElse(formTemplate.fileSizeLimit.getOrElse(appConfig.formMaxAttachmentSizeMB))
 
+            val fileName = fileId.value + "_" + upscanCallbackSuccess.uploadDetails.fileName
+
             val validated: Validated[UpscanValidationFailure, Unit] =
-              validateFile(allowedFileTypes, fileSizeLimit, upscanCallbackSuccess.uploadDetails)
+              validateFile(allowedFileTypes, fileSizeLimit, upscanCallbackSuccess.uploadDetails, fileName)
 
             validated match {
               case Invalid(upscanValidationFailure) =>
@@ -143,7 +145,7 @@ class UpscanController(
                   uploadDetails = upscanCallbackSuccess.uploadDetails
                   isObjectStore <- objectStoreAlgebra.isObjectStore(envelopeId)
                   _ <- if (isObjectStore) {
-                         val fileName = fileId.value + "_" + uploadDetails.fileName
+
                          objectStoreAlgebra.uploadFile(
                            envelopeId,
                            fileId,
@@ -187,14 +189,15 @@ class UpscanController(
   private def validateFile(
     allowedFileTypes: AllowedFileTypes,
     fileSizeLimit: Int,
-    uploadDetails: UploadDetails
+    uploadDetails: UploadDetails,
+    fileName: String
   ): Validated[UpscanValidationFailure, Unit] = {
     val fileNameCheckResult = validateFileExtension(uploadDetails.fileName)
     val fileMimeTypeResult = validateFileType(allowedFileTypes, ContentType(uploadDetails.fileMimeType))
     Valid(uploadDetails)
       .ensure(UpscanValidationFailure.EntityTooSmall)(_.size =!= 0)
       .ensure(UpscanValidationFailure.EntityTooLarge)(_ => validateFileSize(fileSizeLimit, uploadDetails.size))
-      .ensure(UpscanValidationFailure.FileNameTooLong)(_ => validateFileNameLength(uploadDetails.fileName) < 255)
+      .ensure(UpscanValidationFailure.FileNameTooLong)(_ => validateFileNameLength(fileName) < 255)
       .ensure(
         UpscanValidationFailure.InvalidFileType(
           "fileName: " + uploadDetails.fileName + " - " + fileNameCheckResult + ", fileMimeType: " + uploadDetails.fileMimeType + " - " + fileMimeTypeResult,
