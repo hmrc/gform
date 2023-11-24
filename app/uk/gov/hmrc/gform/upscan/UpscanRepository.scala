@@ -40,8 +40,7 @@ class UpscanRepository(
             .name("confirmedAtIndex")
             .expireAfter(appConfig.`upscan-confirmation-ttl`.toMillis, TimeUnit.MILLISECONDS)
         )
-      ),
-      replaceIndexes = true
+      )
     ) {
 
   def find(reference: UpscanReference): Future[Option[UpscanConfirmation]] =

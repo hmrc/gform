@@ -27,12 +27,13 @@ import pureconfig.generic.auto._
 case class AppConfig(
   appName: String,
   formExpiryDays: Int,
+  createdFormExpiryDays: Int,
+  submittedFormExpiryHours: Int,
   formMaxAttachmentSizeMB: Int,
   formMaxAttachments: Int,
   formMaxAttachmentTotalSizeMB: Int,
   `upscan-confirmation-ttl`: FiniteDuration,
-  restrictedFileExtensionList: List[String],
-  submittedFormExpiryHours: Int
+  restrictedFileExtensionList: List[String]
 ) {
 
   def restrictedFileExtensions: List[FileExtension] =
@@ -48,6 +49,8 @@ object AppConfig {
     val appConfig = ConfigSource.fromConfig(config).loadOrThrow[AppConfig]
 
     appConfig.formExpiryDays.verifyThat(_ > 0, s"'formExpiryDays' must be positive, was ${appConfig.formExpiryDays}")
+    appConfig.createdFormExpiryDays
+      .verifyThat(_ > 0, s"'createdFormExpiryDays' must be positive, was ${appConfig.createdFormExpiryDays}")
     appConfig.submittedFormExpiryHours
       .verifyThat(_ > 0, s"'submittedFormExpiryHours' must be positive, was ${appConfig.submittedFormExpiryHours}")
     appConfig.formMaxAttachments

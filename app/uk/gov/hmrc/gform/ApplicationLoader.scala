@@ -110,7 +110,7 @@ class ApplicationModule(context: Context)
   private val akkaModule = new AkkaModule(materializer, actorSystem)
   protected val playComponents = new PlayComponents(context, self, self)
 
-  protected val configModule = new ConfigModule(configuration, playComponents, controllerComponents, appName)
+  protected val configModule = new ConfigModule(configuration, controllerComponents)
   private val metricsModule = new MetricsModule(configModule, playComponents, akkaModule, executionContext)
   private val graphiteModule = new GraphiteModule(environment, configuration, applicationLifecycle, metricsModule)
   protected val auditingModule =
@@ -184,6 +184,7 @@ class ApplicationModule(context: Context)
     ) {
       override def ensureIndexes: Future[Seq[String]] = {
         val formExpiry = configModule.appConfig.formExpiryDays.days.toMillis
+        val createdFormExpiry = configModule.appConfig.createdFormExpiryDays.days.toMillis
         val submittedExpiry = configModule.appConfig.submittedFormExpiryHours.hours.toMillis
         val indexes = Seq(
           IndexModel(
@@ -191,7 +192,7 @@ class ApplicationModule(context: Context)
             IndexOptions()
               .background(false)
               .name("createdAtIndex")
-              .expireAfter(formExpiry, TimeUnit.MILLISECONDS)
+              .expireAfter(createdFormExpiry, TimeUnit.MILLISECONDS)
           ),
           IndexModel(
             Indexes.ascending("modifiedDetails.lastUpdated"),
