@@ -75,8 +75,7 @@ class SdesModule(
             .background(false)
             .name("isProcessed")
         )
-      ),
-      replaceIndexes = true
+      )
     )
 
   private val dmsAuthorizationToken = configModule.serviceConfig.getString("microservice.services.sdes.dms.api-key")
@@ -123,7 +122,7 @@ class SdesModule(
 
   val dataStoreWorkItemRepo = new DataStoreWorkItemRepo(mongoModule.mongoComponent)
 
-  val dataStoreWorkItemService: DataStoreWorkItemAlgebra[Future] = new DataStoreWorkItemService(
+  private val dataStoreWorkItemService: DataStoreWorkItemAlgebra[Future] = new DataStoreWorkItemService(
     dataStoreWorkItemRepo,
     envelopeModule.envelopeService,
     dataStoreInformationType,

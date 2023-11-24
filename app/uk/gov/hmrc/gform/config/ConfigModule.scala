@@ -19,7 +19,6 @@ package uk.gov.hmrc.gform.config
 import com.typesafe.config.{ Config => TypeSafeConfig }
 import play.api.Configuration
 import play.api.mvc.ControllerComponents
-import uk.gov.hmrc.gform.playcomponents.PlayComponents
 import uk.gov.hmrc.gform.sharedmodel.config.ExposedConfig
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.ProfileName
 import uk.gov.hmrc.http.Authorization
@@ -33,9 +32,7 @@ import uk.gov.hmrc.gform.notifier.NotifierConfig
 
 class ConfigModule(
   val configuration: Configuration,
-  playComponents: PlayComponents,
-  val controllerComponents: ControllerComponents,
-  appName: String
+  val controllerComponents: ControllerComponents
 )(implicit ec: ExecutionContext) {
 
   val typesafeConfig: TypeSafeConfig = configuration.underlying
@@ -46,9 +43,6 @@ class ConfigModule(
 
   val desConfig: DesConnectorConfig =
     ConfigSource.default.at("microservice.services.etmp-hod").loadOrThrow[DesConnectorConfig]
-
-  val emailConfig: EmailConnectorConfig =
-    ConfigSource.default.at("microservice.services.email").loadOrThrow[EmailConnectorConfig]
 
   val controllerConfigs = ControllerConfigs.fromConfig(configuration)
 
@@ -154,7 +148,3 @@ class ConfigModule(
 }
 
 case class DesConnectorConfig(basePath: String, authorizationToken: String, environment: String)
-
-case class MdgIntegrationFrameworkConfig(basePath: String, authorizationToken: String)
-
-case class EmailConnectorConfig(host: String, port: String)
