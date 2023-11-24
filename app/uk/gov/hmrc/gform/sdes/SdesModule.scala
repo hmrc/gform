@@ -143,13 +143,14 @@ class SdesModule(
       envelopeModule.envelopeService
     )
 
-  private val alertSdesDestination = configModule.configuration.getOptional[String]("alert.sdes.destination")
+  private val alertSdesDestination: Option[Seq[String]] =
+    configModule.configuration.getOptional[Seq[String]]("alert.sdes.destination")
   private val alertSdesNotifierEmailAddress: String =
     configModule.typesafeConfig.getString("alert.sdes.notifierEmailAddress")
   private val alertSdesEmailTemplateId: String = configModule.typesafeConfig.getString("alert.sdes.emailTemplateId")
 
   val sdesAlertService = new SdesAlertService(
-    alertSdesDestination,
+    alertSdesDestination.map(_.map(SdesDestination.fromString)),
     NotifierEmailAddress(alertSdesNotifierEmailAddress),
     EmailTemplateId(alertSdesEmailTemplateId),
     emailModule.emailLogic,
