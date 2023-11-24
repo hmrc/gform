@@ -29,14 +29,15 @@ import uk.gov.hmrc.gform.scheduler.quartz.QScheduledService
 import uk.gov.hmrc.gform.sharedmodel.email.EmailTemplateId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ EmailParameterValue, EmailParametersRecalculated, EmailTemplateVariable }
 import uk.gov.hmrc.gform.sharedmodel.notifier.NotifierEmailAddress
-import uk.gov.hmrc.gform.sharedmodel.sdes.SdesSubmission
+import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination.fromName
+import uk.gov.hmrc.gform.sharedmodel.sdes.{ SdesDestination, SdesSubmission }
 import uk.gov.hmrc.http.HeaderCarrier
 
 import java.time.LocalDateTime
 import scala.concurrent.{ ExecutionContext, Future }
 
 class SdesAlertService(
-  alertSdesDestination: Option[String],
+  alertSdesDestination: Option[Seq[SdesDestination]],
   notifierEmailAddress: NotifierEmailAddress,
   emailTemplateId: EmailTemplateId,
   emailService: EmailService,
@@ -50,7 +51,9 @@ class SdesAlertService(
       Filters.and(equal("isProcessed", false), lte("submittedAt", LocalDateTime.now().minusMinutes(30)))
 
     val totalItemQuery =
-      alertSdesDestination.fold(query)(destination => Filters.and(query, equal("destination", destination)))
+      alertSdesDestination.fold(query)(destination =>
+        Filters.and(query, Filters.in("destination", destination.map(fromName): _*))
+      )
     val newItemQuery = Filters.and(totalItemQuery, notEqual("isAlerted", true))
 
     for {
