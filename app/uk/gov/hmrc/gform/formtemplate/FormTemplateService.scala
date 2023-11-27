@@ -27,7 +27,7 @@ import uk.gov.hmrc.gform.handlebarstemplate.HandlebarsTemplateAlgebra
 import uk.gov.hmrc.gform.repo.Repo
 import uk.gov.hmrc.gform.sharedmodel.HandlebarsTemplateId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HandlebarsHttpApi
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.{ DataStore, HandlebarsHttpApi }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DestinationId, Destinations, UploadableConditioning }
 
 import scala.concurrent.{ ExecutionContext, Future }
@@ -136,6 +136,7 @@ class FormTemplateService(
         case destinationList: Destinations.DestinationList =>
           destinationList.destinations.collect {
             case h: HandlebarsHttpApi if h.payload.isEmpty => h.id
+            case d: DataStore if d.handlebarPayload        => d.id
           }
         case _ => List.empty[DestinationId]
       }
@@ -168,6 +169,16 @@ class FormTemplateService(
                       UploadableConditioning.conditionAndValidate(h.convertSingleQuotes, payload).getOrElse("")
                     )
                   h.copy(payload = payload)
+                case d: DataStore if d.handlebarPayload =>
+                  val payload = destinationIdsPayloads
+                    .find(_._1 === d.id)
+                    .map(_._2)
+                    .map(payload =>
+                      UploadableConditioning.conditionAndValidate(d.convertSingleQuotes, payload).getOrElse("")
+                    )
+                  if (payload.isEmpty) {
+                    throw new Exception(s"Couldn't find handlebar payload for ${d.id}")
+                  } else d.copy(payload = payload)
                 case other => other
               })
             case other => other

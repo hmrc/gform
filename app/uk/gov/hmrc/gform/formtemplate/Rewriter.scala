@@ -114,7 +114,7 @@ trait Rewriter {
           case StateTransition(_, _, IncludeIfValue(includeIf), _)                     => includeIf
           case SubmissionConsolidator(_, _, _, _, IncludeIfValue(includeIf), _)        => includeIf
           case Email(_, _, IncludeIfValue(includeIf), _, _, _)                         => includeIf
-          case DataStore(_, IncludeIfValue(includeIf), _, _, _, _, _, _)               => includeIf
+          case DataStore(_, IncludeIfValue(includeIf), _, _, _, _, _, _, _, _, _, _)   => includeIf
         }
       case _ => Nil
     }

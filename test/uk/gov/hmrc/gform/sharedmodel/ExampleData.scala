@@ -61,7 +61,11 @@ trait ExampleAuthConfig extends DestinationGen {
     "1",
     Constant("TestTaxpayerId"),
     "TestRegime",
-    true
+    true,
+    false,
+    false,
+    None,
+    None
   )
 
   private def buildFormComponent(name: String, expr: Expr) =

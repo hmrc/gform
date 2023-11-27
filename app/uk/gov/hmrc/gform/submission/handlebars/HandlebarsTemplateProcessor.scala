@@ -51,7 +51,11 @@ object RealHandlebarsTemplateProcessor extends HandlebarsTemplateProcessor {
 
       try postProcessor(compiledTemplate.apply(context))
       catch {
-        case ex: Exception => throw new Exception(focussedTree.focus.model.toString, ex)
+        case ex: Exception =>
+          throw new Exception(
+            "Error processing handlebar template. Model: " + focussedTree.focus.model.toString,
+            ex
+          )
       }
     }
   }
@@ -60,7 +64,7 @@ object RealHandlebarsTemplateProcessor extends HandlebarsTemplateProcessor {
     new EscapingStrategy {
       override def escape(value: CharSequence): CharSequence =
         if (value == null) null
-        else org.apache.commons.text.StringEscapeUtils.unescapeJson(value.toString)
+        else org.apache.commons.text.StringEscapeUtils.escapeJson(value.toString)
     },
     MagicCommasParser.apply
   )

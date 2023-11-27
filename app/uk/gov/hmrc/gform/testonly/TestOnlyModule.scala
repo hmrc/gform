@@ -28,6 +28,7 @@ import uk.gov.hmrc.gform.mongo.MongoModule
 import uk.gov.hmrc.gform.objectstore.ObjectStoreModule
 import uk.gov.hmrc.gform.playcomponents.PlayComponents
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplate, FormTemplateId }
+import uk.gov.hmrc.gform.submission.SubmissionModule
 import uk.gov.hmrc.gform.submission.destinations.DestinationModule
 import uk.gov.hmrc.gform.wshttp.WSHttpModule
 
@@ -43,6 +44,7 @@ class TestOnlyModule(
   destinationModule: DestinationModule,
   controllerComponents: ControllerComponents,
   objectStoreModule: ObjectStoreModule,
+  submissionModule: SubmissionModule,
   akkaModule: AkkaModule
 )(implicit ex: ExecutionContext) {
 
@@ -72,6 +74,7 @@ class TestOnlyModule(
       formService,
       formTemplateAlgebra,
       destinationModule.futureDestinationsProcessorModelService,
+      submissionModule.dataStoreSubmitter,
       desConnector
     )
   val proxyActions = new Proxy(playComponents.wsClient, controllerComponents)

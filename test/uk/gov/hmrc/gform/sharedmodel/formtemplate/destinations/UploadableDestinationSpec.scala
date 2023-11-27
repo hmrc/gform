@@ -122,7 +122,7 @@ class UploadableDestinationSpec extends Spec with ScalaCheckDrivenPropertyChecks
       payload,
       Some(payloadType),
       convertSingleQuotes,
-      Some(includeIf),
+      includeIf,
       Some(failOnError),
       Some(multiRequestPayload)
     )
@@ -140,7 +140,7 @@ class UploadableDestinationSpec extends Spec with ScalaCheckDrivenPropertyChecks
       classificationType,
       businessArea,
       convertSingleQuotes,
-      Some(includeIf),
+      includeIf,
       Some(failOnError),
       Some(DataOutputFormat.XML),
       Some(formdataXml),
@@ -160,7 +160,7 @@ class UploadableDestinationSpec extends Spec with ScalaCheckDrivenPropertyChecks
       TextExpression(customerId),
       destination.formData,
       convertSingleQuotes,
-      Some(includeIf),
+      includeIf,
       Some(failOnError)
     )
   }
