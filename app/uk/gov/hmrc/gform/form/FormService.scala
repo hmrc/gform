@@ -235,6 +235,7 @@ object LifeCycleStatus {
     case (Validated, Summary | Signed)                     => Some(to)
     case (Signed, Submitted | NeedsReview)                 => Some(to)
     case (Submitting, Submitted | NeedsReview | Accepted)  => Some(to)
+    case (Submitted, InProgress)                           => Some(to)
     case _                                                 => None
   }
 
