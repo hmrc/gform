@@ -16,8 +16,6 @@
 
 package uk.gov.hmrc.gform.testonly
 
-import cats.data.EitherT
-import cats.instances.option._
 import cats.syntax.eq._
 import com.fasterxml.jackson.databind.JsonNode
 import com.typesafe.config.{ ConfigFactory, ConfigRenderOptions }
@@ -31,17 +29,19 @@ import play.api.libs.json._
 import play.api.mvc._
 
 import scala.concurrent.{ ExecutionContext, Future }
+import scala.util.Try
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.des.DesAlgebra
 import uk.gov.hmrc.gform.form.FormAlgebra
 import uk.gov.hmrc.gform.formtemplate.FormTemplateAlgebra
 import uk.gov.hmrc.gform.repo.Repo
 import uk.gov.hmrc.gform.sharedmodel._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.TemplateType
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplate, FormTemplateId }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DestinationList
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationId, Destinations, HandlebarsTemplateProcessorModel }
 import uk.gov.hmrc.gform.sharedmodel.form.FormId
-import uk.gov.hmrc.gform.submission.destinations.DestinationsProcessorModelAlgebra
+import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
+import uk.gov.hmrc.gform.submission.destinations.{ DataStoreSubmitter, DestinationSubmissionInfo, DestinationsProcessorModelAlgebra }
 import uk.gov.hmrc.gform.submission.{ DmsMetaData, Submission, SubmissionId }
 import uk.gov.hmrc.gform.submission.handlebars.{ FocussedHandlebarsModelTree, HandlebarsModelTree, RealHandlebarsTemplateProcessor }
 import uk.gov.hmrc.http.BuildInfo
@@ -54,6 +54,7 @@ class TestOnlyController(
   formAlgebra: FormAlgebra[Future],
   formTemplateAlgebra: FormTemplateAlgebra[Future],
   destinationsModelProcessorAlgebra: DestinationsProcessorModelAlgebra[Future],
+  dataStoreSubmitter: DataStoreSubmitter,
   des: DesAlgebra[Future]
 )(implicit ex: ExecutionContext)
     extends BaseController(controllerComponents) {
@@ -122,17 +123,11 @@ class TestOnlyController(
     formId: FormId
   ): Action[SubmissionData] =
     Action.async(parse.json[SubmissionData]) { implicit request =>
-      logInfo("TestOnlyController.renderHandlebarPayload starting")
-
       val submissionData: SubmissionData = request.body
-      logInfo("TestOnlyController.renderHandlebarPayload Got submission data")
 
-      logInfo("TestOnlyController.renderHandlebarPayload Getting bits and pieces")
       for {
         formTemplate <- formTemplateAlgebra.get(formTemplateId)
-        _ = logInfo("TestOnlyController.renderHandlebarPayload Got form template")
-        form <- formAlgebra.get(formId)
-        _ = logInfo("TestOnlyController.renderHandlebarPayload Got form")
+        form         <- formAlgebra.get(formId)
         submission = Submission(
                        SubmissionId(formId, form.envelopeId),
                        LocalDateTime.now(ZoneId.of("Europe/London")),
@@ -141,7 +136,6 @@ class TestOnlyController(
                        0,
                        DmsMetaData(formTemplate._id, customerIdHeader)
                      )
-        _ = logInfo("TestOnlyController.renderHandlebarPayload Got submission")
         model <- destinationsModelProcessorAlgebra
                    .create(
                      form,
@@ -151,82 +145,85 @@ class TestOnlyController(
                      submissionData.structuredFormData,
                      formTemplate.isObjectStore
                    )
-        _ = logInfo("TestOnlyController.renderHandlebarPayload Got model")
       } yield {
-        val maybeDestination: Option[Destination.HandlebarsHttpApi] =
+        val maybeDestination: Option[Destination] =
           findHandlebarsDestinationWithId(destinationId, formTemplate.destinations)
 
-        val availableDestinationIds: String =
-          availableHandlebarsDestinations(formTemplate.destinations).map(_.id.id).mkString(", ")
+        val destinationResult: Option[DestinationResult] =
+          submissionData.destinationEvaluation.evaluation.find(_.destinationId === destinationId)
 
-        val resultPayload: EitherT[Option, String, String] =
-          for {
-            destination <- fromOption(
-                             maybeDestination,
-                             s"No handlebars destination '${destinationId.id}' found on formTemplate '${formTemplateId.value}'. Available handlebars destinations: $availableDestinationIds."
-                           ).leftMap { s =>
-                             logInfo(s); s
-                           }
-            payload <-
-              fromOption(
-                destination.payload,
-                s"There is no payload field on destination '${destinationId.id}' for formTemplate '${formTemplateId.value}'"
-              )
-                .leftMap { s =>
-                  logInfo(s); s
-                }
-          } yield {
-            logInfo("TestOnlyController.renderHandlebarPayload Rendering")
-            RealHandlebarsTemplateProcessor(
-              payload,
-              HandlebarsTemplateProcessorModel.empty,
-              FocussedHandlebarsModelTree(
-                HandlebarsModelTree(
-                  submission._id.formId,
-                  submission.submissionRef,
-                  formTemplate,
-                  submissionData.pdfData,
-                  submissionData.instructionPDFData,
-                  submissionData.structuredFormData,
-                  model
-                )
-              ),
-              destination.payloadType
+        maybeDestination match {
+          case None => BadRequest(s"No destination '${destinationId.id}' found")
+          case Some(destination) =>
+            val modelTree = HandlebarsModelTree(
+              submission._id.formId,
+              submission.submissionRef,
+              formTemplate,
+              submissionData.pdfData,
+              submissionData.instructionPDFData,
+              submissionData.structuredFormData,
+              model
             )
-          }
+            destination match {
+              case d: Destination.HandlebarsHttpApi =>
+                d.payload match {
+                  case None => BadRequest(s"Destination '${d.id.id}' is missing payload data")
+                  case Some(payload) =>
+                    val res = RealHandlebarsTemplateProcessor(
+                      payload,
+                      HandlebarsTemplateProcessorModel.empty,
+                      FocussedHandlebarsModelTree(modelTree),
+                      d.payloadType
+                    )
+                    Ok(res)
+                }
+              case dataStore: Destination.DataStore =>
+                val submissionInfo: DestinationSubmissionInfo = DestinationSubmissionInfo(customerIdHeader, submission)
+                val structuredFormData: StructuredFormValue.ObjectStructure = submissionData.structuredFormData
+                val userSession: UserSession = submissionData.userSession
+                val taxpayerId: Option[String] = destinationResult.flatMap(_.taxpayerId)
+                val accumulatedModel: HandlebarsTemplateProcessorModel = HandlebarsTemplateProcessorModel.empty
 
-        logInfo(s"TestOnlyController.renderHandlebarPayload Complete with ${resultPayload.map(_ => "Success").merge}")
+                val tryResult = Try(
+                  dataStoreSubmitter.generatePayload(
+                    submissionInfo,
+                    structuredFormData,
+                    dataStore,
+                    LangADT.En,
+                    userSession,
+                    taxpayerId,
+                    accumulatedModel,
+                    modelTree
+                  )
+                )
 
-        resultPayload.fold(BadRequest(_), Ok(_)).getOrElse(BadRequest("Oops, something went wrong"))
+                tryResult.fold(
+                  error => BadRequest(flattenExceptionMessage(error).mkString("\n")),
+                  res => Ok(res)
+                )
+
+              case _ =>
+                BadRequest(
+                  "Invalid destination. Only 'handlebarsHttpApi' and 'hmrcIlluminate' destinations are allowed here"
+                )
+            }
+        }
       }
     }
-
-  private def availableHandlebarsDestinations(destinations: Destinations): List[Destination.HandlebarsHttpApi] =
-    destinations match {
-      case DestinationList(list, acknowledgementSection, declarationSection) =>
-        availableHandlebarsDestinations(list.toList)
-
-      case _ => List.empty
-    }
-
-  private def availableHandlebarsDestinations(
-    destinations: List[Destination],
-    acc: List[Destination.HandlebarsHttpApi] = Nil
-  ): List[Destination.HandlebarsHttpApi] = destinations match {
-    case Nil => acc
-    case (head: Destination.Composite) :: tail =>
-      availableHandlebarsDestinations(tail, availableHandlebarsDestinations(head.destinations.toList, acc))
-    case (head: Destination.HandlebarsHttpApi) :: tail => availableHandlebarsDestinations(tail, head :: acc)
-    case _ :: tail                                     => availableHandlebarsDestinations(tail, acc)
-  }
 
   private def findHandlebarsDestinationWithId(
     id: DestinationId,
     destinations: Destinations
-  ): Option[Destination.HandlebarsHttpApi] =
-    availableHandlebarsDestinations(destinations).find(_.id === id)
-
-  private def fromOption[A, B](a: Option[A], s: B): EitherT[Option, B, A] = EitherT.fromOption(a, s)
+  ): Option[Destination] =
+    destinations match {
+      case dl: Destinations.DestinationList =>
+        dl.destinations.find {
+          case (d: Destination.HandlebarsHttpApi) if d.id === id => true
+          case (d: Destination.DataStore) if d.id === id         => true
+          case _                                                 => false
+        }
+      case _: Destinations.DestinationPrint => None
+    }
 
   def removeTemplates() = Action.async { _ =>
     logger.info("purging mongo database ....")
@@ -238,7 +235,13 @@ class TestOnlyController(
 
   def buildInfo() = Action { r =>
     Results.Ok(Json.toJson(BuildInfo.toMap.view.mapValues(_.toString)))
+  }
 
+  private def flattenExceptionMessage(ex: Throwable): List[String] = {
+    def loop(ex: Throwable, acc: List[String]): List[String] =
+      if (ex == null) acc
+      else loop(ex.getCause, ex.getMessage :: acc)
+    loop(ex.getCause, ex.getMessage :: Nil)
   }
 
   case class User(id: String, postCode: String, countryCode: String)
@@ -293,3 +296,9 @@ class TestOnlyController(
       .map(StringEscapeUtils.unescapeHtml4)
       .getOrElse("")
 }
+
+final case class RenderableDestination(
+  id: DestinationId,
+  payload: Option[String],
+  payloadType: TemplateType
+)

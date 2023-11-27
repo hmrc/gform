@@ -7,7 +7,7 @@ object Dependencies {
   lazy val appDependencies: Seq[ModuleID] = compile ++ test()
 
   val parsebackVersion = "0.3"
-  val handlebarsVersion = "4.2.0"
+  val handlebarsVersion = "4.2.1"
   val hmrcMongoVersion = "0.74.0"
   val bootstrapVersion = "7.15.0"
   val json4sVersion = "3.6.12"

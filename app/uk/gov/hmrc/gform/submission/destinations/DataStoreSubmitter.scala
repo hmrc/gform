@@ -17,10 +17,14 @@
 package uk.gov.hmrc.gform.submission.destinations
 
 import akka.util.ByteString
+import play.api.libs.json.{ JsObject, Json }
+import scala.util.Try
 import uk.gov.hmrc.gform.core.FOpt
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DestinationId, HandlebarsTemplateProcessorModel, TemplateType }
 import uk.gov.hmrc.gform.sharedmodel.{ DataStoreMetaData, LangADT, UserSession }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.DataStore
 import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
+import uk.gov.hmrc.gform.submission.handlebars.{ FocussedHandlebarsModelTree, HandlebarsModelTree, RealHandlebarsTemplateProcessor }
 import uk.gov.hmrc.gform.submission.{ DataStoreFileGenerator, RoboticsXMLGenerator }
 import org.json4s.native.JsonMethods
 import org.json4s.native.Printer.compact
@@ -44,35 +48,51 @@ class DataStoreSubmitter(
 )(implicit
   ec: ExecutionContext
 ) extends DataStoreSubmitterAlgebra[FOpt] {
-  override def apply(
+
+  // Throws an exception, but we cannot recover from it, so it is not reflected in a type as Option[String]
+  override def generatePayload(
     submissionInfo: DestinationSubmissionInfo,
     structuredFormData: StructuredFormValue.ObjectStructure,
     dataStore: DataStore,
     l: LangADT,
     userSession: UserSession,
-    taxpayerId: Option[String]
-  ): FOpt[Unit] = {
-    implicit val hc = new HeaderCarrier
+    taxpayerId: Option[String],
+    accumulatedModel: HandlebarsTemplateProcessorModel,
+    modelTree: HandlebarsModelTree
+  ): String = {
     val dateSubmittedFormater = DateTimeFormatter.ofPattern("dd/MM/yyyy").withZone(ZoneId.of("Europe/London"))
     val submission = submissionInfo.submission
 
-    val gform: String =
-      compact(
-        JsonMethods.render(
-          org.json4s.Xml.toJson(
-            RoboticsXMLGenerator(
-              submission.dmsMetaData.formTemplateId,
-              dataStore.formId.value,
-              submission.submissionRef,
-              structuredFormData,
-              Instant.now(),
-              l,
-              Some(submission.envelopeId),
-              sanitizeRequired = false
-            )
+    val focussedTree = FocussedHandlebarsModelTree(modelTree, modelTree.value.model)
+    val handlebarBasedPayload =
+      RealHandlebarsTemplateProcessor(dataStore.payload.get, accumulatedModel, focussedTree, TemplateType.JSON)
+
+    val rawFormDataBasedPayload = compact(
+      JsonMethods.render(
+        org.json4s.Xml.toJson(
+          RoboticsXMLGenerator(
+            submission.dmsMetaData.formTemplateId,
+            dataStore.formId.value,
+            submission.submissionRef,
+            structuredFormData,
+            Instant.now(),
+            l,
+            Some(submission.envelopeId),
+            sanitizeRequired = false
           )
         )
       )
+    )
+
+    val formDataBasedPayload: JsObject = convertToJson(rawFormDataBasedPayload, dataStore.id, "robotics")
+    val handleBarPayload: JsObject = convertToJson(handlebarBasedPayload, dataStore.id, "handlebar")
+
+    val payloads: JsObject = (dataStore.formDataPayload, dataStore.handlebarPayload) match {
+      case (true, true)   => formDataBasedPayload ++ handleBarPayload
+      case (true, false)  => formDataBasedPayload
+      case (false, true)  => handleBarPayload
+      case (false, false) => Json.obj()
+    }
 
     val dataStoreMetaData = DataStoreMetaData(
       dataStore.formId.value,
@@ -84,20 +104,48 @@ class DataStoreSubmitter(
       submission.submittedDate.toLocalTime.toString
     )
 
-    val dataStoreJson = DataStoreFileGenerator(userSession, dataStoreMetaData, gform, dataStore.includeSessionInfo)
+    DataStoreFileGenerator(userSession, dataStoreMetaData, payloads, dataStore.includeSessionInfo)
+  }
+
+  private def convertToJson(string: String, destinationId: DestinationId, payloadDiscriminator: String): JsObject =
+    Try(
+      Json.parse(string)
+    ).fold(
+      error =>
+        throw new Exception(
+          s"Data store destination '${destinationId.id}' error, failed to parse $payloadDiscriminator payload into a json:\n${error.getMessage}",
+          error
+        ),
+      jsValue =>
+        jsValue.asOpt[JsObject].getOrElse {
+          throw new Exception(
+            s"Data store destination '${destinationId.id}' error. Cannot convert $payloadDiscriminator payload into a JsObject. This is not a JsObject: '$jsValue'"
+          )
+        }
+    )
+
+  override def submitPayload(
+    submissionInfo: DestinationSubmissionInfo,
+    payload: String
+  ): FOpt[Unit] = {
+    implicit val hc = new HeaderCarrier
+
+    val submission = submissionInfo.submission
+
     val fileName = s"${submission.envelopeId.value}.json"
+    val byteString = ByteString(payload.getBytes)
     for {
       _ <- objectStoreAlgebra.uploadFile(
              Path.Directory(s"${dataStorebasePath}envelopes/${submission.envelopeId.value}"),
              fileName,
-             ByteString(dataStoreJson.getBytes),
+             byteString,
              ContentType.`application/json`
            )
 
       objWithSummary <- objectStoreAlgebra.uploadFile(
                           Path.Directory(s"$sdesBasePath$dataStorebasePath"),
                           fileName,
-                          ByteString(dataStoreJson.getBytes),
+                          byteString,
                           ContentType.`application/json`
                         )
       _ <- dataStoreWorkItemAlgebra.pushWorkItem(

@@ -151,7 +151,9 @@ class DestinationSubmitter[M[_]](
           d,
           l,
           userSession,
-          destinationEvaluation.evaluation.find(_.destinationId === d.id)
+          destinationEvaluation.evaluation.find(_.destinationId === d.id),
+          accumulatedModel,
+          modelTree
         ).map(_ => None)
       case d: Destination.HandlebarsHttpApi => submitToHandlebars(d, accumulatedModel, modelTree, submissionInfo)
       case d: Destination.Composite =>
@@ -262,10 +264,25 @@ class DestinationSubmitter[M[_]](
     d: Destination.DataStore,
     l: LangADT,
     userSession: UserSession,
-    destinationResult: Option[DestinationResult]
-  ): M[Unit] =
+    destinationResult: Option[DestinationResult],
+    accumulatedModel: HandlebarsTemplateProcessorModel,
+    modelTree: HandlebarsModelTree
+  ): M[Unit] = {
+    val payload = dataStore.generatePayload(
+      submissionInfo,
+      structuredFormData,
+      d,
+      l,
+      userSession,
+      destinationResult.flatMap(_.taxpayerId),
+      accumulatedModel,
+      modelTree
+    )
     monadError.handleErrorWith(
-      dataStore(submissionInfo, structuredFormData, d, l, userSession, destinationResult.flatMap(_.taxpayerId))
+      dataStore.submitPayload(
+        submissionInfo,
+        payload
+      )
     ) { msg =>
       if (d.failOnError)
         raiseError(submissionInfo.formId, d.id, msg)
@@ -273,6 +290,7 @@ class DestinationSubmitter[M[_]](
         logErrorInMonad(submissionInfo.formId, d.id, "Failed execution but has 'failOnError' set to false. Ignoring.")
       }
     }
+  }
 
   private def submitToHandlebars(
     d: Destination.HandlebarsHttpApi,

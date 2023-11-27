@@ -887,5 +887,10 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
     )
 
   private def process(functionCall: String, tree: FocussedHandlebarsModelTree): String =
-    RealHandlebarsTemplateProcessor(functionCall, HandlebarsTemplateProcessorModel.empty, tree, TemplateType.Plain)
+    RealHandlebarsTemplateProcessor(
+      functionCall,
+      HandlebarsTemplateProcessorModel.empty,
+      tree,
+      TemplateType.Plain
+    )
 }

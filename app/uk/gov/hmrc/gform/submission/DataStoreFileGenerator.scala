@@ -23,7 +23,7 @@ object DataStoreFileGenerator {
   def apply(
     userSession: UserSession,
     metaData: DataStoreMetaData,
-    gform: String,
+    gformJson: JsObject,
     includeSessionInfo: Boolean
   ): String = {
 
@@ -36,8 +36,6 @@ object DataStoreFileGenerator {
       "submissionDate" -> JsString(metaData.submissionDate),
       "submissionTime" -> JsString(metaData.submissionTime)
     )
-
-    val gformJson: JsValue = Json.parse(gform)
 
     val dataStoreJson: JsObject = if (includeSessionInfo) {
       val userSessionJson: JsObject = Json.obj(

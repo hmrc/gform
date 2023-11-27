@@ -276,6 +276,7 @@ class ApplicationModule(context: Context)
       destinationModule,
       controllerComponents,
       objectStoreModule,
+      submissionModule,
       akkaModule
     )
 

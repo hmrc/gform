@@ -81,7 +81,7 @@ class SubmissionModule(
   private val dataStoreBasePath = configModule.serviceConfig.getString("object-store.base-filepath.data-store")
   private val sdsesBasePath = configModule.serviceConfig.getString("object-store.base-filepath.sdes")
 
-  private val dataStoreSubmitter = new DataStoreSubmitter(
+  val dataStoreSubmitter = new DataStoreSubmitter(
     objectStoreModule.foptObjectStoreService,
     sdesModule.foptDataStoreWorkItemService,
     timeModule.timeProvider,

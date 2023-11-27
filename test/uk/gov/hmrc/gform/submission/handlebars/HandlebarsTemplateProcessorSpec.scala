@@ -16,15 +16,17 @@
 
 package uk.gov.hmrc.gform.submission.handlebars
 
+import com.fasterxml.jackson.databind.JsonNode
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.sharedmodel.form.FormId
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.JsonNodes
 import uk.gov.hmrc.gform.sharedmodel.{ PdfHtml, SubmissionRef }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ HandlebarsTemplateProcessorModel, SingleQuoteReplacementLexer, TemplateType }
 import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
 
 class HandlebarsTemplateProcessorSpec extends Spec {
   "apply" must "work with JSON" in {
-    process(
+    processJson(
       "I am a {{name}} template",
       """{"name" : "handlebars"}""",
       TemplateType.JSON
@@ -32,7 +34,7 @@ class HandlebarsTemplateProcessorSpec extends Spec {
   }
 
   it must "work with XML" in {
-    process(
+    processJson(
       "<foo>I am a {{name}} template</foo>",
       """{"name" : "handlebars"}""",
       TemplateType.XML
@@ -45,7 +47,7 @@ class HandlebarsTemplateProcessorSpec extends Spec {
     ) match {
       case Left(err) => fail(err)
       case Right(template) =>
-        process(
+        processJson(
           template,
           """{"name" : "0"}""",
           TemplateType.XML
@@ -54,27 +56,55 @@ class HandlebarsTemplateProcessorSpec extends Spec {
   }
 
   it must "work with plain text" in {
-    process(
+    processJson(
       "I am a {{name}} template",
       """{"name" : "handlebars"}""",
       TemplateType.XML
     ) shouldBe "I am a handlebars template"
   }
 
-  "JsonEscapingStrategy un-escaping" must "work with apostrophes" in {
-    process("string with an {{apostrophe}}", """{"apostrophe" : "'"}""", TemplateType.JSON) shouldBe "string with an '"
+  "JsonEscapingStrategy escaping" must "ignore apostrophes" in {
+    processModel(
+      "string with an ' {{apostrophe}}",
+      Map(("apostrophe", JsonNodes.textNode("'"))),
+      TemplateType.JSON
+    ) shouldBe "string with an ' '"
   }
 
-  it must "work with a backslash" in {
-    process("""string with a \""", TemplateType.JSON) shouldBe """string with a \"""
+  it must "escape a backslash" in {
+    processModel(
+      """string with a \ {{dataBacklash}}""",
+      Map(("dataBacklash", JsonNodes.textNode("""\"""))),
+      TemplateType.JSON
+    ) shouldBe """string with a \ \\"""
   }
 
-  it must "work with two backslashes" in {
-    process("""string with two \\""", TemplateType.JSON) shouldBe """string with two \\"""
+  it must "escape two backslashes" in {
+    processModel(
+      """string with two \\ {{dataBacklash}}""",
+      Map(("dataBacklash", JsonNodes.textNode("""\\"""))),
+      TemplateType.JSON
+    ) shouldBe """string with two \\ \\\\"""
   }
 
-  private def process(functionCall: String, stringModel: String, templateType: TemplateType): String = {
-    val model = HandlebarsTemplateProcessorModel(stringModel.stripMargin)
+  it must "escape double quotes" in {
+    processModel(
+      """string with {{foo}} two""",
+      Map(("foo", JsonNodes.textNode("""b"a"r"""))),
+      TemplateType.JSON
+    ) shouldBe """string with b\"a\"r two"""
+  }
+
+  it must "escape control characters" in {
+    processModel(
+      """string with {{foo}} two""",
+      Map(("foo", JsonNodes.textNode("""b\t"""))),
+      TemplateType.JSON
+    ) shouldBe """string with b\\t two"""
+  }
+
+  private def processJson(functionCall: String, jsonModel: String, templateType: TemplateType): String = {
+    val model = HandlebarsTemplateProcessorModel(jsonModel)
     process(
       functionCall,
       FocussedHandlebarsModelTree(
@@ -92,12 +122,9 @@ class HandlebarsTemplateProcessorSpec extends Spec {
     )
   }
 
-  private def process(functionCall: String, templateType: TemplateType): String =
-    process(functionCall, HandlebarsTemplateProcessorModel.empty, templateType)
-
-  private def process(
+  private def processModel(
     functionCall: String,
-    model: HandlebarsTemplateProcessorModel,
+    model: Map[String, JsonNode],
     templateType: TemplateType
   ): String =
     process(
@@ -110,7 +137,7 @@ class HandlebarsTemplateProcessorSpec extends Spec {
           PdfHtml(""),
           None,
           StructuredFormValue.ObjectStructure(Nil),
-          model
+          HandlebarsTemplateProcessorModel(model)
         )
       ),
       templateType
