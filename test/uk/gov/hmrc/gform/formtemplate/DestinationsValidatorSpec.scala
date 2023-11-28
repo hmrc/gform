@@ -35,21 +35,23 @@ class DestinationsValidatorSpec extends Spec with ScalaCheckDrivenPropertyChecks
           oneOrMoreGen(destinationWithFixedIdGen(id1)),
           oneOrMoreGen(destinationWithFixedIdGen(id2)),
           oneOrMoreGen(destinationWithFixedIdGen(id2)),
-          destinationGen.filter(d => d.id =!= id1 && d.id =!= id2)
-        ) { (d1WithId1, d2WithId1, d1WithId2, d2WithId2, uniqueD) =>
-          whenever(uniqueD.id =!= id1 && uniqueD.id =!= id2) {
-            val destinations =
-              Destinations
-                .DestinationList(
-                  uniqueD :: d1WithId1 ::: d2WithId1 ::: d1WithId2 ::: d2WithId2,
-                  ackSection,
-                  Some(decSection)
-                )
-
-            DestinationsValidator.validateUniqueDestinationIds(destinations) should be(
-              Invalid(DestinationsValidator.someDestinationIdsAreUsedMoreThanOnce(Set(id1, id2)))
-            )
+          destinationGen.filter { d =>
+            val allIds = DestinationsValidator.extractIds(d).toList
+            allIds.toSet.size == allIds.size && // Guard against duplicate ids in composite destination
+            allIds.toSet.intersect(Set(id1, id2)).isEmpty
           }
+        ) { (d1WithId1, d2WithId1, d1WithId2, d2WithId2, uniqueD) =>
+          val destinations =
+            Destinations
+              .DestinationList(
+                uniqueD :: d1WithId1 ::: d2WithId1 ::: d1WithId2 ::: d2WithId2,
+                ackSection,
+                Some(decSection)
+              )
+
+          DestinationsValidator.validateUniqueDestinationIds(destinations) should be(
+            Invalid(DestinationsValidator.someDestinationIdsAreUsedMoreThanOnce(Set(id1, id2)))
+          )
         }
       }
     }
