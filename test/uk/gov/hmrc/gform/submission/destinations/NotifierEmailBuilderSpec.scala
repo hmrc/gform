@@ -90,30 +90,33 @@ class NotifierEmailBuilderSpec
   it must "succeed when all required form fields are present" in {
     forAll(emailGen, nonEmptyAlphaNumStrGen, nonEmptyAlphaNumStrGen) { (generatedDestination, pf, to) =>
       withNotifier(generatedDestination) { emailTemplateId =>
+        val fcIdValue = s"_$pf"
         val destination = generatedDestination.copy(
-          personalisation = Map(NotifierPersonalisationFieldId(pf) -> FormComponentId(s"_$pf"))
+          personalisation = Map(NotifierPersonalisationFieldId(pf) -> FormComponentId(fcIdValue))
         )
-        val structuredFormData =
-          StructuredFormValue.ObjectStructure(
-            List(
-              Field(FieldName(destination.to.value), StructuredFormValue.TextNode(to)),
-              Field(FieldName(s"_$pf"), StructuredFormValue.TextNode("some value"))
+        whenever(destination.to.value != fcIdValue) {
+          val structuredFormData =
+            StructuredFormValue.ObjectStructure(
+              List(
+                Field(FieldName(destination.to.value), StructuredFormValue.TextNode(to)),
+                Field(FieldName(fcIdValue), StructuredFormValue.TextNode("some value"))
+              )
             )
-          )
 
-        val expectedNotifierEmail =
-          NotifierEmail(
+          val expectedNotifierEmail =
+            NotifierEmail(
+              emailTemplateId,
+              NotifierEmailAddress(to),
+              Map(pf -> "some value"),
+              NotifierEmailReference("")
+            )
+
+          NotifierEmailBuilder[Possible](
             emailTemplateId,
-            NotifierEmailAddress(to),
-            Map(pf -> "some value"),
-            NotifierEmailReference("")
-          )
-
-        NotifierEmailBuilder[Possible](
-          emailTemplateId,
-          destination,
-          structuredFormData
-        ) shouldBe Right(expectedNotifierEmail)
+            destination,
+            structuredFormData
+          ) shouldBe Right(expectedNotifierEmail)
+        }
       }
     }
   }
