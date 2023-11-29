@@ -35,7 +35,6 @@ class DmsQueueService(
   dmsRetryIntervalMillis: Long
 )(implicit ec: ExecutionContext)
     extends QueueAlgebra[SdesWorkItem] {
-  private val logger: Logger = LoggerFactory.getLogger(getClass)
 
   override def sendWorkItem(sdesWorkItem: WorkItem[SdesWorkItem]): Future[Unit] = {
     implicit val hc = HeaderCarrier()
@@ -59,4 +58,5 @@ class DmsQueueService(
   override implicit val executionContext: ExecutionContext = ec
   override val maxFailureCount: Int = dmsMaxFailureCount
   override val retryIntervalMillis: Long = dmsRetryIntervalMillis
+  override val logger: Logger = LoggerFactory.getLogger(getClass)
 }

@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.gform.scheduler
 
+import org.slf4j.Logger
 import uk.gov.hmrc.mongo.workitem.WorkItem
 
 import scala.concurrent.{ ExecutionContext, Future }
@@ -26,6 +27,7 @@ trait QueueAlgebra[Q] {
   val pollLimit: Int
   val maxFailureCount: Int
   val retryIntervalMillis: Long
+  val logger: Logger
 
   implicit val executionContext: ExecutionContext
 
@@ -33,7 +35,9 @@ trait QueueAlgebra[Q] {
 
   def processThenMarkAsComplete(acc: Seq[WorkItem[Q]], workItem: WorkItem[Q]): Future[Seq[WorkItem[Q]]] =
     sendWorkItem(workItem).map(_ => repo.completeAndDelete(workItem.id)).map(_ => acc :+ workItem).recoverWith {
-      case _ => repo.failed(workItem, maxFailureCount).map(_ => acc)
+      case e =>
+        logger.error("Failed to send the work-item", e)
+        repo.failed(workItem, maxFailureCount).map(_ => acc)
     }
 
   def retrieveWorkItems: Future[Seq[WorkItem[Q]]] = {

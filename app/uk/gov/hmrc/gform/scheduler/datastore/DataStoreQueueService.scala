@@ -35,7 +35,6 @@ class DataStoreQueueService(
   dataStoreRetryIntervalMillis: Long
 )(implicit ec: ExecutionContext)
     extends QueueAlgebra[SdesWorkItem] {
-  private val logger: Logger = LoggerFactory.getLogger(getClass)
 
   override def sendWorkItem(sdesWorkItem: WorkItem[SdesWorkItem]): Future[Unit] = {
     implicit val hc = HeaderCarrier()
@@ -59,4 +58,5 @@ class DataStoreQueueService(
   override implicit val executionContext: ExecutionContext = ec
   override val maxFailureCount: Int = dataStoreMaxFailureCount
   override val retryIntervalMillis: Long = dataStoreRetryIntervalMillis
+  override val logger: Logger = LoggerFactory.getLogger(getClass)
 }
