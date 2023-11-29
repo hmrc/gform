@@ -38,11 +38,5 @@ class SdesConnector(wSHttp: WSHttp, sdesBaseUrl: String, sdesBasePath: String, h
     wSHttp
       .POST[SdesNotifyRequest, HttpResponse](url, payload, headers)
       .failWithNonSuccessStatusCodes(url)
-      .recoverWith { case e =>
-        logger.error(
-          s"Failed to notify SDES [file-ready] for the information type ${payload.informationType}, error : $e"
-        )
-        Future.failed(e)
-      }
   }
 }
