@@ -27,6 +27,7 @@ import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.config.FileInfoConfig
 import uk.gov.hmrc.gform.fileupload.FileUploadAlgebra
 import uk.gov.hmrc.gform.pdfgenerator.PdfGeneratorAlgebra
+import uk.gov.hmrc.gform.sharedmodel.LangADT
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AllowedFileTypes, FormTemplateId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
@@ -212,10 +213,10 @@ class DmsSubmissionServiceSpec extends Spec {
       formTemplateId: FormTemplateId
     ): Fixture = {
       (fileUpload
-        .submitEnvelope(_: Submission, _: PdfAndXmlSummaries, _: HmrcDms, _: Boolean, _: FormTemplateId)(
+        .submitEnvelope(_: Submission, _: PdfAndXmlSummaries, _: HmrcDms, _: Boolean, _: FormTemplateId, _: LangADT)(
           _: HeaderCarrier
         ))
-        .expects(submission, pdfAndXmlSummaries, hmrcDms, objectStore, formTemplateId, hc)
+        .expects(submission, pdfAndXmlSummaries, hmrcDms, objectStore, formTemplateId, LangADT.En, hc)
         .returning(())
 
       this

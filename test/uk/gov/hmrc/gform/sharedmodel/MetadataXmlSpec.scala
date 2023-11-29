@@ -32,6 +32,7 @@ class MetadataXmlSpec extends Spec {
   "metadata.xml" should "be generated" in {
 
     val dmsMetaData = DmsMetaData(formTemplateId = FormTemplateId("some-form-type-id"), "TESTID")
+    val l: LangADT = LangADT.En
 
     val submission = Submission(
       submittedDate = LocalDateTime.of(2012, 12, 3, 12, 45),
@@ -156,6 +157,20 @@ class MetadataXmlSpec extends Spec {
               </attribute_values>
             </attribute>
             <attribute>
+              <attribute_name>correlationId</attribute_name>
+              <attribute_type>string</attribute_type>
+              <attribute_values>
+                <attribute_value>some-envelope-id</attribute_value>
+              </attribute_values>
+            </attribute>
+            <attribute>
+              <attribute_name>userLanguage</attribute_name>
+              <attribute_type>string</attribute_type>
+              <attribute_values>
+                <attribute_value>EN</attribute_value>
+              </attribute_values>
+            </attribute>
+            <attribute>
               <attribute_name>backscan</attribute_name>
               <attribute_type>boolean</attribute_type>
               <attribute_values>
@@ -172,7 +187,8 @@ class MetadataXmlSpec extends Spec {
         ReconciliationId("some-recocilliatin-id"),
         pdfSummary.numberOfPages,
         submission.noOfAttachments,
-        hmrcDms
+        hmrcDms,
+        l
       )
 
     metadataXml should equal(Utility.trim(expected).asInstanceOf[Elem])(after being streamlined[Elem])

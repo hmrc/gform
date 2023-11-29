@@ -146,14 +146,8 @@ object PdfAndXmlSummariesFactory {
           }
         case DataOutputFormat.JSON =>
           Some(
-            RoboticsXMLGenerator(
-              formTemplate._id,
-              hmrcDms.dmsFormId,
-              submissionRef,
+            RoboticsXMLGenerator.buildXMLForJson(
               structuredFormData,
-              now,
-              l,
-              envelopeId,
               sanitizeRequired = false
             )
           ).map(xml => compact(JsonMethods.render(org.json4s.Xml.toJson(xml))))

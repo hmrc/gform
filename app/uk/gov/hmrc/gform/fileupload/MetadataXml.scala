@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.gform.fileupload
 
-import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
+import uk.gov.hmrc.gform.sharedmodel.{ LangADT, SubmissionRef }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
 import uk.gov.hmrc.gform.submission.Submission
 import uk.gov.hmrc.gform.typeclasses.Attribute
@@ -27,7 +27,13 @@ object MetadataXml {
 
   val xmlDec = """<?xml version="1.0" encoding="UTF-8" standalone="no"?>"""
 
-  private def createMetadata(submission: Submission, noOfPages: Long, attachmentCount: Int, hmrcDms: HmrcDms): Elem = {
+  private def createMetadata(
+    submission: Submission,
+    noOfPages: Long,
+    attachmentCount: Int,
+    hmrcDms: HmrcDms,
+    l: LangADT
+  ): Elem = {
 
     val backscan = hmrcDms.backscan.map(backscan => createAttribute("backscan", backscan)).toList
 
@@ -43,7 +49,9 @@ object MetadataXml {
       createAttribute("cas_key", "AUDIT_SERVICE"), // We are not using CAS
       createAttribute("classification_type", hmrcDms.classificationType),
       createAttribute("business_area", hmrcDms.businessArea),
-      createAttribute("attachment_count", attachmentCount)
+      createAttribute("attachment_count", attachmentCount),
+      createAttribute("correlationId", submission.envelopeId.value),
+      createAttribute("userLanguage", l.langADTToString.toUpperCase)
     ) ++ backscan
 
     <metadata></metadata>.copy(child = attributes)
@@ -70,12 +78,13 @@ object MetadataXml {
     reconciliationId: ReconciliationId,
     noOfPages: Long,
     attachmentCount: Int,
-    hmrcDms: HmrcDms
+    hmrcDms: HmrcDms,
+    l: LangADT
   ): Elem = {
     val body =
       List(
         createHeader(submission.submissionRef, reconciliationId),
-        createMetadata(submission, noOfPages, attachmentCount, hmrcDms)
+        createMetadata(submission, noOfPages, attachmentCount, hmrcDms, l)
       )
 
     trim(createDocument(body))

@@ -23,7 +23,7 @@ import uk.gov.hmrc.gform.dms.FileAttachment
 import uk.gov.hmrc.gform.fileupload.FileUploadService.FileIds._
 import uk.gov.hmrc.gform.objectstore.ObjectStoreAlgebra
 import uk.gov.hmrc.gform.sdes.dms.DmsWorkItemAlgebra
-import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
+import uk.gov.hmrc.gform.sharedmodel.{ LangADT, SubmissionRef }
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
@@ -68,7 +68,8 @@ class FileUploadService(
     summaries: PdfAndXmlSummaries,
     hmrcDms: HmrcDms,
     objectStore: Boolean,
-    formTemplateId: FormTemplateId
+    formTemplateId: FormTemplateId,
+    l: LangADT
   )(implicit
     hc: HeaderCarrier
   ): Future[Unit] = {
@@ -127,7 +128,8 @@ class FileUploadService(
           reconciliationId,
           summaries.instructionPdfSummary.fold(summaries.pdfSummary.numberOfPages)(_.numberOfPages),
           submission.noOfAttachments + summaries.instructionPdfSummary.fold(0)(_ => 1),
-          hmrcDms
+          hmrcDms,
+          l
         )
       uploadFile(
         submission.envelopeId,

@@ -58,6 +58,9 @@ object RoboticsXMLGenerator {
   private def datetimeSubmitted(now: Instant): NodeSeq =
     <datetimeSubmitted>{datetimeSubmittedFormater.format(now.atZone(ZoneId.of("Europe/London")))}</datetimeSubmitted>
 
+  private[submission] def buildXMLForJson(value: ObjectStructure, sanitizeRequired: Boolean): NodeSeq =
+    <gform>{buildObjectStructureXml(value, sanitizeRequired)}</gform>
+
   private def buildStructuredValueXml(
     field: Field,
     value: StructuredFormValue,

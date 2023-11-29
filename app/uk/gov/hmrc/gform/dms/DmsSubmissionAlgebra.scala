@@ -27,7 +27,7 @@ import org.apache.pdfbox.pdmodel.PDDocument
 import uk.gov.hmrc.gform.config.FileInfoConfig
 import uk.gov.hmrc.gform.fileupload.FileUploadAlgebra
 import uk.gov.hmrc.gform.pdfgenerator.PdfGeneratorAlgebra
-import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
+import uk.gov.hmrc.gform.sharedmodel.{ LangADT, SubmissionRef }
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FormId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DataOutputFormat, DestinationId, DestinationIncludeIf }
@@ -87,7 +87,14 @@ class DmsSubmissionService[F[_]](
                      .createSubmission(metadata, envId, LocalDateTime.now(clock), fileAttachments.size)
       summaries = PdfAndXmlSummaries(pdfSummary)
       hmrcDms = DmsSubmissionService.createHmrcDms(metadata)
-      _ <- fileUpload.submitEnvelope(submission, summaries, hmrcDms, objectStoreEnable, formTemplateId)
+      _ <- fileUpload.submitEnvelope(
+             submission,
+             summaries,
+             hmrcDms,
+             objectStoreEnable,
+             formTemplateId,
+             LangADT.En //by default we are using English for the external end-point
+           )
     } yield envId
   }
 

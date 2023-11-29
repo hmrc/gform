@@ -65,7 +65,7 @@ class DmsSubmitter(
       maybeEnvelope <- envelopeAlgebra.find(submission.envelopeId)
       res <-
         fromFutureA(
-          fileUploadService.submitEnvelope(submission, summaries, hmrcDms, maybeEnvelope.isDefined, formTemplate._id)
+          fileUploadService.submitEnvelope(submission, summaries, hmrcDms, maybeEnvelope.isDefined, formTemplate._id, l)
         )
       envelopeDetails <- maybeEnvelope match {
                            case Some(envelope) =>

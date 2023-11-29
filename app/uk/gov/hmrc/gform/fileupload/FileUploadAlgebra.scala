@@ -23,6 +23,7 @@ import cats.syntax.functor._
 import cats.syntax.traverse._
 import cats.{ Applicative, Monad }
 import uk.gov.hmrc.gform.dms.FileAttachment
+import uk.gov.hmrc.gform.sharedmodel.LangADT
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AllowedFileTypes, FormTemplateId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
@@ -66,7 +67,8 @@ trait FileUploadAlgebra[F[_]] {
     summaries: PdfAndXmlSummaries,
     hmrcDms: HmrcDms,
     objectStore: Boolean,
-    formTemplateId: FormTemplateId
+    formTemplateId: FormTemplateId,
+    l: LangADT
   )(implicit
     hc: HeaderCarrier
   ): F[Unit]
