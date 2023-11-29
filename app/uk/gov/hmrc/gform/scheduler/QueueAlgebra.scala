@@ -36,7 +36,7 @@ trait QueueAlgebra[Q] {
   def processThenMarkAsComplete(acc: Seq[WorkItem[Q]], workItem: WorkItem[Q]): Future[Seq[WorkItem[Q]]] =
     sendWorkItem(workItem).map(_ => repo.completeAndDelete(workItem.id)).map(_ => acc :+ workItem).recoverWith {
       case e =>
-        logger.error(s"Failed to send the work-item : $e")
+        logger.error("Failed to send the work-item", e)
         repo.failed(workItem, maxFailureCount).map(_ => acc)
     }
 
