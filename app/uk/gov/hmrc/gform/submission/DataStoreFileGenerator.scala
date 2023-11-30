@@ -28,13 +28,16 @@ object DataStoreFileGenerator {
   ): String = {
 
     val metaDataJson: JsObject = Json.obj(
-      "formId"         -> JsString(metaData.formId),
-      "version"        -> JsString(metaData.version),
-      "mdtpXrefId"     -> JsString(""),
-      "regime"         -> JsString(metaData.regime),
-      "taxpayerId"     -> JsString(metaData.taxpayerId),
-      "submissionDate" -> JsString(metaData.submissionDate),
-      "submissionTime" -> JsString(metaData.submissionTime)
+      "formId"               -> JsString(metaData.formId),
+      "version"              -> JsString(metaData.version),
+      "mdtpXrefId"           -> JsString(""),
+      "regime"               -> JsString(metaData.regime),
+      "taxpayerId"           -> JsString(metaData.taxpayerId),
+      "submissionDate"       -> JsString(metaData.submissionDate),
+      "submissionTime"       -> JsString(metaData.submissionTime),
+      "submission-reference" -> JsString(metaData.submissionReference),
+      "correlationId"        -> JsString(metaData.correlationId),
+      "userLanguage"         -> JsString(metaData.userLanguage)
     )
 
     val dataStoreJson: JsObject = if (includeSessionInfo) {
