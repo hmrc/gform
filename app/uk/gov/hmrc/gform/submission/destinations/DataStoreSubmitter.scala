@@ -64,8 +64,9 @@ class DataStoreSubmitter(
     val submission = submissionInfo.submission
 
     val focussedTree = FocussedHandlebarsModelTree(modelTree, modelTree.value.model)
-    val handlebarBasedPayload =
-      RealHandlebarsTemplateProcessor(dataStore.payload.get, accumulatedModel, focussedTree, TemplateType.JSON)
+    val maybeHandlebarBasedPayload = dataStore.payload.map(payload =>
+      RealHandlebarsTemplateProcessor(payload, accumulatedModel, focussedTree, TemplateType.JSON)
+    )
 
     val rawFormDataBasedPayload = compact(
       JsonMethods.render(
@@ -85,7 +86,9 @@ class DataStoreSubmitter(
     )
 
     val formDataBasedPayload: JsObject = convertToJson(rawFormDataBasedPayload, dataStore.id, "robotics")
-    val handleBarPayload: JsObject = convertToJson(handlebarBasedPayload, dataStore.id, "handlebar")
+    val handleBarPayload: JsObject = maybeHandlebarBasedPayload.fold(Json.obj()) { handlebarBasedPayload =>
+      convertToJson(handlebarBasedPayload, dataStore.id, "handlebar")
+    }
 
     val payloads: JsObject = (dataStore.formDataPayload, dataStore.handlebarPayload) match {
       case (true, true)   => formDataBasedPayload ++ handleBarPayload
