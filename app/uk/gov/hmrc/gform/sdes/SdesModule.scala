@@ -38,9 +38,13 @@ import uk.gov.hmrc.gform.sharedmodel.notifier.NotifierEmailAddress
 import uk.gov.hmrc.gform.sharedmodel.sdes._
 import uk.gov.hmrc.gform.wshttp.WSHttpModule
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
+import uk.gov.hmrc.mongo.CurrentTimestampSupport
+import uk.gov.hmrc.mongo.lock.MongoLockRepository
 import uk.gov.hmrc.mongo.workitem.{ ProcessingStatus, WorkItem }
 import uk.gov.hmrc.objectstore.client.ObjectSummaryWithMd5
 
+import java.util.concurrent.TimeUnit
+import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ ExecutionContext, Future }
 
 class SdesModule(
@@ -148,13 +152,21 @@ class SdesModule(
   private val alertSdesNotifierEmailAddress: String =
     configModule.typesafeConfig.getString("alert.sdes.notifierEmailAddress")
   private val alertSdesEmailTemplateId: String = configModule.typesafeConfig.getString("alert.sdes.emailTemplateId")
+  private val alertSdesMongodbLockTimeoutDuration: FiniteDuration =
+    FiniteDuration(configModule.typesafeConfig.getDuration("alert.sdes.lockDuration").toNanos, TimeUnit.NANOSECONDS)
+  private val lockRepoSdesAlert: MongoLockRepository = new MongoLockRepository(
+    mongoModule.mongoComponent,
+    new CurrentTimestampSupport()
+  )
 
   val sdesAlertService = new SdesAlertService(
     alertSdesDestination.map(_.map(SdesDestination.fromString)),
     NotifierEmailAddress(alertSdesNotifierEmailAddress),
     EmailTemplateId(alertSdesEmailTemplateId),
     emailModule.emailLogic,
-    repoSdesSubmission
+    repoSdesSubmission,
+    lockRepoSdesAlert,
+    alertSdesMongodbLockTimeoutDuration
   )
 
   private val dataStoreFileBasePath = configModule.serviceConfig.getString("object-store.base-filepath.data-store")
