@@ -32,8 +32,10 @@ import uk.gov.hmrc.gform.sharedmodel.notifier.NotifierEmailAddress
 import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination.fromName
 import uk.gov.hmrc.gform.sharedmodel.sdes.{ SdesDestination, SdesSubmission }
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.mongo.lock.{ LockService, MongoLockRepository }
 
 import java.time.LocalDateTime
+import scala.concurrent.duration.Duration
 import scala.concurrent.{ ExecutionContext, Future }
 
 class SdesAlertService(
@@ -41,12 +43,34 @@ class SdesAlertService(
   notifierEmailAddress: NotifierEmailAddress,
   emailTemplateId: EmailTemplateId,
   emailService: EmailService,
-  repoSdesSubmission: Repo[SdesSubmission]
+  repoSdesSubmission: Repo[SdesSubmission],
+  lockRepositoryProvider: MongoLockRepository,
+  mongodbLockTimeoutDuration: Duration
 ) extends QScheduledService[Unit] {
   private val logger: Logger = LoggerFactory.getLogger(getClass)
+  private val jobName = "SdesAlertJob"
 
   override def invoke(implicit ec: ExecutionContext): Future[Unit] = {
 
+    val lockKeeper = LockService(
+      lockRepository = lockRepositoryProvider,
+      lockId = jobName,
+      ttl = mongodbLockTimeoutDuration
+    )
+
+    lockKeeper
+      .withLock(processUnAlertedItems)
+      .map {
+        case Some(result) => result
+        case None =>
+          logger.info(s"$jobName locked because it might be running on another instance")
+      }
+      .recover { case e: Exception =>
+        logger.info(s"$jobName failed with exception", e)
+      }
+  }
+
+  private def processUnAlertedItems(implicit ec: ExecutionContext): Future[Unit] = {
     val query =
       Filters.and(equal("isProcessed", false), lte("submittedAt", LocalDateTime.now().minusMinutes(30)))
 
