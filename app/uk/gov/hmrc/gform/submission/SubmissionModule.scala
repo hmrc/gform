@@ -27,7 +27,6 @@ import uk.gov.hmrc.gform.mongo.MongoModule
 import uk.gov.hmrc.gform.pdfgenerator.PdfGeneratorModule
 import uk.gov.hmrc.gform.submission.handlebars.HandlebarsHttpApiModule
 import uk.gov.hmrc.gform.time.TimeModule
-import uk.gov.hmrc.gform.wshttp.WSHttpModule
 import uk.gov.hmrc.gform.core._
 import uk.gov.hmrc.gform.envelope.EnvelopeModule
 import uk.gov.hmrc.gform.notifier.NotifierModule
@@ -46,7 +45,6 @@ class SubmissionModule(
   formModule: FormModule,
   formTemplateModule: FormTemplateModule,
   fileUploadModule: FileUploadModule,
-  wsHttpModule: WSHttpModule,
   timeModule: TimeModule,
   emailModule: EmailModule,
   submissionConsolidatorModule: SubmissionConsolidatorModule,
@@ -84,7 +82,6 @@ class SubmissionModule(
   val dataStoreSubmitter = new DataStoreSubmitter(
     objectStoreModule.foptObjectStoreService,
     sdesModule.foptDataStoreWorkItemService,
-    timeModule.timeProvider,
     dataStoreBasePath,
     sdsesBasePath
   )

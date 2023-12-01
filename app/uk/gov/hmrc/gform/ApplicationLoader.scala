@@ -244,7 +244,6 @@ class ApplicationModule(context: Context)
       formModule,
       formTemplateModule,
       fileUploadModule,
-      wSHttpModule,
       timeModule,
       emailModule,
       submissionConsolidatorModule,

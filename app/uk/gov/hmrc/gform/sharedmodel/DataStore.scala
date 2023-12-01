@@ -31,7 +31,10 @@ case class DataStoreMetaData(
   regime: String,
   taxpayerId: String,
   submissionDate: String,
-  submissionTime: String
+  submissionTime: String,
+  submissionReference: String,
+  correlationId: String,
+  userLanguage: String
 )
 
 object DataStoreMetaData {

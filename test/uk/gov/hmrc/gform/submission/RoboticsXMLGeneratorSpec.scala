@@ -117,6 +117,14 @@ class RoboticsXMLGeneratorSpec extends Spec {
 
   }
 
+  "buildDataStoreXML" should "generate the correct XML for the data-store with a field that is also an object structure" in {
+
+    RoboticsXMLGenerator.buildDataStoreXML(
+      objectStructure(arrayField("arrayField", TextNode("value1"), TextNode("value2"))),
+      false
+    ) shouldBe <gform><arrayFields><arrayField seqNum="0">value1</arrayField><arrayField seqNum="1">value2</arrayField></arrayFields></gform>
+
+  }
 }
 case object RoboticsXMLGeneratorSpec extends Spec {
 

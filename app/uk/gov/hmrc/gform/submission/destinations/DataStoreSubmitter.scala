@@ -31,19 +31,17 @@ import org.json4s.native.Printer.compact
 import uk.gov.hmrc.gform.objectstore.ObjectStoreAlgebra
 import uk.gov.hmrc.gform.sdes.datastore.DataStoreWorkItemAlgebra
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
-import uk.gov.hmrc.gform.time.TimeProvider
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.objectstore.client.Path
 
-import java.time.{ Instant, ZoneId }
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import scala.concurrent.ExecutionContext
 
 class DataStoreSubmitter(
   objectStoreAlgebra: ObjectStoreAlgebra[FOpt],
   dataStoreWorkItemAlgebra: DataStoreWorkItemAlgebra[FOpt],
-  timeProvider: TimeProvider,
-  dataStorebasePath: String,
+  dataStoreBasePath: String,
   sdesBasePath: String
 )(implicit
   ec: ExecutionContext
@@ -71,14 +69,8 @@ class DataStoreSubmitter(
     val rawFormDataBasedPayload = compact(
       JsonMethods.render(
         org.json4s.Xml.toJson(
-          RoboticsXMLGenerator(
-            submission.dmsMetaData.formTemplateId,
-            dataStore.formId.value,
-            submission.submissionRef,
+          RoboticsXMLGenerator.buildDataStoreXML(
             structuredFormData,
-            Instant.now(),
-            l,
-            Some(submission.envelopeId),
             sanitizeRequired = false
           )
         )
@@ -104,7 +96,10 @@ class DataStoreSubmitter(
       dataStore.regime,
       taxpayerId.getOrElse(""),
       dateSubmittedFormater.format(submission.submittedDate.toLocalDate),
-      submission.submittedDate.toLocalTime.toString
+      submission.submittedDate.toLocalTime.toString,
+      submission.submissionRef.value,
+      submission.envelopeId.value,
+      l.langADTToString.toUpperCase
     )
 
     DataStoreFileGenerator(userSession, dataStoreMetaData, payloads, dataStore.includeSessionInfo)
@@ -139,14 +134,14 @@ class DataStoreSubmitter(
     val byteString = ByteString(payload.getBytes)
     for {
       _ <- objectStoreAlgebra.uploadFile(
-             Path.Directory(s"${dataStorebasePath}envelopes/${submission.envelopeId.value}"),
+             Path.Directory(s"${dataStoreBasePath}envelopes/${submission.envelopeId.value}"),
              fileName,
              byteString,
              ContentType.`application/json`
            )
 
       objWithSummary <- objectStoreAlgebra.uploadFile(
-                          Path.Directory(s"$sdesBasePath$dataStorebasePath"),
+                          Path.Directory(s"$sdesBasePath$dataStoreBasePath"),
                           fileName,
                           byteString,
                           ContentType.`application/json`
