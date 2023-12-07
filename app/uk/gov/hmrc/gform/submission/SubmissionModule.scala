@@ -76,14 +76,9 @@ class SubmissionModule(
     envelopeModule.foptEnvelopeService
   )
 
-  private val dataStoreBasePath = configModule.serviceConfig.getString("object-store.base-filepath.data-store")
-  private val sdsesBasePath = configModule.serviceConfig.getString("object-store.base-filepath.sdes")
-
   val dataStoreSubmitter = new DataStoreSubmitter(
     objectStoreModule.foptObjectStoreService,
-    sdesModule.foptDataStoreWorkItemService,
-    dataStoreBasePath,
-    sdsesBasePath
+    sdesModule.foptDataStoreWorkItemService
   )
 
   private val stateTransitionService = new StateTransitionService(formModule.fOptFormService)
@@ -95,7 +90,8 @@ class SubmissionModule(
     notifierModule.fOptNotifierService,
     destinationModule.destinationAuditer,
     submissionConsolidatorModule.submissionConsolidator,
-    dataStoreSubmitter
+    dataStoreSubmitter,
+    configModule.sdesConfig
   )
 
   private val destinationsSubmitter: DestinationsSubmitterAlgebra[FOpt] = new DestinationsSubmitter(

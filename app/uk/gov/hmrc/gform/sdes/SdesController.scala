@@ -18,24 +18,22 @@ package uk.gov.hmrc.gform.sdes
 
 import akka.stream.Materializer
 import akka.util.ByteString
+import cats.syntax.all._
 import play.api.libs.json.Json
 import play.api.mvc.ControllerComponents
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.objectstore.ObjectStoreAlgebra
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
+import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
-import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination.DataStore
 import uk.gov.hmrc.gform.sharedmodel.sdes.{ CorrelationId, NotificationStatus, SdesDestination, SdesSubmissionData }
-import uk.gov.hmrc.objectstore.client.Path
 
 import scala.concurrent.{ ExecutionContext, Future }
 
 class SdesController(
   cc: ControllerComponents,
   sdesAlgebra: SdesAlgebra[Future],
-  objectStoreAlgebra: ObjectStoreAlgebra[Future],
-  sdesBasePath: String,
-  dataStorebasePath: String
+  objectStoreAlgebra: ObjectStoreAlgebra[Future]
 )(implicit
   ex: ExecutionContext,
   m: Materializer
@@ -55,6 +53,15 @@ class SdesController(
       .map(pageData => Ok(Json.toJson(pageData)))
   }
 
+  def findByEnvelopeId(envelopeId: EnvelopeId) = Action.async { _ =>
+    sdesAlgebra.findSdesSubmissionByEnvelopeId(envelopeId).map {
+      case Nil =>
+        Ok(s"Not found. There are no data in mongo db collection 'sdesSubmission' for envelopeId: ${envelopeId.value}.")
+      case s :: Nil => Ok(Json.toJson(s))
+      case xs       => Ok(Json.toJson(xs))
+    }
+  }
+
   def find(correlationId: CorrelationId) = Action.async { _ =>
     sdesAlgebra.findSdesSubmission(correlationId).flatMap {
       case Some(s) => Future.successful(Ok(Json.toJson(SdesSubmissionData.fromSdesSubmission(s))))
@@ -67,16 +74,15 @@ class SdesController(
       sdesSubmission <- sdesAlgebra.findSdesSubmission(correlationId)
       result <- sdesSubmission match {
                   case Some(submission) =>
+                    val sdesDestination = submission.sdesDestination
+                    val paths = sdesDestination.objectStorePaths(submission.envelopeId)
                     for {
-                      objSummary <- submission.destination match {
-                                      case Some(DataStore) =>
+                      objSummary <- sdesDestination match {
+                                      case SdesDestination.DataStore | SdesDestination.DataStoreLegacy |
+                                          SdesDestination.HmrcIlluminate =>
                                         val fileName = s"${submission.envelopeId.value}.json"
-                                        val envelopeDirectory = Path.Directory(
-                                          s"${dataStorebasePath}envelopes/${submission.envelopeId.value}"
-                                        )
-
                                         for {
-                                          maybeObject <- objectStoreAlgebra.getFile(envelopeDirectory, fileName)
+                                          maybeObject <- objectStoreAlgebra.getFile(paths.permanent, fileName)
                                           objSummary <- maybeObject match {
                                                           case Some(obj) =>
                                                             val byteStringFuture: Future[ByteString] =
@@ -84,9 +90,7 @@ class SdesController(
 
                                                             byteStringFuture.flatMap { concatenatedByteString =>
                                                               objectStoreAlgebra.uploadFile(
-                                                                Path.Directory(
-                                                                  s"$sdesBasePath$dataStorebasePath"
-                                                                ),
+                                                                paths.ephemeral,
                                                                 fileName,
                                                                 concatenatedByteString,
                                                                 ContentType.`application/json`
@@ -100,7 +104,8 @@ class SdesController(
                                                             )
                                                         }
                                         } yield objSummary
-                                      case _ => objectStoreAlgebra.zipFiles(submission.envelopeId)
+                                      case SdesDestination.Dms =>
+                                        objectStoreAlgebra.zipFiles(submission.envelopeId, paths)
                                     }
                       res <- sdesAlgebra.notifySDES(submission, objSummary)
                     } yield res
@@ -124,4 +129,42 @@ class SdesController(
       NoContent
     }
   }
+
+  def getSdesSubmissionsDestinations() = Action.async { _ =>
+    sdesAlgebra
+      .getSdesSubmissionsDestination()
+      .map { sdesDestination =>
+        Ok(Json.toJson(sdesDestination))
+      }
+  }
+
+  def sdesMigration(from: String, to: String) = Action.async { _ =>
+    (from, to) match {
+      case ("DataStore", "DataStoreLegacy") =>
+        sdesAlgebra.getSdesSubmissionsDestination().flatMap { stats =>
+          stats.find(_.destination === to) match {
+            case Some(destination) =>
+              BadRequest(s"Invalid migration. 'DataStoreLegacy' destination already exists: $destination").pure[Future]
+            case None => runMigration(from, to)
+          }
+        }
+      case ("DataStoreLegacy", "DataStore") =>
+        sdesAlgebra.getSdesSubmissionsDestination().flatMap { stats =>
+          stats.find(_.destination === to) match {
+            case Some(destination) =>
+              BadRequest(s"Invalid migration. 'DataStore' destination already exists: $destination").pure[Future]
+            case None => runMigration(from, to)
+          }
+        }
+      case _ =>
+        BadRequest("Invalid migration. Only 'DataStore' -> 'DataStoreLegacy' or back is allowed").pure[Future]
+    }
+  }
+
+  private def runMigration(from: String, to: String) =
+    sdesAlgebra
+      .sdesMigration(from, to)
+      .map { modifiedCount =>
+        Ok(modifiedCount.toString)
+      }
 }

@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.gform.sdes
 
+import com.mongodb.client.result.UpdateResult
 import org.mongodb.scala.model.{ IndexModel, IndexOptions, Indexes }
 import uk.gov.hmrc.gform.akka.AkkaModule
 import uk.gov.hmrc.gform.config.ConfigModule
@@ -58,8 +59,8 @@ class SdesModule(
 )(implicit ex: ExecutionContext) {
 
   private val sdesBaseUrl = configModule.serviceConfig.baseUrl("sdes")
-  private val sdesBasePath = configModule.serviceConfig.getString("microservice.services.sdes.base-path")
-  private val fileLocationUrl = configModule.serviceConfig.getString("microservice.services.sdes.file-location-url")
+  private val sdesBasePath = configModule.sdesConfig.basePath
+  private val fileLocationUrl = configModule.sdesConfig.fileLocationUrl
 
   private val repoSdesSubmission: Repo[SdesSubmission] =
     new Repo[SdesSubmission](
@@ -82,55 +83,33 @@ class SdesModule(
       )
     )
 
-  private val dmsAuthorizationToken = configModule.serviceConfig.getString("microservice.services.sdes.dms.api-key")
-  private val dmsInformationType =
-    configModule.serviceConfig.getString("microservice.services.sdes.dms.information-type")
-  private val dmsRecipientOrSender =
-    configModule.serviceConfig.getString("microservice.services.sdes.dms.recipient-or-sender")
-
-  private val dmsHeaders: Seq[(String, String)] = Seq(
-    "x-client-id"  -> dmsAuthorizationToken,
-    "Content-Type" -> "application/json"
-  )
+  private val sdesRouting: SdesRouting = configModule.sdesConfig.dms
 
   val dmsConnector: SdesConnector =
-    new SdesConnector(wSHttpModule.auditableWSHttp, sdesBaseUrl, sdesBasePath, dmsHeaders)
+    new SdesConnector(wSHttpModule.auditableWSHttp, sdesBaseUrl, sdesBasePath, sdesRouting)
 
   val dmsWorkItemRepo = new DmsWorkItemRepo(mongoModule.mongoComponent)
 
   val dmsWorkItemService: DmsWorkItemAlgebra[Future] = new DmsWorkItemService(
     dmsWorkItemRepo,
     envelopeModule.envelopeService,
-    dmsInformationType,
-    dmsRecipientOrSender,
+    sdesRouting,
     fileLocationUrl
   )
 
   val dmsWorkItemController: DmsWorkItemController =
     new DmsWorkItemController(configModule.controllerComponents, dmsWorkItemService)
 
-  private val dataStoreAuthorizationToken =
-    configModule.serviceConfig.getString("microservice.services.sdes.data-store.api-key")
-  private val dataStoreInformationType =
-    configModule.serviceConfig.getString("microservice.services.sdes.data-store.information-type")
-  private val dataStoreRecipientOrSender =
-    configModule.serviceConfig.getString("microservice.services.sdes.data-store.recipient-or-sender")
-
-  private val dataStoreHeaders: Seq[(String, String)] = Seq(
-    "x-client-id"  -> dataStoreAuthorizationToken,
-    "Content-Type" -> "application/json"
-  )
+  private val dataStoreRouting: SdesRouting = configModule.sdesConfig.dataStore
 
   val dataStoreConnector: SdesConnector =
-    new SdesConnector(wSHttpModule.auditableWSHttp, sdesBaseUrl, sdesBasePath, dataStoreHeaders)
+    new SdesConnector(wSHttpModule.auditableWSHttp, sdesBaseUrl, sdesBasePath, dataStoreRouting)
 
   val dataStoreWorkItemRepo = new DataStoreWorkItemRepo(mongoModule.mongoComponent)
 
   private val dataStoreWorkItemService: DataStoreWorkItemAlgebra[Future] = new DataStoreWorkItemService(
     dataStoreWorkItemRepo,
     envelopeModule.envelopeService,
-    dataStoreInformationType,
-    dataStoreRecipientOrSender,
     fileLocationUrl
   )
 
@@ -144,7 +123,8 @@ class SdesModule(
       repoSdesSubmission,
       dmsWorkItemService,
       dataStoreWorkItemService,
-      envelopeModule.envelopeService
+      envelopeModule.envelopeService,
+      configModule.sdesConfig
     )
 
   private val alertSdesDestination: Option[Seq[String]] =
@@ -169,25 +149,18 @@ class SdesModule(
     alertSdesMongodbLockTimeoutDuration
   )
 
-  private val dataStoreFileBasePath = configModule.serviceConfig.getString("object-store.base-filepath.data-store")
-  private val sdesFileBasePath = configModule.serviceConfig.getString("object-store.base-filepath.sdes")
-
   val sdesCallbackController: SdesCallbackController =
     new SdesCallbackController(
       configModule.controllerComponents,
       sdesService,
-      objectStoreModule.objectStoreService,
-      sdesFileBasePath,
-      dataStoreFileBasePath
+      objectStoreModule.objectStoreService
     )
 
   val sdesController: SdesController =
     new SdesController(
       configModule.controllerComponents,
       sdesService,
-      objectStoreModule.objectStoreService,
-      sdesFileBasePath,
-      dataStoreFileBasePath
+      objectStoreModule.objectStoreService
     )(ex, akkaModule.materializer)
 
   val foptSdesService: SdesAlgebra[FOpt] = new SdesAlgebra[FOpt] {
@@ -217,6 +190,9 @@ class SdesModule(
     override def findSdesSubmission(correlationId: CorrelationId): FOpt[Option[SdesSubmission]] =
       fromFutureA(sdesService.findSdesSubmission(correlationId))
 
+    override def findSdesSubmissionByEnvelopeId(envelopeId: EnvelopeId): FOpt[List[SdesSubmission]] =
+      fromFutureA(sdesService.findSdesSubmissionByEnvelopeId(envelopeId))
+
     override def search(
       page: Int,
       pageSize: Int,
@@ -231,6 +207,12 @@ class SdesModule(
     override def updateAsManualConfirmed(correlation: CorrelationId): FOpt[Unit] =
       fromFutureA(sdesService.updateAsManualConfirmed(correlation))
 
+    override def getSdesSubmissionsDestination(): FOpt[Seq[SdesSubmissionsStats]] =
+      fromFutureA(sdesService.getSdesSubmissionsDestination())
+
+    override def sdesMigration(from: String, to: String): FOpt[UpdateResult] =
+      fromFutureA(sdesService.sdesMigration(from, to))
+
   }
 
   val foptDataStoreWorkItemService: DataStoreWorkItemAlgebra[FOpt] = new DataStoreWorkItemAlgebra[FOpt] {
@@ -238,12 +220,21 @@ class SdesModule(
       envelopeId: EnvelopeId,
       formTemplateId: FormTemplateId,
       submissionRef: SubmissionRef,
-      objWithSummary: ObjectSummaryWithMd5
+      objWithSummary: ObjectSummaryWithMd5,
+      dataStoreRouting: SdesRouting,
+      destination: SdesDestination
     ): FOpt[Unit] =
-      fromFutureA(dataStoreWorkItemService.pushWorkItem(envelopeId, formTemplateId, submissionRef, objWithSummary))
+      fromFutureA(
+        dataStoreWorkItemService
+          .pushWorkItem(envelopeId, formTemplateId, submissionRef, objWithSummary, dataStoreRouting, destination)
+      )
 
-    override def createNotifyRequest(objSummary: ObjectSummaryWithMd5, correlationId: String): SdesNotifyRequest =
-      dataStoreWorkItemService.createNotifyRequest(objSummary, correlationId)
+    override def createNotifyRequest(
+      objSummary: ObjectSummaryWithMd5,
+      correlationId: String,
+      dataStoreRouting: SdesRouting
+    ): SdesNotifyRequest =
+      dataStoreWorkItemService.createNotifyRequest(objSummary, correlationId, dataStoreRouting)
 
     override def search(
       page: Int,
@@ -256,6 +247,10 @@ class SdesModule(
     override def enqueue(id: String): FOpt[Unit] = fromFutureA(dataStoreWorkItemService.enqueue(id))
 
     override def find(id: String): FOpt[Option[WorkItem[SdesWorkItem]]] = fromFutureA(dataStoreWorkItemService.find(id))
+
+    override def findByEnvelopeId(envelopeId: EnvelopeId): FOpt[List[WorkItem[SdesWorkItem]]] = fromFutureA(
+      dataStoreWorkItemService.findByEnvelopeId(envelopeId)
+    )
 
     override def delete(id: String): FOpt[Unit] = fromFutureA(dataStoreWorkItemService.delete(id))
   }

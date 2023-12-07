@@ -31,6 +31,7 @@ import uk.gov.hmrc.gform.sharedmodel.form.{ FormId, FormStatus }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationIncludeIf.{ HandlebarValue, IncludeIfValue }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.SubmissionConsolidator
 import uk.gov.hmrc.gform.sharedmodel.notifier.NotifierPersonalisationFieldId
+import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination
 
 sealed trait DestinationWithCustomerId {
   def customerId(): Expr
@@ -79,6 +80,7 @@ object Destination {
 
   case class DataStore(
     id: DestinationId,
+    routing: SdesDestination,
     includeIf: DestinationIncludeIf,
     failOnError: Boolean,
     formId: FormId,
@@ -258,13 +260,15 @@ case class UploadableDataStoreDestination(
   includeSessionInfo: Option[Boolean],
   convertSingleQuotes: Option[Boolean],
   handlebarPayload: Boolean,
-  formDataPayload: Boolean
+  formDataPayload: Boolean,
+  routing: SdesDestination
 ) {
   def toDataStoreDestination: Either[String, Destination.DataStore] =
     for {
       cvii <- addErrorInfo(id, convertSingleQuotes, includeIf)
     } yield Destination.DataStore(
       id,
+      routing,
       cvii,
       failOnError.getOrElse(false),
       formId,

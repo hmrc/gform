@@ -18,28 +18,54 @@ package uk.gov.hmrc.gform.sharedmodel.sdes
 
 import cats.Eq
 import play.api.libs.json.Format
+import uk.gov.hmrc.gform.objectstore.ObjectStorePaths
+import uk.gov.hmrc.gform.sdes.{ SdesConfig, SdesRouting }
+import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.ADTFormat
 
-sealed trait SdesDestination extends Product with Serializable
+sealed trait SdesDestination extends Product with Serializable {
+  def sdesRouting(sdesConfig: SdesConfig): SdesRouting = this match {
+    case SdesDestination.HmrcIlluminate  => sdesConfig.hmrcIlluminate
+    case SdesDestination.DataStore       => sdesConfig.dataStore
+    case SdesDestination.DataStoreLegacy => sdesConfig.hmrcIlluminate
+    case SdesDestination.Dms             => sdesConfig.dms
+  }
+
+  def objectStorePaths(envelopeId: EnvelopeId): ObjectStorePaths =
+    this match {
+      case SdesDestination.HmrcIlluminate  => ObjectStorePaths.hmrcIlluminatePaths(envelopeId)
+      case SdesDestination.DataStore       => ObjectStorePaths.dataStorePaths(envelopeId)
+      case SdesDestination.DataStoreLegacy => ObjectStorePaths.dataStorePaths(envelopeId)
+      case SdesDestination.Dms             => ObjectStorePaths.dmsPaths(envelopeId)
+    }
+}
 
 object SdesDestination {
   case object Dms extends SdesDestination
+  case object HmrcIlluminate extends SdesDestination
+  case object DataStoreLegacy extends SdesDestination // Alias for HmrcIlluminate (deprecated)
   case object DataStore extends SdesDestination
 
   implicit val equal: Eq[SdesDestination] = Eq.fromUniversalEquals
   implicit val format: Format[SdesDestination] =
     ADTFormat.formatEnumeration(
-      "Dms"       -> Dms,
-      "DataStore" -> DataStore
+      "Dms"             -> Dms,
+      "HmrcIlluminate"  -> HmrcIlluminate,
+      "DataStoreLegacy" -> DataStoreLegacy,
+      "DataStore"       -> DataStore
     )
 
   def fromName(destination: SdesDestination): String = destination match {
-    case Dms       => "Dms"
-    case DataStore => "DataStore"
+    case Dms             => "Dms"
+    case HmrcIlluminate  => "HmrcIlluminate"
+    case DataStoreLegacy => "DataStoreLegacy"
+    case DataStore       => "DataStore"
   }
 
   def fromString(destination: String): SdesDestination = destination match {
-    case "Dms"       => Dms
-    case "DataStore" => DataStore
+    case "Dms"             => Dms
+    case "HmrcIlluminate"  => HmrcIlluminate
+    case "DataStoreLegacy" => DataStoreLegacy
+    case "DataStore"       => DataStore
   }
 }

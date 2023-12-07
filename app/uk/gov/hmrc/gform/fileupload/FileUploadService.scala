@@ -28,6 +28,7 @@ import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AllowedFileTypes, FormTemplateId }
+import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination
 import uk.gov.hmrc.gform.submission.{ PdfAndXmlSummaries, Submission }
 import uk.gov.hmrc.gform.time.TimeProvider
 import uk.gov.hmrc.http.HeaderCarrier
@@ -213,8 +214,9 @@ class FileUploadService(
     implicit hc: HeaderCarrier
   ): Future[Unit] =
     for {
-      objectSummary <- objectStoreService.zipFiles(envelopeId)
-      _             <- dmsWorkItemAlgebra.pushWorkItem(envelopeId, formTemplateId, submissionRef, objectSummary)
+      objectSummary <-
+        objectStoreService.zipFiles(envelopeId, SdesDestination.Dms.objectStorePaths(envelopeId))
+      _ <- dmsWorkItemAlgebra.pushWorkItem(envelopeId, formTemplateId, submissionRef, objectSummary)
     } yield ()
 }
 

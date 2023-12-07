@@ -86,11 +86,8 @@ class TestOnlyModule(
       proxyActions
     )
 
-  private val dataStoreBasePath = configModule.serviceConfig.getString("object-store.base-filepath.data-store")
-
   val testOnlyObjectStoreController: TestOnlyObjectStoreController = new TestOnlyObjectStoreController(
     configModule.controllerComponents,
-    objectStoreModule.objectStoreService,
-    dataStoreBasePath
+    objectStoreModule.objectStoreService
   )(ex, akkaModule.materializer)
 }

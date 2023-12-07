@@ -18,16 +18,22 @@ package uk.gov.hmrc.gform.sdes
 
 import org.slf4j.LoggerFactory
 import play.api.libs.json.Json
+import uk.gov.hmrc.gform.sdes.SdesRouting
 import uk.gov.hmrc.gform.sharedmodel.sdes.SdesNotifyRequest
 import uk.gov.hmrc.gform.wshttp.{ FutureHttpResponseSyntax, WSHttp }
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpReads, HttpReadsInstances, HttpResponse }
 
 import scala.concurrent.{ ExecutionContext, Future }
 
-class SdesConnector(wSHttp: WSHttp, sdesBaseUrl: String, sdesBasePath: String, headers: Seq[(String, String)])(implicit
+class SdesConnector(wSHttp: WSHttp, sdesBaseUrl: String, sdesBasePath: String, sdesRouting: SdesRouting)(implicit
   ex: ExecutionContext
 ) {
   private val logger = LoggerFactory.getLogger(getClass)
+
+  private val headers: Seq[(String, String)] = Seq(
+    "x-client-id"  -> sdesRouting.apiKey,
+    "Content-Type" -> "application/json"
+  )
 
   implicit val legacyRawReads: HttpReads[HttpResponse] =
     HttpReadsInstances.throwOnFailure(HttpReadsInstances.readEitherOf(HttpReadsInstances.readRaw))

@@ -23,6 +23,7 @@ import cats.syntax.flatMap._
 import cats.syntax.functor._
 import uk.gov.hmrc.gform.logging.Loggers
 import uk.gov.hmrc.gform.notifier.NotifierAlgebra
+import uk.gov.hmrc.gform.sdes.SdesConfig
 import uk.gov.hmrc.gform.sharedmodel.{ DestinationEvaluation, DestinationResult, EmailVerifierService, LangADT, PdfHtml, UserSession }
 import uk.gov.hmrc.gform.sharedmodel.form.{ FormData, FormId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations._
@@ -40,6 +41,7 @@ class DestinationSubmitter[M[_]](
   destinationAuditer: Option[DestinationAuditAlgebra[M]],
   submissionConsolidator: SubmissionConsolidatorAlgebra[M],
   dataStore: DataStoreSubmitterAlgebra[M],
+  sdesConfig: SdesConfig,
   handlebarsTemplateProcessor: HandlebarsTemplateProcessor = RealHandlebarsTemplateProcessor
 )(implicit monadError: MonadError[M, String])
     extends DestinationSubmitterAlgebra[M] {
@@ -278,10 +280,13 @@ class DestinationSubmitter[M[_]](
       accumulatedModel,
       modelTree
     )
+    val dataStoreRouting = d.routing.sdesRouting(sdesConfig)
     monadError.handleErrorWith(
       dataStore.submitPayload(
         submissionInfo,
-        payload
+        payload,
+        dataStoreRouting,
+        d.routing
       )
     ) { msg =>
       if (d.failOnError)

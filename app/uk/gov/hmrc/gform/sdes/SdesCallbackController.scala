@@ -22,9 +22,7 @@ import play.api.mvc.{ Action, ControllerComponents }
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.objectstore.ObjectStoreAlgebra
 import uk.gov.hmrc.gform.sharedmodel.sdes.NotificationStatus.FileProcessed
-import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination.DataStore
-import uk.gov.hmrc.gform.sharedmodel.sdes.{ CallBackNotification, CorrelationId }
-import uk.gov.hmrc.objectstore.client.Path
+import uk.gov.hmrc.gform.sharedmodel.sdes.{ CallBackNotification, CorrelationId, SdesDestination }
 
 import java.time.Instant
 import scala.concurrent.{ ExecutionContext, Future }
@@ -32,27 +30,23 @@ import scala.concurrent.{ ExecutionContext, Future }
 class SdesCallbackController(
   cc: ControllerComponents,
   sdesAlgebra: SdesAlgebra[Future],
-  objectStoreAlgebra: ObjectStoreAlgebra[Future],
-  sdesFileBasePath: String,
-  dataStoreFileBasePath: String
+  objectStoreAlgebra: ObjectStoreAlgebra[Future]
 )(implicit ex: ExecutionContext)
     extends BaseController(cc) {
   private val logger = LoggerFactory.getLogger(getClass)
-
   def callback: Action[CallBackNotification] = Action.async(parse.json[CallBackNotification]) { implicit request =>
     val CallBackNotification(responseStatus, fileName, correlationID, responseFailureReason) = request.body
     logger.info(
-      s"SDES: Received callback for fileName: $fileName, correlationId : $correlationID, status : $responseStatus and failedReason: ${responseFailureReason
-        .getOrElse("")} "
+      s"SDES: Received callback for fileName: $fileName, correlationId: $correlationID, status: $responseStatus and failedReason: $responseFailureReason"
     )
 
     for {
       maybeSdesSubmission <- sdesAlgebra.findSdesSubmission(CorrelationId(correlationID))
       _ <- maybeSdesSubmission match {
              case Some(sdesSubmission) =>
+               val envelopeId = sdesSubmission.envelopeId
                logger.info(
-                 s"Received callback for envelopeId: ${sdesSubmission.envelopeId.value}, destination: ${sdesSubmission.destination
-                   .getOrElse("dms")}"
+                 s"Received callback for envelopeId: $envelopeId, destination: ${sdesSubmission.destination.getOrElse("dms")}"
                )
                val updatedSdesSubmission = sdesSubmission.copy(
                  isProcessed = responseStatus === FileProcessed,
@@ -63,13 +57,13 @@ class SdesCallbackController(
                for {
                  _ <- sdesAlgebra.saveSdesSubmission(updatedSdesSubmission)
                  _ <- if (responseStatus === FileProcessed) {
-                        sdesSubmission.destination match {
-                          case Some(DataStore) =>
-                            objectStoreAlgebra.deleteFile(
-                              Path.Directory(s"$sdesFileBasePath$dataStoreFileBasePath"),
-                              fileName
-                            )
-                          case _ => objectStoreAlgebra.deleteZipFile(sdesSubmission.envelopeId)
+                        val sdesDestination = sdesSubmission.sdesDestination
+                        val paths = sdesDestination.objectStorePaths(envelopeId)
+                        sdesDestination match {
+                          case SdesDestination.DataStore | SdesDestination.DataStoreLegacy |
+                              SdesDestination.HmrcIlluminate =>
+                            objectStoreAlgebra.deleteFile(paths.ephemeral, fileName)
+                          case SdesDestination.Dms => objectStoreAlgebra.deleteZipFile(envelopeId, paths)
                         }
                       } else Future.unit
                } yield ()

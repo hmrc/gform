@@ -25,10 +25,11 @@ import org.mongodb.scala.model.Filters.equal
 import uk.gov.hmrc.gform.envelope.EnvelopeAlgebra
 import uk.gov.hmrc.gform.fileupload.FileUploadService
 import uk.gov.hmrc.gform.scheduler.dms.DmsWorkItemRepo
+import uk.gov.hmrc.gform.sdes.SdesRouting
 import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
-import uk.gov.hmrc.gform.sharedmodel.sdes.{ CorrelationId, FileAudit, FileChecksum, FileMetaData, SdesNotifyRequest, SdesWorkItem, SdesWorkItemData, SdesWorkItemPageData }
+import uk.gov.hmrc.gform.sharedmodel.sdes.{ CorrelationId, FileAudit, FileChecksum, FileMetaData, SdesDestination, SdesNotifyRequest, SdesWorkItem, SdesWorkItemData, SdesWorkItemPageData }
 import uk.gov.hmrc.mongo.workitem.{ ProcessingStatus, WorkItem }
 import uk.gov.hmrc.objectstore.client.ObjectSummaryWithMd5
 
@@ -59,14 +60,15 @@ trait DmsWorkItemAlgebra[F[_]] {
 
   def find(id: String): F[Option[WorkItem[SdesWorkItem]]]
 
+  def findByEnvelopeId(envelopeId: EnvelopeId): F[List[WorkItem[SdesWorkItem]]]
+
   def delete(id: String): F[Unit]
 }
 
 class DmsWorkItemService(
   dmsWorkItemRepo: DmsWorkItemRepo,
   envelopeAlgebra: EnvelopeAlgebra[Future],
-  informationType: String,
-  recipientOrSender: String,
+  dmsRouting: SdesRouting,
   fileLocationUrl: String
 )(implicit ec: ExecutionContext)
     extends DmsWorkItemAlgebra[Future] {
@@ -79,7 +81,14 @@ class DmsWorkItemService(
     val correlationId = UUID.randomUUID().toString
     val sdesNotifyRequest = createNotifyRequest(objWithSummary, correlationId)
     val sdesWorkItem =
-      SdesWorkItem(CorrelationId(correlationId), envelopeId, formTemplateId, submissionRef, sdesNotifyRequest)
+      SdesWorkItem(
+        CorrelationId(correlationId),
+        envelopeId,
+        formTemplateId,
+        submissionRef,
+        sdesNotifyRequest,
+        SdesDestination.Dms
+      )
     dmsWorkItemRepo.pushNew(sdesWorkItem).void
   }
 
@@ -88,9 +97,9 @@ class DmsWorkItemService(
     correlationId: String
   ): SdesNotifyRequest =
     SdesNotifyRequest(
-      informationType,
+      dmsRouting.informationType,
       FileMetaData(
-        recipientOrSender,
+        dmsRouting.recipientOrSender,
         objSummary.location.fileName,
         s"$fileLocationUrl${objSummary.location.asUri}",
         FileChecksum(value = Base64.getDecoder.decode(objSummary.contentMd5.value).map("%02x".format(_)).mkString),
@@ -135,4 +144,9 @@ class DmsWorkItemService(
 
   override def find(id: String): Future[Option[WorkItem[SdesWorkItem]]] =
     dmsWorkItemRepo.findById(new ObjectId(id))
+
+  override def findByEnvelopeId(envelopeId: EnvelopeId): Future[List[WorkItem[SdesWorkItem]]] = {
+    val query = Filters.equal("item.envelopeId", envelopeId.value)
+    dmsWorkItemRepo.collection.find(query).toFuture().map(_.toList)
+  }
 }

@@ -20,7 +20,6 @@ import org.slf4j.{ Logger, LoggerFactory }
 import uk.gov.hmrc.gform.core.FutureSyntax
 import uk.gov.hmrc.gform.scheduler.{ QueueAlgebra, WorkItemRepo }
 import uk.gov.hmrc.gform.sdes.SdesAlgebra
-import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination.DataStore
 import uk.gov.hmrc.gform.sharedmodel.sdes.SdesWorkItem
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.mongo.workitem.WorkItem
@@ -48,7 +47,7 @@ class DataStoreQueueService(
         workItem.formTemplateId,
         workItem.submissionRef,
         workItem.sdesNotifyRequest,
-        DataStore
+        workItem.destination
       )
       .void(ec)
   }

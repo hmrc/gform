@@ -22,50 +22,52 @@ import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.objectstore.ObjectStoreAlgebra
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
-import uk.gov.hmrc.objectstore.client.Path
+import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination
 
 import scala.concurrent.{ ExecutionContext, Future }
 
 class TestOnlyObjectStoreController(
   controllerComponents: ControllerComponents,
-  objectStoreAlgebra: ObjectStoreAlgebra[Future],
-  dataStoreBasePath: String
+  objectStoreAlgebra: ObjectStoreAlgebra[Future]
 )(implicit
   ex: ExecutionContext,
   m: Materializer
 ) extends BaseController(controllerComponents) {
 
   def downloadDmsFiles(envelopeId: EnvelopeId) = Action.async { implicit request =>
-    objectStoreAlgebra.getZipFile(envelopeId) map {
-      case Some(objectSource) =>
-        Ok.streamed(
-          objectSource.content,
-          contentLength = Some(objectSource.metadata.contentLength),
-          contentType = Some(objectSource.metadata.contentType)
-        ).as("application/zip")
-          .withHeaders(
-            Results.contentDispositionHeader(inline = false, name = Some(s"${envelopeId.value}.zip")).toList: _*
-          )
-      case None => BadRequest(s"Envelope with id: $envelopeId not found")
-    }
+    val paths = SdesDestination.Dms.objectStorePaths(envelopeId)
+    objectStoreAlgebra
+      .getZipFile(envelopeId, paths)
+      .map {
+        case Some(objectSource) =>
+          Ok.streamed(
+            objectSource.content,
+            contentLength = Some(objectSource.metadata.contentLength),
+            contentType = Some(objectSource.metadata.contentType)
+          ).as("application/zip")
+            .withHeaders(
+              Results.contentDispositionHeader(inline = false, name = Some(s"${envelopeId.value}.zip")).toList: _*
+            )
+        case None => BadRequest(s"Envelope with id: $envelopeId not found")
+      }
   }
 
   def downloadDataStoreFile(envelopeId: EnvelopeId) = Action.async { implicit request =>
-    objectStoreAlgebra.getFile(
-      Path.Directory(s"${dataStoreBasePath}envelopes/${envelopeId.value}"),
-      s"${envelopeId.value}.json"
-    ) map {
-      case Some(objectSource) =>
-        Ok.streamed(
-          objectSource.content,
-          contentLength = Some(objectSource.metadata.contentLength),
-          contentType = Some(objectSource.metadata.contentType)
-        ).as(ContentType.`application/json`.value)
-          .withHeaders(
-            Results.contentDispositionHeader(inline = false, name = Some(s"${envelopeId.value}.json")).toList: _*
-          )
-      case None => BadRequest(s"Envelope with id: $envelopeId not found")
-    }
+    val paths = SdesDestination.DataStore.objectStorePaths(envelopeId)
+    objectStoreAlgebra
+      .getFile(paths.permanent, s"${envelopeId.value}.json")
+      .map {
+        case Some(objectSource) =>
+          Ok.streamed(
+            objectSource.content,
+            contentLength = Some(objectSource.metadata.contentLength),
+            contentType = Some(objectSource.metadata.contentType)
+          ).as(ContentType.`application/json`.value)
+            .withHeaders(
+              Results.contentDispositionHeader(inline = false, name = Some(s"${envelopeId.value}.json")).toList: _*
+            )
+        case None => BadRequest(s"Envelope with id: $envelopeId not found")
+      }
   }
 
 }
