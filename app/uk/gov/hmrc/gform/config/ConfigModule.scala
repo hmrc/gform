@@ -19,6 +19,8 @@ package uk.gov.hmrc.gform.config
 import com.typesafe.config.{ Config => TypeSafeConfig }
 import play.api.Configuration
 import play.api.mvc.ControllerComponents
+import uk.gov.hmrc.gform.notifier.NotifierConfig
+import uk.gov.hmrc.gform.sdes.SdesConfig
 import uk.gov.hmrc.gform.sharedmodel.config.ExposedConfig
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.ProfileName
 import uk.gov.hmrc.http.Authorization
@@ -28,7 +30,6 @@ import scala.concurrent.ExecutionContext
 import scala.util.Try
 import pureconfig.generic.auto._
 import pureconfig.ConfigSource
-import uk.gov.hmrc.gform.notifier.NotifierConfig
 
 class ConfigModule(
   val configuration: Configuration,
@@ -43,6 +44,8 @@ class ConfigModule(
 
   val desConfig: DesConnectorConfig =
     ConfigSource.default.at("microservice.services.etmp-hod").loadOrThrow[DesConnectorConfig]
+
+  val sdesConfig: SdesConfig = ConfigSource.default.at("microservice.services.sdes").loadOrThrow[SdesConfig]
 
   val controllerConfigs = ControllerConfigs.fromConfig(configuration)
 
@@ -147,4 +150,4 @@ class ConfigModule(
   }
 }
 
-case class DesConnectorConfig(basePath: String, authorizationToken: String, environment: String)
+final case class DesConnectorConfig(basePath: String, authorizationToken: String, environment: String)

@@ -33,8 +33,7 @@ import scala.concurrent.{ ExecutionContext, Future }
 
 class ObjectStoreConnector(
   objectStoreClient: PlayObjectStoreClient,
-  objectStoreClientConfig: ObjectStoreClientConfig,
-  sdesBasePath: String
+  objectStoreClientConfig: ObjectStoreClientConfig
 )(implicit ex: ExecutionContext, actorSystem: ActorSystem) {
 
   private val zipExtension = ".zip"
@@ -103,22 +102,24 @@ class ObjectStoreConnector(
       path = directory.file(fileName)
     )
 
-  def zipFiles(envelopeId: EnvelopeId)(implicit
+  def zipFiles(envelopeId: EnvelopeId, objectStorePaths: ObjectStorePaths)(implicit
     hc: HeaderCarrier
   ): Future[ObjectSummaryWithMd5] =
     objectStoreClient.zip(
       from = directory(envelopeId.value),
-      to = Path.Directory(s"$sdesBasePath").file(s"${envelopeId.value}$zipExtension")
+      to = objectStorePaths.ephemeral.file(s"${envelopeId.value}$zipExtension")
     )
 
-  def deleteZipFile(envelopeId: EnvelopeId)(implicit hc: HeaderCarrier): Future[Unit] =
+  def deleteZipFile(envelopeId: EnvelopeId, objectStorePaths: ObjectStorePaths)(implicit
+    hc: HeaderCarrier
+  ): Future[Unit] =
     objectStoreClient.deleteObject(
-      path = Path.Directory(s"$sdesBasePath").file(s"${envelopeId.value}$zipExtension")
+      path = objectStorePaths.ephemeral.file(s"${envelopeId.value}$zipExtension")
     )
 
-  def getZipFile(envelopeId: EnvelopeId)(implicit
+  def getZipFile(envelopeId: EnvelopeId, objectStorePaths: ObjectStorePaths)(implicit
     hc: HeaderCarrier
   ): Future[Option[client.Object[Source[ByteString, NotUsed]]]] =
     objectStoreClient
-      .getObject(path = Path.Directory(s"$sdesBasePath").file(s"${envelopeId.value}$zipExtension"))
+      .getObject(path = objectStorePaths.ephemeral.file(s"${envelopeId.value}$zipExtension"))
 }

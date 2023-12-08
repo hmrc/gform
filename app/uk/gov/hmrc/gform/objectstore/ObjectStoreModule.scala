@@ -48,7 +48,6 @@ class ObjectStoreModule(
   private val defaultRetentionPeriod = RetentionPeriod
     .parse(configModule.typesafeConfig.getString("object-store.default-retention-period"))
     .fold(m => throw new IllegalStateException(m), identity)
-  private val sdesBasePath = configModule.typesafeConfig.getString("object-store.base-filepath.sdes")
 
   private val objectStoreClientConfig = ObjectStoreClientConfig(
     baseUrl,
@@ -60,7 +59,7 @@ class ObjectStoreModule(
   val objectStoreClient = new PlayObjectStoreClient(wsClient, objectStoreClientConfig)(akkaModule.materializer, ex)
 
   val objectStoreConnector: ObjectStoreConnector =
-    new ObjectStoreConnector(objectStoreClient, objectStoreClientConfig, sdesBasePath)(
+    new ObjectStoreConnector(objectStoreClient, objectStoreClientConfig)(
       ex,
       akkaModule.actorSystem
     )
@@ -90,19 +89,21 @@ class ObjectStoreModule(
     override def deleteFile(envelopeId: EnvelopeId, fileId: FileId)(implicit hc: HeaderCarrier): FOpt[Unit] =
       fromFutureA(objectStoreService.deleteFile(envelopeId, fileId))
 
-    override def zipFiles(envelopeId: EnvelopeId)(implicit
+    override def zipFiles(envelopeId: EnvelopeId, objectStorePaths: ObjectStorePaths)(implicit
       hc: HeaderCarrier
     ): FOpt[ObjectSummaryWithMd5] =
-      fromFutureA(objectStoreService.zipFiles(envelopeId))
+      fromFutureA(objectStoreService.zipFiles(envelopeId, objectStorePaths))
 
-    override def deleteZipFile(envelopeId: EnvelopeId)(implicit hc: HeaderCarrier): FOpt[Unit] =
-      fromFutureA(objectStoreService.deleteZipFile(envelopeId))
+    override def deleteZipFile(envelopeId: EnvelopeId, objectStorePaths: ObjectStorePaths)(implicit
+      hc: HeaderCarrier
+    ): FOpt[Unit] =
+      fromFutureA(objectStoreService.deleteZipFile(envelopeId, objectStorePaths))
 
-    override def getZipFile(envelopeId: EnvelopeId)(implicit
+    override def getZipFile(envelopeId: EnvelopeId, objectStorePaths: ObjectStorePaths)(implicit
       hc: HeaderCarrier,
       m: Materializer
     ): FOpt[Option[client.Object[Source[ByteString, NotUsed]]]] =
-      fromFutureA(objectStoreService.getZipFile(envelopeId))
+      fromFutureA(objectStoreService.getZipFile(envelopeId, objectStorePaths))
 
     override def isObjectStore(envelopeId: EnvelopeId): FOpt[Boolean] =
       fromFutureA(objectStoreService.isObjectStore(envelopeId))

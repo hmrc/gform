@@ -19,9 +19,10 @@ package uk.gov.hmrc.gform.sdes.datastore
 import play.api.libs.json.Json
 import play.api.mvc.ControllerComponents
 import uk.gov.hmrc.gform.controllers.BaseController
+import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
-import uk.gov.hmrc.gform.sharedmodel.sdes.SdesWorkItemData
-import uk.gov.hmrc.mongo.workitem.ProcessingStatus
+import uk.gov.hmrc.gform.sharedmodel.sdes.{ SdesWorkItem, SdesWorkItemData }
+import uk.gov.hmrc.mongo.workitem.{ ProcessingStatus, WorkItem, WorkItemFields }
 
 import scala.concurrent.{ ExecutionContext, Future }
 
@@ -59,6 +60,18 @@ class DataStoreWorkItemController(
   def delete(id: String) = Action.async { _ =>
     dataStoreWorkItemAlgebra.delete(id).map { _ =>
       NoContent
+    }
+  }
+
+  implicit val workItemFormat = WorkItem.formatForFields[SdesWorkItem](WorkItemFields.default)
+  def getByEnvelopeId(envelopeId: EnvelopeId) = Action.async { _ =>
+    dataStoreWorkItemAlgebra.findByEnvelopeId(envelopeId).map {
+      case Nil =>
+        Ok(
+          s"Not found. There are no data in mongo db collection 'dataStoreWorkItem' for envelopeId: ${envelopeId.value}."
+        )
+      case w :: Nil => Ok(Json.toJson(w))
+      case ws       => Ok(Json.toJson(ws))
     }
   }
 }

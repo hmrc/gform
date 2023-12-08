@@ -20,7 +20,9 @@ import akka.util.ByteString
 import play.api.libs.json.{ JsObject, Json }
 import scala.util.Try
 import uk.gov.hmrc.gform.core.FOpt
+import uk.gov.hmrc.gform.sdes.SdesRouting
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DestinationId, HandlebarsTemplateProcessorModel, TemplateType }
+import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination
 import uk.gov.hmrc.gform.sharedmodel.{ DataStoreMetaData, LangADT, UserSession }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.DataStore
 import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
@@ -32,7 +34,6 @@ import uk.gov.hmrc.gform.objectstore.ObjectStoreAlgebra
 import uk.gov.hmrc.gform.sdes.datastore.DataStoreWorkItemAlgebra
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.objectstore.client.Path
 
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -40,9 +41,7 @@ import scala.concurrent.ExecutionContext
 
 class DataStoreSubmitter(
   objectStoreAlgebra: ObjectStoreAlgebra[FOpt],
-  dataStoreWorkItemAlgebra: DataStoreWorkItemAlgebra[FOpt],
-  dataStoreBasePath: String,
-  sdesBasePath: String
+  dataStoreWorkItemAlgebra: DataStoreWorkItemAlgebra[FOpt]
 )(implicit
   ec: ExecutionContext
 ) extends DataStoreSubmitterAlgebra[FOpt] {
@@ -124,7 +123,9 @@ class DataStoreSubmitter(
 
   override def submitPayload(
     submissionInfo: DestinationSubmissionInfo,
-    payload: String
+    payload: String,
+    dataStoreRouting: SdesRouting,
+    destination: SdesDestination
   ): FOpt[Unit] = {
     implicit val hc = new HeaderCarrier
 
@@ -132,16 +133,17 @@ class DataStoreSubmitter(
 
     val fileName = s"${submission.envelopeId.value}.json"
     val byteString = ByteString(payload.getBytes)
+    val paths = destination.objectStorePaths(submission.envelopeId)
     for {
       _ <- objectStoreAlgebra.uploadFile(
-             Path.Directory(s"${dataStoreBasePath}envelopes/${submission.envelopeId.value}"),
+             paths.permanent,
              fileName,
              byteString,
              ContentType.`application/json`
            )
 
       objWithSummary <- objectStoreAlgebra.uploadFile(
-                          Path.Directory(s"$sdesBasePath$dataStoreBasePath"),
+                          paths.ephemeral,
                           fileName,
                           byteString,
                           ContentType.`application/json`
@@ -150,7 +152,9 @@ class DataStoreSubmitter(
              submission.envelopeId,
              submission.dmsMetaData.formTemplateId,
              submission.submissionRef,
-             objWithSummary
+             objWithSummary,
+             dataStoreRouting,
+             destination
            )
     } yield ()
   }

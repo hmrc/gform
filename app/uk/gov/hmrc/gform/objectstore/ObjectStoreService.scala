@@ -84,15 +84,29 @@ trait ObjectStoreAlgebra[F[_]] {
 
   def deleteFile(directory: Path.Directory, fileName: String)(implicit hc: HeaderCarrier): F[Unit]
 
-  def getFile(directory: Path.Directory, fileName: String)(implicit
+  def getFile(
+    directory: Path.Directory,
+    fileName: String
+  )(implicit
     hc: HeaderCarrier
   ): F[Option[client.Object[Source[ByteString, NotUsed]]]]
 
-  def zipFiles(envelopeId: EnvelopeId)(implicit hc: HeaderCarrier): F[ObjectSummaryWithMd5]
+  def zipFiles(
+    envelopeId: EnvelopeId,
+    objectStorePaths: ObjectStorePaths
+  )(implicit
+    hc: HeaderCarrier
+  ): F[ObjectSummaryWithMd5]
 
-  def deleteZipFile(envelopeId: EnvelopeId)(implicit hc: HeaderCarrier): F[Unit]
+  def deleteZipFile(
+    envelopeId: EnvelopeId,
+    objectStorePaths: ObjectStorePaths
+  )(implicit hc: HeaderCarrier): F[Unit]
 
-  def getZipFile(envelopeId: EnvelopeId)(implicit
+  def getZipFile(
+    envelopeId: EnvelopeId,
+    objectStorePaths: ObjectStorePaths
+  )(implicit
     hc: HeaderCarrier,
     m: Materializer
   ): F[Option[client.Object[Source[ByteString, NotUsed]]]]
@@ -179,16 +193,27 @@ class ObjectStoreService(
   ): Future[Option[client.Object[Source[ByteString, NotUsed]]]] =
     objectStoreConnector.getFile(directory, fileName)
 
-  override def zipFiles(envelopeId: EnvelopeId)(implicit hc: HeaderCarrier): Future[ObjectSummaryWithMd5] =
-    objectStoreConnector.zipFiles(envelopeId)
+  override def zipFiles(
+    envelopeId: EnvelopeId,
+    objectStorePaths: ObjectStorePaths
+  )(implicit
+    hc: HeaderCarrier
+  ): Future[ObjectSummaryWithMd5] =
+    objectStoreConnector.zipFiles(envelopeId, objectStorePaths)
 
-  override def deleteZipFile(envelopeId: EnvelopeId)(implicit hc: HeaderCarrier): Future[Unit] =
-    objectStoreConnector.deleteZipFile(envelopeId)
+  override def deleteZipFile(
+    envelopeId: EnvelopeId,
+    objectStorePaths: ObjectStorePaths
+  )(implicit
+    hc: HeaderCarrier
+  ): Future[Unit] =
+    objectStoreConnector.deleteZipFile(envelopeId, objectStorePaths)
 
   override def getZipFile(
-    envelopeId: EnvelopeId
+    envelopeId: EnvelopeId,
+    objectStorePaths: ObjectStorePaths
   )(implicit hc: HeaderCarrier, m: Materializer): Future[Option[client.Object[Source[ByteString, NotUsed]]]] =
-    objectStoreConnector.getZipFile(envelopeId)
+    objectStoreConnector.getZipFile(envelopeId, objectStorePaths)
 
   override def isObjectStore(envelopeId: EnvelopeId): Future[Boolean] =
     envelopeService.find(envelopeId).map(e => e.isDefined)

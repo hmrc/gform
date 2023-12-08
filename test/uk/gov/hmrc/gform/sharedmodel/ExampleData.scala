@@ -27,6 +27,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.{ Dat
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DestinationList
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DataOutputFormat, DestinationId, DestinationIncludeIf }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.DestinationGen
+import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination
 import uk.gov.hmrc.gform.submission.{ DmsMetaData, Submission, SubmissionId }
 
 import java.time.LocalDateTime
@@ -55,6 +56,7 @@ trait ExampleAuthConfig extends DestinationGen {
 
   val dataStore = DataStore(
     DestinationId("TestDataStoreId"),
+    SdesDestination.DataStore,
     DestinationIncludeIf.HandlebarValue(""),
     true,
     FormId("TestHmrcDmsFormId"),

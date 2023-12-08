@@ -21,6 +21,7 @@ import cats.{ Applicative, MonadError }
 import org.scalacheck.Gen
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import uk.gov.hmrc.gform.notifier.NotifierAlgebra
+import uk.gov.hmrc.gform.sdes.{ SdesConfig, SdesRouting }
 import uk.gov.hmrc.gform.sharedmodel.{ DestinationEvaluation, DestinationResult, LangADT, PdfHtml, SubmissionRef, UserSession }
 import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormData, FormId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
@@ -801,6 +802,8 @@ class DestinationSubmitterSpec
     val destinationAuditer = mock[DestinationAuditAlgebra[Possible]]
     val submissionConsolidator = mock[SubmissionConsolidatorAlgebra[Possible]]
     val dataStoreSubmitter = mock[DataStoreSubmitterAlgebra[Possible]]
+    val sdesRouting = SdesRouting("api-key", "information-type", "recipient-or-sender")
+    val sdesConfig = SdesConfig("base-path", "file-location-url", sdesRouting, sdesRouting, sdesRouting)
     val submitter =
       new DestinationSubmitter[Possible](
         dmsSubmitter,
@@ -810,6 +813,7 @@ class DestinationSubmitterSpec
         Some(destinationAuditer),
         submissionConsolidator,
         dataStoreSubmitter,
+        sdesConfig,
         handlebarsTemplateProcessor
       )
 

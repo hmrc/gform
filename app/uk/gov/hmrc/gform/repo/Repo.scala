@@ -21,17 +21,19 @@ import cats.instances.long._
 import cats.syntax.either._
 import cats.syntax.eq._
 import com.mongodb.ReadPreference
+import com.mongodb.client.result.UpdateResult
 import org.mongodb.scala.Document
 import org.mongodb.scala.bson.BsonValue
 import org.mongodb.scala.bson.conversions.Bson
+import org.mongodb.scala.model.{ Aggregates, Field }
 import org.mongodb.scala.model.Filters._
+import org.mongodb.scala.model.Projections._
 import org.mongodb.scala.model.{ Filters, FindOneAndReplaceOptions, IndexModel, ReplaceOneModel, ReplaceOptions }
 import play.api.libs.json._
 import uk.gov.hmrc.gform.core.FOpt
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
-import org.mongodb.scala.model.Projections._
 
 import scala.concurrent.{ ExecutionContext, Future }
 
@@ -179,6 +181,14 @@ class Repo[T: OWrites: Manifest](
 
   def deleteAll(): FOpt[Unit] = EitherT {
     underlying.collection.deleteMany(Document()).toFuture().asEither
+  }
+
+  def sdesMigration(from: String, to: String): Future[UpdateResult] = {
+    val filter: Bson = Filters.equal("destination", from)
+    val update = Aggregates.set(
+      Field("destination", to)
+    )
+    underlying.collection.updateMany(filter, update).toFuture()
   }
 
   private def idSelector(item: T): Bson = Filters.equal("_id", idLens(item))

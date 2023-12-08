@@ -20,13 +20,15 @@ import play.api.libs.json.{ Format, Json, OFormat }
 import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
+import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination
 
 final case class SdesWorkItem(
   correlationId: CorrelationId,
   envelopeId: EnvelopeId,
   formTemplateId: FormTemplateId,
   submissionRef: SubmissionRef,
-  sdesNotifyRequest: SdesNotifyRequest
+  sdesNotifyRequest: SdesNotifyRequest,
+  destination: SdesDestination
 )
 
 object SdesWorkItem {
