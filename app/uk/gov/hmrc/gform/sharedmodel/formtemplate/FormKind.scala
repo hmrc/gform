@@ -86,7 +86,8 @@ object TaskSection {
 final case class Task(
   title: SmartString,
   sections: NonEmptyList[Section],
-  summarySection: Option[SummarySection]
+  summarySection: Option[SummarySection],
+  declarationSection: Option[DeclarationSection]
 )
 
 object Task {
@@ -95,5 +96,6 @@ object Task {
   implicit val leafExprs: LeafExpr[Task] = (path: TemplatePath, t: Task) =>
     LeafExpr(path + "title", t.title) ++
       LeafExpr(path + "sections", t.sections) ++
-      LeafExpr(path + "summarySection", t.summarySection)
+      LeafExpr(path + "summarySection", t.summarySection) ++
+      LeafExpr(path + "declarationSection", t.declarationSection)
 }

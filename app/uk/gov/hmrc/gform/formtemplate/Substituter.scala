@@ -347,7 +347,8 @@ object Substituter {
     t.copy(
       title = t.title(substitutions),
       sections = t.sections(substitutions),
-      summarySection = t.summarySection(substitutions)
+      summarySection = t.summarySection(substitutions),
+      declarationSection = t.declarationSection(substitutions)
     )
 
   implicit def taskSectionSubstituter[A](implicit

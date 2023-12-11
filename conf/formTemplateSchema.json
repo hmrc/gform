@@ -419,6 +419,9 @@
               "summarySection": {
                 "type": "object"
               },
+              "declarationSection": {
+                "type": "object"
+              },
               "sections": {
                 "type": "array",
                 "additionalProperties": false,
