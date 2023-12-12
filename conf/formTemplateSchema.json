@@ -446,6 +446,23 @@
     },
     "fields": {
       "type": "object",
+      "patternProperties": {
+        "^(comment)": {
+          "type": [
+            "string",
+            "object"
+          ]
+        },
+        "^(_)": {
+          "type": [
+            "array",
+            "boolean",
+            "number",
+            "object",
+            "string"
+          ]
+        }
+      },
       "additionalProperties": false,
       "properties": {
         "id": {
