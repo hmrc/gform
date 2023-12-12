@@ -144,8 +144,8 @@ object BuilderSupport {
     val history = List(DownField("acknowledgementSection"))
     List(
       Property("title"),
-      Property("panelTitle", PropertyBehaviour.PurgeWhenEmpty), //perge if empty
-      Property("showReference"), //remove if true as it is default
+      Property("panelTitle", PropertyBehaviour.PurgeWhenEmpty),
+      Property("showReference"),
       Property("note", PropertyBehaviour.PurgeWhenEmpty)
     ).foldRight(json) { case (property, accJson) =>
       acknowledgement.hcursor
