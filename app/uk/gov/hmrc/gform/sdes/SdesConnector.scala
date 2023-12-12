@@ -18,19 +18,18 @@ package uk.gov.hmrc.gform.sdes
 
 import org.slf4j.LoggerFactory
 import play.api.libs.json.Json
-import uk.gov.hmrc.gform.sdes.SdesRouting
 import uk.gov.hmrc.gform.sharedmodel.sdes.SdesNotifyRequest
 import uk.gov.hmrc.gform.wshttp.{ FutureHttpResponseSyntax, WSHttp }
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpReads, HttpReadsInstances, HttpResponse }
 
 import scala.concurrent.{ ExecutionContext, Future }
 
-class SdesConnector(wSHttp: WSHttp, sdesBaseUrl: String, sdesBasePath: String, sdesRouting: SdesRouting)(implicit
+class SdesConnector(wSHttp: WSHttp, sdesBaseUrl: String, sdesBasePath: String)(implicit
   ex: ExecutionContext
 ) {
   private val logger = LoggerFactory.getLogger(getClass)
 
-  private val headers: Seq[(String, String)] = Seq(
+  private def mkHeaders(sdesRouting: SdesRouting): Seq[(String, String)] = Seq(
     "x-client-id"  -> sdesRouting.apiKey,
     "Content-Type" -> "application/json"
   )
@@ -38,8 +37,11 @@ class SdesConnector(wSHttp: WSHttp, sdesBaseUrl: String, sdesBasePath: String, s
   implicit val legacyRawReads: HttpReads[HttpResponse] =
     HttpReadsInstances.throwOnFailure(HttpReadsInstances.readEitherOf(HttpReadsInstances.readRaw))
 
-  def notifySDES(payload: SdesNotifyRequest)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
+  def notifySDES(payload: SdesNotifyRequest, sdesRouting: SdesRouting)(implicit
+    hc: HeaderCarrier
+  ): Future[HttpResponse] = {
     logger.info(s"SDES notification request: ${Json.stringify(Json.toJson(payload))}")
+    val headers = mkHeaders(sdesRouting)
     val url = s"$sdesBaseUrl$sdesBasePath/notification/fileready"
     wSHttp
       .POST[SdesNotifyRequest, HttpResponse](url, payload, headers)

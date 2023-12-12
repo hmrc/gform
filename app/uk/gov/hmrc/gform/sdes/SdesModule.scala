@@ -83,12 +83,9 @@ class SdesModule(
       )
     )
 
-  private val sdesRouting: SdesRouting = configModule.sdesConfig.dms
-
-  val dmsConnector: SdesConnector =
-    new SdesConnector(wSHttpModule.auditableWSHttp, sdesBaseUrl, sdesBasePath, sdesRouting)
-
   val dmsWorkItemRepo = new DmsWorkItemRepo(mongoModule.mongoComponent)
+
+  private val sdesRouting: SdesRouting = configModule.sdesConfig.dms
 
   val dmsWorkItemService: DmsWorkItemAlgebra[Future] = new DmsWorkItemService(
     dmsWorkItemRepo,
@@ -100,10 +97,8 @@ class SdesModule(
   val dmsWorkItemController: DmsWorkItemController =
     new DmsWorkItemController(configModule.controllerComponents, dmsWorkItemService)
 
-  private val dataStoreRouting: SdesRouting = configModule.sdesConfig.dataStore
-
   val dataStoreConnector: SdesConnector =
-    new SdesConnector(wSHttpModule.auditableWSHttp, sdesBaseUrl, sdesBasePath, dataStoreRouting)
+    new SdesConnector(wSHttpModule.auditableWSHttp, sdesBaseUrl, sdesBasePath)
 
   val dataStoreWorkItemRepo = new DataStoreWorkItemRepo(mongoModule.mongoComponent)
 
@@ -118,7 +113,6 @@ class SdesModule(
 
   val sdesService: SdesAlgebra[Future] =
     new SdesService(
-      dmsConnector,
       dataStoreConnector,
       repoSdesSubmission,
       dmsWorkItemService,
@@ -179,10 +173,10 @@ class SdesModule(
         sdesService.notifySDES(correlationId, envelopeId, formTemplateId, submissionRef, notifyRequest, destination)
       )
 
-    override def notifySDES(sdesSubmission: SdesSubmission, objWithSummary: ObjectSummaryWithMd5)(implicit
+    override def renotifySDES(sdesSubmission: SdesSubmission, objWithSummary: ObjectSummaryWithMd5)(implicit
       hc: HeaderCarrier
     ): FOpt[HttpResponse] =
-      fromFutureA(sdesService.notifySDES(sdesSubmission, objWithSummary))
+      fromFutureA(sdesService.renotifySDES(sdesSubmission, objWithSummary))
 
     override def saveSdesSubmission(sdesSubmission: SdesSubmission): FOpt[Unit] =
       fromFutureA(sdesService.saveSdesSubmission(sdesSubmission))

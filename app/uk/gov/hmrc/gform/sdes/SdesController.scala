@@ -69,7 +69,7 @@ class SdesController(
     }
   }
 
-  def notifySDES(correlationId: CorrelationId) = Action.async { implicit request =>
+  def renotifySDES(correlationId: CorrelationId) = Action.async { implicit request =>
     for {
       sdesSubmission <- sdesAlgebra.findSdesSubmission(correlationId)
       result <- sdesSubmission match {
@@ -107,7 +107,7 @@ class SdesController(
                                       case SdesDestination.Dms =>
                                         objectStoreAlgebra.zipFiles(submission.envelopeId, paths)
                                     }
-                      res <- sdesAlgebra.notifySDES(submission, objSummary)
+                      res <- sdesAlgebra.renotifySDES(submission, objSummary)
                     } yield res
                   case None =>
                     Future.failed(

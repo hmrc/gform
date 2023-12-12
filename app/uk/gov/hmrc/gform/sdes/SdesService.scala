@@ -58,7 +58,7 @@ trait SdesAlgebra[F[_]] {
     hc: HeaderCarrier
   ): F[HttpResponse]
 
-  def notifySDES(sdesSubmission: SdesSubmission, objWithSummary: ObjectSummaryWithMd5)(implicit
+  def renotifySDES(sdesSubmission: SdesSubmission, objWithSummary: ObjectSummaryWithMd5)(implicit
     hc: HeaderCarrier
   ): F[HttpResponse]
 
@@ -87,7 +87,6 @@ trait SdesAlgebra[F[_]] {
 }
 
 class SdesService(
-  dmsConnector: SdesConnector,
   sdesConnector: SdesConnector,
   repoSdesSubmission: Repo[SdesSubmission],
   dmsWorkItemAlgebra: DmsWorkItemAlgebra[Future],
@@ -111,13 +110,12 @@ class SdesService(
   ): Future[HttpResponse] = {
     val sdesSubmission =
       SdesSubmission.createSdesSubmission(correlationId, envelopeId, formTemplateId, submissionRef, destination)
+
+    val sdesRouting = sdesSubmission.sdesDestination.sdesRouting(sdesConfig)
+
     for {
-      res <-
-        if (
-          destination === SdesDestination.DataStore || destination === SdesDestination.DataStoreLegacy || destination === SdesDestination.HmrcIlluminate
-        ) sdesConnector.notifySDES(notifyRequest)
-        else dmsConnector.notifySDES(notifyRequest)
-      _ <- saveSdesSubmission(sdesSubmission.copy(submittedAt = Some(Instant.now), status = FileReady))
+      res <- sdesConnector.notifySDES(notifyRequest, sdesRouting)
+      _   <- saveSdesSubmission(sdesSubmission.copy(submittedAt = Some(Instant.now), status = FileReady))
     } yield res
   }
 
@@ -189,21 +187,19 @@ class SdesService(
 
   }
 
-  override def notifySDES(sdesSubmission: SdesSubmission, objWithSummary: ObjectSummaryWithMd5)(implicit
+  override def renotifySDES(sdesSubmission: SdesSubmission, objWithSummary: ObjectSummaryWithMd5)(implicit
     hc: HeaderCarrier
   ): Future[HttpResponse] = {
     val sdesDestination = sdesSubmission.sdesDestination
+    val sdesRouting = sdesDestination.sdesRouting(sdesConfig)
+    val notifyRequest = sdesDestination match {
+      case SdesDestination.DataStore | SdesDestination.DataStoreLegacy | SdesDestination.HmrcIlluminate =>
+        dataStoreWorkItemAlgebra.createNotifyRequest(objWithSummary, sdesSubmission._id.value, sdesRouting)
+      case SdesDestination.Dms =>
+        dmsWorkItemAlgebra.createNotifyRequest(objWithSummary, sdesSubmission._id.value)
+    }
     for {
-      res <- sdesDestination match {
-               case SdesDestination.DataStore | SdesDestination.DataStoreLegacy | SdesDestination.HmrcIlluminate =>
-                 val sdesRouting = sdesDestination.sdesRouting(sdesConfig)
-                 val notifyRequest =
-                   dataStoreWorkItemAlgebra.createNotifyRequest(objWithSummary, sdesSubmission._id.value, sdesRouting)
-                 sdesConnector.notifySDES(notifyRequest)
-               case SdesDestination.Dms =>
-                 val notifyRequest = dmsWorkItemAlgebra.createNotifyRequest(objWithSummary, sdesSubmission._id.value)
-                 dmsConnector.notifySDES(notifyRequest)
-             }
+      res <- sdesConnector.notifySDES(notifyRequest, sdesRouting)
       _ <-
         saveSdesSubmission(
           sdesSubmission.copy(
