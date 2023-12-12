@@ -140,6 +140,24 @@ object BuilderSupport {
         updateSummary(jsonWithSummarySection, summarySection, history)
     }
 
+  def modifyAcknowledgementData(json: Json, acknowledgement: Json): Json = {
+    val history = List(DownField("acknowledgementSection"))
+    List(
+      Property("title"),
+      Property("panelTitle", PropertyBehaviour.PurgeWhenEmpty), //perge if empty
+      Property("showReference"), //remove if true as it is default
+      Property("note", PropertyBehaviour.PurgeWhenEmpty)
+    ).foldRight(json) { case (property, accJson) =>
+      acknowledgement.hcursor
+        .downField(property.name)
+        .focus
+        .flatMap { propertyValue =>
+          updateProperty(property, propertyValue, history, accJson)
+        }
+        .getOrElse(accJson)
+    }
+  }
+
   private def updateSummary(json: Json, summarySection: Json, history: List[CursorOp]): Json =
     List(
       Property("note"),
@@ -435,6 +453,26 @@ object BuilderSupport {
     patchFormComponent(maybeHistory, json, formComponentData)
   }
 
+  def modifyAcknowledgementFormComponentData(
+    json: Json,
+    formComponentId: FormComponentId,
+    formComponentData: Json
+  ): Json = {
+
+    val id = Json.fromString(formComponentId.value)
+
+    val history = List(DownField("acknowledgementSection"))
+
+    val maybeHistory: Option[List[CursorOp]] = json.hcursor
+      .replay(history)
+      .focus
+      .flatMap { summarySection =>
+        fieldHistory(summarySection, id, history)
+      }
+
+    patchFormComponent(maybeHistory, json, formComponentData)
+  }
+
   private def patchFormComponent(maybeHistory: Option[List[CursorOp]], json: Json, formComponentData: Json): Json =
     maybeHistory
       .flatMap { history =>
@@ -483,6 +521,12 @@ object BuilderSupport {
   ): Either[BuilderError, FormTemplateRaw] =
     modifyJson(formTemplateRaw)(modifySummarySectionData(_, summarySectionData, maybeCoordinates))
 
+  def updateAcknowledgement(
+    formTemplateRaw: FormTemplateRaw,
+    acknowledgementData: Json
+  ): Either[BuilderError, FormTemplateRaw] =
+    modifyJson(formTemplateRaw)(modifyAcknowledgementData(_, acknowledgementData))
+
   def updateSummarySectionFormComponent(
     formTemplateRaw: FormTemplateRaw,
     sectionData: Json,
@@ -491,6 +535,15 @@ object BuilderSupport {
   ): Either[BuilderError, FormTemplateRaw] =
     modifyJson(formTemplateRaw)(
       modifySummarySectionFormComponentData(_, formComponentId, sectionData, maybeCoordinates)
+    )
+
+  def updateAcknowledgementFormComponent(
+    formTemplateRaw: FormTemplateRaw,
+    sectionData: Json,
+    formComponentId: FormComponentId
+  ): Either[BuilderError, FormTemplateRaw] =
+    modifyJson(formTemplateRaw)(
+      modifyAcknowledgementFormComponentData(_, formComponentId, sectionData)
     )
 }
 
@@ -633,6 +686,32 @@ class BuilderController(
         case JsSuccess(formCategory, _) => Ok(SummarySection.defaultJson(formCategory))
         case JsError(error)             => BadRequest(JsError.toJson(error).toString())
       }
+    }
+
+  def updateAcknowledgement(formTemplateRawId: FormTemplateRawId) =
+    updateAction(formTemplateRawId) { (formTemplateRaw, requestBody) =>
+      BuilderSupport
+        .updateAcknowledgement(formTemplateRaw, requestBody)
+        .map(formTemplateRaw => (formTemplateRaw, Results.Ok(formTemplateRaw.value)))
+    }
+
+  def updateAcknowledgementFormComponent(
+    formTemplateRawId: FormTemplateRawId,
+    formComponentId: FormComponentId
+  ) =
+    updateAction(formTemplateRawId) { (formTemplateRaw, requestBody) =>
+      for {
+        componentUpdateRequest <-
+          requestBody.as[ComponentUpdateRequest].leftMap(e => BuilderError.CirceDecodingError(e))
+
+        formTemplateRaw <-
+          BuilderSupport
+            .updateAcknowledgementFormComponent(
+              formTemplateRaw,
+              componentUpdateRequest.formComponent,
+              formComponentId
+            )
+      } yield (formTemplateRaw, Results.Ok(formTemplateRaw.value))
     }
 }
 
