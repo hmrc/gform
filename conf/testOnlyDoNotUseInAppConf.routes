@@ -11,7 +11,7 @@
 
 # Add all the application routes to the prod.routes file
 ->            /                                                                  prod.Routes
-->            /gform/builder                                                     builder.Routes
+->            /gform/test-only/builder                                           builder.Routes
 
 #NewAuthConnector
 POST        /gform/test-only/de-enrol/userId/:userId                             uk.gov.hmrc.gform.testonly.TestOnlyController.deEnrolUser(userId: String)
