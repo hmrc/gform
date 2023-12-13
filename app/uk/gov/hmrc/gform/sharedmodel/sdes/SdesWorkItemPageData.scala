@@ -36,6 +36,7 @@ object SdesWorkItemPageData {
 case class SdesWorkItemData(
   id: String,
   envelopeId: EnvelopeId,
+  destination: SdesDestination,
   formTemplateId: FormTemplateId,
   submissionRef: SubmissionRef,
   numberOfFiles: Int,
@@ -51,6 +52,7 @@ object SdesWorkItemData {
   def fromWorkItem(workItem: WorkItem[SdesWorkItem], numberOfFiles: Int = 0) = SdesWorkItemData(
     workItem.id.toString,
     workItem.item.envelopeId,
+    workItem.item.destination,
     workItem.item.formTemplateId,
     workItem.item.submissionRef,
     numberOfFiles,
