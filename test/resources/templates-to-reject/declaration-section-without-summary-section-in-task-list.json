@@ -1,0 +1,62 @@
+{
+  "_id": "declaration-section-without-summary-section-in-task-list",
+  "formName": "Task List",
+  "description": "",
+  "version": 1,
+  "emailTemplateId": "",
+  "authConfig": {
+    "authModule": "anonymous"
+  },
+  "sections": [
+    {
+      "title": "Check before you start",
+      "tasks": [
+        {
+          "title": "Check eligibility",
+          "sections": [
+            {
+              "title": "Applicants age details page",
+              "fields": [
+                {
+                  "id": "whichScheme",
+                  "type": "choice",
+                  "label": "When did the trade start?",
+                  "choices": [
+                    "Seed Enterprise Investment Scheme"
+                  ]
+                }
+              ]
+            }
+          ],
+          "declarationSection": {
+            "title": "Declaration",
+            "shortName": "Declaration",
+            "fields": [
+              {
+                "id": "info",
+                "type": "info",
+                "label": "",
+                "infoText": "info text"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "submitSection": {
+    "label": "Apply",
+    "taskLabel": "Submit"
+  },
+  "acknowledgementSection": {
+    "title": "Confirmation page ",
+    "fields": []
+  },
+  "destinations": [
+    {
+      "id": "transitionToSubmitted",
+      "type": "stateTransition",
+      "requiredState": "Submitted"
+    }
+  ]
+}

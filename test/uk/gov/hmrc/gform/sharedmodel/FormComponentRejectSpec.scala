@@ -75,7 +75,9 @@ class FormComponentRejectSpec extends Spec with TableDrivenPropertyChecks {
       ("choice-index-size-expr-with-value",         "Expression 'hasDifferentName.0.size' can't use numeric index: 0. hasDifferentName has these values: foo, bar"),
       ("choice-value-size-expr-with-index",         "Expression 'hasDifferentName.A.size' can't use value index: A. Use numeric index from 0 to 1"),
       ("choice-value-size-expr-wrong-value",        "Expression 'hasDifferentName.baz.size' has wrong value baz. hasDifferentName has these values: foo, bar"),
-      ("choice-options-value-expr-not-in-atl",      "The value of 'choiceId' is not valid. The component expression value must be within the scope of an ATL.")
+      ("choice-options-value-expr-not-in-atl",      "The value of 'choiceId' is not valid. The component expression value must be within the scope of an ATL."),
+      ("declaration-section-with-enterable-field-in-task-list",     "A declarationSection in a task list cannot contain enterable fields. Field 'text' is not Info or Mini Summary or Table field."),
+      ("declaration-section-without-summary-section-in-task-list",   "A destinationSection requires a summarySection in a task list.")
 
       // format: on",
     )

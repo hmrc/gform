@@ -1427,6 +1427,31 @@ object FormTemplateValidator {
       else Valid
     )(_ => Valid)
 
+  def validateTaskListDeclarationSection(formTemplate: FormTemplate): ValidationResult = {
+
+    def isNotEditable(fields: List[FormComponent]): List[ValidationResult] =
+      fields.map {
+        case IsInformationMessage(_) => Valid
+        case IsMiniSummaryList(_)    => Valid
+        case IsTableComp(_)          => Valid
+        case fc =>
+          Invalid(
+            s"""A declarationSection in a task list cannot contain enterable fields. Field '${fc.id}' is not Info or Mini Summary or Table field."""
+          )
+      }
+
+    formTemplate.formKind.fold[ValidationResult](_ => Valid) { taskList =>
+      taskList.sections.toList.flatMap { section =>
+        section.tasks.toList.flatMap { task =>
+          if (task.declarationSection.isDefined && task.summarySection.isEmpty)
+            Seq(Invalid(s"""A destinationSection requires a summarySection in a task list."""))
+          else
+            task.declarationSection.map(ds => isNotEditable(ds.fields)).combineAll
+        }
+      }.combineAll
+    }
+  }
+
   def validateDataThreshold(sectionsList: List[Page]): ValidationResult = {
     val textAreaFieldIds = allFormComponents(sectionsList).collect {
       case fc @ IsTextArea(textArea) if textArea.dataThreshold.fold(false)(v => v > 100) => fc.id

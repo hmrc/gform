@@ -520,7 +520,8 @@ trait Rewriter {
                 tasks = taskSection.tasks.map(task =>
                   task.copy(
                     sections = task.sections.map(updateSection),
-                    summarySection = task.summarySection.map(replaceSummarySection)
+                    summarySection = task.summarySection.map(replaceSummarySection),
+                    declarationSection = task.declarationSection.map(replaceDeclarationSection)
                   )
                 )
               )

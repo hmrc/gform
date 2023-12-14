@@ -103,6 +103,7 @@ trait Verifier {
       _ <- fromOptA(FormTemplateValidator.validatePageRedirects(pages).toEither)
       _ <- fromOptA(DestinationsValidator.validateDestinationIncludeIfs(formTemplate.destinations).toEither)
       _ <- fromOptA(FormTemplateValidator.validateTaskListDisplayWidth(formTemplate).toEither)
+      _ <- fromOptA(FormTemplateValidator.validateTaskListDeclarationSection(formTemplate).toEither)
       _ <- fromOptA(FormTemplateValidator.validateDataThreshold(pages).toEither)
       _ <- fromOptA(FormTemplateValidator.validateFileUpload(formTemplate, appConfig).toEither)
       _ <- fromOptA(FormTemplateValidator.validateChoicesRevealedField(formTemplate).toEither)

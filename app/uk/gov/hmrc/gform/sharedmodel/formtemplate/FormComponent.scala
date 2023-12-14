@@ -158,3 +158,7 @@ object IsCountryLookup {
       case _                                                    => None
     }
 }
+
+object IsTableComp {
+  def unapply(fc: FormComponent): Option[TableComp] = fc.`type`.cast[TableComp]
+}
