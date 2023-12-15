@@ -29,6 +29,7 @@ object ContentType {
   val `application/json` = ContentType("application/json")
   val `image/jpeg` = ContentType("image/jpeg")
   val `text/xml` = ContentType("text/xml")
+  val `application/zip` = ContentType("application/zip")
 
   /** .xls files
     */

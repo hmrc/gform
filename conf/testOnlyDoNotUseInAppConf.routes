@@ -35,5 +35,6 @@ GET           /gform/test-only/file-upload-interceptor/get-responses            
 
 GET           /gform/test-only/getFromDes/*path                                  uk.gov.hmrc.gform.testonly.TestOnlyController.getFromDes(path: String)
 
-GET           /gform/test-only/object-store/envelopes/:envelopeId                uk.gov.hmrc.gform.testonly.TestOnlyObjectStoreController.downloadDmsFiles(envelopeId: EnvelopeId)
-GET           /gform/test-only/object-store/data-store/envelopes/:envelopeId     uk.gov.hmrc.gform.testonly.TestOnlyObjectStoreController.downloadDataStoreFile(envelopeId: EnvelopeId)
+GET           /gform/test-only/object-store/dms/envelopes/:envelopeId                 uk.gov.hmrc.gform.testonly.TestOnlyObjectStoreController.downloadDmsFiles(envelopeId: EnvelopeId)
+GET           /gform/test-only/object-store/data-store/envelopes/:envelopeId          uk.gov.hmrc.gform.testonly.TestOnlyObjectStoreController.downloadDataStoreFile(envelopeId: EnvelopeId)
+GET           /gform/test-only/object-store/hmrc-illuminate/envelopes/:envelopeId     uk.gov.hmrc.gform.testonly.TestOnlyObjectStoreController.downloadHmrcIlluminateFile(envelopeId: EnvelopeId)
