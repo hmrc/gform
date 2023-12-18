@@ -94,14 +94,6 @@ class TestOnlyController(
       for {
         formTemplate <- formTemplateAlgebra.get(formTemplateId)
         form         <- formAlgebra.get(formId)
-        submission = Submission(
-                       SubmissionId(formId, form.envelopeId),
-                       LocalDateTime.now(ZoneId.of("Europe/London")),
-                       SubmissionRef(form.envelopeId),
-                       form.envelopeId,
-                       0,
-                       DmsMetaData(formTemplate._id, customerIdHeader)
-                     )
         model <- destinationsModelProcessorAlgebra
                    .create(
                      form,
