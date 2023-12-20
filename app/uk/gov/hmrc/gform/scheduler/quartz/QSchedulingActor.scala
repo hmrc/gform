@@ -35,5 +35,5 @@ object QSchedulingActor {
     val service: QScheduledService[A]
   }
   case class SdesAlert(service: SdesAlertService) extends QScheduledMessage[Unit] {}
-  case class ReNotify(service: SdesReNotifyService) extends QScheduledMessage[Unit] {}
+  case class SdesReNotify(service: SdesReNotifyService) extends QScheduledMessage[Unit] {}
 }

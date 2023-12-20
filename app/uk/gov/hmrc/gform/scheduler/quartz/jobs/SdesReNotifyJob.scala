@@ -20,7 +20,7 @@ import akka.actor.{ ActorRef, ActorSystem, Props }
 import com.typesafe.akka.extension.quartz.QuartzSchedulerExtension
 import play.api.inject.ApplicationLifecycle
 import uk.gov.hmrc.gform.scheduler.quartz.{ QScheduledJob, QSchedulingActor }
-import uk.gov.hmrc.gform.scheduler.quartz.QSchedulingActor.ReNotify
+import uk.gov.hmrc.gform.scheduler.quartz.QSchedulingActor.SdesReNotify
 import uk.gov.hmrc.gform.sdes.renotify.SdesReNotifyService
 
 import scala.concurrent.{ ExecutionContext, Future }
@@ -37,7 +37,7 @@ class SdesReNotifyJob(
   override val jobName: String = "SdesReNotifyJob"
   override val scheduler: QuartzSchedulerExtension = QuartzSchedulerExtension(jobActorSystem)
   override val schedulingActorRef: ActorRef = jobActorSystem.actorOf(Props(new QSchedulingActor()))
-  override val scheduledMessage: ReNotify = ReNotify(reNotifyService)
+  override val scheduledMessage: SdesReNotify = SdesReNotify(reNotifyService)
   override val enabled: Boolean = jobEnabled
   override val expression: String = jobExpression
   override val description: Option[String] = Some(
