@@ -148,18 +148,18 @@ class SdesModule(
 
   private val renotifyDestinations: Seq[String] =
     configModule.configuration
-      .getOptional[Seq[String]]("renotify.fileready.destinations")
+      .getOptional[Seq[String]]("renotify.sdes.destinations")
       .getOrElse(Seq.empty)
 
   private val reNotifyMongodbLockTimeoutDuration: FiniteDuration =
     FiniteDuration(
-      configModule.typesafeConfig.getDuration("renotify.fileready.lockDuration").toNanos,
+      configModule.typesafeConfig.getDuration("renotify.sdes.lockDuration").toNanos,
       TimeUnit.NANOSECONDS
     )
 
   private val showBeforeLastUpdatedAt: Option[Int] =
     configModule.configuration
-      .getOptional[Int]("renotify.fileready.showBeforeLastUpdatedAt")
+      .getOptional[Int]("renotify.sdes.showBeforeLastUpdatedAt")
 
   private val lockRepoReNotify: MongoLockRepository = new MongoLockRepository(
     mongoModule.mongoComponent,

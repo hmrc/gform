@@ -117,8 +117,8 @@ class SchedulerModule(
     alertSdesExpression
   )
 
-  private val reNotifyEnabled: Boolean = configModule.typesafeConfig.getBoolean("renotify.fileready.enabled")
-  private val reNotifyExpression: String = configModule.typesafeConfig.getString("renotify.fileready.cron")
+  private val reNotifyEnabled: Boolean = configModule.typesafeConfig.getBoolean("renotify.sdes.enabled")
+  private val reNotifyExpression: String = configModule.typesafeConfig.getString("renotify.sdes.cron")
 
   new SdesReNotifyJob(
     sdesModule.reNotifyService,
