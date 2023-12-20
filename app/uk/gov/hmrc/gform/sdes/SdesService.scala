@@ -78,6 +78,15 @@ trait SdesAlgebra[F[_]] {
     destination: Option[SdesDestination]
   ): F[SdesSubmissionPageData]
 
+  def searchAll(
+    processed: Option[Boolean],
+    formTemplateId: Option[FormTemplateId],
+    status: Option[NotificationStatus],
+    showBeforeAt: Option[Boolean],
+    destination: Option[SdesDestination],
+    showBeforeLastUpdatedAt: Option[Int]
+  ): F[SdesSubmissionPageData]
+
   def updateAsManualConfirmed(correlation: CorrelationId): F[Unit]
 
   def getSdesSubmissionsDestination(): F[Seq[SdesSubmissionsStats]]
@@ -139,6 +148,29 @@ class SdesService(
     showBeforeAt: Option[Boolean],
     destination: Option[SdesDestination]
   ): Future[SdesSubmissionPageData] = {
+    val skip = page * pageSize
+    doSearch(Some((skip, pageSize)), processed, formTemplateId, status, showBeforeAt, destination, None)
+  }
+
+  override def searchAll(
+    processed: Option[Boolean],
+    formTemplateId: Option[FormTemplateId],
+    status: Option[NotificationStatus],
+    showBeforeAt: Option[Boolean],
+    destination: Option[SdesDestination],
+    showBeforeLastUpdatedAt: Option[Int]
+  ): Future[SdesSubmissionPageData] =
+    doSearch(None, processed, formTemplateId, status, showBeforeAt, destination, showBeforeLastUpdatedAt)
+
+  private def doSearch(
+    maybeSkipAndPageSize: Option[(Int, Int)],
+    processed: Option[Boolean],
+    formTemplateId: Option[FormTemplateId],
+    status: Option[NotificationStatus],
+    showBeforeAt: Option[Boolean],
+    destination: Option[SdesDestination],
+    showBeforeLastUpdatedAt: Option[Int]
+  ): Future[SdesSubmissionPageData] = {
 
     val queryByTemplateId =
       formTemplateId.fold(exists("_id"))(t => equal("formTemplateId", t.value))
@@ -146,8 +178,14 @@ class SdesService(
       processed.fold(queryByTemplateId)(p => Filters.and(equal("isProcessed", p), queryByTemplateId))
     val queryByStatus =
       status.fold(queryByProcessed)(s => Filters.and(equal("status", fromName(s)), queryByProcessed))
+
+    val queryByLastUpdated =
+      showBeforeLastUpdatedAt.fold(queryByStatus)(d =>
+        Filters.and(lt("lastUpdated", LocalDateTime.now().minusHours(d.toLong)), queryByStatus)
+      )
+
     val queryByDestination =
-      destination.fold(queryByStatus)(d =>
+      destination.fold(queryByLastUpdated)(d =>
         Filters.and(equal("destination", SdesDestination.fromName(d)), queryByStatus)
       )
     val query = if (showBeforeAt.getOrElse(false)) {
@@ -161,9 +199,12 @@ class SdesService(
 
     val sort = equal("createdAt", -1)
 
-    val skip = page * pageSize
     for {
-      sdesSubmissions <- repoSdesSubmission.page(query, sort, skip, pageSize)
+      sdesSubmissions <- maybeSkipAndPageSize match {
+                           case Some((skip, pageSize)) =>
+                             repoSdesSubmission.page(query, sort, skip, pageSize)
+                           case None => repoSdesSubmission.search(query, sort)
+                         }
       sdesSubmissionData <-
         sdesSubmissions.traverse(sdesSubmission =>
           for {

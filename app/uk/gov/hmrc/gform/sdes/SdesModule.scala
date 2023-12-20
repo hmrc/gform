@@ -29,6 +29,7 @@ import uk.gov.hmrc.gform.repo.Repo
 import uk.gov.hmrc.gform.scheduler.datastore.DataStoreWorkItemRepo
 import uk.gov.hmrc.gform.scheduler.dms.DmsWorkItemRepo
 import uk.gov.hmrc.gform.sdes.alert.SdesAlertService
+import uk.gov.hmrc.gform.sdes.renotify.ReNotifyService
 import uk.gov.hmrc.gform.sdes.datastore.{ DataStoreWorkItemAlgebra, DataStoreWorkItemController, DataStoreWorkItemService }
 import uk.gov.hmrc.gform.sdes.dms.{ DmsWorkItemAlgebra, DmsWorkItemController, DmsWorkItemService }
 import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
@@ -47,6 +48,7 @@ import uk.gov.hmrc.objectstore.client.ObjectSummaryWithMd5
 import java.util.concurrent.TimeUnit
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ ExecutionContext, Future }
+import play.api.libs.ws.WSClient
 
 class SdesModule(
   configModule: ConfigModule,
@@ -55,7 +57,8 @@ class SdesModule(
   objectStoreModule: ObjectStoreModule,
   akkaModule: AkkaModule,
   envelopeModule: EnvelopeModule,
-  emailModule: EmailModule
+  emailModule: EmailModule,
+  wsClient: WSClient
 )(implicit ex: ExecutionContext) {
 
   private val sdesBaseUrl = configModule.serviceConfig.baseUrl("sdes")
@@ -143,6 +146,38 @@ class SdesModule(
     alertSdesMongodbLockTimeoutDuration
   )
 
+  private val renotifyDestinations: Seq[String] =
+    configModule.configuration
+      .getOptional[Seq[String]]("renotify.fileready.destinations")
+      .getOrElse(Seq.empty)
+
+  private val reNotifyMongodbLockTimeoutDuration: FiniteDuration =
+    FiniteDuration(
+      configModule.typesafeConfig.getDuration("renotify.fileready.lockDuration").toNanos,
+      TimeUnit.NANOSECONDS
+    )
+
+  private val showBeforeLastUpdatedAt: Option[Int] =
+    configModule.configuration
+      .getOptional[Int]("renotify.fileready.showBeforeLastUpdatedAt")
+
+  private val lockRepoReNotify: MongoLockRepository = new MongoLockRepository(
+    mongoModule.mongoComponent,
+    new CurrentTimestampSupport()
+  )
+
+  private val gformBaseUrl: String = configModule.serviceConfig.baseUrl("gform")
+
+  val reNotifyService = new ReNotifyService(
+    renotifyDestinations.map(SdesDestination.fromString),
+    wsClient,
+    sdesService,
+    lockRepoReNotify,
+    reNotifyMongodbLockTimeoutDuration,
+    showBeforeLastUpdatedAt,
+    gformBaseUrl
+  )
+
   val sdesCallbackController: SdesCallbackController =
     new SdesCallbackController(
       configModule.controllerComponents,
@@ -187,6 +222,18 @@ class SdesModule(
     override def findSdesSubmissionByEnvelopeId(envelopeId: EnvelopeId): FOpt[List[SdesSubmission]] =
       fromFutureA(sdesService.findSdesSubmissionByEnvelopeId(envelopeId))
 
+    override def searchAll(
+      processed: Option[Boolean],
+      formTemplateId: Option[FormTemplateId],
+      status: Option[NotificationStatus],
+      showBeforeAt: Option[Boolean],
+      destination: Option[SdesDestination],
+      showBeforeLastUpdatedAt: Option[Int]
+    ): FOpt[SdesSubmissionPageData] =
+      fromFutureA(
+        sdesService.searchAll(processed, formTemplateId, status, showBeforeAt, destination, showBeforeLastUpdatedAt)
+      )
+
     override def search(
       page: Int,
       pageSize: Int,
@@ -229,6 +276,12 @@ class SdesModule(
       dataStoreRouting: SdesRouting
     ): SdesNotifyRequest =
       dataStoreWorkItemService.createNotifyRequest(objSummary, correlationId, dataStoreRouting)
+
+    override def searchAll(
+      formTemplateId: Option[FormTemplateId],
+      status: Option[ProcessingStatus]
+    ): FOpt[SdesWorkItemPageData] =
+      fromFutureA(dataStoreWorkItemService.searchAll(formTemplateId, status))
 
     override def search(
       page: Int,

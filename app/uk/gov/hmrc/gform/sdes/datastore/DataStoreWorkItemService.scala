@@ -49,6 +49,11 @@ trait DataStoreWorkItemAlgebra[F[_]] {
     dataStoreRouting: SdesRouting
   ): SdesNotifyRequest
 
+  def searchAll(
+    formTemplateId: Option[FormTemplateId],
+    status: Option[ProcessingStatus]
+  ): F[SdesWorkItemPageData]
+
   def search(
     page: Int,
     pageSize: Int,
@@ -111,9 +116,24 @@ class DataStoreWorkItemService(
       FileAudit(correlationId)
     )
 
+  override def searchAll(
+    formTemplateId: Option[FormTemplateId],
+    status: Option[ProcessingStatus]
+  ): Future[SdesWorkItemPageData] =
+    doSearch(None, formTemplateId, status)
+
   override def search(
     page: Int,
     pageSize: Int,
+    formTemplateId: Option[FormTemplateId],
+    status: Option[ProcessingStatus]
+  ): Future[SdesWorkItemPageData] = {
+    val skip = page * pageSize
+    doSearch(Some((skip, pageSize)), formTemplateId, status)
+  }
+
+  private def doSearch(
+    maybeSkipAndPageSize: Option[(Int, Int)],
     formTemplateId: Option[FormTemplateId],
     status: Option[ProcessingStatus]
   ): Future[SdesWorkItemPageData] = {
@@ -121,10 +141,18 @@ class DataStoreWorkItemService(
     val query = status.fold(queryByFormTemplateId)(s => Filters.and(equal("status", s.name), queryByFormTemplateId))
     val sort = equal("receivedAt", -1)
 
-    val skip = page * pageSize
     for {
-      dmsWorkItem <-
-        dataStoreWorkItemRepo.collection.find(query).sort(sort).skip(skip).limit(pageSize).toFuture().map(_.toList)
+      dmsWorkItem <- maybeSkipAndPageSize match {
+                       case Some((skip, pageSize)) =>
+                         dataStoreWorkItemRepo.collection
+                           .find(query)
+                           .sort(sort)
+                           .skip(skip)
+                           .limit(pageSize)
+                           .toFuture()
+                           .map(_.toList)
+                       case None => dataStoreWorkItemRepo.collection.find(query).sort(sort).toFuture().map(_.toList)
+                     }
       dmsWorkItemData = dmsWorkItem.map(workItem => SdesWorkItemData.fromWorkItem(workItem, 1))
       count <- dataStoreWorkItemRepo.collection.countDocuments(query).toFuture()
     } yield SdesWorkItemPageData(dmsWorkItemData, count)

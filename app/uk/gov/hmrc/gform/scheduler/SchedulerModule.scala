@@ -22,7 +22,7 @@ import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.mongo.MongoModule
 import uk.gov.hmrc.gform.scheduler.datastore.{ DataStoreQueuePollingService, DataStoreQueueService, DataStoreWorkItemRepo }
 import uk.gov.hmrc.gform.scheduler.dms.{ DmsQueuePollingService, DmsQueueService, DmsWorkItemRepo }
-import uk.gov.hmrc.gform.scheduler.quartz.jobs.SdesAlertJob
+import uk.gov.hmrc.gform.scheduler.quartz.jobs.{ ReNotifyJob, SdesAlertJob }
 import uk.gov.hmrc.gform.sdes.SdesModule
 import java.util.concurrent.TimeUnit
 import scala.concurrent.ExecutionContext
@@ -115,5 +115,16 @@ class SchedulerModule(
     akkaModule.actorSystem,
     alertSdesEnabled,
     alertSdesExpression
+  )
+
+  private val reNotifyEnabled: Boolean = configModule.typesafeConfig.getBoolean("renotify.fileready.enabled")
+  private val reNotifyExpression: String = configModule.typesafeConfig.getString("renotify.fileready.cron")
+
+  new ReNotifyJob(
+    sdesModule.reNotifyService,
+    applicationLifecycle,
+    akkaModule.actorSystem,
+    reNotifyEnabled,
+    reNotifyExpression
   )
 }
