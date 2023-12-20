@@ -146,12 +146,12 @@ class SdesModule(
     alertSdesMongodbLockTimeoutDuration
   )
 
-  private val renotifyDestinations: Seq[String] =
+  private val sdesRenotifyDestinations: Seq[String] =
     configModule.configuration
       .getOptional[Seq[String]]("renotify.sdes.destinations")
       .getOrElse(Seq.empty)
 
-  private val reNotifyMongodbLockTimeoutDuration: FiniteDuration =
+  private val sdesReNotifyMongodbLockTimeoutDuration: FiniteDuration =
     FiniteDuration(
       configModule.typesafeConfig.getDuration("renotify.sdes.lockDuration").toNanos,
       TimeUnit.NANOSECONDS
@@ -169,11 +169,11 @@ class SdesModule(
   private val gformBaseUrl: String = configModule.serviceConfig.baseUrl("gform")
 
   val sdesReNotifyService = new SdesReNotifyService(
-    renotifyDestinations.map(SdesDestination.fromString),
+    sdesRenotifyDestinations.map(SdesDestination.fromString),
     wsClient,
     sdesService,
     lockRepoReNotify,
-    reNotifyMongodbLockTimeoutDuration,
+    sdesReNotifyMongodbLockTimeoutDuration,
     showBeforeLastUpdatedAt,
     gformBaseUrl
   )
