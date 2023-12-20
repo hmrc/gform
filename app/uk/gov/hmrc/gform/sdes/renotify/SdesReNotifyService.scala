@@ -37,7 +37,7 @@ class SdesReNotifyService(
   gformBaseUrl: String
 ) extends QScheduledService[Unit] {
   private val logger: Logger = LoggerFactory.getLogger(getClass)
-  private val jobName = "ReNotifyJob"
+  private val jobName = "SdesReNotifyJob"
 
   override def invoke(implicit ec: ExecutionContext): Future[Unit] = {
 

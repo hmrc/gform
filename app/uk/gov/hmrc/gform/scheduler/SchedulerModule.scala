@@ -121,7 +121,7 @@ class SchedulerModule(
   private val reNotifyExpression: String = configModule.typesafeConfig.getString("renotify.sdes.cron")
 
   new SdesReNotifyJob(
-    sdesModule.reNotifyService,
+    sdesModule.sdesReNotifyService,
     applicationLifecycle,
     akkaModule.actorSystem,
     reNotifyEnabled,

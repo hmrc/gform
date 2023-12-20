@@ -26,7 +26,7 @@ import uk.gov.hmrc.gform.sdes.renotify.SdesReNotifyService
 import scala.concurrent.{ ExecutionContext, Future }
 
 class SdesReNotifyJob(
-  val reNotifyService: SdesReNotifyService,
+  val sdesReNotifyService: SdesReNotifyService,
   val applicationLifecycle: ApplicationLifecycle,
   val jobActorSystem: ActorSystem,
   val jobEnabled: Boolean,
@@ -37,7 +37,7 @@ class SdesReNotifyJob(
   override val jobName: String = "SdesReNotifyJob"
   override val scheduler: QuartzSchedulerExtension = QuartzSchedulerExtension(jobActorSystem)
   override val schedulingActorRef: ActorRef = jobActorSystem.actorOf(Props(new QSchedulingActor()))
-  override val scheduledMessage: SdesReNotify = SdesReNotify(reNotifyService)
+  override val scheduledMessage: SdesReNotify = SdesReNotify(sdesReNotifyService)
   override val enabled: Boolean = jobEnabled
   override val expression: String = jobExpression
   override val description: Option[String] = Some(

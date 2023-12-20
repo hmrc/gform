@@ -168,7 +168,7 @@ class SdesModule(
 
   private val gformBaseUrl: String = configModule.serviceConfig.baseUrl("gform")
 
-  val reNotifyService = new SdesReNotifyService(
+  val sdesReNotifyService = new SdesReNotifyService(
     renotifyDestinations.map(SdesDestination.fromString),
     wsClient,
     sdesService,
