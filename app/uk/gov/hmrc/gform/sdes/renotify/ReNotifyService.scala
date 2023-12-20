@@ -25,6 +25,7 @@ import uk.gov.hmrc.mongo.lock.{ LockService, MongoLockRepository }
 import scala.concurrent.duration.Duration
 import scala.concurrent.{ ExecutionContext, Future }
 import play.api.libs.ws.WSClient
+import cats.implicits._
 
 class ReNotifyService(
   renotifyDestination: Seq[SdesDestination],
@@ -65,22 +66,19 @@ class ReNotifyService(
     for {
       sdesSubmissionsData <-
         sdesAlgebra.searchAll(None, None, Some(FileReady), None, Some(destination), showBeforeLastUpdatedAt)
-      _ <- Future.sequence(
-             sdesSubmissionsData.sdesSubmissions.toList
-               map { submission =>
-                 val url = gformBaseUrl + uk.gov.hmrc.gform.sdes.routes.SdesController
-                   .renotifySDES(submission.correlationId)
-                   .url
-                 val request = wsClient.url(url)
-                 request.post("").map { response =>
-                   if (response.status == play.api.http.Status.OK) {
-                     logger.info(s"Notification successfully updated for ID: ${submission.correlationId.value}.")
-                   } else {
-                     logger.error(s"Unable to renotify ID: ${submission.correlationId.value}.")
-                   }
-                 }
+      _ <- sdesSubmissionsData.sdesSubmissions.toList.traverse { submission =>
+             val url = gformBaseUrl + uk.gov.hmrc.gform.sdes.routes.SdesController
+               .renotifySDES(submission.correlationId)
+               .url
+             val request = wsClient.url(url)
+             request.post("").map { response =>
+               if (response.status == play.api.http.Status.OK) {
+                 logger.info(s"Notification successfully updated for ID: ${submission.correlationId.value}.")
+               } else {
+                 logger.error(s"Unable to renotify ID: ${submission.correlationId.value}.")
                }
-           )
+             }
+           }
     } yield ()
 
 }
