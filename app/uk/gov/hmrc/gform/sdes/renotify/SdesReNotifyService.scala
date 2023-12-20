@@ -27,7 +27,7 @@ import scala.concurrent.{ ExecutionContext, Future }
 import play.api.libs.ws.WSClient
 import cats.implicits._
 
-class ReNotifyService(
+class SdesReNotifyService(
   renotifyDestination: Seq[SdesDestination],
   wsClient: WSClient,
   sdesAlgebra: SdesAlgebra[Future],

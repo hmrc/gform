@@ -29,7 +29,7 @@ import uk.gov.hmrc.gform.repo.Repo
 import uk.gov.hmrc.gform.scheduler.datastore.DataStoreWorkItemRepo
 import uk.gov.hmrc.gform.scheduler.dms.DmsWorkItemRepo
 import uk.gov.hmrc.gform.sdes.alert.SdesAlertService
-import uk.gov.hmrc.gform.sdes.renotify.ReNotifyService
+import uk.gov.hmrc.gform.sdes.renotify.SdesReNotifyService
 import uk.gov.hmrc.gform.sdes.datastore.{ DataStoreWorkItemAlgebra, DataStoreWorkItemController, DataStoreWorkItemService }
 import uk.gov.hmrc.gform.sdes.dms.{ DmsWorkItemAlgebra, DmsWorkItemController, DmsWorkItemService }
 import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
@@ -168,7 +168,7 @@ class SdesModule(
 
   private val gformBaseUrl: String = configModule.serviceConfig.baseUrl("gform")
 
-  val reNotifyService = new ReNotifyService(
+  val reNotifyService = new SdesReNotifyService(
     renotifyDestinations.map(SdesDestination.fromString),
     wsClient,
     sdesService,

@@ -21,12 +21,12 @@ import com.typesafe.akka.extension.quartz.QuartzSchedulerExtension
 import play.api.inject.ApplicationLifecycle
 import uk.gov.hmrc.gform.scheduler.quartz.{ QScheduledJob, QSchedulingActor }
 import uk.gov.hmrc.gform.scheduler.quartz.QSchedulingActor.ReNotify
-import uk.gov.hmrc.gform.sdes.renotify.ReNotifyService
+import uk.gov.hmrc.gform.sdes.renotify.SdesReNotifyService
 
 import scala.concurrent.{ ExecutionContext, Future }
 
 class ReNotifyJob(
-  val reNotifyService: ReNotifyService,
+  val reNotifyService: SdesReNotifyService,
   val applicationLifecycle: ApplicationLifecycle,
   val jobActorSystem: ActorSystem,
   val jobEnabled: Boolean,
