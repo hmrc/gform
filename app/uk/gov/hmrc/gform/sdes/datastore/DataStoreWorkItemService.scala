@@ -49,11 +49,6 @@ trait DataStoreWorkItemAlgebra[F[_]] {
     dataStoreRouting: SdesRouting
   ): SdesNotifyRequest
 
-  def searchAll(
-    formTemplateId: Option[FormTemplateId],
-    status: Option[ProcessingStatus]
-  ): F[SdesWorkItemPageData]
-
   def search(
     page: Int,
     pageSize: Int,
@@ -115,12 +110,6 @@ class DataStoreWorkItemService(
       ),
       FileAudit(correlationId)
     )
-
-  override def searchAll(
-    formTemplateId: Option[FormTemplateId],
-    status: Option[ProcessingStatus]
-  ): Future[SdesWorkItemPageData] =
-    doSearch(None, formTemplateId, status)
 
   override def search(
     page: Int,

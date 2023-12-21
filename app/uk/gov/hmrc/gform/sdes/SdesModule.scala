@@ -262,12 +262,6 @@ class SdesModule(
     ): SdesNotifyRequest =
       dataStoreWorkItemService.createNotifyRequest(objSummary, correlationId, dataStoreRouting)
 
-    override def searchAll(
-      formTemplateId: Option[FormTemplateId],
-      status: Option[ProcessingStatus]
-    ): FOpt[SdesWorkItemPageData] =
-      fromFutureA(dataStoreWorkItemService.searchAll(formTemplateId, status))
-
     override def search(
       page: Int,
       pageSize: Int,
