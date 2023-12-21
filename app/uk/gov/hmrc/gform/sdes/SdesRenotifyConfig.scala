@@ -15,6 +15,7 @@
  */
 
 package uk.gov.hmrc.gform.sdes
+
 import scala.concurrent.duration.Duration
 
 final case class SdesRenotifyConfig(
