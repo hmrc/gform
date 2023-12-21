@@ -14,4 +14,13 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.scheduler.quartz.jobs
+package uk.gov.hmrc.gform.sdes
+import scala.concurrent.duration.Duration
+
+final case class SdesRenotifyConfig(
+  enabled: Boolean,
+  cron: String,
+  destinations: List[String],
+  showBeforeLastUpdatedAt: Int,
+  lockDuration: Duration
+)

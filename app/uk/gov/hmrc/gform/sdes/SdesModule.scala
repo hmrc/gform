@@ -29,7 +29,7 @@ import uk.gov.hmrc.gform.repo.Repo
 import uk.gov.hmrc.gform.scheduler.datastore.DataStoreWorkItemRepo
 import uk.gov.hmrc.gform.scheduler.dms.DmsWorkItemRepo
 import uk.gov.hmrc.gform.sdes.alert.SdesAlertService
-import uk.gov.hmrc.gform.sdes.renotify.SdesReNotifyQScheduledService
+import uk.gov.hmrc.gform.sdes.renotify.SdesRenotifyQScheduledService
 import uk.gov.hmrc.gform.sdes.datastore.{ DataStoreWorkItemAlgebra, DataStoreWorkItemController, DataStoreWorkItemService }
 import uk.gov.hmrc.gform.sdes.dms.{ DmsWorkItemAlgebra, DmsWorkItemController, DmsWorkItemService }
 import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
@@ -144,7 +144,7 @@ class SdesModule(
     alertSdesMongodbLockTimeoutDuration
   )
 
-  private val lockRepoReNotify: MongoLockRepository = new MongoLockRepository(
+  private val lockRepoRenotify: MongoLockRepository = new MongoLockRepository(
     mongoModule.mongoComponent,
     new CurrentTimestampSupport()
   )
@@ -170,11 +170,11 @@ class SdesModule(
       sdesRenotifyService
     )(ex)
 
-  val sdesReNotifyQScheduledService = new SdesReNotifyQScheduledService(
+  val sdesRenotifyQScheduledService = new SdesRenotifyQScheduledService(
     configModule.sdesRenotifyConfig.destinations.map(SdesDestination.fromString),
     sdesRenotifyService,
     sdesService,
-    lockRepoReNotify,
+    lockRepoRenotify,
     configModule.sdesRenotifyConfig.lockDuration,
     Some(configModule.sdesRenotifyConfig.showBeforeLastUpdatedAt),
     gformBaseUrl

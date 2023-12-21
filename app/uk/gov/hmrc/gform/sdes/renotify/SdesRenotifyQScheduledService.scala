@@ -32,7 +32,7 @@ import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import scala.concurrent.duration.Duration
 
-class SdesReNotifyQScheduledService(
+class SdesRenotifyQScheduledService(
   renotifyDestination: Seq[SdesDestination],
   sdesRenotifyService: SdesRenotifyService,
   sdesAlgebra: SdesAlgebra[Future],
@@ -42,7 +42,7 @@ class SdesReNotifyQScheduledService(
   gformBaseUrl: String
 ) extends QScheduledService[Unit] {
   private val logger: Logger = LoggerFactory.getLogger(getClass)
-  private val jobName = "SdesReNotifyJob"
+  private val jobName = "SdesRenotifyJob"
 
   override def invoke(implicit ec: ExecutionContext): Future[Unit] = {
 
