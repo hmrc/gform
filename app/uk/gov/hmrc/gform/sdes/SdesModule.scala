@@ -149,8 +149,6 @@ class SdesModule(
     new CurrentTimestampSupport()
   )
 
-  private val gformBaseUrl: String = configModule.serviceConfig.baseUrl("gform")
-
   val sdesCallbackController: SdesCallbackController =
     new SdesCallbackController(
       configModule.controllerComponents,
@@ -176,8 +174,7 @@ class SdesModule(
     sdesService,
     lockRepoRenotify,
     configModule.sdesRenotifyConfig.lockDuration,
-    Some(configModule.sdesRenotifyConfig.showBeforeLastUpdatedAt),
-    gformBaseUrl
+    Some(configModule.sdesRenotifyConfig.showBeforeLastUpdatedAt)
   )
 
   val foptSdesService: SdesAlgebra[FOpt] = new SdesAlgebra[FOpt] {

@@ -38,8 +38,7 @@ class SdesRenotifyQScheduledService(
   sdesAlgebra: SdesAlgebra[Future],
   lockRepositoryProvider: MongoLockRepository,
   mongodbLockTimeoutDuration: Duration,
-  showBeforeLastUpdatedAt: Option[Int],
-  gformBaseUrl: String
+  showBeforeLastUpdatedAt: Option[Int]
 ) extends QScheduledService[Unit] {
   private val logger: Logger = LoggerFactory.getLogger(getClass)
   private val jobName = "SdesRenotifyJob"
