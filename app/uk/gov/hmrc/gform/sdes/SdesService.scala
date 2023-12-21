@@ -84,7 +84,7 @@ trait SdesAlgebra[F[_]] {
     status: Option[NotificationStatus],
     showBeforeAt: Option[Boolean],
     destination: Option[SdesDestination],
-    showBeforeLastUpdatedAt: Option[Int]
+    showBeforeSubmittedAt: Option[Int]
   ): F[SdesSubmissionPageData]
 
   def updateAsManualConfirmed(correlation: CorrelationId): F[Unit]
@@ -158,9 +158,9 @@ class SdesService(
     status: Option[NotificationStatus],
     showBeforeAt: Option[Boolean],
     destination: Option[SdesDestination],
-    showBeforeLastUpdatedAt: Option[Int]
+    showBeforeSubmittedAt: Option[Int]
   ): Future[SdesSubmissionPageData] =
-    doSearch(None, processed, formTemplateId, status, showBeforeAt, destination, showBeforeLastUpdatedAt)
+    doSearch(None, processed, formTemplateId, status, showBeforeAt, destination, showBeforeSubmittedAt)
 
   private def doSearch(
     maybeSkipAndPageSize: Option[(Int, Int)],
@@ -169,15 +169,15 @@ class SdesService(
     status: Option[NotificationStatus],
     showBeforeAt: Option[Boolean],
     destination: Option[SdesDestination],
-    showBeforeLastUpdatedAt: Option[Int]
+    showBeforeSubmittedAt: Option[Int]
   ): Future[SdesSubmissionPageData] = {
 
     val queryByTemplateId =
       formTemplateId.fold(exists("_id"))(t => equal("formTemplateId", t.value))
     val queryByProcessed = processed.map(p => equal("isProcessed", p))
     val queryByStatus = status.map(s => equal("status", fromName(s)))
-    val queryByLastUpdated =
-      showBeforeLastUpdatedAt.map(d => lt("lastUpdated", LocalDateTime.now().minusHours(d.toLong)))
+    val queryBySubmittedAt =
+      showBeforeSubmittedAt.map(d => lt("submittedAt", LocalDateTime.now().minusHours(d.toLong)))
     val queryByDestination = destination.map(d => equal("destination", SdesDestination.fromName(d)))
 
     val additionalCondition = if (showBeforeAt.getOrElse(false)) {
@@ -189,7 +189,7 @@ class SdesService(
     val conditions = queryByTemplateId :: List(
       queryByProcessed,
       queryByStatus,
-      queryByLastUpdated,
+      queryBySubmittedAt,
       queryByDestination,
       additionalCondition
     ).flatten

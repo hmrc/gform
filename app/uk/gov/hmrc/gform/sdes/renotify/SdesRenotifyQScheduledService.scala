@@ -38,7 +38,7 @@ class SdesRenotifyQScheduledService(
   sdesAlgebra: SdesAlgebra[Future],
   lockRepositoryProvider: MongoLockRepository,
   mongodbLockTimeoutDuration: Duration,
-  showBeforeLastUpdatedAt: Option[Int]
+  showBeforeSubmittedAt: Option[Int]
 ) extends QScheduledService[Unit] {
   private val logger: Logger = LoggerFactory.getLogger(getClass)
   private val jobName = "SdesRenotifyJob"
@@ -69,7 +69,7 @@ class SdesRenotifyQScheduledService(
   private def renotifyItemsFor(destination: SdesDestination)(implicit ec: ExecutionContext): Future[Unit] =
     for {
       sdesSubmissionsData <-
-        sdesAlgebra.searchAll(None, None, Some(FileReady), None, Some(destination), showBeforeLastUpdatedAt)
+        sdesAlgebra.searchAll(None, None, Some(FileReady), None, Some(destination), showBeforeSubmittedAt)
       _ <- sdesSubmissionsData.sdesSubmissions.toList.traverse { submission =>
              implicit val hc = HeaderCarrier()
              sdesRenotifyService

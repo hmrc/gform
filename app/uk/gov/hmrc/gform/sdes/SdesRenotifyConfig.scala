@@ -22,6 +22,6 @@ final case class SdesRenotifyConfig(
   enabled: Boolean,
   cron: String,
   destinations: List[String],
-  showBeforeLastUpdatedAt: Int,
+  showBeforeSubmittedAt: Int,
   lockDuration: Duration
 )

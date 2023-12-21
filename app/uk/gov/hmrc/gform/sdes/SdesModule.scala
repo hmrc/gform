@@ -174,7 +174,7 @@ class SdesModule(
     sdesService,
     lockRepoRenotify,
     configModule.sdesRenotifyConfig.lockDuration,
-    Some(configModule.sdesRenotifyConfig.showBeforeLastUpdatedAt)
+    Some(configModule.sdesRenotifyConfig.showBeforeSubmittedAt)
   )
 
   val foptSdesService: SdesAlgebra[FOpt] = new SdesAlgebra[FOpt] {
@@ -213,10 +213,10 @@ class SdesModule(
       status: Option[NotificationStatus],
       showBeforeAt: Option[Boolean],
       destination: Option[SdesDestination],
-      showBeforeLastUpdatedAt: Option[Int]
+      showBeforeSubmittedAt: Option[Int]
     ): FOpt[SdesSubmissionPageData] =
       fromFutureA(
-        sdesService.searchAll(processed, formTemplateId, status, showBeforeAt, destination, showBeforeLastUpdatedAt)
+        sdesService.searchAll(processed, formTemplateId, status, showBeforeAt, destination, showBeforeSubmittedAt)
       )
 
     override def search(
