@@ -117,31 +117,14 @@ class DataStoreWorkItemService(
     formTemplateId: Option[FormTemplateId],
     status: Option[ProcessingStatus]
   ): Future[SdesWorkItemPageData] = {
-    val skip = page * pageSize
-    doSearch(Some((skip, pageSize)), formTemplateId, status)
-  }
-
-  private def doSearch(
-    maybeSkipAndPageSize: Option[(Int, Int)],
-    formTemplateId: Option[FormTemplateId],
-    status: Option[ProcessingStatus]
-  ): Future[SdesWorkItemPageData] = {
     val queryByFormTemplateId = formTemplateId.fold(Filters.exists("_id"))(t => equal("item.formTemplateId", t.value))
     val query = status.fold(queryByFormTemplateId)(s => Filters.and(equal("status", s.name), queryByFormTemplateId))
     val sort = equal("receivedAt", -1)
 
+    val skip = page * pageSize
     for {
-      dmsWorkItem <- maybeSkipAndPageSize match {
-                       case Some((skip, pageSize)) =>
-                         dataStoreWorkItemRepo.collection
-                           .find(query)
-                           .sort(sort)
-                           .skip(skip)
-                           .limit(pageSize)
-                           .toFuture()
-                           .map(_.toList)
-                       case None => dataStoreWorkItemRepo.collection.find(query).sort(sort).toFuture().map(_.toList)
-                     }
+      dmsWorkItem <-
+        dataStoreWorkItemRepo.collection.find(query).sort(sort).skip(skip).limit(pageSize).toFuture().map(_.toList)
       dmsWorkItemData = dmsWorkItem.map(workItem => SdesWorkItemData.fromWorkItem(workItem, 1))
       count <- dataStoreWorkItemRepo.collection.countDocuments(query).toFuture()
     } yield SdesWorkItemPageData(dmsWorkItemData, count)
