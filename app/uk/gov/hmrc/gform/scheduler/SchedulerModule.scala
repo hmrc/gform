@@ -117,14 +117,11 @@ class SchedulerModule(
     alertSdesExpression
   )
 
-  private val sdesReNotifyEnabled: Boolean = configModule.typesafeConfig.getBoolean("renotify.sdes.enabled")
-  private val sdesReNotifyExpression: String = configModule.typesafeConfig.getString("renotify.sdes.cron")
-
   new SdesReNotifyJob(
     sdesModule.sdesReNotifyQScheduledService,
     applicationLifecycle,
     akkaModule.actorSystem,
-    sdesReNotifyEnabled,
-    sdesReNotifyExpression
+    configModule.sdesRenotifyConfig.enabled,
+    configModule.sdesRenotifyConfig.cron
   )
 }

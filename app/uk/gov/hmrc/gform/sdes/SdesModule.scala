@@ -144,21 +144,6 @@ class SdesModule(
     alertSdesMongodbLockTimeoutDuration
   )
 
-  private val sdesRenotifyDestinations: Seq[String] =
-    configModule.configuration
-      .getOptional[Seq[String]]("renotify.sdes.destinations")
-      .getOrElse(Seq.empty)
-
-  private val sdesReNotifyMongodbLockTimeoutDuration: FiniteDuration =
-    FiniteDuration(
-      configModule.typesafeConfig.getDuration("renotify.sdes.lockDuration").toNanos,
-      TimeUnit.NANOSECONDS
-    )
-
-  private val showBeforeLastUpdatedAt: Option[Int] =
-    configModule.configuration
-      .getOptional[Int]("renotify.sdes.showBeforeLastUpdatedAt")
-
   private val lockRepoReNotify: MongoLockRepository = new MongoLockRepository(
     mongoModule.mongoComponent,
     new CurrentTimestampSupport()
@@ -186,12 +171,12 @@ class SdesModule(
     )(ex)
 
   val sdesReNotifyQScheduledService = new SdesReNotifyQScheduledService(
-    sdesRenotifyDestinations.map(SdesDestination.fromString),
+    configModule.sdesRenotifyConfig.destinations.map(SdesDestination.fromString),
     sdesRenotifyService,
     sdesService,
     lockRepoReNotify,
-    sdesReNotifyMongodbLockTimeoutDuration,
-    showBeforeLastUpdatedAt,
+    configModule.sdesRenotifyConfig.lockDuration,
+    Some(configModule.sdesRenotifyConfig.showBeforeLastUpdatedAt),
     gformBaseUrl
   )
 
