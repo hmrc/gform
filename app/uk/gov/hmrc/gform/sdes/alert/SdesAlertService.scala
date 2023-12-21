@@ -66,7 +66,7 @@ class SdesAlertService(
           logger.info(s"$jobName locked because it might be running on another instance")
       }
       .recover { case e: Exception =>
-        logger.info(s"$jobName failed with exception", e)
+        logger.error(s"$jobName failed with exception", e)
       }
   }
 
