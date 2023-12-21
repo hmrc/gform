@@ -174,28 +174,27 @@ class SdesService(
 
     val queryByTemplateId =
       formTemplateId.fold(exists("_id"))(t => equal("formTemplateId", t.value))
-    val queryByProcessed =
-      processed.fold(queryByTemplateId)(p => Filters.and(equal("isProcessed", p), queryByTemplateId))
-    val queryByStatus =
-      status.fold(queryByProcessed)(s => Filters.and(equal("status", fromName(s)), queryByProcessed))
-
+    val queryByProcessed = processed.map(p => equal("isProcessed", p))
+    val queryByStatus = status.map(s => equal("status", fromName(s)))
     val queryByLastUpdated =
-      showBeforeLastUpdatedAt.fold(queryByStatus)(d =>
-        Filters.and(lt("lastUpdated", LocalDateTime.now().minusHours(d.toLong)), queryByStatus)
-      )
+      showBeforeLastUpdatedAt.map(d => lt("lastUpdated", LocalDateTime.now().minusHours(d.toLong)))
+    val queryByDestination = destination.map(d => equal("destination", SdesDestination.fromName(d)))
 
-    val queryByDestination =
-      destination.fold(queryByLastUpdated)(d =>
-        Filters.and(equal("destination", SdesDestination.fromName(d)), queryByStatus)
-      )
-    val query = if (showBeforeAt.getOrElse(false)) {
-      Filters.and(
-        queryByDestination,
-        Filters.and(lt("createdAt", LocalDateTime.now().minusHours(10)), equal("isProcessed", false))
-      )
+    val additionalCondition = if (showBeforeAt.getOrElse(false)) {
+      Some(Filters.and(lt("createdAt", LocalDateTime.now().minusHours(10)), equal("isProcessed", false)))
     } else {
-      queryByDestination
+      None
     }
+
+    val conditions = queryByTemplateId :: List(
+      queryByProcessed,
+      queryByStatus,
+      queryByLastUpdated,
+      queryByDestination,
+      additionalCondition
+    ).flatten
+
+    val query = Filters.and(conditions: _*)
 
     val sort = equal("createdAt", -1)
 
