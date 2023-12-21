@@ -29,6 +29,7 @@ import uk.gov.hmrc.gform.repo.Repo
 import uk.gov.hmrc.gform.scheduler.datastore.DataStoreWorkItemRepo
 import uk.gov.hmrc.gform.scheduler.dms.DmsWorkItemRepo
 import uk.gov.hmrc.gform.sdes.alert.SdesAlertService
+import uk.gov.hmrc.gform.sdes.renotify.SdesRenotifyQScheduledService
 import uk.gov.hmrc.gform.sdes.datastore.{ DataStoreWorkItemAlgebra, DataStoreWorkItemController, DataStoreWorkItemService }
 import uk.gov.hmrc.gform.sdes.dms.{ DmsWorkItemAlgebra, DmsWorkItemController, DmsWorkItemService }
 import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
@@ -143,6 +144,11 @@ class SdesModule(
     alertSdesMongodbLockTimeoutDuration
   )
 
+  private val lockRepoRenotify: MongoLockRepository = new MongoLockRepository(
+    mongoModule.mongoComponent,
+    new CurrentTimestampSupport()
+  )
+
   val sdesCallbackController: SdesCallbackController =
     new SdesCallbackController(
       configModule.controllerComponents,
@@ -150,12 +156,26 @@ class SdesModule(
       objectStoreModule.objectStoreService
     )
 
+  val sdesRenotifyService = new SdesRenotifyService(
+    sdesService,
+    objectStoreModule.objectStoreService
+  )(ex, akkaModule.materializer)
+
   val sdesController: SdesController =
     new SdesController(
       configModule.controllerComponents,
       sdesService,
-      objectStoreModule.objectStoreService
-    )(ex, akkaModule.materializer)
+      sdesRenotifyService
+    )(ex)
+
+  val sdesRenotifyQScheduledService = new SdesRenotifyQScheduledService(
+    configModule.sdesRenotifyConfig.destinations.map(SdesDestination.fromString),
+    sdesRenotifyService,
+    sdesService,
+    lockRepoRenotify,
+    configModule.sdesRenotifyConfig.lockDuration,
+    Some(configModule.sdesRenotifyConfig.showBeforeSubmittedAt)
+  )
 
   val foptSdesService: SdesAlgebra[FOpt] = new SdesAlgebra[FOpt] {
 
@@ -186,6 +206,18 @@ class SdesModule(
 
     override def findSdesSubmissionByEnvelopeId(envelopeId: EnvelopeId): FOpt[List[SdesSubmission]] =
       fromFutureA(sdesService.findSdesSubmissionByEnvelopeId(envelopeId))
+
+    override def searchAll(
+      processed: Option[Boolean],
+      formTemplateId: Option[FormTemplateId],
+      status: Option[NotificationStatus],
+      showBeforeAt: Option[Boolean],
+      destination: Option[SdesDestination],
+      showBeforeSubmittedAt: Option[Int]
+    ): FOpt[SdesSubmissionPageData] =
+      fromFutureA(
+        sdesService.searchAll(processed, formTemplateId, status, showBeforeAt, destination, showBeforeSubmittedAt)
+      )
 
     override def search(
       page: Int,

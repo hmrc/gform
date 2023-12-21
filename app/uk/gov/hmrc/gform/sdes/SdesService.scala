@@ -78,6 +78,15 @@ trait SdesAlgebra[F[_]] {
     destination: Option[SdesDestination]
   ): F[SdesSubmissionPageData]
 
+  def searchAll(
+    processed: Option[Boolean],
+    formTemplateId: Option[FormTemplateId],
+    status: Option[NotificationStatus],
+    showBeforeAt: Option[Boolean],
+    destination: Option[SdesDestination],
+    showBeforeSubmittedAt: Option[Int]
+  ): F[SdesSubmissionPageData]
+
   def updateAsManualConfirmed(correlation: CorrelationId): F[Unit]
 
   def getSdesSubmissionsDestination(): F[Seq[SdesSubmissionsStats]]
@@ -139,31 +148,62 @@ class SdesService(
     showBeforeAt: Option[Boolean],
     destination: Option[SdesDestination]
   ): Future[SdesSubmissionPageData] = {
+    val skip = page * pageSize
+    doSearch(Some((skip, pageSize)), processed, formTemplateId, status, showBeforeAt, destination, None)
+  }
+
+  override def searchAll(
+    processed: Option[Boolean],
+    formTemplateId: Option[FormTemplateId],
+    status: Option[NotificationStatus],
+    showBeforeAt: Option[Boolean],
+    destination: Option[SdesDestination],
+    showBeforeSubmittedAt: Option[Int]
+  ): Future[SdesSubmissionPageData] =
+    doSearch(None, processed, formTemplateId, status, showBeforeAt, destination, showBeforeSubmittedAt)
+
+  private def doSearch(
+    maybeSkipAndPageSize: Option[(Int, Int)],
+    processed: Option[Boolean],
+    formTemplateId: Option[FormTemplateId],
+    status: Option[NotificationStatus],
+    showBeforeAt: Option[Boolean],
+    destination: Option[SdesDestination],
+    showBeforeSubmittedAt: Option[Int]
+  ): Future[SdesSubmissionPageData] = {
 
     val queryByTemplateId =
       formTemplateId.fold(exists("_id"))(t => equal("formTemplateId", t.value))
-    val queryByProcessed =
-      processed.fold(queryByTemplateId)(p => Filters.and(equal("isProcessed", p), queryByTemplateId))
-    val queryByStatus =
-      status.fold(queryByProcessed)(s => Filters.and(equal("status", fromName(s)), queryByProcessed))
-    val queryByDestination =
-      destination.fold(queryByStatus)(d =>
-        Filters.and(equal("destination", SdesDestination.fromName(d)), queryByStatus)
-      )
-    val query = if (showBeforeAt.getOrElse(false)) {
-      Filters.and(
-        queryByDestination,
-        Filters.and(lt("createdAt", LocalDateTime.now().minusHours(10)), equal("isProcessed", false))
-      )
+    val queryByProcessed = processed.map(p => equal("isProcessed", p))
+    val queryByStatus = status.map(s => equal("status", fromName(s)))
+    val queryBySubmittedAt =
+      showBeforeSubmittedAt.map(d => lt("submittedAt", LocalDateTime.now().minusHours(d.toLong)))
+    val queryByDestination = destination.map(d => equal("destination", SdesDestination.fromName(d)))
+
+    val additionalCondition = if (showBeforeAt.getOrElse(false)) {
+      Some(Filters.and(lt("createdAt", LocalDateTime.now().minusHours(10)), equal("isProcessed", false)))
     } else {
-      queryByDestination
+      None
     }
+
+    val conditions = queryByTemplateId :: List(
+      queryByProcessed,
+      queryByStatus,
+      queryBySubmittedAt,
+      queryByDestination,
+      additionalCondition
+    ).flatten
+
+    val query = Filters.and(conditions: _*)
 
     val sort = equal("createdAt", -1)
 
-    val skip = page * pageSize
     for {
-      sdesSubmissions <- repoSdesSubmission.page(query, sort, skip, pageSize)
+      sdesSubmissions <- maybeSkipAndPageSize match {
+                           case Some((skip, pageSize)) =>
+                             repoSdesSubmission.page(query, sort, skip, pageSize)
+                           case None => repoSdesSubmission.search(query, sort)
+                         }
       sdesSubmissionData <-
         sdesSubmissions.traverse(sdesSubmission =>
           for {

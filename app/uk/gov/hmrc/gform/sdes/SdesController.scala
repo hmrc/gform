@@ -16,14 +16,10 @@
 
 package uk.gov.hmrc.gform.sdes
 
-import akka.stream.Materializer
-import akka.util.ByteString
 import cats.syntax.all._
 import play.api.libs.json.Json
 import play.api.mvc.ControllerComponents
 import uk.gov.hmrc.gform.controllers.BaseController
-import uk.gov.hmrc.gform.objectstore.ObjectStoreAlgebra
-import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.gform.sharedmodel.sdes.{ CorrelationId, NotificationStatus, SdesDestination, SdesSubmissionData }
@@ -33,10 +29,9 @@ import scala.concurrent.{ ExecutionContext, Future }
 class SdesController(
   cc: ControllerComponents,
   sdesAlgebra: SdesAlgebra[Future],
-  objectStoreAlgebra: ObjectStoreAlgebra[Future]
+  sdesRenotifyService: SdesRenotifyService
 )(implicit
-  ex: ExecutionContext,
-  m: Materializer
+  ex: ExecutionContext
 ) extends BaseController(cc) {
 
   def search(
@@ -70,58 +65,16 @@ class SdesController(
   }
 
   def renotifySDES(correlationId: CorrelationId) = Action.async { implicit request =>
-    for {
-      sdesSubmission <- sdesAlgebra.findSdesSubmission(correlationId)
-      result <- sdesSubmission match {
-                  case Some(submission) =>
-                    val sdesDestination = submission.sdesDestination
-                    val paths = sdesDestination.objectStorePaths(submission.envelopeId)
-                    for {
-                      objSummary <- sdesDestination match {
-                                      case SdesDestination.DataStore | SdesDestination.DataStoreLegacy |
-                                          SdesDestination.HmrcIlluminate =>
-                                        val fileName = s"${submission.envelopeId.value}.json"
-                                        for {
-                                          maybeObject <- objectStoreAlgebra.getFile(paths.permanent, fileName)
-                                          objSummary <- maybeObject match {
-                                                          case Some(obj) =>
-                                                            val byteStringFuture: Future[ByteString] =
-                                                              obj.content.runFold(ByteString.empty)(_ ++ _)
-
-                                                            byteStringFuture.flatMap { concatenatedByteString =>
-                                                              objectStoreAlgebra.uploadFile(
-                                                                paths.ephemeral,
-                                                                fileName,
-                                                                concatenatedByteString,
-                                                                ContentType.`application/json`
-                                                              )
-                                                            }
-                                                          case None =>
-                                                            Future.failed(
-                                                              new Exception(
-                                                                s"File ${submission.envelopeId.value}.json not found in the object store."
-                                                              )
-                                                            )
-                                                        }
-                                        } yield objSummary
-                                      case SdesDestination.Dms =>
-                                        objectStoreAlgebra.zipFiles(submission.envelopeId, paths)
-                                    }
-                      res <- sdesAlgebra.renotifySDES(submission, objSummary)
-                    } yield res
-                  case None =>
-                    Future.failed(
-                      new RuntimeException(s"Correlation id [$correlationId] not found in mongo collection")
-                    )
-                }
-    } yield {
-      val status = result.status
-      if (status >= 200 && status < 300) {
-        Ok
-      } else {
-        BadRequest(result.body)
+    sdesRenotifyService
+      .renotifySDES(correlationId)
+      .map { result =>
+        val status = result.status
+        if (status >= 200 && status < 300) {
+          Ok
+        } else {
+          BadRequest(result.body)
+        }
       }
-    }
   }
 
   def updateAsManualConfirmed(correlationId: CorrelationId) = Action.async { _ =>

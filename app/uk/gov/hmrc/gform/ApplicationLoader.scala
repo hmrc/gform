@@ -151,7 +151,15 @@ class ApplicationModule(context: Context)
   val pdfGeneratorModule = new PdfGeneratorModule()
 
   private val sdesModule =
-    new SdesModule(configModule, wSHttpModule, mongoModule, objectStoreModule, akkaModule, envelopeModule, emailModule)
+    new SdesModule(
+      configModule,
+      wSHttpModule,
+      mongoModule,
+      objectStoreModule,
+      akkaModule,
+      envelopeModule,
+      emailModule
+    )
   val fileUploadModule =
     new FileUploadModule(
       configModule,

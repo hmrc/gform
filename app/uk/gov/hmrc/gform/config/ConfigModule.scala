@@ -20,7 +20,7 @@ import com.typesafe.config.{ Config => TypeSafeConfig }
 import play.api.Configuration
 import play.api.mvc.ControllerComponents
 import uk.gov.hmrc.gform.notifier.NotifierConfig
-import uk.gov.hmrc.gform.sdes.SdesConfig
+import uk.gov.hmrc.gform.sdes.{ SdesConfig, SdesRenotifyConfig }
 import uk.gov.hmrc.gform.sharedmodel.config.ExposedConfig
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.ProfileName
 import uk.gov.hmrc.http.Authorization
@@ -57,6 +57,9 @@ class ConfigModule(
     ConfigSource.default.at("microservice.services.notifier").loadOrThrow[NotifierConfig]
 
   val configController = new ConfigController(controllerComponents, this)
+
+  val sdesRenotifyConfig: SdesRenotifyConfig =
+    ConfigSource.default.at("renotify.sdes").loadOrThrow[SdesRenotifyConfig]
 
   object DestinationsServicesConfig extends ServicesConfig(configuration) {
     override protected lazy val rootServices = "microservice"
