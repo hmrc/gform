@@ -158,8 +158,7 @@ class ApplicationModule(context: Context)
       objectStoreModule,
       akkaModule,
       envelopeModule,
-      emailModule,
-      wsClient
+      emailModule
     )
   val fileUploadModule =
     new FileUploadModule(

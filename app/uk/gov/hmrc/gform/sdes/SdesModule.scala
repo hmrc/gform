@@ -29,7 +29,7 @@ import uk.gov.hmrc.gform.repo.Repo
 import uk.gov.hmrc.gform.scheduler.datastore.DataStoreWorkItemRepo
 import uk.gov.hmrc.gform.scheduler.dms.DmsWorkItemRepo
 import uk.gov.hmrc.gform.sdes.alert.SdesAlertService
-import uk.gov.hmrc.gform.sdes.renotify.SdesReNotifyService
+import uk.gov.hmrc.gform.sdes.renotify.SdesReNotifyQScheduledService
 import uk.gov.hmrc.gform.sdes.datastore.{ DataStoreWorkItemAlgebra, DataStoreWorkItemController, DataStoreWorkItemService }
 import uk.gov.hmrc.gform.sdes.dms.{ DmsWorkItemAlgebra, DmsWorkItemController, DmsWorkItemService }
 import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
@@ -48,7 +48,6 @@ import uk.gov.hmrc.objectstore.client.ObjectSummaryWithMd5
 import java.util.concurrent.TimeUnit
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ ExecutionContext, Future }
-import play.api.libs.ws.WSClient
 
 class SdesModule(
   configModule: ConfigModule,
@@ -57,8 +56,7 @@ class SdesModule(
   objectStoreModule: ObjectStoreModule,
   akkaModule: AkkaModule,
   envelopeModule: EnvelopeModule,
-  emailModule: EmailModule,
-  wsClient: WSClient
+  emailModule: EmailModule
 )(implicit ex: ExecutionContext) {
 
   private val sdesBaseUrl = configModule.serviceConfig.baseUrl("sdes")
@@ -168,16 +166,6 @@ class SdesModule(
 
   private val gformBaseUrl: String = configModule.serviceConfig.baseUrl("gform")
 
-  val sdesReNotifyService = new SdesReNotifyService(
-    sdesRenotifyDestinations.map(SdesDestination.fromString),
-    wsClient,
-    sdesService,
-    lockRepoReNotify,
-    sdesReNotifyMongodbLockTimeoutDuration,
-    showBeforeLastUpdatedAt,
-    gformBaseUrl
-  )
-
   val sdesCallbackController: SdesCallbackController =
     new SdesCallbackController(
       configModule.controllerComponents,
@@ -185,12 +173,27 @@ class SdesModule(
       objectStoreModule.objectStoreService
     )
 
+  val sdesRenotifyService = new SdesRenotifyService(
+    sdesService,
+    objectStoreModule.objectStoreService
+  )(ex, akkaModule.materializer)
+
   val sdesController: SdesController =
     new SdesController(
       configModule.controllerComponents,
       sdesService,
-      objectStoreModule.objectStoreService
-    )(ex, akkaModule.materializer)
+      sdesRenotifyService
+    )(ex)
+
+  val sdesReNotifyQScheduledService = new SdesReNotifyQScheduledService(
+    sdesRenotifyDestinations.map(SdesDestination.fromString),
+    sdesRenotifyService,
+    sdesService,
+    lockRepoReNotify,
+    sdesReNotifyMongodbLockTimeoutDuration,
+    showBeforeLastUpdatedAt,
+    gformBaseUrl
+  )
 
   val foptSdesService: SdesAlgebra[FOpt] = new SdesAlgebra[FOpt] {
 

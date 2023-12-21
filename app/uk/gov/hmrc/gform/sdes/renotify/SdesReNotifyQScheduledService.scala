@@ -16,20 +16,25 @@
 
 package uk.gov.hmrc.gform.sdes.renotify
 
-import org.slf4j.{ Logger, LoggerFactory }
-import uk.gov.hmrc.gform.sdes.SdesAlgebra
-import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination
-import uk.gov.hmrc.gform.sharedmodel.sdes.NotificationStatus.FileReady
-import uk.gov.hmrc.gform.scheduler.quartz.QScheduledService
-import uk.gov.hmrc.mongo.lock.{ LockService, MongoLockRepository }
-import scala.concurrent.duration.Duration
-import scala.concurrent.{ ExecutionContext, Future }
-import play.api.libs.ws.WSClient
 import cats.implicits._
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import uk.gov.hmrc.gform.scheduler.quartz.QScheduledService
+import uk.gov.hmrc.gform.sdes.SdesAlgebra
+import uk.gov.hmrc.gform.sdes.SdesRenotifyService
+import uk.gov.hmrc.gform.sharedmodel.sdes.NotificationStatus.FileReady
+import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination
+import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.mongo.lock.LockService
+import uk.gov.hmrc.mongo.lock.MongoLockRepository
 
-class SdesReNotifyService(
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
+import scala.concurrent.duration.Duration
+
+class SdesReNotifyQScheduledService(
   renotifyDestination: Seq[SdesDestination],
-  wsClient: WSClient,
+  sdesRenotifyService: SdesRenotifyService,
   sdesAlgebra: SdesAlgebra[Future],
   lockRepositoryProvider: MongoLockRepository,
   mongodbLockTimeoutDuration: Duration,
@@ -67,17 +72,18 @@ class SdesReNotifyService(
       sdesSubmissionsData <-
         sdesAlgebra.searchAll(None, None, Some(FileReady), None, Some(destination), showBeforeLastUpdatedAt)
       _ <- sdesSubmissionsData.sdesSubmissions.toList.traverse { submission =>
-             val url = gformBaseUrl + uk.gov.hmrc.gform.sdes.routes.SdesController
+             implicit val hc = HeaderCarrier()
+             sdesRenotifyService
                .renotifySDES(submission.correlationId)
-               .url
-             val request = wsClient.url(url)
-             request.post("").map { response =>
-               if (response.status == play.api.http.Status.OK) {
-                 logger.info(s"Notification successfully updated for ID: ${submission.correlationId.value}.")
-               } else {
-                 logger.error(s"Unable to renotify ID: ${submission.correlationId.value}.")
+               .map { result =>
+                 val status = result.status
+                 if (status >= 200 && status < 300) {
+                   logger.info(s"Notification successfully updated for ID: ${submission.correlationId.value}.")
+                 } else {
+
+                   logger.error(s"Unable to renotify ID: ${submission.correlationId.value}.")
+                 }
                }
-             }
            }
     } yield ()
 
