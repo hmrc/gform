@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.gform.sdes
 
+import com.mongodb.client.result.UpdateResult
 import org.mongodb.scala.model.{ IndexModel, IndexOptions, Indexes }
 import uk.gov.hmrc.gform.akka.AkkaModule
 import uk.gov.hmrc.gform.config.ConfigModule
@@ -235,6 +236,12 @@ class SdesModule(
     override def updateAsManualConfirmed(correlation: CorrelationId): FOpt[Unit] =
       fromFutureA(sdesService.updateAsManualConfirmed(correlation))
 
+    override def getSdesSubmissionsDestination(): FOpt[Seq[SdesSubmissionsStats]] =
+      fromFutureA(sdesService.getSdesSubmissionsDestination())
+
+    override def sdesMigration(): FOpt[UpdateResult] =
+      fromFutureA(sdesService.sdesMigration())
+
   }
 
   val foptDataStoreWorkItemService: DataStoreWorkItemAlgebra[FOpt] = new DataStoreWorkItemAlgebra[FOpt] {
@@ -262,5 +269,6 @@ class SdesModule(
     override def find(id: String): FOpt[Option[WorkItem[SdesWorkItem]]] = fromFutureA(dataStoreWorkItemService.find(id))
 
     override def delete(id: String): FOpt[Unit] = fromFutureA(dataStoreWorkItemService.delete(id))
+
   }
 }

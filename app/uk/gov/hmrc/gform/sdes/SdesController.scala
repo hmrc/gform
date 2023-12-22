@@ -124,4 +124,21 @@ class SdesController(
       NoContent
     }
   }
+
+  def getSdesSubmissionsDestinations() = Action.async { _ =>
+    sdesAlgebra
+      .getSdesSubmissionsDestination()
+      .map { sdesDestination =>
+        Ok(Json.toJson(sdesDestination))
+      }
+  }
+
+  def sdesMigration() = Action.async { _ =>
+    sdesAlgebra
+      .sdesMigration()
+      .map { modifiedCount =>
+        Ok(modifiedCount.toString)
+      }
+  }
+
 }

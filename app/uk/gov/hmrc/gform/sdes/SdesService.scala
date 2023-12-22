@@ -20,8 +20,12 @@ import cats.syntax.eq._
 import cats.syntax.traverse._
 import cats.syntax.functor._
 import cats.syntax.show._
-import org.mongodb.scala.model.Filters
+import play.api.libs.json.{ JsValue, Json, OFormat }
+import com.mongodb.client.result.UpdateResult
+import org.mongodb.scala.bson.{ BsonArray, BsonDocument }
+import org.mongodb.scala.model.{ Accumulators, Aggregates, Field, Filters, Sorts }
 import org.mongodb.scala.model.Filters.{ equal, exists, lt }
+import uk.gov.hmrc.mongo.play.json.Codecs
 import org.slf4j.LoggerFactory
 import uk.gov.hmrc.gform.core._
 import uk.gov.hmrc.gform.envelope.EnvelopeAlgebra
@@ -73,6 +77,11 @@ trait SdesAlgebra[F[_]] {
   ): F[SdesSubmissionPageData]
 
   def updateAsManualConfirmed(correlation: CorrelationId): F[Unit]
+
+  def getSdesSubmissionsDestination(): F[Seq[SdesSubmissionsStats]]
+
+  def sdesMigration(): F[UpdateResult]
+
 }
 
 class SdesService(
@@ -209,4 +218,54 @@ class SdesService(
              )
            ).as(logger.info(show"SdesService.updateAsManualConfirmed(${correlationId.value}) - updated manually)"))
     } yield ()
+
+  // db.sdesSubmission.aggregate([
+  //   {
+  //     "$group": {
+  //       "_id": "$destination",
+  //       "count": {
+  //         "$sum": 1
+  //       }
+  //     }
+  //   },
+  //   {
+  //     "$set": {
+  //       "destination": "$_id"
+  //     }
+  //   },
+  //   {
+  //     "$unset": [
+  //       "_id"
+  //     ]
+  //   },
+  //   {
+  //     "$sort": {
+  //       "count": -1
+  //     }
+  //   }
+  //]);
+  override def getSdesSubmissionsDestination(): Future[Seq[SdesSubmissionsStats]] = {
+    val group = Aggregates.group(
+      "$destination",
+      Accumulators.sum("count", 1)
+    )
+    val set = Aggregates.set(
+      Field("destination", "$_id")
+    )
+    val unset = BsonDocument("$unset" -> BsonArray("_id"))
+    val sort = Aggregates.sort(Sorts.descending("count"))
+    val pipeline = List(group, set, unset, sort)
+    repoSdesSubmission
+      .aggregate(pipeline)
+      .map(_.map(Codecs.fromBson[SdesSubmissionsStats]))
+  }
+
+  override def sdesMigration(): Future[UpdateResult] =
+    repoSdesSubmission.sdesMigration()
+}
+
+final case class SdesSubmissionsStats(destination: JsValue, count: Long)
+
+object SdesSubmissionsStats {
+  implicit val format: OFormat[SdesSubmissionsStats] = Json.format
 }

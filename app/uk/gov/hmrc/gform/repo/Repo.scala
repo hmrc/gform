@@ -21,14 +21,17 @@ import cats.instances.long._
 import cats.syntax.either._
 import cats.syntax.eq._
 import com.mongodb.ReadPreference
+import com.mongodb.client.result.UpdateResult
 import org.mongodb.scala.Document
 import org.mongodb.scala.bson.BsonValue
 import org.mongodb.scala.bson.conversions.Bson
+import org.mongodb.scala.model.{ Aggregates, Field }
 import org.mongodb.scala.model.Filters._
 import org.mongodb.scala.model.{ Filters, FindOneAndReplaceOptions, IndexModel, ReplaceOneModel, ReplaceOptions }
 import play.api.libs.json._
 import uk.gov.hmrc.gform.core.FOpt
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
+import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 import org.mongodb.scala.model.Projections._
@@ -191,4 +194,13 @@ class Repo[T: OWrites: Manifest](
         UnexpectedState(lastError.getMessage).asLeft[Unit]
       }
   }
+
+  def sdesMigration(): Future[UpdateResult] = {
+    val filter: Bson = Filters.nor(Filters.exists("destination"))
+    val update = Aggregates.set(
+      Field("destination", SdesDestination.fromName(SdesDestination.Dms))
+    )
+    underlying.collection.updateMany(filter, update).toFuture()
+  }
+
 }
