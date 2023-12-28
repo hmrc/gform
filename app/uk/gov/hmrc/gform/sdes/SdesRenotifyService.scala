@@ -20,8 +20,7 @@ import akka.stream.Materializer
 import akka.util.ByteString
 import uk.gov.hmrc.gform.objectstore.ObjectStoreAlgebra
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
-import uk.gov.hmrc.gform.sharedmodel.sdes.CorrelationId
-import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination
+import uk.gov.hmrc.gform.sharedmodel.sdes.{ CorrelationId, SdesDestination }
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.ExecutionContext

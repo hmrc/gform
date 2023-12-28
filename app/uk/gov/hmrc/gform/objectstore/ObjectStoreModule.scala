@@ -59,7 +59,7 @@ class ObjectStoreModule(
   val objectStoreClient = new PlayObjectStoreClient(wsClient, objectStoreClientConfig)(akkaModule.materializer, ex)
 
   val objectStoreConnector: ObjectStoreConnector =
-    new ObjectStoreConnector(objectStoreClient, objectStoreClientConfig)(
+    new ObjectStoreConnector(objectStoreClient)(
       ex,
       akkaModule.actorSystem
     )

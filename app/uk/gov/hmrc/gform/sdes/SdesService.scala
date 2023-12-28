@@ -101,7 +101,8 @@ class SdesService(
   dmsWorkItemAlgebra: DmsWorkItemAlgebra[Future],
   dataStoreWorkItemAlgebra: DataStoreWorkItemAlgebra[Future],
   envelopeAlgebra: EnvelopeAlgebra[Future],
-  sdesConfig: SdesConfig
+  sdesConfig: SdesConfig,
+  sdesHistoryAlgebra: SdesHistoryAlgebra[Future]
 )(implicit
   ec: ExecutionContext
 ) extends SdesAlgebra[Future] {
@@ -121,10 +122,20 @@ class SdesService(
       SdesSubmission.createSdesSubmission(correlationId, envelopeId, formTemplateId, submissionRef, destination)
 
     val sdesRouting = sdesSubmission.sdesDestination.sdesRouting(sdesConfig)
+    val sdesHistory =
+      SdesHistory.create(
+        envelopeId,
+        correlationId,
+        NotificationStatus.FileReady,
+        notifyRequest.file.name,
+        None,
+        Some(notifyRequest)
+      )
 
     for {
       res <- sdesConnector.notifySDES(notifyRequest, sdesRouting)
       _   <- saveSdesSubmission(sdesSubmission.copy(submittedAt = Some(Instant.now), status = FileReady))
+      _   <- sdesHistoryAlgebra.save(sdesHistory)
     } yield res
   }
 
@@ -238,6 +249,14 @@ class SdesService(
       case SdesDestination.Dms =>
         dmsWorkItemAlgebra.createNotifyRequest(objWithSummary, sdesSubmission._id.value)
     }
+    val sdesHistory = SdesHistory.create(
+      sdesSubmission.envelopeId,
+      sdesSubmission._id,
+      FileReady,
+      notifyRequest.file.name,
+      None,
+      Some(notifyRequest)
+    )
     for {
       res <- sdesConnector.notifySDES(notifyRequest, sdesRouting)
       _ <-
@@ -251,6 +270,7 @@ class SdesService(
             confirmedAt = None
           )
         )
+      _ <- sdesHistoryAlgebra.save(sdesHistory)
     } yield res
   }
 

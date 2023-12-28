@@ -22,7 +22,7 @@ import play.api.mvc.{ Action, ControllerComponents }
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.objectstore.ObjectStoreAlgebra
 import uk.gov.hmrc.gform.sharedmodel.sdes.NotificationStatus.FileProcessed
-import uk.gov.hmrc.gform.sharedmodel.sdes.{ CallBackNotification, CorrelationId, SdesDestination }
+import uk.gov.hmrc.gform.sharedmodel.sdes.{ CallBackNotification, CorrelationId, SdesDestination, SdesHistory }
 
 import java.time.Instant
 import scala.concurrent.{ ExecutionContext, Future }
@@ -30,7 +30,8 @@ import scala.concurrent.{ ExecutionContext, Future }
 class SdesCallbackController(
   cc: ControllerComponents,
   sdesAlgebra: SdesAlgebra[Future],
-  objectStoreAlgebra: ObjectStoreAlgebra[Future]
+  objectStoreAlgebra: ObjectStoreAlgebra[Future],
+  sdesHistoryAlgebra: SdesHistoryAlgebra[Future]
 )(implicit ex: ExecutionContext)
     extends BaseController(cc) {
   private val logger = LoggerFactory.getLogger(getClass)
@@ -39,15 +40,26 @@ class SdesCallbackController(
     logger.info(
       s"SDES: Received callback for fileName: $fileName, correlationId: $correlationID, status: $responseStatus and failedReason: $responseFailureReason"
     )
+    val correlationId = CorrelationId(correlationID)
 
     for {
-      maybeSdesSubmission <- sdesAlgebra.findSdesSubmission(CorrelationId(correlationID))
+      maybeSdesSubmission <- sdesAlgebra.findSdesSubmission(correlationId)
       _ <- maybeSdesSubmission match {
              case Some(sdesSubmission) =>
                val envelopeId = sdesSubmission.envelopeId
                logger.info(
                  s"Received callback for envelopeId: $envelopeId, destination: ${sdesSubmission.destination.getOrElse("dms")}"
                )
+
+               val sdesHistory = SdesHistory.create(
+                 envelopeId,
+                 correlationId,
+                 responseStatus,
+                 fileName,
+                 responseFailureReason,
+                 None
+               )
+
                val updatedSdesSubmission = sdesSubmission.copy(
                  isProcessed = responseStatus === FileProcessed,
                  status = responseStatus,
@@ -55,6 +67,7 @@ class SdesCallbackController(
                  failureReason = responseFailureReason
                )
                for {
+                 _ <- sdesHistoryAlgebra.save(sdesHistory)
                  _ <- sdesAlgebra.saveSdesSubmission(updatedSdesSubmission)
                  _ <- if (responseStatus === FileProcessed) {
                         val sdesDestination = sdesSubmission.sdesDestination

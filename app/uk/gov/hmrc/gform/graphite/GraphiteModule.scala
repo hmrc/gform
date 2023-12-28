@@ -19,14 +19,13 @@ package uk.gov.hmrc.gform.graphite
 import com.codahale.metrics.graphite.{ Graphite, GraphiteReporter }
 import com.codahale.metrics.MetricFilter
 import play.api.inject.ApplicationLifecycle
-import play.api.{ Configuration, Environment }
+import play.api.Configuration
 import uk.gov.hmrc.gform.metrics.MetricsModule
 import uk.gov.hmrc.play.audit.http.connector.DatastreamMetrics
 import uk.gov.hmrc.play.bootstrap.audit.{ DisabledDatastreamMetricsProvider, EnabledDatastreamMetricsProvider }
 import uk.gov.hmrc.play.bootstrap.graphite.{ DisabledGraphiteReporting, EnabledGraphiteReporting, GraphiteProvider, GraphiteProviderConfig, GraphiteReporterProvider, GraphiteReporterProviderConfig }
 
 class GraphiteModule(
-  environment: Environment,
   configuration: Configuration,
   applicationLifecycle: ApplicationLifecycle,
   metricsModule: MetricsModule

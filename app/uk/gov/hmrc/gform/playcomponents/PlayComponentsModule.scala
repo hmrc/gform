@@ -41,7 +41,6 @@ import uk.gov.hmrc.gform.metrics.MetricsModule
 import uk.gov.hmrc.gform.notificationbanner.NotificationBannerModule
 import uk.gov.hmrc.gform.objectstore.ObjectStoreModule
 import uk.gov.hmrc.gform.obligation.ObligationModule
-import uk.gov.hmrc.gform.scheduler.SchedulerModule
 import uk.gov.hmrc.gform.sdes.SdesModule
 import uk.gov.hmrc.gform.submission.SubmissionModule
 import uk.gov.hmrc.gform.testonly.TestOnlyModule
@@ -76,7 +75,6 @@ class PlayComponentsModule(
   objectStoreModule: ObjectStoreModule,
   sdesModule: SdesModule,
   notificationBannerModule: NotificationBannerModule,
-  schedulerModule: SchedulerModule,
   builderModule: BuilderModule,
   shutterModule: ShutterModule,
   handlebarsPayloadModule: HandlebarsTemplateModule,
