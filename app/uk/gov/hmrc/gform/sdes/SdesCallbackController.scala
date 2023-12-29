@@ -68,16 +68,18 @@ class SdesCallbackController(
                )
                for {
                  _ <- sdesHistoryAlgebra.save(sdesHistory)
-                 _ <- sdesAlgebra.saveSdesSubmission(updatedSdesSubmission)
-                 _ <- if (responseStatus === FileProcessed) {
-                        val sdesDestination = sdesSubmission.sdesDestination
-                        val paths = sdesDestination.objectStorePaths(envelopeId)
-                        sdesDestination match {
-                          case SdesDestination.DataStore | SdesDestination.DataStoreLegacy |
-                              SdesDestination.HmrcIlluminate =>
-                            objectStoreAlgebra.deleteFile(paths.ephemeral, fileName)
-                          case SdesDestination.Dms => objectStoreAlgebra.deleteZipFile(envelopeId, paths)
-                        }
+                 _ <- if (!sdesSubmission.isProcessed) {
+                        sdesAlgebra.saveSdesSubmission(updatedSdesSubmission)
+                        if (responseStatus === FileProcessed) {
+                          val sdesDestination = sdesSubmission.sdesDestination
+                          val paths = sdesDestination.objectStorePaths(envelopeId)
+                          sdesDestination match {
+                            case SdesDestination.DataStore | SdesDestination.DataStoreLegacy |
+                                SdesDestination.HmrcIlluminate =>
+                              objectStoreAlgebra.deleteFile(paths.ephemeral, fileName)
+                            case SdesDestination.Dms => objectStoreAlgebra.deleteZipFile(envelopeId, paths)
+                          }
+                        } else Future.unit
                       } else Future.unit
                } yield ()
              case None =>
