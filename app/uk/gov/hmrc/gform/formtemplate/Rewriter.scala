@@ -131,7 +131,7 @@ trait Rewriter {
             )
         )
 
-    val taskListIncludeIfs: List[IncludeIf] =
+    val taskIncludeIfs: List[IncludeIf] =
       formTemplate.formKind.fold(_ => List.empty[IncludeIf])(taskList =>
         taskList.sections.toList.flatMap(_.tasks.toList.flatMap(_.includeIf))
       )
@@ -217,7 +217,7 @@ trait Rewriter {
         includeIf.toList ++ pages.toList.flatMap(_.includeIf.toList) ++ fields.fold(List.empty[IncludeIf])(
           _.toList.flatMap(_.includeIf.toList)
         ) ++ repeatsUntil.toList ++ repeatsWhile.toList
-    } ++ fieldsIncludeIfs ++ destinationsIncludeIfs ++ summarySectionIncludeIfs ++ choiceIncludeIfs ++ miniSummaryListIncludeIfs ++ redirectsIncludeIfs ++ confirmationRedirectsIncludeIfs ++ taskDeclarationSectionIncludeIfs ++ taskListIncludeIfs
+    } ++ fieldsIncludeIfs ++ destinationsIncludeIfs ++ summarySectionIncludeIfs ++ choiceIncludeIfs ++ miniSummaryListIncludeIfs ++ redirectsIncludeIfs ++ confirmationRedirectsIncludeIfs ++ taskDeclarationSectionIncludeIfs ++ taskIncludeIfs
 
     def validate(
       c: String,
