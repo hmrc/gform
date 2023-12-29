@@ -22,14 +22,15 @@ import play.api.mvc.ControllerComponents
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
-import uk.gov.hmrc.gform.sharedmodel.sdes.{ CorrelationId, NotificationStatus, SdesDestination, SdesSubmissionData }
+import uk.gov.hmrc.gform.sharedmodel.sdes.{ CorrelationId, NotificationStatus, SdesDestination, SdesHistoryNotification, SdesHistoryView, SdesSubmissionData }
 
 import scala.concurrent.{ ExecutionContext, Future }
 
 class SdesController(
   cc: ControllerComponents,
   sdesAlgebra: SdesAlgebra[Future],
-  sdesRenotifyService: SdesRenotifyService
+  sdesRenotifyService: SdesRenotifyService,
+  sdesHistoryAlgebra: SdesHistoryAlgebra[Future]
 )(implicit
   ex: ExecutionContext
 ) extends BaseController(cc) {
@@ -120,4 +121,27 @@ class SdesController(
       .map { modifiedCount =>
         Ok(modifiedCount.toString)
       }
+
+  def historyById(correlationId: CorrelationId) = Action.async { _ =>
+    for {
+      histories <- sdesHistoryAlgebra.get(correlationId).map(_.sortBy(_.createdAt).reverse)
+      historyNotification <-
+        histories.traverse(h =>
+          SdesHistoryNotification(h.notificationStatus, h.createdAt, h.failureReason, h.notifyRequest).pure[Future]
+        )
+    } yield
+      if (histories.nonEmpty) {
+        val firstHistory = histories.head
+        Ok(
+          Json.toJson(
+            SdesHistoryView(
+              firstHistory.envelopeId,
+              firstHistory.correlationId,
+              firstHistory.fileName,
+              historyNotification
+            )
+          )
+        )
+      } else NotFound
+  }
 }

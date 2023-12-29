@@ -18,14 +18,12 @@ package uk.gov.hmrc.gform.handlebarstemplate
 
 import play.api.mvc.ControllerComponents
 import uk.gov.hmrc.gform.formtemplate.FormTemplateModule
-import uk.gov.hmrc.gform.mongo.MongoModule
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 
 class HandlebarsTemplateModule(
   controllerComponents: ControllerComponents,
-  mongoModule: MongoModule,
   handlebarsTemplateService: HandlebarsTemplateAlgebra[Future],
   formTemplateModule: FormTemplateModule
 )(implicit

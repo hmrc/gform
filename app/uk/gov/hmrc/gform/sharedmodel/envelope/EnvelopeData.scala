@@ -56,7 +56,7 @@ object EnvelopeFile {
       (JsPath \ "contentType").read[ContentType] and
       (JsPath \ "length").read[Long] and
       (JsPath \ "metadata").read[Map[String, List[String]]]
-  )(EnvelopeFile.apply(_, _, _, _, _, _))
+  )(EnvelopeFile.apply _)
 
   implicit val fileFormat: Format[EnvelopeFile] = Format[EnvelopeFile](fileReads, fileWrites)
 }

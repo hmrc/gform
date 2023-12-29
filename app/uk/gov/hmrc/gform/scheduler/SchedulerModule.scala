@@ -106,15 +106,12 @@ class SchedulerModule(
     dataStoreQueueService
   )
 
-  private val alertSdesEnabled: Boolean = configModule.typesafeConfig.getBoolean("alert.sdes.enabled")
-  private val alertSdesExpression: String = configModule.typesafeConfig.getString("alert.sdes.cron")
-
   new SdesAlertJob(
     sdesModule.sdesAlertService,
     applicationLifecycle,
     akkaModule.actorSystem,
-    alertSdesEnabled,
-    alertSdesExpression
+    configModule.sdesAlertConfig.enabled,
+    configModule.sdesAlertConfig.cron
   )
 
   new SdesRenotifyJob(

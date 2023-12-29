@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.gform.sdes
 
+import scala.concurrent.duration.Duration
+
 final case class SdesConfig(
   basePath: String,
   fileLocationUrl: String,
@@ -25,3 +27,20 @@ final case class SdesConfig(
 )
 
 final case class SdesRouting(apiKey: String, informationType: String, recipientOrSender: String)
+
+final case class SdesAlertConfig(
+  enabled: Boolean,
+  cron: String,
+  destination: Option[List[String]],
+  notifierEmailAddress: String,
+  emailTemplateId: String,
+  lockDuration: Duration
+)
+
+final case class SdesRenotifyConfig(
+  enabled: Boolean,
+  cron: String,
+  destinations: List[String],
+  showBeforeSubmittedAt: Int,
+  lockDuration: Duration
+)

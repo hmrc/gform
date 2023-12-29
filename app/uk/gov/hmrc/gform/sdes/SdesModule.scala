@@ -45,8 +45,6 @@ import uk.gov.hmrc.mongo.lock.MongoLockRepository
 import uk.gov.hmrc.mongo.workitem.{ ProcessingStatus, WorkItem }
 import uk.gov.hmrc.objectstore.client.ObjectSummaryWithMd5
 
-import java.util.concurrent.TimeUnit
-import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ ExecutionContext, Future }
 
 class SdesModule(
@@ -84,6 +82,21 @@ class SdesModule(
       )
     )
 
+  private val repoSdesHistory: Repo[SdesHistory] =
+    new Repo[SdesHistory](
+      "sdesHistory",
+      mongoModule.mongoComponent,
+      _._id.toString,
+      indexes = Seq(
+        IndexModel(
+          Indexes.ascending("correlationId"),
+          IndexOptions()
+            .background(false)
+            .name("correlationId")
+        )
+      )
+    )
+
   val dmsWorkItemRepo = new DmsWorkItemRepo(mongoModule.mongoComponent)
 
   private val sdesRouting: SdesRouting = configModule.sdesConfig.dms
@@ -112,6 +125,9 @@ class SdesModule(
   val dataStoreWorkItemController: DataStoreWorkItemController =
     new DataStoreWorkItemController(configModule.controllerComponents, dataStoreWorkItemService)
 
+  val sdesHistoryService: SdesHistoryService =
+    new SdesHistoryService(repoSdesHistory)
+
   val sdesService: SdesAlgebra[Future] =
     new SdesService(
       dataStoreConnector,
@@ -119,29 +135,23 @@ class SdesModule(
       dmsWorkItemService,
       dataStoreWorkItemService,
       envelopeModule.envelopeService,
-      configModule.sdesConfig
+      configModule.sdesConfig,
+      sdesHistoryService
     )
 
-  private val alertSdesDestination: Option[Seq[String]] =
-    configModule.configuration.getOptional[Seq[String]]("alert.sdes.destination")
-  private val alertSdesNotifierEmailAddress: String =
-    configModule.typesafeConfig.getString("alert.sdes.notifierEmailAddress")
-  private val alertSdesEmailTemplateId: String = configModule.typesafeConfig.getString("alert.sdes.emailTemplateId")
-  private val alertSdesMongodbLockTimeoutDuration: FiniteDuration =
-    FiniteDuration(configModule.typesafeConfig.getDuration("alert.sdes.lockDuration").toNanos, TimeUnit.NANOSECONDS)
   private val lockRepoSdesAlert: MongoLockRepository = new MongoLockRepository(
     mongoModule.mongoComponent,
     new CurrentTimestampSupport()
   )
 
   val sdesAlertService = new SdesAlertService(
-    alertSdesDestination.map(_.map(SdesDestination.fromString)),
-    NotifierEmailAddress(alertSdesNotifierEmailAddress),
-    EmailTemplateId(alertSdesEmailTemplateId),
+    configModule.sdesAlertConfig.destination.map(_.map(SdesDestination.fromString)),
+    NotifierEmailAddress(configModule.sdesAlertConfig.notifierEmailAddress),
+    EmailTemplateId(configModule.sdesAlertConfig.emailTemplateId),
     emailModule.emailLogic,
     repoSdesSubmission,
     lockRepoSdesAlert,
-    alertSdesMongodbLockTimeoutDuration
+    configModule.sdesAlertConfig.lockDuration
   )
 
   private val lockRepoRenotify: MongoLockRepository = new MongoLockRepository(
@@ -153,7 +163,8 @@ class SdesModule(
     new SdesCallbackController(
       configModule.controllerComponents,
       sdesService,
-      objectStoreModule.objectStoreService
+      objectStoreModule.objectStoreService,
+      sdesHistoryService
     )
 
   val sdesRenotifyService = new SdesRenotifyService(
@@ -165,7 +176,8 @@ class SdesModule(
     new SdesController(
       configModule.controllerComponents,
       sdesService,
-      sdesRenotifyService
+      sdesRenotifyService,
+      sdesHistoryService
     )(ex)
 
   val sdesRenotifyQScheduledService = new SdesRenotifyQScheduledService(

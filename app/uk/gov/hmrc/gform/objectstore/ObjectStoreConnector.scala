@@ -24,7 +24,6 @@ import uk.gov.hmrc.gform.models.helpers.ObjectStoreHelper._
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.objectstore.client
-import uk.gov.hmrc.objectstore.client.config.ObjectStoreClientConfig
 import uk.gov.hmrc.objectstore.client.play.Implicits._
 import uk.gov.hmrc.objectstore.client.play.PlayObjectStoreClient
 import uk.gov.hmrc.objectstore.client.{ ObjectSummaryWithMd5, Path }
@@ -32,8 +31,7 @@ import uk.gov.hmrc.objectstore.client.{ ObjectSummaryWithMd5, Path }
 import scala.concurrent.{ ExecutionContext, Future }
 
 class ObjectStoreConnector(
-  objectStoreClient: PlayObjectStoreClient,
-  objectStoreClientConfig: ObjectStoreClientConfig
+  objectStoreClient: PlayObjectStoreClient
 )(implicit ex: ExecutionContext, actorSystem: ActorSystem) {
 
   private val zipExtension = ".zip"

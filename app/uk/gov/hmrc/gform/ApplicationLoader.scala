@@ -112,7 +112,7 @@ class ApplicationModule(context: Context)
 
   protected val configModule = new ConfigModule(configuration, controllerComponents)
   private val metricsModule = new MetricsModule(configModule, playComponents, akkaModule, executionContext)
-  private val graphiteModule = new GraphiteModule(environment, configuration, applicationLifecycle, metricsModule)
+  private val graphiteModule = new GraphiteModule(configuration, applicationLifecycle, metricsModule)
   protected val auditingModule =
     new AuditingModule(configModule, graphiteModule, akkaModule, applicationLifecycle)
   protected val wSHttpModule = new WSHttpModule(auditingModule, configModule, playComponents)
@@ -144,7 +144,7 @@ class ApplicationModule(context: Context)
     )
 
   private val handlebarsPayloadModule =
-    new HandlebarsTemplateModule(controllerComponents, mongoModule, handlebarsTemplateService, formTemplateModule)
+    new HandlebarsTemplateModule(controllerComponents, handlebarsTemplateService, formTemplateModule)
 
   private val emailModule = new EmailModule(configModule, wSHttpModule, notifierModule, formTemplateModule)
   private val translationModule = new TranslationModule(formTemplateModule, historyModule, configModule)
@@ -315,8 +315,7 @@ class ApplicationModule(context: Context)
     playComponents.context.devContext.map(_.sourceMapper)
   )
 
-  val schedulerModule =
-    new SchedulerModule(configModule, mongoModule, sdesModule, akkaModule, applicationLifecycle)
+  new SchedulerModule(configModule, mongoModule, sdesModule, akkaModule, applicationLifecycle)
 
   val builderModule = new BuilderModule(controllerComponents, formTemplateModule.formTemplateService, historyModule)
 
@@ -344,7 +343,6 @@ class ApplicationModule(context: Context)
     objectStoreModule,
     sdesModule,
     notificationBannerModule,
-    schedulerModule,
     builderModule,
     shutterModule,
     handlebarsPayloadModule,
