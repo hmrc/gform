@@ -416,6 +416,9 @@
                   "object"
                 ]
               },
+              "includeIf": {
+                "type": "string"
+              },
               "summarySection": {
                 "type": "object"
               },
