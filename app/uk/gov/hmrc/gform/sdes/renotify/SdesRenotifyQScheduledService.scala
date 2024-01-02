@@ -69,7 +69,7 @@ class SdesRenotifyQScheduledService(
   private def renotifyItemsFor(destination: SdesDestination)(implicit ec: ExecutionContext): Future[Unit] =
     for {
       sdesSubmissionsData <-
-        sdesAlgebra.searchAll(None, None, Some(FileReady), None, Some(destination), showBeforeSubmittedAt)
+        sdesAlgebra.searchAll(None, None, Some(FileReady), Some(destination), None, showBeforeSubmittedAt)
       _ <- sdesSubmissionsData.sdesSubmissions.toList.traverse { submission =>
              implicit val hc = HeaderCarrier()
              sdesRenotifyService

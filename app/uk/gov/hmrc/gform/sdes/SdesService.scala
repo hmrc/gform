@@ -23,14 +23,14 @@ import cats.syntax.show._
 import com.mongodb.client.result.UpdateResult
 import org.mongodb.scala.bson.{ BsonArray, BsonDocument }
 import org.mongodb.scala.model.{ Accumulators, Aggregates, Field, Filters, Sorts }
-import org.mongodb.scala.model.Filters.{ equal, exists, lt }
+import org.mongodb.scala.model.Filters.{ equal, lt }
 import org.slf4j.LoggerFactory
 import play.api.libs.json.{ Json, OFormat }
 import uk.gov.hmrc.gform.core._
 import uk.gov.hmrc.gform.envelope.EnvelopeAlgebra
 import uk.gov.hmrc.gform.fileupload.FileUploadService
+import uk.gov.hmrc.gform.history.DateFilter
 import uk.gov.hmrc.gform.repo.Repo
-import uk.gov.hmrc.gform.sdes.SdesConfig
 import uk.gov.hmrc.gform.sdes.datastore.DataStoreWorkItemAlgebra
 import uk.gov.hmrc.gform.sdes.dms.DmsWorkItemAlgebra
 import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
@@ -68,23 +68,15 @@ trait SdesAlgebra[F[_]] {
 
   def findSdesSubmissionByEnvelopeId(envelopeId: EnvelopeId): F[List[SdesSubmission]]
 
-  def search(
-    page: Int,
-    pageSize: Int,
-    processed: Option[Boolean],
-    formTemplateId: Option[FormTemplateId],
-    status: Option[NotificationStatus],
-    showBeforeAt: Option[Boolean],
-    destination: Option[SdesDestination]
-  ): F[SdesSubmissionPageData]
+  def search(sdesFilter: SdesFilter): F[SdesSubmissionPageData]
 
   def searchAll(
     processed: Option[Boolean],
     formTemplateId: Option[FormTemplateId],
     status: Option[NotificationStatus],
-    showBeforeAt: Option[Boolean],
     destination: Option[SdesDestination],
-    showBeforeSubmittedAt: Option[Int]
+    beforeCreatedAt: Option[Int],
+    beforeSubmittedAt: Option[Int]
   ): F[SdesSubmissionPageData]
 
   def updateAsManualConfirmed(correlation: CorrelationId): F[Unit]
@@ -150,59 +142,72 @@ class SdesService(
     repoSdesSubmission.search(query)
   }
 
-  override def search(
-    page: Int,
-    pageSize: Int,
-    processed: Option[Boolean],
-    formTemplateId: Option[FormTemplateId],
-    status: Option[NotificationStatus],
-    showBeforeAt: Option[Boolean],
-    destination: Option[SdesDestination]
-  ): Future[SdesSubmissionPageData] = {
-    val skip = page * pageSize
-    doSearch(Some((skip, pageSize)), processed, formTemplateId, status, showBeforeAt, destination, None)
+  override def search(filter: SdesFilter): Future[SdesSubmissionPageData] = {
+    val pageSize = filter.pageSize
+    val skip = filter.page * pageSize
+    doSearch(
+      Some((skip, pageSize)),
+      filter.isProcessed,
+      filter.formTemplateId,
+      filter.status,
+      filter.destination,
+      filter.beforeAt,
+      None,
+      filter.envelopeId,
+      filter.from,
+      filter.to
+    )
   }
 
   override def searchAll(
     processed: Option[Boolean],
     formTemplateId: Option[FormTemplateId],
     status: Option[NotificationStatus],
-    showBeforeAt: Option[Boolean],
     destination: Option[SdesDestination],
-    showBeforeSubmittedAt: Option[Int]
+    beforeCreatedAt: Option[Int],
+    beforeSubmittedAt: Option[Int]
   ): Future[SdesSubmissionPageData] =
-    doSearch(None, processed, formTemplateId, status, showBeforeAt, destination, showBeforeSubmittedAt)
+    doSearch(None, processed, formTemplateId, status, destination, beforeCreatedAt, beforeSubmittedAt, None, None, None)
 
   private def doSearch(
     maybeSkipAndPageSize: Option[(Int, Int)],
-    processed: Option[Boolean],
+    isProcessed: Option[Boolean],
     formTemplateId: Option[FormTemplateId],
     status: Option[NotificationStatus],
-    showBeforeAt: Option[Boolean],
     destination: Option[SdesDestination],
-    showBeforeSubmittedAt: Option[Int]
+    beforeCreatedAt: Option[Int],
+    beforeSubmittedAt: Option[Int],
+    envelopeId: Option[EnvelopeId],
+    from: Option[DateFilter],
+    to: Option[DateFilter]
   ): Future[SdesSubmissionPageData] = {
 
-    val queryByTemplateId =
-      formTemplateId.fold(exists("_id"))(t => equal("formTemplateId", t.value))
-    val queryByProcessed = processed.map(p => equal("isProcessed", p))
+    val queryByTemplateId = formTemplateId.map(f => equal("formTemplateId", f.value))
+    val queryByProcessed = isProcessed.map(p => equal("isProcessed", p))
     val queryByStatus = status.map(s => equal("status", fromName(s)))
-    val queryBySubmittedAt =
-      showBeforeSubmittedAt.map(d => lt("submittedAt", LocalDateTime.now().minusHours(d.toLong)))
+    val queryBySubmittedAt = beforeCreatedAt.map(d => lt("submittedAt", LocalDateTime.now().minusHours(d.toLong)))
     val queryByDestination = destination.map(d => equal("destination", SdesDestination.fromName(d)))
+    val queryByEnvelopeId = envelopeId.map(e => equal("envelopeId", e.value))
+    val queryByBeforeAt = beforeSubmittedAt.map(b =>
+      Filters.and(lt("createdAt", LocalDateTime.now().minusHours(b.toLong)), equal("isProcessed", false))
+    )
 
-    val additionalCondition = if (showBeforeAt.getOrElse(false)) {
-      Some(Filters.and(lt("createdAt", LocalDateTime.now().minusHours(10)), equal("isProcessed", false)))
-    } else {
-      None
+    val queryByDateFilter = (from, to) match {
+      case (Some(from), Some(to)) => Filters.and(from.gte, to.lte)
+      case (Some(from), None)     => from.gte
+      case (None, Some(to))       => to.lte
+      case (None, None)           => Filters.empty()
     }
 
-    val conditions = queryByTemplateId :: List(
+    val conditions = List(
+      queryByTemplateId,
       queryByProcessed,
       queryByStatus,
       queryBySubmittedAt,
       queryByDestination,
-      additionalCondition
+      queryByEnvelopeId,
+      queryByBeforeAt,
+      Some(queryByDateFilter)
     ).flatten
 
     val query = Filters.and(conditions: _*)
