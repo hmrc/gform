@@ -223,24 +223,18 @@ class SdesModule(
       processed: Option[Boolean],
       formTemplateId: Option[FormTemplateId],
       status: Option[NotificationStatus],
-      showBeforeAt: Option[Boolean],
       destination: Option[SdesDestination],
-      showBeforeSubmittedAt: Option[Int]
+      beforeCreatedAt: Option[Int],
+      beforeSubmittedAt: Option[Int]
     ): FOpt[SdesSubmissionPageData] =
       fromFutureA(
-        sdesService.searchAll(processed, formTemplateId, status, showBeforeAt, destination, showBeforeSubmittedAt)
+        sdesService.searchAll(processed, formTemplateId, status, destination, beforeCreatedAt, beforeSubmittedAt)
       )
 
-    override def search(
-      page: Int,
-      pageSize: Int,
-      processed: Option[Boolean],
-      formTemplateId: Option[FormTemplateId],
-      status: Option[NotificationStatus],
-      showBeforeAt: Option[Boolean],
-      destination: Option[SdesDestination]
-    ): FOpt[SdesSubmissionPageData] =
-      fromFutureA(sdesService.search(page, pageSize, processed, formTemplateId, status, showBeforeAt, destination))
+    override def search(sdesFilter: SdesFilter): FOpt[SdesSubmissionPageData] =
+      fromFutureA(
+        sdesService.search(sdesFilter)
+      )
 
     override def updateAsManualConfirmed(correlation: CorrelationId): FOpt[Unit] =
       fromFutureA(sdesService.updateAsManualConfirmed(correlation))

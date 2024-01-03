@@ -24,7 +24,7 @@ import play.api.libs.json.{ Format, Json, OFormat }
 
 sealed trait DateFilter extends Product with Serializable {
   val lte: Bson = this match {
-    case DateFilter.DateOnly(localDate)     => Filters.lte("createdAt", localDate)
+    case DateFilter.DateOnly(localDate)     => Filters.lte("createdAt", localDate.plusDays(1))
     case DateFilter.DateTime(localDateTime) => Filters.lte("createdAt", localDateTime)
   }
 
