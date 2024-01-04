@@ -18,7 +18,7 @@ package uk.gov.hmrc.gform.scheduler.quartz
 
 import akka.actor.{ Actor, ActorLogging }
 import uk.gov.hmrc.gform.scheduler.quartz.QSchedulingActor.QScheduledMessage
-import uk.gov.hmrc.gform.sdes.alert.SdesAlertService
+import uk.gov.hmrc.gform.sdes.alert.{ SdesSubmissionAlertService, SdesWorkItemAlertService }
 import uk.gov.hmrc.gform.sdes.renotify.SdesRenotifyQScheduledService
 
 import scala.concurrent.ExecutionContext
@@ -34,6 +34,7 @@ object QSchedulingActor {
   sealed trait QScheduledMessage[A] {
     val service: QScheduledService[A]
   }
-  case class SdesAlert(service: SdesAlertService) extends QScheduledMessage[Unit] {}
+  case class SdesSubmissionAlert(service: SdesSubmissionAlertService) extends QScheduledMessage[Unit] {}
+  case class SdesWorkItemAlert(service: SdesWorkItemAlertService) extends QScheduledMessage[Unit] {}
   case class SdesRenotify(service: SdesRenotifyQScheduledService) extends QScheduledMessage[Unit] {}
 }

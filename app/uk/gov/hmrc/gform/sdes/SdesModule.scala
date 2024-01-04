@@ -28,7 +28,7 @@ import uk.gov.hmrc.gform.objectstore.ObjectStoreModule
 import uk.gov.hmrc.gform.repo.Repo
 import uk.gov.hmrc.gform.scheduler.datastore.DataStoreWorkItemRepo
 import uk.gov.hmrc.gform.scheduler.dms.DmsWorkItemRepo
-import uk.gov.hmrc.gform.sdes.alert.SdesAlertService
+import uk.gov.hmrc.gform.sdes.alert.{ SdesSubmissionAlertService, SdesWorkItemAlertService }
 import uk.gov.hmrc.gform.sdes.renotify.SdesRenotifyQScheduledService
 import uk.gov.hmrc.gform.sdes.datastore.{ DataStoreWorkItemAlgebra, DataStoreWorkItemController, DataStoreWorkItemService }
 import uk.gov.hmrc.gform.sdes.dms.{ DmsWorkItemAlgebra, DmsWorkItemController, DmsWorkItemService }
@@ -144,7 +144,7 @@ class SdesModule(
     new CurrentTimestampSupport()
   )
 
-  val sdesAlertService = new SdesAlertService(
+  val sdesSubmissionAlertService = new SdesSubmissionAlertService(
     configModule.sdesAlertConfig.destination.map(_.map(SdesDestination.fromString)),
     NotifierEmailAddress(configModule.sdesAlertConfig.notifierEmailAddress),
     EmailTemplateId(configModule.sdesAlertConfig.emailTemplateId),
@@ -152,6 +152,16 @@ class SdesModule(
     repoSdesSubmission,
     lockRepoSdesAlert,
     configModule.sdesAlertConfig.lockDuration
+  )
+
+  val sdesWorkItemAlertService = new SdesWorkItemAlertService(
+    NotifierEmailAddress(configModule.workItemAlertConfig.notifierEmailAddress),
+    EmailTemplateId(configModule.workItemAlertConfig.emailTemplateId),
+    emailModule.emailLogic,
+    dmsWorkItemRepo,
+    dataStoreWorkItemRepo,
+    lockRepoSdesAlert,
+    configModule.workItemAlertConfig.lockDuration
   )
 
   private val lockRepoRenotify: MongoLockRepository = new MongoLockRepository(
