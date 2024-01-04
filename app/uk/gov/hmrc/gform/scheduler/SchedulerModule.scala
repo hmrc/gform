@@ -22,8 +22,9 @@ import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.mongo.MongoModule
 import uk.gov.hmrc.gform.scheduler.datastore.{ DataStoreQueuePollingService, DataStoreQueueService, DataStoreWorkItemRepo }
 import uk.gov.hmrc.gform.scheduler.dms.{ DmsQueuePollingService, DmsQueueService, DmsWorkItemRepo }
-import uk.gov.hmrc.gform.scheduler.quartz.jobs.{ SdesAlertJob, SdesRenotifyJob }
+import uk.gov.hmrc.gform.scheduler.quartz.jobs.{ SdesRenotifyJob, SdesSubmissionAlertJob, SdesWorkItemAlertJob }
 import uk.gov.hmrc.gform.sdes.SdesModule
+
 import java.util.concurrent.TimeUnit
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.FiniteDuration
@@ -106,12 +107,20 @@ class SchedulerModule(
     dataStoreQueueService
   )
 
-  new SdesAlertJob(
-    sdesModule.sdesAlertService,
+  new SdesSubmissionAlertJob(
+    sdesModule.sdesSubmissionAlertService,
     applicationLifecycle,
     akkaModule.actorSystem,
     configModule.sdesAlertConfig.enabled,
     configModule.sdesAlertConfig.cron
+  )
+
+  new SdesWorkItemAlertJob(
+    sdesModule.sdesWorkItemAlertService,
+    applicationLifecycle,
+    akkaModule.actorSystem,
+    configModule.workItemAlertConfig.enabled,
+    configModule.workItemAlertConfig.cron
   )
 
   new SdesRenotifyJob(

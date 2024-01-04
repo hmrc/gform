@@ -38,7 +38,7 @@ import java.time.LocalDateTime
 import scala.concurrent.duration.Duration
 import scala.concurrent.{ ExecutionContext, Future }
 
-class SdesAlertService(
+class SdesSubmissionAlertService(
   alertSdesDestination: Option[Seq[SdesDestination]],
   notifierEmailAddress: NotifierEmailAddress,
   emailTemplateId: EmailTemplateId,
@@ -48,7 +48,7 @@ class SdesAlertService(
   mongodbLockTimeoutDuration: Duration
 ) extends QScheduledService[Unit] {
   private val logger: Logger = LoggerFactory.getLogger(getClass)
-  private val jobName = "SdesAlertJob"
+  private val jobName = "SdesSubmissionAlertJob"
 
   override def invoke(implicit ec: ExecutionContext): Future[Unit] = {
 
@@ -94,7 +94,7 @@ class SdesAlertService(
                _     <- sendEmail(sdesSubmissions.size, total.size)
              } yield ()
            } else {
-             logger.info("No new SDES submission found.")
+             logger.info("No new failed SDES submission found")
              Future.successful(())
            }
     } yield ()

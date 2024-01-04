@@ -65,6 +65,9 @@ class ConfigModule(
   val sdesAlertConfig: SdesAlertConfig =
     ConfigSource.default.at("alert.sdes").loadOrThrow[SdesAlertConfig]
 
+  val workItemAlertConfig: SdesAlertConfig =
+    ConfigSource.default.at("alert.work-item").loadOrThrow[SdesAlertConfig]
+
   object DestinationsServicesConfig extends ServicesConfig(configuration) {
     override protected lazy val rootServices = "microservice"
 

@@ -20,13 +20,13 @@ import akka.actor.{ ActorRef, ActorSystem, Props }
 import com.typesafe.akka.extension.quartz.QuartzSchedulerExtension
 import play.api.inject.ApplicationLifecycle
 import uk.gov.hmrc.gform.scheduler.quartz.{ QScheduledJob, QSchedulingActor }
-import uk.gov.hmrc.gform.scheduler.quartz.QSchedulingActor.SdesAlert
-import uk.gov.hmrc.gform.sdes.alert.SdesAlertService
+import uk.gov.hmrc.gform.scheduler.quartz.QSchedulingActor.SdesSubmissionAlert
+import uk.gov.hmrc.gform.sdes.alert.SdesSubmissionAlertService
 
 import scala.concurrent.{ ExecutionContext, Future }
 
-class SdesAlertJob(
-  val sdesAlertService: SdesAlertService,
+class SdesSubmissionAlertJob(
+  val service: SdesSubmissionAlertService,
   val applicationLifecycle: ApplicationLifecycle,
   val jobActorSystem: ActorSystem,
   val jobEnabled: Boolean,
@@ -34,14 +34,14 @@ class SdesAlertJob(
 )(implicit ex: ExecutionContext)
     extends QScheduledJob {
 
-  override val jobName: String = "SdesAlertJob"
+  override val jobName: String = "SdesSubmissionAlertJob"
   override val scheduler: QuartzSchedulerExtension = QuartzSchedulerExtension(jobActorSystem)
   override val schedulingActorRef: ActorRef = jobActorSystem.actorOf(Props(new QSchedulingActor()))
-  override val scheduledMessage: SdesAlert = SdesAlert(sdesAlertService)
+  override val scheduledMessage: SdesSubmissionAlert = SdesSubmissionAlert(service)
   override val enabled: Boolean = jobEnabled
   override val expression: String = jobExpression
   override val description: Option[String] = Some(
-    "It sends an alert to the operation team if there is a problem with SDES"
+    "It sends an alert to the operation team if there is a problem with SDES submissions"
   )
 
   schedule()
