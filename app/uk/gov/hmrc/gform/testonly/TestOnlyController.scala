@@ -299,12 +299,6 @@ class TestOnlyController(
     testOnlyFormService.restoreForm(snapshotId, restoreId).map(snapshot => Ok(Json.toJson(snapshot)))
   }
 
-  def restoreCurrentForm(formId: String) =
-    Action.async { request =>
-      val savedId = request.body.asFormUrlEncoded.get("snapshotId").head
-      testOnlyFormService.restoreForm(savedId, formId).map(_ => NoContent)
-    }
-
   def getSnapshots() =
     Action.async { request =>
       testOnlyFormService.getSnapshots().map(snapshots => Ok(Json.toJson(snapshots)))
