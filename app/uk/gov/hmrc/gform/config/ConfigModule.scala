@@ -158,6 +158,8 @@ class ConfigModule(
         }
       }.getOrElse(Map.empty)
   }
+
+  val snapshotExpiryDays: Int = typesafeConfig.getInt("snapshotExpiryDays")
 }
 
 final case class DesConnectorConfig(basePath: String, authorizationToken: String, environment: String)

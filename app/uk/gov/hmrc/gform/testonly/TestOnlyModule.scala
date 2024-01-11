@@ -40,6 +40,7 @@ class TestOnlyModule(
   configModule: ConfigModule,
   playComponents: PlayComponents,
   formService: FormService[Future],
+  testOnlyFormService: TestOnlyFormService,
   formTemplateService: FormTemplateService,
   destinationModule: DestinationModule,
   controllerComponents: ControllerComponents,
@@ -75,7 +76,8 @@ class TestOnlyModule(
       formTemplateAlgebra,
       destinationModule.futureDestinationsProcessorModelService,
       submissionModule.dataStoreSubmitter,
-      desConnector
+      desConnector,
+      testOnlyFormService
     )
   val proxyActions = new Proxy(playComponents.wsClient, controllerComponents)
   val fUInterceptor: FUInterceptorController =

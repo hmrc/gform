@@ -38,3 +38,10 @@ GET           /gform/test-only/getFromDes/*path                                 
 GET           /gform/test-only/object-store/dms/envelopes/:envelopeId                 uk.gov.hmrc.gform.testonly.TestOnlyObjectStoreController.downloadDmsFiles(envelopeId: EnvelopeId)
 GET           /gform/test-only/object-store/data-store/envelopes/:envelopeId          uk.gov.hmrc.gform.testonly.TestOnlyObjectStoreController.downloadDataStoreFile(envelopeId: EnvelopeId)
 GET           /gform/test-only/object-store/hmrc-illuminate/envelopes/:envelopeId     uk.gov.hmrc.gform.testonly.TestOnlyObjectStoreController.downloadHmrcIlluminateFile(envelopeId: EnvelopeId)
+
+POST           /gform/test-only/save-form                                         uk.gov.hmrc.gform.testonly.TestOnlyController.saveForm()
+POST           /gform/test-only/update-snapshot                                   uk.gov.hmrc.gform.testonly.TestOnlyController.updateSnapshot()
+GET           /gform/test-only/restore-form/:snapshotId/:restoreId                uk.gov.hmrc.gform.testonly.TestOnlyController.restoreForm(snapshotId: String, restoreId: String)
+POST          /gform/test-only/restore-current-form/:formId                       uk.gov.hmrc.gform.testonly.TestOnlyController.restoreCurrentForm(formId: String)
+GET           /gform/test-only/snapshots                                          uk.gov.hmrc.gform.testonly.TestOnlyController.getSnapshots()
+GET           /gform/test-only/snapshot-data/:snapshotId                          uk.gov.hmrc.gform.testonly.TestOnlyController.getSnapshotData(snapshotId: String)
