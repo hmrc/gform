@@ -38,7 +38,7 @@ class TestOnlyFormService(
         val newId = java.util.UUID.randomUUID().toString
         cacheItem.data.fields.toList
           .traverse { case (k, v) =>
-            val value = if (k == "form") { v.as[JsObject] - "_id" - "userId" }
+            val value = if (k === "form") { v.as[JsObject] - "_id" - "userId" }
             else v
             snapshotRepository.put(newId)(DataKey(k), value)
           }
