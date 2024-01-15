@@ -82,3 +82,12 @@ case class UpdateSnapshotRequest(
 object UpdateSnapshotRequest {
   implicit val format: OFormat[UpdateSnapshotRequest] = derived.oformat()
 }
+
+case class UpdateFormDataRequest(
+  formId: String,
+  formData: JsObject
+)
+
+object UpdateFormDataRequest {
+  implicit val format: OFormat[UpdateFormDataRequest] = derived.oformat()
+}

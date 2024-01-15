@@ -32,21 +32,24 @@ class TestOnlyFormService(
   jsonCrypto: Encrypter with Decrypter
 )(implicit ec: ExecutionContext) {
 
-  def saveForm(saveRequest: SaveRequest): Future[SaveReply] =
-    formRepository.findById(saveRequest.formId).flatMap {
-      case Some(cacheItem) =>
-        val newId = java.util.UUID.randomUUID().toString
-        cacheItem.data.fields.toList
-          .traverse { case (k, v) =>
-            val value = if (k === "form") { v.as[JsObject] - "_id" - "userId" }
-            else v
-            snapshotRepository.put(newId)(DataKey(k), value)
-          }
-          .flatMap(_ => snapshotRepository.put(newId)(DataKey("description"), saveRequest.description))
-          .map(_ => SaveReply(newId))
-      case None =>
-        Future.failed(new Exception(s"We could not find cache item with id: ${saveRequest.formId}"))
-    }
+  def saveForm(saveRequest: SaveRequest): Future[SnapshotWithData] =
+    formRepository
+      .findById(saveRequest.formId)
+      .flatMap {
+        case Some(cacheItem) =>
+          val newId = java.util.UUID.randomUUID().toString
+          cacheItem.data.fields.toList
+            .traverse { case (k, v) =>
+              val value = if (k === "form") { v.as[JsObject] - "_id" - "userId" }
+              else v
+              snapshotRepository.put(newId)(DataKey(k), value)
+            }
+            .flatMap(_ => snapshotRepository.put(newId)(DataKey("description"), saveRequest.description))
+            .map(_ => newId)
+        case None =>
+          Future.failed(new Exception(s"We could not find cache item with id: ${saveRequest.formId}"))
+      }
+      .flatMap(snapShotId => getSnapshotData(snapShotId))
 
   def restoreForm(snapshotId: String, restoreId: String): Future[Snapshot] = {
     val snapshotItem = snapshotRepository.findById(snapshotId)
@@ -104,8 +107,34 @@ class TestOnlyFormService(
     }
   }
 
-  def updateSnapshot(request: UpdateSnapshotRequest): Future[SaveReply] =
-    snapshotRepository.findById(request.snapshotId).flatMap {
+  def updateSnapshot(request: UpdateSnapshotRequest): Future[SnapshotWithData] =
+    snapshotRepository
+      .findById(request.snapshotId)
+      .flatMap {
+        case Some(cacheItem) =>
+          val updatedFormData =
+            Json.obj("formData" -> jsonCrypto.encrypt(PlainText(Json.toJson(request.formData).toString())).value)
+          val data = cacheItem.data.as[JsObject].validate((__ \ "form").json.pick).get
+          val updatedForm = data
+            .transform(
+              __.json.update(
+                __.read[JsObject].map { o =>
+                  o ++ updatedFormData
+                }
+              )
+            )
+            .getOrElse(data)
+          snapshotRepository
+            .put(request.snapshotId)(DataKey("form"), updatedForm)
+            .flatMap(_ => snapshotRepository.put(request.snapshotId)(DataKey("description"), request.description))
+            .map(_ => request.snapshotId)
+        case None =>
+          Future.failed(new Exception(s"We could not find cache item with id: ${request.snapshotId}"))
+      }
+      .flatMap(snapShotId => getSnapshotData(snapShotId))
+
+  def updateFormData(request: UpdateFormDataRequest): Future[SaveReply] =
+    formRepository.findById(request.formId).flatMap {
       case Some(cacheItem) =>
         val updatedFormData =
           Json.obj("formData" -> jsonCrypto.encrypt(PlainText(Json.toJson(request.formData).toString())).value)
@@ -119,12 +148,11 @@ class TestOnlyFormService(
             )
           )
           .getOrElse(data)
-        snapshotRepository
-          .put(request.snapshotId)(DataKey("form"), updatedForm)
-          .flatMap(_ => snapshotRepository.put(request.snapshotId)(DataKey("description"), request.description))
-          .map(_ => SaveReply(request.snapshotId))
+        formRepository
+          .put(request.formId)(DataKey("form"), updatedForm)
+          .map(_ => SaveReply(request.formId))
       case None =>
-        Future.failed(new Exception(s"We could not find cache item with id: ${request.snapshotId}"))
+        Future.failed(new Exception(s"We could not find cache item with id: ${request.formId}"))
     }
 
 }
