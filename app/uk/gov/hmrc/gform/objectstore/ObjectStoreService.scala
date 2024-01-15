@@ -134,6 +134,11 @@ class ObjectStoreService(
 
     for {
       envelopeData <- envelopeService.get(envelopeId)
+      _ <- envelopeData.files
+             .find(_.fileId === fileId.value)
+             .traverse { file =>
+               objectStoreConnector.deleteFile(envelopeId, file.fileName)
+             }
       res <- objectStoreConnector.uploadFile(
                envelopeId,
                fileName,
@@ -142,7 +147,7 @@ class ObjectStoreService(
              )
       _ <- {
         val newFiles =
-          envelopeData.files :+
+          envelopeData.files.filterNot(_.fileId === fileId.value) :+
             EnvelopeFile(
               fileId.value,
               fileName,
