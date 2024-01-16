@@ -41,6 +41,8 @@ import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId, Form, FormIdData, UserData }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AllowedFileTypes, FileUpload, FileUploadProvider, FormComponentId, IsFileUpload }
 
+import java.net.URL
+
 class UpscanController(
   appConfig: AppConfig,
   queryParameterCrypto: Encrypter with Decrypter,
@@ -140,22 +142,25 @@ class UpscanController(
                   case _                                                 => false
                 }
                 for {
-                  file <- upscanService.download(upscanCallbackSuccess.downloadUrl)
-                  compressedFile = ImageCompressor.compressIfSupported(file, upscanCallbackSuccess, compression)
-                  uploadDetails = upscanCallbackSuccess.uploadDetails
                   isObjectStore <- objectStoreAlgebra.isObjectStore(envelopeId)
+                  uploadDetails = upscanCallbackSuccess.uploadDetails
                   _ <- if (isObjectStore) {
-
-                         objectStoreAlgebra.uploadFile(
+                         objectStoreAlgebra.uploadFromUrl(
+                           new URL(upscanCallbackSuccess.downloadUrl),
                            envelopeId,
                            fileId,
-                           fileName,
-                           compressedFile,
-                           ContentType(uploadDetails.fileMimeType)
+                           ContentType(uploadDetails.fileMimeType),
+                           fileName
                          )
                        } else {
-                         fileUploadFrontendAlgebra
-                           .uploadFile(envelopeId, fileId, uploadDetails, compressedFile)
+                         for {
+                           file <- upscanService.download(upscanCallbackSuccess.downloadUrl)
+                           compressedFile =
+                             ImageCompressor.compressIfSupported(file, upscanCallbackSuccess, compression)
+                           res <- fileUploadFrontendAlgebra
+                                    .uploadFile(envelopeId, fileId, uploadDetails, compressedFile)
+
+                         } yield res
                        }
                   form <- formService.get(formIdData)
                   formUpd = setTransferred(form, formComponentId, fileId)
