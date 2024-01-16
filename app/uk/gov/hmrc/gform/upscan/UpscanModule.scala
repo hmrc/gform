@@ -19,19 +19,15 @@ package uk.gov.hmrc.gform.upscan
 import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.crypto.{ Decrypter, Encrypter }
 import uk.gov.hmrc.gform.config.{ AppConfig, ConfigModule }
-import uk.gov.hmrc.gform.fileupload.FileUploadFrontendAlgebra
 import uk.gov.hmrc.gform.form.FormService
 import uk.gov.hmrc.gform.formtemplate.FormTemplateModule
 import uk.gov.hmrc.gform.mongo.MongoModule
 import uk.gov.hmrc.gform.objectstore.ObjectStoreModule
-import uk.gov.hmrc.gform.wshttp.WSHttpModule
 
 class UpscanModule(
   formService: FormService[Future],
-  wSHttpModule: WSHttpModule,
   configModule: ConfigModule,
   queryParameterCrypto: Encrypter with Decrypter,
-  fileUploadFrontendAlgebra: FileUploadFrontendAlgebra[Future],
   formTemplateModule: FormTemplateModule,
   appConfig: AppConfig,
   mongoModule: MongoModule,
@@ -39,13 +35,9 @@ class UpscanModule(
 )(implicit
   ec: ExecutionContext
 ) {
-
-  private val upscanConnector = new UpscanConnector(wSHttpModule.auditableWSHttp)
-
   private val upscanRepository = new UpscanRepository(appConfig, mongoModule.mongoComponent)
 
   val upscanService: UpscanService = new UpscanService(
-    upscanConnector,
     upscanRepository
   )
 
@@ -55,7 +47,6 @@ class UpscanModule(
       queryParameterCrypto,
       formService,
       upscanService,
-      fileUploadFrontendAlgebra,
       formTemplateModule.formTemplateService,
       configModule.controllerComponents,
       objectStoreModule.objectStoreService
