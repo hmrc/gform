@@ -231,14 +231,13 @@ class SdesModule(
 
     override def searchAll(
       processed: Option[Boolean],
-      formTemplateId: Option[FormTemplateId],
+      searchKey: Option[String],
       status: Option[NotificationStatus],
       destination: Option[SdesDestination],
-      beforeCreatedAt: Option[Int],
       beforeSubmittedAt: Option[Int]
     ): FOpt[SdesSubmissionPageData] =
       fromFutureA(
-        sdesService.searchAll(processed, formTemplateId, status, destination, beforeCreatedAt, beforeSubmittedAt)
+        sdesService.searchAll(processed, searchKey, status, destination, beforeSubmittedAt)
       )
 
     override def search(sdesFilter: SdesFilter): FOpt[SdesSubmissionPageData] =
