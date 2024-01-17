@@ -55,7 +55,8 @@ class TestOnlyController(
   formTemplateAlgebra: FormTemplateAlgebra[Future],
   destinationsModelProcessorAlgebra: DestinationsProcessorModelAlgebra[Future],
   dataStoreSubmitter: DataStoreSubmitter,
-  des: DesAlgebra[Future]
+  des: DesAlgebra[Future],
+  testOnlyFormService: TestOnlyFormService
 )(implicit ex: ExecutionContext)
     extends BaseController(controllerComponents) {
   private val logger = LoggerFactory.getLogger(getClass)
@@ -287,6 +288,37 @@ class TestOnlyController(
       .get("customerId")
       .map(StringEscapeUtils.unescapeHtml4)
       .getOrElse("")
+
+  def saveForm() =
+    Action.async(parse.json[SaveRequest]) { request =>
+      val saveRequest: SaveRequest = request.body
+      testOnlyFormService.saveForm(saveRequest).map(saveReply => Ok(Json.toJson(saveReply)))
+    }
+
+  def restoreForm(snapshotId: String, restoreId: String) = Action.async { _ =>
+    testOnlyFormService.restoreForm(snapshotId, restoreId).map(snapshot => Ok(Json.toJson(snapshot)))
+  }
+
+  def getSnapshots() =
+    Action.async { request =>
+      testOnlyFormService.getSnapshots().map(snapshots => Ok(Json.toJson(snapshots)))
+    }
+
+  def getSnapshotData(snapshotId: String) = Action.async { _ =>
+    testOnlyFormService.getSnapshotData(snapshotId).map(snapshotWithData => Ok(Json.toJson(snapshotWithData)))
+  }
+
+  def updateSnapshot() =
+    Action.async(parse.json[UpdateSnapshotRequest]) { request =>
+      val updateRequest: UpdateSnapshotRequest = request.body
+      testOnlyFormService.updateSnapshot(updateRequest).map(saveReply => Ok(Json.toJson(saveReply)))
+    }
+
+  def updateFormData() =
+    Action.async(parse.json[UpdateFormDataRequest]) { request =>
+      val updateRequest: UpdateFormDataRequest = request.body
+      testOnlyFormService.updateFormData(updateRequest).map(saveReply => Ok(Json.toJson(saveReply)))
+    }
 }
 
 final case class RenderableDestination(

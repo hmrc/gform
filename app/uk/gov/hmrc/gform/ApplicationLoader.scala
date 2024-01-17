@@ -75,6 +75,7 @@ import uk.gov.hmrc.gform.submission.destinations.DestinationModule
 import uk.gov.hmrc.gform.submission.handlebars.HandlebarsHttpApiModule
 import uk.gov.hmrc.gform.submissionconsolidator.SubmissionConsolidatorModule
 import uk.gov.hmrc.gform.testonly.TestOnlyModule
+import uk.gov.hmrc.gform.testonly.TestOnlyFormService
 import uk.gov.hmrc.gform.time.TimeModule
 import uk.gov.hmrc.gform.translation.TranslationModule
 import uk.gov.hmrc.gform.upscan.UpscanModule
@@ -181,52 +182,56 @@ class ApplicationModule(context: Context)
   val jsonCrypto =
     SymmetricCryptoFactory.aesCryptoFromConfig(baseConfigKey = "json.encryption", configModule.typesafeConfig)
 
+  val mongoCacheRepository = createMongoCacheRepository("forms", configModule.appConfig.formExpiryDays)
   val formMongoCache = new FormMongoCache(
-    new MongoCacheRepository[String](
-      mongoModule.mongoComponent,
-      "forms",
-      true,
-      configModule.appConfig.formExpiryDays.days,
-      new CurrentTimestampSupport(),
-      SimpleCacheId
-    ) {
-      override def ensureIndexes: Future[Seq[String]] = {
-        val formExpiry = configModule.appConfig.formExpiryDays.days.toMillis
-        val createdFormExpiry = configModule.appConfig.createdFormExpiryDays.days.toMillis
-        val submittedExpiry = configModule.appConfig.submittedFormExpiryHours.hours.toMillis
-        val indexes = Seq(
-          IndexModel(
-            Indexes.ascending("modifiedDetails.createdAt"),
-            IndexOptions()
-              .background(false)
-              .name("createdAtIndex")
-              .expireAfter(createdFormExpiry, TimeUnit.MILLISECONDS)
-          ),
-          IndexModel(
-            Indexes.ascending("modifiedDetails.lastUpdated"),
-            IndexOptions()
-              .background(false)
-              .name("lastUpdatedIndex")
-              .expireAfter(formExpiry, TimeUnit.MILLISECONDS)
-          ),
-          IndexModel(
-            Indexes.ascending("submitDetails.createdAt"),
-            IndexOptions()
-              .background(false)
-              .name("submittedIndex")
-              .expireAfter(submittedExpiry, TimeUnit.MILLISECONDS)
-          )
-        )
-        MongoUtils.ensureIndexes(this.collection, indexes, true)
-      }
-    },
+    mongoCacheRepository,
     jsonCrypto,
     timeModule.timeProvider
   )
 
-  val formService: FormService[Future] =
+  def createMongoCacheRepository(collectionName: String, expiryDays: Int) = new MongoCacheRepository[String](
+    mongoModule.mongoComponent,
+    collectionName,
+    true,
+    expiryDays.days,
+    new CurrentTimestampSupport(),
+    SimpleCacheId
+  ) {
+    override def ensureIndexes: Future[Seq[String]] = {
+      val formExpiry = configModule.appConfig.formExpiryDays.days.toMillis
+      val createdFormExpiry = configModule.appConfig.createdFormExpiryDays.days.toMillis
+      val submittedExpiry = configModule.appConfig.submittedFormExpiryHours.hours.toMillis
+      val indexes = Seq(
+        IndexModel(
+          Indexes.ascending("modifiedDetails.createdAt"),
+          IndexOptions()
+            .background(false)
+            .name("createdAtIndex")
+            .expireAfter(createdFormExpiry, TimeUnit.MILLISECONDS)
+        ),
+        IndexModel(
+          Indexes.ascending("modifiedDetails.lastUpdated"),
+          IndexOptions()
+            .background(false)
+            .name("lastUpdatedIndex")
+            .expireAfter(formExpiry, TimeUnit.MILLISECONDS)
+        ),
+        IndexModel(
+          Indexes.ascending("submitDetails.createdAt"),
+          IndexOptions()
+            .background(false)
+            .name("submittedIndex")
+            .expireAfter(submittedExpiry, TimeUnit.MILLISECONDS)
+        )
+      )
+      MongoUtils.ensureIndexes(this.collection, indexes, true)
+    }
+  }
+
+  val formService: FormService[Future] = createFormService(formMongoCache)
+  def createFormService(cache: FormMongoCache): FormService[Future] =
     new FormService(
-      formMongoCache,
+      cache,
       fileUploadModule.fileUploadService,
       formTemplateModule.formTemplateService,
       formMetadaModule.formMetadataService
@@ -272,6 +277,9 @@ class ApplicationModule(context: Context)
     )
   private val obligationModule = new ObligationModule(wSHttpModule, configModule)
   private val employmentsModule = new EmploymentsModule(wSHttpModule, configModule)
+
+  val snapshotsMongoCache = createMongoCacheRepository("snapshots", configModule.snapshotExpiryDays)
+  val testOnlyFormService = new TestOnlyFormService(mongoCacheRepository, snapshotsMongoCache, jsonCrypto)
   private val testOnlyModule =
     new TestOnlyModule(
       mongoModule,
@@ -279,6 +287,7 @@ class ApplicationModule(context: Context)
       configModule,
       playComponents,
       formService,
+      testOnlyFormService,
       formTemplateModule.formTemplateService,
       destinationModule,
       controllerComponents,
