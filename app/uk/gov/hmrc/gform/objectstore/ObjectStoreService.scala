@@ -36,6 +36,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.objectstore.client
 import uk.gov.hmrc.objectstore.client.{ ObjectSummaryWithMd5, Path }
 
+import java.net.URL
 import scala.concurrent.{ ExecutionContext, Future }
 
 trait ObjectStoreAlgebra[F[_]] {
@@ -110,6 +111,16 @@ trait ObjectStoreAlgebra[F[_]] {
     hc: HeaderCarrier,
     m: Materializer
   ): F[Option[client.Object[Source[ByteString, NotUsed]]]]
+
+  def uploadFromUrl(
+    from: java.net.URL,
+    envelopeId: EnvelopeId,
+    fileId: FileId,
+    contentType: ContentType,
+    fileName: String
+  )(implicit
+    hc: HeaderCarrier
+  ): F[ObjectSummaryWithMd5]
 }
 
 class ObjectStoreService(
@@ -130,10 +141,18 @@ class ObjectStoreService(
     content: ByteString,
     contentType: ContentType
   )(implicit hc: HeaderCarrier): Future[ObjectSummaryWithMd5] = {
-    logger.info(s"upload file, envelopeId: ' ${envelopeId.value}', fileId: '${fileId.value}', fileName: '$fileName")
+    logger.info(
+      s"uploading file: envelopeId - '${envelopeId.value}', fileId - '${fileId.value}', fileName - '$fileName"
+    )
 
     for {
       envelopeData <- envelopeService.get(envelopeId)
+      _ <- envelopeData.files
+             .find(_.fileId === fileId.value)
+             .traverse { file =>
+               logger.info(s"removing existing file: envelopeId - '$envelopeId', fileName - '${file.fileName}'")
+               objectStoreConnector.deleteFile(envelopeId, file.fileName)
+             }
       res <- objectStoreConnector.uploadFile(
                envelopeId,
                fileName,
@@ -142,7 +161,7 @@ class ObjectStoreService(
              )
       _ <- {
         val newFiles =
-          envelopeData.files :+
+          envelopeData.files.filterNot(_.fileId === fileId.value) :+
             EnvelopeFile(
               fileId.value,
               fileName,
@@ -171,19 +190,21 @@ class ObjectStoreService(
 
   override def getEnvelope(envelopeId: EnvelopeId): Future[EnvelopeData] = envelopeService.get(envelopeId)
 
-  override def deleteFile(envelopeId: EnvelopeId, fileId: FileId)(implicit hc: HeaderCarrier): Future[Unit] = {
-    logger.info(s"delete file, envelopeId: ' ${envelopeId.value}', fileId: '$fileId'")
+  override def deleteFile(envelopeId: EnvelopeId, fileId: FileId)(implicit hc: HeaderCarrier): Future[Unit] =
     for {
       envelope <- envelopeService.get(envelopeId)
       maybeFileName = envelope.files.find(_.fileId === fileId.value).map(_.fileName)
       _ <- maybeFileName match {
-             case Some(fileName) => objectStoreConnector.deleteFile(envelopeId, fileName)
-             case None           => Future.failed(new RuntimeException(s"FileId $fileId not found in mongo"))
+             case Some(fileName) =>
+               logger.info(
+                 s"deleting file: envelopeId - '${envelopeId.value}', fileId - '${fileId.value}', fileName - $fileName"
+               )
+               objectStoreConnector.deleteFile(envelopeId, fileName)
+             case None => Future.failed(new RuntimeException(s"FileId ${fileId.value} not found in mongo"))
            }
       newEnvelope = envelope.copy(files = envelope.files.filterNot(_.fileId == fileId.value))
       _ <- envelopeService.save(newEnvelope)
     } yield ()
-  }
 
   def deleteFile(directory: Path.Directory, fileName: String)(implicit hc: HeaderCarrier): Future[Unit] =
     objectStoreConnector.deleteFile(directory, fileName)
@@ -217,4 +238,43 @@ class ObjectStoreService(
 
   override def isObjectStore(envelopeId: EnvelopeId): Future[Boolean] =
     envelopeService.find(envelopeId).map(e => e.isDefined)
+
+  override def uploadFromUrl(
+    from: URL,
+    envelopeId: EnvelopeId,
+    fileId: FileId,
+    contentType: ContentType,
+    fileName: String
+  )(implicit
+    hc: HeaderCarrier
+  ): Future[ObjectSummaryWithMd5] = {
+    logger.info(
+      s"uploading from url: envelopeId - '${envelopeId.value}', fileId - '${fileId.value}', fileName - '$fileName', contentType - '${contentType.value}'"
+    )
+
+    for {
+      envelopeData <- envelopeService.get(envelopeId)
+      _ <- envelopeData.files
+             .find(_.fileId === fileId.value)
+             .traverse { file =>
+               logger.info(s"removing existing file: envelopeId - '$envelopeId', fileName - '${file.fileName}'")
+               objectStoreConnector.deleteFile(envelopeId, file.fileName)
+             }
+      res <- objectStoreConnector.uploadFromUrl(from, envelopeId, fileName)
+      _ <- {
+        val newFiles =
+          envelopeData.files.filterNot(_.fileId === fileId.value) :+
+            EnvelopeFile(
+              fileId.value,
+              fileName,
+              Available,
+              contentType,
+              res.contentLength,
+              Map.empty[String, List[String]]
+            )
+        envelopeService.save(envelopeData.copy(files = newFiles))
+      }
+    } yield res
+
+  }
 }

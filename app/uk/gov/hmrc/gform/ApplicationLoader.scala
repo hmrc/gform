@@ -302,10 +302,8 @@ class ApplicationModule(context: Context)
 
   val upscanModule = new UpscanModule(
     formService,
-    wSHttpModule,
     configModule,
     queryParameterCrypto,
-    fileUploadFrontendAlgebra,
     formTemplateModule,
     configModule.appConfig,
     mongoModule,

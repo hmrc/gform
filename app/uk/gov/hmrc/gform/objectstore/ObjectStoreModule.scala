@@ -123,5 +123,16 @@ class ObjectStoreModule(
       hc: HeaderCarrier
     ): FOpt[Option[client.Object[Source[ByteString, NotUsed]]]] =
       fromFutureA(objectStoreService.getFile(directory, fileName))
+
+    override def uploadFromUrl(
+      from: java.net.URL,
+      envelopeId: EnvelopeId,
+      fileId: FileId,
+      contentType: ContentType,
+      fileName: String
+    )(implicit
+      hc: HeaderCarrier
+    ): FOpt[ObjectSummaryWithMd5] =
+      fromFutureA(objectStoreService.uploadFromUrl(from, envelopeId, fileId, contentType, fileName))
   }
 }

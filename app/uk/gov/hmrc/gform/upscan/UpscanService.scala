@@ -16,19 +16,12 @@
 
 package uk.gov.hmrc.gform.upscan
 
-import akka.util.ByteString
 import java.time.Instant
 import scala.concurrent.Future
 
 class UpscanService(
-  upscanConnector: UpscanConnector,
   upscanRepository: UpscanRepository
 ) extends UpscanAlgebra[Future] {
-
-  def download(
-    downloadUrl: String
-  ): Future[ByteString] = upscanConnector.download(downloadUrl)
-
   def confirm(upscanCallbackSuccess: UpscanCallback.Success): Future[UpscanConfirmation] =
     upscanRepository.upsert(
       UpscanConfirmation(

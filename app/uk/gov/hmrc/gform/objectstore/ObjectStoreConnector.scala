@@ -120,4 +120,9 @@ class ObjectStoreConnector(
   ): Future[Option[client.Object[Source[ByteString, NotUsed]]]] =
     objectStoreClient
       .getObject(path = objectStorePaths.ephemeral.file(s"${envelopeId.value}$zipExtension"))
+
+  def uploadFromUrl(from: java.net.URL, envelopeId: EnvelopeId, fileName: String)(implicit
+    hc: HeaderCarrier
+  ): Future[ObjectSummaryWithMd5] =
+    objectStoreClient.uploadFromUrl(from, to = directory(envelopeId.value).file(fileName))
 }
