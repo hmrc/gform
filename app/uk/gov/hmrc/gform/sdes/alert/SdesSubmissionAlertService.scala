@@ -103,8 +103,10 @@ class SdesSubmissionAlertService(
   private def sendEmail(newItemCount: Int, total: Int)(implicit ec: ExecutionContext): Future[Unit] = {
     val emailParametersRecalculated = EmailParametersRecalculated(
       Map(
-        EmailTemplateVariable("newItemCount") -> EmailParameterValue(newItemCount.toString),
-        EmailTemplateVariable("total")        -> EmailParameterValue(total.toString)
+        EmailTemplateVariable("heading") -> EmailParameterValue("You have unprocessed SDES items"),
+        EmailTemplateVariable("paragraph") -> EmailParameterValue(
+          s"There are ${newItemCount.toString} new envelopes and a total of ${total.toString} unprocessed SDES envelopes. You can view these under 'Sdes Submissions' in your EEITT dashboard."
+        )
       )
     )
     logger.info(s"Alert is sending for SDES submission. New item count : $newItemCount, total : $total")
