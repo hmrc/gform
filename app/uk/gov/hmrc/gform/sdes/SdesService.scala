@@ -72,10 +72,9 @@ trait SdesAlgebra[F[_]] {
 
   def searchAll(
     processed: Option[Boolean],
-    formTemplateId: Option[FormTemplateId],
+    searchKey: Option[String],
     status: Option[NotificationStatus],
     destination: Option[SdesDestination],
-    beforeCreatedAt: Option[Int],
     beforeSubmittedAt: Option[Int]
   ): F[SdesSubmissionPageData]
 
@@ -148,12 +147,10 @@ class SdesService(
     doSearch(
       Some((skip, pageSize)),
       filter.isProcessed,
-      filter.formTemplateId,
+      filter.searchKey,
       filter.status,
       filter.destination,
-      filter.beforeAt,
       None,
-      filter.envelopeId,
       filter.from,
       filter.to
     )
@@ -161,33 +158,39 @@ class SdesService(
 
   override def searchAll(
     processed: Option[Boolean],
-    formTemplateId: Option[FormTemplateId],
+    searchKey: Option[String],
     status: Option[NotificationStatus],
     destination: Option[SdesDestination],
-    beforeCreatedAt: Option[Int],
     beforeSubmittedAt: Option[Int]
   ): Future[SdesSubmissionPageData] =
-    doSearch(None, processed, formTemplateId, status, destination, beforeCreatedAt, beforeSubmittedAt, None, None, None)
+    doSearch(None, processed, searchKey, status, destination, beforeSubmittedAt, None, None)
 
   private def doSearch(
     maybeSkipAndPageSize: Option[(Int, Int)],
     isProcessed: Option[Boolean],
-    formTemplateId: Option[FormTemplateId],
+    searchKey: Option[String],
     status: Option[NotificationStatus],
     destination: Option[SdesDestination],
-    beforeCreatedAt: Option[Int],
     beforeSubmittedAt: Option[Int],
-    envelopeId: Option[EnvelopeId],
     from: Option[DateFilter],
     to: Option[DateFilter]
   ): Future[SdesSubmissionPageData] = {
 
-    val queryByTemplateId = formTemplateId.map(f => equal("formTemplateId", f.value))
+    val UUID_REGEX = "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$".r
+
+    val queryBySearchKey = searchKey.map(key =>
+      if (UUID_REGEX.findFirstIn(key).isDefined) {
+        equal("envelopeId", key)
+      } else if (key.length === 14) {
+        equal("submissionRef", key)
+      } else {
+        equal("formTemplateId", key)
+      }
+    )
+
     val queryByProcessed = isProcessed.map(p => equal("isProcessed", p))
     val queryByStatus = status.map(s => equal("status", fromName(s)))
-    val queryBySubmittedAt = beforeCreatedAt.map(d => lt("submittedAt", LocalDateTime.now().minusHours(d.toLong)))
     val queryByDestination = destination.map(d => equal("destination", SdesDestination.fromName(d)))
-    val queryByEnvelopeId = envelopeId.map(e => equal("envelopeId", e.value))
     val queryByBeforeAt = beforeSubmittedAt.map(b =>
       Filters.and(lt("createdAt", LocalDateTime.now().minusHours(b.toLong)), equal("isProcessed", false))
     )
@@ -200,12 +203,10 @@ class SdesService(
     }
 
     val conditions = List(
-      queryByTemplateId,
+      queryBySearchKey,
       queryByProcessed,
       queryByStatus,
-      queryBySubmittedAt,
       queryByDestination,
-      queryByEnvelopeId,
       queryByBeforeAt,
       Some(queryByDateFilter)
     ).flatten

@@ -18,18 +18,14 @@ package uk.gov.hmrc.gform.sharedmodel.sdes
 
 import play.api.libs.json.{ Format, Json }
 import uk.gov.hmrc.gform.history.DateFilter
-import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 
 final case class SdesFilter(
   page: Int,
   pageSize: Int,
   isProcessed: Option[Boolean],
-  envelopeId: Option[EnvelopeId],
-  formTemplateId: Option[FormTemplateId],
+  searchKey: Option[String],
   status: Option[NotificationStatus],
   destination: Option[SdesDestination],
-  beforeAt: Option[Int],
   from: Option[DateFilter],
   to: Option[DateFilter]
 )
