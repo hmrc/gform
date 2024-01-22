@@ -33,20 +33,20 @@ import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.crypto.{ Crypted, Decrypter, Encrypter, PlainText }
 import uk.gov.hmrc.gform.config.AppConfig
 import uk.gov.hmrc.gform.controllers.BaseController
-import uk.gov.hmrc.gform.fileupload.FileUploadFrontendAlgebra
 import uk.gov.hmrc.gform.form.FormAlgebra
 import uk.gov.hmrc.gform.formtemplate.FormTemplateService
 import uk.gov.hmrc.gform.objectstore.ObjectStoreAlgebra
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId, Form, FormIdData, UserData }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AllowedFileTypes, FileUpload, FileUploadProvider, FormComponentId, IsFileUpload }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AllowedFileTypes, FileUpload, FormComponentId, IsFileUpload }
+
+import java.net.URL
 
 class UpscanController(
   appConfig: AppConfig,
   queryParameterCrypto: Encrypter with Decrypter,
   formService: FormAlgebra[Future],
   upscanService: UpscanService,
-  fileUploadFrontendAlgebra: FileUploadFrontendAlgebra[Future],
   formTemplateService: FormTemplateService,
   controllerComponents: ControllerComponents,
   objectStoreAlgebra: ObjectStoreAlgebra[Future]
@@ -135,28 +135,14 @@ class UpscanController(
                        )
                 } yield NoContent
               case Valid(_) =>
-                val compression: Boolean = maybeFileUpload.fold(false) {
-                  case FileUpload(FileUploadProvider.Upscan(true), _, _) => true
-                  case _                                                 => false
-                }
                 for {
-                  file <- upscanService.download(upscanCallbackSuccess.downloadUrl)
-                  compressedFile = ImageCompressor.compressIfSupported(file, upscanCallbackSuccess, compression)
-                  uploadDetails = upscanCallbackSuccess.uploadDetails
-                  isObjectStore <- objectStoreAlgebra.isObjectStore(envelopeId)
-                  _ <- if (isObjectStore) {
-
-                         objectStoreAlgebra.uploadFile(
-                           envelopeId,
-                           fileId,
-                           fileName,
-                           compressedFile,
-                           ContentType(uploadDetails.fileMimeType)
-                         )
-                       } else {
-                         fileUploadFrontendAlgebra
-                           .uploadFile(envelopeId, fileId, uploadDetails, compressedFile)
-                       }
+                  _ <- objectStoreAlgebra.uploadFromUrl(
+                         new URL(upscanCallbackSuccess.downloadUrl),
+                         envelopeId,
+                         fileId,
+                         ContentType(upscanCallbackSuccess.uploadDetails.fileMimeType),
+                         fileName
+                       )
                   form <- formService.get(formIdData)
                   formUpd = setTransferred(form, formComponentId, fileId)
                   _ <- formService.updateUserData(formIdData, toUserData(formUpd))

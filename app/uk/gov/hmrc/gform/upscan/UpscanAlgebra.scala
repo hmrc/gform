@@ -16,14 +16,7 @@
 
 package uk.gov.hmrc.gform.upscan
 
-import akka.util.ByteString
-
 trait UpscanAlgebra[F[_]] {
-
-  def download(
-    downloadUrl: String
-  ): F[ByteString]
-
   def confirm(upscanCallbackSuccess: UpscanCallback.Success): F[UpscanConfirmation]
   def reject(
     reference: UpscanReference,
