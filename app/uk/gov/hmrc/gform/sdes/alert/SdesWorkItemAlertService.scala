@@ -80,7 +80,10 @@ class SdesWorkItemAlertService(
   private def sendEmail(total: Long)(implicit ec: ExecutionContext): Future[Unit] = {
     val emailParametersRecalculated = EmailParametersRecalculated(
       Map(
-        EmailTemplateVariable("total") -> EmailParameterValue(total.toString)
+        EmailTemplateVariable("heading") -> EmailParameterValue("You have unprocessed work items"),
+        EmailTemplateVariable("paragraph") -> EmailParameterValue(
+          s"There are ${total.toString} unprocessed work items. You can view these under 'Work Item' in your EEITT dashboard."
+        )
       )
     )
     logger.info(s"Alert is sending for SDES work-item. Total item : $total")
