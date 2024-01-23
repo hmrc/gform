@@ -275,10 +275,19 @@
     "sections": {
       "type": "object",
       "patternProperties": {
-        "^(comment|note|_)": {
+        "^(comment)": {
           "type": [
             "string",
             "object"
+          ]
+        },
+        "^(_)": {
+          "type": [
+            "array",
+            "boolean",
+            "number",
+            "object",
+            "string"
           ]
         }
       },
@@ -402,6 +411,9 @@
         },
         "instruction": {
           "type": "object"
+        },
+        "note": {
+          "type": "string"
         },
         "tasks": {
           "type": "array",
