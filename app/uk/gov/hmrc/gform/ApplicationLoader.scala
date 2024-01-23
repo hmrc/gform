@@ -19,7 +19,7 @@ package uk.gov.hmrc.gform
 import cats.instances.future._
 import org.mongodb.scala.model.IndexModel
 import org.mongodb.scala.model.IndexOptions
-import org.mongodb.scala.model.Indexes
+import org.mongodb.scala.model.Indexes.ascending
 import org.slf4j.LoggerFactory
 import play.api.ApplicationLoader.Context
 import play.api._
@@ -203,26 +203,28 @@ class ApplicationModule(context: Context)
       val submittedExpiry = configModule.appConfig.submittedFormExpiryHours.hours.toMillis
       val indexes = Seq(
         IndexModel(
-          Indexes.ascending("modifiedDetails.createdAt"),
+          ascending("modifiedDetails.createdAt"),
           IndexOptions()
             .background(false)
             .name("createdAtIndex")
             .expireAfter(createdFormExpiry, TimeUnit.MILLISECONDS)
         ),
         IndexModel(
-          Indexes.ascending("modifiedDetails.lastUpdated"),
+          ascending("modifiedDetails.lastUpdated"),
           IndexOptions()
             .background(false)
             .name("lastUpdatedIndex")
             .expireAfter(formExpiry, TimeUnit.MILLISECONDS)
         ),
         IndexModel(
-          Indexes.ascending("submitDetails.createdAt"),
+          ascending("submitDetails.createdAt"),
           IndexOptions()
             .background(false)
             .name("submittedIndex")
             .expireAfter(submittedExpiry, TimeUnit.MILLISECONDS)
-        )
+        ),
+        IndexModel(ascending("data.form.formTemplateId"), IndexOptions().name("formTemplateIdIdx").background(true)),
+        IndexModel(ascending("data.form.status"), IndexOptions().name("statusIdx").background(true))
       )
       MongoUtils.ensureIndexes(this.collection, indexes, true)
     }

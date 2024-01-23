@@ -16,8 +16,6 @@
 
 package uk.gov.hmrc.gform.formstatistics
 
-import org.mongodb.scala.model.{ IndexModel, IndexOptions }
-import org.mongodb.scala.model.Indexes.ascending
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.core.{ FOpt, fromFutureA }
 import uk.gov.hmrc.gform.formtemplate.FormTemplateModule
@@ -40,10 +38,7 @@ class FormStatisticsModule(
     new Repo[Form](
       "forms",
       mongoModule.mongoComponent,
-      _._id.value,
-      Seq(
-        IndexModel(ascending("data.form.formTemplateId"), IndexOptions().name("formTemplateIdIdx").background(true))
-      )
+      _._id.value
     )
 
   val formStatisticsService: FormStatisticsAlgebra[Future] =
