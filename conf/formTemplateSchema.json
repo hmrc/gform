@@ -1,17 +1,17 @@
 {
-  "$schema":"http://json-schema.org/draft-04/schema#",
-  "title":"gForm form config schema",
-  "description":"Validation of any form posted to gForm platform",
-  "type":"object",
-  "patternProperties":{
-    "^(comment)":{
-      "type":[
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "gForm form config schema",
+  "description": "Validation of any form posted to gForm platform",
+  "type": "object",
+  "patternProperties": {
+    "^(comment)": {
+      "type": [
         "string",
         "object"
       ]
     },
-    "^(_)":{
-      "type":[
+    "^(_)": {
+      "type": [
         "array",
         "boolean",
         "number",
@@ -21,268 +21,268 @@
     }
   },
   "additionalProperties":false,
-  "properties":{
-    "_id":{
-      "type":"string",
-      "pattern":"^[a-zA-Z0-9-]+$"
+  "properties": {
+    "_id": {
+      "type": "string",
+      "pattern": "^[a-zA-Z0-9-]+$"
     },
-    "formName":{
-      "type":[
+    "formName": {
+      "type": [
         "string",
         "object"
       ]
     },
-    "description":{
-      "type":[
+    "description": {
+      "type": [
         "string",
         "object"
       ]
     },
-    "formCategory":{
-      "type":"string",
-      "pattern":"^(hmrcClaimForm|hmrcReturnForm)$"
+    "formCategory": {
+      "type": "string",
+      "pattern": "^(hmrcClaimForm|hmrcReturnForm)$"
     },
-    "version":{
-      "type":"integer"
+    "version": {
+      "type": "integer"
     },
-    "developmentPhase":{
-      "type":"string",
-      "pattern":"^(alpha|research|live)$"
+    "developmentPhase": {
+      "type": "string",
+      "pattern": "^(alpha|research|live)$"
     },
-    "objectStore":{
-      "type":"boolean"
+    "objectStore": {
+      "type": "boolean"
     },
-    "allowedFileTypes":{
-      "type":"array"
+    "allowedFileTypes": {
+      "type": "array"
     },
-    "fileSizeLimit":{
-      "type":"integer"
+    "fileSizeLimit": {
+      "type": "integer"
     },
-    "displayHMRCLogo":{
-      "description":"Defines whether the HMRC logo is displayed",
-      "type":"boolean"
+    "displayHMRCLogo": {
+      "description": "Defines whether the HMRC logo is displayed",
+      "type": "boolean"
     },
-    "displayWidth":{
-      "type":"string",
-      "pattern":"^(m|l|xl)$"
+    "displayWidth": {
+      "type": "string",
+      "pattern": "^(m|l|xl)$"
     },
-    "userResearchUrl":{
-      "type":"string"
+    "userResearchUrl": {
+      "type": "string"
     },
-    "accessibilityUrl":{
-      "type":"string"
+    "accessibilityUrl": {
+      "type": "string"
     },
-    "languages":{
-      "type":"array"
+    "languages": {
+      "type": "array"
     },
-    "exitPages":{
-      "type":"array"
+    "exitPages": {
+      "type": "array"
     },
-    "draftRetrievalMethod":{
-      "type":"string",
-      "pattern":"^(formAccessCodeForAgents|notPermitted|onePerUser)$"
+    "draftRetrievalMethod": {
+      "type": "string",
+      "pattern": "^(formAccessCodeForAgents|notPermitted|onePerUser)$"
     },
-    "showContinueOrDeletePage":{
-      "type":"string",
-      "pattern":"^(false)$"
+    "showContinueOrDeletePage": {
+      "type": "string",
+      "pattern": "^(false)$"
     },
-    "save4LaterInfoText":{
-      "type":[
+    "save4LaterInfoText": {
+      "type": [
         "string",
         "object"
       ]
     },
-    "note":{
-      "type":"string"
+    "note": {
+      "type": "string"
     },
-    "emailTemplateId":{
-      "type":[
+    "emailTemplateId": {
+      "type": [
         "string",
         "object"
       ]
     },
-    "emailParameters":{
-      "type":"array",
+    "emailParameters": {
+      "type": "array",
       "additionalProperties":false,
-      "items":{
-        "type":"object",
+      "items": {
+        "type": "object",
         "additionalProperties":false,
-        "properties":{
-          "value":{
-            "type":"string"
+        "properties": {
+          "value": {
+            "type": "string"
           },
-          "emailTemplateVariable":{
-            "type":"string"
+          "emailTemplateVariable": {
+            "type": "string"
           }
         }
       }
     },
-    "emailCodeParameters":{
-      "type":"array",
+    "emailCodeParameters": {
+      "type": "array",
       "additionalProperties":false,
-      "items":{
-        "type":"object",
+      "items": {
+        "type": "object",
         "additionalProperties":false,
-        "properties":{
-          "value":{
-            "type":"string"
+        "properties": {
+          "value": {
+            "type": "string"
           },
-          "emailTemplateVariable":{
-            "type":"string"
+          "emailTemplateVariable": {
+            "type": "string"
           }
         }
       }
     },
-    "expressions":{
-      "type":"object",
-      "patternProperties":{
-        "^.*$":{
-          "anyOf":[
+    "expressions": {
+      "type": "object",
+      "patternProperties": {
+        "^.*$": {
+          "anyOf": [
             {
-              "type":"string"
+              "type": "string"
             },
             {
-              "type":"object"
+              "type": "object"
             }
           ],
           "additionalProperties":false,
-          "properties":{
-            "value":{
-              "type":"string"
+          "properties": {
+            "value": {
+              "type": "string"
             },
-            "type":{
-              "type":"string"
+            "type": {
+              "type": "string"
             },
-            "fractionalDigits":{
-              "type":"integer"
+            "fractionalDigits": {
+              "type": "integer"
             },
-            "round":{
-              "type":"string",
-              "pattern":"^(Up|Down|HalfUp|HalfDown)$"
+            "round": {
+              "type": "string",
+              "pattern": "^(Up|Down|HalfUp|HalfDown)$"
             }
           }
         }
       }
     },
-    "expressionsOutput":{
-      "type":"array"
+    "expressionsOutput": {
+      "type": "array"
     },
-    "booleanExpressions":{
-      "type":"object"
+    "booleanExpressions": {
+      "type": "object"
     },
-    "legacyFormIds":{
-      "type":"array"
+    "legacyFormIds": {
+      "type": "array"
     },
-    "dataRetrieve":{
-      "type":"array"
+    "dataRetrieve": {
+      "type": "array"
     },
-    "referrerConfig":{
-      "type":"object",
-      "properties":{
-        "allowedReferrerUrls":{
-          "type":"array"
+    "referrerConfig": {
+      "type": "object",
+      "properties": {
+        "allowedReferrerUrls": {
+          "type": "array"
         },
-        "exitMessage":{
-          "type":[
+        "exitMessage": {
+          "type": [
             "string",
             "object"
           ]
         }
       }
     },
-    "authConfig":{
-      "type":"object",
+    "authConfig": {
+      "type": "object",
       "additionalProperties":false,
-      "properties":{
-        "authModule":{
-          "type":"string",
-          "pattern":"^(hmrc|anonymous|composite|hmrcAny|hmrcVerified)$"
+      "properties": {
+        "authModule": {
+          "type": "string",
+          "pattern": "^(hmrc|anonymous|composite|hmrcAny|hmrcVerified)$"
         },
-        "configs":{
-          "type":"array"
+        "configs": {
+          "type": "array"
         },
-        "agentAccess":{
-          "type":"string"
+        "agentAccess": {
+          "type": "string"
         },
-        "enrolmentCheck":{
-          "type":"string"
+        "enrolmentCheck": {
+          "type": "string"
         },
-        "serviceId":{
-          "type":"string"
+        "serviceId": {
+          "type": "string"
         },
-        "regimeId":{
-          "type":"string"
+        "regimeId": {
+          "type": "string"
         },
-        "legacyFcEnrolmentVerifier":{
-          "type":"string"
+        "legacyFcEnrolmentVerifier": {
+          "type": "string"
         },
-        "enrolmentSection":{
-          "type":"object"
+        "enrolmentSection": {
+          "type": "object"
         },
-        "ivFailure":{
-          "type":[
+        "ivFailure": {
+          "type": [
             "string",
             "object"
           ]
         },
-        "notAllowedIn":{
-          "type":[
+        "notAllowedIn": {
+          "type": [
             "string",
             "object"
           ]
         },
-        "minimumCL":{
-          "type":[
+        "minimumCL": {
+          "type": [
             "string",
             "object"
           ]
         }
       }
     },
-    "sections":{
-      "type":"array",
+    "sections": {
+      "type": "array",
       "additionalProperties":false,
-      "items":{
-        "$ref":"#/$defs/sections"
+      "items": {
+        "$ref": "#/$defs/sections"
       }
     },
-    "submitSection":{
-      "type":"object"
+    "submitSection": {
+      "type": "object"
     },
-    "printSection":{
-      "type":"object"
+    "printSection": {
+      "type": "object"
     },
-    "summarySection":{
-      "type":"object"
+    "summarySection": {
+      "type": "object"
     },
-    "declarationSection":{
-      "type":"object"
+    "declarationSection": {
+      "type": "object"
     },
-    "acknowledgementSection":{
-      "type":"object"
+    "acknowledgementSection": {
+      "type": "object"
     },
-    "destinations":{
-      "type":"array"
+    "destinations": {
+      "type": "array"
     }
   },
-  "required":[
+  "required": [
     "_id",
     "formName",
     "description",
     "version"
   ],
-  "$defs":{
-    "sections":{
-      "type":"object",
-      "patternProperties":{
-        "^(comment)":{
-          "type":[
+  "$defs": {
+    "sections": {
+      "type": "object",
+      "patternProperties": {
+        "^(comment)": {
+          "type": [
             "string",
             "object"
           ]
         },
-        "^(_)":{
-          "type":[
+        "^(_)": {
+          "type": [
             "array",
             "boolean",
             "number",
@@ -292,187 +292,187 @@
         }
       },
       "additionalProperties":false,
-      "properties":{
-        "id":{
-          "type":"string"
+      "properties": {
+        "id": {
+          "type": "string"
         },
-        "caption":{
-          "type":[
+        "caption": {
+          "type": [
             "string",
             "object"
           ]
         },
-        "displayWidth":{
-          "type":"string",
-          "pattern":"^(m|l|xl)$"
+        "displayWidth": {
+          "type": "string",
+          "pattern": "^(m|l|xl)$"
         },
-        "title":{
-          "type":[
+        "title": {
+          "type": [
             "string",
             "object"
           ]
         },
-        "description":{
-          "type":[
+        "description": {
+          "type": [
             "string",
             "object"
           ]
         },
-        "shortName":{
-          "type":[
+        "shortName": {
+          "type": [
             "string",
             "object"
           ]
         },
-        "noPIITitle":{
-          "type":[
+        "noPIITitle": {
+          "type": [
             "string",
             "object"
           ]
         },
-        "includeIf":{
-          "type":"string"
+        "includeIf": {
+          "type": "string"
         },
-        "removeItemIf":{
-          "type":"string"
+        "removeItemIf": {
+          "type": "string"
         },
-        "continueIf":{
-          "type":"string"
+        "continueIf": {
+          "type": "string"
         },
-        "continueLabel":{
-          "type":[
+        "continueLabel": {
+          "type": [
             "string",
             "object"
           ]
         },
-        "presentationHint":{
-          "type":"string",
-          "pattern":"^(invisiblePageTitle)$"
+        "presentationHint": {
+          "type": "string",
+          "pattern": "^(invisiblePageTitle)$"
         },
-        "hideSaveAndComeBackButton":{
-          "type":"boolean"
+        "hideSaveAndComeBackButton": {
+          "type": "boolean"
         },
-        "redirects":{
-          "type":"array"
+        "redirects": {
+          "type": "array"
         },
-        "type":{
-          "type":"string"
+        "type": {
+          "type": "string"
         },
-        "dataRetrieve":{
-          "type":"array"
+        "dataRetrieve": {
+          "type": "array"
         },
-        "summaryName":{
-          "type":[
+        "summaryName": {
+          "type": [
             "string",
             "object"
           ]
         },
-        "summaryDescription":{
-          "type":[
+        "summaryDescription": {
+          "type": [
             "string",
             "object"
           ]
         },
-        "addAnotherQuestion":{
-          "type":"object"
+        "addAnotherQuestion": {
+          "type": "object"
         },
-        "defaultPage":{
-          "type":"object"
+        "defaultPage": {
+          "type": "object"
         },
-        "cyaPage":{
-          "type":"object"
+        "cyaPage": {
+          "type": "object"
         },
-        "repeatsUntil":{
-          "type":"string"
+        "repeatsUntil": {
+          "type": "string"
         },
-        "repeatsWhile":{
-          "type":"string"
+        "repeatsWhile": {
+          "type": "string"
         },
-        "infoMessage":{
-          "type":[
+        "infoMessage": {
+          "type": [
             "string",
             "object"
           ]
         },
-        "pageIdToDisplayAfterRemove":{
-          "type":"string"
+        "pageIdToDisplayAfterRemove": {
+          "type": "string"
         },
-        "repeatsMin":{
-          "type":"string"
+        "repeatsMin": {
+          "type": "string"
         },
-        "repeatsMax":{
-          "type":"string"
+        "repeatsMax": {
+          "type": "string"
         },
-        "validators":{
-          "type":"object"
+        "validators": {
+          "type": "object"
         },
-        "confirmation":{
-          "type":"object"
+        "confirmation": {
+          "type": "object"
         },
-        "instruction":{
-          "type":"object"
+        "instruction": {
+          "type": "object"
         },
-        "note":{
-          "type":"string"
+        "note": {
+          "type": "string"
         },
-        "tasks":{
-          "type":"array",
+        "tasks": {
+          "type": "array",
           "additionalProperties":false,
-          "items":{
-            "type":"object",
+          "items": {
+            "type": "object",
             "additionalProperties":false,
-            "properties":{
-              "title":{
-                "type":[
+            "properties": {
+              "title": {
+                "type": [
                   "string",
                   "object"
                 ]
               },
-              "includeIf":{
-                "type":"string"
+              "includeIf": {
+                "type": "string"
               },
-              "summarySection":{
-                "type":"object"
+              "summarySection": {
+                "type": "object"
               },
-              "declarationSection":{
-                "type":"object"
+              "declarationSection": {
+                "type": "object"
               },
-              "sections":{
-                "type":"array",
+              "sections": {
+                "type": "array",
                 "additionalProperties":false,
-                "items":{
-                  "$ref":"#/$defs/sections"
+                "items": {
+                  "$ref": "#/$defs/sections"
                 }
               }
             }
           }
         },
-        "pages":{
-          "type":"array",
+        "pages": {
+          "type": "array",
           "additionalProperties":false,
-          "items":{
-            "$ref":"#/$defs/sections"
+          "items": {
+            "$ref": "#/$defs/sections"
           }
         },
-        "fields":{
-          "type":"array",
-          "items":{
-            "$ref":"#/$defs/fields"
+        "fields": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/fields"
           }
         }
       }
     },
-    "fields":{
-      "type":"object",
-      "patternProperties":{
-        "^(comment)":{
-          "type":[
+    "fields": {
+      "type": "object",
+      "patternProperties": {
+        "^(comment)": {
+          "type": [
             "string",
             "object"
           ]
         },
-        "^(_)":{
-          "type":[
+        "^(_)": {
+          "type": [
             "array",
             "boolean",
             "number",
@@ -482,266 +482,266 @@
         }
       },
       "additionalProperties":false,
-      "properties":{
-        "id":{
-          "type":"string"
+      "properties": {
+        "id": {
+          "type": "string"
         },
-        "type":{
-          "type":"string"
+        "type": {
+          "type": "string"
         },
-        "format":{
-          "type":"string"
+        "format": {
+          "type": "string"
         },
-        "label":{
-          "type":[
+        "label": {
+          "type": [
             "string",
             "object"
           ]
         },
-        "shortName":{
-          "type":[
+        "shortName": {
+          "type": [
             "string",
             "object"
           ]
         },
-        "helpText":{
-          "type":[
+        "helpText": {
+          "type": [
             "string",
             "object"
           ]
         },
-        "includeIf":{
-          "type":"string"
+        "includeIf": {
+          "type": "string"
         },
-        "validIf":{
-          "type":"string"
+        "validIf": {
+          "type": "string"
         },
-        "value":{
-          "type":"string"
+        "value": {
+          "type": "string"
         },
-        "notPII":{
-          "type":"string",
-          "pattern":"^(true)$"
+        "notPII": {
+          "type": "string",
+          "pattern": "^(true)$"
         },
-        "toUpperCase":{
-          "type":"string",
-          "pattern":"^(true)$"
+        "toUpperCase": {
+          "type": "string",
+          "pattern": "^(true)$"
         },
-        "choices":{
-          "type":"array"
+        "choices": {
+          "type": "array"
         },
-        "mandatory":{
-          "type":"string",
-          "pattern":"^(false|true|no|yes)$"
+        "mandatory": {
+          "type": "string",
+          "pattern": "^(false|true|no|yes)$"
         },
-        "errorMessage":{
-          "type":[
+        "errorMessage": {
+          "type": [
             "string",
             "object"
           ]
         },
-        "errorShortName":{
-          "type":[
+        "errorShortName": {
+          "type": [
             "string",
             "object"
           ]
         },
-        "errorShortNameStart":{
-          "type":[
+        "errorShortNameStart": {
+          "type": [
             "string",
             "object"
           ]
         },
-        "displayWidth":{
-          "type":"string"
+        "displayWidth": {
+          "type": "string"
         },
-        "validators":{
-          "type":"array"
+        "validators": {
+          "type": "array"
         },
-        "presentationHint":{
-          "type":"string"
+        "presentationHint": {
+          "type": "string"
         },
-        "submitMode":{
-          "type":"string"
+        "submitMode": {
+          "type": "string"
         },
-        "multiline":{
-          "type":"string"
+        "multiline": {
+          "type": "string"
         },
-        "multivalue":{
-          "type":"string"
+        "multivalue": {
+          "type": "string"
         },
-        "suffix":{
-          "type":"string"
+        "suffix": {
+          "type": "string"
         },
-        "prefix":{
-          "type":"string"
+        "prefix": {
+          "type": "string"
         },
-        "offset":{
-          "type":"string"
+        "offset": {
+          "type": "string"
         },
-        "displayCharCount":{
-          "type":"string"
+        "displayCharCount": {
+          "type": "string"
         },
-        "revealingFields":{
-          "type":"array",
-          "items":{
-            "items":{
-              "$ref":"#/$defs/fields"
+        "revealingFields": {
+          "type": "array",
+          "items": {
+            "items": {
+              "$ref": "#/$defs/fields"
             }
           }
         },
-        "selectionCriteria":{
-          "type":"array"
+        "selectionCriteria": {
+          "type": "array"
         },
-        "labelSize":{
-          "type":"string"
+        "labelSize": {
+          "type": "string"
         },
-        "countryDisplayed":{
-          "type":"string"
+        "countryDisplayed": {
+          "type": "string"
         },
-        "countyDisplayed":{
-          "type":"string"
+        "countyDisplayed": {
+          "type": "string"
         },
-        "cityMandatory":{
-          "type":"string"
+        "cityMandatory": {
+          "type": "string"
         },
-        "line2Mandatory":{
-          "type":"string"
+        "line2Mandatory": {
+          "type": "string"
         },
-        "line3Mandatory":{
-          "type":"string"
+        "line3Mandatory": {
+          "type": "string"
         },
-        "postcodeMandatory":{
-          "type":"string"
+        "postcodeMandatory": {
+          "type": "string"
         },
-        "service":{
-          "type":"string"
+        "service": {
+          "type": "string"
         },
-        "rows":{
-          "type":[
+        "rows": {
+          "type": [
             "integer",
             "array"
           ]
         },
-        "hints":{
-          "type":"array"
+        "hints": {
+          "type": "array"
         },
-        "optionHelpText":{
-          "type":"array"
+        "optionHelpText": {
+          "type": "array"
         },
-        "infoText":{
-          "type":[
+        "infoText": {
+          "type": [
             "string",
             "object"
           ]
         },
-        "infoType":{
-          "type":"string"
+        "infoType": {
+          "type": "string"
         },
-        "instruction":{
-          "type":"object"
+        "instruction": {
+          "type": "object"
         },
-        "idType":{
-          "type":"string"
+        "idType": {
+          "type": "string"
         },
-        "idNumber":{
-          "type":"string"
+        "idNumber": {
+          "type": "string"
         },
-        "regimeType":{
-          "type":"string"
+        "regimeType": {
+          "type": "string"
         },
-        "dividerPosition":{
-          "type":[
+        "dividerPosition": {
+          "type": [
             "integer",
             "string"
           ]
         },
-        "noneChoice":{
-          "type":"integer"
+        "noneChoice": {
+          "type": "integer"
         },
-        "repeatsMin":{
-          "type":"integer"
+        "repeatsMin": {
+          "type": "integer"
         },
-        "repeatsMax":{
-          "type":"integer"
+        "repeatsMax": {
+          "type": "integer"
         },
-        "dataThreshold":{
-          "type":"integer"
+        "dataThreshold": {
+          "type": "integer"
         },
-        "repeatLabel":{
-          "type":[
+        "repeatLabel": {
+          "type": [
             "string",
             "object"
           ]
         },
-        "repeatAddAnotherText":{
-          "type":[
+        "repeatAddAnotherText": {
+          "type": [
             "string",
             "object"
           ]
         },
-        "noneChoiceError":{
-          "type":[
+        "noneChoiceError": {
+          "type": [
             "string",
             "object"
           ]
         },
-        "dividerText":{
-          "type":[
+        "dividerText": {
+          "type": [
             "string",
             "object"
           ]
         },
-        "summaryValue":{
-          "type":[
+        "summaryValue": {
+          "type": [
             "string",
             "object"
           ]
         },
-        "header":{
-          "type":"array"
+        "header": {
+          "type": "array"
         },
-        "chooseAddressLabel":{
-          "type":[
+        "chooseAddressLabel": {
+          "type": [
             "string",
             "object"
           ]
         },
-        "confirmAddressLabel":{
-          "type":[
+        "confirmAddressLabel": {
+          "type": [
             "string",
             "object"
           ]
         },
-        "international":{
-          "type":"string"
+        "international": {
+          "type": "string"
         },
-        "countryLookup":{
-          "type":"string"
+        "countryLookup": {
+          "type": "string"
         },
-        "round":{
-          "type":"string",
-          "pattern":"^(Up|Down|HalfUp|HalfDown)$"
+        "round": {
+          "type": "string",
+          "pattern": "^(Up|Down|HalfUp|HalfDown)$"
         },
-        "allowedFileTypes":{
-          "type":"array"
+        "allowedFileTypes": {
+          "type": "array"
         },
-        "fileSizeLimit":{
-          "type":"integer"
+        "fileSizeLimit": {
+          "type": "integer"
         },
-        "ranges":{
-          "type":"array"
+        "ranges": {
+          "type": "array"
         },
-        "intervalMins":{
-          "type":"integer"
+        "intervalMins": {
+          "type": "integer"
         },
-        "size":{
-          "type":"string"
+        "size": {
+          "type": "string"
         },
-        "fields":{
-          "type":"array",
-          "items":{
-            "$ref":"#/$defs/fields"
+        "fields": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/fields"
           }
         }
       }
