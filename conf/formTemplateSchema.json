@@ -20,7 +20,7 @@
       ]
     }
   },
-  "additionalProperties":false,
+  "additionalProperties": false,
   "properties": {
     "_id": {
       "type": "string",
@@ -103,10 +103,10 @@
     },
     "emailParameters": {
       "type": "array",
-      "additionalProperties":false,
+      "additionalProperties": false,
       "items": {
         "type": "object",
-        "additionalProperties":false,
+        "additionalProperties": false,
         "properties": {
           "value": {
             "type": "string"
@@ -119,10 +119,10 @@
     },
     "emailCodeParameters": {
       "type": "array",
-      "additionalProperties":false,
+      "additionalProperties": false,
       "items": {
         "type": "object",
-        "additionalProperties":false,
+        "additionalProperties": false,
         "properties": {
           "value": {
             "type": "string"
@@ -145,7 +145,7 @@
               "type": "object"
             }
           ],
-          "additionalProperties":false,
+          "additionalProperties": false,
           "properties": {
             "value": {
               "type": "string"
@@ -192,7 +192,7 @@
     },
     "authConfig": {
       "type": "object",
-      "additionalProperties":false,
+      "additionalProperties": false,
       "properties": {
         "authModule": {
           "type": "string",
@@ -241,7 +241,7 @@
     },
     "sections": {
       "type": "array",
-      "additionalProperties":false,
+      "additionalProperties": false,
       "items": {
         "$ref": "#/$defs/sections"
       }
@@ -291,7 +291,7 @@
           ]
         }
       },
-      "additionalProperties":false,
+      "additionalProperties": false,
       "properties": {
         "id": {
           "type": "string"
@@ -417,10 +417,10 @@
         },
         "tasks": {
           "type": "array",
-          "additionalProperties":false,
+          "additionalProperties": false,
           "items": {
             "type": "object",
-            "additionalProperties":false,
+            "additionalProperties": false,
             "properties": {
               "title": {
                 "type": [
@@ -439,7 +439,7 @@
               },
               "sections": {
                 "type": "array",
-                "additionalProperties":false,
+                "additionalProperties": false,
                 "items": {
                   "$ref": "#/$defs/sections"
                 }
@@ -449,7 +449,7 @@
         },
         "pages": {
           "type": "array",
-          "additionalProperties":false,
+          "additionalProperties": false,
           "items": {
             "$ref": "#/$defs/sections"
           }
@@ -481,7 +481,7 @@
           ]
         }
       },
-      "additionalProperties":false,
+      "additionalProperties": false,
       "properties": {
         "id": {
           "type": "string"
