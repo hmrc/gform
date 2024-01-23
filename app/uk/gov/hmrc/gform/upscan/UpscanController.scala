@@ -92,7 +92,6 @@ class UpscanController(
       val decrypted: PlainText = queryParameterCrypto.decrypt(formIdDataCrypted)
 
       val formIdDataJsResult: JsResult[FormIdData] = Json.parse(decrypted.value).validate[FormIdData]
-      val fileId = FileId(formComponentId.value)
 
       val callbackResult: Either[Unit, Future[Result]] = for {
         formIdData <-
@@ -120,10 +119,8 @@ class UpscanController(
               .flatMap(_.fileSizeLimit)
               .getOrElse(formTemplate.fileSizeLimit.getOrElse(appConfig.formMaxAttachmentSizeMB))
 
-            val fileName = fileId.value + "_" + upscanCallbackSuccess.uploadDetails.fileName
-
             val validated: Validated[UpscanValidationFailure, Unit] =
-              validateFile(allowedFileTypes, fileSizeLimit, upscanCallbackSuccess.uploadDetails, fileName)
+              validateFile(allowedFileTypes, fileSizeLimit, upscanCallbackSuccess.uploadDetails)
 
             validated match {
               case Invalid(upscanValidationFailure) =>
@@ -136,17 +133,34 @@ class UpscanController(
                 } yield NoContent
               case Valid(_) =>
                 for {
-                  _ <- objectStoreAlgebra.uploadFromUrl(
-                         new URL(upscanCallbackSuccess.downloadUrl),
-                         envelopeId,
-                         fileId,
-                         ContentType(upscanCallbackSuccess.uploadDetails.fileMimeType),
-                         fileName
-                       )
                   form <- formService.get(formIdData)
-                  formUpd = setTransferred(form, formComponentId, fileId)
-                  _ <- formService.updateUserData(formIdData, toUserData(formUpd))
-                  _ <- upscanService.confirm(upscanCallbackSuccess)
+                  fileId = form.componentIdToFileId.inverseMapping
+                             .get(FileId(formComponentId.value))
+                             .map(mappingComponentId => FileId(mappingComponentId.value))
+                             .getOrElse(FileId(formComponentId.value))
+                  fileName = fileId.value + "_" + upscanCallbackSuccess.uploadDetails.fileName
+                  validatedFileName: Validated[UpscanValidationFailure, Unit] = validateFileName(fileName)
+                  _ <- validatedFileName match {
+                         case Invalid(upscanValidationFailure) =>
+                           upscanService.reject(
+                             upscanCallbackSuccess.reference,
+                             UpscanFileStatus.Failed,
+                             ConfirmationFailure.GformValidationFailure(upscanValidationFailure)
+                           )
+                         case Valid(_) =>
+                           for {
+                             _ <- objectStoreAlgebra.uploadFromUrl(
+                                    new URL(upscanCallbackSuccess.downloadUrl),
+                                    envelopeId,
+                                    fileId,
+                                    ContentType(upscanCallbackSuccess.uploadDetails.fileMimeType),
+                                    fileName
+                                  )
+                             formUpd = setTransferred(form, formComponentId, fileId)
+                             _ <- formService.updateUserData(formIdData, toUserData(formUpd))
+                             _ <- upscanService.confirm(upscanCallbackSuccess)
+                           } yield NoContent
+                       }
                 } yield NoContent
             }
           }
@@ -175,15 +189,13 @@ class UpscanController(
   private def validateFile(
     allowedFileTypes: AllowedFileTypes,
     fileSizeLimit: Int,
-    uploadDetails: UploadDetails,
-    fileName: String
+    uploadDetails: UploadDetails
   ): Validated[UpscanValidationFailure, Unit] = {
     val fileNameCheckResult = validateFileExtension(uploadDetails.fileName)
     val fileMimeTypeResult = validateFileType(allowedFileTypes, ContentType(uploadDetails.fileMimeType))
     Valid(uploadDetails)
       .ensure(UpscanValidationFailure.EntityTooSmall)(_.size =!= 0)
       .ensure(UpscanValidationFailure.EntityTooLarge)(_ => validateFileSize(fileSizeLimit, uploadDetails.size))
-      .ensure(UpscanValidationFailure.FileNameTooLong)(_ => validateFileNameLength(fileName) < 255)
       .ensure(
         UpscanValidationFailure.InvalidFileType(
           "fileName: " + uploadDetails.fileName + " - " + fileNameCheckResult + ", fileMimeType: " + uploadDetails.fileMimeType + " - " + fileMimeTypeResult,
@@ -193,8 +205,13 @@ class UpscanController(
       .map(_ => ())
   }
 
-  private def validateFileNameLength(fileName: String): Int =
-    java.net.URLEncoder.encode(fileName, StandardCharsets.UTF_8.toString()).size
+  private def validateFileName(fileName: String): Validated[UpscanValidationFailure, Unit] =
+    Valid(fileName)
+      .ensure(UpscanValidationFailure.FileNameTooLong)(fileNameLength(_) < 255)
+      .map(_ => ())
+
+  private def fileNameLength(fileName: String): Int =
+    java.net.URLEncoder.encode(fileName, StandardCharsets.UTF_8.toString).length
 
   private def getFileExtension(fileName: String): Option[String] =
     fileName.split("\\.").tail.lastOption
