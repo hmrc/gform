@@ -140,7 +140,12 @@ case class EmailAuthConfig(
   emailConfirmation: Option[LocalisedString]
 ) extends AuthConfig
 case object HmrcAny extends AuthConfig
-case class HmrcVerified(ivFailure: LocalisedString, notAllowedIn: LocalisedString, minimumCL: String) extends AuthConfig
+case class HmrcVerified(
+  ivFailure: LocalisedString,
+  notAllowedIn: LocalisedString,
+  agentAccess: AgentAccess,
+  minimumCL: String
+) extends AuthConfig
 case object HmrcSimpleModule extends AuthConfig
 case class HmrcEnrolmentModule(enrolmentAuth: EnrolmentAuth) extends AuthConfig
 case class HmrcAgentModule(agentAccess: AgentAccess) extends AuthConfig
@@ -227,13 +232,14 @@ object AuthConfig {
                         case AuthModule.AWSALBAccess    => JsSuccess(AWSALBAuth)
                         case AuthModule.HmrcAny         => JsSuccess(HmrcAny)
                         case AuthModule.HmrcVerified =>
-                          (maybeIvFailure, maybeNotAllowedIn, maybeMinimumCL) match {
-                            case (Some(ivFailure), Some(notAllowedIn), Some(maybeMinimumCL)) =>
-                              JsSuccess(HmrcVerified(ivFailure, notAllowedIn, maybeMinimumCL))
-                            case (otherIvFailure, otherNotAllowedIn, otherMinimumCL) =>
+                          (maybeIvFailure, maybeNotAllowedIn, maybeAgentAccess, maybeMinimumCL) match {
+                            case (Some(ivFailure), Some(notAllowedIn), Some(maybeAgentAccess), Some(maybeMinimumCL)) =>
+                              JsSuccess(HmrcVerified(ivFailure, notAllowedIn, maybeAgentAccess, maybeMinimumCL))
+                            case (otherIvFailure, otherNotAllowedIn, otherAgentAccess, otherMinimumCL) =>
                               JsError(
                                 s"Missing ${otherIvFailure.map(_ => "").getOrElse("ivFailure ")}" +
                                   s"${otherNotAllowedIn.map(_ => "").getOrElse("notAllowedIn ")}" +
+                                  s"${otherAgentAccess.map(_ => "").getOrElse("agentAccess ")}" +
                                   s"${otherMinimumCL.map(_ => "").getOrElse("minimumCL ")}field"
                               )
                           }
@@ -290,7 +296,7 @@ object AuthConfig {
                           maybeCompositeConfigs match {
                             case Some(configs) =>
                               val notAllowedConfigs = configs.toList.collectFirst {
-                                case v @ (Anonymous | AWSALBAuth | HmrcAny | HmrcVerified(_, _, _) |
+                                case v @ (Anonymous | AWSALBAuth | HmrcAny | HmrcVerified(_, _, _, _) |
                                     HmrcEnrolmentModule(_) | HmrcAgentModule(_) | HmrcAgentWithEnrolmentModule(_, _) |
                                     OfstedUser | Composite(_)) =>
                                   v
