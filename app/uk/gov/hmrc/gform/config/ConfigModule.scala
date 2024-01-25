@@ -160,6 +160,8 @@ class ConfigModule(
   }
 
   val snapshotExpiryDays: Int = typesafeConfig.getInt("snapshotExpiryDays")
+  val snapshotCreatedExpiryDays: Int = typesafeConfig.getInt("snapshotCreatedExpiryDays")
+  val snapshotSubmittedExpiryHours: Int = typesafeConfig.getInt("snapshotSubmittedExpiryDays") * 24
 }
 
 final case class DesConnectorConfig(basePath: String, authorizationToken: String, environment: String)
