@@ -182,14 +182,19 @@ class ApplicationModule(context: Context)
   val jsonCrypto =
     SymmetricCryptoFactory.aesCryptoFromConfig(baseConfigKey = "json.encryption", configModule.typesafeConfig)
 
-  val mongoCacheRepository = createMongoCacheRepository("forms", configModule.appConfig.formExpiryDays)
+  val mongoCacheRepository = createMongoCacheRepository("forms")
   val formMongoCache = new FormMongoCache(
     mongoCacheRepository,
     jsonCrypto,
     timeModule.timeProvider
   )
 
-  def createMongoCacheRepository(collectionName: String, expiryDays: Int) = new MongoCacheRepository[String](
+  def createMongoCacheRepository(
+    collectionName: String,
+    expiryDays: Int = configModule.appConfig.formExpiryDays,
+    createdExpiryDays: Int = configModule.appConfig.createdFormExpiryDays,
+    submittedExpiryHours: Int = configModule.appConfig.submittedFormExpiryHours
+  ) = new MongoCacheRepository[String](
     mongoModule.mongoComponent,
     collectionName,
     true,
@@ -198,9 +203,9 @@ class ApplicationModule(context: Context)
     SimpleCacheId
   ) {
     override def ensureIndexes: Future[Seq[String]] = {
-      val formExpiry = configModule.appConfig.formExpiryDays.days.toMillis
-      val createdFormExpiry = configModule.appConfig.createdFormExpiryDays.days.toMillis
-      val submittedExpiry = configModule.appConfig.submittedFormExpiryHours.hours.toMillis
+      val formExpiry = expiryDays.days.toMillis
+      val createdFormExpiry = createdExpiryDays.days.toMillis
+      val submittedExpiry = submittedExpiryHours.hours.toMillis
       val indexes = Seq(
         IndexModel(
           Indexes.ascending("modifiedDetails.createdAt"),
@@ -278,7 +283,12 @@ class ApplicationModule(context: Context)
   private val obligationModule = new ObligationModule(wSHttpModule, configModule)
   private val employmentsModule = new EmploymentsModule(wSHttpModule, configModule)
 
-  val snapshotsMongoCache = createMongoCacheRepository("snapshots", configModule.snapshotExpiryDays)
+  val snapshotsMongoCache = createMongoCacheRepository(
+    "snapshots",
+    configModule.snapshotExpiryDays,
+    configModule.snapshotCreatedExpiryDays,
+    configModule.snapshotSubmittedExpiryHours
+  )
   val testOnlyFormService = new TestOnlyFormService(mongoCacheRepository, snapshotsMongoCache, jsonCrypto)
   private val testOnlyModule =
     new TestOnlyModule(
