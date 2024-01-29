@@ -22,10 +22,12 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
 class FunctionsChecker(formTemplate: FormTemplate, allExpressions: List[ExprWithPath]) {
 
-  private val allowedCountIds: Set[FormComponentId] = formTemplate.formKind.allSections.collect {
-    case s: Section.AddToList =>
-      s.addAnotherQuestion.id
-  }.toSet
+  private val allowedCountIds: Set[FormComponentId] = formTemplate.formKind.allSections
+    .collect { case s: Section.AddToList =>
+      Seq(s.addAnotherQuestion.id) ++ s.pages.toList.flatMap(_.fields.map(_.id)).toSet
+    }
+    .flatten
+    .toSet
 
   private val allowedSumIds: Set[FormComponentId] = formTemplate.formKind.allSections
     .collect {
