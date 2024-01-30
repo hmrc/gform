@@ -70,38 +70,44 @@ class SdesModule(
         IndexModel(
           Indexes.ascending("confirmedAt"),
           IndexOptions()
-            .background(false)
+            .background(true)
             .name("confirmedAtIdx")
         ),
         IndexModel(
           Indexes.ascending("isProcessed"),
           IndexOptions()
-            .background(false)
+            .background(true)
             .name("isProcessedIdx")
         ),
         IndexModel(
           Indexes.ascending("envelopeId"),
           IndexOptions()
-            .background(false)
+            .background(true)
             .name("envelopeIdIdx")
         ),
         IndexModel(
           Indexes.ascending("formTemplateId"),
           IndexOptions()
-            .background(false)
+            .background(true)
             .name("formTemplateIdIdx")
         ),
         IndexModel(
           Indexes.ascending("submissionRef"),
           IndexOptions()
-            .background(false)
+            .background(true)
             .name("submissionRefIdx")
         ),
         IndexModel(
           Indexes.ascending("destination"),
           IndexOptions()
-            .background(false)
+            .background(true)
             .name("destinationIdx")
+        ),
+        IndexModel(
+          Indexes.ascending("createdAt"),
+          IndexOptions()
+            .background(true)
+            .name("createdAtIdx")
         )
       ),
       replaceIndexes = true
