@@ -5,7 +5,6 @@ import com.mongodb.{ BasicDBObject, ReadPreference }
 import org.scalatest.time.{ Millis, Seconds, Span }
 import play.api.libs.json.{ Format, Json }
 import uk.gov.hmrc.gform.it.sample.{ FormDataSample, FormTemplateSample, QueryParamsSample }
-import uk.gov.hmrc.gform.it.wiremock.FileUploadServiceStubs
 import uk.gov.hmrc.gform.save4later.EncryptedFormFormat
 import uk.gov.hmrc.gform.sharedmodel.UserId
 import uk.gov.hmrc.gform.sharedmodel.form.FormIdData.Plain
@@ -16,8 +15,7 @@ import uk.gov.hmrc.mongo.cache.DataKey
 import scala.concurrent.ExecutionContext.Implicits.global
 import java.time.{ Instant, ZoneOffset }
 
-class FormIT
-    extends ITSpec with FormTemplateSample with FormDataSample with QueryParamsSample with FileUploadServiceStubs {
+class FormIT extends ITSpec with FormTemplateSample with FormDataSample with QueryParamsSample {
   override implicit val defaultPatience: PatienceConfig =
     PatienceConfig(timeout = Span(15, Seconds), interval = Span(500, Millis))
 
@@ -30,7 +28,6 @@ class FormIT
 
   "new form" should "return create a new instance of form" in {
     val startInstant = Instant.now()
-    createEnvelopeStub()
 
     Given("I have a form template")
     post(basicFormTemplate().toString).to("/formtemplates").send()
@@ -51,7 +48,6 @@ class FormIT
 
   "update form" should "update form data in forms collection" in {
     val startInstant = Instant.now()
-    createEnvelopeStub()
 
     Given("I have setup a form instance")
     post(basicFormTemplate().toString).to("/formtemplates").send()
@@ -80,7 +76,7 @@ class FormIT
 
     val form = formCacheRepository.get[Form]("123-basic")(formDataKey).futureValue.get
     form._id shouldBe FormId("123-basic")
-    form.envelopeId shouldBe EnvelopeId("some-envelope-id")
+    form.envelopeId.value.size shouldBe 36 // EnvelopeId is randomly generated
     form.userId shouldBe UserId("123")
     form.formTemplateId shouldBe FormTemplateId("basic")
     form.formData.fields shouldBe formFields
