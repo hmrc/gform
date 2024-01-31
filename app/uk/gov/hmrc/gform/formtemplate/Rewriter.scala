@@ -106,7 +106,7 @@ trait Rewriter {
     val destinationsIncludeIfs: List[IncludeIf] = formTemplate.destinations match {
       case dl: DestinationList =>
         dl.acknowledgementSection.fields.flatMap(_.includeIf) ++ dl.declarationSection.fold(List.empty[IncludeIf])(
-          _.fields.flatMap(_.includeIf)
+          section => section.includeIf.fold(List.empty[IncludeIf])(List(_)) ++ section.fields.flatMap(_.includeIf)
         ) ++ dl.destinations.toList.collect {
           case HmrcDms(_, _, _, _, _, IncludeIfValue(includeIf), _, _, _, _, _)         => includeIf
           case HandlebarsHttpApi(_, _, _, _, _, _, IncludeIfValue(includeIf), _, _, _)  => includeIf
@@ -140,7 +140,7 @@ trait Rewriter {
       formTemplate.formKind.fold(_ => List.empty[IncludeIf])(taskList =>
         taskList.sections.toList.flatMap(
           _.tasks.toList.flatMap(
-            _.declarationSection.toList.flatMap(_.fields.flatMap(_.includeIf))
+            _.declarationSection.toList.flatMap(section => section.includeIf ++ section.fields.flatMap(_.includeIf))
           )
         )
       )
@@ -435,7 +435,10 @@ trait Rewriter {
         fields.map(_.map(replaceFormComponentNested))
 
       def replaceDeclarationSection(declarationSection: DeclarationSection): DeclarationSection =
-        declarationSection.copy(fields = replaceFields(declarationSection.fields))
+        declarationSection.copy(
+          fields = replaceFields(declarationSection.fields),
+          includeIf = replaceIncludeIf(declarationSection.includeIf)
+        )
 
       def replaceSummarySection(summarySection: SummarySection): SummarySection =
         summarySection.copy(

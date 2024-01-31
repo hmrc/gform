@@ -262,7 +262,8 @@ class FormTemplatesIT extends ITSpec with FormTemplateSample with BeforeAndAfter
         None,
         None,
         None,
-        List.empty
+        List.empty,
+        None
       )
     )
     val formTemplateRaw =
