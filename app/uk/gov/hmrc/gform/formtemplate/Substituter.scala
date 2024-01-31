@@ -456,7 +456,8 @@ object Substituter {
       description = t.description(substitutions),
       shortName = t.shortName(substitutions),
       continueLabel = t.continueLabel(substitutions),
-      fields = t.fields(substitutions)
+      fields = t.fields(substitutions),
+      includeIf = t.includeIf(substitutions)
     )
 
   implicit def destinationsSubstituter[A](implicit

@@ -460,7 +460,8 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
             None,
             None,
             Some(toSmartString("ContinueLabel")),
-            Nil
+            Nil,
+            None
           )
         )
       ),

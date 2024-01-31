@@ -126,7 +126,8 @@ trait ExampleAuthConfig extends DestinationGen {
       None,
       None,
       Some(toSmartString("Declaration section with continueLabel")),
-      decFormComponent
+      decFormComponent,
+      None
     )
 
   val decSectionWithGroupComponent =
@@ -153,7 +154,8 @@ trait ExampleAuthConfig extends DestinationGen {
           None,
           None
         )
-      )
+      ),
+      None
     )
 
   def destinationList = DestinationList(NonEmptyList.of(hmrcDms), ackSection, Some(decSection))
@@ -486,7 +488,8 @@ trait ExampleFormTemplate {
       None,
       None,
       Some(toSmartString("ContinueLabel")),
-      Nil
+      Nil,
+      None
     )
 
   def summarySection = SummarySection(

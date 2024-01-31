@@ -112,7 +112,8 @@ case class DeclarationSection(
   description: Option[SmartString],
   shortName: Option[SmartString],
   continueLabel: Option[SmartString],
-  fields: List[FormComponent]
+  fields: List[FormComponent],
+  includeIf: Option[IncludeIf]
 )
 
 object DeclarationSection {
@@ -123,7 +124,8 @@ object DeclarationSection {
       LeafExpr(path + "description", t.description) ++
       LeafExpr(path + "shortName", t.shortName) ++
       LeafExpr(path + "continueLabel", t.continueLabel) ++
-      LeafExpr(path + "fields", t.fields)
+      LeafExpr(path + "fields", t.fields) ++
+      LeafExpr(path + "includeIf", t.includeIf)
 
 }
 

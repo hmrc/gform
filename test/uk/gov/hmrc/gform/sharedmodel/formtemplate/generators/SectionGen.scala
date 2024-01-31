@@ -82,7 +82,8 @@ trait SectionGen {
       shortName     <- Gen.option(smartStringGen)
       continueLabel <- Gen.option(smartStringGen)
       fields        <- PrimitiveGen.oneOrMoreGen(FormComponentGen.formComponentGen())
-    } yield DeclarationSection(title, noPIITitle, description, shortName, continueLabel, fields.toList)
+      includeIf     <- Gen.option(IncludeIfGen.includeIfGen)
+    } yield DeclarationSection(title, noPIITitle, description, shortName, continueLabel, fields.toList, includeIf)
 
   def checkYourAnswerPageGen: Gen[CheckYourAnswersPage] =
     for {

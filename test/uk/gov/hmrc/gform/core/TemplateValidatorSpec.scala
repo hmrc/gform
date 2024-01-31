@@ -208,7 +208,8 @@ class TemplateValidatorSpec extends Spec {
             None,
             None,
             Some(toSmartString("ContinueLabel")),
-            List(mkFormComponent("declarationFullName", Value))
+            List(mkFormComponent("declarationFullName", Value)),
+            None
           )
         )
       )
