@@ -49,9 +49,6 @@
       "type": "string",
       "pattern": "^(alpha|research|live)$"
     },
-    "objectStore": {
-      "type": "boolean"
-    },
     "allowedFileTypes": {
       "type": "array"
     },
@@ -606,9 +603,6 @@
           "type": "string"
         },
         "postcodeMandatory": {
-          "type": "string"
-        },
-        "service": {
           "type": "string"
         },
         "rows": {
