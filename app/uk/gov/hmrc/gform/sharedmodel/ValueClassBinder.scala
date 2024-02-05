@@ -18,9 +18,11 @@ package uk.gov.hmrc.gform.sharedmodel
 
 import cats.implicits._
 import play.api.libs.json.{ JsError, JsString, JsSuccess, Reads }
+import java.net.URLEncoder
 import play.api.mvc.{ JavascriptLiteral, PathBindable, QueryStringBindable }
 import scala.util.Try
 import uk.gov.hmrc.crypto.Crypted
+import uk.gov.hmrc.gform.builder.SectionPath
 import uk.gov.hmrc.gform.history.HistoryId
 import uk.gov.hmrc.gform.sharedmodel.dblookup.{ CollectionName, DbLookupId }
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId, FormId, FormStatus }
@@ -63,6 +65,14 @@ object ValueClassBinder {
   implicit val sdesDestinationBinder: QueryStringBindable[SdesDestination] = valueClassQueryBinder(
     SdesDestination.fromName
   )
+
+  implicit object sectionPathBindable
+      extends QueryStringBindable.Parsing[SectionPath](
+        SectionPath.apply,
+        sectionPath => URLEncoder.encode(sectionPath.value, "utf-8"),
+        (key: String, e: Exception) => "Cannot parse parameter %s as SectionPath: %s".format(key, e.getMessage)
+      )
+
   implicit val envelopeIdQueryBinder: QueryStringBindable[EnvelopeId] = valueClassQueryBinder(_.value)
   implicit val processingStatusBinder: QueryStringBindable[ProcessingStatus] = valueClassQueryBinder(_.name)
   implicit val bannerIdBinder: PathBindable[BannerId] = valueClassBinder(_.value)

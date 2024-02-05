@@ -49,6 +49,7 @@ lazy val microservice = (project in file("."))
     libraryDependencies ++= appDependencies,
     routesImport ++= Seq(
       "uk.gov.hmrc.crypto.Crypted",
+      "uk.gov.hmrc.gform.builder.SectionPath",
       "uk.gov.hmrc.gform.sharedmodel.AffinityGroup",
       "uk.gov.hmrc.gform.sharedmodel.notifier.NotifierEmailAddress",
       "uk.gov.hmrc.gform.sharedmodel.ValueClassBinder._",

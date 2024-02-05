@@ -110,7 +110,9 @@ class BuilderControllerSuite extends FunSuite {
   test("Update section title (1)") {
     val patch: Json = Json.obj("title" := "Page AA")
 
-    val result = BuilderSupport.modifySectionData(json, ".sections[0]", patch)
+    val sectionPath = SectionPath(".sections[0]")
+
+    val result = BuilderSupport.modifySectionData(json, sectionPath, patch)
 
     assertEquals(result, expectedJson)
   }
@@ -118,7 +120,9 @@ class BuilderControllerSuite extends FunSuite {
   test("Update section title (2)") {
     val patch: Json = Json.obj("title" := "Page AA")
 
-    val result = BuilderSupport.modifySectionData(json, ".sections[1]", patch)
+    val sectionPath = SectionPath(".sections[1]")
+
+    val result = BuilderSupport.modifySectionData(json, sectionPath, patch)
 
     assertEquals(result, expectedJson2)
   }
@@ -184,7 +188,9 @@ class BuilderControllerSuite extends FunSuite {
   test("Update section caption (1)") {
     val patch: Json = Json.obj("caption" := "I'm caption AA")
 
-    val result = BuilderSupport.modifySectionData(sectionCaptionJson, ".sections[0]", patch)
+    val sectionPath = SectionPath(".sections[0]")
+
+    val result = BuilderSupport.modifySectionData(sectionCaptionJson, sectionPath, patch)
 
     assertEquals(result.spaces2, expectedSectionCaptionJson.spaces2)
   }
@@ -229,7 +235,9 @@ class BuilderControllerSuite extends FunSuite {
   test("Purge section's presentationHint when empty (1)") {
     val patch: Json = Json.obj("presentationHint" := "")
 
-    val result = BuilderSupport.modifySectionData(sectionPresentationHintJson, ".sections[0]", patch)
+    val sectionPath = SectionPath(".sections[0]")
+
+    val result = BuilderSupport.modifySectionData(sectionPresentationHintJson, sectionPath, patch)
 
     assertEquals(result, expectedSectionPresentationHintJson)
   }
@@ -274,7 +282,9 @@ class BuilderControllerSuite extends FunSuite {
   test("Set section's presentationHint when empty (1)") {
     val patch: Json = Json.obj("presentationHint" := "abc")
 
-    val result = BuilderSupport.modifySectionData(sectionPresentationHintJson2, ".sections[0]", patch)
+    val sectionPath = SectionPath(".sections[0]")
+
+    val result = BuilderSupport.modifySectionData(sectionPresentationHintJson2, sectionPath, patch)
 
     assertEquals(result, expectedSectionPresentationHintJson2)
   }
@@ -1214,6 +1224,264 @@ class BuilderControllerSuite extends FunSuite {
       )
 
     assertEquals(result, summarySectionTaskFieldsJsonExpected)
+  }
+
+  val atlRepeaterJson: Json = json"""
+    {
+      "sections": [
+        {
+          "type": "addToList",
+          "title": "Add To List",
+          "addAnotherQuestion": {
+            "id": "addToList",
+            "type": "choice",
+            "label": "Add another?",
+            "format": "yesno"
+          },
+          "pages": []
+        },
+        {
+          "type": "addToList",
+          "title": "Add To List",
+          "addAnotherQuestion": {
+            "id": "addToList2",
+            "type": "choice",
+            "label": "Add another?",
+            "format": "yesno"
+          },
+          "pages": []
+        }
+      ]
+    }"""
+
+  val atlRepeaterJsonExpected: Json = json"""
+    {
+      "sections": [
+        {
+          "type": "addToList",
+          "title": "Add To List",
+          "addAnotherQuestion": {
+            "id": "addToList",
+            "type": "choice",
+            "label": "Add another?",
+            "format": "yesno"
+          },
+          "pages": []
+        },
+        {
+          "type": "addToList",
+          "title": "Foo",
+          "addAnotherQuestion": {
+            "id": "addToList2",
+            "type": "choice",
+            "label": "Add another?",
+            "format": "yesno"
+          },
+          "pages": []
+        }
+      ]
+    }"""
+
+  test("Update addToList title") {
+
+    val sectionPath = SectionPath(".sections[1]")
+
+    val patch: Json = Json.obj("title" := "Foo")
+
+    val result: Json = BuilderSupport.modifyAtlRepeaterData(atlRepeaterJson, patch, sectionPath)
+
+    assertEquals(result.spaces2, atlRepeaterJsonExpected.spaces2)
+  }
+
+  val atlRepeaterAddAnotherQuestionJson: Json = json"""
+    {
+      "sections": [
+        {
+          "type": "addToList",
+          "title": "Add To List",
+          "addAnotherQuestion": {
+            "id": "addToList",
+            "type": "choice",
+            "label": "Add another?",
+            "format": "yesno"
+          },
+          "pages": []
+        },
+        {
+          "type": "addToList",
+          "title": "Add To List",
+          "addAnotherQuestion": {
+            "id": "addToList2",
+            "type": "choice",
+            "label": "Add another?",
+            "format": "yesno"
+          },
+          "pages": []
+        }
+      ]
+    }"""
+
+  val atlRepeaterAddAnotherQuestionJsonExpected: Json = json"""
+    {
+      "sections": [
+        {
+          "type": "addToList",
+          "title": "Add To List",
+          "addAnotherQuestion": {
+            "id": "addToList",
+            "type": "choice",
+            "label": "Add another?",
+            "format": "yesno"
+          },
+          "pages": []
+        },
+        {
+          "type": "addToList",
+          "title": "Add To List",
+          "addAnotherQuestion": {
+            "errorMessage": "This is error",
+            "id": "addToList2",
+            "type": "choice",
+            "label": "Foo",
+            "format": "yesno"
+          },
+          "pages": []
+        }
+      ]
+    }"""
+
+  test("Update addToList addAnotherQuestion label") {
+
+    val sectionPath = SectionPath(".sections[1]")
+
+    val patch: Json = Json.obj("label" := "Foo", "errorMessage" := "This is error")
+
+    val result: Json =
+      BuilderSupport.modifyAtlRepeaterDataAddAnotherQuestion(
+        atlRepeaterAddAnotherQuestionJson,
+        patch,
+        sectionPath
+      )
+
+    assertEquals(result.spaces2, atlRepeaterAddAnotherQuestionJsonExpected.spaces2)
+  }
+
+  val atlRepeaterInfoFieldJson: Json = json"""
+    {
+      "sections": [
+        {
+          "type": "addToList",
+          "title": "Add To List",
+          "addAnotherQuestion": {
+            "id": "addToList",
+            "type": "choice",
+            "label": "Add another?",
+            "format": "yesno"
+          },
+          "pages": []
+        },
+        {
+          "type": "addToList",
+          "title": "Add To List",
+          "addAnotherQuestion": {
+            "id": "addToList2",
+            "type": "choice",
+            "label": "Add another?",
+            "format": "yesno"
+          },
+          "fields": [
+            {
+              "id": "info1",
+              "type": "info",
+              "label": "",
+              "infoType": "noformat",
+              "infoText": "This is info field"
+            }
+          ],
+          "pages": []
+        }
+      ]
+    }"""
+
+  val atlRepeaterInfoFieldJsonExpected: Json = json"""
+    {
+      "sections": [
+        {
+          "type": "addToList",
+          "title": "Add To List",
+          "addAnotherQuestion": {
+            "id": "addToList",
+            "type": "choice",
+            "label": "Add another?",
+            "format": "yesno"
+          },
+          "pages": []
+        },
+        {
+          "type": "addToList",
+          "title": "Add To List",
+          "addAnotherQuestion": {
+            "id": "addToList2",
+            "type": "choice",
+            "label": "Add another?",
+            "format": "yesno"
+          },
+          "fields": [
+            {
+              "id": "info1",
+              "type": "info",
+              "label": "",
+              "infoType": "noformat",
+              "infoText": "Foo"
+            }
+          ],
+          "pages": []
+        }
+      ]
+    }"""
+
+  test("Update addToList info field") {
+
+    val sectionPath = SectionPath(".sections[1]")
+    val formComponentId = FormComponentId("info1")
+
+    val patch: Json = Json.obj("infoText" := "Foo")
+
+    val result: Json =
+      BuilderSupport.modifyAtlRepeaterFormComponentData(
+        atlRepeaterInfoFieldJson,
+        patch,
+        formComponentId,
+        sectionPath
+      )
+
+    assertEquals(result.spaces2, atlRepeaterInfoFieldJsonExpected.spaces2)
+  }
+
+  val formTemplateJson: Json = json"""
+    {
+      "_id": "example"
+    }"""
+
+  val formTemplateExpectedJson: Json = json"""
+    {
+      "displayWidth": "xl",
+      "submitSection": {
+        "label": "Apply",
+        "taskLabel": "Submit"
+      },
+      "_id": "example"
+    }"""
+
+  test("Update formTemplate submitSection and displayWidth") {
+
+    val patch: Json =
+      Json.obj("submitSection" := Json.obj("label" := "Apply", "taskLabel" := "Submit"), "displayWidth" := "xl")
+
+    val result: Json =
+      BuilderSupport.modifyFormTemplate(formTemplateJson, patch)
+
+    assertEquals(result.spaces2, formTemplateExpectedJson.spaces2)
   }
 
 }
