@@ -82,7 +82,7 @@ object JsonSchemeValidator {
             } else {
               errors.map(_.getMessage).toList
             }
-          println(conditionalValidationErrorMessages)
+
           SchemaValidationException(
             NonEmptyList(conditionalValidationErrorMessages.head, conditionalValidationErrorMessages.tail)
           )
