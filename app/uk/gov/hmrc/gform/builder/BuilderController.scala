@@ -25,7 +25,6 @@ import play.api.libs.json.{ JsError, JsObject, JsString, JsSuccess }
 import play.api.libs.json.{ Json => PlayJson }
 import play.api.mvc.{ ControllerComponents, Result, Results }
 import scala.concurrent.Future
-import scala.util.matching.Regex
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.core._
 import uk.gov.hmrc.gform.formtemplate.{ FormTemplateService, FormTemplatesControllerRequestHandler, RequestHandlerAlg }
@@ -83,40 +82,83 @@ object BuilderSupport {
     }
   }
 
-  private def nonRepeatedHistory(sectionIndex: Int) =
-    List.fill(sectionIndex)(MoveRight) ::: List(DownArray, DownField("sections"))
+  def modifyAtlRepeaterData(
+    json: Json,
+    atlRepeaterSection: Json,
+    sectionPath: SectionPath
+  ): Json = {
+    val propertyList = List(
+      Property("note", PropertyBehaviour.PurgeWhenEmpty),
+      Property("caption", PropertyBehaviour.PurgeWhenEmpty),
+      Property("description"),
+      Property("title"),
+      Property("shortName"),
+      Property("summaryName"),
+      Property("summaryDescription"),
+      Property("defaultPage", PropertyBehaviour.PurgeWhenEmpty),
+      Property("cyaPage", PropertyBehaviour.PurgeWhenEmpty),
+      Property("repeatsWhile", PropertyBehaviour.PurgeWhenEmpty),
+      Property("repeatsUntil", PropertyBehaviour.PurgeWhenEmpty),
+      Property("pageIdToDisplayAfterRemove", PropertyBehaviour.PurgeWhenEmpty),
+      Property("presentationHint", PropertyBehaviour.PurgeWhenEmpty),
+      Property("continueLabel", PropertyBehaviour.PurgeWhenEmpty)
+    )
 
-  private def nonRepeatedATLHistory(pageIndex: Int, sectionIndex: Int) =
-    List.fill(pageIndex)(MoveRight) ::: List(DownArray, DownField("pages")) :::
-      List.fill(sectionIndex)(MoveRight) ::: List(DownArray, DownField("sections"))
+    modifyAtlRepeater(
+      propertyList,
+      json,
+      atlRepeaterSection,
+      None,
+      sectionPath
+    )
+  }
 
-  private def taskListHistory(sectionIndex: Int, taskIndex: Int, taskSectionIndex: Int) =
-    List.fill(sectionIndex)(MoveRight) ::: List(DownArray, DownField("sections")) :::
-      List.fill(taskIndex)(MoveRight) ::: List(DownArray, DownField("tasks")) :::
-      List.fill(taskSectionIndex)(MoveRight) ::: List(DownArray, DownField("sections"))
+  def modifyAtlRepeaterDataAddAnotherQuestion(
+    json: Json,
+    atlRepeaterSection: Json,
+    sectionPath: SectionPath
+  ): Json = {
+    val propertyList = List(
+      Property("label"),
+      Property("errorMessage", PropertyBehaviour.PurgeWhenEmpty)
+    )
+    modifyAtlRepeater(
+      propertyList,
+      json,
+      atlRepeaterSection,
+      Some(DownField("addAnotherQuestion")),
+      sectionPath
+    )
+  }
 
-  private def taskHistory(sectionIndex: Int, taskIndex: Int) =
-    List.fill(taskIndex)(MoveRight) ::: List(DownArray, DownField("tasks")) :::
-      List.fill(sectionIndex)(MoveRight) ::: List(DownArray, DownField("sections"))
+  def modifyAtlRepeaterFormComponentData(
+    json: Json,
+    atlRepeaterFormComponent: Json,
+    formComponentId: FormComponentId,
+    sectionPath: SectionPath
+  ): Json = {
 
-  private def taskListATLHistory(pageIndex: Int, sectionIndex: Int, taskIndex: Int, taskSectionIndex: Int) =
-    List.fill(pageIndex)(MoveRight) ::: List(DownArray, DownField("pages")) :::
-      List.fill(sectionIndex)(MoveRight) ::: List(DownArray, DownField("sections")) :::
-      List.fill(taskIndex)(MoveRight) ::: List(DownArray, DownField("tasks")) :::
-      List.fill(taskSectionIndex)(MoveRight) ::: List(DownArray, DownField("sections"))
+    val history = sectionPath.toHistory()
+    updateFormComponentWithHistory(json, formComponentId, atlRepeaterFormComponent, history)
 
-  private val sectionPattern: Regex = """^\.sections\[(\d+)\]""".r
-  private val atlPagePattern: Regex = """^\.sections\[(\d+)\]\.pages\[(\d+)\]$""".r
-  private val taskListSectionPattern: Regex = """^\.sections\[(\d+)\]\.tasks\[(\d+)\]\.sections\[(\d+)\]$""".r
-  private val taskListAtlPagePattern: Regex =
-    """^\.sections\[(\d+)\]\.tasks\[(\d+)\]\.sections\[(\d+)\]\.pages\[(\d+)\]$""".r
-  private val taskPattern: Regex = """^\.sections\[(\d+)\]\.tasks\[(\d+)\]$""".r
+  }
+
+  private def modifyAtlRepeater(
+    propertyList: List[Property],
+    json: Json,
+    atlRepeaterSection: Json,
+    historySuffix: Option[CursorOp],
+    sectionPath: SectionPath
+  ) = {
+    val history = sectionPath.toHistory()
+    updateJsonByPropertyList(propertyList, json, atlRepeaterSection, historySuffix.toList ::: history)
+  }
 
   def modifySummarySectionData(json: Json, summarySection: Json, maybeCoordinates: Option[Coordinates]): Json =
     maybeCoordinates match {
       case Some(coordinates) =>
         val history = List(DownField("summarySection")) ++
-          taskHistory(coordinates.taskSectionNumber.value, coordinates.taskNumber.value)
+          SectionPath.taskHistory(coordinates.taskSectionNumber.value, coordinates.taskNumber.value)
         updateSummary(json, summarySection, history)
       case None =>
         val noSummarySection: Boolean = json.hcursor.downField("summarySection").failed
@@ -142,39 +184,29 @@ object BuilderSupport {
 
   def modifyAcknowledgementData(json: Json, acknowledgement: Json): Json = {
     val history = List(DownField("acknowledgementSection"))
-    List(
+
+    val propertyList = List(
       Property("title"),
       Property("panelTitle", PropertyBehaviour.PurgeWhenEmpty),
       Property("showReference"),
       Property("note", PropertyBehaviour.PurgeWhenEmpty)
-    ).foldRight(json) { case (property, accJson) =>
-      acknowledgement.hcursor
-        .downField(property.name)
-        .focus
-        .flatMap { propertyValue =>
-          updateProperty(property, propertyValue, history, accJson)
-        }
-        .getOrElse(accJson)
-    }
+    )
+
+    updateJsonByPropertyList(propertyList, json, acknowledgement, history)
   }
 
-  private def updateSummary(json: Json, summarySection: Json, history: List[CursorOp]): Json =
-    List(
+  private def updateSummary(json: Json, summarySection: Json, history: List[CursorOp]): Json = {
+    val propertyList = List(
       Property("note"),
       Property("title"),
       Property("header"),
       Property("footer"),
       Property("continueLabel", PropertyBehaviour.PurgeWhenEmpty),
       Property("displayWidth", PropertyBehaviour.PurgeWhenEmpty)
-    ).foldRight(json) { case (property, accJson) =>
-      summarySection.hcursor
-        .downField(property.name)
-        .focus
-        .flatMap { propertyValue =>
-          updateProperty(property, propertyValue, history, accJson)
-        }
-        .getOrElse(accJson)
-    }
+    )
+
+    updateJsonByPropertyList(propertyList, json, summarySection, history)
+  }
 
   private def updateProperty(property: Property, propertyValue: Json, history: List[CursorOp], accJson: Json) = {
     val target = accJson.hcursor.replay(history)
@@ -206,23 +238,9 @@ object BuilderSupport {
     }
   }
 
-  def modifySectionData(json: Json, sectionPath: String, sectionData: Json): Json = {
-    val history: List[CursorOp] =
-      sectionPath match {
-        case sectionPattern(sectionIndex) =>
-          nonRepeatedHistory(sectionIndex.toInt)
-        case atlPagePattern(sectionIndex, pageIndex) =>
-          nonRepeatedATLHistory(pageIndex.toInt, sectionIndex.toInt)
-        case taskPattern(taskSectionIndex, taskIndex) =>
-          taskHistory(taskSectionIndex.toInt, taskIndex.toInt)
-        case taskListSectionPattern(taskSectionIndex, taskIndex, sectionIndex) =>
-          taskListHistory(sectionIndex.toInt, taskIndex.toInt, taskSectionIndex.toInt)
-        case taskListAtlPagePattern(taskSectionIndex, taskIndex, sectionIndex, pageIndex) =>
-          taskListATLHistory(pageIndex.toInt, sectionIndex.toInt, taskIndex.toInt, taskSectionIndex.toInt)
-        case _ =>
-          Nil
-      }
-    List(
+  def modifySectionData(json: Json, sectionPath: SectionPath, sectionData: Json): Json = {
+    val history: List[CursorOp] = sectionPath.toHistory()
+    val propertyList = List(
       Property("title"),
       Property("caption"),
       Property("description"),
@@ -231,8 +249,59 @@ object BuilderSupport {
       Property("presentationHint", PropertyBehaviour.PurgeWhenEmpty),
       Property("note", PropertyBehaviour.PurgeWhenEmpty),
       Property("summarySection", PropertyBehaviour.PurgeWhenEmpty)
-    ).foldRight(json) { case (property, accJson) =>
-      sectionData.hcursor
+    )
+
+    updateJsonByPropertyList(propertyList, json, sectionData, history)
+
+  }
+
+  def updateFormComponent(
+    formComponent: Json,
+    sectionData: Json
+  ): Json = {
+    val propertyList =
+      List(
+        Property("type"),
+        Property("label"),
+        Property("helpText", PropertyBehaviour.PurgeWhenEmpty),
+        Property("shortName", PropertyBehaviour.PurgeWhenEmpty),
+        Property("format", PropertyBehaviour.PurgeWhenEmpty),
+        Property("errorShortName", PropertyBehaviour.PurgeWhenEmpty),
+        Property("errorShortNameStart", PropertyBehaviour.PurgeWhenEmpty),
+        Property("errorExample", PropertyBehaviour.PurgeWhenEmpty),
+        Property("errorMessage", PropertyBehaviour.PurgeWhenEmpty),
+        Property("displayWidth", PropertyBehaviour.PurgeWhenEmpty),
+        Property("labelSize", PropertyBehaviour.PurgeWhenEmpty),
+        Property("mandatory", PropertyBehaviour.PurgeWhenEmpty),
+        Property("multiline", PropertyBehaviour.PurgeWhenEmpty),
+        Property("infoText"),
+        Property("infoType"),
+        Property("dividerPosition", PropertyBehaviour.PurgeWhenEmpty),
+        Property("dividerText", PropertyBehaviour.PurgeWhenEmpty),
+        Property("noneChoice", PropertyBehaviour.PurgeWhenEmpty),
+        Property("noneChoiceError", PropertyBehaviour.PurgeWhenEmpty),
+        Property("multivalue", PropertyBehaviour.PurgeWhenEmpty),
+        Property("choices", PropertyBehaviour.PurgeWhenEmpty),
+        Property("cityMandatory", PropertyBehaviour.PurgeWhenEmpty),
+        Property("countyDisplayed", PropertyBehaviour.PurgeWhenEmpty),
+        Property("line2Mandatory", PropertyBehaviour.PurgeWhenEmpty),
+        Property("postcodeMandatory", PropertyBehaviour.PurgeWhenEmpty),
+        Property("countryLookup", PropertyBehaviour.PurgeWhenEmpty),
+        Property("countryDisplayed", PropertyBehaviour.PurgeWhenEmpty)
+      )
+
+    updateJsonByPropertyList(propertyList, formComponent, sectionData, List.empty)
+
+  }
+
+  private def updateJsonByPropertyList(
+    propertyList: List[Property],
+    json: Json,
+    updates: Json,
+    history: List[CursorOp]
+  ): Json =
+    propertyList.foldRight(json) { case (property, accJson) =>
+      updates.hcursor
         .downField(property.name)
         .focus
         .flatMap { propertyValue =>
@@ -240,125 +309,19 @@ object BuilderSupport {
         }
         .getOrElse(accJson)
     }
-  }
-
-  def updateFormComponent(
-    formComponent: Json,
-    sectionData: Json
-  ): Json =
-    List(
-      Property("type"),
-      Property("label"),
-      Property("helpText", PropertyBehaviour.PurgeWhenEmpty),
-      Property("shortName", PropertyBehaviour.PurgeWhenEmpty),
-      Property("format", PropertyBehaviour.PurgeWhenEmpty),
-      Property("errorShortName", PropertyBehaviour.PurgeWhenEmpty),
-      Property("errorShortNameStart", PropertyBehaviour.PurgeWhenEmpty),
-      Property("errorExample", PropertyBehaviour.PurgeWhenEmpty),
-      Property("errorMessage", PropertyBehaviour.PurgeWhenEmpty),
-      Property("displayWidth", PropertyBehaviour.PurgeWhenEmpty),
-      Property("labelSize", PropertyBehaviour.PurgeWhenEmpty),
-      Property("mandatory", PropertyBehaviour.PurgeWhenEmpty),
-      Property("multiline", PropertyBehaviour.PurgeWhenEmpty),
-      Property("infoText"),
-      Property("infoType"),
-      Property("dividerPosition", PropertyBehaviour.PurgeWhenEmpty),
-      Property("dividerText", PropertyBehaviour.PurgeWhenEmpty),
-      Property("noneChoice", PropertyBehaviour.PurgeWhenEmpty),
-      Property("noneChoiceError", PropertyBehaviour.PurgeWhenEmpty),
-      Property("multivalue", PropertyBehaviour.PurgeWhenEmpty),
-      Property("choices", PropertyBehaviour.PurgeWhenEmpty),
-      Property("cityMandatory", PropertyBehaviour.PurgeWhenEmpty),
-      Property("countyDisplayed", PropertyBehaviour.PurgeWhenEmpty),
-      Property("line2Mandatory", PropertyBehaviour.PurgeWhenEmpty),
-      Property("postcodeMandatory", PropertyBehaviour.PurgeWhenEmpty),
-      Property("countryLookup", PropertyBehaviour.PurgeWhenEmpty),
-      Property("countryDisplayed", PropertyBehaviour.PurgeWhenEmpty)
-    )
-      .foldRight(formComponent) { case (property, accJson) =>
-        sectionData.hcursor
-          .downField(property.name)
-          .focus
-          .flatMap { propertyValue =>
-            val isValueAsStringEmpty = propertyValue
-              .as[String]
-              .toOption
-              .fold(false)(_.trim.isEmpty())
-
-            val propertyField = accJson.hcursor.downField(property.name)
-
-            property.behaviour match {
-              case PropertyBehaviour.PurgeWhenEmpty if isValueAsStringEmpty =>
-                if (propertyField.succeeded) {
-                  propertyField.delete.root.focus
-                } else {
-                  Some(accJson)
-                }
-
-              case _ =>
-                if (propertyField.succeeded) {
-                  propertyField
-                    .set(propertyValue)
-                    .root
-                    .focus
-
-                } else {
-                  accJson.hcursor
-                    .withFocus(json => json.deepMerge(Json.obj(property.name -> propertyValue)))
-                    .root
-                    .focus
-                }
-            }
-          }
-          .getOrElse(accJson)
-      }
 
   def modifyFormTemplate(
     json: Json,
     formTemplateData: Json
-  ): Json =
-    List(
+  ): Json = {
+    val propertyList = List(
       Property("displayWidth", PropertyBehaviour.PurgeWhenEmpty),
       Property("submitSection", PropertyBehaviour.PurgeWhenEmpty),
       Property("note", PropertyBehaviour.PurgeWhenEmpty)
     )
-      .foldRight(json) { case (property, accJson) =>
-        formTemplateData.hcursor
-          .downField(property.name)
-          .focus
-          .flatMap { propertyValue =>
-            val isValueAsStringEmpty = propertyValue
-              .as[String]
-              .toOption
-              .fold(false)(_.trim.isEmpty())
 
-            val propertyField = accJson.hcursor.downField(property.name)
-
-            property.behaviour match {
-              case PropertyBehaviour.PurgeWhenEmpty if isValueAsStringEmpty =>
-                if (propertyField.succeeded) {
-                  propertyField.delete.root.focus
-                } else {
-                  Some(accJson)
-                }
-
-              case _ =>
-                if (propertyField.succeeded) {
-                  propertyField
-                    .set(propertyValue)
-                    .root
-                    .focus
-
-                } else {
-                  accJson.hcursor
-                    .withFocus(json => json.deepMerge(Json.obj(property.name -> propertyValue)))
-                    .root
-                    .focus
-                }
-            }
-          }
-          .getOrElse(accJson)
-      }
+    updateJsonByPropertyList(propertyList, json, formTemplateData, List.empty[CursorOp])
+  }
 
   def modifyFormComponentData(
     json: Json,
@@ -373,14 +336,14 @@ object BuilderSupport {
       .flatMap { sections =>
         val histories: Iterable[Option[List[CursorOp]]] = sections.zipWithIndex.map { case (section, sectionIndex) =>
           val fieldHit: Option[List[CursorOp]] = {
-            val historySuffix = nonRepeatedHistory(sectionIndex)
+            val historySuffix = SectionPath.nonRepeatedHistory(sectionIndex)
             fieldHistory(section, id, historySuffix)
           }
 
           val addToListHit: List[Option[List[CursorOp]]] =
             section.hcursor.downField("pages").values.toList.flatMap { pages =>
               pages.zipWithIndex.map { case (page, pageHitIndex) =>
-                val historySuffix = nonRepeatedATLHistory(pageHitIndex, sectionIndex)
+                val historySuffix = SectionPath.nonRepeatedATLHistory(pageHitIndex, sectionIndex)
                 fieldHistory(page, id, historySuffix)
               }
             }
@@ -390,7 +353,7 @@ object BuilderSupport {
               tasks.zipWithIndex.flatMap { case (task, taskHitIndex) =>
                 task.hcursor.downField("sections").values.toList.flatMap { sections =>
                   sections.zipWithIndex.map { case (section, sectionHitIndex) =>
-                    val historySuffix = taskListHistory(sectionHitIndex, taskHitIndex, sectionIndex)
+                    val historySuffix = SectionPath.taskListHistory(sectionHitIndex, taskHitIndex, sectionIndex)
                     fieldHistory(section, id, historySuffix)
                   }
                 }
@@ -405,7 +368,7 @@ object BuilderSupport {
                     section.hcursor.downField("pages").values.toList.flatMap { pages =>
                       pages.zipWithIndex.map { case (page, pageHitIndex) =>
                         val historySuffix =
-                          taskListATLHistory(pageHitIndex, sectionHitIndex, taskHitIndex, sectionIndex)
+                          SectionPath.taskListATLHistory(pageHitIndex, sectionHitIndex, taskHitIndex, sectionIndex)
                         fieldHistory(page, id, historySuffix)
                       }
                     }
@@ -433,24 +396,16 @@ object BuilderSupport {
     maybeCoordinates: Option[Coordinates]
   ): Json = {
 
-    val id = Json.fromString(formComponentId.value)
-
-    val history = maybeCoordinates match {
+    val historySuffix = maybeCoordinates match {
       case Some(coordinates) =>
         List(DownField("summarySection")) ++
-          taskHistory(coordinates.taskSectionNumber.value, coordinates.taskNumber.value)
+          SectionPath.taskHistory(coordinates.taskSectionNumber.value, coordinates.taskNumber.value)
       case None =>
         List(DownField("summarySection"))
     }
 
-    val maybeHistory: Option[List[CursorOp]] = json.hcursor
-      .replay(history)
-      .focus
-      .flatMap { summarySection =>
-        fieldHistory(summarySection, id, history)
-      }
+    updateFormComponentWithHistory(json, formComponentId, formComponentData, historySuffix)
 
-    patchFormComponent(maybeHistory, json, formComponentData)
   }
 
   def modifyAcknowledgementFormComponentData(
@@ -458,19 +413,28 @@ object BuilderSupport {
     formComponentId: FormComponentId,
     formComponentData: Json
   ): Json = {
+    val historySuffix = List(DownField("acknowledgementSection"))
 
+    updateFormComponentWithHistory(json, formComponentId, formComponentData, historySuffix)
+  }
+
+  private def updateFormComponentWithHistory(
+    json: Json,
+    formComponentId: FormComponentId,
+    formComponentData: Json,
+    historySuffix: List[CursorOp]
+  ): Json = {
     val id = Json.fromString(formComponentId.value)
 
-    val history = List(DownField("acknowledgementSection"))
-
     val maybeHistory: Option[List[CursorOp]] = json.hcursor
-      .replay(history)
+      .replay(historySuffix)
       .focus
-      .flatMap { summarySection =>
-        fieldHistory(summarySection, id, history)
+      .flatMap { section =>
+        fieldHistory(section, id, historySuffix)
       }
 
     patchFormComponent(maybeHistory, json, formComponentData)
+
   }
 
   private def patchFormComponent(maybeHistory: Option[List[CursorOp]], json: Json, formComponentData: Json): Json =
@@ -506,7 +470,7 @@ object BuilderSupport {
     formTemplateRaw: FormTemplateRaw,
     sectionDetails: SectionDetails
   ): Either[BuilderError, FormTemplateRaw] =
-    modifyJson(formTemplateRaw)(modifySectionData(_, sectionDetails.sectionPath, sectionDetails.section))
+    modifyJson(formTemplateRaw)(modifySectionData(_, SectionPath(sectionDetails.sectionPath), sectionDetails.section))
 
   def updateFormTemplate(
     formTemplateRaw: FormTemplateRaw,
@@ -520,6 +484,32 @@ object BuilderSupport {
     maybeCoordinates: Option[Coordinates]
   ): Either[BuilderError, FormTemplateRaw] =
     modifyJson(formTemplateRaw)(modifySummarySectionData(_, summarySectionData, maybeCoordinates))
+
+  def updateAtlRepeater(
+    formTemplateRaw: FormTemplateRaw,
+    atlRepeaterData: Json,
+    sectionPath: SectionPath
+  ): Either[BuilderError, FormTemplateRaw] =
+    modifyJson(formTemplateRaw)(modifyAtlRepeaterData(_, atlRepeaterData, sectionPath))
+
+  def updateAtlRepeaterAddAnotherQuestion(
+    formTemplateRaw: FormTemplateRaw,
+    atlRepeaterData: Json,
+    sectionPath: SectionPath
+  ): Either[BuilderError, FormTemplateRaw] =
+    modifyJson(formTemplateRaw)(
+      modifyAtlRepeaterDataAddAnotherQuestion(_, atlRepeaterData, sectionPath)
+    )
+
+  def updateAtlRepeaterFormComponent(
+    formTemplateRaw: FormTemplateRaw,
+    atlRepeaterData: Json,
+    formComponentId: FormComponentId,
+    sectionPath: SectionPath
+  ): Either[BuilderError, FormTemplateRaw] =
+    modifyJson(formTemplateRaw)(
+      modifyAtlRepeaterFormComponentData(_, atlRepeaterData, formComponentId, sectionPath)
+    )
 
   def updateAcknowledgement(
     formTemplateRaw: FormTemplateRaw,
@@ -587,7 +577,7 @@ class BuilderController(
   private def updateAction(formTemplateRawId: FormTemplateRawId)(
     updateFunction: (FormTemplateRaw, Json) => Either[BuilderError, (FormTemplateRaw, Result)]
   ) =
-    Action.async(circe.json) { implicit request =>
+    Action.async(circe.json) { request =>
       applyUpdateFunction(formTemplateRawId)(formTemplateRaw => updateFunction(formTemplateRaw, request.body))
     }
 
@@ -596,6 +586,46 @@ class BuilderController(
       BuilderSupport
         .updateSummarySection(formTemplateRaw, requestBody, maybeCoordinates)
         .map(formTemplateRaw => (formTemplateRaw, Results.Ok(formTemplateRaw.value)))
+    }
+
+  def updateAtlRepeaterAddAnotherQuestion(
+    formTemplateRawId: FormTemplateRawId,
+    sectionPath: SectionPath
+  ) =
+    updateAction(formTemplateRawId) { (formTemplateRaw, requestBody) =>
+      BuilderSupport
+        .updateAtlRepeaterAddAnotherQuestion(formTemplateRaw, requestBody, sectionPath)
+        .map(formTemplateRaw => (formTemplateRaw, Results.Ok(formTemplateRaw.value)))
+    }
+
+  def updateAtlRepeater(
+    formTemplateRawId: FormTemplateRawId,
+    sectionPath: SectionPath
+  ) =
+    updateAction(formTemplateRawId) { (formTemplateRaw, requestBody) =>
+      BuilderSupport
+        .updateAtlRepeater(formTemplateRaw, requestBody, sectionPath)
+        .map(formTemplateRaw => (formTemplateRaw, Results.Ok(formTemplateRaw.value)))
+    }
+
+  def updateAtlRepeaterFormComponent(
+    formTemplateRawId: FormTemplateRawId,
+    formComponentId: FormComponentId,
+    sectionPath: SectionPath
+  ) =
+    updateAction(formTemplateRawId) { (formTemplateRaw, requestBody) =>
+      for {
+        componentUpdateRequest <-
+          requestBody.as[ComponentUpdateRequest].leftMap(e => BuilderError.CirceDecodingError(e))
+        formTemplateRaw <- BuilderSupport
+                             .updateAtlRepeaterFormComponent(
+                               formTemplateRaw,
+                               componentUpdateRequest.formComponent,
+                               formComponentId,
+                               sectionPath
+                             )
+      } yield (formTemplateRaw, Results.Ok(formTemplateRaw.value))
+
     }
 
   def updateSection(formTemplateRawId: FormTemplateRawId) =
@@ -713,6 +743,7 @@ class BuilderController(
             )
       } yield (formTemplateRaw, Results.Ok(formTemplateRaw.value))
     }
+
 }
 
 final case class SectionDetails(section: Json, sectionPath: String)

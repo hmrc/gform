@@ -6,3 +6,7 @@ POST /update-summary-section-form-component/:formTemplateId/:formComponentId uk.
 GET /default-summary-section/:formCategory                    uk.gov.hmrc.gform.builder.BuilderController.defaultSummarySection(formCategory: String)
 POST /update-acknowledgement/:formTemplateId                  uk.gov.hmrc.gform.builder.BuilderController.updateAcknowledgement(formTemplateId: FormTemplateRawId)
 POST /update-acknowledgement-form-component/:formTemplateId/:formComponentId   uk.gov.hmrc.gform.builder.BuilderController.updateAcknowledgementFormComponent(formTemplateId: FormTemplateRawId, formComponentId: FormComponentId)
+
+POST /update-atl-repeater/:formTemplateId                                  uk.gov.hmrc.gform.builder.BuilderController.updateAtlRepeater(formTemplateId: FormTemplateRawId, sectionPath: SectionPath)
+POST /update-atl-repeater/add-another-question/:formTemplateId             uk.gov.hmrc.gform.builder.BuilderController.updateAtlRepeaterAddAnotherQuestion(formTemplateId: FormTemplateRawId, sectionPath: SectionPath)
+POST /update-atl-repeater/form-component/:formTemplateId/:formComponentId  uk.gov.hmrc.gform.builder.BuilderController.updateAtlRepeaterFormComponent(formTemplateId: FormTemplateRawId, formComponentId: FormComponentId, sectionPath: SectionPath)
