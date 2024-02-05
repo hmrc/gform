@@ -44,7 +44,7 @@ import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
 import uk.gov.hmrc.gform.submission.destinations.{ DataStoreSubmitter, DestinationSubmissionInfo, DestinationsProcessorModelAlgebra }
 import uk.gov.hmrc.gform.submission.{ DmsMetaData, Submission, SubmissionId }
 import uk.gov.hmrc.gform.submission.handlebars.{ FocussedHandlebarsModelTree, HandlebarsModelTree, RealHandlebarsTemplateProcessor }
-import uk.gov.hmrc.http.BuildInfo
+import uk.gov.hmrc.gform.BuildInfo
 import uk.gov.hmrc.mongo.MongoComponent
 
 class TestOnlyController(
@@ -227,7 +227,7 @@ class TestOnlyController(
   }
 
   def buildInfo() = Action { r =>
-    Results.Ok(Json.toJson(BuildInfo.toMap.view.mapValues(_.toString)))
+    Results.Ok(Json.toJson("version: " + BuildInfo.version))
   }
 
   private def flattenExceptionMessage(ex: Throwable): List[String] = {
@@ -297,6 +297,11 @@ class TestOnlyController(
 
   def restoreForm(snapshotId: String, restoreId: String) = Action.async { _ =>
     testOnlyFormService.restoreForm(snapshotId, restoreId).map(snapshot => Ok(Json.toJson(snapshot)))
+  }
+
+  def restoreSnapshotTemplate() = Action.async(parse.json) { request =>
+    val snapshotId = request.body.as[JsString]
+    testOnlyFormService.restoreSnapshotTemplate(snapshotId.value).map(_ => Ok)
   }
 
   def getSnapshots() =

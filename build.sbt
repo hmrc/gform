@@ -27,7 +27,7 @@ lazy val IntegrationTest = config("it") extend Test
 lazy val BenchmarkTest = config("benchmark") extend Test
 
 lazy val microservice = (project in file("."))
-  .enablePlugins(play.sbt.PlayScala, SbtDistributablesPlugin)
+  .enablePlugins(play.sbt.PlayScala, SbtDistributablesPlugin, BuildInfoPlugin)
   .settings(
     name := "gform",
     organization := "uk.gov.hmrc",
@@ -101,4 +101,8 @@ lazy val microservice = (project in file("."))
   .settings(
     inConfig(BenchmarkTest)(Defaults.testSettings),
     BenchmarkTest / scalaSource := baseDirectory.value / "/benchmark"
+  )
+  .settings(
+    buildInfoKeys := Seq[BuildInfoKey](version),
+    buildInfoPackage := "uk.gov.hmrc.gform"
   )

@@ -26,7 +26,10 @@ case class Snapshot(
   templateId: String,
   snapshotId: String,
   savedAt: Instant,
-  description: String
+  description: String,
+  gformVersion: String,
+  gformFrontendVersion: String,
+  hasTemplate: Boolean
 )
 
 object Snapshot {
@@ -35,12 +38,21 @@ object Snapshot {
     val templateId = cacheItem.data.validate((__ \ "form" \ "formTemplateId").json.pick[JsString]).get.value
     val snapshotId = cacheItem.id
     val savedAt = cacheItem.createdAt
-    val description = cacheItem.data.validate((__ \ "description").json.pick[JsString]).get.value
+    val description = cacheItem.data.validate((__ \ "description").json.pick[JsString]).asOpt.map(_.value).getOrElse("")
+    val gformVersion =
+      cacheItem.data.validate((__ \ "gformVersion").json.pick[JsString]).asOpt.map(_.value).getOrElse("")
+    val gformFrontendVersion =
+      cacheItem.data.validate((__ \ "gformFrontendVersion").json.pick[JsString]).asOpt.map(_.value).getOrElse("")
+    val hasTemplate: Boolean = cacheItem.data.as[JsObject].keys.contains("template")
+
     Snapshot(
       templateId,
       snapshotId,
       savedAt,
-      description
+      description,
+      gformVersion,
+      gformFrontendVersion,
+      hasTemplate
     )
   }
 
@@ -58,7 +70,8 @@ object SnapshotWithData {
 
 case class SaveRequest(
   formId: String,
-  description: String
+  description: String,
+  gformFrontendVersion: String
 )
 
 object SaveRequest {

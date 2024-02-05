@@ -17,19 +17,30 @@
 package uk.gov.hmrc.gform.testonly
 
 import play.api.libs.json._
+import play.api.mvc.Results
 import uk.gov.hmrc.mongo.cache.DataKey
 import uk.gov.hmrc.mongo.cache.MongoCacheRepository
 import uk.gov.hmrc.crypto.{ Crypted, Decrypter, Encrypter, PlainText }
 import uk.gov.hmrc.gform.sharedmodel.form.FormData
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateRawId
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateRaw
+import uk.gov.hmrc.gform.formtemplate.{ FormTemplateService, RequestHandlerAlg }
+
+import uk.gov.hmrc.gform.core.FOpt
+
+import uk.gov.hmrc.gform.BuildInfo
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import cats.implicits._
+import java.time.Instant
 
 class TestOnlyFormService(
   formRepository: MongoCacheRepository[String],
   snapshotRepository: MongoCacheRepository[String],
-  jsonCrypto: Encrypter with Decrypter
+  jsonCrypto: Encrypter with Decrypter,
+  formTemplateService: FormTemplateService,
+  requestHandler: RequestHandlerAlg[FOpt]
 )(implicit ec: ExecutionContext) {
 
   def saveForm(saveRequest: SaveRequest): Future[SnapshotWithData] =
@@ -40,16 +51,63 @@ class TestOnlyFormService(
           val newId = java.util.UUID.randomUUID().toString
           cacheItem.data.fields.toList
             .traverse { case (k, v) =>
-              val value = if (k === "form") { v.as[JsObject] - "_id" - "userId" }
-              else v
-              snapshotRepository.put(newId)(DataKey(k), value)
+              if (k === "form") {
+                val formTemplateId = v.as[JsObject].value("formTemplateId").as[String]
+                val prefix = UniqueStringGenerator.generateUniqueString()
+                val updatedFormTemplateId = s"${prefix}_$formTemplateId"
+                val js = v.as[JsObject] - "_id" - "userId" ++ Json.obj("formTemplateId" -> updatedFormTemplateId)
+                for {
+                  _   <- snapshotRepository.put(newId)(DataKey(k), js)
+                  raw <- formTemplateService.get(FormTemplateRawId(formTemplateId))
+                  updatedRaw = raw.value ++ Json.obj("_id" -> updatedFormTemplateId)
+                  _ <- snapshotRepository.put(newId)(DataKey("template"), updatedRaw)
+                  _ <- restoreSnapshotTemplate(newId)
+                } yield ()
+              } else {
+                snapshotRepository.put(newId)(DataKey(k), v)
+              }
             }
-            .flatMap(_ => snapshotRepository.put(newId)(DataKey("description"), saveRequest.description))
+            .flatMap(_ =>
+              snapshotRepository.put(newId)(
+                DataKey("description"),
+                saveRequest.description
+              )
+            )
+            .flatMap(_ =>
+              snapshotRepository.put(newId)(
+                DataKey("gformVersion"),
+                Json.toJson(BuildInfo.version)
+              )
+            )
+            .flatMap(_ =>
+              snapshotRepository.put(newId)(
+                DataKey("gformFrontendVersion"),
+                saveRequest.gformFrontendVersion
+              )
+            )
             .map(_ => newId)
         case None =>
           Future.failed(new Exception(s"We could not find cache item with id: ${saveRequest.formId}"))
       }
       .flatMap(snapShotId => getSnapshotData(snapShotId))
+
+  def restoreSnapshotTemplate(snapshotId: String): Future[Unit] = {
+    val snapshotItem = snapshotRepository.findById(snapshotId)
+    snapshotItem.flatMap {
+      case Some(snapshotCacheItem) =>
+        val templateJsonOption: Option[JsObject] =
+          snapshotCacheItem.data.validate((__ \ "template").read[JsObject]).asOpt
+        templateJsonOption
+          .map { templateJson =>
+            requestHandler
+              .handleRequest(FormTemplateRaw(templateJson))
+              .fold(_.asBadRequest, _ => Results.Ok)
+              .map(_ => ())
+          }
+          .getOrElse(().pure[Future])
+      case None => throw new Exception(s"We could not restore the template for : $snapshotId")
+    }
+  }
 
   def restoreForm(snapshotId: String, restoreId: String): Future[Snapshot] = {
     val snapshotItem = snapshotRepository.findById(snapshotId)
@@ -67,7 +125,6 @@ class TestOnlyFormService(
           }
           .map(_ => Snapshot(snapshotCacheItem))
       }
-
   }
 
   private def updateCacheItemData(snapshotData: JsObject, formData: JsObject): JsObject = {
@@ -82,6 +139,9 @@ class TestOnlyFormService(
         )
       )
       .map(_ - "description")
+      .map(_ - "template")
+      .map(_ - "gformVersion")
+      .map(_ - "gformFrontendVersion")
       .getOrElse(snapshotData)
   }
 
@@ -155,4 +215,31 @@ class TestOnlyFormService(
         Future.failed(new Exception(s"We could not find cache item with id: ${request.formId}"))
     }
 
+}
+
+object UniqueStringGenerator {
+  val base = 32
+  // removing 4 ambiguous characters (1, l, 0, o)
+  val alphabet = ('2' to '9') ++ ('a' to 'k') ++ ('m' to 'n') ++ ('p' to 'z')
+
+  def encode(number: Long): String = {
+    def encodeRecursive(num: Long, acc: String): String =
+      if (num == 0) {
+        if (acc.isEmpty) "a" else acc
+      } else {
+        val remainder = (num % base).toInt
+        val nextChar = alphabet(remainder)
+        encodeRecursive(num / base, s"$nextChar$acc")
+      }
+    encodeRecursive(number, "")
+  }
+  def generateUniqueString(): String = {
+    val currentTimestamp = Instant.now.toEpochMilli
+
+    // Subtract a fixed timestamp to reduce the number's size
+    val fixedTimestamp = Instant.parse("2024-01-01T00:00:00Z").toEpochMilli
+
+    val reducedTimestamp = (currentTimestamp - fixedTimestamp) / 1000
+    encode(reducedTimestamp)
+  }
 }

@@ -293,7 +293,13 @@ class ApplicationModule(context: Context)
     configModule.snapshotCreatedExpiryDays,
     configModule.snapshotSubmittedExpiryHours
   )
-  val testOnlyFormService = new TestOnlyFormService(mongoCacheRepository, snapshotsMongoCache, jsonCrypto)
+  val testOnlyFormService = new TestOnlyFormService(
+    mongoCacheRepository,
+    snapshotsMongoCache,
+    jsonCrypto,
+    formTemplateModule.formTemplateService,
+    formTemplateModule.handler
+  )
   private val testOnlyModule =
     new TestOnlyModule(
       mongoModule,
