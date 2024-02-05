@@ -218,9 +218,6 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
     | "auth" ~ "." ~ authInfo ^^ { case _ ~ _ ~ authInfo =>
       AuthCtx(authInfo)
     }
-    | "hmrcRosmRegistrationCheck" ~ "." ~ rosmProp ^^ { case _ ~ _ ~ rosmProp =>
-      HmrcRosmRegistrationCheck(rosmProp)
-    }
     | "link" ~ "." ~ internalLinkParser ^^ { case _ ~ _ ~ internalLink =>
       LinkCtx(internalLink)
     }
@@ -466,12 +463,6 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
       | "itmpAddress" ^^^ AuthInfo.ItmpAddress
       | "payeref" ^^^ AuthInfo.PayeRef
       | "vrn" ^^^ AuthInfo.Vrn
-  )
-  lazy val rosmProp: Parser[RosmProp] = (
-    "safeId" ^^^ RosmSafeId
-      | "organisationName" ^^^ RosmOrganisationName
-      | "organisationType" ^^^ RosmOrganisationType
-      | "isAGroup" ^^^ RosmIsAGroup
   )
   lazy val loginInfo: Parser[LoginInfo] = (
     "ggLogin" ^^^ LoginInfo.GGLogin

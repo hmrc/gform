@@ -148,7 +148,7 @@ trait Verifier {
     )
 
   private def mkSpecimen(page: Page): Page =
-    (removeIncludeIf _ andThen mkComponentsOptional _ andThen noValidators _)(page)
+    (removeIncludeIf _ andThen mkComponentsOptional)(page)
 
   private def removeIncludeIf(section: Page): Page =
     section.copy(includeIf = None, fields = section.fields.map(i => i.copy(includeIf = None)))
@@ -157,9 +157,6 @@ trait Verifier {
     page.copy(
       fields = mkOptional(page.fields)
     )
-
-  private def noValidators(section: Page): Page =
-    section.copy(validators = None)
 
   private def mkOptional(fcs: List[FormComponent]): List[FormComponent] = fcs.map {
     case fc @ IsGroup(group) =>

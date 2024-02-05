@@ -517,7 +517,6 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
       None,
       None,
       None,
-      None,
       List(
         FormComponent(
           FormComponentId("firstName"),

@@ -114,7 +114,6 @@ class FormSpec extends AnyFlatSpec with Matchers with ScalaCheckDrivenPropertyCh
     Submitted,
     VisitIndex.Classic((Set(1, 2, 3))),
     ThirdPartyData(
-      None,
       RetrievedObligations(
         NonEmptyList.one(
           TaxResponse(

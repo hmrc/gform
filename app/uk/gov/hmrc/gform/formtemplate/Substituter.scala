@@ -91,14 +91,6 @@ object Substituter {
     ev: Substituter[A, BooleanExpr]
   ): Substituter[A, RemoveItemIf] = (substitutions, t) => t.copy(booleanExpr = t.booleanExpr(substitutions))
 
-  implicit def validatorSubstituter[A](implicit
-    ev: Substituter[A, Expr]
-  ): Substituter[A, Validator] = (substitutions, t) =>
-    t match {
-      case HmrcRosmRegistrationCheckValidator(errorMessage, regime, utr, postcode) =>
-        HmrcRosmRegistrationCheckValidator(errorMessage(substitutions), regime, utr, postcode)
-    }
-
   implicit def optionDataSubstituter[A](implicit
     ev: Substituter[A, Expr],
     ev2: Substituter[A, BooleanExpr]
@@ -300,7 +292,6 @@ object Substituter {
       shortName = t.shortName(substitutions),
       caption = t.caption(substitutions),
       includeIf = t.includeIf(substitutions),
-      validators = t.validators(substitutions),
       fields = t.fields(substitutions),
       continueLabel = t.continueLabel(substitutions),
       instruction = t.instruction(substitutions),

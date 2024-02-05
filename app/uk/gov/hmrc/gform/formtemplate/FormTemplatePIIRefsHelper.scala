@@ -119,7 +119,6 @@ object FormTemplatePIIRefsHelper {
       case UserCtx(value)                                     => Nil
       case Constant(value)                                    => Nil
       case PeriodValue(value)                                 => Nil
-      case HmrcRosmRegistrationCheck(value)                   => Nil
       case LinkCtx(link)                                      => Nil
       case FormTemplateCtx(value)                             => Nil
       case DateCtx(value)                                     => value.maybeFormCtx.toList.map(_.formComponentId.value)

@@ -57,7 +57,6 @@ object DestinationsProcessorModelAlgebra {
     createFormId(form._id) +
       createStructuredFormData(structuredFormData) +
       createHmrcTaxPeriods(form) +
-      createRosmRegistration(form) +
       createFrontEndSubmissionVariables(frontEndSubmissionVariables) +
       createFormStatus(form.status) +
       createPdfHtml(pdfData) +
@@ -197,18 +196,4 @@ object DestinationsProcessorModelAlgebra {
     HandlebarsTemplateProcessorModel(objectNode(jsonNodes))
   }
 
-  private def createRosmRegistration(form: Form): HandlebarsTemplateProcessorModel = {
-    val f = form.thirdPartyData.desRegistrationResponse.fold("") _
-
-    HandlebarsTemplateProcessorModel(
-      "hmrcRosmRegistrationCheck" -> objectNode(
-        Map(
-          "safeId"           -> f(_.safeId),
-          "organisationName" -> f(_.orgOrInd.getOrganisationName),
-          "organisationType" -> f(_.orgOrInd.getOrganisationType),
-          "isAGroup"         -> f(_.orgOrInd.getIsAGroup)
-        ).view.mapValues(textNode).toMap
-      )
-    )
-  }
 }

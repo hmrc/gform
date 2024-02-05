@@ -165,7 +165,6 @@ object TopLevelExpressions {
         case Constant(_)                   => e
         case Count(_)                      => e
         case FormTemplateCtx(_)            => e
-        case HmrcRosmRegistrationCheck(_)  => e
         case LangCtx                       => e
         case LinkCtx(_)                    => e
         case ParamCtx(_)                   => e

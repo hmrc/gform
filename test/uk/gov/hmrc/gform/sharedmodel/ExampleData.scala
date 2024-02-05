@@ -35,8 +35,8 @@ import java.time.LocalDateTime
 object ExampleData extends ExampleData
 
 trait ExampleData
-    extends ExampleFormTemplate with ExampleFieldId with ExampleFieldValue with ExampleFormField with ExampleValidator
-    with ExampleSection with ExampleForm with ExampleAuthConfig with ExampleSubmission with ExampleRouteEnvelopeRequest
+    extends ExampleFormTemplate with ExampleFieldId with ExampleFieldValue with ExampleFormField with ExampleSection
+    with ExampleForm with ExampleAuthConfig with ExampleSubmission with ExampleRouteEnvelopeRequest
 
 trait ExampleAuthConfig extends DestinationGen {
 
@@ -358,21 +358,9 @@ trait ExampleFieldValue { dependecies: ExampleFieldId =>
 
 }
 
-trait ExampleValidator {
-  def defaultValidator = hMRCUTRPostcodeCheckValidator
-  def hMRCUTRPostcodeCheckValidator =
-    HmrcRosmRegistrationCheckValidator(
-      toSmartString("The UTR could not be foundor the postcode did not match. | <Welsh...>"),
-      "ITSA",
-      FormCtx(FormComponentId("utrToCheck")),
-      FormCtx(FormComponentId("postcodeToCheck"))
-    )
-}
-
-trait ExampleSection { dependecies: ExampleFieldId with ExampleFieldValue with ExampleValidator =>
+trait ExampleSection { dependecies: ExampleFieldId with ExampleFieldValue =>
   def nonRepeatingPageSection(
     title: String = "About you",
-    validators: Option[Validator] = Some(defaultValidator),
     fields: List[FormComponent] = List(`fieldValue - firstName`, `fieldValue - surname`, `fieldValue - facePhoto`),
     includeIf: Option[IncludeIf] = None
   ) =
@@ -385,7 +373,6 @@ trait ExampleSection { dependecies: ExampleFieldId with ExampleFieldValue with E
         None,
         None,
         includeIf,
-        validators,
         fields,
         None,
         None,
@@ -405,7 +392,6 @@ trait ExampleSection { dependecies: ExampleFieldId with ExampleFieldValue with E
   def `section - businessDetails` =
     nonRepeatingPageSection(
       title = "Business details",
-      validators = None,
       fields = List(`fieldValue - businessName`, `fieldValue - startDate`, `fieldValue - iptRegNum`)
     )
 
@@ -413,7 +399,6 @@ trait ExampleSection { dependecies: ExampleFieldId with ExampleFieldValue with E
     Section.RepeatingPage(
       Page(
         toSmartString("Repeating section"),
-        None,
         None,
         None,
         None,

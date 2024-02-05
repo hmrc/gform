@@ -43,7 +43,6 @@ object BooleanExprSubstituter extends Substituter[BooleanExprSubstitutions, Form
         case Constant(_)                   => t
         case Count(_)                      => t
         case FormTemplateCtx(_)            => t
-        case HmrcRosmRegistrationCheck(_)  => t
         case LangCtx                       => t
         case LinkCtx(_)                    => t
         case ParamCtx(_)                   => t
