@@ -20,7 +20,6 @@ import play.api.libs.json._
 import uk.gov.hmrc.gform.addresslookup.AddressLookupResult
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponentId, JsonUtils }
 import uk.gov.hmrc.gform.sharedmodel.{ BooleanExprCache, DataRetrieveId, DataRetrieveResult, NotChecked, Obligations }
-import uk.gov.hmrc.gform.sharedmodel.des.DesRegistrationResponse
 import uk.gov.hmrc.auth.core.retrieve.{ ItmpAddress, ItmpName }
 import java.time.LocalDate
 
@@ -36,7 +35,6 @@ object ItmpRetrievals {
 }
 
 case class ThirdPartyData(
-  desRegistrationResponse: Option[DesRegistrationResponse],
   obligations: Obligations,
   emailVerification: Map[FormComponentId, EmailAndCode],
   queryParams: QueryParams,
@@ -56,7 +54,6 @@ case class ThirdPartyData(
 object ThirdPartyData {
   val empty =
     ThirdPartyData(
-      None,
       NotChecked,
       Map.empty,
       QueryParams.empty,

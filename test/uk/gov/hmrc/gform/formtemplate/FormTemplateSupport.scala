@@ -68,7 +68,6 @@ trait FormTemplateSupport {
         None,
         None,
         None,
-        None,
         formComponents,
         None,
         None,
@@ -235,7 +234,6 @@ trait FormTemplateSupport {
         None,
         None,
         None,
-        None,
         formComponents,
         None,
         None,
@@ -258,7 +256,6 @@ trait FormTemplateSupport {
       Page(
         toSmartString(name),
         pageId,
-        None,
         None,
         None,
         None,

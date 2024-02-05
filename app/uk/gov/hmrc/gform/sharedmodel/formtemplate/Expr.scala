@@ -167,7 +167,6 @@ final case class AuthCtx(value: AuthInfo) extends Expr
 final case class UserCtx(value: UserField) extends Expr
 final case class Constant(value: String) extends Expr
 final case class PeriodValue(value: String) extends Expr
-final case class HmrcRosmRegistrationCheck(value: RosmProp) extends Expr
 final case class LinkCtx(link: InternalLink) extends Expr
 final case class FormTemplateCtx(value: FormTemplateProp) extends Expr
 final case class DateCtx(value: DateExpr) extends Expr
@@ -202,16 +201,6 @@ object Expr {
 
   implicit val leafExprs: LeafExpr[Expr] = (path: TemplatePath, t: Expr) => List(ExprWithPath(path, t))
 
-}
-
-sealed trait RosmProp extends Product with Serializable
-case object RosmSafeId extends RosmProp
-case object RosmOrganisationName extends RosmProp
-case object RosmOrganisationType extends RosmProp
-case object RosmIsAGroup extends RosmProp
-
-object RosmProp {
-  implicit val format: OFormat[RosmProp] = derived.oformat()
 }
 
 sealed trait UserField

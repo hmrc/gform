@@ -119,7 +119,6 @@ trait SectionGen {
       caption          <- Gen.option(smartStringGen)
       shortName        <- Gen.option(smartStringGen)
       includeIf        <- Gen.option(IncludeIfGen.includeIfGen)
-      validators       <- Gen.option(ValidatorGen.validatorGen)
       fields           <- PrimitiveGen.oneOrMoreGen(FormComponentGen.formComponentGen())
       continueLabel    <- Gen.option(smartStringGen)
       continueIf       <- Gen.option(ContinueIfGen.continueIfGen)
@@ -136,7 +135,6 @@ trait SectionGen {
       caption,
       shortName,
       includeIf,
-      validators,
       fields.toList,
       continueLabel,
       continueIf,

@@ -1055,7 +1055,6 @@ object FormTemplateValidator {
       case Else(field1, field2)         => checkFields(field1, field2)
       case Sum(value)                   => validate(value, sections)
       case Count(value)                 => validate(FormCtx(value), sections)
-      case HmrcRosmRegistrationCheck(_) => Valid
       case FormCtx(value) =>
         fieldNamesIds
           .contains(value)

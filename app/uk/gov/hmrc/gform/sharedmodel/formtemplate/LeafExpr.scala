@@ -58,7 +58,6 @@ final case class ExprWithPath(path: TemplatePath, expr: Expr) {
     case UserCtx(value: UserField)                     => Nil
     case Constant(value: String)                       => Nil
     case PeriodValue(value: String)                    => Nil
-    case HmrcRosmRegistrationCheck(value: RosmProp)    => Nil
     case Value                                         => Nil
     case LangCtx                                       => Nil
     case FormTemplateCtx(value: FormTemplateProp)      => Nil
