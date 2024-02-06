@@ -52,7 +52,7 @@ object JsonSchemeValidator {
     case Left(parsingFailure) => Left(SchemaValidationException("Json error: " + parsingFailure))
   }
 
-  private def validateJson(json: Json): Either[SchemaValidationException, Unit] =
+  def validateJson(json: Json): Either[SchemaValidationException, Unit] =
     parsedSchema match {
       case Left(parsingFailure) => Left(SchemaValidationException("Schema error: " + parsingFailure))
       case Right(schema) =>
@@ -60,10 +60,12 @@ object JsonSchemeValidator {
         val validated: ValidatedNel[ValidationError, Unit] = formTemplateSchema.validate(json)
 
         validated.leftMap { errors =>
-          val conditionalValidationErrorMessages: List[String] =
-            if (errors.map(_.keyword).toList.toSet.contains("anyOf")) {
-              errors
-                .map { error =>
+          val conditionalValidationErrorMessages: List[String] = {
+            val indexOfAnyOf = errors.map(_.keyword).toList.indexOf("anyOf")
+            if (indexOfAnyOf > 0) {
+              val conditionalValidationErrors: List[String] = errors.toList
+                .slice(indexOfAnyOf, errors.length)
+                .flatMap { error =>
                   error.keyword match {
                     case "not" =>
                       val errorField: String = "\\[\".+\"]".r.findAllIn(error.getMessage).next()
@@ -72,16 +74,16 @@ object JsonSchemeValidator {
                     case _         => None
                   }
                 }
-                .toList
-                .flatten
                 .grouped(2)
                 .toList
                 .map { field =>
                   s"${field(1)}: Property ${field.head} is only valid for ${conditionalRequirements(field.head).mkString(", ")}"
                 }
+              errors.map(_.getMessage).toList.slice(0, indexOfAnyOf) ++ conditionalValidationErrors
             } else {
               errors.map(_.getMessage).toList
             }
+          }
 
           SchemaValidationException(
             NonEmptyList(conditionalValidationErrorMessages.head, conditionalValidationErrorMessages.tail)
