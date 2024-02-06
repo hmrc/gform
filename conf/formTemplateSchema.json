@@ -785,12 +785,12 @@
         {
           "anyOf": [
             {
-              "not": {"required": ["multiValue"]}
+              "not": {"required": ["multivalue"]}
             },
             {
               "required": ["type"],
               "dependencies": {
-                "multiValue": {
+                "multivalue": {
                   "properties": {
                     "type": {"pattern": "^choice|revealingChoice$"}
                   }

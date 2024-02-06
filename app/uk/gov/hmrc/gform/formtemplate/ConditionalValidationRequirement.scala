@@ -27,4 +27,4 @@ case object TypeChoiceOrRevealingChoice
 
 case object TypeText extends ConditionalValidationRequirement("type", List("text"))
 
-case object MultiLineTrueOrYes extends ConditionalValidationRequirement("multiline", List("true", "yes"))
+case object MultiLineTrue extends ConditionalValidationRequirement("multiline", List("true"))
