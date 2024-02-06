@@ -110,7 +110,7 @@ class UpscanController(
               s"Upscan callback successful, fcId: $formComponentId, reference: ${upscanCallbackSuccess.reference}, fileMimeType: ${upscanCallbackSuccess.uploadDetails.fileMimeType}, fileName: ${upscanCallbackSuccess.uploadDetails.fileName}, size: ${upscanCallbackSuccess.uploadDetails.size}"
             )
             val maybeFileUpload: Option[FileUpload] = formTemplate.formComponents {
-              case fc @ IsFileUpload(fileupload) if fc.id === formComponentId => fileupload
+              case fc @ IsFileUpload(fu) if fc.id === formComponentId.reduceToTemplateFieldId => fu
             }.headOption
 
             val allowedFileTypes: AllowedFileTypes =
