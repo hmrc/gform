@@ -23,6 +23,8 @@ import io.circe.schema.Schema
 import io.circe.schema.ValidationError
 import uk.gov.hmrc.gform.exceptions.SchemaValidationException
 
+import scala.collection.immutable.ListSet
+
 object JsonSchemeValidator {
 
   val inputStream = getClass.getClassLoader.getResourceAsStream("formTemplateSchema.json")
@@ -64,32 +66,24 @@ object JsonSchemeValidator {
             val indexOfAnyOf = errors.map(_.keyword).toList.indexOf("anyOf")
 
             if (indexOfAnyOf > 0) {
-              val allConditionalValidationErrors: List[String] = errors.toList
+              val allConditionalValidationErrors: List[(String, String)] = errors.toList
                 .slice(indexOfAnyOf, errors.length)
                 .flatMap { error =>
                   error.keyword match {
                     case "not" =>
                       val errorField: String = "\\[\".+\"]".r.findAllIn(error.getMessage).next()
-                      Some(errorField.slice(2, errorField.length - 2))
-                    case "pattern" | "required" => Some(error.location)
-                    case _                      => None
+                      Some((errorField.slice(2, errorField.length - 2), error.location))
+                    case _ => None
                   }
                 }
 
-              // Removes consecutive duplicated error messages in the case a property has more than 1 error associated
-              val deduplicatedConditionalValidationErrors =
-                allConditionalValidationErrors.head :: allConditionalValidationErrors
-                  .sliding(2)
-                  .collect { case Seq(error1, error2) if error1 != error2 => error2 }
-                  .toList
+              val deduplicatedConditionalValidationErrors = ListSet(allConditionalValidationErrors).flatten
 
-              val formattedConditionalValidationErrors =
-                deduplicatedConditionalValidationErrors
-                  .grouped(2)
-                  .toList
-                  .map { field =>
-                    s"${field(1)}: Property ${field.head} is only valid for ${conditionalRequirements(field.head).mkString(", ")}"
-                  }
+              val formattedConditionalValidationErrors: List[String] =
+                deduplicatedConditionalValidationErrors.map { case (errorProperty, errorLocation) =>
+                  s"$errorLocation: Property $errorProperty can only be used with ${conditionalRequirements(errorProperty)
+                    .mkString(", ")}"
+                }.toList
 
               errors.map(_.getMessage).toList.slice(0, indexOfAnyOf) ++ formattedConditionalValidationErrors
             } else {
