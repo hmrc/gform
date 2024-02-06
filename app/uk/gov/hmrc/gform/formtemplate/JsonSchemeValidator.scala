@@ -62,24 +62,36 @@ object JsonSchemeValidator {
         validated.leftMap { errors =>
           val conditionalValidationErrorMessages: List[String] = {
             val indexOfAnyOf = errors.map(_.keyword).toList.indexOf("anyOf")
+
             if (indexOfAnyOf > 0) {
-              val conditionalValidationErrors: List[String] = errors.toList
+              val allConditionalValidationErrors: List[String] = errors.toList
                 .slice(indexOfAnyOf, errors.length)
                 .flatMap { error =>
                   error.keyword match {
                     case "not" =>
                       val errorField: String = "\\[\".+\"]".r.findAllIn(error.getMessage).next()
                       Some(errorField.slice(2, errorField.length - 2))
-                    case "pattern" => Some(error.location)
-                    case _         => None
+                    case "pattern" | "required" => Some(error.location)
+                    case _                      => None
                   }
                 }
-                .grouped(2)
-                .toList
-                .map { field =>
-                  s"${field(1)}: Property ${field.head} is only valid for ${conditionalRequirements(field.head).mkString(", ")}"
-                }
-              errors.map(_.getMessage).toList.slice(0, indexOfAnyOf) ++ conditionalValidationErrors
+
+              // Removes consecutive duplicated error messages in the case a property has more than 1 error associated
+              val deduplicatedConditionalValidationErrors =
+                allConditionalValidationErrors.head :: allConditionalValidationErrors
+                  .sliding(2)
+                  .collect { case Seq(error1, error2) if error1 != error2 => error2 }
+                  .toList
+
+              val formattedConditionalValidationErrors =
+                deduplicatedConditionalValidationErrors
+                  .grouped(2)
+                  .toList
+                  .map { field =>
+                    s"${field(1)}: Property ${field.head} is only valid for ${conditionalRequirements(field.head).mkString(", ")}"
+                  }
+
+              errors.map(_.getMessage).toList.slice(0, indexOfAnyOf) ++ formattedConditionalValidationErrors
             } else {
               errors.map(_.getMessage).toList
             }
