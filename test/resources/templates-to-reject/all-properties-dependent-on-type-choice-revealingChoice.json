@@ -1,6 +1,6 @@
 {
-  "_id": "dividerText-with-invalid-type",
-  "formName": "Invalid DividerText Without Type Choice or RevealingChoice",
+  "_id": "all-properties-dependent-on-type-choice-revealingChoice",
+  "formName": "Invalid Type Choice or RevealingChoice Dependencies",
   "version": 1,
   "description": "",
   "emailTemplateId": "",
@@ -15,7 +15,24 @@
           "id": "hasDifferentName",
           "type": "text",
           "label": "Does your company trade under a different name?",
+          "choices": ["A", "B"],
+          "multivalue": "true",
+          "hints": [
+            "This test should pass because this is not valid"
+          ],
+          "optionHelpText": [
+            {
+              "en": "This test should pass because this is not valid",
+              "cy": "This test should pass because this is not valid"
+            }
+          ],
+          "dividerPosition": 1,
           "dividerText": {
+            "en": "This test should pass because this is not valid",
+            "cy": "This test should pass because this is not valid"
+          },
+          "noneChoice": 1,
+          "noneChoiceError": {
             "en": "This test should pass because this is not valid",
             "cy": "This test should pass because this is not valid"
           }

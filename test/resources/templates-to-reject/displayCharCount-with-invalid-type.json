@@ -1,0 +1,47 @@
+{
+  "_id": "displayCharCount-with-invalid-type",
+  "formName": "Invalid DisplayCharCount Without Type Text",
+  "version": 1,
+  "description": "",
+  "emailTemplateId": "",
+  "authConfig": {
+    "authModule": "hmrc"
+  },
+  "sections": [
+    {
+      "title": "Page",
+      "fields": [
+        {
+          "id": "hasDifferentName",
+          "type": "info",
+          "multiline": "true",
+          "label": "Does your company trade under a different name?",
+          "displayCharCount": "false"
+        }
+      ]
+    },
+    {
+      "title": "Page B",
+      "includeIf": "${hasDifferentName.0.size = 1}",
+      "fields": [
+        {
+          "id": "dummy",
+          "type": "text",
+          "label": "Dummy",
+          "format": "shortText"
+        }
+      ]
+    }
+  ],
+  "acknowledgementSection": {
+    "title": "Acknowledgement",
+    "fields": []
+  },
+  "destinations": [
+    {
+      "id": "transitionToSubmitted",
+      "type": "stateTransition",
+      "requiredState": "Submitted"
+    }
+  ]
+}

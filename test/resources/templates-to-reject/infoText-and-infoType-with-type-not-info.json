@@ -1,6 +1,6 @@
 {
-  "_id": "dividerText-with-invalid-type",
-  "formName": "Invalid DividerText Without Type Choice or RevealingChoice",
+  "_id": "infoText-and-infoType-with-type-not-info",
+  "formName": "Invalid InfoText and InfoType in the Same Section Without Type Info",
   "version": 1,
   "description": "",
   "emailTemplateId": "",
@@ -15,10 +15,8 @@
           "id": "hasDifferentName",
           "type": "text",
           "label": "Does your company trade under a different name?",
-          "dividerText": {
-            "en": "This test should pass because this is not valid",
-            "cy": "This test should pass because this is not valid"
-          }
+          "infoType": "noformat",
+          "infoText": "This text should pass because this is invalid"
         }
       ]
     },

@@ -1,6 +1,6 @@
 {
-  "_id": "dividerText-with-invalid-type",
-  "formName": "Invalid DividerText Without Type Choice or RevealingChoice",
+  "_id": "displayCharCount-with-invalid-type-and-multiline",
+  "formName": "Invalid DisplayCharCount Without Type Text and Multiline True",
   "version": 1,
   "description": "",
   "emailTemplateId": "",
@@ -13,12 +13,10 @@
       "fields": [
         {
           "id": "hasDifferentName",
-          "type": "text",
+          "type": "info",
+          "multiline": "false",
           "label": "Does your company trade under a different name?",
-          "dividerText": {
-            "en": "This test should pass because this is not valid",
-            "cy": "This test should pass because this is not valid"
-          }
+          "displayCharCount": "false"
         }
       ]
     },

@@ -1,6 +1,6 @@
 {
-  "_id": "dividerText-with-invalid-type",
-  "formName": "Invalid DividerText Without Type Choice or RevealingChoice",
+  "_id": "multiple-properties-with-conditional-validation-errors",
+  "formName": "One Property For Every Current Conditional Dependency Not Satisfied",
   "version": 1,
   "description": "",
   "emailTemplateId": "",
@@ -15,10 +15,9 @@
           "id": "hasDifferentName",
           "type": "text",
           "label": "Does your company trade under a different name?",
-          "dividerText": {
-            "en": "This test should pass because this is not valid",
-            "cy": "This test should pass because this is not valid"
-          }
+          "infoType": "noformat",
+          "choices": ["A", "B"],
+          "dataThreshold": 1
         }
       ]
     },

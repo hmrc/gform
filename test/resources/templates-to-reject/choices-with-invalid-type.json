@@ -1,0 +1,46 @@
+{
+  "_id": "choices-with-invalid-type",
+  "formName": "Invalid Choices with Type not Choice",
+  "version": 1,
+  "description": "",
+  "emailTemplateId": "",
+  "authConfig": {
+    "authModule": "hmrc"
+  },
+  "sections": [
+    {
+      "title": "Page",
+      "fields": [
+        {
+          "id": "hasDifferentName",
+          "type": "text",
+          "label": "Does your company trade under a different name?",
+          "choices": ["A", "B"]
+        }
+      ]
+    },
+    {
+      "title": "Page B",
+      "includeIf": "${hasDifferentName.0.size = 1}",
+      "fields": [
+        {
+          "id": "dummy",
+          "type": "text",
+          "label": "Dummy",
+          "format": "shortText"
+        }
+      ]
+    }
+  ],
+  "acknowledgementSection": {
+    "title": "Acknowledgement",
+    "fields": []
+  },
+  "destinations": [
+    {
+      "id": "transitionToSubmitted",
+      "type": "stateTransition",
+      "requiredState": "Submitted"
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 {
-  "_id": "dividerText-with-invalid-type",
-  "formName": "Invalid DividerText Without Type Choice or RevealingChoice",
+  "_id": "conditional-with-valid-type-info",
+  "formName": "Valid Type Info Dependencies",
   "version": 1,
   "description": "",
   "emailTemplateId": "",
@@ -13,12 +13,10 @@
       "fields": [
         {
           "id": "hasDifferentName",
-          "type": "text",
+          "type": "info",
           "label": "Does your company trade under a different name?",
-          "dividerText": {
-            "en": "This test should pass because this is not valid",
-            "cy": "This test should pass because this is not valid"
-          }
+          "infoType": "noformat",
+          "infoText": "This test should pass because this is valid"
         }
       ]
     },

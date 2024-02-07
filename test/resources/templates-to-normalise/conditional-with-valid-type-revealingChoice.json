@@ -1,6 +1,6 @@
 {
-  "_id": "optionHelpText-with-invalid-type",
-  "formName": "Invalid OptionHelpText Without Type Choice",
+  "_id": "conditional-with-valid-type-revealingChoice",
+  "formName": "Valid Type RevealingChoice Dependencies",
   "version": 1,
   "description": "",
   "emailTemplateId": "",
@@ -13,14 +13,29 @@
       "fields": [
         {
           "id": "hasDifferentName",
-          "type": "info",
+          "type": "revealingChoice",
           "label": "Does your company trade under a different name?",
+          "choices": ["A", "B"],
+          "multivalue": "true",
+          "hints": [
+            "This test should pass because this is valid"
+          ],
           "optionHelpText": [
             {
-              "en": "This test should pass because this is not valid",
-              "cy": "This test should pass because this is not valid"
+              "en": "This test should pass because this is valid",
+              "cy": "This test should pass because this is valid"
             }
-          ]
+          ],
+          "dividerPosition": 1,
+          "dividerText": {
+            "en": "This test should pass because this is valid",
+            "cy": "This test should pass because this is valid"
+          },
+          "noneChoice": 1,
+          "noneChoiceError": {
+            "en": "This test should pass because this is valid",
+            "cy": "This test should pass because this is valid"
+          }
         }
       ]
     },
