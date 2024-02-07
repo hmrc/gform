@@ -20,11 +20,14 @@ sealed abstract class ConditionalValidationRequirement(requiredProperty: String,
   override def toString: String = s"$requiredProperty: [${requiredValues.mkString(", ")}]"
 }
 
-case object TypeInfo extends ConditionalValidationRequirement("type", List("info"))
+object ConditionalValidationRequirement {
 
-case object TypeChoiceOrRevealingChoice
-    extends ConditionalValidationRequirement("type", List("choice", "revealingChoice"))
+  case object TypeInfo extends ConditionalValidationRequirement("type", List("info"))
+  case object TypeChoiceOrRevealingChoice
+      extends ConditionalValidationRequirement("type", List("choice", "revealingChoice"))
 
-case object TypeText extends ConditionalValidationRequirement("type", List("text"))
+  case object TypeText extends ConditionalValidationRequirement("type", List("text"))
 
-case object MultiLineTrue extends ConditionalValidationRequirement("multiline", List("true"))
+  case object MultilineTrue extends ConditionalValidationRequirement("multiline", List("true"))
+
+}

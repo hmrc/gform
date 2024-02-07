@@ -22,6 +22,7 @@ import io.circe.jawn.JawnParser
 import io.circe.schema.Schema
 import io.circe.schema.ValidationError
 import uk.gov.hmrc.gform.exceptions.SchemaValidationException
+import uk.gov.hmrc.gform.formtemplate.ConditionalValidationRequirement._
 
 import scala.collection.immutable.ListSet
 
@@ -45,8 +46,8 @@ object JsonSchemeValidator {
     "noneChoice"       -> List(TypeChoiceOrRevealingChoice),
     "noneChoiceError"  -> List(TypeChoiceOrRevealingChoice),
     "dividerText"      -> List(TypeChoiceOrRevealingChoice),
-    "displayCharCount" -> List(TypeText, MultiLineTrue),
-    "dataThreshold"    -> List(TypeText, MultiLineTrue)
+    "displayCharCount" -> List(TypeText, MultilineTrue),
+    "dataThreshold"    -> List(TypeText, MultilineTrue)
   )
 
   def checkSchema(json: String): Either[SchemaValidationException, Unit] = parser.parse(json) match {
