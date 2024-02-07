@@ -63,7 +63,7 @@ object JsonSchemeValidator {
         val validated: ValidatedNel[ValidationError, Unit] = formTemplateSchema.validate(json)
 
         validated.leftMap { errors =>
-          val conditionalValidationErrorMessages: List[String] = {
+          val conditionalValidationErrorMessages: NonEmptyList[String] = {
             val indexOfAnyOf = errors.map(_.keyword).toList.indexOf("anyOf")
 
             if (indexOfAnyOf > 0) {
@@ -86,15 +86,16 @@ object JsonSchemeValidator {
                     .mkString(", ")}"
                 }.toList
 
-              errors.map(_.getMessage).toList.slice(0, indexOfAnyOf) ++ formattedConditionalValidationErrors
+              // Using unsafe because errors is an NEL and indexOfAnyOf is > 0 in this branch
+              NonEmptyList.fromListUnsafe(
+                errors.map(_.getMessage).toList.slice(0, indexOfAnyOf) ++ formattedConditionalValidationErrors
+              )
             } else {
-              errors.map(_.getMessage).toList
+              errors.map(_.getMessage)
             }
           }
 
-          SchemaValidationException(
-            NonEmptyList(conditionalValidationErrorMessages.head, conditionalValidationErrorMessages.tail)
-          )
+          SchemaValidationException(conditionalValidationErrorMessages)
         }.toEither
     }
 
