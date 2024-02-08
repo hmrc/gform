@@ -44,8 +44,10 @@ import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
 import uk.gov.hmrc.gform.submission.destinations.{ DataStoreSubmitter, DestinationSubmissionInfo, DestinationsProcessorModelAlgebra }
 import uk.gov.hmrc.gform.submission.{ DmsMetaData, Submission, SubmissionId }
 import uk.gov.hmrc.gform.submission.handlebars.{ FocussedHandlebarsModelTree, HandlebarsModelTree, RealHandlebarsTemplateProcessor }
-import uk.gov.hmrc.http.BuildInfo
+import uk.gov.hmrc.gform.BuildInfo
 import uk.gov.hmrc.mongo.MongoComponent
+
+import uk.gov.hmrc.http.HeaderCarrier
 
 class TestOnlyController(
   controllerComponents: ControllerComponents,
@@ -227,7 +229,7 @@ class TestOnlyController(
   }
 
   def buildInfo() = Action { r =>
-    Results.Ok(Json.toJson(BuildInfo.toMap.view.mapValues(_.toString)))
+    Results.Ok(Json.toJson("version: " + BuildInfo.version))
   }
 
   private def flattenExceptionMessage(ex: Throwable): List[String] = {
@@ -291,12 +293,19 @@ class TestOnlyController(
 
   def saveForm() =
     Action.async(parse.json[SaveRequest]) { request =>
+      implicit val hc: HeaderCarrier = HeaderCarrier()
       val saveRequest: SaveRequest = request.body
       testOnlyFormService.saveForm(saveRequest).map(saveReply => Ok(Json.toJson(saveReply)))
     }
 
   def restoreForm(snapshotId: String, restoreId: String) = Action.async { _ =>
-    testOnlyFormService.restoreForm(snapshotId, restoreId).map(snapshot => Ok(Json.toJson(snapshot)))
+    implicit val hc: HeaderCarrier = HeaderCarrier()
+    testOnlyFormService.restoreForm(SnapshotId(snapshotId), restoreId).map(snapshot => Ok(Json.toJson(snapshot)))
+  }
+
+  def restoreSnapshotTemplate() = Action.async(parse.json) { request =>
+    val snapshotId = request.body.as[SnapshotId]
+    testOnlyFormService.restoreSnapshotTemplate(snapshotId).map(_ => Ok)
   }
 
   def getSnapshots() =
@@ -304,8 +313,10 @@ class TestOnlyController(
       testOnlyFormService.getSnapshots().map(snapshots => Ok(Json.toJson(snapshots)))
     }
 
-  def getSnapshotData(snapshotId: String) = Action.async { _ =>
-    testOnlyFormService.getSnapshotData(snapshotId).map(snapshotWithData => Ok(Json.toJson(snapshotWithData)))
+  def getSnapshotData(snapshotId: SnapshotId) = Action.async { _ =>
+    testOnlyFormService
+      .getSnapshotData(snapshotId)
+      .map(snapshotWithData => Ok(Json.toJson(snapshotWithData)))
   }
 
   def updateSnapshot() =
@@ -316,6 +327,7 @@ class TestOnlyController(
 
   def updateFormData() =
     Action.async(parse.json[UpdateFormDataRequest]) { request =>
+      implicit val hc: HeaderCarrier = HeaderCarrier()
       val updateRequest: UpdateFormDataRequest = request.body
       testOnlyFormService.updateFormData(updateRequest).map(saveReply => Ok(Json.toJson(saveReply)))
     }

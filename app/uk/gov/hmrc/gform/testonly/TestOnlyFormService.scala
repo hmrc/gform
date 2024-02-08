@@ -16,143 +16,102 @@
 
 package uk.gov.hmrc.gform.testonly
 
-import play.api.libs.json._
-import uk.gov.hmrc.mongo.cache.DataKey
-import uk.gov.hmrc.mongo.cache.MongoCacheRepository
-import uk.gov.hmrc.crypto.{ Crypted, Decrypter, Encrypter, PlainText }
-import uk.gov.hmrc.gform.sharedmodel.form.FormData
-
+import play.api.mvc.Results
+import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.crypto.{ Decrypter, Encrypter }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateRawId
+import uk.gov.hmrc.gform.formtemplate.{ FormTemplateService, RequestHandlerAlg }
+import uk.gov.hmrc.gform.sharedmodel.form.FormId
+import uk.gov.hmrc.gform.save4later.FormMongoCache
+import uk.gov.hmrc.gform.core.FOpt
+import uk.gov.hmrc.gform.BuildInfo
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import cats.implicits._
 
 class TestOnlyFormService(
-  formRepository: MongoCacheRepository[String],
-  snapshotRepository: MongoCacheRepository[String],
-  jsonCrypto: Encrypter with Decrypter
+  snapshotMongoCache: SnapshotMongoCache,
+  formMongoCache: FormMongoCache,
+  jsonCrypto: Encrypter with Decrypter,
+  formTemplateService: FormTemplateService,
+  requestHandler: RequestHandlerAlg[FOpt]
 )(implicit ec: ExecutionContext) {
 
-  def saveForm(saveRequest: SaveRequest): Future[SnapshotWithData] =
-    formRepository
-      .findById(saveRequest.formId)
-      .flatMap {
-        case Some(cacheItem) =>
-          val newId = java.util.UUID.randomUUID().toString
-          cacheItem.data.fields.toList
-            .traverse { case (k, v) =>
-              val value = if (k === "form") { v.as[JsObject] - "_id" - "userId" }
-              else v
-              snapshotRepository.put(newId)(DataKey(k), value)
-            }
-            .flatMap(_ => snapshotRepository.put(newId)(DataKey("description"), saveRequest.description))
-            .map(_ => newId)
-        case None =>
-          Future.failed(new Exception(s"We could not find cache item with id: ${saveRequest.formId}"))
+  def saveForm(saveRequest: SaveRequest)(implicit hc: HeaderCarrier): Future[SnapshotOverview] =
+    formMongoCache
+      .get(saveRequest.formId)
+      .flatMap { form =>
+        for {
+          raw <- formTemplateService.get(FormTemplateRawId(form.formTemplateId.value))
+          snapshot = Snapshot(
+                       form,
+                       raw,
+                       saveRequest.description,
+                       GformVersion(BuildInfo.version),
+                       saveRequest.gformFrontendVersion
+                     )
+          _ <- snapshotMongoCache.put(snapshot.snapshotId, snapshot)
+          _ <- restoreSnapshotTemplate(snapshot.snapshotId)
+        } yield SnapshotOverview(snapshot, withData = true)
       }
-      .flatMap(snapShotId => getSnapshotData(snapShotId))
 
-  def restoreForm(snapshotId: String, restoreId: String): Future[Snapshot] = {
-    val snapshotItem = snapshotRepository.findById(snapshotId)
-    val restoreItem = formRepository.findById(restoreId)
-    (snapshotItem, restoreItem)
+  def restoreSnapshotTemplate(snapshotId: SnapshotId): Future[Unit] =
+    snapshotMongoCache.find(snapshotId).flatMap {
+      case Some(snapshot) =>
+        requestHandler
+          .handleRequest(snapshot.toSnapshotTemplate())
+          .fold(_ => throw new Exception(s"Unable to create a new template"), _ => Results.Ok)
+          .map(_ => ())
+      case None => throw new Exception(s"We could not find snapshot item with id: $snapshotId")
+    }
+
+  def restoreForm(snapshotId: SnapshotId, restoreId: String)(implicit hc: HeaderCarrier): Future[SnapshotOverview] = {
+    val snapshotF = snapshotMongoCache.find(snapshotId)
+    val currentFormF = formMongoCache.find(FormId(restoreId))
+    (snapshotF, currentFormF)
       .mapN {
-        case (Some(snapshotCacheItem), Some(restoreCacheItem)) => (snapshotCacheItem, restoreCacheItem)
-        case _                                                 => throw new Exception(s"We could not find cache item with id: $snapshotId or $restoreId")
+        case (Some(snapshot), Some(currentForm)) => (snapshot, currentForm)
+        case _                                   => throw new Exception(s"We could not find cache item with id: $snapshotId or $restoreId")
       }
-      .flatMap { case (snapshotCacheItem, restoreCacheItem) =>
-        val updatedData = updateCacheItemData(snapshotCacheItem.data, restoreCacheItem.data)
-        updatedData.fields.toList
-          .traverse { case (k, v) =>
-            formRepository.put(restoreId)(DataKey(k), v)
-          }
-          .map(_ => Snapshot(snapshotCacheItem))
+      .flatMap { case (snapshot, currentForm) =>
+        formMongoCache
+          .upsert(snapshot.toSnapshotForm(currentForm))
+          .map(_ => SnapshotOverview(snapshot, withData = true))
       }
-
   }
 
-  private def updateCacheItemData(snapshotData: JsObject, formData: JsObject): JsObject = {
-    val id = formData.validate((__ \ "form" \ "_id").json.pick).get
-    val userId = formData.validate((__ \ "form" \ "userId").json.pick).get
-    snapshotData
-      .transform(
-        (__ \ "form").json.update(
-          __.read[JsObject].map { o =>
-            o ++ Json.obj("_id" -> id) ++ Json.obj("userId" -> userId)
-          }
-        )
-      )
-      .map(_ - "description")
-      .getOrElse(snapshotData)
-  }
+  def getSnapshots(): Future[List[SnapshotOverview]] =
+    snapshotMongoCache.findAll().map(_.map(SnapshotOverview(_, withData = false)))
 
-  def getSnapshots(): Future[List[Snapshot]] =
-    snapshotRepository.collection
-      .find()
-      .toFuture()
-      .map { list =>
-        list.toList.map(Snapshot(_))
-      }
-
-  def getSnapshotData(snapshotId: String): Future[SnapshotWithData] = {
-    val snapshotItem = snapshotRepository.findById(snapshotId)
-    snapshotItem.map {
-      case Some(snapshotCacheItem) =>
-        val snapshot = Snapshot(snapshotCacheItem)
-        val data = snapshotCacheItem.data.as[JsObject].value("form").as[JsObject].value("formData").as[String]
-        SnapshotWithData(
-          snapshot,
-          Json.toJson(Json.parse(jsonCrypto.decrypt(Crypted(data)).value).as[FormData]).as[JsObject]
-        )
-      case None => throw new Exception(s"We could not find cache item with id: $snapshotId")
+  def getSnapshotData(snapshotId: SnapshotId): Future[SnapshotOverview] =
+    snapshotMongoCache.find(snapshotId).map {
+      case Some(snapshot) => SnapshotOverview(snapshot, withData = true)
+      case None           => throw new Exception(s"We could not find snapshot item with id: $snapshotId")
     }
-  }
 
-  def updateSnapshot(request: UpdateSnapshotRequest): Future[SnapshotWithData] =
-    snapshotRepository
-      .findById(request.snapshotId)
-      .flatMap {
-        case Some(cacheItem) =>
-          val updatedFormData =
-            Json.obj("formData" -> jsonCrypto.encrypt(PlainText(Json.toJson(request.formData).toString())).value)
-          val data = cacheItem.data.as[JsObject].validate((__ \ "form").json.pick).get
-          val updatedForm = data
-            .transform(
-              __.json.update(
-                __.read[JsObject].map { o =>
-                  o ++ updatedFormData
-                }
-              )
-            )
-            .getOrElse(data)
-          snapshotRepository
-            .put(request.snapshotId)(DataKey("form"), updatedForm)
-            .flatMap(_ => snapshotRepository.put(request.snapshotId)(DataKey("description"), request.description))
-            .map(_ => request.snapshotId)
-        case None =>
-          Future.failed(new Exception(s"We could not find cache item with id: ${request.snapshotId}"))
+  def updateSnapshot(request: UpdateSnapshotRequest): Future[SnapshotOverview] =
+    snapshotMongoCache
+      .find(request.snapshotId)
+      .map {
+        case Some(snapshot) =>
+          val newDescription = request.description
+          snapshot.updateWith(request.formData, newDescription)
+        case None => throw new Exception(s"We could not find snapshot item with id: $request.snapshotId")
       }
-      .flatMap(snapShotId => getSnapshotData(snapShotId))
+      .flatMap { updatedSnapshot =>
+        snapshotMongoCache.upsert(updatedSnapshot).map(_ => SnapshotOverview(updatedSnapshot, withData = true))
+      }
 
-  def updateFormData(request: UpdateFormDataRequest): Future[SaveReply] =
-    formRepository.findById(request.formId).flatMap {
-      case Some(cacheItem) =>
-        val updatedFormData =
-          Json.obj("formData" -> jsonCrypto.encrypt(PlainText(Json.toJson(request.formData).toString())).value)
-        val data = cacheItem.data.as[JsObject].validate((__ \ "form").json.pick).get
-        val updatedForm = data
-          .transform(
-            __.json.update(
-              __.read[JsObject].map { o =>
-                o ++ updatedFormData
-              }
-            )
-          )
-          .getOrElse(data)
-        formRepository
-          .put(request.formId)(DataKey("form"), updatedForm)
-          .map(_ => SaveReply(request.formId))
-      case None =>
-        Future.failed(new Exception(s"We could not find cache item with id: ${request.formId}"))
-    }
+  def updateFormData(request: UpdateFormDataRequest)(implicit hc: HeaderCarrier): Future[SaveReply] =
+    formMongoCache
+      .find(request.formId)
+      .map {
+        case Some(form) =>
+          form.copy(formData = request.formData)
+        case None => throw new Exception(s"We could not find snapshot item with id: $request.snapshotId")
+      }
+      .flatMap { updatedForm =>
+        formMongoCache.upsert(updatedForm).map(_ => SaveReply(request.formId))
+      }
 
 }

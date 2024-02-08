@@ -27,7 +27,7 @@ lazy val IntegrationTest = config("it") extend Test
 lazy val BenchmarkTest = config("benchmark") extend Test
 
 lazy val microservice = (project in file("."))
-  .enablePlugins(play.sbt.PlayScala, SbtDistributablesPlugin)
+  .enablePlugins(play.sbt.PlayScala, SbtDistributablesPlugin, BuildInfoPlugin)
   .settings(
     name := "gform",
     organization := "uk.gov.hmrc",
@@ -61,6 +61,7 @@ lazy val microservice = (project in file("."))
       "uk.gov.hmrc.gform.history.HistoryId",
       "uk.gov.hmrc.gform.upscan.UpscanReference",
       "uk.gov.hmrc.gform.sharedmodel.sdes._",
+      "uk.gov.hmrc.gform.testonly.SnapshotId",
       "uk.gov.hmrc.mongo.workitem.ProcessingStatus"
     ),
     resolvers ++= Seq(
@@ -102,4 +103,8 @@ lazy val microservice = (project in file("."))
   .settings(
     inConfig(BenchmarkTest)(Defaults.testSettings),
     BenchmarkTest / scalaSource := baseDirectory.value / "/benchmark"
+  )
+  .settings(
+    buildInfoKeys := Seq[BuildInfoKey](version),
+    buildInfoPackage := "uk.gov.hmrc.gform"
   )

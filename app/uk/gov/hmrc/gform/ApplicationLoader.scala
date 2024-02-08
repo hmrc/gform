@@ -76,6 +76,7 @@ import uk.gov.hmrc.gform.submission.handlebars.HandlebarsHttpApiModule
 import uk.gov.hmrc.gform.submissionconsolidator.SubmissionConsolidatorModule
 import uk.gov.hmrc.gform.testonly.TestOnlyModule
 import uk.gov.hmrc.gform.testonly.TestOnlyFormService
+import uk.gov.hmrc.gform.testonly.SnapshotMongoCache
 import uk.gov.hmrc.gform.time.TimeModule
 import uk.gov.hmrc.gform.translation.TranslationModule
 import uk.gov.hmrc.gform.upscan.UpscanModule
@@ -293,7 +294,16 @@ class ApplicationModule(context: Context)
     configModule.snapshotCreatedExpiryDays,
     configModule.snapshotSubmittedExpiryHours
   )
-  val testOnlyFormService = new TestOnlyFormService(mongoCacheRepository, snapshotsMongoCache, jsonCrypto)
+  val snapshotMongoCache = new SnapshotMongoCache(
+    snapshotsMongoCache
+  )
+  val testOnlyFormService = new TestOnlyFormService(
+    snapshotMongoCache,
+    formMongoCache,
+    jsonCrypto,
+    formTemplateModule.formTemplateService,
+    formTemplateModule.handler
+  )
   private val testOnlyModule =
     new TestOnlyModule(
       mongoModule,
