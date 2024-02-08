@@ -32,32 +32,32 @@ class SnapshotMongoCache(
   timeProvider: TimeProvider
 )(implicit ec: ExecutionContext) {
 
-  private val snapshotDataKey: DataKey[SnapshotItem] = DataKey("snapshot")
-  implicit val formats: Format[SnapshotItem] = SnapshotItem.format(jsonCrypto)
-  def put(id: SnapshotId, snapshotItem: SnapshotItem): Future[Unit] =
+  private val snapshotDataKey: DataKey[Snapshot] = DataKey("snapshot")
+  implicit val formats: Format[Snapshot] = Snapshot.format(jsonCrypto)
+  def put(id: SnapshotId, snapshot: Snapshot): Future[Unit] =
     mongoCacheRepository
-      .put(id.value)(snapshotDataKey, snapshotItem)
+      .put(id.value)(snapshotDataKey, snapshot)
       .map(_ => ())
 
-  def find(snapshotId: SnapshotId): Future[Option[SnapshotItem]] = mongoCacheRepository
-    .get[SnapshotItem](snapshotId.value)(snapshotDataKey)
+  def find(snapshotId: SnapshotId): Future[Option[Snapshot]] = mongoCacheRepository
+    .get[Snapshot](snapshotId.value)(snapshotDataKey)
 
-  def findAll(): Future[List[SnapshotItem]] =
+  def findAll(): Future[List[Snapshot]] =
     mongoCacheRepository.collection
       .find()
       .toFuture()
       .map(_.toList)
       .map { cacheItemList =>
         cacheItemList.flatMap { cacheItem =>
-          cacheItem.data.as[JsObject].value("snapshot").validate[SnapshotItem] match {
-            case JsSuccess(snapshotItem, _) => Some(snapshotItem)
-            case JsError(errors)            => throw new Exception(s"Error deserializing SnapshotItem: $errors")
+          cacheItem.data.as[JsObject].value("snapshot").validate[Snapshot] match {
+            case JsSuccess(snapshot, _) => Some(snapshot)
+            case JsError(errors)        => throw new Exception(s"Error deserializing Snapshot: $errors")
           }
         }
       }
 
-  def upsert(snapshotItem: SnapshotItem): Future[Unit] =
+  def upsert(snapshot: Snapshot): Future[Unit] =
     mongoCacheRepository
-      .put(snapshotItem.snapshotId.value)(snapshotDataKey, snapshotItem)
+      .put(snapshot.snapshotId.value)(snapshotDataKey, snapshot)
       .map(_ => ())
 }

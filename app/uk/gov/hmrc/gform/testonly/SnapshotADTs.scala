@@ -40,15 +40,15 @@ case class SnapshotOverview(
 
 object SnapshotOverview {
 
-  def apply(snapshotItem: SnapshotItem, withData: Boolean): SnapshotOverview =
+  def apply(snapshot: Snapshot, withData: Boolean): SnapshotOverview =
     SnapshotOverview(
-      snapshotItem.snapshotTemplateId,
-      snapshotItem.snapshotId,
-      snapshotItem.createdAt,
-      snapshotItem.description,
-      snapshotItem.gformVersion,
-      snapshotItem.gformFrontendVersion,
-      if (withData) Some(snapshotItem.originalForm.formData) else None
+      snapshot.snapshotTemplateId,
+      snapshot.snapshotId,
+      snapshot.createdAt,
+      snapshot.description,
+      snapshot.gformVersion,
+      snapshot.gformFrontendVersion,
+      if (withData) Some(snapshot.originalForm.formData) else None
     )
 
   implicit val writes: OWrites[SnapshotOverview] = derived.owrites()
@@ -113,7 +113,7 @@ object GformFrontendVersion {
   implicit val format: Format[GformFrontendVersion] = Json.valueFormat
 }
 
-case class SnapshotItem(
+case class Snapshot(
   snapshotId: SnapshotId,
   originalForm: Form,
   originalTemplate: FormTemplateRaw,
@@ -136,11 +136,11 @@ case class SnapshotItem(
   def toSnapshotTemplate(): FormTemplateRaw =
     originalTemplate.copy(value = originalTemplate.value ++ Json.obj("_id" -> snapshotTemplateId.value))
 
-  def updateWith(newFormData: FormData, newDescription: Description): SnapshotItem =
+  def updateWith(newFormData: FormData, newDescription: Description): Snapshot =
     copy(originalForm = originalForm.copy(formData = newFormData), description = newDescription)
 }
 
-object SnapshotItem {
+object Snapshot {
 
   def apply(
     originalForm: Form,
@@ -148,12 +148,12 @@ object SnapshotItem {
     description: Description,
     gformVersion: GformVersion,
     gformFrontendVersion: GformFrontendVersion
-  ): SnapshotItem = {
+  ): Snapshot = {
     // add prefix to the template id for both saved form and template
     val snapshotId = SnapshotId(java.util.UUID.randomUUID().toString)
     val prefix = snapshotId.value.split("-").head
     val snapshotTemplateId = FormTemplateId(s"${prefix}_${originalForm.formTemplateId.value}")
-    SnapshotItem(
+    Snapshot(
       snapshotId,
       originalForm,
       originalTemplate,
@@ -165,9 +165,9 @@ object SnapshotItem {
     )
   }
 
-  def format(jsonCrypto: Encrypter with Decrypter): Format[SnapshotItem] = {
+  def format(jsonCrypto: Encrypter with Decrypter): Format[Snapshot] = {
     implicit val formatFormEncrypted: Format[Form] = EncryptedFormFormat.formatEncrypted(jsonCrypto)
     implicit val instantFormat = uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats.instantFormat
-    Json.format[SnapshotItem]
+    Json.format[Snapshot]
   }
 }
