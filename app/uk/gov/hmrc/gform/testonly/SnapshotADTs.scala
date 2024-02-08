@@ -74,7 +74,7 @@ object SaveReply {
 
 case class UpdateSnapshotRequest(
   snapshotId: SnapshotId,
-  formData: JsObject,
+  formData: FormData,
   description: Description
 )
 
@@ -84,7 +84,7 @@ object UpdateSnapshotRequest {
 
 case class UpdateFormDataRequest(
   formId: FormId,
-  formData: JsObject
+  formData: FormData
 )
 
 object UpdateFormDataRequest {

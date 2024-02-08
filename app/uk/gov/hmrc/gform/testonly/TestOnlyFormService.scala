@@ -19,7 +19,6 @@ package uk.gov.hmrc.gform.testonly
 import play.api.mvc.Results
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.crypto.{ Decrypter, Encrypter }
-import uk.gov.hmrc.gform.sharedmodel.form.FormData
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateRawId
 import uk.gov.hmrc.gform.formtemplate.{ FormTemplateService, RequestHandlerAlg }
 import uk.gov.hmrc.gform.sharedmodel.form.FormId
@@ -95,9 +94,8 @@ class TestOnlyFormService(
       .find(request.snapshotId)
       .map {
         case Some(snapshot) =>
-          val newFormData = request.formData.validate[FormData].get
           val newDescription = request.description
-          snapshot.updateWith(newFormData, newDescription)
+          snapshot.updateWith(request.formData, newDescription)
         case None => throw new Exception(s"We could not find snapshot item with id: $request.snapshotId")
       }
       .flatMap { updatedSnapshot =>
@@ -109,8 +107,7 @@ class TestOnlyFormService(
       .find(request.formId)
       .map {
         case Some(form) =>
-          val newFormData = request.formData.validate[FormData].get
-          form.copy(formData = newFormData)
+          form.copy(formData = request.formData)
         case None => throw new Exception(s"We could not find snapshot item with id: $request.snapshotId")
       }
       .flatMap { updatedForm =>
