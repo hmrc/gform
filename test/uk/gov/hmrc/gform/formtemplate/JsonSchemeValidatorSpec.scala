@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.gform.formtemplate
 
-import io.circe.{ Json }
+import io.circe.Json
 import io.circe.literal.JsonStringContext
 import io.circe.syntax.EncoderOps
 import munit.FunSuite
