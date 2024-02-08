@@ -47,6 +47,8 @@ import uk.gov.hmrc.gform.submission.handlebars.{ FocussedHandlebarsModelTree, Ha
 import uk.gov.hmrc.gform.BuildInfo
 import uk.gov.hmrc.mongo.MongoComponent
 
+import uk.gov.hmrc.http.HeaderCarrier
+
 class TestOnlyController(
   controllerComponents: ControllerComponents,
   mongoComponent: MongoComponent,
@@ -291,17 +293,19 @@ class TestOnlyController(
 
   def saveForm() =
     Action.async(parse.json[SaveRequest]) { request =>
+      implicit val hc: HeaderCarrier = HeaderCarrier()
       val saveRequest: SaveRequest = request.body
       testOnlyFormService.saveForm(saveRequest).map(saveReply => Ok(Json.toJson(saveReply)))
     }
 
   def restoreForm(snapshotId: String, restoreId: String) = Action.async { _ =>
-    testOnlyFormService.restoreForm(snapshotId, restoreId).map(snapshot => Ok(Json.toJson(snapshot)))
+    implicit val hc: HeaderCarrier = HeaderCarrier()
+    testOnlyFormService.restoreForm(SnapshotId(snapshotId), restoreId).map(snapshot => Ok(Json.toJson(snapshot)))
   }
 
   def restoreSnapshotTemplate() = Action.async(parse.json) { request =>
-    val snapshotId = request.body.as[JsString]
-    testOnlyFormService.restoreSnapshotTemplate(snapshotId.value).map(_ => Ok)
+    val snapshotId = request.body.as[SnapshotId]
+    testOnlyFormService.restoreSnapshotTemplate(snapshotId).map(_ => Ok)
   }
 
   def getSnapshots() =
@@ -309,8 +313,10 @@ class TestOnlyController(
       testOnlyFormService.getSnapshots().map(snapshots => Ok(Json.toJson(snapshots)))
     }
 
-  def getSnapshotData(snapshotId: String) = Action.async { _ =>
-    testOnlyFormService.getSnapshotData(snapshotId).map(snapshotWithData => Ok(Json.toJson(snapshotWithData)))
+  def getSnapshotData(snapshotId: SnapshotId) = Action.async { _ =>
+    testOnlyFormService
+      .getSnapshotData(snapshotId)
+      .map(snapshotWithData => Ok(Json.toJson(snapshotWithData)))
   }
 
   def updateSnapshot() =
@@ -321,6 +327,7 @@ class TestOnlyController(
 
   def updateFormData() =
     Action.async(parse.json[UpdateFormDataRequest]) { request =>
+      implicit val hc: HeaderCarrier = HeaderCarrier()
       val updateRequest: UpdateFormDataRequest = request.body
       testOnlyFormService.updateFormData(updateRequest).map(saveReply => Ok(Json.toJson(saveReply)))
     }
