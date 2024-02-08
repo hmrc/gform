@@ -295,7 +295,6 @@ class JsonSchemeValidatorSpec extends FunSuite {
     runInvalidJsonTest(result, expectedResult)
   }
 
-  //TODO presence of the below test fields
   test(
     "validateJson rejects the form gracefully when the property displayCharCount is used when the type property is not [text]"
   ) {
@@ -322,6 +321,27 @@ class JsonSchemeValidatorSpec extends FunSuite {
   ) {
     val jsonTemplate = constructTestOneSectionJsonTemplate(
       propertyDependencies = Map("type" -> "text", "multiline" -> "false"),
+      strings = Map("displayCharCount" -> "false"),
+      ints = Map(),
+      arraysOfStrings = Map(),
+      arraysOfObjects = Map(),
+      objects = Map()
+    )
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "#/sections/0/fields/0: Property displayCharCount can only be used with type: [text], multiline: [true]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when the property displayCharCount is used when the multiline property is not present"
+  ) {
+    val jsonTemplate = constructTestOneSectionJsonTemplate(
+      propertyDependencies = Map("type" -> "text"),
       strings = Map("displayCharCount" -> "false"),
       ints = Map(),
       arraysOfStrings = Map(),
@@ -385,6 +405,27 @@ class JsonSchemeValidatorSpec extends FunSuite {
   ) {
     val jsonTemplate = constructTestOneSectionJsonTemplate(
       propertyDependencies = Map("type" -> "text", "multiline" -> "false"),
+      strings = Map(),
+      ints = Map("dataThreshold" -> 75),
+      arraysOfStrings = Map(),
+      arraysOfObjects = Map(),
+      objects = Map()
+    )
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "#/sections/0/fields/0: Property dataThreshold can only be used with type: [text], multiline: [true]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when the property dataThreshold is used when the multiline property is not present"
+  ) {
+    val jsonTemplate = constructTestOneSectionJsonTemplate(
+      propertyDependencies = Map("type" -> "text"),
       strings = Map(),
       ints = Map("dataThreshold" -> 75),
       arraysOfStrings = Map(),
