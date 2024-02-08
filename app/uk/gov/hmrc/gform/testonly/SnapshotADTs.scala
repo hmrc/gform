@@ -28,38 +28,30 @@ import uk.gov.hmrc.gform.sharedmodel.form.FormId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateRaw
 
-case class Snapshot(
+case class SnapshotOverview(
   templateId: FormTemplateId,
   snapshotId: SnapshotId,
   savedAt: Instant,
   description: Description,
   gformVersion: GformVersion,
-  gformFrontendVersion: GformFrontendVersion
+  gformFrontendVersion: GformFrontendVersion,
+  formData: Option[FormData]
 )
 
-object Snapshot {
+object SnapshotOverview {
 
-  def apply(snapshotItem: SnapshotItem): Snapshot =
-    Snapshot(
+  def apply(snapshotItem: SnapshotItem, withData: Boolean): SnapshotOverview =
+    SnapshotOverview(
       snapshotItem.snapshotTemplateId,
       snapshotItem.snapshotId,
       snapshotItem.createdAt,
       snapshotItem.description,
       snapshotItem.gformVersion,
-      snapshotItem.gformFrontendVersion
+      snapshotItem.gformFrontendVersion,
+      if (withData) Some(snapshotItem.originalForm.formData) else None
     )
 
-  implicit val writes: OWrites[Snapshot] = derived.owrites()
-}
-
-case class SnapshotWithData(
-  snapshot: Snapshot,
-  formData: FormData
-)
-object SnapshotWithData {
-  def apply(snapshotItem: SnapshotItem): SnapshotWithData =
-    SnapshotWithData(Snapshot(snapshotItem), snapshotItem.originalForm.formData)
-  implicit val writes: OWrites[SnapshotWithData] = derived.owrites()
+  implicit val writes: OWrites[SnapshotOverview] = derived.owrites()
 }
 
 case class SaveRequest(
@@ -158,9 +150,9 @@ object SnapshotItem {
     gformFrontendVersion: GformFrontendVersion
   ): SnapshotItem = {
     // add prefix to the template id for both saved form and template
-    val prefix = UniqueStringGenerator.generateUniqueString()
-    val snapshotTemplateId = FormTemplateId(s"${prefix}_${originalForm.formTemplateId.value}")
     val snapshotId = SnapshotId(java.util.UUID.randomUUID().toString)
+    val prefix = snapshotId.value.split("-").head
+    val snapshotTemplateId = FormTemplateId(s"${prefix}_${originalForm.formTemplateId.value}")
     SnapshotItem(
       snapshotId,
       originalForm,

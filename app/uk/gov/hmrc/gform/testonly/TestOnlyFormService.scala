@@ -38,7 +38,7 @@ class TestOnlyFormService(
   requestHandler: RequestHandlerAlg[FOpt]
 )(implicit ec: ExecutionContext) {
 
-  def saveForm(saveRequest: SaveRequest)(implicit hc: HeaderCarrier): Future[SnapshotWithData] =
+  def saveForm(saveRequest: SaveRequest)(implicit hc: HeaderCarrier): Future[SnapshotOverview] =
     formMongoCache
       .get(saveRequest.formId)
       .flatMap { form =>
@@ -53,7 +53,7 @@ class TestOnlyFormService(
                          )
           _ <- snapshotMongoCache.put(snapshotItem.snapshotId, snapshotItem)
           _ <- restoreSnapshotTemplate(snapshotItem.snapshotId)
-        } yield SnapshotWithData(snapshotItem)
+        } yield SnapshotOverview(snapshotItem, withData = true)
       }
 
   def restoreSnapshotTemplate(snapshotId: SnapshotId): Future[Unit] =
@@ -66,7 +66,7 @@ class TestOnlyFormService(
       case None => throw new Exception(s"We could not find snapshot item with id: $snapshotId")
     }
 
-  def restoreForm(snapshotId: SnapshotId, restoreId: String)(implicit hc: HeaderCarrier): Future[Snapshot] = {
+  def restoreForm(snapshotId: SnapshotId, restoreId: String)(implicit hc: HeaderCarrier): Future[SnapshotOverview] = {
     val snapshotItemF = snapshotMongoCache.find(snapshotId)
     val currentFormF = formMongoCache.find(FormId(restoreId))
     (snapshotItemF, currentFormF)
@@ -77,20 +77,20 @@ class TestOnlyFormService(
       .flatMap { case (snapshotItem, currentForm) =>
         formMongoCache
           .upsert(snapshotItem.toSnapshotForm(currentForm))
-          .map(_ => Snapshot(snapshotItem))
+          .map(_ => SnapshotOverview(snapshotItem, withData = true))
       }
   }
 
-  def getSnapshots(): Future[List[Snapshot]] =
-    snapshotMongoCache.findAll().map(_.map(Snapshot(_)))
+  def getSnapshots(): Future[List[SnapshotOverview]] =
+    snapshotMongoCache.findAll().map(_.map(SnapshotOverview(_, withData = false)))
 
-  def getSnapshotData(snapshotId: SnapshotId): Future[SnapshotWithData] =
+  def getSnapshotData(snapshotId: SnapshotId): Future[SnapshotOverview] =
     snapshotMongoCache.find(snapshotId).map {
-      case Some(snapshotItem) => SnapshotWithData(snapshotItem)
+      case Some(snapshotItem) => SnapshotOverview(snapshotItem, withData = true)
       case None               => throw new Exception(s"We could not find snapshot item with id: $snapshotId")
     }
 
-  def updateSnapshot(request: UpdateSnapshotRequest): Future[SnapshotWithData] =
+  def updateSnapshot(request: UpdateSnapshotRequest): Future[SnapshotOverview] =
     snapshotMongoCache
       .find(request.snapshotId)
       .map {
@@ -101,7 +101,7 @@ class TestOnlyFormService(
         case None => throw new Exception(s"We could not find snapshot item with id: $request.snapshotId")
       }
       .flatMap { updatedSnapshotItem =>
-        snapshotMongoCache.upsert(updatedSnapshotItem).map(_ => SnapshotWithData(updatedSnapshotItem))
+        snapshotMongoCache.upsert(updatedSnapshotItem).map(_ => SnapshotOverview(updatedSnapshotItem, withData = true))
       }
 
   def updateFormData(request: UpdateFormDataRequest)(implicit hc: HeaderCarrier): Future[SaveReply] =
