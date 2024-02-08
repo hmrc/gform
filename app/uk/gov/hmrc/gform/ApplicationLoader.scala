@@ -295,9 +295,7 @@ class ApplicationModule(context: Context)
     configModule.snapshotSubmittedExpiryHours
   )
   val snapshotMongoCache = new SnapshotMongoCache(
-    snapshotsMongoCache,
-    jsonCrypto,
-    timeModule.timeProvider
+    snapshotsMongoCache
   )
   val testOnlyFormService = new TestOnlyFormService(
     snapshotMongoCache,

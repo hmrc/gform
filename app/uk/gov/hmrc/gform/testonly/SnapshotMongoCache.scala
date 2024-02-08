@@ -16,8 +16,6 @@
 
 package uk.gov.hmrc.gform.testonly
 
-import uk.gov.hmrc.crypto.{ Decrypter, Encrypter }
-import uk.gov.hmrc.gform.time.TimeProvider
 import uk.gov.hmrc.mongo.cache.MongoCacheRepository
 import uk.gov.hmrc.mongo.cache.DataKey
 
@@ -26,9 +24,7 @@ import scala.concurrent.Future
 import play.api.libs.json._
 
 class SnapshotMongoCache(
-  mongoCacheRepository: MongoCacheRepository[String],
-  jsonCrypto: Encrypter with Decrypter,
-  timeProvider: TimeProvider
+  mongoCacheRepository: MongoCacheRepository[String]
 )(implicit ec: ExecutionContext) {
 
   private val snapshotDataKey: DataKey[Snapshot] = DataKey("snapshot")
