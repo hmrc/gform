@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.gform.testonly
 
-import play.api.libs.json.Format
 import uk.gov.hmrc.crypto.{ Decrypter, Encrypter }
 import uk.gov.hmrc.gform.time.TimeProvider
 import uk.gov.hmrc.mongo.cache.MongoCacheRepository
@@ -33,7 +32,6 @@ class SnapshotMongoCache(
 )(implicit ec: ExecutionContext) {
 
   private val snapshotDataKey: DataKey[Snapshot] = DataKey("snapshot")
-  implicit val formats: Format[Snapshot] = Snapshot.format(jsonCrypto)
   def put(id: SnapshotId, snapshot: Snapshot): Future[Unit] =
     mongoCacheRepository
       .put(id.value)(snapshotDataKey, snapshot)

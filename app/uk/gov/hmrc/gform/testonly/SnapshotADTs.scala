@@ -20,8 +20,6 @@ import java.time.Instant
 import julienrf.json.derived
 import play.api.libs.json.Reads._
 import play.api.libs.json._
-import uk.gov.hmrc.crypto.{ Decrypter, Encrypter }
-import uk.gov.hmrc.gform.save4later.EncryptedFormFormat
 import uk.gov.hmrc.gform.sharedmodel.form.Form
 import uk.gov.hmrc.gform.sharedmodel.form.FormData
 import uk.gov.hmrc.gform.sharedmodel.form.FormId
@@ -165,9 +163,5 @@ object Snapshot {
     )
   }
 
-  def format(jsonCrypto: Encrypter with Decrypter): Format[Snapshot] = {
-    implicit val formatFormEncrypted: Format[Form] = EncryptedFormFormat.formatEncrypted(jsonCrypto)
-    implicit val instantFormat = uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats.instantFormat
-    Json.format[Snapshot]
-  }
+  implicit val format: OFormat[Snapshot] = Json.format[Snapshot]
 }
