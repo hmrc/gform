@@ -18,7 +18,6 @@ package uk.gov.hmrc.gform.formtemplate
 
 import io.circe.Json
 import io.circe.literal.JsonStringContext
-import io.circe.syntax.EncoderOps
 import munit.FunSuite
 import play.api.libs.json.{ JsArray, JsValue }
 import play.api.libs.json.Json.toJson
@@ -27,26 +26,8 @@ import uk.gov.hmrc.gform.exceptions.SchemaValidationException
 class JsonSchemeValidatorSpec extends FunSuite {
 
   private def constructTestOneSectionJsonTemplate(
-    propertyDependencies: Map[String, String],
-    strings: Map[String, String],
-    ints: Map[String, Int],
-    arraysOfStrings: Map[String, Array[String]],
-    arraysOfObjects: Map[String, Array[Map[String, String]]],
-    objects: Map[String, Map[String, String]]
-  ): Json = {
-    val basePropertiesAndValues = Map(
-      "id"    -> "TestID",
-      "label" -> "Test Label"
-    )
-
-    val allFields = basePropertiesAndValues.asJson
-      .deepMerge(propertyDependencies.asJson)
-      .deepMerge(strings.asJson)
-      .deepMerge(ints.asJson)
-      .deepMerge(arraysOfStrings.asJson)
-      .deepMerge(arraysOfObjects.asJson)
-      .deepMerge(objects.asJson)
-
+    properties: Json
+  ): Json =
     json"""
       {
         "_id": "json-id",
@@ -57,12 +38,34 @@ class JsonSchemeValidatorSpec extends FunSuite {
           {
             "title": "Page",
             "fields": [
-               $allFields
+               $properties
             ]
           }
         ]
       }"""
-  }
+
+  private def constructTestTwoSectionJsonTemplate(properties1: Json, properties2: Json) =
+    json"""
+    {
+      "_id": "json-id",
+      "formName": "Json",
+      "version": 1,
+      "description": "",
+      "sections": [
+        {
+          "title": "Page 1",
+          "fields": [
+            $properties1
+          ]
+        },
+        {
+          "title": "Page 2",
+          "fields": [
+            $properties2
+          ]
+        }
+      ]
+    }"""
 
   private def getNumberOfErrors(errorsAsList: List[JsValue]): Int =
     // Get the number of custom conditional validation error messages
@@ -91,14 +94,17 @@ class JsonSchemeValidatorSpec extends FunSuite {
   test(
     "validateJson rejects the form gracefully when the property infoType is used and the type property is not [info]"
   ) {
-    val jsonTemplate = constructTestOneSectionJsonTemplate(
-      propertyDependencies = Map("type" -> "text"),
-      strings = Map("infoType" -> "noformat"),
-      ints = Map(),
-      arraysOfStrings = Map(),
-      arraysOfObjects = Map(),
-      objects = Map()
-    )
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": "test label",
+            "type": "text",
+            "infoType": "noformat"
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
@@ -110,14 +116,17 @@ class JsonSchemeValidatorSpec extends FunSuite {
   test(
     "validateJson rejects the form gracefully when the property infoText is used and the type property is not [info]"
   ) {
-    val jsonTemplate = constructTestOneSectionJsonTemplate(
-      propertyDependencies = Map("type" -> "choice"),
-      strings = Map("infoText" -> "Test infoText"),
-      ints = Map(),
-      arraysOfStrings = Map(),
-      arraysOfObjects = Map(),
-      objects = Map()
-    )
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": "test label",
+            "type": "choice",
+            "infoText": "Test infoText"
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
@@ -129,14 +138,20 @@ class JsonSchemeValidatorSpec extends FunSuite {
   test(
     "validateJson rejects the form gracefully when the property choices is used and the type property is not [choice, revealingChoice]"
   ) {
-    val jsonTemplate = constructTestOneSectionJsonTemplate(
-      propertyDependencies = Map("type" -> "text"),
-      strings = Map(),
-      ints = Map(),
-      arraysOfStrings = Map("choices" -> Array("A", "B")),
-      arraysOfObjects = Map(),
-      objects = Map()
-    )
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": "test label",
+            "type": "text",
+            "choices": [
+              "Test choice 1",
+              "Test choice 2"
+            ]
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
@@ -149,14 +164,17 @@ class JsonSchemeValidatorSpec extends FunSuite {
   test(
     "validateJson rejects the form gracefully when the property multivalue is used when the type property is not either of [choice, revealingChoice]"
   ) {
-    val jsonTemplate = constructTestOneSectionJsonTemplate(
-      propertyDependencies = Map("type" -> "info"),
-      strings = Map("multivalue" -> "true"),
-      ints = Map(),
-      arraysOfStrings = Map(),
-      arraysOfObjects = Map(),
-      objects = Map()
-    )
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": "test label",
+            "type": "info",
+            "multivalue": "true"
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
@@ -169,14 +187,20 @@ class JsonSchemeValidatorSpec extends FunSuite {
   test(
     "validateJson rejects the form gracefully when the property hints is used when the type property is not either of [choice, revealingChoice]"
   ) {
-    val jsonTemplate = constructTestOneSectionJsonTemplate(
-      propertyDependencies = Map("type" -> "text"),
-      strings = Map(),
-      ints = Map(),
-      arraysOfStrings = Map("hints" -> Array("Test hint 1", "Test hint 2")),
-      arraysOfObjects = Map(),
-      objects = Map()
-    )
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": "test label",
+            "type": "text",
+            "hints": [
+              "Test hint 1",
+              "Test hint 2"
+            ]
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
@@ -189,15 +213,22 @@ class JsonSchemeValidatorSpec extends FunSuite {
   test(
     "validateJson rejects the form gracefully when the property optionHelpText is used when the type property is not either of [choice, revealingChoice]"
   ) {
-    val jsonTemplate = constructTestOneSectionJsonTemplate(
-      propertyDependencies = Map("type" -> "text"),
-      strings = Map(),
-      ints = Map(),
-      arraysOfStrings = Map(),
-      arraysOfObjects =
-        Map("optionHelpText" -> Array(Map("en" -> "Test English optionHelpText", "cy" -> "Test Welsh optionHelpText"))),
-      objects = Map()
-    )
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": "test label",
+            "type": "text",
+            "optionHelpText": [
+              {
+                "en": "Test English optionHelpText",
+                "cy": "Test Welsh optionHelpText"
+              }
+            ]
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
@@ -211,14 +242,17 @@ class JsonSchemeValidatorSpec extends FunSuite {
   test(
     "validateJson rejects the form gracefully when the property dividerPosition is used when the type property is not either of [choice, revealingChoice]"
   ) {
-    val jsonTemplate = constructTestOneSectionJsonTemplate(
-      propertyDependencies = Map("type" -> "text"),
-      strings = Map(),
-      ints = Map("dividerPosition" -> 1),
-      arraysOfStrings = Map(),
-      arraysOfObjects = Map(),
-      objects = Map()
-    )
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": "test label",
+            "type": "text",
+            "dividerPosition": 1
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
@@ -232,15 +266,20 @@ class JsonSchemeValidatorSpec extends FunSuite {
   test(
     "validateJson rejects the form gracefully when the property dividerText is used when the type property is not either of [choice, revealingChoice]"
   ) {
-    val jsonTemplate = constructTestOneSectionJsonTemplate(
-      propertyDependencies = Map("type" -> "text"),
-      strings = Map(),
-      ints = Map(),
-      arraysOfStrings = Map(),
-      arraysOfObjects =
-        Map("dividerText" -> Array(Map("en" -> "Test English dividerText", "cy" -> "Test Welsh dividerText"))),
-      objects = Map()
-    )
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": "test label",
+            "type": "text",
+            "dividerText": {
+              "en": "Test English dividerText",
+              "cy": "Test Welsh dividerText"
+            }
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
@@ -254,14 +293,17 @@ class JsonSchemeValidatorSpec extends FunSuite {
   test(
     "validateJson rejects the form gracefully when the property noneChoice is used when the type property is not either of [choice, revealingChoice]"
   ) {
-    val jsonTemplate = constructTestOneSectionJsonTemplate(
-      propertyDependencies = Map("type" -> "text"),
-      strings = Map(),
-      ints = Map("noneChoice" -> 1),
-      arraysOfStrings = Map(),
-      arraysOfObjects = Map(),
-      objects = Map()
-    )
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": "test label",
+            "type": "text",
+            "noneChoice": 1
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
@@ -275,16 +317,20 @@ class JsonSchemeValidatorSpec extends FunSuite {
   test(
     "validateJson rejects the form gracefully when the property noneChoiceError is used when the type property is not either of [choice, revealingChoice]"
   ) {
-    val jsonTemplate = constructTestOneSectionJsonTemplate(
-      propertyDependencies = Map("type" -> "text"),
-      strings = Map(),
-      ints = Map(),
-      arraysOfStrings = Map(),
-      arraysOfObjects = Map(
-        "noneChoiceError" -> Array(Map("en" -> "Test English noneChoiceError", "cy" -> "Test Welsh noneChoiceError"))
-      ),
-      objects = Map()
-    )
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": "test label",
+            "type": "text",
+            "noneChoiceError": {
+              "en": "Test English noneChoiceError",
+              "cy": "Test Welsh noneChoiceError"
+            }
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
@@ -298,14 +344,18 @@ class JsonSchemeValidatorSpec extends FunSuite {
   test(
     "validateJson rejects the form gracefully when the property displayCharCount is used when the type property is not [text]"
   ) {
-    val jsonTemplate = constructTestOneSectionJsonTemplate(
-      propertyDependencies = Map("type" -> "info", "multiline" -> "true"),
-      strings = Map("displayCharCount" -> "false"),
-      ints = Map(),
-      arraysOfStrings = Map(),
-      arraysOfObjects = Map(),
-      objects = Map()
-    )
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": "test label",
+            "type": "info",
+            "multiline": "true",
+            "displayCharCount": "false"
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
@@ -319,14 +369,18 @@ class JsonSchemeValidatorSpec extends FunSuite {
   test(
     "validateJson rejects the form gracefully when the property displayCharCount is used when the multiline property is not [true]"
   ) {
-    val jsonTemplate = constructTestOneSectionJsonTemplate(
-      propertyDependencies = Map("type" -> "text", "multiline" -> "false"),
-      strings = Map("displayCharCount" -> "false"),
-      ints = Map(),
-      arraysOfStrings = Map(),
-      arraysOfObjects = Map(),
-      objects = Map()
-    )
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": "test label",
+            "type": "text",
+            "multiline": "false",
+            "displayCharCount": "false"
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
@@ -340,14 +394,17 @@ class JsonSchemeValidatorSpec extends FunSuite {
   test(
     "validateJson rejects the form gracefully when the property displayCharCount is used when the multiline property is not present"
   ) {
-    val jsonTemplate = constructTestOneSectionJsonTemplate(
-      propertyDependencies = Map("type" -> "text"),
-      strings = Map("displayCharCount" -> "false"),
-      ints = Map(),
-      arraysOfStrings = Map(),
-      arraysOfObjects = Map(),
-      objects = Map()
-    )
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": "test label",
+            "type": "text",
+            "displayCharCount": "false"
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
@@ -361,14 +418,18 @@ class JsonSchemeValidatorSpec extends FunSuite {
   test(
     "validateJson rejects the form gracefully when the property displayCharCount is used when the type property is not [text] and the multiline property is not [true]"
   ) {
-    val jsonTemplate = constructTestOneSectionJsonTemplate(
-      propertyDependencies = Map("type" -> "choice", "multiline" -> "false"),
-      strings = Map("displayCharCount" -> "false"),
-      ints = Map(),
-      arraysOfStrings = Map(),
-      arraysOfObjects = Map(),
-      objects = Map()
-    )
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": "test label",
+            "type": "choice",
+            "multiline": "false",
+            "displayCharCount": "false"
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
@@ -382,14 +443,18 @@ class JsonSchemeValidatorSpec extends FunSuite {
   test(
     "validateJson rejects the form gracefully when the property dataThreshold is used when the type property is not [text]"
   ) {
-    val jsonTemplate = constructTestOneSectionJsonTemplate(
-      propertyDependencies = Map("type" -> "info", "multiline" -> "true"),
-      strings = Map(),
-      ints = Map("dataThreshold" -> 75),
-      arraysOfStrings = Map(),
-      arraysOfObjects = Map(),
-      objects = Map()
-    )
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": "test label",
+            "type": "info",
+            "multiline": "true",
+            "dataThreshold": 75
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
@@ -403,14 +468,18 @@ class JsonSchemeValidatorSpec extends FunSuite {
   test(
     "validateJson rejects the form gracefully when the property dataThreshold is used when the multiline property is not [true]"
   ) {
-    val jsonTemplate = constructTestOneSectionJsonTemplate(
-      propertyDependencies = Map("type" -> "text", "multiline" -> "false"),
-      strings = Map(),
-      ints = Map("dataThreshold" -> 75),
-      arraysOfStrings = Map(),
-      arraysOfObjects = Map(),
-      objects = Map()
-    )
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": "test label",
+            "type": "text",
+            "multiline": "false",
+            "dataThreshold": 75
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
@@ -424,14 +493,17 @@ class JsonSchemeValidatorSpec extends FunSuite {
   test(
     "validateJson rejects the form gracefully when the property dataThreshold is used when the multiline property is not present"
   ) {
-    val jsonTemplate = constructTestOneSectionJsonTemplate(
-      propertyDependencies = Map("type" -> "text"),
-      strings = Map(),
-      ints = Map("dataThreshold" -> 75),
-      arraysOfStrings = Map(),
-      arraysOfObjects = Map(),
-      objects = Map()
-    )
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": "test label",
+            "type": "text",
+            "dataThreshold": 75
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
@@ -445,14 +517,18 @@ class JsonSchemeValidatorSpec extends FunSuite {
   test(
     "validateJson rejects the form gracefully when the property dataThreshold is used when the type property is not [text] and the multiline property is not [true]"
   ) {
-    val jsonTemplate = constructTestOneSectionJsonTemplate(
-      propertyDependencies = Map("type" -> "choice", "multiline" -> "false"),
-      strings = Map(),
-      ints = Map("dataThreshold" -> 75),
-      arraysOfStrings = Map(),
-      arraysOfObjects = Map(),
-      objects = Map()
-    )
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": "test label",
+            "type": "choice",
+            "multiline": "false",
+            "dataThreshold": 75
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
@@ -466,14 +542,18 @@ class JsonSchemeValidatorSpec extends FunSuite {
   test(
     "validateJson rejects the form gracefully when infoText and infoType are used in one section and the type property is not [info]"
   ) {
-    val jsonTemplate = constructTestOneSectionJsonTemplate(
-      propertyDependencies = Map("type" -> "text"),
-      strings = Map("infoText" -> "Test infoText", "infoType" -> "noformat"),
-      ints = Map(),
-      arraysOfStrings = Map(),
-      arraysOfObjects = Map(),
-      objects = Map()
-    )
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": "test label",
+            "type": "text",
+            "infoText": "Test infoText",
+            "infoType": "noformat"
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
@@ -488,18 +568,41 @@ class JsonSchemeValidatorSpec extends FunSuite {
   test(
     "validateJson rejects the form gracefully when all properties dependent on type property being [choice, revealingChoice] are used in one section with invalid type"
   ) {
-    val jsonTemplate = constructTestOneSectionJsonTemplate(
-      propertyDependencies = Map("type" -> "text"),
-      strings = Map("multivalue" -> "true"),
-      ints = Map("dividerPosition" -> 1, "noneChoice" -> 1),
-      arraysOfStrings = Map("choices" -> Array("A", "B"), "hints" -> Array("Test hint 1", "Test hint 2")),
-      arraysOfObjects =
-        Map("optionHelpText" -> Array(Map("en" -> "Test English optionHelpText", "cy" -> "Test Welsh optionHelpText"))),
-      objects = Map(
-        "dividerText"     -> Map("en" -> "Test English dividerText", "cy" -> "Test Welsh dividerText"),
-        "noneChoiceError" -> Map("en" -> "Test English noneChoiceError", "cy" -> "Test Welsh noneChoiceError")
-      )
-    )
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": "test label",
+            "type": "text",
+            "choices": [
+              "Test choice 1",
+              "Test choice 2"
+            ],
+            "multivalue": "true",
+            "hints": [
+              "Test hint 1",
+              "Test hint 2"
+            ],
+            "optionHelpText": [
+              {
+                "en": "Test English optionHelpText",
+                "cy": "Test Welsh optionHelpText"
+              }
+            ],
+            "dividerPosition": 1,
+            "dividerText": {
+              "en": "Test English dividerText",
+              "cy": "Test Welsh dividerText"
+            },
+            "noneChoice": 1,
+            "noneChoiceError": {
+              "en": "Test English noneChoiceError",
+              "cy": "Test Welsh noneChoiceError"
+            }
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
@@ -520,14 +623,19 @@ class JsonSchemeValidatorSpec extends FunSuite {
   test(
     "validateJson rejects the form gracefully when properties with different dependencies all have errors"
   ) {
-    val jsonTemplate = constructTestOneSectionJsonTemplate(
-      propertyDependencies = Map("type" -> "text"),
-      strings = Map("infoType" -> "noformat"),
-      ints = Map("dataThreshold" -> 1),
-      arraysOfStrings = Map("choices" -> Array("A", "B")),
-      arraysOfObjects = Map(),
-      objects = Map()
-    )
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": "test label",
+            "type": "text",
+            "infoType": "noformat",
+            "choices": ["Test choice 1", "Test choice 2"],
+            "dataThreshold": 1
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
@@ -543,38 +651,27 @@ class JsonSchemeValidatorSpec extends FunSuite {
   test(
     "validateJson rejects the form gracefully when infoText and infoType are used in different sections when the type property is not [info]"
   ) {
-    val jsonTemplate =
+    val testProperties1 =
       json"""
-      {
-        "_id": "json-id",
-        "formName": "Json",
-        "version": 1,
-        "description": "",
-        "sections": [
           {
-            "title": "Page 1",
-            "fields": [
-              {
-                "id": "TestID1",
-                "label": "Test label 1",
-                "type": "text",
-                "infoText": "Test infoText"
-              }
-            ]
-          },
-          {
-            "title": "Page 2",
-            "fields": [
-              {
-                "id": "TestID2",
-                "label": "Test label 2",
-                "type": "choice",
-                "infoType": "noformat"
-              }
-            ]
+            "id": "TestID1",
+            "label": "Test label 1",
+            "type": "text",
+            "infoText": "Test infoText"
           }
-        ]
-      }"""
+          """
+
+    val testProperties2 =
+      json"""
+          {
+            "id": "TestID2",
+            "label": "Test label 2",
+            "type": "choice",
+            "infoType": "noformat"
+          }
+          """
+
+    val jsonTemplate = constructTestTwoSectionJsonTemplate(testProperties1, testProperties2)
 
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
@@ -589,39 +686,28 @@ class JsonSchemeValidatorSpec extends FunSuite {
   test(
     "validateJson rejects the form gracefully when displayCharCount and dataThreshold are used in different sections when the type property is not [info] in one section and the multiline property is not[true] in the other"
   ) {
-    val jsonTemplate =
+    val testProperties1 =
       json"""
-      {
-        "_id": "json-id",
-        "formName": "Json",
-        "version": 1,
-        "description": "",
-        "sections": [
-          {
-            "title": "Page 1",
-            "fields": [
-              {
-                "id": "TestID1",
-                "label": "Test label 1",
-                "type": "text",
-                "displayCharCount": "false"
-              }
-            ]
-          },
-          {
-            "title": "Page 2",
-            "fields": [
-              {
-                "id": "TestID2",
-                "label": "Test label 2",
-                "type": "info",
-                "multiline": "true",
-                "dataThreshold": 1
-              }
-            ]
-          }
-        ]
-      }"""
+            {
+              "id": "TestID1",
+              "label": "Test label 1",
+              "type": "text",
+              "displayCharCount": "false"
+            }
+            """
+
+    val testProperties2 =
+      json"""
+            {
+              "id": "TestID2",
+              "label": "Test label 2",
+              "type": "info",
+              "multiline": "true",
+              "dataThreshold": 1
+            }
+            """
+
+    val jsonTemplate = constructTestTwoSectionJsonTemplate(testProperties1, testProperties2)
 
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
@@ -636,14 +722,18 @@ class JsonSchemeValidatorSpec extends FunSuite {
   test(
     "validateJson accepts the form when the type property is [info] and the properties that are dependent on this are present"
   ) {
-    val jsonTemplate = constructTestOneSectionJsonTemplate(
-      propertyDependencies = Map("type" -> "info"),
-      strings = Map("infoText" -> "Test infoText", "infoType" -> "noformat"),
-      ints = Map(),
-      arraysOfStrings = Map(),
-      arraysOfObjects = Map(),
-      objects = Map()
-    )
+    val testProperties =
+      json"""
+            {
+              "id": "testId",
+              "label": "test label",
+              "type": "info",
+              "infoText": "Test infoText",
+              "infoType": "noformat"
+            }
+          """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
@@ -655,18 +745,41 @@ class JsonSchemeValidatorSpec extends FunSuite {
   test(
     "validateJson accepts the form when the type property is [choice] and the properties that are dependent on this are present"
   ) {
-    val jsonTemplate = constructTestOneSectionJsonTemplate(
-      propertyDependencies = Map("type" -> "choice"),
-      strings = Map("multivalue" -> "true"),
-      ints = Map("dividerPosition" -> 1, "noneChoice" -> 1),
-      arraysOfStrings = Map("choices" -> Array("A", "B"), "hints" -> Array("Test hint 1", "Test hint 2")),
-      arraysOfObjects =
-        Map("optionHelpText" -> Array(Map("en" -> "Test English optionHelpText", "cy" -> "Test Welsh optionHelpText"))),
-      objects = Map(
-        "dividerText"     -> Map("en" -> "Test English dividerText", "cy" -> "Test Welsh dividerText"),
-        "noneChoiceError" -> Map("en" -> "Test English noneChoiceError", "cy" -> "Test Welsh noneChoiceError")
-      )
-    )
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": "test label",
+            "type": "choice",
+            "choices": [
+              "Test choice 1",
+              "Test choice 2"
+            ],
+            "multivalue": "true",
+            "hints": [
+              "Test hint 1",
+              "Test hint 2"
+            ],
+            "optionHelpText": [
+              {
+                "en": "Test English optionHelpText",
+                "cy": "Test Welsh optionHelpText"
+              }
+            ],
+            "dividerPosition": 1,
+            "dividerText": {
+              "en": "Test English dividerText",
+              "cy": "Test Welsh dividerText"
+            },
+            "noneChoice": 1,
+            "noneChoiceError": {
+              "en": "Test English noneChoiceError",
+              "cy": "Test Welsh noneChoiceError"
+            }
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
@@ -678,18 +791,41 @@ class JsonSchemeValidatorSpec extends FunSuite {
   test(
     "validateJson accepts the form when the type property is [revealingChoice] and the properties that are dependent on this are present"
   ) {
-    val jsonTemplate = constructTestOneSectionJsonTemplate(
-      propertyDependencies = Map("type" -> "revealingChoice"),
-      strings = Map("multivalue" -> "true"),
-      ints = Map("dividerPosition" -> 1, "noneChoice" -> 1),
-      arraysOfStrings = Map("choices" -> Array("A", "B"), "hints" -> Array("Test hint 1", "Test hint 2")),
-      arraysOfObjects =
-        Map("optionHelpText" -> Array(Map("en" -> "Test English optionHelpText", "cy" -> "Test Welsh optionHelpText"))),
-      objects = Map(
-        "dividerText"     -> Map("en" -> "Test English dividerText", "cy" -> "Test Welsh dividerText"),
-        "noneChoiceError" -> Map("en" -> "Test English noneChoiceError", "cy" -> "Test Welsh noneChoiceError")
-      )
-    )
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": "test label",
+            "type": "revealingChoice",
+            "choices": [
+              "Test choice 1",
+              "Test choice 2"
+            ],
+            "multivalue": "true",
+            "hints": [
+              "Test hint 1",
+              "Test hint 2"
+            ],
+            "optionHelpText": [
+              {
+                "en": "Test English optionHelpText",
+                "cy": "Test Welsh optionHelpText"
+              }
+            ],
+            "dividerPosition": 1,
+            "dividerText": {
+              "en": "Test English dividerText",
+              "cy": "Test Welsh dividerText"
+            },
+            "noneChoice": 1,
+            "noneChoiceError": {
+              "en": "Test English noneChoiceError",
+              "cy": "Test Welsh noneChoiceError"
+            }
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
@@ -699,16 +835,21 @@ class JsonSchemeValidatorSpec extends FunSuite {
   }
 
   test(
-    "validateJson accepts the form when the type property is [info] and the properties that are dependent on this are present"
+    "validateJson accepts the form when the type property is [text], the multiline property is [true], and the properties that are dependent on these are present"
   ) {
-    val jsonTemplate = constructTestOneSectionJsonTemplate(
-      propertyDependencies = Map("type" -> "text", "multiline" -> "true"),
-      strings = Map("displayCharCount" -> "false"),
-      ints = Map("dataThreshold" -> 1),
-      arraysOfStrings = Map(),
-      arraysOfObjects = Map(),
-      objects = Map()
-    )
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": "test label",
+            "type": "text",
+            "multiline": "true",
+            "displayCharCount": "false",
+            "dataThreshold": 75
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
