@@ -67,11 +67,19 @@ class JsonSchemeValidatorSpec extends FunSuite {
       ]
     }"""
 
-  private def getNumberOfErrors(errorsAsList: List[JsValue]): Int =
+  private def getNumberOfErrors(errorsAsList: List[JsValue]): Int = {
     // Get the number of custom conditional validation error messages
-    errorsAsList
+    val numberOfConditionalValidationErrors = errorsAsList
       .map(_.toString().contains("can only be used with"))
       .count(_ == true)
+
+    // Get the number of property type error messages
+    val numberOfTypeErrors = errorsAsList
+      .map(_.toString().contains("expected type"))
+      .count(_ == true)
+
+    numberOfConditionalValidationErrors + numberOfTypeErrors
+  }
 
   private def getConditionalValidationErrors(errorsAsList: List[JsValue], numberOfErrors: Int): List[JsValue] =
     // Only need last errors because conditional validation messages will appear at the bottom of the stack trace
@@ -856,5 +864,38 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val expectedResult = Right(())
 
     assertEquals(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form and includes relevant errors messages when the types of properties are incorrect"
+  ) {
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": "test label",
+            "type": [
+              "type is not an array"
+            ],
+            "multiline": 1,
+            "displayCharCount": {
+              "en": "displayCharCount is not an object"
+            },
+            "dataThreshold": "dataThreshold is not a string"
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "#/sections/0/fields/0/type: expected type: String, found: JSONArray",
+      "#/sections/0/fields/0/dataThreshold: expected type: Integer, found: String",
+      "#/sections/0/fields/0/multiline: expected type: String, found: Integer",
+      "#/sections/0/fields/0/displayCharCount: expected type: String, found: JSONObject"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
   }
 }

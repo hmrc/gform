@@ -86,9 +86,15 @@ object JsonSchemeValidator {
                     .mkString(", ")}"
                 }.toList
 
+              val typeErrors =
+                errors.toList.slice(indexOfAnyOf, errors.length).filter(_.keyword == "type").map(_.getMessage)
+
               // Using unsafe because errors is an NEL and indexOfAnyOf is > 0 in this branch
               NonEmptyList.fromListUnsafe(
-                errors.map(_.getMessage).toList.slice(0, indexOfAnyOf) ++ formattedConditionalValidationErrors
+                errors
+                  .map(_.getMessage)
+                  .toList
+                  .slice(0, indexOfAnyOf) ++ typeErrors ++ formattedConditionalValidationErrors
               )
             } else {
               errors.map(_.getMessage)
