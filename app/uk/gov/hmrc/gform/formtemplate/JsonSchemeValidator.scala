@@ -16,12 +16,15 @@
 
 package uk.gov.hmrc.gform.formtemplate
 
-import cats.data.ValidatedNel
+import cats.data.{ NonEmptyList, ValidatedNel }
 import io.circe.Json
 import io.circe.jawn.JawnParser
 import io.circe.schema.Schema
 import io.circe.schema.ValidationError
 import uk.gov.hmrc.gform.exceptions.SchemaValidationException
+import uk.gov.hmrc.gform.formtemplate.ConditionalValidationRequirement._
+
+import scala.collection.immutable.ListSet
 
 object JsonSchemeValidator {
 
@@ -32,20 +35,74 @@ object JsonSchemeValidator {
   val parser = JawnParser(allowDuplicateKeys = false)
   val parsedSchema = parser.parse(schemaStream)
 
+  private val conditionalRequirements: Map[String, List[ConditionalValidationRequirement]] = Map(
+    "infoType"         -> List(TypeInfo),
+    "infoText"         -> List(TypeInfo),
+    "choices"          -> List(TypeChoiceOrRevealingChoice),
+    "multivalue"       -> List(TypeChoiceOrRevealingChoice),
+    "hints"            -> List(TypeChoiceOrRevealingChoice),
+    "optionHelpText"   -> List(TypeChoiceOrRevealingChoice),
+    "dividerPosition"  -> List(TypeChoiceOrRevealingChoice),
+    "noneChoice"       -> List(TypeChoiceOrRevealingChoice),
+    "noneChoiceError"  -> List(TypeChoiceOrRevealingChoice),
+    "dividerText"      -> List(TypeChoiceOrRevealingChoice),
+    "displayCharCount" -> List(TypeText, MultilineTrue),
+    "dataThreshold"    -> List(TypeText, MultilineTrue)
+  )
+
   def checkSchema(json: String): Either[SchemaValidationException, Unit] = parser.parse(json) match {
     case Right(json)          => validateJson(json)
     case Left(parsingFailure) => Left(SchemaValidationException("Json error: " + parsingFailure))
   }
 
-  private def validateJson(json: Json): Either[SchemaValidationException, Unit] =
+  def validateJson(json: Json): Either[SchemaValidationException, Unit] =
     parsedSchema match {
       case Left(parsingFailure) => Left(SchemaValidationException("Schema error: " + parsingFailure))
       case Right(schema) =>
         val formTemplateSchema: Schema = Schema.load(schema)
         val validated: ValidatedNel[ValidationError, Unit] = formTemplateSchema.validate(json)
-        validated
-          .leftMap(errors => SchemaValidationException(errors.map(_.getMessage)))
-          .toEither
+
+        validated.leftMap { errors =>
+          val conditionalValidationErrorMessages: NonEmptyList[String] = {
+            val indexOfAnyOf = errors.map(_.keyword).toList.indexOf("anyOf")
+
+            if (indexOfAnyOf > 0) {
+              val allConditionalValidationErrors: List[(String, String)] = errors.toList
+                .slice(indexOfAnyOf, errors.length)
+                .flatMap { error =>
+                  error.keyword match {
+                    case "not" =>
+                      val errorField: String = "\\[\".+\"]".r.findAllIn(error.getMessage).next()
+                      Some((errorField.slice(2, errorField.length - 2), error.location))
+                    case _ => None
+                  }
+                }
+
+              val deduplicatedConditionalValidationErrors = ListSet(allConditionalValidationErrors).flatten
+
+              val formattedConditionalValidationErrors: List[String] =
+                deduplicatedConditionalValidationErrors.map { case (errorProperty, errorLocation) =>
+                  s"$errorLocation: Property $errorProperty can only be used with ${conditionalRequirements(errorProperty)
+                    .mkString(", ")}"
+                }.toList
+
+              val typeErrors =
+                errors.toList.slice(indexOfAnyOf, errors.length).filter(_.keyword == "type").map(_.getMessage)
+
+              // Using unsafe because errors is an NEL and indexOfAnyOf is > 0 in this branch
+              NonEmptyList.fromListUnsafe(
+                errors
+                  .map(_.getMessage)
+                  .toList
+                  .slice(0, indexOfAnyOf) ++ typeErrors ++ formattedConditionalValidationErrors
+              )
+            } else {
+              errors.map(_.getMessage)
+            }
+          }
+
+          SchemaValidationException(conditionalValidationErrorMessages)
+        }.toEither
     }
 
 }

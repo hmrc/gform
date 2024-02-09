@@ -726,7 +726,317 @@
             "$ref": "#/$defs/fields"
           }
         }
-      }
+      },
+      "allOf": [
+        {
+          "anyOf": [
+            {
+              "not": {
+                "required": [
+                  "infoText"
+                ]
+              }
+            },
+            {
+              "required": [
+                "type"
+              ],
+              "dependencies": {
+                "infoText": {
+                  "properties": {
+                    "type": {
+                      "pattern": "^info$"
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "anyOf": [
+            {
+              "not": {
+                "required": [
+                  "infoType"
+                ]
+              }
+            },
+            {
+              "required": [
+                "type"
+              ],
+              "dependencies": {
+                "infoType": {
+                  "properties": {
+                    "type": {
+                      "pattern": "^info$"
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "anyOf": [
+            {
+              "not": {
+                "required": [
+                  "choices"
+                ]
+              }
+            },
+            {
+              "required": [
+                "type"
+              ],
+              "dependencies": {
+                "choices": {
+                  "properties": {
+                    "type": {
+                      "pattern": "^choice|revealingChoice$"
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "anyOf": [
+            {
+              "not": {
+                "required": [
+                  "multivalue"
+                ]
+              }
+            },
+            {
+              "required": [
+                "type"
+              ],
+              "dependencies": {
+                "multivalue": {
+                  "properties": {
+                    "type": {
+                      "pattern": "^choice|revealingChoice$"
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "anyOf": [
+            {
+              "not": {
+                "required": [
+                  "hints"
+                ]
+              }
+            },
+            {
+              "required": [
+                "type"
+              ],
+              "dependencies": {
+                "hints": {
+                  "properties": {
+                    "type": {
+                      "pattern": "^choice|revealingChoice$"
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "anyOf": [
+            {
+              "not": {
+                "required": [
+                  "optionHelpText"
+                ]
+              }
+            },
+            {
+              "required": [
+                "type"
+              ],
+              "dependencies": {
+                "optionHelpText": {
+                  "properties": {
+                    "type": {
+                      "pattern": "^choice|revealingChoice$"
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "anyOf": [
+            {
+              "not": {
+                "required": [
+                  "dividerPosition"
+                ]
+              }
+            },
+            {
+              "required": [
+                "type"
+              ],
+              "dependencies": {
+                "dividerPosition": {
+                  "properties": {
+                    "type": {
+                      "pattern": "^choice|revealingChoice$"
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "anyOf": [
+            {
+              "not": {
+                "required": [
+                  "noneChoice"
+                ]
+              }
+            },
+            {
+              "required": [
+                "type"
+              ],
+              "dependencies": {
+                "noneChoice": {
+                  "properties": {
+                    "type": {
+                      "pattern": "^choice|revealingChoice$"
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "anyOf": [
+            {
+              "not": {
+                "required": [
+                  "noneChoiceError"
+                ]
+              }
+            },
+            {
+              "required": [
+                "type"
+              ],
+              "dependencies": {
+                "noneChoiceError": {
+                  "properties": {
+                    "type": {
+                      "pattern": "^choice|revealingChoice$"
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "anyOf": [
+            {
+              "not": {
+                "required": [
+                  "dividerText"
+                ]
+              }
+            },
+            {
+              "required": [
+                "type"
+              ],
+              "dependencies": {
+                "dividerText": {
+                  "properties": {
+                    "type": {
+                      "pattern": "^choice|revealingChoice$"
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "anyOf": [
+            {
+              "not": {
+                "required": [
+                  "displayCharCount"
+                ]
+              }
+            },
+            {
+              "required": [
+                "type",
+                "multiline"
+              ],
+              "dependencies": {
+                "displayCharCount": {
+                  "properties": {
+                    "type": {
+                      "pattern": "^text$"
+                    },
+                    "multiline": {
+                      "pattern": "^true$"
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "anyOf": [
+            {
+              "not": {
+                "required": [
+                  "dataThreshold"
+                ]
+              }
+            },
+            {
+              "required": [
+                "type",
+                "multiline"
+              ],
+              "dependencies": {
+                "dataThreshold": {
+                  "properties": {
+                    "type": {
+                      "pattern": "^text$"
+                    },
+                    "multiline": {
+                      "pattern": "^true$"
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      ]
     }
   }
 }
