@@ -45,7 +45,8 @@ object JsonSchemeValidator {
     "noneChoiceError"  -> List(TypeChoice, TypeRevealingChoice),
     "dividerText"      -> List(TypeChoice, TypeRevealingChoice),
     "displayCharCount" -> List(TypeText, MultilineTrue),
-    "dataThreshold"    -> List(TypeText, MultilineTrue)
+    "dataThreshold"    -> List(TypeText, MultilineTrue),
+    "format"           -> List(TypeText, TypeChoice, TypeDate, TypeGroup)
   )
 
   def checkSchema(json: String): Either[SchemaValidationException, Unit] = parser.parse(json) match {

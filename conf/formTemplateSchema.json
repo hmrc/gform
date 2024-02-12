@@ -1035,6 +1035,31 @@
               }
             }
           ]
+        },
+        {
+          "anyOf": [
+            {
+              "not": {
+                "required": [
+                  "format"
+                ]
+              }
+            },
+            {
+              "required": [
+                "type"
+              ],
+              "dependencies": {
+                "format": {
+                  "properties": {
+                    "type": {
+                      "pattern": "^text|choice|date|group$"
+                    }
+                  }
+                }
+              }
+            }
+          ]
         }
       ]
     }

@@ -33,6 +33,10 @@ object ConditionalValidationRequirement {
 
   case object TypeText extends ConditionalValidationRequirement("type", "text")
 
+  case object TypeDate extends ConditionalValidationRequirement("type", "date")
+
+  case object TypeGroup extends ConditionalValidationRequirement("type", "group")
+
   case object MultilineTrue extends ConditionalValidationRequirement("multiline", "true")
 
 }
