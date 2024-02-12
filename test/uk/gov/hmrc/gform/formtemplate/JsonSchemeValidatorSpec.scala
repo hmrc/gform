@@ -67,6 +67,24 @@ class JsonSchemeValidatorSpec extends FunSuite {
       ]
     }"""
 
+  private def constructTestTwoFieldJsonTemplate(properties1: Json, properties2: Json) =
+    json"""
+    {
+      "_id": "json-id",
+      "formName": "Json",
+      "version": 1,
+      "description": "",
+      "sections": [
+        {
+          "title": "Page 1",
+          "fields": [
+            $properties1,
+            $properties2
+          ]
+        }
+      ]
+    }"""
+
   private def getNumberOfErrors(errorsAsList: List[JsValue]): Int = {
     // Get the number of custom conditional validation error messages
     val numberOfConditionalValidationErrors = errorsAsList
@@ -675,6 +693,75 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val expectedResult = List(
       "#/sections/0/fields/0: Property format can only be used with type: [text, choice, date, group]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when infoText and infoType are used in different fields when the type property is not [info]"
+  ) {
+    val testProperties1 =
+      json"""
+          {
+            "id": "TestID1",
+            "label": "Test label 1",
+            "type": "text",
+            "infoText": "Test infoText"
+          }
+          """
+
+    val testProperties2 =
+      json"""
+          {
+            "id": "TestID2",
+            "label": "Test label 2",
+            "type": "choice",
+            "infoType": "noformat"
+          }
+          """
+
+    val jsonTemplate = constructTestTwoFieldJsonTemplate(testProperties1, testProperties2)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "#/sections/0/fields/0: Property infoText can only be used with type: [info]",
+      "#/sections/0/fields/1: Property infoType can only be used with type: [info]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when infoText and infoType are used in different fields when the type property is not [info] in one of the fields"
+  ) {
+    val testProperties1 =
+      json"""
+          {
+            "id": "TestID1",
+            "label": "Test label 1",
+            "type": "info",
+            "infoText": "Test infoText"
+          }
+          """
+
+    val testProperties2 =
+      json"""
+          {
+            "id": "TestID2",
+            "label": "Test label 2",
+            "type": "choice",
+            "infoType": "noformat"
+          }
+          """
+
+    val jsonTemplate = constructTestTwoFieldJsonTemplate(testProperties1, testProperties2)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "#/sections/0/fields/1: Property infoType can only be used with type: [info]"
     )
 
     runInvalidJsonTest(result, expectedResult)
