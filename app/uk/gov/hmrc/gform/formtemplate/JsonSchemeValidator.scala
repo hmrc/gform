@@ -84,9 +84,9 @@ object JsonSchemeValidator {
                   val deduplicatedConditionalRequirements: List[String] = {
                     val distinctProperties = conditionalRequirements(errorProperty).map(_.getRequiredProperty).distinct
                     val groupedProperties = conditionalRequirements(errorProperty).groupBy(_.getRequiredProperty)
-                    distinctProperties.map(property => property -> groupedProperties(property)).map {
-                      case (prop, reqs) =>
-                        s"$prop: [${reqs.map(_.getRequiredValue).mkString(", ")}]"
+                    distinctProperties.map(propertyKey => propertyKey -> groupedProperties(propertyKey)).map {
+                      case (property, requiredValues) =>
+                        s"$property: [${requiredValues.map(_.getRequiredValue).mkString(", ")}]"
                     }
                   }
 
