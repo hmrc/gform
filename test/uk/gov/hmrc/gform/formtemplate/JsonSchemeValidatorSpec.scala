@@ -699,6 +699,246 @@ class JsonSchemeValidatorSpec extends FunSuite {
   }
 
   test(
+    "validateJson rejects the form gracefully when the property cityMandatory is used and the type property is not [address, overseasAddress]"
+  ) {
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": "test label",
+            "type": "text",
+            "cityMandatory": "true"
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "#/sections/0/fields/0: Property cityMandatory can only be used with type: [address, overseasAddress]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when the property countyDisplayed is used and the type property is not [address]"
+  ) {
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": "test label",
+            "type": "info",
+            "countyDisplayed": "true"
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "#/sections/0/fields/0: Property countyDisplayed can only be used with type: [address]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when the property international is used and the type property is not [address]"
+  ) {
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": "test label",
+            "type": "date",
+            "international": "true"
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "#/sections/0/fields/0: Property international can only be used with type: [address]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when the property countryDisplayed is used and the type property is not [overseasAddress]"
+  ) {
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": "test label",
+            "type": "group",
+            "countryDisplayed": "false"
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "#/sections/0/fields/0: Property countryDisplayed can only be used with type: [overseasAddress]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when the property countryLookup is used and the type property is not [overseasAddress]"
+  ) {
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": "test label",
+            "type": "group",
+            "countryLookup": "false"
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "#/sections/0/fields/0: Property countryLookup can only be used with type: [overseasAddress]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when the property line2Mandatory is used and the type property is not [overseasAddress]"
+  ) {
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": "test label",
+            "type": "group",
+            "line2Mandatory": "true"
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "#/sections/0/fields/0: Property line2Mandatory can only be used with type: [overseasAddress]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when the property line3Mandatory is used and the type property is not [overseasAddress]"
+  ) {
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": "test label",
+            "type": "group",
+            "line3Mandatory": "true"
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "#/sections/0/fields/0: Property line3Mandatory can only be used with type: [overseasAddress]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when the property postcodeMandatory is used and the type property is not [overseasAddress]"
+  ) {
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": "test label",
+            "type": "date",
+            "postcodeMandatory": "false"
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "#/sections/0/fields/0: Property postcodeMandatory can only be used with type: [overseasAddress]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when the property confirmAddressLabel is used and the type property is not [postcodeLookup]"
+  ) {
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": "test label",
+            "type": "text",
+            "confirmAddressLabel": "Confirm the test business address"
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "#/sections/0/fields/0: Property confirmAddressLabel can only be used with type: [postcodeLookup]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when the property chooseAddressLabel is used and the type property is not [postcodeLookup]"
+  ) {
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": "test label",
+            "type": "info",
+            "chooseAddressLabel": "Choose the test business address"
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "#/sections/0/fields/0: Property chooseAddressLabel can only be used with type: [postcodeLookup]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
     "validateJson rejects the form gracefully when infoText and infoType are used in different fields when the type property is not [info]"
   ) {
     val testProperties1 =
@@ -1032,6 +1272,80 @@ class JsonSchemeValidatorSpec extends FunSuite {
             "multiline": "true",
             "displayCharCount": "false",
             "dataThreshold": 75
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = Right(())
+
+    assertEquals(result, expectedResult)
+  }
+
+  test(
+    "validateJson accepts the form when the type property is [address] and the properties that are dependent on this are present"
+  ) {
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": "test label",
+            "type": "address",
+            "cityMandatory": "true",
+            "countyDisplayed": "false",
+            "international": "false"
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = Right(())
+
+    assertEquals(result, expectedResult)
+  }
+
+  test(
+    "validateJson accepts the form when the type property is [overseasAddress] and the properties that are dependent on this are present"
+  ) {
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": "test label",
+            "type": "overseasAddress",
+            "cityMandatory": "false",
+            "countryDisplayed": "false",
+            "countryLookup": "true",
+            "line2Mandatory": "true",
+            "line3Mandatory": "false",
+            "postcodeMandatory": "true"
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = Right(())
+
+    assertEquals(result, expectedResult)
+  }
+
+  test(
+    "validateJson accepts the form when the type property is [postcodeLookup] and the properties that are dependent on this are present"
+  ) {
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": "test label",
+            "type": "postcodeLookup",
+            "confirmAddressLabel": "Confirm the test business address",
+            "chooseAddressLabel": "Choose the test business address"
           }
         """
 
