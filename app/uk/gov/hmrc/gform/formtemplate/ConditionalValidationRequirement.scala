@@ -37,6 +37,12 @@ object ConditionalValidationRequirement {
 
   case object TypeGroup extends ConditionalValidationRequirement("type", "group")
 
+  case object TypeAddress extends ConditionalValidationRequirement("type", "address")
+
+  case object TypeOverseasAddress extends ConditionalValidationRequirement("type", "overseasAddress")
+
+  case object TypePostcodeLookup extends ConditionalValidationRequirement("type", "postcodeLookup")
+
   case object MultilineTrue extends ConditionalValidationRequirement("multiline", "true")
 
 }
