@@ -16,18 +16,23 @@
 
 package uk.gov.hmrc.gform.formtemplate
 
-sealed abstract class ConditionalValidationRequirement(requiredProperty: String, requiredValues: List[String]) {
-  override def toString: String = s"$requiredProperty: [${requiredValues.mkString(", ")}]"
+sealed abstract class ConditionalValidationRequirement(requiredProperty: String, requiredValue: String) {
+
+  def getRequiredProperty: String = requiredProperty
+
+  def getRequiredValue: String = requiredValue
 }
 
 object ConditionalValidationRequirement {
 
-  case object TypeInfo extends ConditionalValidationRequirement("type", List("info"))
-  case object TypeChoiceOrRevealingChoice
-      extends ConditionalValidationRequirement("type", List("choice", "revealingChoice"))
+  case object TypeInfo extends ConditionalValidationRequirement("type", "info")
 
-  case object TypeText extends ConditionalValidationRequirement("type", List("text"))
+  case object TypeChoice extends ConditionalValidationRequirement("type", "choice")
 
-  case object MultilineTrue extends ConditionalValidationRequirement("multiline", List("true"))
+  case object TypeRevealingChoice extends ConditionalValidationRequirement("type", "revealingChoice")
+
+  case object TypeText extends ConditionalValidationRequirement("type", "text")
+
+  case object MultilineTrue extends ConditionalValidationRequirement("multiline", "true")
 
 }

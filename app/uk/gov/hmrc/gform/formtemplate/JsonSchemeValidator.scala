@@ -24,8 +24,6 @@ import io.circe.schema.ValidationError
 import uk.gov.hmrc.gform.exceptions.SchemaValidationException
 import uk.gov.hmrc.gform.formtemplate.ConditionalValidationRequirement._
 
-import scala.collection.immutable.ListSet
-
 object JsonSchemeValidator {
 
   val inputStream = getClass.getClassLoader.getResourceAsStream("formTemplateSchema.json")
@@ -38,14 +36,14 @@ object JsonSchemeValidator {
   private val conditionalRequirements: Map[String, List[ConditionalValidationRequirement]] = Map(
     "infoType"         -> List(TypeInfo),
     "infoText"         -> List(TypeInfo),
-    "choices"          -> List(TypeChoiceOrRevealingChoice),
-    "multivalue"       -> List(TypeChoiceOrRevealingChoice),
-    "hints"            -> List(TypeChoiceOrRevealingChoice),
-    "optionHelpText"   -> List(TypeChoiceOrRevealingChoice),
-    "dividerPosition"  -> List(TypeChoiceOrRevealingChoice),
-    "noneChoice"       -> List(TypeChoiceOrRevealingChoice),
-    "noneChoiceError"  -> List(TypeChoiceOrRevealingChoice),
-    "dividerText"      -> List(TypeChoiceOrRevealingChoice),
+    "choices"          -> List(TypeChoice, TypeRevealingChoice),
+    "multivalue"       -> List(TypeChoice, TypeRevealingChoice),
+    "hints"            -> List(TypeChoice, TypeRevealingChoice),
+    "optionHelpText"   -> List(TypeChoice, TypeRevealingChoice),
+    "dividerPosition"  -> List(TypeChoice, TypeRevealingChoice),
+    "noneChoice"       -> List(TypeChoice, TypeRevealingChoice),
+    "noneChoiceError"  -> List(TypeChoice, TypeRevealingChoice),
+    "dividerText"      -> List(TypeChoice, TypeRevealingChoice),
     "displayCharCount" -> List(TypeText, MultilineTrue),
     "dataThreshold"    -> List(TypeText, MultilineTrue)
   )
@@ -78,13 +76,21 @@ object JsonSchemeValidator {
                   }
                 }
 
-              val deduplicatedConditionalValidationErrors = ListSet(allConditionalValidationErrors).flatten
+              val deduplicatedConditionalValidationErrors = allConditionalValidationErrors.distinct
 
               val formattedConditionalValidationErrors: List[String] =
                 deduplicatedConditionalValidationErrors.map { case (errorProperty, errorLocation) =>
-                  s"$errorLocation: Property $errorProperty can only be used with ${conditionalRequirements(errorProperty)
-                    .mkString(", ")}"
-                }.toList
+                  val deduplicatedConditionalRequirements: List[String] = {
+                    val distinctProperties = conditionalRequirements(errorProperty).map(_.getRequiredProperty).distinct
+                    val groupedProperties = conditionalRequirements(errorProperty).groupBy(_.getRequiredProperty)
+                    distinctProperties.map(property => property -> groupedProperties(property)).map {
+                      case (prop, reqs) =>
+                        s"$prop: [${reqs.map(_.getRequiredValue).mkString(", ")}]"
+                    }
+                  }
+
+                  s"$errorLocation: Property $errorProperty can only be used with ${deduplicatedConditionalRequirements.mkString(", ")}"
+                }
 
               val typeErrors =
                 errors.toList.slice(indexOfAnyOf, errors.length).filter(_.keyword == "type").map(_.getMessage)
