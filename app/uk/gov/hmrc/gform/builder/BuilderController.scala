@@ -82,6 +82,27 @@ object BuilderSupport {
     }
   }
 
+  def modifyAtlDefaultPageData(
+    json: Json,
+    atlRepeaterSection: Json,
+    sectionPath: SectionPath
+  ): Json = {
+    val propertyList = List(
+      Property("note", PropertyBehaviour.PurgeWhenEmpty),
+      Property("caption", PropertyBehaviour.PurgeWhenEmpty),
+      Property("continueLabel", PropertyBehaviour.PurgeWhenEmpty),
+      Property("title")
+    )
+
+    modifyAtlRepeater(
+      propertyList,
+      json,
+      atlRepeaterSection,
+      Some(DownField("defaultPage")),
+      sectionPath
+    )
+  }
+
   def modifyAtlRepeaterData(
     json: Json,
     atlRepeaterSection: Json,
@@ -139,6 +160,17 @@ object BuilderSupport {
   ): Json = {
 
     val history = sectionPath.toHistory()
+    updateFormComponentWithHistory(json, formComponentId, atlRepeaterFormComponent, history)
+
+  }
+  def modifyAtlDefaultPageFormComponentData(
+    json: Json,
+    atlRepeaterFormComponent: Json,
+    formComponentId: FormComponentId,
+    sectionPath: SectionPath
+  ): Json = {
+
+    val history = DownField("defaultPage") :: sectionPath.toHistory()
     updateFormComponentWithHistory(json, formComponentId, atlRepeaterFormComponent, history)
 
   }
@@ -485,6 +517,13 @@ object BuilderSupport {
   ): Either[BuilderError, FormTemplateRaw] =
     modifyJson(formTemplateRaw)(modifySummarySectionData(_, summarySectionData, maybeCoordinates))
 
+  def updateAtlDefaultPage(
+    formTemplateRaw: FormTemplateRaw,
+    atlRepeaterData: Json,
+    sectionPath: SectionPath
+  ): Either[BuilderError, FormTemplateRaw] =
+    modifyJson(formTemplateRaw)(modifyAtlDefaultPageData(_, atlRepeaterData, sectionPath))
+
   def updateAtlRepeater(
     formTemplateRaw: FormTemplateRaw,
     atlRepeaterData: Json,
@@ -509,6 +548,16 @@ object BuilderSupport {
   ): Either[BuilderError, FormTemplateRaw] =
     modifyJson(formTemplateRaw)(
       modifyAtlRepeaterFormComponentData(_, atlRepeaterData, formComponentId, sectionPath)
+    )
+
+  def updateAtlDefaultPageFormComponent(
+    formTemplateRaw: FormTemplateRaw,
+    atlRepeaterData: Json,
+    formComponentId: FormComponentId,
+    sectionPath: SectionPath
+  ): Either[BuilderError, FormTemplateRaw] =
+    modifyJson(formTemplateRaw)(
+      modifyAtlDefaultPageFormComponentData(_, atlRepeaterData, formComponentId, sectionPath)
     )
 
   def updateAcknowledgement(
@@ -598,6 +647,16 @@ class BuilderController(
         .map(formTemplateRaw => (formTemplateRaw, Results.Ok(formTemplateRaw.value)))
     }
 
+  def updateAtlDefaultPage(
+    formTemplateRawId: FormTemplateRawId,
+    sectionPath: SectionPath
+  ) =
+    updateAction(formTemplateRawId) { (formTemplateRaw, requestBody) =>
+      BuilderSupport
+        .updateAtlDefaultPage(formTemplateRaw, requestBody, sectionPath)
+        .map(formTemplateRaw => (formTemplateRaw, Results.Ok(formTemplateRaw.value)))
+    }
+
   def updateAtlRepeater(
     formTemplateRawId: FormTemplateRawId,
     sectionPath: SectionPath
@@ -625,7 +684,25 @@ class BuilderController(
                                sectionPath
                              )
       } yield (formTemplateRaw, Results.Ok(formTemplateRaw.value))
+    }
 
+  def updateAtlDefaultPageFormComponent(
+    formTemplateRawId: FormTemplateRawId,
+    formComponentId: FormComponentId,
+    sectionPath: SectionPath
+  ) =
+    updateAction(formTemplateRawId) { (formTemplateRaw, requestBody) =>
+      for {
+        componentUpdateRequest <-
+          requestBody.as[ComponentUpdateRequest].leftMap(e => BuilderError.CirceDecodingError(e))
+        formTemplateRaw <- BuilderSupport
+                             .updateAtlDefaultPageFormComponent(
+                               formTemplateRaw,
+                               componentUpdateRequest.formComponent,
+                               formComponentId,
+                               sectionPath
+                             )
+      } yield (formTemplateRaw, Results.Ok(formTemplateRaw.value))
     }
 
   def updateSection(formTemplateRawId: FormTemplateRawId) =

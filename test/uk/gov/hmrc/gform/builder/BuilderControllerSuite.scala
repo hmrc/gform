@@ -1484,4 +1484,188 @@ class BuilderControllerSuite extends FunSuite {
     assertEquals(result.spaces2, formTemplateExpectedJson.spaces2)
   }
 
+  val atlDefaultPageJson: Json = json"""
+    {
+      "sections": [
+        {
+          "type": "addToList",
+          "title": "Add To List",
+          "defaultPage": {
+            "title": "Give us details of each cat"
+          },
+          "addAnotherQuestion": {
+            "id": "addToList",
+            "type": "choice",
+            "label": "Add another?",
+            "format": "yesno"
+          },
+          "pages": []
+        },
+        {
+          "type": "addToList",
+          "title": "Add To List",
+          "defaultPage": {
+            "title": "Give us details of each dog"
+          },
+          "addAnotherQuestion": {
+            "id": "addToList2",
+            "type": "choice",
+            "label": "Add another?",
+            "format": "yesno"
+          },
+          "pages": []
+        }
+      ]
+  }"""
+
+  val atlDefaultPageJsonExpected: Json = json"""
+    {
+      "sections": [
+        {
+          "type": "addToList",
+          "title": "Add To List",
+          "defaultPage": {
+            "title": "Give us details of each cat"
+          },
+          "addAnotherQuestion": {
+            "id": "addToList",
+            "type": "choice",
+            "label": "Add another?",
+            "format": "yesno"
+          },
+          "pages": []
+        },
+        {
+          "type": "addToList",
+          "title": "Add To List",
+          "defaultPage": {
+            "note": "Welcome",
+            "title": "Foo"
+          },
+          "addAnotherQuestion": {
+            "id": "addToList2",
+            "type": "choice",
+            "label": "Add another?",
+            "format": "yesno"
+          },
+          "pages": []
+        }
+      ]
+    }"""
+
+  test("Update addToList defaultPage title") {
+
+    val sectionPath = SectionPath(".sections[1]")
+
+    val patch: Json = Json.obj("title" := "Foo", "note" := "Welcome")
+
+    val result: Json =
+      BuilderSupport.modifyAtlDefaultPageData(
+        atlDefaultPageJson,
+        patch,
+        sectionPath
+      )
+
+    assertEquals(result.spaces2, atlDefaultPageJsonExpected.spaces2)
+  }
+
+  val atlDefaultPageInfoFieldJson: Json = json"""
+    {
+      "sections": [
+        {
+          "type": "addToList",
+          "title": "Add To List",
+          "addAnotherQuestion": {
+            "id": "addToList",
+            "type": "choice",
+            "label": "Add another?",
+            "format": "yesno"
+          },
+          "pages": []
+        },
+        {
+          "type": "addToList",
+          "title": "Add To List",
+          "defaultPage": {
+            "title": "Foo",
+            "fields": [
+              {
+                "id": "info1",
+                "type": "info",
+                "label": "",
+                "infoType": "noformat",
+                "infoText": "This is info field"
+              }
+            ]
+          },
+          "addAnotherQuestion": {
+            "id": "addToList2",
+            "type": "choice",
+            "label": "Add another?",
+            "format": "yesno"
+          },
+          "fields": [],
+          "pages": []
+        }
+      ]
+  }"""
+
+  val atlDefaultPageInfoFieldJsonExpected: Json = json"""
+    {
+      "sections": [
+        {
+          "type": "addToList",
+          "title": "Add To List",
+          "addAnotherQuestion": {
+            "id": "addToList",
+            "type": "choice",
+            "label": "Add another?",
+            "format": "yesno"
+          },
+          "pages": []
+        },
+        {
+          "type": "addToList",
+          "title": "Add To List",
+          "defaultPage": {
+            "title": "Foo",
+            "fields": [
+              {
+                "id": "info1",
+                "type": "info",
+                "label": "",
+                "infoType": "noformat",
+                "infoText": "Foo"
+              }
+            ]
+          },
+          "addAnotherQuestion": {
+            "id": "addToList2",
+            "type": "choice",
+            "label": "Add another?",
+            "format": "yesno"
+          },
+          "fields": [],
+          "pages": []
+        }
+      ]
+    }"""
+
+  test("Update addToList defaultPage info field") {
+    val sectionPath = SectionPath(".sections[1]")
+    val formComponentId = FormComponentId("info1")
+
+    val patch: Json = Json.obj("infoText" := "Foo")
+
+    val result: Json =
+      BuilderSupport.modifyAtlDefaultPageFormComponentData(
+        atlDefaultPageInfoFieldJson,
+        patch,
+        formComponentId,
+        sectionPath
+      )
+
+    assertEquals(result.spaces2, atlDefaultPageInfoFieldJsonExpected.spaces2)
+  }
+
 }
