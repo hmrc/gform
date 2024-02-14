@@ -1060,6 +1060,256 @@
               }
             }
           ]
+        },
+        {
+          "anyOf": [
+            {
+              "not": {
+                "required": [
+                  "cityMandatory"
+                ]
+              }
+            },
+            {
+              "required": [
+                "type"
+              ],
+              "dependencies": {
+                "cityMandatory": {
+                  "properties": {
+                    "type": {
+                      "pattern": "^address|overseasAddress$"
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "anyOf": [
+            {
+              "not": {
+                "required": [
+                  "countyDisplayed"
+                ]
+              }
+            },
+            {
+              "required": [
+                "type"
+              ],
+              "dependencies": {
+                "countyDisplayed": {
+                  "properties": {
+                    "type": {
+                      "pattern": "^address$"
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "anyOf": [
+            {
+              "not": {
+                "required": [
+                  "international"
+                ]
+              }
+            },
+            {
+              "required": [
+                "type"
+              ],
+              "dependencies": {
+                "international": {
+                  "properties": {
+                    "type": {
+                      "pattern": "^address$"
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "anyOf": [
+            {
+              "not": {
+                "required": [
+                  "countryDisplayed"
+                ]
+              }
+            },
+            {
+              "required": [
+                "type"
+              ],
+              "dependencies": {
+                "countryDisplayed": {
+                  "properties": {
+                    "type": {
+                      "pattern": "^overseasAddress$"
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "anyOf": [
+            {
+              "not": {
+                "required": [
+                  "countryLookup"
+                ]
+              }
+            },
+            {
+              "required": [
+                "type"
+              ],
+              "dependencies": {
+                "countryLookup": {
+                  "properties": {
+                    "type": {
+                      "pattern": "^overseasAddress$"
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "anyOf": [
+            {
+              "not": {
+                "required": [
+                  "line2Mandatory"
+                ]
+              }
+            },
+            {
+              "required": [
+                "type"
+              ],
+              "dependencies": {
+                "line2Mandatory": {
+                  "properties": {
+                    "type": {
+                      "pattern": "^overseasAddress$"
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "anyOf": [
+            {
+              "not": {
+                "required": [
+                  "line3Mandatory"
+                ]
+              }
+            },
+            {
+              "required": [
+                "type"
+              ],
+              "dependencies": {
+                "line3Mandatory": {
+                  "properties": {
+                    "type": {
+                      "pattern": "^overseasAddress$"
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "anyOf": [
+            {
+              "not": {
+                "required": [
+                  "postcodeMandatory"
+                ]
+              }
+            },
+            {
+              "required": [
+                "type"
+              ],
+              "dependencies": {
+                "postcodeMandatory": {
+                  "properties": {
+                    "type": {
+                      "pattern": "^overseasAddress$"
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "anyOf": [
+            {
+              "not": {
+                "required": [
+                  "confirmAddressLabel"
+                ]
+              }
+            },
+            {
+              "required": [
+                "type"
+              ],
+              "dependencies": {
+                "confirmAddressLabel": {
+                  "properties": {
+                    "type": {
+                      "pattern": "^postcodeLookup$"
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "anyOf": [
+            {
+              "not": {
+                "required": [
+                  "chooseAddressLabel"
+                ]
+              }
+            },
+            {
+              "required": [
+                "type"
+              ],
+              "dependencies": {
+                "chooseAddressLabel": {
+                  "properties": {
+                    "type": {
+                      "pattern": "^postcodeLookup$"
+                    }
+                  }
+                }
+              }
+            }
+          ]
         }
       ]
     }

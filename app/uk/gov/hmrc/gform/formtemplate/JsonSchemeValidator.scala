@@ -34,19 +34,29 @@ object JsonSchemeValidator {
   val parsedSchema = parser.parse(schemaStream)
 
   private val conditionalRequirements: Map[String, List[ConditionalValidationRequirement]] = Map(
-    "infoType"         -> List(TypeInfo),
-    "infoText"         -> List(TypeInfo),
-    "choices"          -> List(TypeChoice, TypeRevealingChoice),
-    "multivalue"       -> List(TypeChoice, TypeRevealingChoice),
-    "hints"            -> List(TypeChoice, TypeRevealingChoice),
-    "optionHelpText"   -> List(TypeChoice, TypeRevealingChoice),
-    "dividerPosition"  -> List(TypeChoice, TypeRevealingChoice),
-    "noneChoice"       -> List(TypeChoice, TypeRevealingChoice),
-    "noneChoiceError"  -> List(TypeChoice, TypeRevealingChoice),
-    "dividerText"      -> List(TypeChoice, TypeRevealingChoice),
-    "displayCharCount" -> List(TypeText, MultilineTrue),
-    "dataThreshold"    -> List(TypeText, MultilineTrue),
-    "format"           -> List(TypeText, TypeChoice, TypeDate, TypeGroup)
+    "infoType"            -> List(TypeInfo),
+    "infoText"            -> List(TypeInfo),
+    "choices"             -> List(TypeChoice, TypeRevealingChoice),
+    "multivalue"          -> List(TypeChoice, TypeRevealingChoice),
+    "hints"               -> List(TypeChoice, TypeRevealingChoice),
+    "optionHelpText"      -> List(TypeChoice, TypeRevealingChoice),
+    "dividerPosition"     -> List(TypeChoice, TypeRevealingChoice),
+    "noneChoice"          -> List(TypeChoice, TypeRevealingChoice),
+    "noneChoiceError"     -> List(TypeChoice, TypeRevealingChoice),
+    "dividerText"         -> List(TypeChoice, TypeRevealingChoice),
+    "displayCharCount"    -> List(TypeText, MultilineTrue),
+    "dataThreshold"       -> List(TypeText, MultilineTrue),
+    "format"              -> List(TypeText, TypeChoice, TypeDate, TypeGroup),
+    "cityMandatory"       -> List(TypeAddress, TypeOverseasAddress),
+    "countyDisplayed"     -> List(TypeAddress),
+    "international"       -> List(TypeAddress),
+    "countryDisplayed"    -> List(TypeOverseasAddress),
+    "countryLookup"       -> List(TypeOverseasAddress),
+    "line2Mandatory"      -> List(TypeOverseasAddress),
+    "line3Mandatory"      -> List(TypeOverseasAddress),
+    "postcodeMandatory"   -> List(TypeOverseasAddress),
+    "confirmAddressLabel" -> List(TypePostcodeLookup),
+    "chooseAddressLabel"  -> List(TypePostcodeLookup)
   )
 
   def checkSchema(json: String): Either[SchemaValidationException, Unit] = parser.parse(json) match {
