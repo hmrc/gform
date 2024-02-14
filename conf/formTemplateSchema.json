@@ -727,591 +727,226 @@
           }
         }
       },
-      "allOf": [
-        {
-          "anyOf": [
-            {
-              "not": {
-                "required": [
-                  "infoText"
-                ]
-              }
-            },
-            {
-              "required": [
-                "type"
-              ],
-              "dependencies": {
-                "infoText": {
-                  "properties": {
-                    "type": {
-                      "pattern": "^info$"
-                    }
-                  }
-                }
-              }
+      "dependencies": {
+        "infoText": {
+          "required": ["type"],
+          "properties": {
+            "type": {
+              "pattern": "^info$"
             }
-          ]
+          }
         },
-        {
-          "anyOf": [
-            {
-              "not": {
-                "required": [
-                  "infoType"
-                ]
-              }
-            },
-            {
-              "required": [
-                "type"
-              ],
-              "dependencies": {
-                "infoType": {
-                  "properties": {
-                    "type": {
-                      "pattern": "^info$"
-                    }
-                  }
-                }
-              }
+        "infoType": {
+          "required": ["type"],
+          "properties": {
+            "type": {
+              "pattern": "^info$"
             }
-          ]
+          }
         },
-        {
-          "anyOf": [
-            {
-              "not": {
-                "required": [
-                  "choices"
-                ]
-              }
-            },
-            {
-              "required": [
-                "type"
-              ],
-              "dependencies": {
-                "choices": {
-                  "properties": {
-                    "type": {
-                      "pattern": "^choice|revealingChoice$"
-                    }
-                  }
-                }
-              }
+        "choices": {
+          "required": ["type"],
+          "properties": {
+            "type": {
+              "pattern": "^choice|revealingChoice$"
             }
-          ]
+          }
         },
-        {
-          "anyOf": [
-            {
-              "not": {
-                "required": [
-                  "multivalue"
-                ]
-              }
-            },
-            {
-              "required": [
-                "type"
-              ],
-              "dependencies": {
-                "multivalue": {
-                  "properties": {
-                    "type": {
-                      "pattern": "^choice|revealingChoice$"
-                    }
-                  }
-                }
-              }
+        "multivalue": {
+          "required": ["type"],
+          "properties": {
+            "type": {
+              "pattern": "^choice|revealingChoice$"
             }
-          ]
+          }
         },
-        {
-          "anyOf": [
-            {
-              "not": {
-                "required": [
-                  "hints"
-                ]
-              }
-            },
-            {
-              "required": [
-                "type"
-              ],
-              "dependencies": {
-                "hints": {
-                  "properties": {
-                    "type": {
-                      "pattern": "^choice|revealingChoice$"
-                    }
-                  }
-                }
-              }
+        "hints": {
+          "required": ["type"],
+          "properties": {
+            "type": {
+              "pattern": "^choice|revealingChoice$"
             }
-          ]
+          }
         },
-        {
-          "anyOf": [
-            {
-              "not": {
-                "required": [
-                  "optionHelpText"
-                ]
-              }
-            },
-            {
-              "required": [
-                "type"
-              ],
-              "dependencies": {
-                "optionHelpText": {
-                  "properties": {
-                    "type": {
-                      "pattern": "^choice|revealingChoice$"
-                    }
-                  }
-                }
-              }
+        "optionHelpText": {
+          "required": ["type"],
+          "properties": {
+            "type": {
+              "pattern": "^choice|revealingChoice$"
             }
-          ]
+          }
         },
-        {
-          "anyOf": [
-            {
-              "not": {
-                "required": [
-                  "dividerPosition"
-                ]
-              }
-            },
-            {
-              "required": [
-                "type"
-              ],
-              "dependencies": {
-                "dividerPosition": {
-                  "properties": {
-                    "type": {
-                      "pattern": "^choice|revealingChoice$"
-                    }
-                  }
-                }
-              }
+        "dividerPosition": {
+          "required": ["type"],
+          "properties": {
+            "type": {
+              "pattern": "^choice|revealingChoice$"
             }
-          ]
+          }
         },
-        {
-          "anyOf": [
-            {
-              "not": {
-                "required": [
-                  "noneChoice"
-                ]
-              }
-            },
-            {
-              "required": [
-                "type"
-              ],
-              "dependencies": {
-                "noneChoice": {
-                  "properties": {
-                    "type": {
-                      "pattern": "^choice|revealingChoice$"
-                    }
-                  }
-                }
-              }
+        "noneChoice": {
+          "required": ["type"],
+          "properties": {
+            "type": {
+              "pattern": "^choice|revealingChoice$"
             }
-          ]
+          }
         },
-        {
-          "anyOf": [
-            {
-              "not": {
-                "required": [
-                  "noneChoiceError"
-                ]
-              }
-            },
-            {
-              "required": [
-                "type"
-              ],
-              "dependencies": {
-                "noneChoiceError": {
-                  "properties": {
-                    "type": {
-                      "pattern": "^choice|revealingChoice$"
-                    }
-                  }
-                }
-              }
+        "noneChoiceError": {
+          "required": ["type"],
+          "properties": {
+            "type": {
+              "pattern": "^choice|revealingChoice$"
             }
-          ]
+          }
         },
-        {
-          "anyOf": [
-            {
-              "not": {
-                "required": [
-                  "dividerText"
-                ]
-              }
-            },
-            {
-              "required": [
-                "type"
-              ],
-              "dependencies": {
-                "dividerText": {
-                  "properties": {
-                    "type": {
-                      "pattern": "^choice|revealingChoice$"
-                    }
-                  }
-                }
-              }
+        "dividerText": {
+          "required": ["type"],
+          "properties": {
+            "type": {
+              "pattern": "^choice|revealingChoice$"
             }
-          ]
+          }
         },
-        {
-          "anyOf": [
-            {
-              "not": {
-                "required": [
-                  "displayCharCount"
-                ]
-              }
+        "displayCharCount": {
+          "required": [
+            "type",
+            "multiline"
+          ],
+          "properties": {
+            "type": {
+              "pattern": "^text$"
             },
-            {
-              "required": [
-                "type",
-                "multiline"
-              ],
-              "dependencies": {
-                "displayCharCount": {
-                  "properties": {
-                    "type": {
-                      "pattern": "^text$"
-                    },
-                    "multiline": {
-                      "pattern": "^true$"
-                    }
-                  }
-                }
-              }
+            "multiline": {
+              "pattern": "^true$"
             }
-          ]
+          }
         },
-        {
-          "anyOf": [
-            {
-              "not": {
-                "required": [
-                  "dataThreshold"
-                ]
-              }
+        "dataThreshold": {
+          "required": [
+            "type",
+            "multiline"
+          ],
+          "properties": {
+            "type": {
+              "pattern": "^text$"
             },
-            {
-              "required": [
-                "type",
-                "multiline"
-              ],
-              "dependencies": {
-                "dataThreshold": {
-                  "properties": {
-                    "type": {
-                      "pattern": "^text$"
-                    },
-                    "multiline": {
-                      "pattern": "^true$"
-                    }
-                  }
-                }
-              }
+            "multiline": {
+              "pattern": "^true$"
             }
-          ]
+          }
         },
-        {
-          "anyOf": [
-            {
-              "not": {
-                "required": [
-                  "format"
-                ]
-              }
-            },
-            {
-              "required": [
-                "type"
-              ],
-              "dependencies": {
-                "format": {
-                  "properties": {
-                    "type": {
-                      "pattern": "^text|choice|date|group$"
-                    }
-                  }
-                }
-              }
+        "format": {
+          "required": [
+            "type"
+          ],
+          "properties": {
+            "type": {
+              "pattern": "^text|choice|date|group$"
             }
-          ]
+          }
         },
-        {
-          "anyOf": [
-            {
-              "not": {
-                "required": [
-                  "cityMandatory"
-                ]
-              }
-            },
-            {
-              "required": [
-                "type"
-              ],
-              "dependencies": {
-                "cityMandatory": {
-                  "properties": {
-                    "type": {
-                      "pattern": "^address|overseasAddress$"
-                    }
-                  }
-                }
-              }
+        "cityMandatory": {
+          "required": [
+            "type"
+          ],
+          "properties": {
+            "type": {
+              "pattern": "^address|overseasAddress$"
             }
-          ]
+          }
         },
-        {
-          "anyOf": [
-            {
-              "not": {
-                "required": [
-                  "countyDisplayed"
-                ]
-              }
-            },
-            {
-              "required": [
-                "type"
-              ],
-              "dependencies": {
-                "countyDisplayed": {
-                  "properties": {
-                    "type": {
-                      "pattern": "^address$"
-                    }
-                  }
-                }
-              }
+        "countyDisplayed": {
+          "required": [
+            "type"
+          ],
+          "properties": {
+            "type": {
+              "pattern": "^address$"
             }
-          ]
+          }
         },
-        {
-          "anyOf": [
-            {
-              "not": {
-                "required": [
-                  "international"
-                ]
-              }
-            },
-            {
-              "required": [
-                "type"
-              ],
-              "dependencies": {
-                "international": {
-                  "properties": {
-                    "type": {
-                      "pattern": "^address$"
-                    }
-                  }
-                }
-              }
+        "international": {
+          "required": [
+            "type"
+          ],
+          "properties": {
+            "type": {
+              "pattern": "^address$"
             }
-          ]
+          }
         },
-        {
-          "anyOf": [
-            {
-              "not": {
-                "required": [
-                  "countryDisplayed"
-                ]
-              }
-            },
-            {
-              "required": [
-                "type"
-              ],
-              "dependencies": {
-                "countryDisplayed": {
-                  "properties": {
-                    "type": {
-                      "pattern": "^overseasAddress$"
-                    }
-                  }
-                }
-              }
+        "countryDisplayed": {
+          "required": [
+            "type"
+          ],
+          "properties": {
+            "type": {
+              "pattern": "^overseasAddress$"
             }
-          ]
+          }
         },
-        {
-          "anyOf": [
-            {
-              "not": {
-                "required": [
-                  "countryLookup"
-                ]
-              }
-            },
-            {
-              "required": [
-                "type"
-              ],
-              "dependencies": {
-                "countryLookup": {
-                  "properties": {
-                    "type": {
-                      "pattern": "^overseasAddress$"
-                    }
-                  }
-                }
-              }
+        "countryLookup": {
+          "required": [
+            "type"
+          ],
+          "properties": {
+            "type": {
+              "pattern": "^overseasAddress$"
             }
-          ]
+          }
         },
-        {
-          "anyOf": [
-            {
-              "not": {
-                "required": [
-                  "line2Mandatory"
-                ]
-              }
-            },
-            {
-              "required": [
-                "type"
-              ],
-              "dependencies": {
-                "line2Mandatory": {
-                  "properties": {
-                    "type": {
-                      "pattern": "^overseasAddress$"
-                    }
-                  }
-                }
-              }
+        "line2Mandatory": {
+          "required": [
+            "type"
+          ],
+          "properties": {
+            "type": {
+              "pattern": "^overseasAddress$"
             }
-          ]
+          }
         },
-        {
-          "anyOf": [
-            {
-              "not": {
-                "required": [
-                  "line3Mandatory"
-                ]
-              }
-            },
-            {
-              "required": [
-                "type"
-              ],
-              "dependencies": {
-                "line3Mandatory": {
-                  "properties": {
-                    "type": {
-                      "pattern": "^overseasAddress$"
-                    }
-                  }
-                }
-              }
+        "line3Mandatory": {
+          "required": [
+            "type"
+          ],
+          "properties": {
+            "type": {
+              "pattern": "^overseasAddress$"
             }
-          ]
+          }
         },
-        {
-          "anyOf": [
-            {
-              "not": {
-                "required": [
-                  "postcodeMandatory"
-                ]
-              }
-            },
-            {
-              "required": [
-                "type"
-              ],
-              "dependencies": {
-                "postcodeMandatory": {
-                  "properties": {
-                    "type": {
-                      "pattern": "^overseasAddress$"
-                    }
-                  }
-                }
-              }
+        "postcodeMandatory": {
+          "required": [
+            "type"
+          ],
+          "properties": {
+            "type": {
+              "pattern": "^overseasAddress$"
             }
-          ]
+          }
         },
-        {
-          "anyOf": [
-            {
-              "not": {
-                "required": [
-                  "confirmAddressLabel"
-                ]
-              }
-            },
-            {
-              "required": [
-                "type"
-              ],
-              "dependencies": {
-                "confirmAddressLabel": {
-                  "properties": {
-                    "type": {
-                      "pattern": "^postcodeLookup$"
-                    }
-                  }
-                }
-              }
+        "confirmAddressLabel": {
+          "required": [
+            "type"
+          ],
+          "properties": {
+            "type": {
+              "pattern": "^postcodeLookup$"
             }
-          ]
+          }
         },
-        {
-          "anyOf": [
-            {
-              "not": {
-                "required": [
-                  "chooseAddressLabel"
-                ]
-              }
-            },
-            {
-              "required": [
-                "type"
-              ],
-              "dependencies": {
-                "chooseAddressLabel": {
-                  "properties": {
-                    "type": {
-                      "pattern": "^postcodeLookup$"
-                    }
-                  }
-                }
-              }
+        "chooseAddressLabel": {
+          "required": [
+            "type"
+          ],
+          "properties": {
+            "type": {
+              "pattern": "^postcodeLookup$"
             }
-          ]
+          }
         }
-      ]
+      }
     }
   }
 }
