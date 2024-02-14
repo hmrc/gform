@@ -633,14 +633,14 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
     val expectedResult = List(
-      "#/sections/0/fields/0: Property choices can only be used with type: [choice, revealingChoice]",
-      "#/sections/0/fields/0: Property multivalue can only be used with type: [choice, revealingChoice]",
       "#/sections/0/fields/0: Property hints can only be used with type: [choice, revealingChoice]",
-      "#/sections/0/fields/0: Property optionHelpText can only be used with type: [choice, revealingChoice]",
       "#/sections/0/fields/0: Property dividerPosition can only be used with type: [choice, revealingChoice]",
       "#/sections/0/fields/0: Property noneChoice can only be used with type: [choice, revealingChoice]",
-      "#/sections/0/fields/0: Property noneChoiceError can only be used with type: [choice, revealingChoice]",
-      "#/sections/0/fields/0: Property dividerText can only be used with type: [choice, revealingChoice]"
+      "#/sections/0/fields/0: Property multivalue can only be used with type: [choice, revealingChoice]",
+      "#/sections/0/fields/0: Property optionHelpText can only be used with type: [choice, revealingChoice]",
+      "#/sections/0/fields/0: Property dividerText can only be used with type: [choice, revealingChoice]",
+      "#/sections/0/fields/0: Property choices can only be used with type: [choice, revealingChoice]",
+      "#/sections/0/fields/0: Property noneChoiceError can only be used with type: [choice, revealingChoice]"
     )
 
     runInvalidJsonTest(result, expectedResult)
@@ -666,9 +666,9 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
     val expectedResult = List(
+      "#/sections/0/fields/0: Property dataThreshold can only be used with type: [text], multiline: [true]",
       "#/sections/0/fields/0: Property infoType can only be used with type: [info]",
-      "#/sections/0/fields/0: Property choices can only be used with type: [choice, revealingChoice]",
-      "#/sections/0/fields/0: Property dataThreshold can only be used with type: [text], multiline: [true]"
+      "#/sections/0/fields/0: Property choices can only be used with type: [choice, revealingChoice]"
     )
 
     runInvalidJsonTest(result, expectedResult)
