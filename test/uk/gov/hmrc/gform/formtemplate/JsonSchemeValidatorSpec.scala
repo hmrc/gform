@@ -1079,6 +1079,110 @@ class JsonSchemeValidatorSpec extends FunSuite {
   }
 
   test(
+    "validateJson rejects the form gracefully when the properties dependent on type [info] are present but the type property is missing"
+  ) {
+    val testProperties =
+      json"""
+            {
+              "id": "testId",
+              "label": "test label",
+              "infoText": "Test infoText",
+              "infoType": "noformat"
+            }
+          """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at ID <testId>: Property infoText can only be used with type: [info]",
+      "Error at ID <testId>: Property infoType can only be used with type: [info]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when the properties dependent on type [choice, revealingChoice] are present but the type property is missing"
+  ) {
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": "test label",
+            "choices": [
+              "Test choice 1",
+              "Test choice 2"
+            ],
+            "multivalue": "true",
+            "hints": [
+              "Test hint 1",
+              "Test hint 2"
+            ],
+            "optionHelpText": [
+              {
+                "en": "Test English optionHelpText",
+                "cy": "Test Welsh optionHelpText"
+              }
+            ],
+            "dividerPosition": 1,
+            "dividerText": {
+              "en": "Test English dividerText",
+              "cy": "Test Welsh dividerText"
+            },
+            "noneChoice": 1,
+            "noneChoiceError": {
+              "en": "Test English noneChoiceError",
+              "cy": "Test Welsh noneChoiceError"
+            }
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at ID <testId>: Property hints can only be used with type: [choice, revealingChoice]",
+      "Error at ID <testId>: Property dividerPosition can only be used with type: [choice, revealingChoice]",
+      "Error at ID <testId>: Property noneChoice can only be used with type: [choice, revealingChoice]",
+      "Error at ID <testId>: Property multivalue can only be used with type: [choice, revealingChoice]",
+      "Error at ID <testId>: Property optionHelpText can only be used with type: [choice, revealingChoice]",
+      "Error at ID <testId>: Property dividerText can only be used with type: [choice, revealingChoice]",
+      "Error at ID <testId>: Property choices can only be used with type: [choice, revealingChoice]",
+      "Error at ID <testId>: Property noneChoiceError can only be used with type: [choice, revealingChoice]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when the properties dependent on type [text] and multiline [true] are present but the type and multiline properties are missing"
+  ) {
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": "test label",
+            "dataThreshold": 75,
+            "displayCharCount": "false"
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at ID <testId>: Property dataThreshold can only be used with type: [text], multiline: [true]",
+      "Error at ID <testId>: Property displayCharCount can only be used with type: [text], multiline: [true]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
     "validateJson accepts the form when the type property is [info] and the properties that are dependent on this are present"
   ) {
     val testProperties =
