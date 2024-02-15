@@ -24,6 +24,8 @@ import io.circe.schema.Schema
 import io.circe.schema.ValidationError
 import uk.gov.hmrc.gform.exceptions.SchemaValidationException
 
+import scala.annotation.tailrec
+
 object JsonSchemeValidator {
 
   val inputStream = getClass.getClassLoader.getResourceAsStream("formTemplateSchema.json")
@@ -51,7 +53,7 @@ object JsonSchemeValidator {
               case None => errors.map(_.getMessage)
               case Some(firstDependencyIndex) =>
                 val conditionalValidationErrors: List[String] =
-                  parseConditionalValidationErrors(errors, firstDependencyIndex, schema)
+                  parseConditionalValidationErrors(errors, firstDependencyIndex, schema, json)
 
                 constructFullError(errors, conditionalValidationErrors, firstDependencyIndex)
             }
@@ -61,12 +63,60 @@ object JsonSchemeValidator {
         }.toEither
     }
 
+  @tailrec
+  private def getErrorLocationId(json: Json, remainingSections: List[String]): Option[Json] =
+    remainingSections.headOption match {
+      // No more sections to traverse, so get ID of current section to return
+      case None =>
+        json.hcursor.downField("id").as[Json] match {
+          case Left(_)                      => None
+          case Right(errorLocationId: Json) => Some(errorLocationId)
+        }
+
+      // More sections to traverse, so check if current json is a List of Json or a Json
+      case Some(section: String) =>
+        json.as[List[Json]] match {
+
+          // If Json, go to next section
+          case Left(_) =>
+            json.hcursor.downField(section).as[Json] match {
+              case Left(_)                      => None
+              case Right(nextJsonSection: Json) => getErrorLocationId(nextJsonSection, remainingSections.tail)
+            }
+
+          // If List of Json, get Int of next section and index the List to go to next section
+          case Right(jsonList: List[Json]) =>
+            section.toIntOption match {
+              case Some(sectionInt: Int) => getErrorLocationId(jsonList(sectionInt), remainingSections.tail)
+              case None                  => None
+            }
+        }
+    }
+
+  private def tryConvertErrorLocationToId(json: Json, location: String): String = {
+    val errorLocationSections = location.split("/").toList.tail
+
+    getErrorLocationId(json, errorLocationSections) match {
+      // If cannot get ID of location, use original location message instead
+      case None => location
+
+      case Some(errorLocationId: Json) =>
+        errorLocationId.asString match {
+          case None                                => location
+          case Some(errorLocationIdString: String) => errorLocationIdString
+        }
+    }
+  }
+
   private def parseConditionalValidationErrors(
     errors: NonEmptyList[ValidationError],
     firstDependencyIndex: Int,
-    schema: Json
+    schema: Json,
+    json: Json
   ): List[String] =
     getErrorLocationsAndProperties(errors, firstDependencyIndex).distinct.map { case (location, property) =>
+      val errorLocation = tryConvertErrorLocationToId(json, location)
+
       val maybeRequirements: Option[String] =
         propertyRequirementsFromSchema(schema: Json, property: String) match {
           case Left(_) => None
@@ -75,8 +125,9 @@ object JsonSchemeValidator {
         }
 
       maybeRequirements match {
-        case None               => s"$location: Could not find validation in the schema for property: $property"
-        case Some(requirements) => s"$location: Property $property can only be used with $requirements"
+        case None => s"$errorLocation: Could not find validation in the schema for property: $property"
+        case Some(requirements: String) =>
+          s"Error at ID <$errorLocation>: Property $property can only be used with $requirements"
       }
     }
 
