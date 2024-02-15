@@ -134,7 +134,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
-    val expectedResult = List("#/sections/0/fields/0: Property infoType can only be used with type: [info]")
+    val expectedResult = List("Error at ID <testId>: Property infoType can only be used with type: [info]")
 
     runInvalidJsonTest(result, expectedResult)
   }
@@ -156,7 +156,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
-    val expectedResult = List("#/sections/0/fields/0: Property infoText can only be used with type: [info]")
+    val expectedResult = List("Error at ID <testId>: Property infoText can only be used with type: [info]")
 
     runInvalidJsonTest(result, expectedResult)
   }
@@ -182,7 +182,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
     val expectedResult =
-      List("#/sections/0/fields/0: Property choices can only be used with type: [choice, revealingChoice]")
+      List("Error at ID <testId>: Property choices can only be used with type: [choice, revealingChoice]")
 
     runInvalidJsonTest(result, expectedResult)
   }
@@ -205,7 +205,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
     val expectedResult =
-      List("#/sections/0/fields/0: Property multivalue can only be used with type: [choice, revealingChoice]")
+      List("Error at ID <testId>: Property multivalue can only be used with type: [choice, revealingChoice]")
 
     runInvalidJsonTest(result, expectedResult)
   }
@@ -231,7 +231,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
     val expectedResult =
-      List("#/sections/0/fields/0: Property hints can only be used with type: [choice, revealingChoice]")
+      List("Error at ID <testId>: Property hints can only be used with type: [choice, revealingChoice]")
 
     runInvalidJsonTest(result, expectedResult)
   }
@@ -259,7 +259,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
     val expectedResult = List(
-      "#/sections/0/fields/0: Property optionHelpText can only be used with type: [choice, revealingChoice]"
+      "Error at ID <testId>: Property optionHelpText can only be used with type: [choice, revealingChoice]"
     )
 
     runInvalidJsonTest(result, expectedResult)
@@ -283,7 +283,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
     val expectedResult = List(
-      "#/sections/0/fields/0: Property dividerPosition can only be used with type: [choice, revealingChoice]"
+      "Error at ID <testId>: Property dividerPosition can only be used with type: [choice, revealingChoice]"
     )
 
     runInvalidJsonTest(result, expectedResult)
@@ -310,7 +310,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
     val expectedResult = List(
-      "#/sections/0/fields/0: Property dividerText can only be used with type: [choice, revealingChoice]"
+      "Error at ID <testId>: Property dividerText can only be used with type: [choice, revealingChoice]"
     )
 
     runInvalidJsonTest(result, expectedResult)
@@ -334,7 +334,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
     val expectedResult = List(
-      "#/sections/0/fields/0: Property noneChoice can only be used with type: [choice, revealingChoice]"
+      "Error at ID <testId>: Property noneChoice can only be used with type: [choice, revealingChoice]"
     )
 
     runInvalidJsonTest(result, expectedResult)
@@ -361,7 +361,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
     val expectedResult = List(
-      "#/sections/0/fields/0: Property noneChoiceError can only be used with type: [choice, revealingChoice]"
+      "Error at ID <testId>: Property noneChoiceError can only be used with type: [choice, revealingChoice]"
     )
 
     runInvalidJsonTest(result, expectedResult)
@@ -386,7 +386,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
     val expectedResult = List(
-      "#/sections/0/fields/0: Property displayCharCount can only be used with type: [text], multiline: [true]"
+      "Error at ID <testId>: Property displayCharCount can only be used with type: [text], multiline: [true]"
     )
 
     runInvalidJsonTest(result, expectedResult)
@@ -411,7 +411,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
     val expectedResult = List(
-      "#/sections/0/fields/0: Property displayCharCount can only be used with type: [text], multiline: [true]"
+      "Error at ID <testId>: Property displayCharCount can only be used with type: [text], multiline: [true]"
     )
 
     runInvalidJsonTest(result, expectedResult)
@@ -435,7 +435,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
     val expectedResult = List(
-      "#/sections/0/fields/0: Property displayCharCount can only be used with type: [text], multiline: [true]"
+      "Error at ID <testId>: Property displayCharCount can only be used with type: [text], multiline: [true]"
     )
 
     runInvalidJsonTest(result, expectedResult)
@@ -460,7 +460,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
     val expectedResult = List(
-      "#/sections/0/fields/0: Property displayCharCount can only be used with type: [text], multiline: [true]"
+      "Error at ID <testId>: Property displayCharCount can only be used with type: [text], multiline: [true]"
     )
 
     runInvalidJsonTest(result, expectedResult)
@@ -485,7 +485,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
     val expectedResult = List(
-      "#/sections/0/fields/0: Property dataThreshold can only be used with type: [text], multiline: [true]"
+      "Error at ID <testId>: Property dataThreshold can only be used with type: [text], multiline: [true]"
     )
 
     runInvalidJsonTest(result, expectedResult)
@@ -510,7 +510,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
     val expectedResult = List(
-      "#/sections/0/fields/0: Property dataThreshold can only be used with type: [text], multiline: [true]"
+      "Error at ID <testId>: Property dataThreshold can only be used with type: [text], multiline: [true]"
     )
 
     runInvalidJsonTest(result, expectedResult)
@@ -534,7 +534,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
     val expectedResult = List(
-      "#/sections/0/fields/0: Property dataThreshold can only be used with type: [text], multiline: [true]"
+      "Error at ID <testId>: Property dataThreshold can only be used with type: [text], multiline: [true]"
     )
 
     runInvalidJsonTest(result, expectedResult)
@@ -559,7 +559,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
     val expectedResult = List(
-      "#/sections/0/fields/0: Property dataThreshold can only be used with type: [text], multiline: [true]"
+      "Error at ID <testId>: Property dataThreshold can only be used with type: [text], multiline: [true]"
     )
 
     runInvalidJsonTest(result, expectedResult)
@@ -584,8 +584,8 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
     val expectedResult = List(
-      "#/sections/0/fields/0: Property infoText can only be used with type: [info]",
-      "#/sections/0/fields/0: Property infoType can only be used with type: [info]"
+      "Error at ID <testId>: Property infoText can only be used with type: [info]",
+      "Error at ID <testId>: Property infoType can only be used with type: [info]"
     )
 
     runInvalidJsonTest(result, expectedResult)
@@ -633,14 +633,14 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
     val expectedResult = List(
-      "#/sections/0/fields/0: Property hints can only be used with type: [choice, revealingChoice]",
-      "#/sections/0/fields/0: Property dividerPosition can only be used with type: [choice, revealingChoice]",
-      "#/sections/0/fields/0: Property noneChoice can only be used with type: [choice, revealingChoice]",
-      "#/sections/0/fields/0: Property multivalue can only be used with type: [choice, revealingChoice]",
-      "#/sections/0/fields/0: Property optionHelpText can only be used with type: [choice, revealingChoice]",
-      "#/sections/0/fields/0: Property dividerText can only be used with type: [choice, revealingChoice]",
-      "#/sections/0/fields/0: Property choices can only be used with type: [choice, revealingChoice]",
-      "#/sections/0/fields/0: Property noneChoiceError can only be used with type: [choice, revealingChoice]"
+      "Error at ID <testId>: Property hints can only be used with type: [choice, revealingChoice]",
+      "Error at ID <testId>: Property dividerPosition can only be used with type: [choice, revealingChoice]",
+      "Error at ID <testId>: Property noneChoice can only be used with type: [choice, revealingChoice]",
+      "Error at ID <testId>: Property multivalue can only be used with type: [choice, revealingChoice]",
+      "Error at ID <testId>: Property optionHelpText can only be used with type: [choice, revealingChoice]",
+      "Error at ID <testId>: Property dividerText can only be used with type: [choice, revealingChoice]",
+      "Error at ID <testId>: Property choices can only be used with type: [choice, revealingChoice]",
+      "Error at ID <testId>: Property noneChoiceError can only be used with type: [choice, revealingChoice]"
     )
 
     runInvalidJsonTest(result, expectedResult)
@@ -666,9 +666,9 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
     val expectedResult = List(
-      "#/sections/0/fields/0: Property dataThreshold can only be used with type: [text], multiline: [true]",
-      "#/sections/0/fields/0: Property infoType can only be used with type: [info]",
-      "#/sections/0/fields/0: Property choices can only be used with type: [choice, revealingChoice]"
+      "Error at ID <testId>: Property dataThreshold can only be used with type: [text], multiline: [true]",
+      "Error at ID <testId>: Property infoType can only be used with type: [info]",
+      "Error at ID <testId>: Property choices can only be used with type: [choice, revealingChoice]"
     )
 
     runInvalidJsonTest(result, expectedResult)
@@ -692,7 +692,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
     val expectedResult = List(
-      "#/sections/0/fields/0: Property format can only be used with type: [text, choice, date, group]"
+      "Error at ID <testId>: Property format can only be used with type: [text, choice, date, group]"
     )
 
     runInvalidJsonTest(result, expectedResult)
@@ -716,7 +716,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
     val expectedResult = List(
-      "#/sections/0/fields/0: Property cityMandatory can only be used with type: [address, overseasAddress]"
+      "Error at ID <testId>: Property cityMandatory can only be used with type: [address, overseasAddress]"
     )
 
     runInvalidJsonTest(result, expectedResult)
@@ -740,7 +740,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
     val expectedResult = List(
-      "#/sections/0/fields/0: Property countyDisplayed can only be used with type: [address]"
+      "Error at ID <testId>: Property countyDisplayed can only be used with type: [address]"
     )
 
     runInvalidJsonTest(result, expectedResult)
@@ -764,7 +764,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
     val expectedResult = List(
-      "#/sections/0/fields/0: Property international can only be used with type: [address]"
+      "Error at ID <testId>: Property international can only be used with type: [address]"
     )
 
     runInvalidJsonTest(result, expectedResult)
@@ -788,7 +788,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
     val expectedResult = List(
-      "#/sections/0/fields/0: Property countryDisplayed can only be used with type: [overseasAddress]"
+      "Error at ID <testId>: Property countryDisplayed can only be used with type: [overseasAddress]"
     )
 
     runInvalidJsonTest(result, expectedResult)
@@ -812,7 +812,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
     val expectedResult = List(
-      "#/sections/0/fields/0: Property countryLookup can only be used with type: [overseasAddress]"
+      "Error at ID <testId>: Property countryLookup can only be used with type: [overseasAddress]"
     )
 
     runInvalidJsonTest(result, expectedResult)
@@ -836,7 +836,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
     val expectedResult = List(
-      "#/sections/0/fields/0: Property line2Mandatory can only be used with type: [overseasAddress]"
+      "Error at ID <testId>: Property line2Mandatory can only be used with type: [overseasAddress]"
     )
 
     runInvalidJsonTest(result, expectedResult)
@@ -860,7 +860,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
     val expectedResult = List(
-      "#/sections/0/fields/0: Property line3Mandatory can only be used with type: [overseasAddress]"
+      "Error at ID <testId>: Property line3Mandatory can only be used with type: [overseasAddress]"
     )
 
     runInvalidJsonTest(result, expectedResult)
@@ -884,7 +884,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
     val expectedResult = List(
-      "#/sections/0/fields/0: Property postcodeMandatory can only be used with type: [overseasAddress]"
+      "Error at ID <testId>: Property postcodeMandatory can only be used with type: [overseasAddress]"
     )
 
     runInvalidJsonTest(result, expectedResult)
@@ -908,7 +908,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
     val expectedResult = List(
-      "#/sections/0/fields/0: Property confirmAddressLabel can only be used with type: [postcodeLookup]"
+      "Error at ID <testId>: Property confirmAddressLabel can only be used with type: [postcodeLookup]"
     )
 
     runInvalidJsonTest(result, expectedResult)
@@ -932,7 +932,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
     val expectedResult = List(
-      "#/sections/0/fields/0: Property chooseAddressLabel can only be used with type: [postcodeLookup]"
+      "Error at ID <testId>: Property chooseAddressLabel can only be used with type: [postcodeLookup]"
     )
 
     runInvalidJsonTest(result, expectedResult)
@@ -966,8 +966,8 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
     val expectedResult = List(
-      "#/sections/0/fields/0: Property infoText can only be used with type: [info]",
-      "#/sections/0/fields/1: Property infoType can only be used with type: [info]"
+      "Error at ID <TestID1>: Property infoText can only be used with type: [info]",
+      "Error at ID <TestID2>: Property infoType can only be used with type: [info]"
     )
 
     runInvalidJsonTest(result, expectedResult)
@@ -1001,7 +1001,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
     val expectedResult = List(
-      "#/sections/0/fields/1: Property infoType can only be used with type: [info]"
+      "Error at ID <TestID2>: Property infoType can only be used with type: [info]"
     )
 
     runInvalidJsonTest(result, expectedResult)
@@ -1035,15 +1035,15 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
     val expectedResult = List(
-      "#/sections/0/fields/0: Property infoText can only be used with type: [info]",
-      "#/sections/1/fields/0: Property infoType can only be used with type: [info]"
+      "Error at ID <TestID1>: Property infoText can only be used with type: [info]",
+      "Error at ID <TestID2>: Property infoType can only be used with type: [info]"
     )
 
     runInvalidJsonTest(result, expectedResult)
   }
 
   test(
-    "validateJson rejects the form gracefully when displayCharCount and dataThreshold are used in different sections when the type property is not [info] in one section and the multiline property is not[true] in the other"
+    "validateJson rejects the form gracefully when displayCharCount and dataThreshold are used in different sections when the type property is not [text] in one section and the multiline property is not [true] in the other"
   ) {
     val testProperties1 =
       json"""
@@ -1071,8 +1071,8 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
     val expectedResult = List(
-      "#/sections/0/fields/0: Property displayCharCount can only be used with type: [text], multiline: [true]",
-      "#/sections/1/fields/0: Property dataThreshold can only be used with type: [text], multiline: [true]"
+      "Error at ID <TestID1>: Property displayCharCount can only be used with type: [text], multiline: [true]",
+      "Error at ID <TestID2>: Property dataThreshold can only be used with type: [text], multiline: [true]"
     )
 
     runInvalidJsonTest(result, expectedResult)
