@@ -1486,10 +1486,10 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
     val expectedResult = List(
-      "#/sections/0/fields/0/type: expected type: String, found: JSONArray",
-      "#/sections/0/fields/0/dataThreshold: expected type: Integer, found: String",
-      "#/sections/0/fields/0/multiline: expected type: String, found: Integer",
-      "#/sections/0/fields/0/displayCharCount: expected type: String, found: JSONObject"
+      "Error at ID <testId>: Property type expected type: String, found: JSONArray",
+      "Error at ID <testId>: Property dataThreshold expected type: Integer, found: String",
+      "Error at ID <testId>: Property multiline expected type: String, found: Integer",
+      "Error at ID <testId>: Property displayCharCount expected type: String, found: JSONObject"
     )
 
     runInvalidJsonTest(result, expectedResult)
