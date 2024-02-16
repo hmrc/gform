@@ -119,7 +119,10 @@ trait Verifier {
       case l: Section.AddToList =>
         l.copy(
           pages = l.pages.map(mkSpecimen),
-          includeIf = None
+          includeIf = None,
+          fields = l.fields.flatMap(fields => removeIncludeIfFromFormComponents(fields.toList).toNel),
+          repeatsUntil = None,
+          repeatsWhile = None
         )
     }
 
@@ -138,7 +141,10 @@ trait Verifier {
             taskSection.copy(
               tasks = taskSection.tasks.map(task =>
                 task.copy(
-                  sections = task.sections.map(updateSection)
+                  sections = task.sections.map(updateSection),
+                  includeIf = None,
+                  summarySection = task.summarySection.map(summary => summary.copy(includeIf = None)),
+                  declarationSection = task.declarationSection.map(declaration => declaration.copy(includeIf = None))
                 )
               )
             )
@@ -151,7 +157,31 @@ trait Verifier {
     (removeIncludeIf _ andThen mkComponentsOptional)(page)
 
   private def removeIncludeIf(section: Page): Page =
-    section.copy(includeIf = None, fields = section.fields.map(i => i.copy(includeIf = None)))
+    section.copy(includeIf = None, fields = removeIncludeIfFromFormComponents(section.fields))
+
+  private def removeIncludeIfFromFormComponents(fcs: List[FormComponent]): List[FormComponent] = fcs.map {
+    case fc @ IsChoice(choice) =>
+      fc.copy(
+        includeIf = None,
+        `type` = choice.copy(
+          options = choice.options.map(optionData => removeIncludeIfFromOptionData(optionData))
+        )
+      )
+    case fc @ IsRevealingChoice(revealingChoice) =>
+      fc.copy(
+        includeIf = None,
+        `type` = revealingChoice.copy(
+          options = revealingChoice.options.map(rce => rce.copy(choice = removeIncludeIfFromOptionData(rce.choice)))
+        )
+      )
+    case other => other.copy(includeIf = None)
+  }
+
+  private def removeIncludeIfFromOptionData(optionData: OptionData) =
+    optionData match {
+      case i @ OptionData.IndexBased(_, _, _, _)    => i.copy(includeIf = None)
+      case i @ OptionData.ValueBased(_, _, _, _, _) => i.copy(includeIf = None)
+    }
 
   private def mkComponentsOptional(page: Page): Page =
     page.copy(
