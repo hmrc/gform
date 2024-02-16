@@ -49,19 +49,124 @@ object JsonSchemeValidator {
 
         validated.leftMap { errors =>
           val fullError: NonEmptyList[String] = {
+            val errorsWithParsedTypeErrors = parseTypeErrors(errors, json)
+
             maybeFirstSchemaValidationErrorIndex(errors) match {
-              case None => errors.map(_.getMessage)
+              case None => errorsWithParsedTypeErrors.map(_.getMessage)
               case Some(firstDependencyIndex) =>
                 val conditionalValidationErrors: List[String] =
                   parseConditionalValidationErrors(errors, firstDependencyIndex, schema, json)
 
-                constructFullError(errors, conditionalValidationErrors, firstDependencyIndex)
+                constructFullError(errorsWithParsedTypeErrors, conditionalValidationErrors, firstDependencyIndex)
             }
           }
 
           SchemaValidationException(fullError)
         }.toEither
     }
+
+  private def parseTypeErrors(
+    errors: NonEmptyList[ValidationError],
+    json: Json
+  ): NonEmptyList[ValidationError] = {
+    errors.map { error =>
+      if (error.keyword == "type") {
+        val remainingSections = error.location.split("/").toList.tail
+        val errorProperty = remainingSections.last
+
+        val errorLocationId: String = getErrorLocationId(json, remainingSections.dropRight(1)) match {
+          case None => remainingSections.mkString("/")
+          case Some(value) =>
+            value.asString match {
+              case None                                => remainingSections.mkString("/")
+              case Some(errorLocationIdString: String) => errorLocationIdString
+            }
+        }
+
+        val errorMessage =
+          s"Error at ID <$errorLocationId>: Property $errorProperty ${error.getMessage.split(":").tail.mkString(":").strip()}"
+
+        ValidationError(error.keyword, errorMessage, error.location, error.schemaLocation)
+      } else {
+        error
+      }
+    }
+  }
+
+  private def maybeFirstSchemaValidationErrorIndex(errors: NonEmptyList[ValidationError]): Option[Int] = errors
+    .map(_.schemaLocation.getOrElse(""))
+    .toList
+    .zipWithIndex
+    .filter(_._1.contains("dependencies"))
+    .map(_._2)
+    .headOption
+
+  private def parseConditionalValidationErrors(
+    errors: NonEmptyList[ValidationError],
+    firstDependencyIndex: Int,
+    schema: Json,
+    json: Json
+  ): List[String] =
+    getErrorLocationsAndProperties(errors, firstDependencyIndex).distinct.map { case (location, property) =>
+      val errorLocation = tryConvertErrorLocationToId(json, location)
+
+      val maybeRequirements: Option[String] =
+        propertyRequirementsFromSchema(schema: Json, property: String) match {
+          case Left(_) => None
+          case Right(requiredPropertyAndPattern) =>
+            Some(requiredPropertyValuesFromPattern(requiredPropertyAndPattern))
+        }
+
+      maybeRequirements match {
+        case None => s"$errorLocation: Could not find validation in the schema for property: $property"
+        case Some(requirements: String) =>
+          s"Error at ID <$errorLocation>: Property $property can only be used with $requirements"
+      }
+    }
+
+  private def getErrorLocationsAndProperties(
+    errors: NonEmptyList[ValidationError],
+    firstDependencyIndex: Int
+  ): List[(String, String)] =
+    errors.toList.slice(firstDependencyIndex, errors.length).flatMap { error =>
+      val schemaErrorLocation = error.schemaLocation.getOrElse("")
+      schemaErrorLocation match {
+        case "" => None
+        case _ => maybeErrorLocationAndPropertyFromKeyword(error, schemaErrorLocation.split("/"))
+      }
+    }
+
+  private def maybeErrorLocationAndPropertyFromKeyword(
+    error: ValidationError,
+    splitErrorLocation: Array[String]
+  ): Option[(String, String)] =
+    error.keyword match {
+      case "pattern" =>
+        Some(
+          (
+            error.location.substring(0, error.location.lastIndexOf("/")),
+            splitErrorLocation(splitErrorLocation.length - 3)
+          )
+        )
+      case "required" =>
+        Some((error.location, splitErrorLocation.last))
+      case _ => None
+    }
+
+  private def tryConvertErrorLocationToId(json: Json, location: String): String = {
+    val errorLocationSections = location.split("/").toList.tail
+
+    getErrorLocationId(json, errorLocationSections) match {
+      // If cannot get ID of location, use original location message instead
+      case None => location
+
+      case Some(errorLocationId: Json) =>
+        errorLocationId.asString match {
+          case None => location
+          case Some(errorLocationIdString: String) => errorLocationIdString
+        }
+    }
+  }
 
   @tailrec
   private def getErrorLocationId(json: Json, remainingSections: List[String]): Option[Json] =
@@ -93,81 +198,6 @@ object JsonSchemeValidator {
         }
     }
 
-  private def tryConvertErrorLocationToId(json: Json, location: String): String = {
-    val errorLocationSections = location.split("/").toList.tail
-
-    getErrorLocationId(json, errorLocationSections) match {
-      // If cannot get ID of location, use original location message instead
-      case None => location
-
-      case Some(errorLocationId: Json) =>
-        errorLocationId.asString match {
-          case None                                => location
-          case Some(errorLocationIdString: String) => errorLocationIdString
-        }
-    }
-  }
-
-  private def parseConditionalValidationErrors(
-    errors: NonEmptyList[ValidationError],
-    firstDependencyIndex: Int,
-    schema: Json,
-    json: Json
-  ): List[String] =
-    getErrorLocationsAndProperties(errors, firstDependencyIndex).distinct.map { case (location, property) =>
-      val errorLocation = tryConvertErrorLocationToId(json, location)
-
-      val maybeRequirements: Option[String] =
-        propertyRequirementsFromSchema(schema: Json, property: String) match {
-          case Left(_) => None
-          case Right(requiredPropertyAndPattern) =>
-            Some(requiredPropertyValuesFromPattern(requiredPropertyAndPattern))
-        }
-
-      maybeRequirements match {
-        case None => s"$errorLocation: Could not find validation in the schema for property: $property"
-        case Some(requirements: String) =>
-          s"Error at ID <$errorLocation>: Property $property can only be used with $requirements"
-      }
-    }
-
-  private def maybeFirstSchemaValidationErrorIndex(errors: NonEmptyList[ValidationError]): Option[Int] = errors
-    .map(_.schemaLocation.getOrElse(""))
-    .toList
-    .zipWithIndex
-    .filter(_._1.contains("dependencies"))
-    .map(_._2)
-    .headOption
-
-  private def maybeErrorLocationAndPropertyFromKeyword(
-    error: ValidationError,
-    splitErrorLocation: Array[String]
-  ): Option[(String, String)] =
-    error.keyword match {
-      case "pattern" =>
-        Some(
-          (
-            error.location.substring(0, error.location.lastIndexOf("/")),
-            splitErrorLocation(splitErrorLocation.length - 3)
-          )
-        )
-      case "required" =>
-        Some((error.location, splitErrorLocation.last))
-      case _ => None
-    }
-
-  private def getErrorLocationsAndProperties(
-    errors: NonEmptyList[ValidationError],
-    firstDependencyIndex: Int
-  ): List[(String, String)] =
-    errors.toList.slice(firstDependencyIndex, errors.length).flatMap { error =>
-      val schemaErrorLocation = error.schemaLocation.getOrElse("")
-      schemaErrorLocation match {
-        case "" => None
-        case _  => maybeErrorLocationAndPropertyFromKeyword(error, schemaErrorLocation.split("/"))
-      }
-    }
-
   private def propertyRequirementsFromSchema(schema: Json, property: String): Result[Map[String, Map[String, String]]] =
     schema.hcursor
       .downField("$defs")
@@ -195,17 +225,12 @@ object JsonSchemeValidator {
     baseErrors: NonEmptyList[ValidationError],
     conditionalValidationErrors: List[String],
     firstDependencyIndex: Int
-  ) = {
-
-    val typeErrors =
-      baseErrors.toList.slice(firstDependencyIndex, baseErrors.length).filter(_.keyword == "type").map(_.getMessage)
-
+  ) =
     // Using unsafe because errors is an NEL and firstDependencyIndex is not None in this branch
     NonEmptyList.fromListUnsafe(
       baseErrors
         .map(_.getMessage)
         .toList
-        .slice(0, firstDependencyIndex) ++ typeErrors ++ conditionalValidationErrors
+        .slice(0, firstDependencyIndex) ++ conditionalValidationErrors
     )
-  }
 }
