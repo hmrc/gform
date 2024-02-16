@@ -68,7 +68,7 @@ object JsonSchemeValidator {
   private def parseTypeErrors(
     errors: NonEmptyList[ValidationError],
     json: Json
-  ): NonEmptyList[ValidationError] = {
+  ): NonEmptyList[ValidationError] =
     errors.map { error =>
       if (error.keyword == "type") {
         val remainingSections = error.location.split("/").toList.tail
@@ -91,7 +91,6 @@ object JsonSchemeValidator {
         error
       }
     }
-  }
 
   private def maybeFirstSchemaValidationErrorIndex(errors: NonEmptyList[ValidationError]): Option[Int] = errors
     .map(_.schemaLocation.getOrElse(""))
@@ -132,7 +131,7 @@ object JsonSchemeValidator {
       val schemaErrorLocation = error.schemaLocation.getOrElse("")
       schemaErrorLocation match {
         case "" => None
-        case _ => maybeErrorLocationAndPropertyFromKeyword(error, schemaErrorLocation.split("/"))
+        case _  => maybeErrorLocationAndPropertyFromKeyword(error, schemaErrorLocation.split("/"))
       }
     }
 
@@ -162,7 +161,7 @@ object JsonSchemeValidator {
 
       case Some(errorLocationId: Json) =>
         errorLocationId.asString match {
-          case None => location
+          case None                                => location
           case Some(errorLocationIdString: String) => errorLocationIdString
         }
     }
