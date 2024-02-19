@@ -18,7 +18,7 @@ package uk.gov.hmrc.gform.formtemplate
 
 import cats.data.{ NonEmptyList, ValidatedNel }
 import io.circe.Decoder.Result
-import io.circe.Json
+import io.circe.{ DecodingFailure, Json }
 import io.circe.jawn.JawnParser
 import io.circe.schema.Schema
 import io.circe.schema.ValidationError
@@ -43,7 +43,7 @@ object JsonSchemeValidator {
   def validateJson(json: Json): Either[SchemaValidationException, Unit] =
     parsedSchema match {
       case Left(parsingFailure) => Left(SchemaValidationException("Schema error: " + parsingFailure))
-      case Right(schema: Json) =>
+      case Right(schema) =>
         val formTemplateSchema: Schema = Schema.load(schema)
         val validated: ValidatedNel[ValidationError, Unit] = formTemplateSchema.validate(json)
 
@@ -71,18 +71,8 @@ object JsonSchemeValidator {
   ): NonEmptyList[ValidationError] =
     errors.map { error =>
       if (error.keyword == "type") {
-        val remainingSections = error.location.split("/").toList.tail
-        val errorProperty = remainingSections.last
-
-        val errorLocationId: String = getErrorLocationId(json, remainingSections.dropRight(1)) match {
-          case None => remainingSections.mkString("/")
-          case Some(value) =>
-            value.asString match {
-              case None                                => remainingSections.mkString("/")
-              case Some(errorLocationIdString: String) => errorLocationIdString
-            }
-        }
-
+        val errorProperty = error.location.split("/").last
+        val errorLocationId: String = tryConvertErrorLocationToId(json, error.location, propertyNameInLocation = true)
         val errorMessage =
           s"Error at ID <$errorLocationId>: Property $errorProperty ${error.getMessage.split(":").tail.mkString(":").strip()}"
 
@@ -96,9 +86,7 @@ object JsonSchemeValidator {
     .map(_.schemaLocation.getOrElse(""))
     .toList
     .zipWithIndex
-    .filter(_._1.contains("dependencies"))
-    .map(_._2)
-    .headOption
+    .collectFirst { case (lookup, index) if lookup.contains("dependencies") => index }
 
   private def parseConditionalValidationErrors(
     errors: NonEmptyList[ValidationError],
@@ -107,18 +95,14 @@ object JsonSchemeValidator {
     json: Json
   ): List[String] =
     getErrorLocationsAndProperties(errors, firstDependencyIndex).distinct.map { case (location, property) =>
-      val errorLocation = tryConvertErrorLocationToId(json, location)
+      val errorLocation = tryConvertErrorLocationToId(json, location, propertyNameInLocation = false)
 
-      val maybeRequirements: Option[String] =
-        propertyRequirementsFromSchema(schema: Json, property: String) match {
-          case Left(_) => None
-          case Right(requiredPropertyAndPattern) =>
-            Some(requiredPropertyValuesFromPattern(requiredPropertyAndPattern))
-        }
+      val maybeRequirements: Either[DecodingFailure, String] =
+        propertyRequirementsFromSchema(schema, property).map(requiredPropertyValuesFromPattern)
 
       maybeRequirements match {
-        case None => s"$errorLocation: Could not find validation in the schema for property: $property"
-        case Some(requirements: String) =>
+        case Left(_) => s"$errorLocation: Could not find validation in the schema for property: $property"
+        case Right(requirements) =>
           s"Error at ID <$errorLocation>: Property $property can only be used with $requirements"
       }
     }
@@ -128,11 +112,9 @@ object JsonSchemeValidator {
     firstDependencyIndex: Int
   ): List[(String, String)] =
     errors.toList.slice(firstDependencyIndex, errors.length).flatMap { error =>
-      val schemaErrorLocation = error.schemaLocation.getOrElse("")
-      schemaErrorLocation match {
-        case "" => None
-        case _  => maybeErrorLocationAndPropertyFromKeyword(error, schemaErrorLocation.split("/"))
-      }
+      error.schemaLocation.flatMap(schemaErrorLocation =>
+        maybeErrorLocationAndPropertyFromKeyword(error, schemaErrorLocation.split("/"))
+      )
     }
 
   private def maybeErrorLocationAndPropertyFromKeyword(
@@ -152,47 +134,41 @@ object JsonSchemeValidator {
       case _ => None
     }
 
-  private def tryConvertErrorLocationToId(json: Json, location: String): String = {
+  private def tryConvertErrorLocationToId(json: Json, location: String, propertyNameInLocation: Boolean): String = {
     val errorLocationSections = location.split("/").toList.tail
+    val errorLocationSectionsWithoutProperty =
+      if (propertyNameInLocation) errorLocationSections.dropRight(1) else errorLocationSections
 
-    getErrorLocationId(json, errorLocationSections) match {
-      // If cannot get ID of location, use original location message instead
-      case None => location
-
-      case Some(errorLocationId: Json) =>
-        errorLocationId.asString match {
-          case None                                => location
-          case Some(errorLocationIdString: String) => errorLocationIdString
-        }
-    }
+    // If cannot get ID of location, use original location message instead
+    getErrorLocationId(json, errorLocationSectionsWithoutProperty).flatMap(_.asString).getOrElse(location)
   }
 
   @tailrec
   private def getErrorLocationId(json: Json, remainingSections: List[String]): Option[Json] =
-    remainingSections.headOption match {
+    remainingSections match {
       // No more sections to traverse, so get ID of current section to return
-      case None =>
+      case Nil =>
         json.hcursor.downField("id").as[Json] match {
-          case Left(_)                      => None
-          case Right(errorLocationId: Json) => Some(errorLocationId)
+          case Left(_)                => None
+          case Right(errorLocationId) => Some(errorLocationId)
         }
 
       // More sections to traverse, so check if current json is a List of Json or a Json
-      case Some(section: String) =>
+      case section :: nextRemainingSections =>
         json.as[List[Json]] match {
 
           // If Json, go to next section
           case Left(_) =>
             json.hcursor.downField(section).as[Json] match {
-              case Left(_)                      => None
-              case Right(nextJsonSection: Json) => getErrorLocationId(nextJsonSection, remainingSections.tail)
+              case Left(_)                => None
+              case Right(nextJsonSection) => getErrorLocationId(nextJsonSection, nextRemainingSections)
             }
 
           // If List of Json, get Int of next section and index the List to go to next section
-          case Right(jsonList: List[Json]) =>
+          case Right(jsonList) =>
             section.toIntOption match {
-              case Some(sectionInt: Int) => getErrorLocationId(jsonList(sectionInt), remainingSections.tail)
-              case None                  => None
+              case Some(sectionInt) => getErrorLocationId(jsonList(sectionInt), nextRemainingSections)
+              case None             => None
             }
         }
     }
@@ -207,10 +183,10 @@ object JsonSchemeValidator {
       .as[Map[String, Map[String, String]]]
 
   private def requiredPropertyValuesFromPattern(requiredPropertyAndPattern: Map[String, Map[String, String]]): String =
-    requiredPropertyAndPattern
-      .map { case (requiredProperty, pattern) =>
-        requiredProperty -> pattern
-          .map { case (_, requiredValues) =>
+    requiredPropertyAndPattern.view
+      .mapValues { requiredPattern =>
+        requiredPattern.values
+          .map { requiredValues =>
             requiredValues.substring(1, requiredValues.length - 1).replace("|", ", ")
           }
           .mkString(", ")
