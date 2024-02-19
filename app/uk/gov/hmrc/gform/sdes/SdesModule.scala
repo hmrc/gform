@@ -70,16 +70,47 @@ class SdesModule(
         IndexModel(
           Indexes.ascending("confirmedAt"),
           IndexOptions()
-            .background(false)
-            .name("confirmedAtIndex")
+            .background(true)
+            .name("confirmedAtIdx")
         ),
         IndexModel(
           Indexes.ascending("isProcessed"),
           IndexOptions()
-            .background(false)
-            .name("isProcessed")
+            .background(true)
+            .name("isProcessedIdx")
+        ),
+        IndexModel(
+          Indexes.ascending("envelopeId"),
+          IndexOptions()
+            .background(true)
+            .name("envelopeIdIdx")
+        ),
+        IndexModel(
+          Indexes.ascending("formTemplateId"),
+          IndexOptions()
+            .background(true)
+            .name("formTemplateIdIdx")
+        ),
+        IndexModel(
+          Indexes.ascending("submissionRef"),
+          IndexOptions()
+            .background(true)
+            .name("submissionRefIdx")
+        ),
+        IndexModel(
+          Indexes.ascending("destination"),
+          IndexOptions()
+            .background(true)
+            .name("destinationIdx")
+        ),
+        IndexModel(
+          Indexes.ascending("createdAt"),
+          IndexOptions()
+            .background(true)
+            .name("createdAtIdx")
         )
-      )
+      ),
+      replaceIndexes = true
     )
 
   private val repoSdesHistory: Repo[SdesHistory] =
