@@ -17,12 +17,14 @@
 package uk.gov.hmrc.gform.formtemplate
 
 import cats.data.{ NonEmptyList, ValidatedNel }
-import io.circe.Json
+import io.circe.Decoder.Result
+import io.circe.{ DecodingFailure, Json }
 import io.circe.jawn.JawnParser
 import io.circe.schema.Schema
 import io.circe.schema.ValidationError
 import uk.gov.hmrc.gform.exceptions.SchemaValidationException
-import uk.gov.hmrc.gform.formtemplate.ConditionalValidationRequirement._
+
+import scala.annotation.tailrec
 
 object JsonSchemeValidator {
 
@@ -32,32 +34,6 @@ object JsonSchemeValidator {
 
   val parser = JawnParser(allowDuplicateKeys = false)
   val parsedSchema = parser.parse(schemaStream)
-
-  private val conditionalRequirements: Map[String, List[ConditionalValidationRequirement]] = Map(
-    "infoType"            -> List(TypeInfo),
-    "infoText"            -> List(TypeInfo),
-    "choices"             -> List(TypeChoice, TypeRevealingChoice),
-    "multivalue"          -> List(TypeChoice, TypeRevealingChoice),
-    "hints"               -> List(TypeChoice, TypeRevealingChoice),
-    "optionHelpText"      -> List(TypeChoice, TypeRevealingChoice),
-    "dividerPosition"     -> List(TypeChoice, TypeRevealingChoice),
-    "noneChoice"          -> List(TypeChoice, TypeRevealingChoice),
-    "noneChoiceError"     -> List(TypeChoice, TypeRevealingChoice),
-    "dividerText"         -> List(TypeChoice, TypeRevealingChoice),
-    "displayCharCount"    -> List(TypeText, MultilineTrue),
-    "dataThreshold"       -> List(TypeText, MultilineTrue),
-    "format"              -> List(TypeText, TypeChoice, TypeDate, TypeGroup),
-    "cityMandatory"       -> List(TypeAddress, TypeOverseasAddress),
-    "countyDisplayed"     -> List(TypeAddress),
-    "international"       -> List(TypeAddress),
-    "countryDisplayed"    -> List(TypeOverseasAddress),
-    "countryLookup"       -> List(TypeOverseasAddress),
-    "line2Mandatory"      -> List(TypeOverseasAddress),
-    "line3Mandatory"      -> List(TypeOverseasAddress),
-    "postcodeMandatory"   -> List(TypeOverseasAddress),
-    "confirmAddressLabel" -> List(TypePostcodeLookup),
-    "chooseAddressLabel"  -> List(TypePostcodeLookup)
-  )
 
   def checkSchema(json: String): Either[SchemaValidationException, Unit] = parser.parse(json) match {
     case Right(json)          => validateJson(json)
@@ -72,54 +48,164 @@ object JsonSchemeValidator {
         val validated: ValidatedNel[ValidationError, Unit] = formTemplateSchema.validate(json)
 
         validated.leftMap { errors =>
-          val conditionalValidationErrorMessages: NonEmptyList[String] = {
-            val indexOfAnyOf = errors.map(_.keyword).toList.indexOf("anyOf")
+          val fullError: NonEmptyList[String] = {
+            val errorsWithParsedTypeErrors = parseTypeErrors(errors, json)
 
-            if (indexOfAnyOf > 0) {
-              val allConditionalValidationErrors: List[(String, String)] = errors.toList
-                .slice(indexOfAnyOf, errors.length)
-                .flatMap { error =>
-                  error.keyword match {
-                    case "not" =>
-                      val errorField: String = "\\[\".+\"]".r.findAllIn(error.getMessage).next()
-                      Some((errorField.slice(2, errorField.length - 2), error.location))
-                    case _ => None
-                  }
-                }
+            maybeFirstSchemaValidationErrorIndex(errors) match {
+              case None => errorsWithParsedTypeErrors.map(_.getMessage)
+              case Some(firstDependencyIndex) =>
+                val conditionalValidationErrors: List[String] =
+                  parseConditionalValidationErrors(errors, firstDependencyIndex, schema, json)
 
-              val deduplicatedConditionalValidationErrors = allConditionalValidationErrors.distinct
-
-              val formattedConditionalValidationErrors: List[String] =
-                deduplicatedConditionalValidationErrors.map { case (errorProperty, errorLocation) =>
-                  val deduplicatedConditionalRequirements: List[String] = {
-                    val distinctProperties = conditionalRequirements(errorProperty).map(_.getRequiredProperty).distinct
-                    val groupedProperties = conditionalRequirements(errorProperty).groupBy(_.getRequiredProperty)
-                    distinctProperties.map(propertyKey => propertyKey -> groupedProperties(propertyKey)).map {
-                      case (property, requiredValues) =>
-                        s"$property: [${requiredValues.map(_.getRequiredValue).mkString(", ")}]"
-                    }
-                  }
-
-                  s"$errorLocation: Property $errorProperty can only be used with ${deduplicatedConditionalRequirements.mkString(", ")}"
-                }
-
-              val typeErrors =
-                errors.toList.slice(indexOfAnyOf, errors.length).filter(_.keyword == "type").map(_.getMessage)
-
-              // Using unsafe because errors is an NEL and indexOfAnyOf is > 0 in this branch
-              NonEmptyList.fromListUnsafe(
-                errors
-                  .map(_.getMessage)
-                  .toList
-                  .slice(0, indexOfAnyOf) ++ typeErrors ++ formattedConditionalValidationErrors
-              )
-            } else {
-              errors.map(_.getMessage)
+                constructFullError(errorsWithParsedTypeErrors, conditionalValidationErrors, firstDependencyIndex)
             }
           }
 
-          SchemaValidationException(conditionalValidationErrorMessages)
+          SchemaValidationException(fullError)
         }.toEither
     }
 
+  private def parseTypeErrors(
+    errors: NonEmptyList[ValidationError],
+    json: Json
+  ): NonEmptyList[ValidationError] =
+    errors.map { error =>
+      if (error.keyword == "type") {
+        val errorProperty = error.location.split("/").last
+        val errorLocationId: String = tryConvertErrorLocationToId(json, error.location, propertyNameInLocation = true)
+        val errorMessage =
+          s"Error at ID <$errorLocationId>: Property $errorProperty ${error.getMessage.split(":").tail.mkString(":").strip()}"
+
+        ValidationError(error.keyword, errorMessage, error.location, error.schemaLocation)
+      } else {
+        error
+      }
+    }
+
+  private def maybeFirstSchemaValidationErrorIndex(errors: NonEmptyList[ValidationError]): Option[Int] = errors
+    .map(_.schemaLocation.getOrElse(""))
+    .toList
+    .zipWithIndex
+    .collectFirst { case (lookup, index) if lookup.contains("dependencies") => index }
+
+  private def parseConditionalValidationErrors(
+    errors: NonEmptyList[ValidationError],
+    firstDependencyIndex: Int,
+    schema: Json,
+    json: Json
+  ): List[String] =
+    getErrorLocationsAndProperties(errors, firstDependencyIndex).distinct.map { case (location, property) =>
+      val errorLocation = tryConvertErrorLocationToId(json, location, propertyNameInLocation = false)
+
+      val maybeRequirements: Either[DecodingFailure, String] =
+        propertyRequirementsFromSchema(schema, property).map(requiredPropertyValuesFromPattern)
+
+      maybeRequirements match {
+        case Left(_) => s"$errorLocation: Could not find validation in the schema for property: $property"
+        case Right(requirements) =>
+          s"Error at ID <$errorLocation>: Property $property can only be used with $requirements"
+      }
+    }
+
+  private def getErrorLocationsAndProperties(
+    errors: NonEmptyList[ValidationError],
+    firstDependencyIndex: Int
+  ): List[(String, String)] =
+    errors.toList.slice(firstDependencyIndex, errors.length).flatMap { error =>
+      error.schemaLocation.flatMap(schemaErrorLocation =>
+        maybeErrorLocationAndPropertyFromKeyword(error, schemaErrorLocation.split("/"))
+      )
+    }
+
+  private def maybeErrorLocationAndPropertyFromKeyword(
+    error: ValidationError,
+    splitErrorLocation: Array[String]
+  ): Option[(String, String)] =
+    error.keyword match {
+      case "pattern" =>
+        Some(
+          (
+            error.location.substring(0, error.location.lastIndexOf("/")),
+            splitErrorLocation(splitErrorLocation.length - 3)
+          )
+        )
+      case "required" =>
+        Some((error.location, splitErrorLocation.last))
+      case _ => None
+    }
+
+  private def tryConvertErrorLocationToId(json: Json, location: String, propertyNameInLocation: Boolean): String = {
+    val errorLocationSections = location.split("/").toList.tail
+    val errorLocationSectionsWithoutProperty =
+      if (propertyNameInLocation) errorLocationSections.dropRight(1) else errorLocationSections
+
+    // If cannot get ID of location, use original location message instead
+    getErrorLocationId(json, errorLocationSectionsWithoutProperty).flatMap(_.asString).getOrElse(location)
+  }
+
+  @tailrec
+  private def getErrorLocationId(json: Json, remainingSections: List[String]): Option[Json] =
+    remainingSections match {
+      // No more sections to traverse, so get ID of current section to return
+      case Nil =>
+        json.hcursor.downField("id").as[Json] match {
+          case Left(_)                => None
+          case Right(errorLocationId) => Some(errorLocationId)
+        }
+
+      // More sections to traverse, so check if current json is a List of Json or a Json
+      case section :: nextRemainingSections =>
+        json.as[List[Json]] match {
+
+          // If Json, go to next section
+          case Left(_) =>
+            json.hcursor.downField(section).as[Json] match {
+              case Left(_)                => None
+              case Right(nextJsonSection) => getErrorLocationId(nextJsonSection, nextRemainingSections)
+            }
+
+          // If List of Json, get Int of next section and index the List to go to next section
+          case Right(jsonList) =>
+            section.toIntOption match {
+              case Some(sectionInt) => getErrorLocationId(jsonList(sectionInt), nextRemainingSections)
+              case None             => None
+            }
+        }
+    }
+
+  private def propertyRequirementsFromSchema(schema: Json, property: String): Result[Map[String, Map[String, String]]] =
+    schema.hcursor
+      .downField("$defs")
+      .downField("fields")
+      .downField("dependencies")
+      .downField(property)
+      .downField("properties")
+      .as[Map[String, Map[String, String]]]
+
+  private def requiredPropertyValuesFromPattern(requiredPropertyAndPattern: Map[String, Map[String, String]]): String =
+    requiredPropertyAndPattern.view
+      .mapValues { requiredPattern =>
+        requiredPattern.values
+          .map { requiredValues =>
+            requiredValues.substring(1, requiredValues.length - 1).replace("|", ", ")
+          }
+          .mkString(", ")
+      }
+      .map { case (requiredProperty, requiredValues) =>
+        s"$requiredProperty: [$requiredValues]"
+      }
+      .mkString(", ")
+
+  private def constructFullError(
+    baseErrors: NonEmptyList[ValidationError],
+    conditionalValidationErrors: List[String],
+    firstDependencyIndex: Int
+  ) =
+    // Using unsafe because errors is an NEL and firstDependencyIndex is not None in this branch
+    NonEmptyList.fromListUnsafe(
+      baseErrors
+        .map(_.getMessage)
+        .toList
+        .slice(0, firstDependencyIndex) ++ conditionalValidationErrors
+    )
 }
