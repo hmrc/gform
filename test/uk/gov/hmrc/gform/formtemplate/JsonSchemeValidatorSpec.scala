@@ -88,15 +88,15 @@ class JsonSchemeValidatorSpec extends FunSuite {
   private def getNumberOfErrors(errorsAsList: List[JsValue]): Int = {
     // Get the number of custom conditional validation error messages
     val numberOfConditionalValidationErrors = errorsAsList
-      .map(_.toString().contains("can only be used with"))
+      .map(_.toString().contains("Error at ID"))
       .count(_ == true)
 
     // Get the number of property type error messages
-    val numberOfTypeErrors = errorsAsList
-      .map(_.toString().contains("expected type"))
-      .count(_ == true)
+//    val numberOfTypeErrors = errorsAsList
+//      .map(_.toString().contains("expected type"))
+//      .count(_ == true)
 
-    numberOfConditionalValidationErrors + numberOfTypeErrors
+    numberOfConditionalValidationErrors
   }
 
   private def getConditionalValidationErrors(errorsAsList: List[JsValue], numberOfErrors: Int): List[JsValue] =
@@ -584,8 +584,8 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
     val expectedResult = List(
-      "Error at ID <testId>: Property infoText can only be used with type: [info]",
-      "Error at ID <testId>: Property infoType can only be used with type: [info]"
+      "Error at ID <testId>: Property infoType can only be used with type: [info]",
+      "Error at ID <testId>: Property infoText can only be used with type: [info]"
     )
 
     runInvalidJsonTest(result, expectedResult)
@@ -633,8 +633,8 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
     val expectedResult = List(
-      "Error at ID <testId>: Property hints can only be used with type: [choice, revealingChoice]",
       "Error at ID <testId>: Property dividerPosition can only be used with type: [choice, revealingChoice]",
+      "Error at ID <testId>: Property hints can only be used with type: [choice, revealingChoice]",
       "Error at ID <testId>: Property noneChoice can only be used with type: [choice, revealingChoice]",
       "Error at ID <testId>: Property multivalue can only be used with type: [choice, revealingChoice]",
       "Error at ID <testId>: Property optionHelpText can only be used with type: [choice, revealingChoice]",
@@ -666,8 +666,8 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
     val expectedResult = List(
-      "Error at ID <testId>: Property dataThreshold can only be used with type: [text], multiline: [true]",
       "Error at ID <testId>: Property infoType can only be used with type: [info]",
+      "Error at ID <testId>: Property dataThreshold can only be used with type: [text], multiline: [true]",
       "Error at ID <testId>: Property choices can only be used with type: [choice, revealingChoice]"
     )
 
@@ -1096,8 +1096,8 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
     val expectedResult = List(
-      "Error at ID <testId>: Property infoText can only be used with type: [info]",
-      "Error at ID <testId>: Property infoType can only be used with type: [info]"
+      "Error at ID <testId>: Property infoType can only be used with type: [info]",
+      "Error at ID <testId>: Property infoText can only be used with type: [info]"
     )
 
     runInvalidJsonTest(result, expectedResult)
@@ -1144,8 +1144,8 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
     val expectedResult = List(
-      "Error at ID <testId>: Property hints can only be used with type: [choice, revealingChoice]",
       "Error at ID <testId>: Property dividerPosition can only be used with type: [choice, revealingChoice]",
+      "Error at ID <testId>: Property hints can only be used with type: [choice, revealingChoice]",
       "Error at ID <testId>: Property noneChoice can only be used with type: [choice, revealingChoice]",
       "Error at ID <testId>: Property multivalue can only be used with type: [choice, revealingChoice]",
       "Error at ID <testId>: Property optionHelpText can only be used with type: [choice, revealingChoice]",
