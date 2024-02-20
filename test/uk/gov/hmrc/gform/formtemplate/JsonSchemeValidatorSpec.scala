@@ -91,11 +91,6 @@ class JsonSchemeValidatorSpec extends FunSuite {
       .map(_.toString().contains("Error at ID"))
       .count(_ == true)
 
-    // Get the number of property type error messages
-//    val numberOfTypeErrors = errorsAsList
-//      .map(_.toString().contains("expected type"))
-//      .count(_ == true)
-
     numberOfConditionalValidationErrors
   }
 
