@@ -48,7 +48,8 @@ class TestOnlyFormService(
                        raw,
                        saveRequest.description,
                        GformVersion(BuildInfo.version),
-                       saveRequest.gformFrontendVersion
+                       saveRequest.gformFrontendVersion,
+                       saveRequest.ggFormData
                      )
           _ <- snapshotMongoCache.put(snapshot.snapshotId, snapshot)
           _ <- restoreSnapshotTemplate(snapshot.snapshotId)
