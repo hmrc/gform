@@ -965,6 +965,19 @@
               "pattern": "^postcodeLookup$"
             }
           }
+        },
+        "prefix": {
+          "required": [
+            "type"
+          ],
+          "properties": {
+            "type": {
+              "pattern": "^text$"
+            },
+            "format": {
+              "pattern": "^((?!sterling|positiveSterling|positiveWholeSterling).)*$"
+            }
+          }
         }
       }
     }
