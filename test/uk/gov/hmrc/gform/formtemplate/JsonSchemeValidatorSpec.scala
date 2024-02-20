@@ -939,6 +939,129 @@ class JsonSchemeValidatorSpec extends FunSuite {
   }
 
   test(
+    "validateJson rejects the form gracefully when the property prefix is used and the format property is [sterling]"
+  ) {
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": "test label",
+            "type": "text",
+            "format": "sterling",
+            "prefix": "£"
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at ID <testId>: Property prefix can only be used with type: [text], format not: [sterling, positiveSterling, positiveWholeSterling]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when the property prefix is used and the format property is [positiveSterling]"
+  ) {
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": "test label",
+            "type": "text",
+            "format": "positiveSterling",
+            "prefix": "£"
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at ID <testId>: Property prefix can only be used with type: [text], format not: [sterling, positiveSterling, positiveWholeSterling]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when the property prefix is used and the format property is [positiveWholeSterling]"
+  ) {
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": "test label",
+            "type": "text",
+            "format": "positiveWholeSterling",
+            "prefix": "£"
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at ID <testId>: Property prefix can only be used with type: [text], format not: [sterling, positiveSterling, positiveWholeSterling]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when the property prefix is used and the type property is not [text]"
+  ) {
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": "test label",
+            "type": "choice",
+            "format": "number",
+            "prefix": "£"
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at ID <testId>: Property prefix can only be used with type: [text], format not: [sterling, positiveSterling, positiveWholeSterling]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when the property prefix is used with the type and format properties not present"
+  ) {
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": "test label",
+            "prefix": "£"
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at ID <testId>: Property prefix can only be used with type: [text], format not: [sterling, positiveSterling, positiveWholeSterling]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
     "validateJson rejects the form gracefully when infoText and infoType are used in different fields when the type property is not [info]"
   ) {
     val testProperties1 =
@@ -1450,6 +1573,29 @@ class JsonSchemeValidatorSpec extends FunSuite {
             "type": "postcodeLookup",
             "confirmAddressLabel": "Confirm the test business address",
             "chooseAddressLabel": "Choose the test business address"
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = Right(())
+
+    assertEquals(result, expectedResult)
+  }
+
+  test(
+    "validateJson accepts the form when the prefix property is present with format not [sterling, wholeSterling, positiveWholeSterling] and type [text]"
+  ) {
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": "test label",
+            "type": "text",
+            "format": "number",
+            "prefix": "£"
           }
         """
 
