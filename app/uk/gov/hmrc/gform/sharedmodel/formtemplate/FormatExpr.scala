@@ -232,7 +232,6 @@ object Register {
   case object SicCode extends Register
 
   implicit val format: OFormat[Register] = derived.oformat()
-
 }
 
 case class CsvColumnName(column: String) extends AnyVal
