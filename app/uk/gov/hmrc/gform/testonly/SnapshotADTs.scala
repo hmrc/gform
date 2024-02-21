@@ -33,7 +33,8 @@ case class SnapshotOverview(
   description: Description,
   gformVersion: GformVersion,
   gformFrontendVersion: GformFrontendVersion,
-  formData: Option[FormData]
+  formData: Option[FormData],
+  ggFormData: Option[GovernmentGatewayFormData]
 )
 
 object SnapshotOverview {
@@ -46,7 +47,8 @@ object SnapshotOverview {
       snapshot.description,
       snapshot.gformVersion,
       snapshot.gformFrontendVersion,
-      if (withData) Some(snapshot.originalForm.formData) else None
+      if (withData) Some(snapshot.originalForm.formData) else None,
+      if (withData) snapshot.ggFormData else None
     )
 
   implicit val writes: OWrites[SnapshotOverview] = derived.owrites()
@@ -55,7 +57,8 @@ object SnapshotOverview {
 case class SaveRequest(
   formId: FormId,
   description: Description,
-  gformFrontendVersion: GformFrontendVersion
+  gformFrontendVersion: GformFrontendVersion,
+  ggFormData: Option[GovernmentGatewayFormData]
 )
 
 object SaveRequest {
@@ -119,7 +122,8 @@ case class Snapshot(
   gformVersion: GformVersion,
   gformFrontendVersion: GformFrontendVersion,
   snapshotTemplateId: FormTemplateId,
-  createdAt: Instant
+  createdAt: Instant,
+  ggFormData: Option[GovernmentGatewayFormData]
 ) {
   def toSnapshotForm(currentForm: Form): Form = {
     val currentUserId = currentForm.userId
@@ -145,7 +149,8 @@ object Snapshot {
     originalTemplate: FormTemplateRaw,
     description: Description,
     gformVersion: GformVersion,
-    gformFrontendVersion: GformFrontendVersion
+    gformFrontendVersion: GformFrontendVersion,
+    governmentGatewayFormData: Option[GovernmentGatewayFormData]
   ): Snapshot = {
     // add prefix to the template id for both saved form and template
     val snapshotId = SnapshotId(java.util.UUID.randomUUID().toString)
@@ -159,7 +164,8 @@ object Snapshot {
       gformVersion,
       gformFrontendVersion,
       snapshotTemplateId,
-      Instant.now
+      Instant.now,
+      governmentGatewayFormData
     )
   }
 
