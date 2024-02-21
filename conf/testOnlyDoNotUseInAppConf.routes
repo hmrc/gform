@@ -46,3 +46,4 @@ GET           /gform/test-only/restore-form/:snapshotId/:restoreId              
 PUT           /gform/test-only/restore-snapshot-template                              uk.gov.hmrc.gform.testonly.TestOnlyController.restoreSnapshotTemplate()
 GET           /gform/test-only/snapshots                                              uk.gov.hmrc.gform.testonly.TestOnlyController.getSnapshots()
 GET           /gform/test-only/snapshot-data/:snapshotId                              uk.gov.hmrc.gform.testonly.TestOnlyController.getSnapshotData(snapshotId: SnapshotId)
+DELETE        /gform/test-only/snapshot/:snapshotId                                   uk.gov.hmrc.gform.testonly.TestOnlyController.deleteSnapshot(snapshotId: SnapshotId)

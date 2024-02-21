@@ -54,4 +54,7 @@ class SnapshotMongoCache(
     mongoCacheRepository
       .put(snapshot.snapshotId.value)(snapshotDataKey, snapshot)
       .map(_ => ())
+
+  def delete(snapshotId: SnapshotId): Future[Unit] =
+    mongoCacheRepository.deleteEntity(snapshotId.value)
 }
