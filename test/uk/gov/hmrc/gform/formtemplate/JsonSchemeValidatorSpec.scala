@@ -88,15 +88,10 @@ class JsonSchemeValidatorSpec extends FunSuite {
   private def getNumberOfErrors(errorsAsList: List[JsValue]): Int = {
     // Get the number of custom conditional validation error messages
     val numberOfConditionalValidationErrors = errorsAsList
-      .map(_.toString().contains("can only be used with"))
+      .map(_.toString().contains("Error at ID"))
       .count(_ == true)
 
-    // Get the number of property type error messages
-    val numberOfTypeErrors = errorsAsList
-      .map(_.toString().contains("expected type"))
-      .count(_ == true)
-
-    numberOfConditionalValidationErrors + numberOfTypeErrors
+    numberOfConditionalValidationErrors
   }
 
   private def getConditionalValidationErrors(errorsAsList: List[JsValue], numberOfErrors: Int): List[JsValue] =
@@ -584,8 +579,8 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
     val expectedResult = List(
-      "Error at ID <testId>: Property infoText can only be used with type: [info]",
-      "Error at ID <testId>: Property infoType can only be used with type: [info]"
+      "Error at ID <testId>: Property infoType can only be used with type: [info]",
+      "Error at ID <testId>: Property infoText can only be used with type: [info]"
     )
 
     runInvalidJsonTest(result, expectedResult)
@@ -633,8 +628,8 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
     val expectedResult = List(
-      "Error at ID <testId>: Property hints can only be used with type: [choice, revealingChoice]",
       "Error at ID <testId>: Property dividerPosition can only be used with type: [choice, revealingChoice]",
+      "Error at ID <testId>: Property hints can only be used with type: [choice, revealingChoice]",
       "Error at ID <testId>: Property noneChoice can only be used with type: [choice, revealingChoice]",
       "Error at ID <testId>: Property multivalue can only be used with type: [choice, revealingChoice]",
       "Error at ID <testId>: Property optionHelpText can only be used with type: [choice, revealingChoice]",
@@ -666,8 +661,8 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
     val expectedResult = List(
-      "Error at ID <testId>: Property dataThreshold can only be used with type: [text], multiline: [true]",
       "Error at ID <testId>: Property infoType can only be used with type: [info]",
+      "Error at ID <testId>: Property dataThreshold can only be used with type: [text], multiline: [true]",
       "Error at ID <testId>: Property choices can only be used with type: [choice, revealingChoice]"
     )
 
@@ -939,6 +934,129 @@ class JsonSchemeValidatorSpec extends FunSuite {
   }
 
   test(
+    "validateJson rejects the form gracefully when the property prefix is used and the format property is [sterling]"
+  ) {
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": "test label",
+            "type": "text",
+            "format": "sterling",
+            "prefix": "£"
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at ID <testId>: Property prefix can only be used with type: [text], format not: [sterling, positiveSterling, positiveWholeSterling]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when the property prefix is used and the format property is [positiveSterling]"
+  ) {
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": "test label",
+            "type": "text",
+            "format": "positiveSterling",
+            "prefix": "£"
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at ID <testId>: Property prefix can only be used with type: [text], format not: [sterling, positiveSterling, positiveWholeSterling]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when the property prefix is used and the format property is [positiveWholeSterling]"
+  ) {
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": "test label",
+            "type": "text",
+            "format": "positiveWholeSterling",
+            "prefix": "£"
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at ID <testId>: Property prefix can only be used with type: [text], format not: [sterling, positiveSterling, positiveWholeSterling]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when the property prefix is used and the type property is not [text]"
+  ) {
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": "test label",
+            "type": "choice",
+            "format": "number",
+            "prefix": "£"
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at ID <testId>: Property prefix can only be used with type: [text], format not: [sterling, positiveSterling, positiveWholeSterling]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when the property prefix is used with the type and format properties not present"
+  ) {
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": "test label",
+            "prefix": "£"
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at ID <testId>: Property prefix can only be used with type: [text], format not: [sterling, positiveSterling, positiveWholeSterling]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
     "validateJson rejects the form gracefully when infoText and infoType are used in different fields when the type property is not [info]"
   ) {
     val testProperties1 =
@@ -1096,8 +1214,8 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
     val expectedResult = List(
-      "Error at ID <testId>: Property infoText can only be used with type: [info]",
-      "Error at ID <testId>: Property infoType can only be used with type: [info]"
+      "Error at ID <testId>: Property infoType can only be used with type: [info]",
+      "Error at ID <testId>: Property infoText can only be used with type: [info]"
     )
 
     runInvalidJsonTest(result, expectedResult)
@@ -1144,8 +1262,8 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
     val expectedResult = List(
-      "Error at ID <testId>: Property hints can only be used with type: [choice, revealingChoice]",
       "Error at ID <testId>: Property dividerPosition can only be used with type: [choice, revealingChoice]",
+      "Error at ID <testId>: Property hints can only be used with type: [choice, revealingChoice]",
       "Error at ID <testId>: Property noneChoice can only be used with type: [choice, revealingChoice]",
       "Error at ID <testId>: Property multivalue can only be used with type: [choice, revealingChoice]",
       "Error at ID <testId>: Property optionHelpText can only be used with type: [choice, revealingChoice]",
@@ -1450,6 +1568,29 @@ class JsonSchemeValidatorSpec extends FunSuite {
             "type": "postcodeLookup",
             "confirmAddressLabel": "Confirm the test business address",
             "chooseAddressLabel": "Choose the test business address"
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = Right(())
+
+    assertEquals(result, expectedResult)
+  }
+
+  test(
+    "validateJson accepts the form when the prefix property is present with format not [sterling, wholeSterling, positiveWholeSterling] and type [text]"
+  ) {
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": "test label",
+            "type": "text",
+            "format": "number",
+            "prefix": "£"
           }
         """
 

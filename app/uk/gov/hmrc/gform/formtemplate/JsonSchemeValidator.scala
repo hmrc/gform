@@ -192,7 +192,11 @@ object JsonSchemeValidator {
           .mkString(", ")
       }
       .map { case (requiredProperty, requiredValues) =>
-        s"$requiredProperty: [$requiredValues]"
+        if (requiredValues.contains("?!")) {
+          s"$requiredProperty not: [${requiredValues.substring(4, requiredValues.length - 4)}]"
+        } else {
+          s"$requiredProperty: [$requiredValues]"
+        }
       }
       .mkString(", ")
 
