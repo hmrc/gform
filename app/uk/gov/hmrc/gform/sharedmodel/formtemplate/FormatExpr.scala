@@ -211,6 +211,7 @@ object TextConstraint {
 sealed trait Register
 
 object Register {
+  case object AgentComplaintsCategories extends Register
   case object CashType extends Register
   case object Country extends Register
   case object Currency extends Register
@@ -231,6 +232,7 @@ object Register {
   case object SicCode extends Register
 
   implicit val format: OFormat[Register] = derived.oformat()
+
 }
 
 case class CsvColumnName(column: String) extends AnyVal
