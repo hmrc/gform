@@ -120,7 +120,8 @@ trait FormatParser extends ValueParser {
     }
 
   lazy val register: Parser[Register] = {
-    "cashType" ^^^ Register.CashType |
+    "agentComplaintCategories" ^^^ Register.AgentComplaintCategories |
+      "cashType" ^^^ Register.CashType |
       "country" ^^^ Register.Country |
       "currency" ^^^ Register.Currency |
       "intercept" ^^^ Register.Intercept |

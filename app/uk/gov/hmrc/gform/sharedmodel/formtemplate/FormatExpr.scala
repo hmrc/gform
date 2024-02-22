@@ -211,6 +211,7 @@ object TextConstraint {
 sealed trait Register
 
 object Register {
+  case object AgentComplaintCategories extends Register
   case object CashType extends Register
   case object Country extends Register
   case object Currency extends Register
