@@ -335,7 +335,7 @@ class TestOnlyController(
   def deleteSnapshot(snapshotId: SnapshotId) = Action.async { _ =>
     testOnlyFormService
       .deleteSnapshot(snapshotId)
-      .map(_ => Ok(""))
+      .map(_ => NoContent)
   }
 }
 
