@@ -274,10 +274,10 @@ object BuilderSupport {
     val history: List[CursorOp] = sectionPath.toHistory()
     val propertyList = List(
       Property("title"),
-      Property("caption"),
-      Property("description"),
+      Property("caption", PropertyBehaviour.PurgeWhenEmpty),
+      Property("description", PropertyBehaviour.PurgeWhenEmpty),
       Property("shortName", PropertyBehaviour.PurgeWhenEmpty),
-      Property("continueLabel"),
+      Property("continueLabel", PropertyBehaviour.PurgeWhenEmpty),
       Property("presentationHint", PropertyBehaviour.PurgeWhenEmpty),
       Property("note", PropertyBehaviour.PurgeWhenEmpty),
       Property("summarySection", PropertyBehaviour.PurgeWhenEmpty)
