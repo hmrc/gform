@@ -133,8 +133,8 @@ object JsonSchemeErrorParser {
         schema.hcursor
           .downField(current)
           .as[Json] match {
-          case Left(value)  => Left(value)
-          case Right(value) => goDownSchema(value, next)
+          case Left(decodingFailure)  => Left(decodingFailure)
+          case Right(reducedSchema) => goDownSchema(reducedSchema, next)
         }
     }
 
@@ -149,9 +149,9 @@ object JsonSchemeErrorParser {
       case Right(requirements: Json) =>
         requirements.as[Map[String, Map[String, String]]] match {
           case Left(_) => error.getMessage
-          case Right(value) =>
+          case Right(propertyAndPattern) =>
             val errorMessage: String =
-              s"Property $property can only be used with ${requiredPropertyValuesFromPattern(value)}"
+              s"Property $property can only be used with ${requiredPropertyValuesFromPattern(propertyAndPattern)}"
             constructCustomErrorMessage(errorLocation, errorMessage)
         }
     }
@@ -286,9 +286,9 @@ object JsonSchemeErrorParser {
         }
 
         maybeRequiredType match {
-          case Some(value) =>
+          case Some(requiredType) =>
             val errorMessage: String =
-              s"Property $errorProperty expected type [${value.capitalize}], found [$typeFound]"
+              s"Property $errorProperty expected type [${requiredType.capitalize}], found [$typeFound]"
             constructCustomErrorMessage(errorLocation, errorMessage)
           case None => error.getMessage
         }

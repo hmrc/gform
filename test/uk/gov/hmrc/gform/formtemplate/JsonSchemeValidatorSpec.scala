@@ -1275,7 +1275,6 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
-    println(result)
 
     val expectedResult = List(
       "Error at ID <testId>: Property dataThreshold can only be used with type: [text], multiline: [true]",
