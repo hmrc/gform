@@ -17,6 +17,7 @@
 package uk.gov.hmrc.gform.formtemplate
 
 import cats.data.NonEmptyList
+import cats.syntax.eq._
 import io.circe.{ DecodingFailure, Json }
 import io.circe.schema.ValidationError
 import uk.gov.hmrc.gform.exceptions.SchemaValidationException
@@ -30,7 +31,7 @@ object JsonSchemeErrorParser {
       val parsedErrorMessage: String =
         if (error.schemaLocation.getOrElse("").contains("dependencies")) {
           parseConditionalValidationErrorMessage(schema, json, error)
-        } else if (errors.filter(_.location == error.location).map(_.keyword).contains("type")) {
+        } else if (errors.filter(_.location === error.location).map(_.keyword).contains("type")) {
           parseTypeError(error, errors, json, schema)
         } else {
           error.getMessage
@@ -100,10 +101,7 @@ object JsonSchemeErrorParser {
     remainingSections match {
       // No more sections to traverse, so get ID of current section to return
       case Nil =>
-        json.hcursor.downField("id").as[Json] match {
-          case Left(_)                => None
-          case Right(errorLocationId) => Some(errorLocationId)
-        }
+        json.hcursor.downField("id").as[Json].toOption
 
       // More sections to traverse, so check if current json is a List of Json or a Json
       case section :: nextRemainingSections =>
@@ -183,7 +181,7 @@ object JsonSchemeErrorParser {
     json: Json,
     schema: Json
   ): String = {
-    val allSameErrors: List[ValidationError] = errors.filter(_.location == error.location)
+    val allSameErrors: List[ValidationError] = errors.filter(_.location === error.location)
     if (allSameErrors.map(_.schemaLocation).exists(_.contains("#/$defs/stringOrEnCyObject"))) {
       parseEnCyTypeError(allSameErrors, json, error)
     } else {
@@ -208,7 +206,7 @@ object JsonSchemeErrorParser {
 
   private def keysFromErrorMessage(allSameErrors: List[ValidationError], keyword: String): List[String] =
     allSameErrors
-      .filter(_.keyword == keyword)
+      .filter(_.keyword === keyword)
       .map(_.getMessage)
       .map("\\[.*]".r.findAllIn(_).next().drop(1).dropRight(1))
 
@@ -229,7 +227,7 @@ object JsonSchemeErrorParser {
     errors: NonEmptyList[ValidationError]
   ): String = {
     val maybeSchemaError: List[Option[String]] = errors
-      .filter(_.location == error.location)
+      .filter(_.location === error.location)
       .map(_.schemaLocation)
       .filter(_.isDefined)
       .distinct
@@ -256,7 +254,7 @@ object JsonSchemeErrorParser {
     val errorLocation: String =
       tryConvertErrorLocationToId(json, error.location, propertyNameInLocation = true)
 
-    errors.filter(_.location == error.location).filter(_.keyword == "type").map(_.getMessage) match {
+    errors.filter(_.location === error.location).filter(_.keyword === "type").map(_.getMessage) match {
       case Nil => error.getMessage
       case errorMessage :: Nil =>
         val typeFound: String = errorMessage.split(" ").last
