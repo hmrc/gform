@@ -133,8 +133,8 @@ object JsonSchemeErrorParser {
         schema.hcursor
           .downField(current)
           .as[Json] match {
-          case Left(decodingFailure)  => Left(decodingFailure)
-          case Right(reducedSchema) => goDownSchema(reducedSchema, next)
+          case Left(decodingFailure) => Left(decodingFailure)
+          case Right(reducedSchema)  => goDownSchema(reducedSchema, next)
         }
     }
 

@@ -1333,7 +1333,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
     val expectedResult = List(
-      "Error at <#/description>: Property description expected type String or JSONObject with structure {en: String} or {en: String, cy: String}",
+      "Error at <#/description>: Property description expected type String or JSONObject with structure {en: String} or {en: String, cy: String}"
     )
 
     runInvalidJsonTest(result, expectedResult)
@@ -1370,7 +1370,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val expectedResult = List(
       "Error at <#/description>: Property description expected type String or JSONObject with structure {en: String} or {en: String, cy: String}. Missing key(s) [en] are required",
-      "Error at ID <testId>: Property label expected type String or JSONObject with structure {en: String} or {en: String, cy: String}. Missing key(s) [en] are required. Invalid key(s) [value] are not permitted",
+      "Error at ID <testId>: Property label expected type String or JSONObject with structure {en: String} or {en: String, cy: String}. Missing key(s) [en] are required. Invalid key(s) [value] are not permitted"
     )
 
     runInvalidJsonTest(result, expectedResult)
@@ -1394,7 +1394,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
     val expectedResult = List(
-      "Error at ID <testId>: Property label expected type String or JSONObject with structure {en: String} or {en: String, cy: String}. Missing key(s) [en] are required. Invalid key(s) [value] are not permitted",
+      "Error at ID <testId>: Property label expected type String or JSONObject with structure {en: String} or {en: String, cy: String}. Missing key(s) [en] are required. Invalid key(s) [value] are not permitted"
     )
 
     runInvalidJsonTest(result, expectedResult)
@@ -1419,7 +1419,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
     val expectedResult = List(
-      "Error at ID <testId>: Property label expected type String or JSONObject with structure {en: String} or {en: String, cy: String}. Missing key(s) [en] are required. Invalid key(s) [value, anotherValue] are not permitted",
+      "Error at ID <testId>: Property label expected type String or JSONObject with structure {en: String} or {en: String, cy: String}. Missing key(s) [en] are required. Invalid key(s) [value, anotherValue] are not permitted"
     )
 
     runInvalidJsonTest(result, expectedResult)
@@ -1443,7 +1443,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
     val expectedResult = List(
-      "Error at ID <testId>: Property label expected type String or JSONObject with structure {en: String} or {en: String, cy: String}. Missing key(s) [en] are required",
+      "Error at ID <testId>: Property label expected type String or JSONObject with structure {en: String} or {en: String, cy: String}. Missing key(s) [en] are required"
     )
 
     runInvalidJsonTest(result, expectedResult)
@@ -1465,7 +1465,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
     val expectedResult = List(
-      "Error at ID <testId>: Property label expected type String or JSONObject with structure {en: String} or {en: String, cy: String}. Missing key(s) [en] are required",
+      "Error at ID <testId>: Property label expected type String or JSONObject with structure {en: String} or {en: String, cy: String}. Missing key(s) [en] are required"
     )
 
     runInvalidJsonTest(result, expectedResult)
@@ -1500,7 +1500,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val expectedResult = List(
       "Error at ID <TestID1>: Property label expected type String or JSONObject with structure {en: String} or {en: String, cy: String}. Missing key(s) [en] are required. Invalid key(s) [xyz] are not permitted",
-      "Error at ID <TestID2>: Property shortName expected type String or JSONObject with structure {en: String} or {en: String, cy: String}. Missing key(s) [en] are required",
+      "Error at ID <TestID2>: Property shortName expected type String or JSONObject with structure {en: String} or {en: String, cy: String}. Missing key(s) [en] are required"
     )
 
     runInvalidJsonTest(result, expectedResult)
@@ -1522,7 +1522,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
     val expectedResult = List(
-      "Error at ID <testId>: Property label expected type String or JSONObject with structure {en: String} or {en: String, cy: String}",
+      "Error at ID <testId>: Property label expected type String or JSONObject with structure {en: String} or {en: String, cy: String}"
     )
 
     runInvalidJsonTest(result, expectedResult)
