@@ -19,7 +19,7 @@ package uk.gov.hmrc.gform.formtemplate
 import io.circe.Json
 import io.circe.literal.JsonStringContext
 import munit.FunSuite
-import play.api.libs.json.{ JsArray, JsValue }
+import play.api.libs.json.JsArray
 import play.api.libs.json.Json.toJson
 import uk.gov.hmrc.gform.exceptions.SchemaValidationException
 
@@ -85,19 +85,6 @@ class JsonSchemeValidatorSpec extends FunSuite {
       ]
     }"""
 
-  private def getNumberOfErrors(errorsAsList: List[JsValue]): Int = {
-    // Get the number of custom conditional validation error messages
-    val numberOfConditionalValidationErrors = errorsAsList
-      .map(_.toString().contains("Error at ID"))
-      .count(_ == true)
-
-    numberOfConditionalValidationErrors
-  }
-
-  private def getConditionalValidationErrors(errorsAsList: List[JsValue], numberOfErrors: Int): List[JsValue] =
-    // Only need last errors because conditional validation messages will appear at the bottom of the stack trace
-    errorsAsList.slice(errorsAsList.length - numberOfErrors, errorsAsList.length)
-
   private def runInvalidJsonTest(result: Either[SchemaValidationException, Unit], expectedResult: List[String]): Unit =
     result match {
       case Right(value) => fail("No error was returned from schema validation:\n" + value)
@@ -105,10 +92,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
       case Left(errors) =>
         val errorsAsList = errors.errors.as[JsArray].value.toList
 
-        val numberOfErrors = getNumberOfErrors(errorsAsList)
-        assertEquals(numberOfErrors, expectedResult.length)
-
-        val conditionalValidationErrors = getConditionalValidationErrors(errorsAsList, numberOfErrors)
+        val conditionalValidationErrors = errorsAsList.filter(_.toString().contains("Error at"))
         assertEquals(conditionalValidationErrors, expectedResult.map(toJson(_)))
     }
 
@@ -1291,6 +1275,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    println(result)
 
     val expectedResult = List(
       "Error at ID <testId>: Property dataThreshold can only be used with type: [text], multiline: [true]",
@@ -1627,10 +1612,10 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
     val expectedResult = List(
-      "Error at ID <testId>: Property type expected type: String, found: JSONArray",
-      "Error at ID <testId>: Property dataThreshold expected type: Integer, found: String",
-      "Error at ID <testId>: Property multiline expected type: String, found: Integer",
-      "Error at ID <testId>: Property displayCharCount expected type: String, found: JSONObject"
+      "Error at ID <testId>: Property type expected type [String], found [JSONArray]",
+      "Error at ID <testId>: Property dataThreshold expected type [Integer], found [String]",
+      "Error at ID <testId>: Property multiline expected type [String], found [Integer]",
+      "Error at ID <testId>: Property displayCharCount expected type [String], found [JSONObject]"
     )
 
     runInvalidJsonTest(result, expectedResult)
