@@ -5,10 +5,7 @@
   "type": "object",
   "patternProperties": {
     "^(comment)": {
-      "type": [
-        "string",
-        "object"
-      ]
+      "$ref": "#/$defs/stringOrEnCyObject"
     },
     "^(_)": {
       "type": [
@@ -27,16 +24,10 @@
       "pattern": "^[a-zA-Z0-9-]+$"
     },
     "formName": {
-      "type": [
-        "string",
-        "object"
-      ]
+      "$ref": "#/$defs/stringOrEnCyObject"
     },
     "description": {
-      "type": [
-        "string",
-        "object"
-      ]
+      "$ref": "#/$defs/stringOrEnCyObject"
     },
     "formCategory": {
       "type": "string",
@@ -84,19 +75,13 @@
       "pattern": "^(false)$"
     },
     "save4LaterInfoText": {
-      "type": [
-        "string",
-        "object"
-      ]
+      "$ref": "#/$defs/stringOrEnCyObject"
     },
     "note": {
       "type": "string"
     },
     "emailTemplateId": {
-      "type": [
-        "string",
-        "object"
-      ]
+      "$ref": "#/$defs/stringOrEnCyObject"
     },
     "emailParameters": {
       "type": "array",
@@ -180,10 +165,7 @@
           "type": "array"
         },
         "exitMessage": {
-          "type": [
-            "string",
-            "object"
-          ]
+          "$ref": "#/$defs/stringOrEnCyObject"
         }
       }
     },
@@ -217,22 +199,13 @@
           "type": "object"
         },
         "ivFailure": {
-          "type": [
-            "string",
-            "object"
-          ]
+          "$ref": "#/$defs/stringOrEnCyObject"
         },
         "notAllowedIn": {
-          "type": [
-            "string",
-            "object"
-          ]
+          "$ref": "#/$defs/stringOrEnCyObject"
         },
         "minimumCL": {
-          "type": [
-            "string",
-            "object"
-          ]
+          "$ref": "#/$defs/stringOrEnCyObject"
         }
       }
     },
@@ -273,10 +246,7 @@
       "type": "object",
       "patternProperties": {
         "^(comment)": {
-          "type": [
-            "string",
-            "object"
-          ]
+          "$ref": "#/$defs/stringOrEnCyObject"
         },
         "^(_)": {
           "type": [
@@ -294,38 +264,23 @@
           "type": "string"
         },
         "caption": {
-          "type": [
-            "string",
-            "object"
-          ]
+          "$ref": "#/$defs/stringOrEnCyObject"
         },
         "displayWidth": {
           "type": "string",
           "pattern": "^(m|l|xl)$"
         },
         "title": {
-          "type": [
-            "string",
-            "object"
-          ]
+          "$ref": "#/$defs/stringOrEnCyObject"
         },
         "description": {
-          "type": [
-            "string",
-            "object"
-          ]
+          "$ref": "#/$defs/stringOrEnCyObject"
         },
         "shortName": {
-          "type": [
-            "string",
-            "object"
-          ]
+          "$ref": "#/$defs/stringOrEnCyObject"
         },
         "noPIITitle": {
-          "type": [
-            "string",
-            "object"
-          ]
+          "$ref": "#/$defs/stringOrEnCyObject"
         },
         "includeIf": {
           "type": "string"
@@ -337,10 +292,7 @@
           "type": "string"
         },
         "continueLabel": {
-          "type": [
-            "string",
-            "object"
-          ]
+          "$ref": "#/$defs/stringOrEnCyObject"
         },
         "presentationHint": {
           "type": "string",
@@ -359,16 +311,10 @@
           "type": "array"
         },
         "summaryName": {
-          "type": [
-            "string",
-            "object"
-          ]
+          "$ref": "#/$defs/stringOrEnCyObject"
         },
         "summaryDescription": {
-          "type": [
-            "string",
-            "object"
-          ]
+          "$ref": "#/$defs/stringOrEnCyObject"
         },
         "addAnotherQuestion": {
           "type": "object"
@@ -411,10 +357,7 @@
             "additionalProperties": false,
             "properties": {
               "title": {
-                "type": [
-                  "string",
-                  "object"
-                ]
+                "$ref": "#/$defs/stringOrEnCyObject"
               },
               "includeIf": {
                 "type": "string"
@@ -454,10 +397,7 @@
       "type": "object",
       "patternProperties": {
         "^(comment)": {
-          "type": [
-            "string",
-            "object"
-          ]
+          "$ref": "#/$defs/stringOrEnCyObject"
         },
         "^(_)": {
           "type": [
@@ -481,22 +421,13 @@
           "type": "string"
         },
         "label": {
-          "type": [
-            "string",
-            "object"
-          ]
+          "$ref": "#/$defs/stringOrEnCyObject"
         },
         "shortName": {
-          "type": [
-            "string",
-            "object"
-          ]
+          "$ref": "#/$defs/stringOrEnCyObject"
         },
         "helpText": {
-          "type": [
-            "string",
-            "object"
-          ]
+          "$ref": "#/$defs/stringOrEnCyObject"
         },
         "includeIf": {
           "type": "string"
@@ -523,22 +454,13 @@
           "pattern": "^(false|true|no|yes)$"
         },
         "errorMessage": {
-          "type": [
-            "string",
-            "object"
-          ]
+          "$ref": "#/$defs/stringOrEnCyObject"
         },
         "errorShortName": {
-          "type": [
-            "string",
-            "object"
-          ]
+          "$ref": "#/$defs/stringOrEnCyObject"
         },
         "errorShortNameStart": {
-          "type": [
-            "string",
-            "object"
-          ]
+          "$ref": "#/$defs/stringOrEnCyObject"
         },
         "displayWidth": {
           "type": "string"
@@ -615,10 +537,7 @@
           "type": "array"
         },
         "infoText": {
-          "type": [
-            "string",
-            "object"
-          ]
+          "$ref": "#/$defs/stringOrEnCyObject"
         },
         "infoType": {
           "type": "string"
@@ -654,49 +573,28 @@
           "type": "integer"
         },
         "repeatLabel": {
-          "type": [
-            "string",
-            "object"
-          ]
+          "$ref": "#/$defs/stringOrEnCyObject"
         },
         "repeatAddAnotherText": {
-          "type": [
-            "string",
-            "object"
-          ]
+          "$ref": "#/$defs/stringOrEnCyObject"
         },
         "noneChoiceError": {
-          "type": [
-            "string",
-            "object"
-          ]
+          "$ref": "#/$defs/stringOrEnCyObject"
         },
         "dividerText": {
-          "type": [
-            "string",
-            "object"
-          ]
+          "$ref": "#/$defs/stringOrEnCyObject"
         },
         "summaryValue": {
-          "type": [
-            "string",
-            "object"
-          ]
+          "$ref": "#/$defs/stringOrEnCyObject"
         },
         "header": {
           "type": "array"
         },
         "chooseAddressLabel": {
-          "type": [
-            "string",
-            "object"
-          ]
+          "$ref": "#/$defs/stringOrEnCyObject"
         },
         "confirmAddressLabel": {
-          "type": [
-            "string",
-            "object"
-          ]
+          "$ref": "#/$defs/stringOrEnCyObject"
         },
         "international": {
           "type": "string"
@@ -980,6 +878,22 @@
           }
         }
       }
+    },
+    "stringOrEnCyObject": {
+      "type": [
+        "string",
+        "object"
+      ],
+      "properties": {
+        "en": {
+          "type": "string"
+        },
+        "cy": {
+          "type": "string"
+        }
+      },
+      "required": ["en"],
+      "additionalProperties": false
     }
   }
 }
