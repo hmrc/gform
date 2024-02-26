@@ -115,4 +115,7 @@ class TestOnlyFormService(
         formMongoCache.upsert(updatedForm).map(_ => SaveReply(request.formId))
       }
 
+  def deleteSnapshot(snapshotId: SnapshotId): Future[Unit] =
+    snapshotMongoCache.delete(snapshotId)
+
 }

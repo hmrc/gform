@@ -331,6 +331,12 @@ class TestOnlyController(
       val updateRequest: UpdateFormDataRequest = request.body
       testOnlyFormService.updateFormData(updateRequest).map(saveReply => Ok(Json.toJson(saveReply)))
     }
+
+  def deleteSnapshot(snapshotId: SnapshotId) = Action.async { _ =>
+    testOnlyFormService
+      .deleteSnapshot(snapshotId)
+      .map(_ => NoContent)
+  }
 }
 
 final case class RenderableDestination(
