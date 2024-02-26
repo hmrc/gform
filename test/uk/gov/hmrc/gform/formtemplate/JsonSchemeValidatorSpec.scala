@@ -1285,6 +1285,250 @@ class JsonSchemeValidatorSpec extends FunSuite {
   }
 
   test(
+    "validateJson rejects the form gracefully when the types of properties are incorrect"
+  ) {
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": "test label",
+            "type": [
+              "type is not an array"
+            ],
+            "multiline": 1,
+            "displayCharCount": {
+              "en": "displayCharCount is not an object"
+            },
+            "dataThreshold": "dataThreshold is not a string"
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at ID <testId>: Property type expected type [String], found [JSONArray]",
+      "Error at ID <testId>: Property dataThreshold expected type [Integer], found [String]",
+      "Error at ID <testId>: Property multiline expected type [String], found [Integer]",
+      "Error at ID <testId>: Property displayCharCount expected type [String], found [JSONObject]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a property outside of a field (no field ID) is incorrect"
+  ) {
+    val jsonTemplate =
+      json"""
+      {
+        "_id": "json-id",
+        "formName": "Json",
+        "version": 1,
+        "description": true,
+        "sections": []
+      }"""
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/description>: Property description expected type String or JSONObject with structure {en: String} or {en: String, cy: String}",
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a property outside of a field (no field ID) and a property inside a field are incorrect"
+  ) {
+    val jsonTemplate =
+      json"""
+      {
+        "_id": "json-id",
+        "formName": "Json",
+        "version": 1,
+        "description": {
+          "cy": "Cy test description"
+        },
+        "sections": [
+          {
+            "title": "Page 1",
+            "fields": [
+              {
+                "id": "testId",
+                "label": {
+                  "value": "test label"
+                }
+              }
+            ]
+          }
+        ]
+      }"""
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/description>: Property description expected type String or JSONObject with structure {en: String} or {en: String, cy: String}. Missing key(s) [en] are required",
+      "Error at ID <testId>: Property label expected type String or JSONObject with structure {en: String} or {en: String, cy: String}. Missing key(s) [en] are required. Invalid key(s) [value] are not permitted",
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a StringOrEnCyObject property contains one incorrect property"
+  ) {
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": {
+              "value": "test label"
+            }
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at ID <testId>: Property label expected type String or JSONObject with structure {en: String} or {en: String, cy: String}. Missing key(s) [en] are required. Invalid key(s) [value] are not permitted",
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a StringOrEnCyObject property contains more than one incorrect property"
+  ) {
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": {
+              "value": "test label",
+              "anotherValue": "another test label"
+            }
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at ID <testId>: Property label expected type String or JSONObject with structure {en: String} or {en: String, cy: String}. Missing key(s) [en] are required. Invalid key(s) [value, anotherValue] are not permitted",
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a StringOrEnCyObject property only contains the Cy property"
+  ) {
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": {
+              "cy": "Cy test label"
+            }
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at ID <testId>: Property label expected type String or JSONObject with structure {en: String} or {en: String, cy: String}. Missing key(s) [en] are required",
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a StringOrEnCyObject property contains no properties"
+  ) {
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": {}
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at ID <testId>: Property label expected type String or JSONObject with structure {en: String} or {en: String, cy: String}. Missing key(s) [en] are required",
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when multiple StringOrEnCyObject properties contain incorrect properties"
+  ) {
+    val testProperties1 =
+      json"""
+          {
+            "id": "TestID1",
+            "label": {
+              "xyz": "Test label 1"
+            }
+          }
+          """
+
+    val testProperties2 =
+      json"""
+          {
+            "id": "TestID2",
+            "shortName": {
+              "cy": "Test label 2"
+            }
+          }
+          """
+
+    val jsonTemplate = constructTestTwoFieldJsonTemplate(testProperties1, testProperties2)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at ID <TestID1>: Property label expected type String or JSONObject with structure {en: String} or {en: String, cy: String}. Missing key(s) [en] are required. Invalid key(s) [xyz] are not permitted",
+      "Error at ID <TestID2>: Property shortName expected type String or JSONObject with structure {en: String} or {en: String, cy: String}. Missing key(s) [en] are required",
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a StringOrEnCyObject property takes a value of an incorrect type"
+  ) {
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": 1
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at ID <testId>: Property label expected type String or JSONObject with structure {en: String} or {en: String, cy: String}",
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
     "validateJson accepts the form when the type property is [info] and the properties that are dependent on this are present"
   ) {
     val testProperties =
@@ -1588,21 +1832,13 @@ class JsonSchemeValidatorSpec extends FunSuite {
   }
 
   test(
-    "validateJson rejects the form and includes relevant errors messages when the types of properties are incorrect"
+    "validateJson accepts the form when a StringOrEnCyObject property is a String"
   ) {
     val testProperties =
       json"""
           {
             "id": "testId",
-            "label": "test label",
-            "type": [
-              "type is not an array"
-            ],
-            "multiline": 1,
-            "displayCharCount": {
-              "en": "displayCharCount is not an object"
-            },
-            "dataThreshold": "dataThreshold is not a string"
+            "label": "test label"
           }
         """
 
@@ -1610,13 +1846,53 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
-    val expectedResult = List(
-      "Error at ID <testId>: Property type expected type [String], found [JSONArray]",
-      "Error at ID <testId>: Property dataThreshold expected type [Integer], found [String]",
-      "Error at ID <testId>: Property multiline expected type [String], found [Integer]",
-      "Error at ID <testId>: Property displayCharCount expected type [String], found [JSONObject]"
-    )
+    val expectedResult = Right(())
 
-    runInvalidJsonTest(result, expectedResult)
+    assertEquals(result, expectedResult)
+  }
+
+  test(
+    "validateJson accepts the form when a StringOrEnCyObject property is an object with just the En property defined"
+  ) {
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": {
+              "en": "test label"
+            }
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = Right(())
+
+    assertEquals(result, expectedResult)
+  }
+
+  test(
+    "validateJson accepts the form when a StringOrEnCyObject property is an object with both the En and Cy properties defined"
+  ) {
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": {
+              "en": "En test label",
+              "cy": "Cy test label"
+            }
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = Right(())
+
+    assertEquals(result, expectedResult)
   }
 }

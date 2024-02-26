@@ -218,7 +218,7 @@ object JsonSchemeErrorParser {
       tryConvertErrorLocationToId(json, error.location, propertyNameInLocation = true)
 
     val errorMessage: String =
-      s"Property $errorProperty Expected type String or JSONObject with structure {en: String} or {en: String, cy: String}"
+      s"Property $errorProperty expected type String or JSONObject with structure {en: String} or {en: String, cy: String}"
     constructCustomErrorMessage(errorLocation, errorMessage)
   }
 
