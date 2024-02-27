@@ -17,11 +17,13 @@
 package uk.gov.hmrc.gform.testonly
 
 import play.api.mvc.Results
+import play.api.libs.json._
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.crypto.{ Decrypter, Encrypter }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateRawId
 import uk.gov.hmrc.gform.formtemplate.{ FormTemplateService, RequestHandlerAlg }
 import uk.gov.hmrc.gform.sharedmodel.form.FormId
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateRaw
 import uk.gov.hmrc.gform.save4later.FormMongoCache
 import uk.gov.hmrc.gform.core.FOpt
 import uk.gov.hmrc.gform.BuildInfo
@@ -37,15 +39,41 @@ class TestOnlyFormService(
   requestHandler: RequestHandlerAlg[FOpt]
 )(implicit ec: ExecutionContext) {
 
+  private def maybeReplaceDestinations(raw: FormTemplateRaw): FormTemplateRaw = {
+    val destinations = (raw.value \ "destinations").as[JsArray]
+    if (containTypes(destinations, List("hmrcIlluminate", "hmrcDms")))
+      replaceDestination(raw)
+    else
+      raw
+  }
+
+  private def replaceDestination(raw: FormTemplateRaw): FormTemplateRaw = {
+    val newDestinations = Json.arr(
+      Json.obj(
+        "id"            -> "transitionToSubmitted",
+        "type"          -> "stateTransition",
+        "requiredState" -> "Submitted"
+      )
+    )
+    val updatedValue = raw.value ++ Json.obj("destinations" -> newDestinations)
+    FormTemplateRaw(updatedValue)
+  }
+
+  private def containTypes(destinations: JsArray, types: List[String]): Boolean =
+    destinations.value.exists { jsValue =>
+      val destinationType = (jsValue \ "type").as[String]
+      types.contains(destinationType)
+    }
   def saveForm(saveRequest: SaveRequest)(implicit hc: HeaderCarrier): Future[SnapshotOverview] =
     formMongoCache
       .get(saveRequest.formId)
       .flatMap { form =>
         for {
           raw <- formTemplateService.get(FormTemplateRawId(form.formTemplateId.value))
+          rawUpdated = maybeReplaceDestinations(raw)
           snapshot = Snapshot(
                        form,
-                       raw,
+                       rawUpdated,
                        saveRequest.description,
                        GformVersion(BuildInfo.version),
                        saveRequest.gformFrontendVersion,
