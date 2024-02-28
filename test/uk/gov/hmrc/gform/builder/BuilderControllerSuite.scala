@@ -1668,4 +1668,89 @@ class BuilderControllerSuite extends FunSuite {
     assertEquals(result.spaces2, atlDefaultPageInfoFieldJsonExpected.spaces2)
   }
 
+  val atlCyaPageJson: Json = json"""
+    {
+      "sections": [
+        {
+          "type": "addToList",
+          "title": "Add To List",
+          "cyaPage": {
+            "title": "Give us details of each cat"
+          },
+          "addAnotherQuestion": {
+            "id": "addToList",
+            "type": "choice",
+            "label": "Add another?",
+            "format": "yesno"
+          },
+          "pages": []
+        },
+        {
+          "type": "addToList",
+          "title": "Add To List",
+          "cyaPage": {
+            "title": "Give us details of each dog"
+          },
+          "addAnotherQuestion": {
+            "id": "addToList2",
+            "type": "choice",
+            "label": "Add another?",
+            "format": "yesno"
+          },
+          "pages": []
+        }
+      ]
+  }"""
+
+  val atlCyaPageJsonExpected: Json = json"""
+    {
+      "sections": [
+        {
+          "type": "addToList",
+          "title": "Add To List",
+          "cyaPage": {
+            "title": "Give us details of each cat"
+          },
+          "addAnotherQuestion": {
+            "id": "addToList",
+            "type": "choice",
+            "label": "Add another?",
+            "format": "yesno"
+          },
+          "pages": []
+        },
+        {
+          "type": "addToList",
+          "title": "Add To List",
+          "cyaPage": {
+            "note": "Welcome",
+            "title": "Foo"
+          },
+          "addAnotherQuestion": {
+            "id": "addToList2",
+            "type": "choice",
+            "label": "Add another?",
+            "format": "yesno"
+          },
+          "pages": []
+        }
+      ]
+    }"""
+
+  test("Update addToList cyaPage title") {
+
+    val sectionPath = SectionPath(".sections[1]")
+
+    val patch: Json = Json.obj("title" := "Foo", "note" := "Welcome")
+
+    val result: Json =
+      BuilderSupport.modifyAtlCyaPageData(
+        atlCyaPageJson,
+        patch,
+        sectionPath
+      )
+
+    assertEquals(result.spaces2, atlCyaPageJsonExpected.spaces2)
+  }
+
 }

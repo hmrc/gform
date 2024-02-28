@@ -13,3 +13,5 @@ POST /update-atl-repeater/form-component/:formTemplateId/:formComponentId  uk.go
 
 POST /update-atl-default-page/:formTemplateId                                  uk.gov.hmrc.gform.builder.BuilderController.updateAtlDefaultPage(formTemplateId: FormTemplateRawId, sectionPath: SectionPath)
 POST /update-atl-default-page/form-component/:formTemplateId/:formComponentId  uk.gov.hmrc.gform.builder.BuilderController.updateAtlDefaultPageFormComponent(formTemplateId: FormTemplateRawId, formComponentId: FormComponentId, sectionPath: SectionPath)
+
+POST /update-atl-cya-page/:formTemplateId                                      uk.gov.hmrc.gform.builder.BuilderController.updateAtlCyaPage(formTemplateId: FormTemplateRawId, sectionPath: SectionPath)

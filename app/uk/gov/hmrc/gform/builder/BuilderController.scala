@@ -103,6 +103,34 @@ object BuilderSupport {
     )
   }
 
+  def modifyAtlCyaPageData(
+    json: Json,
+    atlRepeaterSection: Json,
+    sectionPath: SectionPath
+  ): Json = {
+    val propertyList = List(
+      Property("note", PropertyBehaviour.PurgeWhenEmpty),
+      Property("caption", PropertyBehaviour.PurgeWhenEmpty),
+      Property("continueLabel", PropertyBehaviour.PurgeWhenEmpty),
+      Property("title", PropertyBehaviour.PurgeWhenEmpty),
+      Property("updateTitle"),
+      Property("noPIITitle", PropertyBehaviour.PurgeWhenEmpty),
+      Property("noPIIUpdateTitle", PropertyBehaviour.PurgeWhenEmpty),
+      Property("presentationHint", PropertyBehaviour.PurgeWhenEmpty),
+      Property("removeItemIf", PropertyBehaviour.PurgeWhenEmpty),
+      Property("header", PropertyBehaviour.PurgeWhenEmpty),
+      Property("footer", PropertyBehaviour.PurgeWhenEmpty)
+    )
+
+    modifyAtlRepeater(
+      propertyList,
+      json,
+      atlRepeaterSection,
+      Some(DownField("cyaPage")),
+      sectionPath
+    )
+  }
+
   def modifyAtlRepeaterData(
     json: Json,
     atlRepeaterSection: Json,
@@ -259,10 +287,20 @@ object BuilderSupport {
         case _ =>
           val propertyField = hcursor.downField(property.name)
           if (propertyField.succeeded) {
-            propertyField
-              .set(propertyValue)
-              .root
-              .focus
+            val localisedValue: ACursor = propertyField.replayOne(DownField("en"))
+            val oldValue = if (localisedValue.succeeded) {
+              localisedValue.focus
+            } else {
+              propertyField.focus
+            }
+            if (oldValue.contains(propertyValue)) {
+              propertyField.root.focus // Do not update what didn't change, to keep welsch untouched
+            } else {
+              propertyField
+                .set(propertyValue)
+                .root
+                .focus
+            }
           } else {
             hcursor.withFocus(json => json.deepMerge(Json.obj(property.name -> propertyValue))).root.focus
           }
@@ -524,6 +562,13 @@ object BuilderSupport {
   ): Either[BuilderError, FormTemplateRaw] =
     modifyJson(formTemplateRaw)(modifyAtlDefaultPageData(_, atlRepeaterData, sectionPath))
 
+  def updateAtlCyaPage(
+    formTemplateRaw: FormTemplateRaw,
+    atlRepeaterData: Json,
+    sectionPath: SectionPath
+  ): Either[BuilderError, FormTemplateRaw] =
+    modifyJson(formTemplateRaw)(modifyAtlCyaPageData(_, atlRepeaterData, sectionPath))
+
   def updateAtlRepeater(
     formTemplateRaw: FormTemplateRaw,
     atlRepeaterData: Json,
@@ -654,6 +699,16 @@ class BuilderController(
     updateAction(formTemplateRawId) { (formTemplateRaw, requestBody) =>
       BuilderSupport
         .updateAtlDefaultPage(formTemplateRaw, requestBody, sectionPath)
+        .map(formTemplateRaw => (formTemplateRaw, Results.Ok(formTemplateRaw.value)))
+    }
+
+  def updateAtlCyaPage(
+    formTemplateRawId: FormTemplateRawId,
+    sectionPath: SectionPath
+  ) =
+    updateAction(formTemplateRawId) { (formTemplateRaw, requestBody) =>
+      BuilderSupport
+        .updateAtlCyaPage(formTemplateRaw, requestBody, sectionPath)
         .map(formTemplateRaw => (formTemplateRaw, Results.Ok(formTemplateRaw.value)))
     }
 
