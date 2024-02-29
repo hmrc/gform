@@ -1529,6 +1529,438 @@ class JsonSchemeValidatorSpec extends FunSuite {
   }
 
   test(
+    "validateJson rejects the form gracefully when a choices property takes a value of an incorrect type"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "id": "testId",
+          "label": "test label",
+          "type": "choice",
+          "choices": "this string should not be allowed"
+        }
+      """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at ID <testId>: Property choices expected type [Array], found [String]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a choices property contains both strings and objects"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "id": "testId",
+          "label": "test label",
+          "type": "choice",
+          "choices": [
+            "this is a string",
+            {
+              "en": "this is an object"
+            }
+          ]
+        }
+      """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at ID <testId: choices/1>: Property choices expected type Array of either Strings or JSONObjects with required keys [en] and optional keys [cy, dynamic, value, hint, includeIf]",
+      "Error at ID <testId: choices/0>: Property choices expected type Array of either Strings or JSONObjects with required keys [en] and optional keys [cy, dynamic, value, hint, includeIf]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a choices property contains invalid types"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "id": "testId",
+          "label": "test label",
+          "type": "choice",
+          "choices": [
+            false,
+            1
+          ]
+        }
+      """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at ID <testId: choices/0>: Property choices expected type Array of either Strings or JSONObjects with required keys [en] and optional keys [cy, dynamic, value, hint, includeIf]",
+      "Error at ID <testId: choices/1>: Property choices expected type Array of either Strings or JSONObjects with required keys [en] and optional keys [cy, dynamic, value, hint, includeIf]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a choices property contains one valid type and one invalid type"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "id": "testId",
+          "label": "test label",
+          "type": "choice",
+          "choices": [
+            "this is a string",
+            1
+          ]
+        }
+      """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at ID <testId: choices/1>: Property choices expected type Array of either Strings or JSONObjects with required keys [en] and optional keys [cy, dynamic, value, hint, includeIf]",
+      "Error at ID <testId: choices/0>: Property choices expected type Array of either Strings or JSONObjects with required keys [en] and optional keys [cy, dynamic, value, hint, includeIf]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a choices property has an object with an invalid key"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "id": "testId",
+          "label": "test label",
+          "type": "choice",
+          "choices": [
+            {
+              "en": "test en 1",
+              "val": "this should not be allowed"
+            },
+            {
+              "en": "test en 2"
+            }
+          ]
+        }
+      """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at ID <testId: choices/0>: Property choices expected type Array of either Strings or JSONObjects with required keys [en] and optional keys [cy, dynamic, value, hint, includeIf]. Invalid key(s) [val] are not permitted",
+      "Error at ID <testId: choices/1>: Property choices expected type Array of either Strings or JSONObjects with required keys [en] and optional keys [cy, dynamic, value, hint, includeIf]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a choices property has an object missing a required key"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "id": "testId",
+          "label": "test label",
+          "type": "choice",
+          "choices": [
+            {
+              "en": "test en 1",
+              "cy": "test cy 1"
+            },
+            {
+              "cy": "test cy 2"
+            }
+          ]
+        }
+      """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at ID <testId: choices/1>: Property choices expected type Array of either Strings or JSONObjects with required keys [en] and optional keys [cy, dynamic, value, hint, includeIf]. Missing key(s) [en] are required",
+      "Error at ID <testId: choices/0>: Property choices expected type Array of either Strings or JSONObjects with required keys [en] and optional keys [cy, dynamic, value, hint, includeIf]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a choices property has an object with an invalid key and a missing required key"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "id": "testId",
+          "label": "test label",
+          "type": "choice",
+          "choices": [
+            {
+              "xyz": "this should not be allowed"
+            },
+            {
+              "en": "test cy 2"
+            }
+          ]
+        }
+      """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at ID <testId: choices/0>: Property choices expected type Array of either Strings or JSONObjects with required keys [en] and optional keys [cy, dynamic, value, hint, includeIf]. Missing key(s) [en] are required. Invalid key(s) [xyz] are not permitted",
+      "Error at ID <testId: choices/1>: Property choices expected type Array of either Strings or JSONObjects with required keys [en] and optional keys [cy, dynamic, value, hint, includeIf]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a choices property has one object with an invalid key and another object missing a required key"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "id": "testId",
+          "label": "test label",
+          "type": "choice",
+          "choices": [
+            {
+              "en": "test en 1",
+              "xyz": "this should not be allowed"
+            },
+            {
+              "cy": "test cy 2"
+            }
+          ]
+        }
+      """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at ID <testId: choices/0>: Property choices expected type Array of either Strings or JSONObjects with required keys [en] and optional keys [cy, dynamic, value, hint, includeIf]. Invalid key(s) [xyz] are not permitted",
+      "Error at ID <testId: choices/1>: Property choices expected type Array of either Strings or JSONObjects with required keys [en] and optional keys [cy, dynamic, value, hint, includeIf]. Missing key(s) [en] are required"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a choices property has one primitive-typed object with a property of invalid type and one valid object"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "id": "testId",
+          "label": "test label",
+          "type": "choice",
+          "choices": [
+            {
+              "en": "test en 1",
+              "cy": true
+            },
+            {
+              "en": "test en 2"
+            }
+          ]
+        }
+      """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at ID <testId: choices/0>: Property cy expected type [String], found [Boolean]",
+      "Error at ID <testId: choices/0>: Property choices expected type Array of either Strings or JSONObjects with required keys [en] and optional keys [cy, dynamic, value, hint, includeIf]",
+      "Error at ID <testId: choices/1>: Property choices expected type Array of either Strings or JSONObjects with required keys [en] and optional keys [cy, dynamic, value, hint, includeIf]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a choices property has one stringOrEnCyObject-typed object with a property of invalid type and one valid object"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "id": "testId",
+          "label": "test label",
+          "type": "choice",
+          "choices": [
+            {
+              "en": "test en 1",
+              "hint": {
+                "xyz": "this should not be allowed"
+              }
+            },
+            {
+              "en": "test en 2"
+            }
+          ]
+        }
+      """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at ID <testId: choices/0>: Property hint expected type String or JSONObject with structure {en: String} or {en: String, cy: String}. Missing key(s) [en] are required. Invalid key(s) [xyz] are not permitted",
+      "Error at ID <testId: choices/0>: Property choices expected type Array of either Strings or JSONObjects with required keys [en] and optional keys [cy, dynamic, value, hint, includeIf]",
+      "Error at ID <testId: choices/1>: Property choices expected type Array of either Strings or JSONObjects with required keys [en] and optional keys [cy, dynamic, value, hint, includeIf]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a choices property has one invalid object and one object with an invalid property"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "id": "testId",
+          "label": "test label",
+          "type": "choice",
+          "choices": [
+            {
+              "en": "test en 1",
+              "hint": {
+                "xyz": "this should not be allowed"
+              }
+            },
+            {
+              "abc": "test en 2"
+            }
+          ]
+        }
+      """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at ID <testId: choices/0>: Property choices expected type Array of either Strings or JSONObjects with required keys [en] and optional keys [cy, dynamic, value, hint, includeIf]",
+      "Error at ID <testId: choices/1>: Property choices expected type Array of either Strings or JSONObjects with required keys [en] and optional keys [cy, dynamic, value, hint, includeIf]. Missing key(s) [en] are required. Invalid key(s) [abc] are not permitted",
+      "Error at ID <testId: choices/0>: Property hint expected type String or JSONObject with structure {en: String} or {en: String, cy: String}. Missing key(s) [en] are required. Invalid key(s) [xyz] are not permitted"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a choices property has multiple objects with all properties invalid"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "id": "testId",
+          "label": "test label",
+          "type": "choice",
+          "choices": [
+            {
+              "en": 1,
+              "cy": false,
+              "dynamic": {},
+              "hint": [],
+              "value": 1,
+              "includeIf": null
+            },
+            {
+              "en": {},
+              "cy": [],
+              "dynamic": true,
+              "hint": 1,
+              "value": [],
+              "includeIf": 4
+            }
+          ]
+        }
+      """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at ID <testId: choices/0>: Property choices expected type Array of either Strings or JSONObjects with required keys [en] and optional keys [cy, dynamic, value, hint, includeIf]",
+      "Error at ID <testId: choices/1>: Property choices expected type Array of either Strings or JSONObjects with required keys [en] and optional keys [cy, dynamic, value, hint, includeIf]",
+      "Error at ID <testId: choices/0>: Property includeIf expected type [String], found [Null]",
+      "Error at ID <testId: choices/0>: Property cy expected type [String], found [Boolean]",
+      "Error at ID <testId: choices/0>: Property hint expected type String or JSONObject with structure {en: String} or {en: String, cy: String}",
+      "Error at ID <testId: choices/0>: Property en expected type [String], found [Integer]",
+      "Error at ID <testId: choices/0>: Property dynamic expected type [String], found [JSONObject]",
+      "Error at ID <testId: choices/0>: Property value expected type [String], found [Integer]",
+      "Error at ID <testId: choices/1>: Property includeIf expected type [String], found [Integer]",
+      "Error at ID <testId: choices/1>: Property cy expected type [String], found [JSONArray]",
+      "Error at ID <testId: choices/1>: Property hint expected type String or JSONObject with structure {en: String} or {en: String, cy: String}",
+      "Error at ID <testId: choices/1>: Property en expected type [String], found [JSONObject]",
+      "Error at ID <testId: choices/1>: Property dynamic expected type [String], found [Boolean]",
+      "Error at ID <testId: choices/1>: Property value expected type [String], found [JSONArray]"
+    )
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a choices property has one object with an invalid property type and one index of the array is an invalid type"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "id": "testId",
+          "label": "test label",
+          "type": "choice",
+          "choices": [
+            {
+              "en": "test en 1",
+              "cy": true
+            },
+            1
+          ]
+        }
+      """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at ID <testId: choices/0>: Property choices expected type Array of either Strings or JSONObjects with required keys [en] and optional keys [cy, dynamic, value, hint, includeIf]",
+      "Error at ID <testId: choices/1>: Property choices expected type Array of either Strings or JSONObjects with required keys [en] and optional keys [cy, dynamic, value, hint, includeIf]",
+      "Error at ID <testId: choices/0>: Property cy expected type [String], found [Boolean]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
     "validateJson accepts the form when the type property is [info] and the properties that are dependent on this are present"
   ) {
     val testProperties =
@@ -1884,6 +2316,146 @@ class JsonSchemeValidatorSpec extends FunSuite {
               "en": "En test label",
               "cy": "Cy test label"
             }
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = Right(())
+
+    assertEquals(result, expectedResult)
+  }
+
+  test(
+    "validateJson accepts the form when a choices property is an Array of Strings"
+  ) {
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": "test label",
+            "type": "choice",
+            "choices": [
+              "choice 1",
+              "choice 2",
+              "choice 3"
+            ]
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = Right(())
+
+    assertEquals(result, expectedResult)
+  }
+
+  test(
+    "validateJson accepts the form when a choices property is an Array of Objects with just the En property"
+  ) {
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": "test label",
+            "type": "choice",
+            "choices": [
+              {
+                "en": "en choice 1"
+              },
+              {
+                "en": "en choice 2"
+              },
+              {
+                "en": "en choice 3"
+              }
+            ]
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = Right(())
+
+    assertEquals(result, expectedResult)
+  }
+
+  test(
+    "validateJson accepts the form when a choices property is an Array of Objects with all valid properties"
+  ) {
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": "test label",
+            "type": "choice",
+            "choices": [
+              {
+                "en": "en choice 1",
+                "cy": "cy choice 1",
+                "dynamic": "dynamic.one",
+                "hint": {
+                  "en": "en hint 1",
+                  "cy": "cy hint 1"
+                },
+                "value": "NONE",
+                "includeIf": "1=1"
+              },
+              {
+                "en": "en choice 2",
+                "cy": "cy choice 2",
+                "dynamic": "dynamic.two",
+                "hint": {
+                  "en": "en hint 2",
+                  "cy": "cy hint 2"
+                },
+                "value": "NONE",
+                "includeIf": "1=2"
+              }
+            ]
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = Right(())
+
+    assertEquals(result, expectedResult)
+  }
+
+  test(
+    "validateJson accepts the form when a choices property is an Array of one Object with all valid properties and one Object with just the En property"
+  ) {
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": "test label",
+            "type": "choice",
+            "choices": [
+              {
+                "en": "en choice 1",
+                "cy": "cy choice 1",
+                "dynamic": "dynamic.one",
+                "hint": {
+                  "en": "en hint 1",
+                  "cy": "cy hint 1"
+                },
+                "value": "NONE",
+                "includeIf": "1=1"
+              },
+              {
+                "en": "en choice 2"
+              }
+            ]
           }
         """
 
