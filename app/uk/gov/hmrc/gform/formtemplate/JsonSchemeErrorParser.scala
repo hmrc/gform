@@ -18,6 +18,7 @@ package uk.gov.hmrc.gform.formtemplate
 
 import cats.data.NonEmptyList
 import cats.syntax.eq._
+import io.circe.DecodingFailure.Reason.WrongTypeExpectation
 import io.circe.{ DecodingFailure, Json }
 import io.circe.schema.ValidationError
 import uk.gov.hmrc.gform.exceptions.SchemaValidationException
@@ -93,47 +94,77 @@ object JsonSchemeErrorParser {
       if (propertyNameInLocation) errorLocationSections.dropRight(1) else errorLocationSections
 
     // If cannot get ID of location, use original location message instead
-    getErrorLocationId(json, errorLocationSectionsWithoutProperty).flatMap(_.asString).getOrElse(location)
+    val (maybeFoundId, restOfLocation) =
+      getErrorLocationIdWithRemainingSections(json, errorLocationSectionsWithoutProperty)
+
+    maybeFoundId.flatMap(_.asString) match {
+      case None          => location
+      case Some(foundId) => if (restOfLocation.nonEmpty) s"$foundId: $restOfLocation".stripTrailing() else foundId
+    }
   }
 
   @tailrec
-  private def getErrorLocationId(json: Json, remainingSections: List[String]): Option[Json] =
+  private def getErrorLocationIdWithRemainingSections(
+    json: Json,
+    remainingSections: List[String]
+  ): (Option[Json], String) = {
+    val maybeFoundId: Option[Json] = json.hcursor.downField("id").as[Json].toOption
+
     remainingSections match {
       // No more sections to traverse, so get ID of current section to return
       case Nil =>
-        json.hcursor.downField("id").as[Json].toOption
+        (maybeFoundId, "")
 
       // More sections to traverse, so check if current json is a List of Json or a Json
       case section :: nextRemainingSections =>
+        // If an ID is found along the way, return the ID
+        if (maybeFoundId.isDefined) {
+          return (maybeFoundId, remainingSections.mkString("/"))
+        }
+
         json.as[List[Json]] match {
 
           // If Json, go to next section
           case Left(_) =>
             json.hcursor.downField(section).as[Json] match {
-              case Left(_)                => None
-              case Right(nextJsonSection) => getErrorLocationId(nextJsonSection, nextRemainingSections)
+              case Left(_) => (None, "")
+              case Right(nextJsonSection) =>
+                getErrorLocationIdWithRemainingSections(nextJsonSection, nextRemainingSections)
             }
 
           // If List of Json, get Int of next section and index the List to go to next section
           case Right(jsonList) =>
             section.toIntOption match {
-              case Some(sectionInt) => getErrorLocationId(jsonList(sectionInt), nextRemainingSections)
-              case None             => None
+              case Some(sectionInt) =>
+                getErrorLocationIdWithRemainingSections(jsonList(sectionInt), nextRemainingSections)
+              case None => (None, "")
             }
         }
     }
+  }
 
   @tailrec
   private def goDownSchema(schema: Json, remaining: List[String]): Either[DecodingFailure, Json] =
     remaining match {
       case Nil => Right(schema)
       case current :: next =>
-        schema.hcursor
-          .downField(current)
-          .as[Json] match {
-          case Left(decodingFailure) => Left(decodingFailure)
-          case Right(reducedSchema)  => goDownSchema(reducedSchema, next)
+        schema.as[List[Json]] match {
+
+          case Left(_) =>
+            schema.hcursor.downField(current).as[Json] match {
+              case Left(decodingFailure) => Left(decodingFailure)
+              case Right(reducedSchema) =>
+                goDownSchema(reducedSchema, next)
+            }
+
+          case Right(schemaList) =>
+            current.toIntOption match {
+              case Some(sectionInt) =>
+                goDownSchema(schemaList(sectionInt), next)
+              case None => Left(DecodingFailure(WrongTypeExpectation("Int", Json.fromString(current)), schema.hcursor))
+            }
         }
+
     }
 
   private def getErrorMessageFromConditionalRequirements(
@@ -183,13 +214,27 @@ object JsonSchemeErrorParser {
   ): String = {
     val allSameErrors: List[ValidationError] = errors.filter(_.location === error.location)
     if (allSameErrors.map(_.schemaLocation).exists(_.contains("#/$defs/stringOrEnCyObject"))) {
-      parseEnCyTypeError(allSameErrors, json, error)
+      parseCustomTypeError(allSameErrors, json, error, constructEnCyTypeError)
+    } else if (
+      allSameErrors
+        .map(_.schemaLocation.getOrElse(""))
+        .exists(_.contains("#/$defs/fields/properties/choices/")) &&
+      !allSameErrors
+        .map(_.schemaLocation.getOrElse(""))
+        .exists(_.contains("items/properties/"))
+    ) {
+      parseCustomTypeError(allSameErrors, json, error, constructChoiceTypeError)
     } else {
       parseNormalTypeError(schema, json, error, errors)
     }
   }
 
-  private def parseEnCyTypeError(allSameErrors: List[ValidationError], json: Json, error: ValidationError) = {
+  private def parseCustomTypeError(
+    allSameErrors: List[ValidationError],
+    json: Json,
+    error: ValidationError,
+    customErrorConstructor: (Json, ValidationError) => String
+  ) = {
     val maybeInvalidKeyMessage: Option[String] = keysFromErrorMessage(allSameErrors, "additionalProperties") match {
       case Nil         => None
       case invalidKeys => Some(s"Invalid key(s) [${invalidKeys.mkString(", ")}] are not permitted")
@@ -200,7 +245,7 @@ object JsonSchemeErrorParser {
       case requiredKeys => Some(s"Missing key(s) [${requiredKeys.mkString(", ")}] are required")
     }
 
-    List(Some(constructEnCyTypeError(json, error)), maybeRequiredKeyMessage, maybeInvalidKeyMessage).flatten
+    List(Some(customErrorConstructor(json, error)), maybeRequiredKeyMessage, maybeInvalidKeyMessage).flatten
       .mkString(". ")
   }
 
@@ -217,6 +262,16 @@ object JsonSchemeErrorParser {
 
     val errorMessage: String =
       s"Property $errorProperty expected type String or JSONObject with structure {en: String} or {en: String, cy: String}"
+    constructCustomErrorMessage(errorLocation, errorMessage)
+  }
+
+  private def constructChoiceTypeError(json: Json, error: ValidationError): String = {
+    val errorProperty: String = error.location.split("/").dropRight(1).last
+    val errorLocation: String =
+      tryConvertErrorLocationToId(json, error.location, propertyNameInLocation = false)
+
+    val errorMessage: String =
+      s"Property $errorProperty expected type Array of either Strings or JSONObjects with required keys [en] and optional keys [cy, dynamic, value, hint, includeIf]"
     constructCustomErrorMessage(errorLocation, errorMessage)
   }
 
