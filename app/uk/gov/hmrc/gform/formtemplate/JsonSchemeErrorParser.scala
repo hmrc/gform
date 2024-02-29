@@ -215,15 +215,18 @@ object JsonSchemeErrorParser {
     val allSameErrors: List[ValidationError] = errors.filter(_.location === error.location)
     if (allSameErrors.map(_.schemaLocation).exists(_.contains("#/$defs/stringOrEnCyObject"))) {
       parseCustomTypeError(allSameErrors, json, error, constructEnCyTypeError)
-    } else if (
-      allSameErrors
-        .map(_.schemaLocation.getOrElse(""))
-        .exists(_.contains("#/$defs/fields/properties/choices/")) &&
-      !allSameErrors
-        .map(_.schemaLocation.getOrElse(""))
-        .exists(_.contains("items/properties/"))
-    ) {
-      parseCustomTypeError(allSameErrors, json, error, constructChoiceTypeError)
+
+    } else if (!allSameErrors.map(_.schemaLocation.getOrElse("")).exists(_.contains("items/properties/"))) {
+      val schemaLocationOrEmpty = allSameErrors.map(_.schemaLocation.getOrElse(""))
+
+      if (schemaLocationOrEmpty.exists(_.contains("#/$defs/fields/properties/choices/"))) {
+        parseCustomTypeError(allSameErrors, json, error, constructChoiceTypeError)
+      } else if (schemaLocationOrEmpty.exists(_.contains("#/$defs/fields/properties/header/"))) {
+        parseCustomTypeError(allSameErrors, json, error, constructHeaderTypeError)
+      } else {
+        parseNormalTypeError(schema, json, error, errors)
+      }
+
     } else {
       parseNormalTypeError(schema, json, error, errors)
     }
@@ -256,22 +259,42 @@ object JsonSchemeErrorParser {
       .map("\\[.*]".r.findAllIn(_).next().drop(1).dropRight(1))
 
   private def constructEnCyTypeError(json: Json, error: ValidationError): String = {
-    val errorProperty: String = error.location.split("/").last
-    val errorLocation: String =
-      tryConvertErrorLocationToId(json, error.location, propertyNameInLocation = true)
+    val (errorProperty, errorLocation) = getTypeErrorPropertyAndLocation(error, json)
 
     val errorMessage: String =
       s"Property $errorProperty expected type String or JSONObject with structure {en: String} or {en: String, cy: String}"
     constructCustomErrorMessage(errorLocation, errorMessage)
   }
 
+  private def getTypeErrorPropertyAndLocation(error: ValidationError, json: Json) =
+    error.location.split("/").last.toIntOption match {
+      case Some(_) =>
+        val property: String = error.location.split("/").dropRight(1).last
+        val location: String =
+          tryConvertErrorLocationToId(json, error.location, propertyNameInLocation = false)
+
+        (property, location)
+      case None =>
+        val property: String = error.location.split("/").last
+        val location: String =
+          tryConvertErrorLocationToId(json, error.location, propertyNameInLocation = true)
+
+        (property, location)
+    }
+
   private def constructChoiceTypeError(json: Json, error: ValidationError): String = {
-    val errorProperty: String = error.location.split("/").dropRight(1).last
-    val errorLocation: String =
-      tryConvertErrorLocationToId(json, error.location, propertyNameInLocation = false)
+    val (errorProperty, errorLocation) = getTypeErrorPropertyAndLocation(error, json)
 
     val errorMessage: String =
       s"Property $errorProperty expected type Array of either Strings or JSONObjects with required keys [en] and optional keys [cy, dynamic, value, hint, includeIf]"
+    constructCustomErrorMessage(errorLocation, errorMessage)
+  }
+
+  private def constructHeaderTypeError(json: Json, error: ValidationError): String = {
+    val (errorProperty, errorLocation) = getTypeErrorPropertyAndLocation(error, json)
+
+    val errorMessage: String =
+      s"Property $errorProperty expected type Array of either Strings or JSONObject with structure {en: String} or {en: String, cy: String}"
     constructCustomErrorMessage(errorLocation, errorMessage)
   }
 
@@ -305,9 +328,7 @@ object JsonSchemeErrorParser {
     errors: NonEmptyList[ValidationError],
     schemaLocation: String
   ): String = {
-    val errorProperty: String = error.location.split("/").last
-    val errorLocation: String =
-      tryConvertErrorLocationToId(json, error.location, propertyNameInLocation = true)
+    val (errorProperty, errorLocation) = getTypeErrorPropertyAndLocation(error, json)
 
     errors.filter(_.location === error.location).filter(_.keyword === "type").map(_.getMessage) match {
       case Nil => error.getMessage
