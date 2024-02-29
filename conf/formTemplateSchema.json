@@ -447,7 +447,41 @@
           "pattern": "^(true)$"
         },
         "choices": {
-          "type": "array"
+          "type": "array",
+          "oneOf": [
+            {
+              "items": {
+                "type": "string"
+              }
+            },
+            {
+              "items": {
+                "type": "object",
+                "properties": {
+                  "en": {
+                    "type": "string"
+                  },
+                  "cy": {
+                    "type": "string"
+                  },
+                  "dynamic": {
+                    "type": "string"
+                  },
+                  "value": {
+                    "type": "string"
+                  },
+                  "hint": {
+                    "$ref": "#/$defs/stringOrEnCyObject"
+                  },
+                  "includeIf": {
+                    "type": "string"
+                  }
+                },
+                "required": ["en"],
+                "additionalProperties": false
+              }
+            }
+          ]
         },
         "mandatory": {
           "type": "string",
