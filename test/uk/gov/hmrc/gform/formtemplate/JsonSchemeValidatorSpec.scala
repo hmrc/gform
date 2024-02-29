@@ -1770,7 +1770,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
   }
 
   test(
-    "validateJson rejects the form gracefully when a choices property has one primitive-typed object with a property of invalid type and one valid object"
+    "validateJson rejects the form gracefully when a choices property has one object with a primitive-typed property of invalid type and one valid object"
   ) {
     val testProperties =
       json"""
@@ -1804,7 +1804,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
   }
 
   test(
-    "validateJson rejects the form gracefully when a choices property has one stringOrEnCyObject-typed object with a property of invalid type and one valid object"
+    "validateJson rejects the form gracefully when a choices property has one object with a stringOrEnCyObject-typed property of invalid type and one valid object"
   ) {
     val testProperties =
       json"""
@@ -1955,6 +1955,366 @@ class JsonSchemeValidatorSpec extends FunSuite {
       "Error at ID <testId: choices/0>: Property choices expected type Array of either Strings or JSONObjects with required keys [en] and optional keys [cy, dynamic, value, hint, includeIf]",
       "Error at ID <testId: choices/1>: Property choices expected type Array of either Strings or JSONObjects with required keys [en] and optional keys [cy, dynamic, value, hint, includeIf]",
       "Error at ID <testId: choices/0>: Property cy expected type [String], found [Boolean]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a header property is used when the type property is not present"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "id": "testId",
+          "label": "test label",
+          "header": [
+            "header 1",
+            "header 2"
+          ]
+        }
+      """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at ID <testId>: Property header can only be used with type: [table]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a header property is used when the type property is not [table]"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "id": "testId",
+          "label": "test label",
+          "type": "text",
+          "header": [
+            "header 1",
+            "header 2"
+          ]
+        }
+      """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at ID <testId>: Property header can only be used with type: [table]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a header property takes a value of an incorrect type"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "id": "testId",
+          "label": "test label",
+          "type": "table",
+          "header": "This should be an array"
+        }
+      """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at ID <testId>: Property header expected type [Array], found [String]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a header property contains both strings and objects"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "id": "testId",
+          "label": "test label",
+          "type": "table",
+          "header": [
+            "this is a string",
+            {
+              "en": "this is an object"
+            }
+          ]
+        }
+      """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at ID <testId: header/1>: Property header expected type Array of either Strings or JSONObject with structure {en: String} or {en: String, cy: String}",
+      "Error at ID <testId: header/0>: Property header expected type Array of either Strings or JSONObject with structure {en: String} or {en: String, cy: String}"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a header property contains invalid types"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "id": "testId",
+          "label": "test label",
+          "type": "table",
+          "header": [
+            false,
+            1
+          ]
+        }
+      """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at ID <testId: header/0>: Property header expected type Array of either Strings or JSONObject with structure {en: String} or {en: String, cy: String}",
+      "Error at ID <testId: header/1>: Property header expected type Array of either Strings or JSONObject with structure {en: String} or {en: String, cy: String}"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a header property contains one valid type and one invalid type"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "id": "testId",
+          "label": "test label",
+          "type": "table",
+          "header": [
+            "this is a string",
+            1
+          ]
+        }
+      """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at ID <testId: header/1>: Property header expected type Array of either Strings or JSONObject with structure {en: String} or {en: String, cy: String}",
+      "Error at ID <testId: header/0>: Property header expected type Array of either Strings or JSONObject with structure {en: String} or {en: String, cy: String}"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a header property has an object with an invalid key"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "id": "testId",
+          "label": "test label",
+          "type": "table",
+          "header": [
+            {
+              "en": "test en 1",
+              "val": "this should not be allowed"
+            },
+            {
+              "en": "test en 2"
+            }
+          ]
+        }
+      """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at ID <testId: header/0>: Property header expected type Array of either Strings or JSONObject with structure {en: String} or {en: String, cy: String}. Invalid key(s) [val] are not permitted",
+      "Error at ID <testId: header/1>: Property header expected type Array of either Strings or JSONObject with structure {en: String} or {en: String, cy: String}"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a header property has an object missing a required key"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "id": "testId",
+          "label": "test label",
+          "type": "table",
+          "header": [
+            {
+              "en": "test en 1",
+              "cy": "test cy 1"
+            },
+            {
+              "cy": "test cy 2"
+            }
+          ]
+        }
+      """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at ID <testId: header/1>: Property header expected type Array of either Strings or JSONObject with structure {en: String} or {en: String, cy: String}. Missing key(s) [en] are required",
+      "Error at ID <testId: header/0>: Property header expected type Array of either Strings or JSONObject with structure {en: String} or {en: String, cy: String}"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a header property has an object with an invalid key and a missing required key"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "id": "testId",
+          "label": "test label",
+          "type": "table",
+          "header": [
+            {
+              "xyz": "this should not be allowed"
+            },
+            {
+              "en": "test cy 2"
+            }
+          ]
+        }
+      """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at ID <testId: header/0>: Property header expected type Array of either Strings or JSONObject with structure {en: String} or {en: String, cy: String}. Missing key(s) [en] are required. Invalid key(s) [xyz] are not permitted",
+      "Error at ID <testId: header/1>: Property header expected type Array of either Strings or JSONObject with structure {en: String} or {en: String, cy: String}"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a header property has one object with an invalid key and another object missing a required key"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "id": "testId",
+          "label": "test label",
+          "type": "table",
+          "header": [
+            {
+              "en": "test en 1",
+              "xyz": "this should not be allowed"
+            },
+            {
+              "cy": "test cy 2"
+            }
+          ]
+        }
+      """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at ID <testId: header/0>: Property header expected type Array of either Strings or JSONObject with structure {en: String} or {en: String, cy: String}. Invalid key(s) [xyz] are not permitted",
+      "Error at ID <testId: header/1>: Property header expected type Array of either Strings or JSONObject with structure {en: String} or {en: String, cy: String}. Missing key(s) [en] are required"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a header property has one object with a property of invalid type and one valid object"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "id": "testId",
+          "label": "test label",
+          "type": "table",
+          "header": [
+            {
+              "en": "test en 1",
+              "cy": true
+            },
+            {
+              "en": "test en 2"
+            }
+          ]
+        }
+      """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at ID <testId: header/0>: Property cy expected type [String], found [Boolean]",
+      "Error at ID <testId: header/0>: Property header expected type Array of either Strings or JSONObject with structure {en: String} or {en: String, cy: String}",
+      "Error at ID <testId: header/1>: Property header expected type Array of either Strings or JSONObject with structure {en: String} or {en: String, cy: String}"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a header property has one object with an invalid property type and one index of the array is an invalid type"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "id": "testId",
+          "label": "test label",
+          "type": "table",
+          "header": [
+            {
+              "en": "test en 1",
+              "cy": true
+            },
+            1
+          ]
+        }
+      """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at ID <testId: header/0>: Property header expected type Array of either Strings or JSONObject with structure {en: String} or {en: String, cy: String}",
+      "Error at ID <testId: header/1>: Property header expected type Array of either Strings or JSONObject with structure {en: String} or {en: String, cy: String}",
+      "Error at ID <testId: header/0>: Property cy expected type [String], found [Boolean]"
     )
 
     runInvalidJsonTest(result, expectedResult)
@@ -2454,6 +2814,125 @@ class JsonSchemeValidatorSpec extends FunSuite {
               },
               {
                 "en": "en choice 2"
+              }
+            ]
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = Right(())
+
+    assertEquals(result, expectedResult)
+  }
+
+  test(
+    "validateJson accepts the form when a header property is an Array of Strings"
+  ) {
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": "test label",
+            "type": "table",
+            "header": [
+              "header 1",
+              "header 2",
+              "header 3"
+            ]
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = Right(())
+
+    assertEquals(result, expectedResult)
+  }
+
+  test(
+    "validateJson accepts the form when a header property is an Array of Objects with just the En property"
+  ) {
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": "test label",
+            "type": "table",
+            "header": [
+              {
+                "en": "en header 1"
+              },
+              {
+                "en": "en header 2"
+              },
+              {
+                "en": "en header 3"
+              }
+            ]
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = Right(())
+
+    assertEquals(result, expectedResult)
+  }
+
+  test(
+    "validateJson accepts the form when a header property is an Array of Objects with En and Cy properties"
+  ) {
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": "test label",
+            "type": "table",
+            "header": [
+              {
+                "en": "en header 1",
+                "cy": "cy header 1"
+              },
+              {
+                "en": "en header 2",
+                "cy": "cy header 2"
+              }
+            ]
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = Right(())
+
+    assertEquals(result, expectedResult)
+  }
+
+  test(
+    "validateJson accepts the form when a choices property is an Array of one Object with the En and Cy properties, and one Object with just the En property"
+  ) {
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": "test label",
+            "type": "table",
+            "header": [
+              {
+                "en": "en header 1",
+                "cy": "cy header 1"
+              },
+              {
+                "en": "en header 2"
               }
             ]
           }
