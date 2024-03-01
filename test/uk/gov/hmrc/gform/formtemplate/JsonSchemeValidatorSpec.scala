@@ -2060,8 +2060,8 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
     val expectedResult = List(
-      "Error at ID <testId: header/1>: Property header expected type Array of either Strings or JSONObject with structure {en: String} or {en: String, cy: String}",
-      "Error at ID <testId: header/0>: Property header expected type Array of either Strings or JSONObject with structure {en: String} or {en: String, cy: String}"
+      "Error at ID <testId: header/1>: Property header expected type Array of either Strings or JSONObjects with structure {en: String} or {en: String, cy: String}",
+      "Error at ID <testId: header/0>: Property header expected type Array of either Strings or JSONObjects with structure {en: String} or {en: String, cy: String}"
     )
 
     runInvalidJsonTest(result, expectedResult)
@@ -2088,8 +2088,8 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
     val expectedResult = List(
-      "Error at ID <testId: header/0>: Property header expected type Array of either Strings or JSONObject with structure {en: String} or {en: String, cy: String}",
-      "Error at ID <testId: header/1>: Property header expected type Array of either Strings or JSONObject with structure {en: String} or {en: String, cy: String}"
+      "Error at ID <testId: header/0>: Property header expected type Array of either Strings or JSONObjects with structure {en: String} or {en: String, cy: String}",
+      "Error at ID <testId: header/1>: Property header expected type Array of either Strings or JSONObjects with structure {en: String} or {en: String, cy: String}"
     )
 
     runInvalidJsonTest(result, expectedResult)
@@ -2116,8 +2116,8 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
     val expectedResult = List(
-      "Error at ID <testId: header/1>: Property header expected type Array of either Strings or JSONObject with structure {en: String} or {en: String, cy: String}",
-      "Error at ID <testId: header/0>: Property header expected type Array of either Strings or JSONObject with structure {en: String} or {en: String, cy: String}"
+      "Error at ID <testId: header/1>: Property header expected type Array of either Strings or JSONObjects with structure {en: String} or {en: String, cy: String}",
+      "Error at ID <testId: header/0>: Property header expected type Array of either Strings or JSONObjects with structure {en: String} or {en: String, cy: String}"
     )
 
     runInvalidJsonTest(result, expectedResult)
@@ -2149,8 +2149,8 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
     val expectedResult = List(
-      "Error at ID <testId: header/0>: Property header expected type Array of either Strings or JSONObject with structure {en: String} or {en: String, cy: String}. Invalid key(s) [val] are not permitted",
-      "Error at ID <testId: header/1>: Property header expected type Array of either Strings or JSONObject with structure {en: String} or {en: String, cy: String}"
+      "Error at ID <testId: header/0>: Property header expected type Array of either Strings or JSONObjects with structure {en: String} or {en: String, cy: String}. Invalid key(s) [val] are not permitted",
+      "Error at ID <testId: header/1>: Property header expected type Array of either Strings or JSONObjects with structure {en: String} or {en: String, cy: String}"
     )
 
     runInvalidJsonTest(result, expectedResult)
@@ -2182,8 +2182,8 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
     val expectedResult = List(
-      "Error at ID <testId: header/1>: Property header expected type Array of either Strings or JSONObject with structure {en: String} or {en: String, cy: String}. Missing key(s) [en] are required",
-      "Error at ID <testId: header/0>: Property header expected type Array of either Strings or JSONObject with structure {en: String} or {en: String, cy: String}"
+      "Error at ID <testId: header/1>: Property header expected type Array of either Strings or JSONObjects with structure {en: String} or {en: String, cy: String}. Missing key(s) [en] are required",
+      "Error at ID <testId: header/0>: Property header expected type Array of either Strings or JSONObjects with structure {en: String} or {en: String, cy: String}"
     )
 
     runInvalidJsonTest(result, expectedResult)
@@ -2214,8 +2214,8 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
     val expectedResult = List(
-      "Error at ID <testId: header/0>: Property header expected type Array of either Strings or JSONObject with structure {en: String} or {en: String, cy: String}. Missing key(s) [en] are required. Invalid key(s) [xyz] are not permitted",
-      "Error at ID <testId: header/1>: Property header expected type Array of either Strings or JSONObject with structure {en: String} or {en: String, cy: String}"
+      "Error at ID <testId: header/0>: Property header expected type Array of either Strings or JSONObjects with structure {en: String} or {en: String, cy: String}. Missing key(s) [en] are required. Invalid key(s) [xyz] are not permitted",
+      "Error at ID <testId: header/1>: Property header expected type Array of either Strings or JSONObjects with structure {en: String} or {en: String, cy: String}"
     )
 
     runInvalidJsonTest(result, expectedResult)
@@ -2247,8 +2247,8 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
     val expectedResult = List(
-      "Error at ID <testId: header/0>: Property header expected type Array of either Strings or JSONObject with structure {en: String} or {en: String, cy: String}. Invalid key(s) [xyz] are not permitted",
-      "Error at ID <testId: header/1>: Property header expected type Array of either Strings or JSONObject with structure {en: String} or {en: String, cy: String}. Missing key(s) [en] are required"
+      "Error at ID <testId: header/0>: Property header expected type Array of either Strings or JSONObjects with structure {en: String} or {en: String, cy: String}. Invalid key(s) [xyz] are not permitted",
+      "Error at ID <testId: header/1>: Property header expected type Array of either Strings or JSONObjects with structure {en: String} or {en: String, cy: String}. Missing key(s) [en] are required"
     )
 
     runInvalidJsonTest(result, expectedResult)
@@ -2281,8 +2281,8 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val expectedResult = List(
       "Error at ID <testId: header/0>: Property cy expected type [String], found [Boolean]",
-      "Error at ID <testId: header/0>: Property header expected type Array of either Strings or JSONObject with structure {en: String} or {en: String, cy: String}",
-      "Error at ID <testId: header/1>: Property header expected type Array of either Strings or JSONObject with structure {en: String} or {en: String, cy: String}"
+      "Error at ID <testId: header/0>: Property header expected type Array of either Strings or JSONObjects with structure {en: String} or {en: String, cy: String}",
+      "Error at ID <testId: header/1>: Property header expected type Array of either Strings or JSONObjects with structure {en: String} or {en: String, cy: String}"
     )
 
     runInvalidJsonTest(result, expectedResult)
@@ -2312,8 +2312,8 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
     val expectedResult = List(
-      "Error at ID <testId: header/0>: Property header expected type Array of either Strings or JSONObject with structure {en: String} or {en: String, cy: String}",
-      "Error at ID <testId: header/1>: Property header expected type Array of either Strings or JSONObject with structure {en: String} or {en: String, cy: String}",
+      "Error at ID <testId: header/0>: Property header expected type Array of either Strings or JSONObjects with structure {en: String} or {en: String, cy: String}",
+      "Error at ID <testId: header/1>: Property header expected type Array of either Strings or JSONObjects with structure {en: String} or {en: String, cy: String}",
       "Error at ID <testId: header/0>: Property cy expected type [String], found [Boolean]"
     )
 
@@ -2918,7 +2918,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
   }
 
   test(
-    "validateJson accepts the form when a choices property is an Array of one Object with the En and Cy properties, and one Object with just the En property"
+    "validateJson accepts the form when a header property is an Array of one Object with the En and Cy properties, and one Object with just the En property"
   ) {
     val testProperties =
       json"""

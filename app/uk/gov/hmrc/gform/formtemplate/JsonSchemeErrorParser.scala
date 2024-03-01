@@ -95,7 +95,7 @@ object JsonSchemeErrorParser {
 
     // If cannot get ID of location, use original location message instead
     val (maybeFoundId, restOfLocation) =
-      getErrorLocationIdWithRemainingSections(json, errorLocationSectionsWithoutProperty)
+      getErrorLocationIdWithRemainingSections(json, errorLocationSectionsWithoutProperty, (None, ""))
 
     maybeFoundId.flatMap(_.asString) match {
       case None          => location
@@ -106,20 +106,23 @@ object JsonSchemeErrorParser {
   @tailrec
   private def getErrorLocationIdWithRemainingSections(
     json: Json,
-    remainingSections: List[String]
+    remainingSections: List[String],
+    maybeFoundLocationAndSections: (Option[Json], String)
   ): (Option[Json], String) = {
     val maybeFoundId: Option[Json] = json.hcursor.downField("id").as[Json].toOption
 
     remainingSections match {
-      // No more sections to traverse, so get ID of current section to return
+      // No more sections to traverse, so return current section ID if defined, else previously found ID
       case Nil =>
-        (maybeFoundId, "")
+        if (maybeFoundId.isDefined) (maybeFoundId, "") else maybeFoundLocationAndSections
 
       // More sections to traverse, so check if current json is a List of Json or a Json
       case section :: nextRemainingSections =>
-        // If an ID is found along the way, return the ID
-        if (maybeFoundId.isDefined) {
-          return (maybeFoundId, remainingSections.mkString("/"))
+        // Keep track of lowest level ID and remaining sections found
+        val newLocationAndSections: (Option[Json], String) = if (maybeFoundId.isDefined) {
+          (maybeFoundId, remainingSections.mkString("/"))
+        } else {
+          maybeFoundLocationAndSections
         }
 
         json.as[List[Json]] match {
@@ -129,14 +132,18 @@ object JsonSchemeErrorParser {
             json.hcursor.downField(section).as[Json] match {
               case Left(_) => (None, "")
               case Right(nextJsonSection) =>
-                getErrorLocationIdWithRemainingSections(nextJsonSection, nextRemainingSections)
+                getErrorLocationIdWithRemainingSections(nextJsonSection, nextRemainingSections, newLocationAndSections)
             }
 
           // If List of Json, get Int of next section and index the List to go to next section
           case Right(jsonList) =>
             section.toIntOption match {
               case Some(sectionInt) =>
-                getErrorLocationIdWithRemainingSections(jsonList(sectionInt), nextRemainingSections)
+                getErrorLocationIdWithRemainingSections(
+                  jsonList(sectionInt),
+                  nextRemainingSections,
+                  newLocationAndSections
+                )
               case None => (None, "")
             }
         }
@@ -294,7 +301,7 @@ object JsonSchemeErrorParser {
     val (errorProperty, errorLocation) = getTypeErrorPropertyAndLocation(error, json)
 
     val errorMessage: String =
-      s"Property $errorProperty expected type Array of either Strings or JSONObject with structure {en: String} or {en: String, cy: String}"
+      s"Property $errorProperty expected type Array of either Strings or JSONObjects with structure {en: String} or {en: String, cy: String}"
     constructCustomErrorMessage(errorLocation, errorMessage)
   }
 
