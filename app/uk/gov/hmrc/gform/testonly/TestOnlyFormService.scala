@@ -64,13 +64,19 @@ class TestOnlyFormService(
       val destinationType = (jsValue \ "type").as[String]
       types.contains(destinationType)
     }
+
+  private def updateShowContinueOrDeletePage(raw: FormTemplateRaw): FormTemplateRaw = {
+    val updatedValue = raw.value ++ Json.obj("showContinueOrDeletePage" -> "false")
+    FormTemplateRaw(updatedValue)
+  }
+
   def saveForm(saveRequest: SaveRequest)(implicit hc: HeaderCarrier): Future[SnapshotOverview] =
     formMongoCache
       .get(saveRequest.formId)
       .flatMap { form =>
         for {
           raw <- formTemplateService.get(FormTemplateRawId(form.formTemplateId.value))
-          rawUpdated = maybeReplaceDestinations(raw)
+          rawUpdated = updateShowContinueOrDeletePage(maybeReplaceDestinations(raw))
           snapshot = Snapshot(
                        form,
                        rawUpdated,
