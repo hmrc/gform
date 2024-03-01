@@ -622,7 +622,29 @@
           "$ref": "#/$defs/stringOrEnCyObject"
         },
         "header": {
-          "type": "array"
+          "type": "array",
+          "oneOf": [
+            {
+              "items": {
+                "type": "string"
+              }
+            },
+            {
+              "items": {
+                "type": "object",
+                "properties": {
+                  "en": {
+                    "type": "string"
+                  },
+                  "cy": {
+                    "type": "string"
+                  }
+                },
+                "required": ["en"],
+                "additionalProperties": false
+              }
+            }
+          ]
         },
         "chooseAddressLabel": {
           "$ref": "#/$defs/stringOrEnCyObject"
@@ -908,6 +930,16 @@
             },
             "format": {
               "pattern": "^((?!sterling|positiveSterling|positiveWholeSterling).)*$"
+            }
+          }
+        },
+        "header": {
+          "required": [
+            "type"
+          ],
+          "properties": {
+            "type": {
+              "pattern": "^table$"
             }
           }
         }
