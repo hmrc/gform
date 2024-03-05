@@ -30,4 +30,10 @@ object Helpers {
 
   def toSmartString(stringEn: String, stringCy: String): SmartString =
     SmartString(LocalisedString(Map(LangADT.En -> stringEn, LangADT.Cy -> stringCy)), Nil)
+
+  def toSomeSmartString(string: String): Some[SmartString] =
+    Some(toSmartString(string))
+
+  def toSomeSmartString(stringEn: String, stringCy: String): Some[SmartString] =
+    Some(toSmartString(stringEn, stringCy))
 }
