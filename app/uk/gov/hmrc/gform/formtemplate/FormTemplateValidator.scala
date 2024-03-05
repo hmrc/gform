@@ -1231,21 +1231,16 @@ object FormTemplateValidator {
   def validateAddToListDefaultPage(formTemplate: FormTemplate): ValidationResult = {
 
     def checkComponentTypes(page: Page): List[ValidationResult] = {
-      val title = page.title.rawValue(LangADT.En)
+      val reason =
+        s"AddToList, '${page.title.rawValue(LangADT.En)}', cannot contains fields in defaultPage other than Info type. " +
+          s"All fields in defaultPage for AddToList must be Info or Table or MiniSummary type."
 
-      page.fields.map(_.`type`) map {
-        case InformationMessage(_, _) => Valid
-        case _ =>
-          Invalid(
-            s"AddToList, '$title', cannot contains fields in defaultPage other than Info type. " +
-              s"All fields in defaultPage for AddToList must be Info type."
-          )
-      }
+      page.fields map { fc => isViewOnlyComponent(fc, reason) }
     }
 
     val isNonInformationMessagePresent: List[ValidationResult] =
       formTemplate.formKind.allSections.flatMap {
-        case s: Section.AddToList => s.defaultPage.toList.flatMap(checkComponentTypes _)
+        case s: Section.AddToList => s.defaultPage.toList.flatMap(checkComponentTypes)
         case _                    => Nil
       }
 
@@ -1364,7 +1359,6 @@ object FormTemplateValidator {
   }
 
   def validateConfirmations(
-    formTemplate: FormTemplate,
     pages: List[Page]
   ): ValidationResult = {
     val confirmationRelatedData: List[(Option[PageId], Option[Confirmation])] = pages.map { page =>
@@ -1398,22 +1392,25 @@ object FormTemplateValidator {
     }
   }
 
+  private def isViewOnlyComponent(field: FormComponent, reason: String): ValidationResult =
+    field.`type` match {
+      case _: InformationMessage => Valid
+      case _: TableComp          => Valid
+      case _: MiniSummaryList    => Valid
+      case _                     => Invalid(reason)
+    }
+
   def validateAddToListInfoFields(formTemplate: FormTemplate): ValidationResult = {
 
-    def isInfoOrTable(field: FormComponent): ValidationResult =
-      field.`type` match {
-        case InformationMessage(_, _) => Valid
-        case _: TableComp             => Valid
-        case _ =>
-          Invalid(
-            s"AddToList.fields must be Info types. Field '${field.id.value}' is not an Info type."
-          )
-      }
+    def reason(fc: FormComponent) =
+      s"AddToList.fields must be Info or Table or MiniSummary types. Field '${fc.id.value}' is not an expected type.";
 
     val isNonInformation: List[ValidationResult] =
       formTemplate.formKind.allSections.map {
         case s: Section.AddToList =>
-          s.fields.fold[ValidationResult](Valid)(fields => fields.toList.map(f => isInfoOrTable(f)).combineAll)
+          s.fields.fold[ValidationResult](Valid)(fields =>
+            fields.toList.map(f => isViewOnlyComponent(f, reason(f))).combineAll
+          )
         case _ => Valid
       }
 
@@ -1428,16 +1425,8 @@ object FormTemplateValidator {
 
   def validateTaskListDeclarationSection(formTemplate: FormTemplate): ValidationResult = {
 
-    def isNotEditable(fields: List[FormComponent]): List[ValidationResult] =
-      fields.map {
-        case IsInformationMessage(_) => Valid
-        case IsMiniSummaryList(_)    => Valid
-        case IsTableComp(_)          => Valid
-        case fc =>
-          Invalid(
-            s"""A declarationSection in a task list cannot contain enterable fields. Field '${fc.id}' is not Info or Mini Summary or Table field."""
-          )
-      }
+    def reason(fc: FormComponent) =
+      s"""A declarationSection in a task list cannot contain enterable fields. Field '${fc.id.value}' is not Info or Mini Summary or Table field.""";
 
     formTemplate.formKind.fold[ValidationResult](_ => Valid) { taskList =>
       taskList.sections.toList.flatMap { section =>
@@ -1445,7 +1434,7 @@ object FormTemplateValidator {
           if (task.declarationSection.isDefined && task.summarySection.isEmpty)
             Seq(Invalid(s"""A destinationSection requires a summarySection in a task list."""))
           else
-            task.declarationSection.map(ds => isNotEditable(ds.fields)).combineAll
+            task.declarationSection.map(ds => ds.fields.map(fc => isViewOnlyComponent(fc, reason(fc)))).combineAll
         }
       }.combineAll
     }

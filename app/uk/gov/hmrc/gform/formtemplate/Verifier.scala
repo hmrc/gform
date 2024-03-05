@@ -93,7 +93,7 @@ trait Verifier {
       _ <- fromOptA(FormTemplateValidator.validateDataRetrieveFormCtxReferences(pages).toEither)
       _ <- fromOptA(FormTemplateValidator.validateDataRetrieveCtx(formTemplate, pages, allExpressions).toEither)
       _ <- fromOptA(FormTemplateValidator.validateDataRetrieveCount(formTemplate, pages, allExpressions).toEither)
-      _ <- fromOptA(FormTemplateValidator.validateConfirmations(formTemplate, pages).toEither)
+      _ <- fromOptA(FormTemplateValidator.validateConfirmations(pages).toEither)
       _ <- fromOptA(FormTemplateValidator.validateChoiceSize(pages, allExpressions).toEither)
       _ <- fromOptA(FormTemplateValidator.validatePostcodeLookup(pages).toEither)
       _ <- fromOptA(FormTemplateValidator.validateLabel(pages).toEither)
