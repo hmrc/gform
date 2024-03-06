@@ -100,7 +100,9 @@ class TestOnlyFormService(
       case None => throw new Exception(s"We could not find snapshot item with id: $snapshotId")
     }
 
-  def restoreForm(snapshotId: SnapshotId, restoreId: String)(implicit hc: HeaderCarrier): Future[SnapshotOverview] = {
+  def restoreForm(snapshotId: SnapshotId, restoreId: String, useOriginalTemplate: Boolean)(implicit
+    hc: HeaderCarrier
+  ): Future[SnapshotOverview] = {
     val snapshotF = snapshotMongoCache.find(snapshotId)
     val currentFormF = formMongoCache.find(FormId(restoreId))
     (snapshotF, currentFormF)
@@ -110,7 +112,7 @@ class TestOnlyFormService(
       }
       .flatMap { case (snapshot, currentForm) =>
         formMongoCache
-          .upsert(snapshot.toSnapshotForm(currentForm))
+          .upsert(snapshot.toSnapshotForm(currentForm, useOriginalTemplate))
           .map(_ => SnapshotOverview(snapshot, withData = true))
       }
   }
