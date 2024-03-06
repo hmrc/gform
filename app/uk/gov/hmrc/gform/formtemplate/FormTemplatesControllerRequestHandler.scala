@@ -262,6 +262,18 @@ object FormTemplatesControllerRequestHandler {
       }
     }
 
+    val groupChoicesUpdater: Reads[JsValue] = Reads { json =>
+      json \ "type" match {
+        case JsDefined(JsString(tpe)) if tpe === "group" =>
+          val updateChoices: Reads[JsObject] =
+            (__ \ "fields").json.update(of[JsArray].map { case JsArray(arr) =>
+              JsArray(arr.map(item => item.transform(updateChoicesField).getOrElse(item)))
+            })
+          json.transform(updateChoices) orElse JsSuccess(json)
+        case _ => JsSuccess(json)
+      }
+    }
+
     val fileUploadUpdater: Reads[JsValue] = Reads { json =>
       jsonValue \ "objectStore" match {
         case JsDefined(JsBoolean(bool)) if !bool => JsSuccess(json)
@@ -288,7 +300,9 @@ object FormTemplatesControllerRequestHandler {
 
     val fieldsReads: Reads[JsObject] =
       (__ \ "fields").json
-        .update(list(choicesUpdater andThen revealingChoicesUpdater andThen fileUploadUpdater))
+        .update(
+          list(choicesUpdater andThen groupChoicesUpdater andThen revealingChoicesUpdater andThen fileUploadUpdater)
+        )
 
     val regularFieldsOrAddToListFieldsReads =
       (__ \ "pages").json.update(list(fieldsReads)) orElse fieldsReads
