@@ -20,7 +20,11 @@ import cats.data.NonEmptyList
 import play.api.libs.json.{ Format, Json }
 import uk.gov.hmrc.gform.sharedmodel.LocalisedString
 
-case class ReferrerConfig(allowedReferrerUrls: NonEmptyList[ReferrerUrlPattern], exitMessage: LocalisedString)
+case class ReferrerConfig(
+  allowedReferrerUrls: NonEmptyList[ReferrerUrlPattern],
+  title: Option[LocalisedString],
+  exitMessage: LocalisedString
+)
 
 object ReferrerConfig {
   import JsonUtils._
