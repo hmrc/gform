@@ -298,9 +298,11 @@ class TestOnlyController(
       testOnlyFormService.saveForm(saveRequest).map(saveReply => Ok(Json.toJson(saveReply)))
     }
 
-  def restoreForm(snapshotId: String, restoreId: String) = Action.async { _ =>
+  def restoreForm(snapshotId: String, restoreId: String, useOriginalTemplate: Boolean) = Action.async { _ =>
     implicit val hc: HeaderCarrier = HeaderCarrier()
-    testOnlyFormService.restoreForm(SnapshotId(snapshotId), restoreId).map(snapshot => Ok(Json.toJson(snapshot)))
+    testOnlyFormService
+      .restoreForm(SnapshotId(snapshotId), restoreId, useOriginalTemplate: Boolean)
+      .map(snapshot => Ok(Json.toJson(snapshot)))
   }
 
   def restoreSnapshotTemplate() = Action.async(parse.json) { request =>

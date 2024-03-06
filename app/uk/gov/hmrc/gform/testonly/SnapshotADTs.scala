@@ -28,6 +28,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateRaw
 
 case class SnapshotOverview(
   templateId: FormTemplateId,
+  originalTemplateId: FormTemplateId,
   snapshotId: SnapshotId,
   savedAt: Instant,
   description: Description,
@@ -42,6 +43,7 @@ object SnapshotOverview {
   def apply(snapshot: Snapshot, withData: Boolean): SnapshotOverview =
     SnapshotOverview(
       snapshot.snapshotTemplateId,
+      snapshot.originalForm.formTemplateId,
       snapshot.snapshotId,
       snapshot.createdAt,
       snapshot.description,
@@ -125,13 +127,13 @@ case class Snapshot(
   createdAt: Instant,
   ggFormData: Option[GovernmentGatewayFormData]
 ) {
-  def toSnapshotForm(currentForm: Form): Form = {
+  def toSnapshotForm(currentForm: Form, useOriginalTemplate: Boolean): Form = {
     val currentUserId = currentForm.userId
     val currentId = currentForm._id
     originalForm.copy(
       _id = currentId,
       userId = currentUserId,
-      formTemplateId = snapshotTemplateId
+      formTemplateId = if (useOriginalTemplate) originalForm.formTemplateId else snapshotTemplateId
     )
   }
 
