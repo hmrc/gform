@@ -554,7 +554,7 @@ class FormComponentMaker(json: JsValue) {
     }
 
   private def toSmartString(stringEn: String, stringCy: String) =
-    Some(SmartString(LocalisedString(Map(LangADT.En -> stringEn, LangADT.Cy -> stringCy)), Nil))
+    SmartString(LocalisedString(Map(LangADT.En -> stringEn, LangADT.Cy -> stringCy)), Nil)
 
   private lazy val choiceOpt: Opt[Choice] = {
     val yesNo =

@@ -712,7 +712,7 @@ class TemplateValidatorSpec extends Spec {
 
     val yesNoLocalisedStrings =
       NonEmptyList
-        .of(toSomeSmartString("Yes"), toSomeSmartString("No"))
+        .of(toSmartString("Yes"), toSmartString("No"))
         .map(OptionData.IndexBased(_, None, None, None))
 
     val addToListPage = mkSection("addToListPage", List(mkFormComponent("fieldA", Value))).page

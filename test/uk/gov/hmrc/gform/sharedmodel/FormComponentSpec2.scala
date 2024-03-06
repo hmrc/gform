@@ -50,7 +50,7 @@ class FormComponentSpec2 extends Spec {
           Radio,
           NonEmptyList
             .of("Natural gas", "Other gas")
-            .map(l => OptionData.IndexBased(toSomeSmartString(l), None, None, None)),
+            .map(l => OptionData.IndexBased(toSmartString(l), None, None, None)),
           Vertical,
           List.empty[Int],
           None,
@@ -110,8 +110,8 @@ class FormComponentSpec2 extends Spec {
           Radio,
           NonEmptyList.of(
             OptionData
-              .ValueBased(toSomeSmartString("Yes", "Iawn"), None, None, None, OptionDataValue.StringBased("foo")),
-            OptionData.ValueBased(toSomeSmartString("No", "Na"), None, None, None, OptionDataValue.StringBased("bar"))
+              .ValueBased(toSmartString("Yes", "Iawn"), None, None, None, OptionDataValue.StringBased("foo")),
+            OptionData.ValueBased(toSmartString("No", "Na"), None, None, None, OptionDataValue.StringBased("bar"))
           ),
           Vertical,
           List.empty[Int],

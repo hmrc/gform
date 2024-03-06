@@ -17,7 +17,7 @@
 package uk.gov.hmrc.gform.formtemplate
 
 import cats.data.NonEmptyList
-import uk.gov.hmrc.gform.Helpers.{ toSmartString, toSomeSmartString }
+import uk.gov.hmrc.gform.Helpers.toSmartString
 import uk.gov.hmrc.gform.sharedmodel.{ ExampleData, LangADT, LocalisedString }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.SmartString
@@ -25,9 +25,7 @@ import uk.gov.hmrc.gform.sharedmodel.SmartString
 trait FormTemplateSupport {
 
   val yesNoLocalisedStrings =
-    NonEmptyList
-      .of(toSomeSmartString("Yes"), toSomeSmartString("No"))
-      .map(OptionData.IndexBased(_, None, None, None))
+    NonEmptyList.of(toSmartString("Yes"), toSmartString("No")).map(OptionData.IndexBased(_, None, None, None))
 
   val addAnotherQuestion =
     mkFormComponent(

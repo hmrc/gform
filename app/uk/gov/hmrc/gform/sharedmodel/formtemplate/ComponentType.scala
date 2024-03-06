@@ -207,14 +207,14 @@ sealed trait OptionData extends Product with Serializable
 object OptionData {
 
   case class IndexBased(
-    label: Option[SmartString],
+    label: SmartString,
     hint: Option[SmartString],
     includeIf: Option[IncludeIf],
     dynamic: Option[Dynamic]
   ) extends OptionData
 
   case class ValueBased(
-    label: Option[SmartString],
+    label: SmartString,
     hint: Option[SmartString],
     includeIf: Option[IncludeIf],
     dynamic: Option[Dynamic],
