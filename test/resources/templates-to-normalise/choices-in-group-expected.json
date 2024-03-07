@@ -1,0 +1,120 @@
+{
+  "draftRetrievalMethod": {
+    "showContinueOrDeletePage": "true",
+    "value": "formAccessCodeForAgents"
+  },
+  "formCategory": "default",
+  "languages": [
+    "en"
+  ],
+  "authConfig": {
+    "authModule": "anonymous"
+  },
+  "destinations": {
+    "destinations": [
+      {
+        "id": "transitionToSubmitted",
+        "type": "stateTransition",
+        "includeIf": "true",
+        "requiredState": "Submitted"
+      }
+    ],
+    "declarationSection": {
+      "shortName": "Declaration",
+      "fields": [],
+      "title": "Declaration"
+    },
+    "acknowledgementSection": {
+      "shortName": "Acknowledgement Page",
+      "title": "Acknowledgement Page",
+      "fields": [
+        {
+          "type": "info",
+          "id": "ackpageInfo",
+          "label": "SomeContent",
+          "infoText": "SomeContent"
+        }
+      ],
+      "displayFeedbackLink": true
+    }
+  },
+  "description": "Group component with three fields ",
+  "allowedFileTypes": [
+    "pdf",
+    "jpg",
+    "xlsx",
+    "ods",
+    "docx",
+    "odt",
+    "pptx",
+    "odp"
+  ],
+  "version": 1,
+  "formKind": {
+    "type": "classic",
+    "sections": [
+      {
+        "shortName": "Basic Repeating Group",
+        "fields": [
+          {
+            "repeatAddAnotherText": "Add group",
+            "repeatsMin": 1,
+            "repeatsMax": 5,
+            "format": "horizontal",
+            "repeatLabel": "Repeat label",
+            "id": "componentTest",
+            "label": "Alcoholic ingredients and quantity",
+            "fields": [
+              {
+                "id": "dutyType",
+                "label": "Select the tax type for the duty you need to pay from the below",
+                "type": "choice",
+                "choices": [
+                  {
+                    "label": {
+                      "en": "Tax type 591 - Natural gas",
+                      "cy": "Welsh Tax type 591 - Natural gas"
+                    }
+                  },
+                  {
+                    "label": {
+                      "en": "Tax type 591 - Other gas"
+                    }
+                  },
+                  {
+                    "label": {
+                      "en": "Tax type 591 - Another gas "
+                    }
+                  }
+                ],
+                "mandatory": "true"
+              }
+            ],
+            "type": "group"
+          }
+        ],
+        "title": "Section One"
+      }
+    ]
+  },
+  "summarySection": {
+    "title": {
+      "en": "Check your answers",
+      "cy": "Gwiriwch eich atebion"
+    },
+    "header": {
+      "en": "Make sure the information you have given is correct.",
+      "cy": "Gwnewch yn siŵr bod yr wybodaeth a roddwyd gennych yn gywir."
+    },
+    "footer": {
+      "en": "##Now send your form\n\nYou need to submit your form on the next screen.\n\nBefore you do this you can [print or save a PDF copy of your answers (opens in a new window or tab)](${link.printSummaryPdf}).",
+      "cy": "##Nawr anfonwch eich ffurflen\n\nMae angen i chi gyflwyno’ch ffurflen ar y sgrin nesaf.\n\nCyn i chi wneud hyn gallwch [argraffu neu gadw copi PDF o’ch atebion (yn agor ffenestr neu dab newydd)](${link.printSummaryPdf})."
+    }
+  },
+  "formName": "Choices in group",
+  "emailTemplateId": "eeitt_submission_confirmation",
+  "originalId": "choices-in-group",
+  "_id": "choices-in-group",
+  "displayHMRCLogo": false,
+  "parentFormSubmissionRefs": []
+}

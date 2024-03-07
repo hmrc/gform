@@ -1,0 +1,73 @@
+{
+  "_id": "choices-in-group",
+  "formName": "Choices in group",
+  "version": 1,
+  "description": "Group component with three fields ",
+  "authConfig": {
+    "authModule": "anonymous"
+  },
+  "destinations": [
+    {
+      "id": "transitionToSubmitted",
+      "type": "stateTransition",
+      "includeIf": "true",
+      "requiredState": "Submitted"
+    }
+  ],
+  "emailTemplateId": "eeitt_submission_confirmation",
+  "sections": [
+    {
+      "shortName": "Basic Repeating Group",
+      "title": "Section One",
+      "fields": [
+        {
+          "type": "group",
+          "id": "componentTest",
+          "label": "Alcoholic ingredients and quantity",
+          "format": "horizontal",
+          "repeatsMax": 5,
+          "repeatsMin": 1,
+          "repeatLabel": "Repeat label",
+          "repeatAddAnotherText": "Add group",
+          "fields": [
+            {
+              "type": "choice",
+              "id": "dutyType",
+              "label": "Select the tax type for the duty you need to pay from the below",
+              "mandatory": "true",
+              "choices": [
+                {
+                  "en": "Tax type 591 - Natural gas",
+                  "cy": "Welsh Tax type 591 - Natural gas"
+                },
+                {
+                  "en": "Tax type 591 - Other gas"
+                },
+                {
+                  "en": "Tax type 591 - Another gas "
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "declarationSection": {
+    "shortName": "Declaration",
+    "title": "Declaration",
+    "fields": []
+  },
+  "acknowledgementSection": {
+    "shortName": "Acknowledgement Page",
+    "title": "Acknowledgement Page",
+    "fields": [
+      {
+        "type": "info",
+        "id": "ackpageInfo",
+        "label": "SomeContent",
+        "infoText": "SomeContent"
+      }
+    ]
+  }
+}
