@@ -226,7 +226,40 @@
       "type": "object"
     },
     "summarySection": {
-      "type": "object"
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "title",
+        "header",
+        "footer"
+      ],
+      "properties": {
+        "title": {
+          "$ref": "#/$defs/stringOrEnCyObject"
+        },
+        "header": {
+          "$ref": "#/$defs/stringOrEnCyObject"
+        },
+        "footer": {
+          "$ref": "#/$defs/stringOrEnCyObject"
+        },
+        "displayWidth": {
+          "type": "string",
+          "pattern": "^(m|l|xl)$"
+        },
+        "continueLabel": {
+          "$ref": "#/$defs/stringOrEnCyObject"
+        },
+        "pdf": {
+          "type": "object"
+        },
+        "fields": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/fields"
+          }
+        }
+      }
     },
     "declarationSection": {
       "type": "object"
@@ -366,7 +399,40 @@
                 "type": "string"
               },
               "summarySection": {
-                "type": "object"
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "title",
+                  "header",
+                  "footer"
+                ],
+                "properties": {
+                  "title": {
+                    "$ref": "#/$defs/stringOrEnCyObject"
+                  },
+                  "header": {
+                    "$ref": "#/$defs/stringOrEnCyObject"
+                  },
+                  "footer": {
+                    "$ref": "#/$defs/stringOrEnCyObject"
+                  },
+                  "displayWidth": {
+                    "type": "string",
+                    "pattern": "^(m|l|xl)$"
+                  },
+                  "includeIf": {
+                    "type": "string"
+                  },
+                  "continueLabel": {
+                    "$ref": "#/$defs/stringOrEnCyObject"
+                  },
+                  "fields": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/$defs/fields"
+                    }
+                  }
+                }
               },
               "declarationSection": {
                 "type": "object"
@@ -480,7 +546,9 @@
                     "type": "string"
                   }
                 },
-                "required": ["en"],
+                "required": [
+                  "en"
+                ],
                 "additionalProperties": false
               }
             }
@@ -643,7 +711,9 @@
                     "type": "string"
                   }
                 },
-                "required": ["en"],
+                "required": [
+                  "en"
+                ],
                 "additionalProperties": false
               }
             }
@@ -691,7 +761,7 @@
           ],
           "properties": {
             "type": {
-              "pattern": "^info$"
+              "pattern": "^(info)$"
             }
           }
         },
@@ -701,7 +771,7 @@
           ],
           "properties": {
             "type": {
-              "pattern": "^info$"
+              "pattern": "^(info)$"
             }
           }
         },
@@ -711,7 +781,7 @@
           ],
           "properties": {
             "type": {
-              "pattern": "^choice|revealingChoice$"
+              "pattern": "^(choice|revealingChoice)$"
             }
           }
         },
@@ -721,7 +791,7 @@
           ],
           "properties": {
             "type": {
-              "pattern": "^choice|revealingChoice$"
+              "pattern": "^(choice|revealingChoice)$"
             }
           }
         },
@@ -731,7 +801,7 @@
           ],
           "properties": {
             "type": {
-              "pattern": "^choice|revealingChoice$"
+              "pattern": "^(choice|revealingChoice)$"
             }
           }
         },
@@ -741,7 +811,7 @@
           ],
           "properties": {
             "type": {
-              "pattern": "^choice|revealingChoice$"
+              "pattern": "^(choice|revealingChoice)$"
             }
           }
         },
@@ -751,7 +821,7 @@
           ],
           "properties": {
             "type": {
-              "pattern": "^choice|revealingChoice$"
+              "pattern": "^(choice|revealingChoice)$"
             }
           }
         },
@@ -761,7 +831,7 @@
           ],
           "properties": {
             "type": {
-              "pattern": "^choice|revealingChoice$"
+              "pattern": "^(choice|revealingChoice)$"
             }
           }
         },
@@ -771,7 +841,7 @@
           ],
           "properties": {
             "type": {
-              "pattern": "^choice|revealingChoice$"
+              "pattern": "^(choice|revealingChoice)$"
             }
           }
         },
@@ -781,7 +851,7 @@
           ],
           "properties": {
             "type": {
-              "pattern": "^choice|revealingChoice$"
+              "pattern": "^(choice|revealingChoice)$"
             }
           }
         },
@@ -792,10 +862,10 @@
           ],
           "properties": {
             "type": {
-              "pattern": "^text$"
+              "pattern": "^(text)$"
             },
             "multiline": {
-              "pattern": "^true$"
+              "pattern": "^(true)$"
             }
           }
         },
@@ -806,10 +876,10 @@
           ],
           "properties": {
             "type": {
-              "pattern": "^text$"
+              "pattern": "^(text)$"
             },
             "multiline": {
-              "pattern": "^true$"
+              "pattern": "^(true)$"
             }
           }
         },
@@ -819,7 +889,7 @@
           ],
           "properties": {
             "type": {
-              "pattern": "^text|choice|date|group$"
+              "pattern": "^(text|choice|date|group)$"
             }
           }
         },
@@ -829,7 +899,7 @@
           ],
           "properties": {
             "type": {
-              "pattern": "^address|overseasAddress$"
+              "pattern": "^(address|overseasAddress)$"
             }
           }
         },
@@ -839,7 +909,7 @@
           ],
           "properties": {
             "type": {
-              "pattern": "^address$"
+              "pattern": "^(address)$"
             }
           }
         },
@@ -849,7 +919,7 @@
           ],
           "properties": {
             "type": {
-              "pattern": "^address$"
+              "pattern": "^(address)$"
             }
           }
         },
@@ -859,7 +929,7 @@
           ],
           "properties": {
             "type": {
-              "pattern": "^overseasAddress$"
+              "pattern": "^(overseasAddress)$"
             }
           }
         },
@@ -869,7 +939,7 @@
           ],
           "properties": {
             "type": {
-              "pattern": "^overseasAddress$"
+              "pattern": "^(overseasAddress)$"
             }
           }
         },
@@ -879,7 +949,7 @@
           ],
           "properties": {
             "type": {
-              "pattern": "^overseasAddress$"
+              "pattern": "^(overseasAddress)$"
             }
           }
         },
@@ -889,7 +959,7 @@
           ],
           "properties": {
             "type": {
-              "pattern": "^overseasAddress$"
+              "pattern": "^(overseasAddress)$"
             }
           }
         },
@@ -899,7 +969,7 @@
           ],
           "properties": {
             "type": {
-              "pattern": "^overseasAddress$"
+              "pattern": "^(overseasAddress)$"
             }
           }
         },
@@ -909,7 +979,7 @@
           ],
           "properties": {
             "type": {
-              "pattern": "^postcodeLookup$"
+              "pattern": "^(postcodeLookup)$"
             }
           }
         },
@@ -919,7 +989,7 @@
           ],
           "properties": {
             "type": {
-              "pattern": "^postcodeLookup$"
+              "pattern": "^(postcodeLookup)$"
             }
           }
         },
@@ -929,7 +999,7 @@
           ],
           "properties": {
             "type": {
-              "pattern": "^text$"
+              "pattern": "^(text)$"
             },
             "format": {
               "pattern": "^((?!sterling|positiveSterling|positiveWholeSterling).)*$"
@@ -942,7 +1012,7 @@
           ],
           "properties": {
             "type": {
-              "pattern": "^table$"
+              "pattern": "^(table)$"
             }
           }
         }
@@ -961,7 +1031,9 @@
           "type": "string"
         }
       },
-      "required": ["en"],
+      "required": [
+        "en"
+      ],
       "additionalProperties": false
     }
   }

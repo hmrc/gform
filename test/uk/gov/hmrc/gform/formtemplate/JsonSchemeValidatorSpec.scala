@@ -25,9 +25,7 @@ import uk.gov.hmrc.gform.exceptions.SchemaValidationException
 
 class JsonSchemeValidatorSpec extends FunSuite {
 
-  private def constructTestOneSectionJsonTemplate(
-    properties: Json
-  ): Json =
+  private def constructTestOneSectionJsonTemplate(properties: Json): Json =
     json"""
       {
         "_id": "json-id",
@@ -84,6 +82,36 @@ class JsonSchemeValidatorSpec extends FunSuite {
         }
       ]
     }"""
+
+  private def constructTestSummarySectionJsonTemplate(properties: Json): Json =
+    json"""
+      {
+        "_id": "json-id",
+        "formName": "Json",
+        "version": 1,
+        "description": "",
+        "sections": [],
+        "summarySection": $properties
+      }"""
+
+  private def constructTestTaskListSummarySectionJsonTemplate(properties: Json): Json =
+    json"""
+      {
+        "_id": "json-id",
+        "formName": "Json",
+        "version": 1,
+        "description": "",
+        "sections": [
+          {
+            "tasks": [
+              {
+                "sections": [],
+                "summarySection": $properties
+              }
+            ]
+          }
+        ]
+      }"""
 
   private def runInvalidJsonTest(result: Either[SchemaValidationException, Unit], expectedResult: List[String]): Unit =
     result match {
@@ -2060,8 +2088,8 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
     val expectedResult = List(
-      "Error at ID <testId: header/1>: Property header expected type Array of either Strings or JSONObject with structure {en: String} or {en: String, cy: String}",
-      "Error at ID <testId: header/0>: Property header expected type Array of either Strings or JSONObject with structure {en: String} or {en: String, cy: String}"
+      "Error at ID <testId: header/1>: Property header expected type Array of either Strings or JSONObjects with structure {en: String} or {en: String, cy: String}",
+      "Error at ID <testId: header/0>: Property header expected type Array of either Strings or JSONObjects with structure {en: String} or {en: String, cy: String}"
     )
 
     runInvalidJsonTest(result, expectedResult)
@@ -2088,8 +2116,8 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
     val expectedResult = List(
-      "Error at ID <testId: header/0>: Property header expected type Array of either Strings or JSONObject with structure {en: String} or {en: String, cy: String}",
-      "Error at ID <testId: header/1>: Property header expected type Array of either Strings or JSONObject with structure {en: String} or {en: String, cy: String}"
+      "Error at ID <testId: header/0>: Property header expected type Array of either Strings or JSONObjects with structure {en: String} or {en: String, cy: String}",
+      "Error at ID <testId: header/1>: Property header expected type Array of either Strings or JSONObjects with structure {en: String} or {en: String, cy: String}"
     )
 
     runInvalidJsonTest(result, expectedResult)
@@ -2116,8 +2144,8 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
     val expectedResult = List(
-      "Error at ID <testId: header/1>: Property header expected type Array of either Strings or JSONObject with structure {en: String} or {en: String, cy: String}",
-      "Error at ID <testId: header/0>: Property header expected type Array of either Strings or JSONObject with structure {en: String} or {en: String, cy: String}"
+      "Error at ID <testId: header/1>: Property header expected type Array of either Strings or JSONObjects with structure {en: String} or {en: String, cy: String}",
+      "Error at ID <testId: header/0>: Property header expected type Array of either Strings or JSONObjects with structure {en: String} or {en: String, cy: String}"
     )
 
     runInvalidJsonTest(result, expectedResult)
@@ -2149,8 +2177,8 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
     val expectedResult = List(
-      "Error at ID <testId: header/0>: Property header expected type Array of either Strings or JSONObject with structure {en: String} or {en: String, cy: String}. Invalid key(s) [val] are not permitted",
-      "Error at ID <testId: header/1>: Property header expected type Array of either Strings or JSONObject with structure {en: String} or {en: String, cy: String}"
+      "Error at ID <testId: header/0>: Property header expected type Array of either Strings or JSONObjects with structure {en: String} or {en: String, cy: String}. Invalid key(s) [val] are not permitted",
+      "Error at ID <testId: header/1>: Property header expected type Array of either Strings or JSONObjects with structure {en: String} or {en: String, cy: String}"
     )
 
     runInvalidJsonTest(result, expectedResult)
@@ -2182,8 +2210,8 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
     val expectedResult = List(
-      "Error at ID <testId: header/1>: Property header expected type Array of either Strings or JSONObject with structure {en: String} or {en: String, cy: String}. Missing key(s) [en] are required",
-      "Error at ID <testId: header/0>: Property header expected type Array of either Strings or JSONObject with structure {en: String} or {en: String, cy: String}"
+      "Error at ID <testId: header/1>: Property header expected type Array of either Strings or JSONObjects with structure {en: String} or {en: String, cy: String}. Missing key(s) [en] are required",
+      "Error at ID <testId: header/0>: Property header expected type Array of either Strings or JSONObjects with structure {en: String} or {en: String, cy: String}"
     )
 
     runInvalidJsonTest(result, expectedResult)
@@ -2214,8 +2242,8 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
     val expectedResult = List(
-      "Error at ID <testId: header/0>: Property header expected type Array of either Strings or JSONObject with structure {en: String} or {en: String, cy: String}. Missing key(s) [en] are required. Invalid key(s) [xyz] are not permitted",
-      "Error at ID <testId: header/1>: Property header expected type Array of either Strings or JSONObject with structure {en: String} or {en: String, cy: String}"
+      "Error at ID <testId: header/0>: Property header expected type Array of either Strings or JSONObjects with structure {en: String} or {en: String, cy: String}. Missing key(s) [en] are required. Invalid key(s) [xyz] are not permitted",
+      "Error at ID <testId: header/1>: Property header expected type Array of either Strings or JSONObjects with structure {en: String} or {en: String, cy: String}"
     )
 
     runInvalidJsonTest(result, expectedResult)
@@ -2247,8 +2275,8 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
     val expectedResult = List(
-      "Error at ID <testId: header/0>: Property header expected type Array of either Strings or JSONObject with structure {en: String} or {en: String, cy: String}. Invalid key(s) [xyz] are not permitted",
-      "Error at ID <testId: header/1>: Property header expected type Array of either Strings or JSONObject with structure {en: String} or {en: String, cy: String}. Missing key(s) [en] are required"
+      "Error at ID <testId: header/0>: Property header expected type Array of either Strings or JSONObjects with structure {en: String} or {en: String, cy: String}. Invalid key(s) [xyz] are not permitted",
+      "Error at ID <testId: header/1>: Property header expected type Array of either Strings or JSONObjects with structure {en: String} or {en: String, cy: String}. Missing key(s) [en] are required"
     )
 
     runInvalidJsonTest(result, expectedResult)
@@ -2281,8 +2309,8 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val expectedResult = List(
       "Error at ID <testId: header/0>: Property cy expected type [String], found [Boolean]",
-      "Error at ID <testId: header/0>: Property header expected type Array of either Strings or JSONObject with structure {en: String} or {en: String, cy: String}",
-      "Error at ID <testId: header/1>: Property header expected type Array of either Strings or JSONObject with structure {en: String} or {en: String, cy: String}"
+      "Error at ID <testId: header/0>: Property header expected type Array of either Strings or JSONObjects with structure {en: String} or {en: String, cy: String}",
+      "Error at ID <testId: header/1>: Property header expected type Array of either Strings or JSONObjects with structure {en: String} or {en: String, cy: String}"
     )
 
     runInvalidJsonTest(result, expectedResult)
@@ -2312,9 +2340,875 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
     val expectedResult = List(
-      "Error at ID <testId: header/0>: Property header expected type Array of either Strings or JSONObject with structure {en: String} or {en: String, cy: String}",
-      "Error at ID <testId: header/1>: Property header expected type Array of either Strings or JSONObject with structure {en: String} or {en: String, cy: String}",
+      "Error at ID <testId: header/0>: Property header expected type Array of either Strings or JSONObjects with structure {en: String} or {en: String, cy: String}",
+      "Error at ID <testId: header/1>: Property header expected type Array of either Strings or JSONObjects with structure {en: String} or {en: String, cy: String}",
       "Error at ID <testId: header/0>: Property cy expected type [String], found [Boolean]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a main CYA summarySection does not have any of the required properties [title, header, footer]"
+  ) {
+    val testProperties =
+      json"""
+        {
+        }
+      """
+
+    val jsonTemplate = constructTestSummarySectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/summarySection>: summarySection requires properties [title, header, footer] to be present"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a main CYA summarySection only has one of the required properties [title, header, footer]"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "title": "yes"
+        }
+      """
+
+    val jsonTemplate = constructTestSummarySectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/summarySection>: summarySection requires properties [title, header, footer] to be present"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a main CYA summarySection has one invalid property key"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "title": {
+            "en": "en title",
+            "cy": "cy title"
+          },
+          "header": {
+            "en": "en header",
+            "cy": "cy header"
+          },
+          "footer": {
+            "en": "en footer",
+            "cy": "cy footer"
+          },
+          "type": "text"
+        }
+      """
+
+    val jsonTemplate = constructTestSummarySectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/summarySection>: summarySection has invalid key(s) [type]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a main CYA summarySection has multiple invalid property keys"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "title": {
+            "en": "en title",
+            "cy": "cy title"
+          },
+          "header": {
+            "en": "en header",
+            "cy": "cy header"
+          },
+          "footer": {
+            "en": "en footer",
+            "cy": "cy footer"
+          },
+          "type": "text",
+          "format": "text"
+        }
+      """
+
+    val jsonTemplate = constructTestSummarySectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/summarySection>: summarySection has invalid key(s) [format, type]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a main CYA summarySection has the title property of an incorrect type"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "title": 1,
+          "header": {
+            "en": "en header",
+            "cy": "cy header"
+          },
+          "footer": {
+            "en": "en footer",
+            "cy": "cy footer"
+          }
+        }
+      """
+
+    val jsonTemplate = constructTestSummarySectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/summarySection/title>: Property title expected type String or JSONObject with structure {en: String} or {en: String, cy: String}"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a main CYA summarySection has the header property of an incorrect type"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "title": {
+            "en": "en title",
+            "cy": "cy title"
+          },
+          "header": true,
+          "footer": {
+            "en": "en footer",
+            "cy": "cy footer"
+          }
+        }
+      """
+
+    val jsonTemplate = constructTestSummarySectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/summarySection/header>: Property header expected type String or JSONObject with structure {en: String} or {en: String, cy: String}"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a main CYA summarySection has the footer property of an incorrect type"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "title": {
+            "en": "en title",
+            "cy": "cy title"
+          },
+          "header": {
+            "en": "en header",
+            "cy": "cy header"
+          },
+          "footer": []
+        }
+      """
+
+    val jsonTemplate = constructTestSummarySectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/summarySection/footer>: Property footer expected type String or JSONObject with structure {en: String} or {en: String, cy: String}"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a main CYA summarySection has the displayWidth property of an incorrect type"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "title": {
+            "en": "en title",
+            "cy": "cy title"
+          },
+          "header": {
+            "en": "en header",
+            "cy": "cy header"
+          },
+          "footer": {
+            "en": "en footer",
+            "cy": "cy footer"
+          },
+          "displayWidth": 1
+        }
+      """
+
+    val jsonTemplate = constructTestSummarySectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/summarySection/displayWidth>: Property displayWidth expected type [String], found [Integer]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a main CYA summarySection has the displayWidth property of a not permitted value"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "title": {
+            "en": "en title",
+            "cy": "cy title"
+          },
+          "header": {
+            "en": "en header",
+            "cy": "cy header"
+          },
+          "footer": {
+            "en": "en footer",
+            "cy": "cy footer"
+          },
+          "displayWidth": "ml"
+        }
+      """
+
+    val jsonTemplate = constructTestSummarySectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/summarySection/displayWidth>: Property displayWidth expected value [m, l, xl]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a main CYA summarySection has the continueLabel property of an incorrect type"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "title": {
+            "en": "en title",
+            "cy": "cy title"
+          },
+          "header": {
+            "en": "en header",
+            "cy": "cy header"
+          },
+          "footer": {
+            "en": "en footer",
+            "cy": "cy footer"
+          },
+          "continueLabel": false
+        }
+      """
+
+    val jsonTemplate = constructTestSummarySectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/summarySection/continueLabel>: Property continueLabel expected type String or JSONObject with structure {en: String} or {en: String, cy: String}"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a main CYA summarySection has the pdf property of an incorrect type"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "title": {
+            "en": "en title",
+            "cy": "cy title"
+          },
+          "header": {
+            "en": "en header",
+            "cy": "cy header"
+          },
+          "footer": {
+            "en": "en footer",
+            "cy": "cy footer"
+          },
+          "pdf": "pdf should not be a string"
+        }
+      """
+
+    val jsonTemplate = constructTestSummarySectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/summarySection/pdf>: Property pdf expected type [Object], found [String]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a main CYA summarySection has the fields property of an incorrect type"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "title": {
+            "en": "en title",
+            "cy": "cy title"
+          },
+          "header": {
+            "en": "en header",
+            "cy": "cy header"
+          },
+          "footer": {
+            "en": "en footer",
+            "cy": "cy footer"
+          },
+          "fields": {}
+        }
+      """
+
+    val jsonTemplate = constructTestSummarySectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/summarySection/fields>: Property fields expected type [Array], found [JSONObject]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a main CYA summarySection has the fields property containing an incorrect type"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "title": {
+            "en": "en title",
+            "cy": "cy title"
+          },
+          "header": {
+            "en": "en header",
+            "cy": "cy header"
+          },
+          "footer": {
+            "en": "en footer",
+            "cy": "cy footer"
+          },
+          "fields": [
+            "incorrect"
+          ]
+        }
+      """
+
+    val jsonTemplate = constructTestSummarySectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/summarySection/fields/0>: Property fields expected type [Object], found [String]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a main CYA summarySection has the fields property containing an invalid property key"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "title": {
+            "en": "en title",
+            "cy": "cy title"
+          },
+          "header": {
+            "en": "en header",
+            "cy": "cy header"
+          },
+          "footer": {
+            "en": "en footer",
+            "cy": "cy footer"
+          },
+          "fields": [
+            {
+              "summarySection": {}
+            }
+          ]
+        }
+      """
+
+    val jsonTemplate = constructTestSummarySectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/summarySection/fields/0>: fields has invalid key(s) [summarySection]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a task list summarySection does not have any of the required properties [title, header, footer]"
+  ) {
+    val testProperties =
+      json"""
+        {
+        }
+      """
+
+    val jsonTemplate = constructTestTaskListSummarySectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/sections/0/tasks/0/summarySection>: summarySection requires properties [title, header, footer] to be present"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a task list summarySection only has one of the required properties [title, header, footer]"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "title": "yes"
+        }
+      """
+
+    val jsonTemplate = constructTestTaskListSummarySectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/sections/0/tasks/0/summarySection>: summarySection requires properties [title, header, footer] to be present"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a task list summarySection has one invalid property key"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "title": {
+            "en": "en title",
+            "cy": "cy title"
+          },
+          "header": {
+            "en": "en header",
+            "cy": "cy header"
+          },
+          "footer": {
+            "en": "en footer",
+            "cy": "cy footer"
+          },
+          "type": "text"
+        }
+      """
+
+    val jsonTemplate = constructTestTaskListSummarySectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/sections/0/tasks/0/summarySection>: summarySection has invalid key(s) [type]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a task list summarySection has multiple invalid property keys"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "title": {
+            "en": "en title",
+            "cy": "cy title"
+          },
+          "header": {
+            "en": "en header",
+            "cy": "cy header"
+          },
+          "footer": {
+            "en": "en footer",
+            "cy": "cy footer"
+          },
+          "type": "text",
+          "format": "text"
+        }
+      """
+
+    val jsonTemplate = constructTestTaskListSummarySectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/sections/0/tasks/0/summarySection>: summarySection has invalid key(s) [format, type]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a task list summarySection has the title property of an incorrect type"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "title": 1,
+          "header": {
+            "en": "en header",
+            "cy": "cy header"
+          },
+          "footer": {
+            "en": "en footer",
+            "cy": "cy footer"
+          }
+        }
+      """
+
+    val jsonTemplate = constructTestTaskListSummarySectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/sections/0/tasks/0/summarySection/title>: Property title expected type String or JSONObject with structure {en: String} or {en: String, cy: String}"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a task list summarySection has the header property of an incorrect type"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "title": {
+            "en": "en title",
+            "cy": "cy title"
+          },
+          "header": true,
+          "footer": {
+            "en": "en footer",
+            "cy": "cy footer"
+          }
+        }
+      """
+
+    val jsonTemplate = constructTestTaskListSummarySectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/sections/0/tasks/0/summarySection/header>: Property header expected type String or JSONObject with structure {en: String} or {en: String, cy: String}"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a task list summarySection has the footer property of an incorrect type"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "title": {
+            "en": "en title",
+            "cy": "cy title"
+          },
+          "header": {
+            "en": "en header",
+            "cy": "cy header"
+          },
+          "footer": []
+        }
+      """
+
+    val jsonTemplate = constructTestTaskListSummarySectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/sections/0/tasks/0/summarySection/footer>: Property footer expected type String or JSONObject with structure {en: String} or {en: String, cy: String}"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a task list summarySection has the displayWidth property of an incorrect type"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "title": {
+            "en": "en title",
+            "cy": "cy title"
+          },
+          "header": {
+            "en": "en header",
+            "cy": "cy header"
+          },
+          "footer": {
+            "en": "en footer",
+            "cy": "cy footer"
+          },
+          "displayWidth": 1
+        }
+      """
+
+    val jsonTemplate = constructTestTaskListSummarySectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/sections/0/tasks/0/summarySection/displayWidth>: Property displayWidth expected type [String], found [Integer]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a task list summarySection has the displayWidth property of a not permitted value"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "title": {
+            "en": "en title",
+            "cy": "cy title"
+          },
+          "header": {
+            "en": "en header",
+            "cy": "cy header"
+          },
+          "footer": {
+            "en": "en footer",
+            "cy": "cy footer"
+          },
+          "displayWidth": "ml"
+        }
+      """
+
+    val jsonTemplate = constructTestTaskListSummarySectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/sections/0/tasks/0/summarySection/displayWidth>: Property displayWidth expected value [m, l, xl]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a task list summarySection has the continueLabel property of an incorrect type"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "title": {
+            "en": "en title",
+            "cy": "cy title"
+          },
+          "header": {
+            "en": "en header",
+            "cy": "cy header"
+          },
+          "footer": {
+            "en": "en footer",
+            "cy": "cy footer"
+          },
+          "continueLabel": false
+        }
+      """
+
+    val jsonTemplate = constructTestTaskListSummarySectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/sections/0/tasks/0/summarySection/continueLabel>: Property continueLabel expected type String or JSONObject with structure {en: String} or {en: String, cy: String}"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a task list summarySection has the includeIf property of an incorrect type"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "title": {
+            "en": "en title",
+            "cy": "cy title"
+          },
+          "header": {
+            "en": "en header",
+            "cy": "cy header"
+          },
+          "footer": {
+            "en": "en footer",
+            "cy": "cy footer"
+          },
+          "includeIf": {
+            "value": "includeIf should not be an object"
+          }
+        }
+      """
+
+    val jsonTemplate = constructTestTaskListSummarySectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/sections/0/tasks/0/summarySection/includeIf>: Property includeIf expected type [String], found [JSONObject]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a task list summarySection has the fields property of an incorrect type"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "title": {
+            "en": "en title",
+            "cy": "cy title"
+          },
+          "header": {
+            "en": "en header",
+            "cy": "cy header"
+          },
+          "footer": {
+            "en": "en footer",
+            "cy": "cy footer"
+          },
+          "fields": {}
+        }
+      """
+
+    val jsonTemplate = constructTestTaskListSummarySectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/sections/0/tasks/0/summarySection/fields>: Property fields expected type [Array], found [JSONObject]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a task list summarySection has the fields property containing an incorrect type"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "title": {
+            "en": "en title",
+            "cy": "cy title"
+          },
+          "header": {
+            "en": "en header",
+            "cy": "cy header"
+          },
+          "footer": {
+            "en": "en footer",
+            "cy": "cy footer"
+          },
+          "fields": [
+            "incorrect"
+          ]
+        }
+      """
+
+    val jsonTemplate = constructTestTaskListSummarySectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/sections/0/tasks/0/summarySection/fields/0>: Property fields expected type [Object], found [String]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a task list summarySection has the fields property containing an invalid property key"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "title": {
+            "en": "en title",
+            "cy": "cy title"
+          },
+          "header": {
+            "en": "en header",
+            "cy": "cy header"
+          },
+          "footer": {
+            "en": "en footer",
+            "cy": "cy footer"
+          },
+          "fields": [
+            {
+              "summarySection": {}
+            }
+          ]
+        }
+      """
+
+    val jsonTemplate = constructTestTaskListSummarySectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/sections/0/tasks/0/summarySection/fields/0>: fields has invalid key(s) [summarySection]"
     )
 
     runInvalidJsonTest(result, expectedResult)
@@ -2918,7 +3812,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
   }
 
   test(
-    "validateJson accepts the form when a choices property is an Array of one Object with the En and Cy properties, and one Object with just the En property"
+    "validateJson accepts the form when a header property is an Array of one Object with the En and Cy properties, and one Object with just the En property"
   ) {
     val testProperties =
       json"""
@@ -2939,6 +3833,74 @@ class JsonSchemeValidatorSpec extends FunSuite {
         """
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = Right(())
+
+    assertEquals(result, expectedResult)
+  }
+
+  test(
+    "validateJson accepts the form when a main CYA summarySection has all required and optional properties with correct types and values"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "title": {
+            "en": "en title",
+            "cy": "cy title"
+          },
+          "header": {
+            "en": "en header",
+            "cy": "cy header"
+          },
+          "footer": {
+            "en": "en footer",
+            "cy": "cy footer"
+          },
+          "displayWidth": "xl",
+          "continueLabel": "correct continueLabel string",
+          "pdf": {},
+          "fields": []
+        }
+      """
+
+    val jsonTemplate = constructTestSummarySectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = Right(())
+
+    assertEquals(result, expectedResult)
+  }
+
+  test(
+    "validateJson accepts the form when a task list summarySection has all required and optional properties with correct types and values"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "title": {
+            "en": "en title",
+            "cy": "cy title"
+          },
+          "header": {
+            "en": "en header",
+            "cy": "cy header"
+          },
+          "footer": {
+            "en": "en footer",
+            "cy": "cy footer"
+          },
+          "displayWidth": "xl",
+          "continueLabel": "correct continueLabel string",
+          "includeIf": "include if",
+          "fields": []
+        }
+      """
+
+    val jsonTemplate = constructTestTaskListSummarySectionJsonTemplate(testProperties)
 
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
