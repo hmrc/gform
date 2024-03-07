@@ -34,6 +34,12 @@ object JsonSchemeErrorParser {
           parseConditionalValidationErrorMessage(schema, json, error)
         } else if (errors.filter(_.location === error.location).map(_.keyword).contains("type")) {
           parseTypeError(error, errors, json, schema)
+        } else if (error.keyword === "required") {
+          parseRequiredError(schema, json, error)
+        } else if (error.keyword === "pattern") {
+          parsePatternError(schema, json, error)
+        } else if (error.keyword === "additionalProperties") {
+          parseAdditionalPropertiesError(errors, json, error)
         } else {
           error.getMessage
         }
@@ -42,6 +48,89 @@ object JsonSchemeErrorParser {
     }
 
     SchemaValidationException(parsedErrors.map(_.getMessage).distinct)
+  }
+
+  private def parseRequiredError(schema: Json, json: Json, error: ValidationError): String = {
+    val errorLocation: String = tryConvertErrorLocationToId(json, error.location, propertyNameInLocation = true)
+
+    val maybeRequirements: Either[DecodingFailure, Json] =
+      goDownSchema(
+        schema,
+        error.schemaLocation.getOrElse("").split("/").tail.toList ++ List("required")
+      )
+
+    val property: String = error.schemaLocation
+      .getOrElse("")
+      .split("/")
+      .last
+
+    maybeRequirements match {
+      case Left(_) => error.getMessage
+      case Right(requirementsJson) =>
+        requirementsJson.as[List[String]] match {
+          case Left(_) => error.getMessage
+          case Right(requirements) =>
+            val errorMessage = s"$property requires properties [${requirements.mkString(", ")}] to be present"
+            constructCustomErrorMessage(errorLocation, errorMessage)
+        }
+    }
+  }
+
+  private def parsePatternError(schema: Json, json: Json, error: ValidationError): String = {
+    val errorLocation: String = tryConvertErrorLocationToId(json, error.location, propertyNameInLocation = false)
+
+    val maybeRequirements: Either[DecodingFailure, Json] =
+      goDownSchema(
+        schema,
+        error.schemaLocation.getOrElse("").split("/").tail.toList ++ List("pattern")
+      )
+
+    val property: String = error.schemaLocation
+      .getOrElse("")
+      .split("/")
+      .last
+
+    maybeRequirements match {
+      case Left(_) => error.getMessage
+      case Right(requirementsJson) =>
+        requirementsJson.asString match {
+          case None => error.getMessage
+          case Some(requiredValues) =>
+            val notMatchingPattern: Boolean = requiredValues.contains("?!")
+            val lengthOfTrim: Int = if (notMatchingPattern) 5 else 2
+
+            val parsedRequiredValues: String =
+              requiredValues.substring(lengthOfTrim, requiredValues.length - lengthOfTrim).replace("|", ", ")
+
+            val errorMessage: String =
+              s"Property $property expected value ${if (notMatchingPattern) "not " else ""}[$parsedRequiredValues]"
+
+            constructCustomErrorMessage(errorLocation, errorMessage)
+        }
+    }
+  }
+
+  private def parseAdditionalPropertiesError(
+    errors: NonEmptyList[ValidationError],
+    json: Json,
+    error: ValidationError
+  ): String = {
+    val errorLocation: String = tryConvertErrorLocationToId(json, error.location, propertyNameInLocation = false)
+    val allSameErrors = errors.filter(_.location === error.location).filter(_.keyword === error.keyword)
+
+    val property: String = error.schemaLocation
+      .getOrElse("")
+      .split("/")
+      .last
+
+    val allInvalidProperties = allSameErrors
+      .map(_.getMessage)
+      .map("\\[.*]".r.findAllIn(_).next())
+      .map(property => property.substring(1, property.length - 1))
+      .mkString(", ")
+
+    val errorMessage = s"$property has invalid key(s) [$allInvalidProperties]"
+    constructCustomErrorMessage(errorLocation, errorMessage)
   }
 
   private def parseConditionalValidationErrorMessage(schema: Json, json: Json, error: ValidationError): String =
@@ -197,13 +286,13 @@ object JsonSchemeErrorParser {
       .mapValues { requiredPattern =>
         requiredPattern.values
           .map { requiredValues =>
-            requiredValues.substring(1, requiredValues.length - 1).replace("|", ", ")
+            requiredValues.substring(2, requiredValues.length - 2).replace("|", ", ")
           }
           .mkString(", ")
       }
       .map { case (requiredProperty, requiredValues) =>
         if (requiredValues.contains("?!")) {
-          s"$requiredProperty not: [${requiredValues.substring(4, requiredValues.length - 4)}]"
+          s"$requiredProperty not: [${requiredValues.substring(3, requiredValues.length - 3)}]"
         } else {
           s"$requiredProperty: [$requiredValues]"
         }
