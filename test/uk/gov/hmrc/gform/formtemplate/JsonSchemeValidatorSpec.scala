@@ -3215,6 +3215,34 @@ class JsonSchemeValidatorSpec extends FunSuite {
   }
 
   test(
+    "validateJson rejects the form gracefully when emailCodeParameters has a value that is not a StringOrEnCy Object"
+  ) {
+    val jsonTemplate =
+      json"""
+        {
+          "_id": "json-id",
+          "formName": "Json",
+          "version": 1,
+          "description": "",
+          "sections": [],
+          "emailCodeParameters": [
+            {
+              "value": 1,
+              "emailTemplateVariable": "emailSubjectCode"
+            }
+          ]
+        }"""
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/emailCodeParameters/0/value>: Property value expected type String or JSONObject with structure {en: String} or {en: String, cy: String}"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
     "validateJson accepts the form when the type property is [info] and the properties that are dependent on this are present"
   ) {
     val testProperties =
@@ -3901,6 +3929,61 @@ class JsonSchemeValidatorSpec extends FunSuite {
       """
 
     val jsonTemplate = constructTestTaskListSummarySectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = Right(())
+
+    assertEquals(result, expectedResult)
+  }
+
+  test(
+    "validateJson accepts the form when emailCodeParameters has a value that is a String"
+  ) {
+    val jsonTemplate =
+      json"""
+      {
+        "_id": "json-id",
+        "formName": "Json",
+        "version": 1,
+        "description": "",
+        "sections": [],
+        "emailCodeParameters": [
+          {
+            "value": "a valid value",
+            "emailTemplateVariable": "emailSubjectCode"
+          }
+        ]
+      }"""
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = Right(())
+
+    assertEquals(result, expectedResult)
+  }
+
+  test(
+    "validateJson accepts the form when emailCodeParameters has a value that is an Object with En and Cy properties"
+  ) {
+    val jsonTemplate =
+      json"""
+      {
+        "_id": "json-id",
+        "formName": "Json",
+        "version": 1,
+        "description": "",
+        "sections": [],
+        "emailCodeParameters": [
+          {
+            "value": {
+              "en": "English value",
+              "cy": "Welsh value"
+            },
+            "emailTemplateVariable": "emailSubjectCode"
+          }
+        ]
+      }"""
 
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
