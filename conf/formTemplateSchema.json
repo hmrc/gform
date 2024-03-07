@@ -223,7 +223,40 @@
       "type": "object"
     },
     "summarySection": {
-      "type": "object"
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "title",
+        "header",
+        "footer"
+      ],
+      "properties": {
+        "title": {
+          "$ref": "#/$defs/stringOrEnCyObject"
+        },
+        "header": {
+          "$ref": "#/$defs/stringOrEnCyObject"
+        },
+        "footer": {
+          "$ref": "#/$defs/stringOrEnCyObject"
+        },
+        "displayWidth": {
+          "type": "string",
+          "pattern": "^(m|l|xl)$"
+        },
+        "continueLabel": {
+          "$ref": "#/$defs/stringOrEnCyObject"
+        },
+        "pdf": {
+          "type": "object"
+        },
+        "fields": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/fields"
+          }
+        }
+      }
     },
     "declarationSection": {
       "type": "object"
@@ -363,7 +396,40 @@
                 "type": "string"
               },
               "summarySection": {
-                "type": "object"
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "title",
+                  "header",
+                  "footer"
+                ],
+                "properties": {
+                  "title": {
+                    "$ref": "#/$defs/stringOrEnCyObject"
+                  },
+                  "header": {
+                    "$ref": "#/$defs/stringOrEnCyObject"
+                  },
+                  "footer": {
+                    "$ref": "#/$defs/stringOrEnCyObject"
+                  },
+                  "displayWidth": {
+                    "type": "string",
+                    "pattern": "^(m|l|xl)$"
+                  },
+                  "includeIf": {
+                    "type": "string"
+                  },
+                  "continueLabel": {
+                    "$ref": "#/$defs/stringOrEnCyObject"
+                  },
+                  "fields": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/$defs/fields"
+                    }
+                  }
+                }
               },
               "declarationSection": {
                 "type": "object"
@@ -477,7 +543,9 @@
                     "type": "string"
                   }
                 },
-                "required": ["en"],
+                "required": [
+                  "en"
+                ],
                 "additionalProperties": false
               }
             }
@@ -640,7 +708,9 @@
                     "type": "string"
                   }
                 },
-                "required": ["en"],
+                "required": [
+                  "en"
+                ],
                 "additionalProperties": false
               }
             }
@@ -958,7 +1028,9 @@
           "type": "string"
         }
       },
-      "required": ["en"],
+      "required": [
+        "en"
+      ],
       "additionalProperties": false
     }
   }
