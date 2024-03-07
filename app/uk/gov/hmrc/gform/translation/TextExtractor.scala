@@ -407,6 +407,7 @@ object TextExtractor {
   val ackFields = List(TraverseArray, Pure(DownField("fields")), Pure(DownField("acknowledgementSection")))
   val decFields = List(TraverseArray, Pure(DownField("fields")), Pure(DownField("declarationSection")))
   val summarySection = List(Pure(DownField("summarySection")))
+  val referrerConfig = List(Pure(DownField("referrerConfig")))
   val summarySectionFields = List(TraverseArray, Pure(DownField("fields"))) ++ summarySection
   val tasks = List(TraverseArray, Pure(DownField("tasks"))) ++ sections
   val taskSummarySection = List(Pure(DownField("summarySection"))) ++ tasks
@@ -440,6 +441,8 @@ object TextExtractor {
       List(Pure(DownField("description"))),
       Pure(DownField("label")) :: exitPages,
       Pure(DownField("exitMessage")) :: exitPages,
+      Pure(DownField("title")) :: referrerConfig,
+      Pure(DownField("exitMessage")) :: referrerConfig,
       List(Pure(DownField("shortName")), Pure(DownField("declarationSection"))),
       List(Pure(DownField("errorShortName")), Pure(DownField("declarationSection"))),
       List(Pure(DownField("errorShortNameStart")), Pure(DownField("declarationSection"))),
