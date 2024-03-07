@@ -164,6 +164,9 @@
         "allowedReferrerUrls": {
           "type": "array"
         },
+        "title": {
+          "$ref": "#/$defs/stringOrEnCyObject"
+        },
         "exitMessage": {
           "$ref": "#/$defs/stringOrEnCyObject"
         }
