@@ -134,9 +134,17 @@ class UpscanController(
               case Valid(_) =>
                 for {
                   form <- formService.get(formIdData)
-                  fileId = form.componentIdToFileId.inverseMapping
+                  mapping = form.componentIdToFileId.mapping
+                              .filter(_._1.reduceToTemplateFieldId === formComponentId.reduceToTemplateFieldId)
+                  inverseMapping = mapping.map { case (k, v) => (v, k) }
+                  fileId = inverseMapping
                              .get(FileId(formComponentId.value))
-                             .map(mappingComponentId => FileId(mappingComponentId.value))
+                             .flatMap(_ =>
+                               mapping.keys.toList
+                                 .diff(mapping.values.toList.map(fileId => FormComponentId(fileId.value)))
+                                 .headOption
+                                 .map(fc => FileId(fc.value))
+                             )
                              .getOrElse(FileId(formComponentId.value))
                   fileName = fileId.value + "_" + upscanCallbackSuccess.uploadDetails.fileName
                   validatedFileName: Validated[UpscanValidationFailure, Unit] = validateFileName(fileName)

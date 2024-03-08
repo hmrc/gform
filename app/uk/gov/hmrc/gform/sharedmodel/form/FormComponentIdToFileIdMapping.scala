@@ -20,7 +20,6 @@ import play.api.libs.json.Format
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponentId, JsonUtils }
 
 case class FormComponentIdToFileIdMapping(mapping: Map[FormComponentId, FileId]) {
-  val inverseMapping: Map[FileId, FormComponentId] = mapping.map { case (k, v) => (v, k) }
   def +(formComponentId: FormComponentId, fileId: FileId): FormComponentIdToFileIdMapping =
     FormComponentIdToFileIdMapping(mapping + (formComponentId -> fileId))
 }
