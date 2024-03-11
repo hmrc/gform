@@ -22,7 +22,7 @@ import org.slf4j.LoggerFactory
 import uk.gov.hmrc.gform.scheduler.quartz.QScheduledService
 import uk.gov.hmrc.gform.sdes.SdesAlgebra
 import uk.gov.hmrc.gform.sdes.SdesRenotifyService
-import uk.gov.hmrc.gform.sharedmodel.sdes.NotificationStatus.FileReady
+import uk.gov.hmrc.gform.sharedmodel.sdes.NotificationStatus.{ FileReady, FileReceived }
 import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.mongo.lock.LockService
@@ -68,9 +68,12 @@ class SdesRenotifyQScheduledService(
 
   private def renotifyItemsFor(destination: SdesDestination)(implicit ec: ExecutionContext): Future[Unit] =
     for {
-      sdesSubmissionsData <-
-        sdesAlgebra.searchAll(None, None, Some(FileReady), Some(destination), showBeforeSubmittedAt)
-      _ <- sdesSubmissionsData.sdesSubmissions.traverse { submission =>
+      submissions <- List(FileReady, FileReceived).traverse(status =>
+                       sdesAlgebra
+                         .searchAll(None, None, Some(status), Some(destination), showBeforeSubmittedAt)
+                         .map(_.sdesSubmissions)
+                     )
+      _ <- submissions.flatten.traverse { submission =>
              implicit val hc = HeaderCarrier()
              sdesRenotifyService
                .renotifySDES(submission.correlationId)
