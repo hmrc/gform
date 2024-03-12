@@ -294,6 +294,9 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
     | "choicesRevealedField(" ~ FormComponentId.unanchoredIdValidation ~ ")" ^^ { case _ ~ value ~ _ =>
       ChoicesRevealedField(FormComponentId(value))
     }
+    | "substring(" ~ _expr1 ~ "," ~ positiveInteger ~ ")" ^^ { case _ ~ value ~ _ ~ from ~ _ =>
+      StringOps(value, StringFnc.SubString(from, Int.MaxValue))
+    }
     | "substring(" ~ _expr1 ~ "," ~ positiveInteger ~ "," ~ positiveInteger ~ ")" ^^ {
       case _ ~ value ~ _ ~ from ~ _ ~ to ~ _ =>
         StringOps(value, StringFnc.SubString(from, to))
