@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.gform.testonly
 
-import java.time.Instant
+import java.time.{ Instant, LocalDateTime }
 import julienrf.json.derived
 import play.api.libs.json.Reads._
 import play.api.libs.json._
@@ -172,4 +172,17 @@ object Snapshot {
   }
 
   implicit val format: OFormat[Snapshot] = Json.format[Snapshot]
+}
+
+final case class SnapshotFilter(
+  from: Option[LocalDateTime],
+  to: Option[LocalDateTime],
+  snapshotIdFilter: Option[String],
+  descriptionFilter: Option[String],
+  templateIdFilter: Option[String]
+)
+
+object SnapshotFilter {
+  val empty: SnapshotFilter = SnapshotFilter(None, None, None, None, None)
+  implicit val format: Format[SnapshotFilter] = Json.format[SnapshotFilter]
 }
