@@ -18,6 +18,8 @@ package uk.gov.hmrc.gform.testonly
 
 import uk.gov.hmrc.mongo.cache.MongoCacheRepository
 import uk.gov.hmrc.mongo.cache.DataKey
+import org.mongodb.scala.model.{ Aggregates, Filters }
+import org.mongodb.scala.model.Sorts.descending
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
@@ -36,9 +38,28 @@ class SnapshotMongoCache(
   def find(snapshotId: SnapshotId): Future[Option[Snapshot]] = mongoCacheRepository
     .get[Snapshot](snapshotId.value)(snapshotDataKey)
 
-  def findAll(): Future[List[Snapshot]] =
+  def findWithFilter(snapshotFilter: SnapshotFilter): Future[List[Snapshot]] = {
+
+    val fromFilter = snapshotFilter.from.map(from => Aggregates.filter(Filters.gte("modifiedDetails.createdAt", from)))
+    val toFilter = snapshotFilter.to.map(to => Aggregates.filter(Filters.lte("modifiedDetails.createdAt", to)))
+    val snapshotIdFilter =
+      snapshotFilter.snapshotIdFilter.map(snapshotId => Aggregates.filter(Filters.eq("_id", snapshotId)))
+    val descriptionFilter = snapshotFilter.descriptionFilter.map(description =>
+      Aggregates.`match`(Filters.regex("data.snapshot.description", s".*$description.*"))
+    )
+    val templateIdFilter = snapshotFilter.templateIdFilter.map(templateId =>
+      Aggregates.filter(Filters.eq("data.snapshot.originalTemplate._id", templateId))
+    )
+
+    val sort = Some(Aggregates.sort(descending("createdAt")))
+
+    val limit = Some(Aggregates.limit(1000))
+
+    val pipeline =
+      List(fromFilter, toFilter, snapshotIdFilter, templateIdFilter, descriptionFilter, sort, limit).flatten
+
     mongoCacheRepository.collection
-      .find()
+      .aggregate(pipeline)
       .toFuture()
       .map(_.toList)
       .map { cacheItemList =>
@@ -49,6 +70,7 @@ class SnapshotMongoCache(
           }
         }
       }
+  }
 
   def upsert(snapshot: Snapshot): Future[Unit] =
     mongoCacheRepository

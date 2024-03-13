@@ -311,8 +311,9 @@ class TestOnlyController(
   }
 
   def getSnapshots() =
-    Action.async { request =>
-      testOnlyFormService.getSnapshots().map(snapshots => Ok(Json.toJson(snapshots)))
+    Action.async(parse.json[SnapshotFilter]) { request =>
+      val snapshotFilter: SnapshotFilter = request.body
+      testOnlyFormService.getSnapshots(snapshotFilter).map(snapshots => Ok(Json.toJson(snapshots)))
     }
 
   def getSnapshotData(snapshotId: SnapshotId) = Action.async { _ =>

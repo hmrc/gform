@@ -117,8 +117,8 @@ class TestOnlyFormService(
       }
   }
 
-  def getSnapshots(): Future[List[SnapshotOverview]] =
-    snapshotMongoCache.findAll().map(_.map(SnapshotOverview(_, withData = false)))
+  def getSnapshots(filter: SnapshotFilter): Future[List[SnapshotOverview]] =
+    snapshotMongoCache.findWithFilter(filter).map(_.map(SnapshotOverview(_, withData = false)))
 
   def getSnapshotData(snapshotId: SnapshotId): Future[SnapshotOverview] =
     snapshotMongoCache.find(snapshotId).map {
