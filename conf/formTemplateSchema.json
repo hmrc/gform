@@ -107,7 +107,7 @@
         "additionalProperties": false,
         "properties": {
           "value": {
-            "type": "string"
+            "$ref": "#/$defs/stringOrEnCyObject"
           },
           "emailTemplateVariable": {
             "type": "string"
