@@ -1279,6 +1279,22 @@ object FormTemplateValidator {
     (isNonInformationMessagePresent ++ validateSmartStrings).combineAll
   }
 
+  def validateAddToListCYAPage(formTemplate: FormTemplate): ValidationResult = {
+    def checkComponentType(field: FormComponent): ValidationResult = {
+      val reason =
+        s"All fields in Check Your Answer page for AddToList must be Info or Table or MiniSummary type. Field Id, '${field.id}' is not an info field"
+      isViewOnlyComponent(field, reason)
+    }
+
+    formTemplate.formKind.allSections
+      .collect { case s: Section.AddToList =>
+        s.cyaPage.fold(List.empty[FormComponent])(_.fields.fold(List.empty[FormComponent])(_.toList))
+      }
+      .flatten
+      .map(checkComponentType)
+      .combineAll
+  }
+
   def validateDataRetrieve(formTemplate: FormTemplate, pages: List[Page]): ValidationResult = {
     val pageDataRetrieves = pages.flatMap(_.dataRetrieves()).map(_.id)
     val ids = formTemplate.dataRetrieve.fold(pageDataRetrieves)(dr => pageDataRetrieves ++ dr.map(_.id).toList)

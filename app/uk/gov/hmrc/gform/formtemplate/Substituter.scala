@@ -499,7 +499,8 @@ object Substituter {
       header = t.header(substitutions),
       footer = t.footer(substitutions),
       continueLabel = t.continueLabel(substitutions),
-      removeItemIf = t.removeItemIf(substitutions)
+      removeItemIf = t.removeItemIf(substitutions),
+      fields = t.fields(substitutions)
     )
 
   implicit def emailParameterSubstituter[A](implicit

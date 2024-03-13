@@ -16,8 +16,10 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
+import cats.data.NonEmptyList
 import play.api.libs.json.{ Format, Json }
 import uk.gov.hmrc.gform.sharedmodel.SmartString
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.JsonUtils._
 
 case class CheckYourAnswersPage(
   title: Option[SmartString],
@@ -29,7 +31,8 @@ case class CheckYourAnswersPage(
   footer: Option[SmartString],
   continueLabel: Option[SmartString],
   presentationHint: Option[PresentationHint],
-  removeItemIf: Option[RemoveItemIf]
+  removeItemIf: Option[RemoveItemIf],
+  fields: Option[NonEmptyList[FormComponent]]
 )
 
 object CheckYourAnswersPage {
@@ -44,6 +47,6 @@ object CheckYourAnswersPage {
       LeafExpr(path + "header", t.header) ++
       LeafExpr(path + "footer", t.footer) ++
       LeafExpr(path + "continueLabel", t.continueLabel) ++
-      LeafExpr(path + "removeItemIf", t.removeItemIf)
-
+      LeafExpr(path + "removeItemIf", t.removeItemIf) ++
+      LeafExpr(path + "fields", t.fields)
 }
