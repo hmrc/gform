@@ -3243,6 +3243,236 @@ class JsonSchemeValidatorSpec extends FunSuite {
   }
 
   test(
+    "validateJson rejects the form gracefully when referrerConfig does not include the allowedReferrerUrls property"
+  ) {
+    val jsonTemplate =
+      json"""
+        {
+          "_id": "json-id",
+          "formName": "Json",
+          "version": 1,
+          "description": "",
+          "sections": [],
+          "referrerConfig": {
+            "exitMessage": {
+              "en": "English exit message",
+              "cy": "Welsh exit message"
+            },
+            "title": {
+              "en": "English title",
+              "cy": "Welsh title"
+            }
+          }
+        }"""
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/referrerConfig>: referrerConfig requires properties [allowedReferrerUrls, exitMessage] to be present"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when referrerConfig does not include the exitMessage property"
+  ) {
+    val jsonTemplate =
+      json"""
+        {
+          "_id": "json-id",
+          "formName": "Json",
+          "version": 1,
+          "description": "",
+          "sections": [],
+          "referrerConfig": {
+            "allowedReferrerUrls": [
+              "tax.service.gov.uk"
+            ],
+            "title": {
+              "en": "English title",
+              "cy": "Welsh title"
+            }
+          }
+        }"""
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/referrerConfig>: referrerConfig requires properties [allowedReferrerUrls, exitMessage] to be present"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when referrerConfig includes a property that is not one of [allowedReferrerUrls, exitMessage, title]"
+  ) {
+    val jsonTemplate =
+      json"""
+        {
+          "_id": "json-id",
+          "formName": "Json",
+          "version": 1,
+          "description": "",
+          "sections": [],
+          "referrerConfig": {
+            "allowedReferrerUrls": [
+              "tax.service.gov.uk"
+            ],
+            "exitMessage": {
+              "en": "English exit message",
+              "cy": "Welsh exit message"
+            },
+            "title": {
+              "en": "English title",
+              "cy": "Welsh title"
+            },
+            "format": "text"
+          }
+        }"""
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/referrerConfig>: referrerConfig has invalid key(s) [format]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when referrerConfig includes allowedReferrerUrls that isn't an Array"
+  ) {
+    val jsonTemplate =
+      json"""
+        {
+          "_id": "json-id",
+          "formName": "Json",
+          "version": 1,
+          "description": "",
+          "sections": [],
+          "referrerConfig": {
+            "allowedReferrerUrls": true,
+            "exitMessage": "exit message",
+            "title": {
+              "en": "English title",
+              "cy": "Welsh title"
+            }
+          }
+        }"""
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/referrerConfig/allowedReferrerUrls>: Property allowedReferrerUrls expected type [Array], found [Boolean]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when referrerConfig includes allowedReferrerUrls that is an Array of not Strings"
+  ) {
+    val jsonTemplate =
+      json"""
+        {
+          "_id": "json-id",
+          "formName": "Json",
+          "version": 1,
+          "description": "",
+          "sections": [],
+          "referrerConfig": {
+            "allowedReferrerUrls": [
+              1
+            ],
+            "exitMessage": {
+              "en": "English exit message",
+              "cy": "Welsh exit message"
+            },
+            "title": {
+              "en": "English title",
+              "cy": "Welsh title"
+            }
+          }
+        }"""
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/referrerConfig/allowedReferrerUrls/0>: Property allowedReferrerUrls expected type Array of [String], found Array of [Integer]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when referrerConfig includes exitMessage that is not a StringOrEnCy Object"
+  ) {
+    val jsonTemplate =
+      json"""
+        {
+          "_id": "json-id",
+          "formName": "Json",
+          "version": 1,
+          "description": "",
+          "sections": [],
+          "referrerConfig": {
+            "allowedReferrerUrls": [
+              "tax.service.gov.uk"
+            ],
+            "exitMessage": {
+              "notAllowed": 4
+            },
+            "title": {
+              "en": "English title",
+              "cy": "Welsh title"
+            }
+          }
+        }"""
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/referrerConfig/exitMessage>: Property exitMessage expected type String or JSONObject with structure {en: String} or {en: String, cy: String}. Missing key(s) [en] are required. Invalid key(s) [notAllowed] are not permitted"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when referrerConfig includes title that is not a StringOrEnCy Object"
+  ) {
+    val jsonTemplate =
+      json"""
+        {
+          "_id": "json-id",
+          "formName": "Json",
+          "version": 1,
+          "description": "",
+          "sections": [],
+          "referrerConfig": {
+            "allowedReferrerUrls": [
+              "tax.service.gov.uk"
+            ],
+            "exitMessage": {
+              "en": "English exit message",
+              "cy": "Welsh exit message"
+            },
+            "title": []
+          }
+        }"""
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/referrerConfig/title>: Property title expected type String or JSONObject with structure {en: String} or {en: String, cy: String}"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
     "validateJson accepts the form when the type property is [info] and the properties that are dependent on this are present"
   ) {
     val testProperties =
@@ -3984,6 +4214,65 @@ class JsonSchemeValidatorSpec extends FunSuite {
           }
         ]
       }"""
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = Right(())
+
+    assertEquals(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when referrerConfig includes valid [allowedReferrerUrls, exitMessage]"
+  ) {
+    val jsonTemplate =
+      json"""
+        {
+          "_id": "json-id",
+          "formName": "Json",
+          "version": 1,
+          "description": "",
+          "sections": [],
+          "referrerConfig": {
+            "allowedReferrerUrls": [
+              "tax.service.gov.uk"
+            ],
+            "exitMessage": {
+              "en": "English exit message",
+              "cy": "Welsh exit message"
+            }
+          }
+        }"""
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = Right(())
+
+    assertEquals(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when referrerConfig includes valid [allowedReferrerUrls, exitMessage, title]"
+  ) {
+    val jsonTemplate =
+      json"""
+        {
+          "_id": "json-id",
+          "formName": "Json",
+          "version": 1,
+          "description": "",
+          "sections": [],
+          "referrerConfig": {
+            "allowedReferrerUrls": [
+              "tax.service.gov.uk"
+            ],
+            "exitMessage": {
+              "en": "English exit message",
+              "cy": "Welsh exit message"
+            },
+            "title": "Title"
+          }
+        }"""
 
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 

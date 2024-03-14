@@ -162,7 +162,10 @@
       "type": "object",
       "properties": {
         "allowedReferrerUrls": {
-          "type": "array"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "title": {
           "$ref": "#/$defs/stringOrEnCyObject"
@@ -170,7 +173,12 @@
         "exitMessage": {
           "$ref": "#/$defs/stringOrEnCyObject"
         }
-      }
+      },
+      "additionalProperties": false,
+      "required": [
+        "allowedReferrerUrls",
+        "exitMessage"
+      ]
     },
     "authConfig": {
       "type": "object",
