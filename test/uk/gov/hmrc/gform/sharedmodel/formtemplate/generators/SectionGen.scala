@@ -97,6 +97,7 @@ trait SectionGen {
       continueLabel    <- Gen.option(smartStringGen)
       presentationHint <- Gen.option(PresentationHintGen.presentationHintGen)
       removeItemIf     <- Gen.option(RemoveItemIfGen.removeItemIfGen)
+      fields           <- Gen.option(PrimitiveGen.oneOrMoreGen(FormComponentGen.formComponentGen()))
     } yield CheckYourAnswersPage(
       title,
       caption,
@@ -107,7 +108,8 @@ trait SectionGen {
       footer,
       continueLabel,
       presentationHint,
-      removeItemIf
+      removeItemIf,
+      fields
     )
 
   def pageGen: Gen[Page] =

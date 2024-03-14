@@ -210,12 +210,14 @@ trait Rewriter {
             _,
             _,
             _,
-            _,
+            cyaPage,
             fields,
             _
           ) =>
         includeIf.toList ++ pages.toList.flatMap(_.includeIf.toList) ++ fields.fold(List.empty[IncludeIf])(
           _.toList.flatMap(_.includeIf.toList)
+        ) ++ cyaPage.fold(List.empty[IncludeIf])(
+          _.fields.fold(List.empty[IncludeIf])(_.toList.flatMap(_.includeIf.toList))
         ) ++ repeatsUntil.toList ++ repeatsWhile.toList
     } ++ fieldsIncludeIfs ++ destinationsIncludeIfs ++ summarySectionIncludeIfs ++ choiceIncludeIfs ++ miniSummaryListIncludeIfs ++ redirectsIncludeIfs ++ confirmationRedirectsIncludeIfs ++ taskDeclarationSectionIncludeIfs ++ taskIncludeIfs
 
@@ -434,6 +436,11 @@ trait Rewriter {
       def replaceFieldsNel(fields: Option[NonEmptyList[FormComponent]]): Option[NonEmptyList[FormComponent]] =
         fields.map(_.map(replaceFormComponentNested))
 
+      def replaceCheckYourAnswersPage(checkYourAnswersPage: CheckYourAnswersPage): CheckYourAnswersPage =
+        checkYourAnswersPage.copy(
+          fields = replaceFieldsNel(checkYourAnswersPage.fields)
+        )
+
       def replaceDeclarationSection(declarationSection: DeclarationSection): DeclarationSection =
         declarationSection.copy(
           fields = replaceFields(declarationSection.fields),
@@ -521,7 +528,8 @@ trait Rewriter {
                   confirmation = replaceConfirmation(page.confirmation)
                 )
               ),
-              fields = replaceFieldsNel(s.fields)
+              fields = replaceFieldsNel(s.fields),
+              cyaPage = s.cyaPage.map(replaceCheckYourAnswersPage)
             )
         }
 

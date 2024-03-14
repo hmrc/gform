@@ -85,6 +85,7 @@ trait Verifier {
            )
       _ <- fromOptA(FormTemplateValidator.validateSectionShortNames(formTemplate).toEither)
       _ <- fromOptA(FormTemplateValidator.validateSummarySection(formTemplate).toEither)
+      _ <- fromOptA(FormTemplateValidator.validateAddToListCYAPage(formTemplate).toEither)
       _ <- fromOptA(FormTemplateValidator.validateAddToListDefaultPage(formTemplate).toEither)
       _ <- fromOptA(FormTemplateValidator.validateAddToListInfoFields(formTemplate).toEither)
       _ <- fromOptA(DestinationsValidator.validateUniqueDestinationIds(formTemplate.destinations).toEither)
