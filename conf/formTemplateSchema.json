@@ -261,6 +261,9 @@
         "pdf": {
           "type": "object"
         },
+        "notes": {
+          "type": "string"
+        },
         "fields": {
           "type": "array",
           "items": {
@@ -270,7 +273,32 @@
       }
     },
     "declarationSection": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "title": {
+          "$ref": "#/$defs/stringOrEnCyObject"
+        },
+        "shortName": {
+          "$ref": "#/$defs/stringOrEnCyObject"
+        },
+        "continueLabel": {
+          "$ref": "#/$defs/stringOrEnCyObject"
+        },
+        "includeIf": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/fields"
+          }
+        }
+      },
+      "required": [
+        "title",
+        "fields"
+      ],
+      "additionalProperties": false
     },
     "acknowledgementSection": {
       "type": "object"
@@ -443,7 +471,32 @@
                 }
               },
               "declarationSection": {
-                "type": "object"
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "$ref": "#/$defs/stringOrEnCyObject"
+                  },
+                  "shortName": {
+                    "$ref": "#/$defs/stringOrEnCyObject"
+                  },
+                  "continueLabel": {
+                    "$ref": "#/$defs/stringOrEnCyObject"
+                  },
+                  "includeIf": {
+                    "type": "string"
+                  },
+                  "fields": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/$defs/fields"
+                    }
+                  }
+                },
+                "required": [
+                  "title",
+                  "fields"
+                ],
+                "additionalProperties": false
               },
               "sections": {
                 "type": "array",

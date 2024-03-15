@@ -113,6 +113,36 @@ class JsonSchemeValidatorSpec extends FunSuite {
         ]
       }"""
 
+  private def constructTestDeclarationSectionJsonTemplate(properties: Json): Json =
+    json"""
+      {
+        "_id": "json-id",
+        "formName": "Json",
+        "version": 1,
+        "description": "",
+        "sections": [],
+        "declarationSection": $properties
+      }"""
+
+  private def constructTestTaskListDeclarationSectionJsonTemplate(properties: Json): Json =
+    json"""
+      {
+        "_id": "json-id",
+        "formName": "Json",
+        "version": 1,
+        "description": "",
+        "sections": [
+          {
+            "tasks": [
+              {
+                "sections": [],
+                "declarationSection": $properties
+              }
+            ]
+          }
+        ]
+      }"""
+
   private def runInvalidJsonTest(result: Either[SchemaValidationException, Unit], expectedResult: List[String]): Unit =
     result match {
       case Right(value) => fail("No error was returned from schema validation:\n" + value)
@@ -2676,6 +2706,39 @@ class JsonSchemeValidatorSpec extends FunSuite {
   }
 
   test(
+    "validateJson rejects the form gracefully when a main CYA summarySection has the notes property of an incorrect type"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "title": {
+            "en": "en title",
+            "cy": "cy title"
+          },
+          "header": {
+            "en": "en header",
+            "cy": "cy header"
+          },
+          "footer": {
+            "en": "en footer",
+            "cy": "cy footer"
+          },
+          "notes": true
+        }
+      """
+
+    val jsonTemplate = constructTestSummarySectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/summarySection/notes>: Property notes expected type [String], found [Boolean]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
     "validateJson rejects the form gracefully when a main CYA summarySection has the fields property of an incorrect type"
   ) {
     val testProperties =
@@ -2737,7 +2800,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
     val expectedResult = List(
-      "Error at <#/summarySection/fields/0>: Property fields expected type [Object], found [String]"
+      "Error at <#/summarySection/fields/0>: Property fields expected type Array of [Object], found Array of [String]"
     )
 
     runInvalidJsonTest(result, expectedResult)
@@ -3171,7 +3234,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
     val expectedResult = List(
-      "Error at <#/sections/0/tasks/0/summarySection/fields/0>: Property fields expected type [Object], found [String]"
+      "Error at <#/sections/0/tasks/0/summarySection/fields/0>: Property fields expected type Array of [Object], found Array of [String]"
     )
 
     runInvalidJsonTest(result, expectedResult)
@@ -3467,6 +3530,718 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val expectedResult = List(
       "Error at <#/referrerConfig/title>: Property title expected type String or JSONObject with structure {en: String} or {en: String, cy: String}"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a main declarationSection does not contain the property [title]"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "shortName": {
+            "en": "English short name",
+            "cy": "Welsh short name"
+          },
+          "continueLabel": {
+            "en": "English continue label",
+            "cy": "Welsh continue label"
+          },
+          "includeIf": "1=1",
+          "fields": []
+        }"""
+
+    val jsonTemplate = constructTestDeclarationSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/declarationSection>: declarationSection requires properties [title, fields] to be present"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a main declarationSection contains the property [title] of an invalid type"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "title": [],
+          "shortName": {
+            "en": "English short name",
+            "cy": "Welsh short name"
+          },
+          "continueLabel": {
+            "en": "English continue label",
+            "cy": "Welsh continue label"
+          },
+          "includeIf": "1=1",
+          "fields": []
+        }"""
+
+    val jsonTemplate = constructTestDeclarationSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/declarationSection/title>: Property title expected type String or JSONObject with structure {en: String} or {en: String, cy: String}"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a main declarationSection does not contain the property [fields]"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "title": {
+            "en": "English title",
+            "cy": "Welsh title"
+          },
+          "shortName": {
+            "en": "English short name",
+            "cy": "Welsh short name"
+          },
+          "continueLabel": {
+            "en": "English continue label",
+            "cy": "Welsh continue label"
+          },
+          "includeIf": "1=1"
+        }"""
+
+    val jsonTemplate = constructTestDeclarationSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/declarationSection>: declarationSection requires properties [title, fields] to be present"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a main declarationSection contains the property [fields] of an invalid type"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "title": {
+            "en": "English title",
+            "cy": "Welsh title"
+          },
+          "shortName": {
+            "en": "English short name",
+            "cy": "Welsh short name"
+          },
+          "continueLabel": {
+            "en": "English continue label",
+            "cy": "Welsh continue label"
+          },
+          "includeIf": "1=1",
+          "fields": true
+        }"""
+
+    val jsonTemplate = constructTestDeclarationSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/declarationSection/fields>: Property fields expected type [Array], found [Boolean]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a main declarationSection contains the property [fields] which is an array of an invalid type"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "title": {
+            "en": "English title",
+            "cy": "Welsh title"
+          },
+          "shortName": {
+            "en": "English short name",
+            "cy": "Welsh short name"
+          },
+          "continueLabel": {
+            "en": "English continue label",
+            "cy": "Welsh continue label"
+          },
+          "includeIf": "1=1",
+          "fields": [
+            1
+          ]
+        }"""
+
+    val jsonTemplate = constructTestDeclarationSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/declarationSection/fields/0>: Property fields expected type Array of [Object], found Array of [Integer]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a main declarationSection contains the property [fields] which is an array of objects that are invalid"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "title": {
+            "en": "English title",
+            "cy": "Welsh title"
+          },
+          "shortName": {
+            "en": "English short name",
+            "cy": "Welsh short name"
+          },
+          "continueLabel": {
+            "en": "English continue label",
+            "cy": "Welsh continue label"
+          },
+          "includeIf": "1=1",
+          "fields": [
+            {
+              "id": "test-declarationSection-id",
+              "type": 1
+            }
+          ]
+        }"""
+
+    val jsonTemplate = constructTestDeclarationSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at ID <test-declarationSection-id>: Property type expected type [String], found [Integer]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a main declarationSection contains the property [shortName] of an invalid type"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "title": {
+            "en": "English title",
+            "cy": "Welsh title"
+          },
+          "shortName": 1,
+          "continueLabel": {
+            "en": "English continue label",
+            "cy": "Welsh continue label"
+          },
+          "includeIf": "1=1",
+          "fields": []
+        }"""
+
+    val jsonTemplate = constructTestDeclarationSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/declarationSection/shortName>: Property shortName expected type String or JSONObject with structure {en: String} or {en: String, cy: String}"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a main declarationSection contains the property [continueLabel] of an invalid type"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "title": {
+            "en": "English title",
+            "cy": "Welsh title"
+          },
+          "shortName": {
+            "en": "English short name",
+            "cy": "Welsh short name"
+          },
+          "continueLabel": true,
+          "includeIf": "1=1",
+          "fields": []
+        }"""
+
+    val jsonTemplate = constructTestDeclarationSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/declarationSection/continueLabel>: Property continueLabel expected type String or JSONObject with structure {en: String} or {en: String, cy: String}"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a main declarationSection contains the property [includeIf] of an invalid type"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "title": {
+            "en": "English title",
+            "cy": "Welsh title"
+          },
+          "shortName": {
+            "en": "English short name",
+            "cy": "Welsh short name"
+          },
+          "continueLabel": {
+            "en": "English continue label",
+            "cy": "Welsh continue label"
+          },
+          "includeIf": {},
+          "fields": []
+        }"""
+
+    val jsonTemplate = constructTestDeclarationSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/declarationSection/includeIf>: Property includeIf expected type [String], found [JSONObject]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a main declarationSection contains a property that isn't any of [title, shortName, continueLabel, includeIf, fields]"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "title": {
+            "en": "English title",
+            "cy": "Welsh title"
+          },
+          "shortName": {
+            "en": "English short name",
+            "cy": "Welsh short name"
+          },
+          "continueLabel": {
+            "en": "English continue label",
+            "cy": "Welsh continue label"
+          },
+          "includeIf": "1=1",
+          "fields": [],
+          "type": "text"
+        }"""
+
+    val jsonTemplate = constructTestDeclarationSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/declarationSection>: declarationSection has invalid key(s) [type]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a main declarationSection contains StringOrEnCyObjects that are all invalid"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "title": {
+            "en": "English title",
+            "cy": "Welsh title",
+            "value": "value not allowed"
+          },
+          "shortName": {
+            "cy": "Welsh short name"
+          },
+          "continueLabel": 1,
+          "includeIf": "1=1",
+          "fields": []
+        }"""
+
+    val jsonTemplate = constructTestDeclarationSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/declarationSection/title>: Property title expected type String or JSONObject with structure {en: String} or {en: String, cy: String}. Invalid key(s) [value] are not permitted",
+      "Error at <#/declarationSection/shortName>: Property shortName expected type String or JSONObject with structure {en: String} or {en: String, cy: String}. Missing key(s) [en] are required",
+      "Error at <#/declarationSection/continueLabel>: Property continueLabel expected type String or JSONObject with structure {en: String} or {en: String, cy: String}"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a task list declarationSection does not contain the property [title]"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "shortName": {
+            "en": "English short name",
+            "cy": "Welsh short name"
+          },
+          "continueLabel": {
+            "en": "English continue label",
+            "cy": "Welsh continue label"
+          },
+          "includeIf": "1=1",
+          "fields": []
+        }"""
+
+    val jsonTemplate = constructTestTaskListDeclarationSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/sections/0/tasks/0/declarationSection>: declarationSection requires properties [title, fields] to be present"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a task list declarationSection contains the property [title] of an invalid type"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "title": [],
+          "shortName": {
+            "en": "English short name",
+            "cy": "Welsh short name"
+          },
+          "continueLabel": {
+            "en": "English continue label",
+            "cy": "Welsh continue label"
+          },
+          "includeIf": "1=1",
+          "fields": []
+        }"""
+
+    val jsonTemplate = constructTestTaskListDeclarationSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/sections/0/tasks/0/declarationSection/title>: Property title expected type String or JSONObject with structure {en: String} or {en: String, cy: String}"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a task list declarationSection does not contain the property [fields]"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "title": {
+            "en": "English title",
+            "cy": "Welsh title"
+          },
+          "shortName": {
+            "en": "English short name",
+            "cy": "Welsh short name"
+          },
+          "continueLabel": {
+            "en": "English continue label",
+            "cy": "Welsh continue label"
+          },
+          "includeIf": "1=1"
+        }"""
+
+    val jsonTemplate = constructTestTaskListDeclarationSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/sections/0/tasks/0/declarationSection>: declarationSection requires properties [title, fields] to be present"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a task list declarationSection contains the property [fields] of an invalid type"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "title": {
+            "en": "English title",
+            "cy": "Welsh title"
+          },
+          "shortName": {
+            "en": "English short name",
+            "cy": "Welsh short name"
+          },
+          "continueLabel": {
+            "en": "English continue label",
+            "cy": "Welsh continue label"
+          },
+          "includeIf": "1=1",
+          "fields": true
+        }"""
+
+    val jsonTemplate = constructTestTaskListDeclarationSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/sections/0/tasks/0/declarationSection/fields>: Property fields expected type [Array], found [Boolean]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a task list declarationSection contains the property [fields] which is an array of an invalid type"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "title": {
+            "en": "English title",
+            "cy": "Welsh title"
+          },
+          "shortName": {
+            "en": "English short name",
+            "cy": "Welsh short name"
+          },
+          "continueLabel": {
+            "en": "English continue label",
+            "cy": "Welsh continue label"
+          },
+          "includeIf": "1=1",
+          "fields": [
+            1
+          ]
+        }"""
+
+    val jsonTemplate = constructTestTaskListDeclarationSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/sections/0/tasks/0/declarationSection/fields/0>: Property fields expected type Array of [Object], found Array of [Integer]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a task list declarationSection contains the property [fields] which is an array of objects that are invalid"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "title": {
+            "en": "English title",
+            "cy": "Welsh title"
+          },
+          "shortName": {
+            "en": "English short name",
+            "cy": "Welsh short name"
+          },
+          "continueLabel": {
+            "en": "English continue label",
+            "cy": "Welsh continue label"
+          },
+          "includeIf": "1=1",
+          "fields": [
+            {
+              "id": "test-declarationSection-id",
+              "type": 1
+            }
+          ]
+        }"""
+
+    val jsonTemplate = constructTestTaskListDeclarationSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at ID <test-declarationSection-id>: Property type expected type [String], found [Integer]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a task list declarationSection contains the property [shortName] of an invalid type"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "title": {
+            "en": "English title",
+            "cy": "Welsh title"
+          },
+          "shortName": 1,
+          "continueLabel": {
+            "en": "English continue label",
+            "cy": "Welsh continue label"
+          },
+          "includeIf": "1=1",
+          "fields": []
+        }"""
+
+    val jsonTemplate = constructTestTaskListDeclarationSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/sections/0/tasks/0/declarationSection/shortName>: Property shortName expected type String or JSONObject with structure {en: String} or {en: String, cy: String}"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a task list declarationSection contains the property [continueLabel] of an invalid type"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "title": {
+            "en": "English title",
+            "cy": "Welsh title"
+          },
+          "shortName": {
+            "en": "English short name",
+            "cy": "Welsh short name"
+          },
+          "continueLabel": true,
+          "includeIf": "1=1",
+          "fields": []
+        }"""
+
+    val jsonTemplate = constructTestTaskListDeclarationSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/sections/0/tasks/0/declarationSection/continueLabel>: Property continueLabel expected type String or JSONObject with structure {en: String} or {en: String, cy: String}"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a task list declarationSection contains the property [includeIf] of an invalid type"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "title": {
+            "en": "English title",
+            "cy": "Welsh title"
+          },
+          "shortName": {
+            "en": "English short name",
+            "cy": "Welsh short name"
+          },
+          "continueLabel": {
+            "en": "English continue label",
+            "cy": "Welsh continue label"
+          },
+          "includeIf": {},
+          "fields": []
+        }"""
+
+    val jsonTemplate = constructTestTaskListDeclarationSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/sections/0/tasks/0/declarationSection/includeIf>: Property includeIf expected type [String], found [JSONObject]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a task list declarationSection contains a property that isn't any of [title, shortName, continueLabel, includeIf, fields]"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "title": {
+            "en": "English title",
+            "cy": "Welsh title"
+          },
+          "shortName": {
+            "en": "English short name",
+            "cy": "Welsh short name"
+          },
+          "continueLabel": {
+            "en": "English continue label",
+            "cy": "Welsh continue label"
+          },
+          "includeIf": "1=1",
+          "fields": [],
+          "type": "text"
+        }"""
+
+    val jsonTemplate = constructTestTaskListDeclarationSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/sections/0/tasks/0/declarationSection>: declarationSection has invalid key(s) [type]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a task list declarationSection contains StringOrEnCyObjects that are all invalid"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "title": {
+            "en": "English title",
+            "cy": "Welsh title",
+            "value": "value not allowed"
+          },
+          "shortName": {
+            "cy": "Welsh short name"
+          },
+          "continueLabel": 1,
+          "includeIf": "1=1",
+          "fields": []
+        }"""
+
+    val jsonTemplate = constructTestTaskListDeclarationSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/sections/0/tasks/0/declarationSection/title>: Property title expected type String or JSONObject with structure {en: String} or {en: String, cy: String}. Invalid key(s) [value] are not permitted",
+      "Error at <#/sections/0/tasks/0/declarationSection/shortName>: Property shortName expected type String or JSONObject with structure {en: String} or {en: String, cy: String}. Missing key(s) [en] are required",
+      "Error at <#/sections/0/tasks/0/declarationSection/continueLabel>: Property continueLabel expected type String or JSONObject with structure {en: String} or {en: String, cy: String}"
     )
 
     runInvalidJsonTest(result, expectedResult)
@@ -4120,6 +4895,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
           "displayWidth": "xl",
           "continueLabel": "correct continueLabel string",
           "pdf": {},
+          "notes": "note",
           "fields": []
         }
       """
@@ -4223,7 +4999,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
   }
 
   test(
-    "validateJson rejects the form gracefully when referrerConfig includes valid [allowedReferrerUrls, exitMessage]"
+    "validateJson accepts the form when referrerConfig includes valid [allowedReferrerUrls, exitMessage]"
   ) {
     val jsonTemplate =
       json"""
@@ -4252,7 +5028,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
   }
 
   test(
-    "validateJson rejects the form gracefully when referrerConfig includes valid [allowedReferrerUrls, exitMessage, title]"
+    "validateJson accepts the form when referrerConfig includes valid [allowedReferrerUrls, exitMessage, title]"
   ) {
     val jsonTemplate =
       json"""
@@ -4273,6 +5049,130 @@ class JsonSchemeValidatorSpec extends FunSuite {
             "title": "Title"
           }
         }"""
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = Right(())
+
+    assertEquals(result, expectedResult)
+  }
+
+  test(
+    "validateJson accepts the form when a main declarationSection includes valid [title, fields]"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "title": {
+            "en": "English title",
+            "cy": "Welsh title"
+          },
+          "shortName": {
+            "en": "English short name",
+            "cy": "Welsh short name"
+          },
+          "continueLabel": {
+            "en": "English continue label",
+            "cy": "Welsh continue label"
+          },
+          "includeIf": "1=1",
+          "fields": []
+        }"""
+
+    val jsonTemplate = constructTestDeclarationSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = Right(())
+
+    assertEquals(result, expectedResult)
+  }
+
+  test(
+    "validateJson accepts the form when a main declarationSection includes valid [title, shortName, continueLabel, includeIf, fields]"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "title": {
+            "en": "English title",
+            "cy": "Welsh title"
+          },
+          "shortName": {
+            "en": "English short name",
+            "cy": "Welsh short name"
+          },
+          "continueLabel": {
+            "en": "English continue label",
+            "cy": "Welsh continue label"
+          },
+          "includeIf": "1=1",
+          "fields": []
+        }"""
+
+    val jsonTemplate = constructTestDeclarationSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = Right(())
+
+    assertEquals(result, expectedResult)
+  }
+
+  test(
+    "validateJson accepts the form when a task list declarationSection includes valid [title, fields]"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "title": {
+            "en": "English title",
+            "cy": "Welsh title"
+          },
+          "shortName": {
+            "en": "English short name",
+            "cy": "Welsh short name"
+          },
+          "continueLabel": {
+            "en": "English continue label",
+            "cy": "Welsh continue label"
+          },
+          "includeIf": "1=1",
+          "fields": []
+        }"""
+
+    val jsonTemplate = constructTestTaskListDeclarationSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = Right(())
+
+    assertEquals(result, expectedResult)
+  }
+
+  test(
+    "validateJson accepts the form when a task list declarationSection includes valid [title, shortName, continueLabel, includeIf, fields]"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "title": {
+            "en": "English title",
+            "cy": "Welsh title"
+          },
+          "shortName": {
+            "en": "English short name",
+            "cy": "Welsh short name"
+          },
+          "continueLabel": {
+            "en": "English continue label",
+            "cy": "Welsh continue label"
+          },
+          "includeIf": "1=1",
+          "fields": []
+        }"""
+
+    val jsonTemplate = constructTestTaskListDeclarationSectionJsonTemplate(testProperties)
 
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 

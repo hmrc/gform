@@ -457,11 +457,12 @@ object JsonSchemeErrorParser {
 
         maybeRequiredType match {
           case Some(requiredType) =>
-            val errorMessage: String = if (schemaLocation.split("/").last === "items") {
-              s"Property $errorProperty expected type Array of [${requiredType.capitalize}], found Array of [$typeFound]"
-            } else {
-              s"Property $errorProperty expected type [${requiredType.capitalize}], found [$typeFound]"
-            }
+            val errorMessage: String =
+              if (schemaLocation.split("/").last === "items" || schemaLocation === "#/$defs/fields") {
+                s"Property $errorProperty expected type Array of [${requiredType.capitalize}], found Array of [$typeFound]"
+              } else {
+                s"Property $errorProperty expected type [${requiredType.capitalize}], found [$typeFound]"
+              }
             constructCustomErrorMessage(errorLocation, errorMessage)
           case None => error.getMessage
         }
