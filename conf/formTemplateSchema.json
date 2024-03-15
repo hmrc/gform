@@ -261,6 +261,9 @@
         "pdf": {
           "type": "object"
         },
+        "notes": {
+          "type": "string"
+        },
         "fields": {
           "type": "array",
           "items": {

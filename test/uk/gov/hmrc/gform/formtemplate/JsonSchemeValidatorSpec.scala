@@ -2706,6 +2706,39 @@ class JsonSchemeValidatorSpec extends FunSuite {
   }
 
   test(
+    "validateJson rejects the form gracefully when a main CYA summarySection has the notes property of an incorrect type"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "title": {
+            "en": "en title",
+            "cy": "cy title"
+          },
+          "header": {
+            "en": "en header",
+            "cy": "cy header"
+          },
+          "footer": {
+            "en": "en footer",
+            "cy": "cy footer"
+          },
+          "notes": true
+        }
+      """
+
+    val jsonTemplate = constructTestSummarySectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/summarySection/notes>: Property notes expected type [String], found [Boolean]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
     "validateJson rejects the form gracefully when a main CYA summarySection has the fields property of an incorrect type"
   ) {
     val testProperties =
@@ -4862,6 +4895,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
           "displayWidth": "xl",
           "continueLabel": "correct continueLabel string",
           "pdf": {},
+          "notes": "note",
           "fields": []
         }
       """
