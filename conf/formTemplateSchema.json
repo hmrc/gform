@@ -727,7 +727,10 @@
           ]
         },
         "noneChoice": {
-          "type": "integer"
+          "type": [
+            "integer",
+            "string"
+          ]
         },
         "repeatsMin": {
           "type": "integer"
