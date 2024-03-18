@@ -143,6 +143,17 @@ class JsonSchemeValidatorSpec extends FunSuite {
         ]
       }"""
 
+  private def constructTestAcknowledgementSectionJsonTemplate(properties: Json): Json =
+    json"""
+      {
+        "_id": "json-id",
+        "formName": "Json",
+        "version": 1,
+        "description": "",
+        "sections": [],
+        "acknowledgementSection": $properties
+      }"""
+
   private def runInvalidJsonTest(result: Either[SchemaValidationException, Unit], expectedResult: List[String]): Unit =
     result match {
       case Right(value) => fail("No error was returned from schema validation:\n" + value)
@@ -4248,6 +4259,610 @@ class JsonSchemeValidatorSpec extends FunSuite {
   }
 
   test(
+    "validateJson rejects the form gracefully when an acknowledgementSection does not contain the required property [title]"
+  ) {
+    val testProperties =
+      json"""
+      {
+        "panelTitle": {
+          "en": "English panel title",
+          "cy": "Welsh panel title"
+        },
+        "showReference": true,
+        "instructionPdf": {
+          "header": {
+            "en": "English header",
+            "cy": "Welsh header"
+          },
+          "footer": {
+            "en": "English footer",
+            "cy": "Welsh footer"
+          }
+        },
+        "pdf": {
+          "header": {
+            "en": "English header",
+            "cy": "Welsh header"
+          },
+          "footer": {
+            "en": "English footer",
+            "cy": "Welsh footer"
+          },
+          "tabularFormat": true
+        },
+        "fields": []
+      }"""
+
+    val jsonTemplate = constructTestAcknowledgementSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/acknowledgementSection>: acknowledgementSection requires properties [title, fields] to be present"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when an acknowledgementSection does not contain the required property [fields]"
+  ) {
+    val testProperties =
+      json"""
+      {
+        "title": {
+          "en": "English title",
+          "cy": "Welsh title"
+        },
+        "panelTitle": {
+          "en": "English panel title",
+          "cy": "Welsh panel title"
+        },
+        "showReference": true,
+        "instructionPdf": {
+          "header": {
+            "en": "English header",
+            "cy": "Welsh header"
+          },
+          "footer": {
+            "en": "English footer",
+            "cy": "Welsh footer"
+          }
+        },
+        "pdf": {
+          "header": {
+            "en": "English header",
+            "cy": "Welsh header"
+          },
+          "footer": {
+            "en": "English footer",
+            "cy": "Welsh footer"
+          },
+          "tabularFormat": true
+        }
+      }"""
+
+    val jsonTemplate = constructTestAcknowledgementSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/acknowledgementSection>: acknowledgementSection requires properties [title, fields] to be present"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when an acknowledgementSection contains an invalid property"
+  ) {
+    val testProperties =
+      json"""
+      {
+        "title": {
+          "en": "English title",
+          "cy": "Welsh title"
+        },
+        "panelTitle": {
+          "en": "English panel title",
+          "cy": "Welsh panel title"
+        },
+        "showReference": true,
+        "instructionPdf": {
+          "header": {
+            "en": "English header",
+            "cy": "Welsh header"
+          },
+          "footer": {
+            "en": "English footer",
+            "cy": "Welsh footer"
+          }
+        },
+        "pdf": {
+          "header": {
+            "en": "English header",
+            "cy": "Welsh header"
+          },
+          "footer": {
+            "en": "English footer",
+            "cy": "Welsh footer"
+          },
+          "tabularFormat": true
+        },
+        "fields": [],
+        "type": "text"
+      }"""
+
+    val jsonTemplate = constructTestAcknowledgementSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/acknowledgementSection>: acknowledgementSection has invalid key(s) [type]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when an acknowledgementSection contains the property [title] of an incorrect type"
+  ) {
+    val testProperties =
+      json"""
+      {
+        "title": 1,
+        "fields": []
+      }"""
+
+    val jsonTemplate = constructTestAcknowledgementSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/acknowledgementSection/title>: Property title expected type String or JSONObject with structure {en: String} or {en: String, cy: String}"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when an acknowledgementSection contains the property [title] as an object without the key [en]"
+  ) {
+    val testProperties =
+      json"""
+      {
+        "title": {
+          "cy": "Welsh title"
+        },
+        "fields": []
+      }"""
+
+    val jsonTemplate = constructTestAcknowledgementSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/acknowledgementSection/title>: Property title expected type String or JSONObject with structure {en: String} or {en: String, cy: String}. Missing key(s) [en] are required"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when an acknowledgementSection contains the property [title] as an object with a key other than [en, cy]"
+  ) {
+    val testProperties =
+      json"""
+      {
+        "title": {
+          "en": "English title",
+          "cy": "Welsh title",
+          "value": "This is not allowed"
+        },
+        "fields": []
+      }"""
+
+    val jsonTemplate = constructTestAcknowledgementSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/acknowledgementSection/title>: Property title expected type String or JSONObject with structure {en: String} or {en: String, cy: String}. Invalid key(s) [value] are not permitted"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when an acknowledgementSection contains the property [title] as an object without the key [en] with a key other than [en, cy]"
+  ) {
+    val testProperties =
+      json"""
+      {
+        "title": {
+          "cy": "Welsh title",
+          "value": "This is not allowed"
+        },
+        "fields": []
+      }"""
+
+    val jsonTemplate = constructTestAcknowledgementSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/acknowledgementSection/title>: Property title expected type String or JSONObject with structure {en: String} or {en: String, cy: String}. Missing key(s) [en] are required. Invalid key(s) [value] are not permitted"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when an acknowledgementSection contains the property [panelTitle] of an incorrect type"
+  ) {
+    val testProperties =
+      json"""
+      {
+        "title": {
+          "en": "English title",
+          "cy": "Welsh title"
+        },
+        "panelTitle": false,
+        "fields": []
+      }"""
+
+    val jsonTemplate = constructTestAcknowledgementSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/acknowledgementSection/panelTitle>: Property panelTitle expected type String or JSONObject with structure {en: String} or {en: String, cy: String}"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when an acknowledgementSection contains the property [panelTitle] as an object without the key [en]"
+  ) {
+    val testProperties =
+      json"""
+      {
+        "title": {
+          "en": "English title",
+          "cy": "Welsh title"
+        },
+        "panelTitle": {
+          "cy": "Welsh panel title"
+        },
+        "fields": []
+      }"""
+
+    val jsonTemplate = constructTestAcknowledgementSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/acknowledgementSection/panelTitle>: Property panelTitle expected type String or JSONObject with structure {en: String} or {en: String, cy: String}. Missing key(s) [en] are required"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when an acknowledgementSection contains the property [panelTitle] as an object with a key other than [en, cy]"
+  ) {
+    val testProperties =
+      json"""
+      {
+        "title": {
+          "en": "English title",
+          "cy": "Welsh title"
+        },
+        "panelTitle": {
+          "en": "English panel title",
+          "cy": "Welsh panel title",
+          "value": "This is not allowed"
+        },
+        "fields": []
+      }"""
+
+    val jsonTemplate = constructTestAcknowledgementSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/acknowledgementSection/panelTitle>: Property panelTitle expected type String or JSONObject with structure {en: String} or {en: String, cy: String}. Invalid key(s) [value] are not permitted"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when an acknowledgementSection contains the property [panelTitle] as an object without the key [en] with a key other than [en, cy]"
+  ) {
+    val testProperties =
+      json"""
+      {
+        "title": {
+          "en": "English title",
+          "cy": "Welsh title"
+        },
+        "panelTitle": {
+          "cy": "Welsh panel title",
+          "value": "This is not allowed"
+        },
+        "fields": []
+      }"""
+
+    val jsonTemplate = constructTestAcknowledgementSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/acknowledgementSection/panelTitle>: Property panelTitle expected type String or JSONObject with structure {en: String} or {en: String, cy: String}. Missing key(s) [en] are required. Invalid key(s) [value] are not permitted"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when an acknowledgementSection contains the property [showReference] with an invalid type"
+  ) {
+    val testProperties =
+      json"""
+      {
+        "title": {
+          "en": "English title",
+          "cy": "Welsh title"
+        },
+        "showReference": [],
+        "fields": []
+      }"""
+
+    val jsonTemplate = constructTestAcknowledgementSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/acknowledgementSection/showReference>: Property showReference expected type [Boolean], found [JSONArray]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when an acknowledgementSection contains the property [instructionPdf] with an invalid type"
+  ) {
+    val testProperties =
+      json"""
+      {
+        "title": {
+          "en": "English title",
+          "cy": "Welsh title"
+        },
+        "instructionPdf": "This is not allowed",
+        "fields": []
+      }"""
+
+    val jsonTemplate = constructTestAcknowledgementSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/acknowledgementSection/instructionPdf>: Property instructionPdf expected type [Object], found [String]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when an acknowledgementSection contains the property [instructionPdf] that doesn't include the property [header]"
+  ) {
+    val testProperties =
+      json"""
+      {
+        "title": {
+          "en": "English title",
+          "cy": "Welsh title"
+        },
+        "instructionPdf": {
+          "footer": {
+            "en": "English footer",
+            "cy": "Welsh footer"
+          }
+        },
+        "fields": []
+      }"""
+
+    val jsonTemplate = constructTestAcknowledgementSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/acknowledgementSection/instructionPdf>: instructionPdf requires properties [header] to be present"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when an acknowledgementSection contains the property [instructionPdf] that has the property [footer] of an incorrect type"
+  ) {
+    val testProperties =
+      json"""
+      {
+        "title": {
+          "en": "English title",
+          "cy": "Welsh title"
+        },
+        "instructionPdf": {
+          "header": {
+            "en": "English header",
+            "cy": "Welsh header"
+          },
+          "footer": 1
+        },
+        "fields": []
+      }"""
+
+    val jsonTemplate = constructTestAcknowledgementSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/acknowledgementSection/instructionPdf/footer>: Property footer expected type String or JSONObject with structure {en: String} or {en: String, cy: String}"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when an acknowledgementSection contains the property [pdf] that doesn't include the property [header]"
+  ) {
+    val testProperties =
+      json"""
+      {
+        "title": {
+          "en": "English title",
+          "cy": "Welsh title"
+        },
+        "pdf": {
+          "footer": {
+            "en": "English footer",
+            "cy": "Welsh footer"
+          },
+          "tabularFormat": true
+        },
+        "fields": []
+      }"""
+
+    val jsonTemplate = constructTestAcknowledgementSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/acknowledgementSection/pdf>: pdf requires properties [header] to be present"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when an acknowledgementSection contains the property [pdf] that has the property [tabularFormat] of an incorrect type"
+  ) {
+    val testProperties =
+      json"""
+      {
+        "title": {
+          "en": "English title",
+          "cy": "Welsh title"
+        },
+        "pdf": {
+          "header": {
+            "en": "English header",
+            "cy": "Welsh header"
+          },
+          "footer": {
+            "en": "English footer",
+            "cy": "Welsh footer"
+          },
+          "tabularFormat": {}
+        },
+        "fields": []
+      }"""
+
+    val jsonTemplate = constructTestAcknowledgementSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/acknowledgementSection/pdf/tabularFormat>: Property tabularFormat expected type [Boolean], found [JSONObject]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when an acknowledgementSection contains the property [fields] of an incorrect type"
+  ) {
+    val testProperties =
+      json"""
+      {
+        "title": {
+          "en": "English title",
+          "cy": "Welsh title"
+        },
+        "fields": "This is not allowed"
+      }"""
+
+    val jsonTemplate = constructTestAcknowledgementSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/acknowledgementSection/fields>: Property fields expected type [Array], found [String]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when an acknowledgementSection contains the property [fields] which is an array of an invalid type"
+  ) {
+    val testProperties =
+      json"""
+      {
+        "title": {
+          "en": "English title",
+          "cy": "Welsh title"
+        },
+        "fields": [
+          1
+        ]
+      }"""
+
+    val jsonTemplate = constructTestAcknowledgementSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/acknowledgementSection/fields/0>: Property fields expected type Array of [Object], found Array of [Integer]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when an acknowledgementSection contains the property [fields] which is an array of objects that are invalid"
+  ) {
+    val testProperties =
+      json"""
+      {
+        "title": {
+          "en": "English title",
+          "cy": "Welsh title"
+        },
+        "fields": [
+          {
+            "id": "test-acknowledgementSection-id",
+            "type": 1
+          }
+        ]
+      }"""
+
+    val jsonTemplate = constructTestAcknowledgementSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at ID <test-acknowledgementSection-id>: Property type expected type [String], found [Integer]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
     "validateJson accepts the form when the type property is [info] and the properties that are dependent on this are present"
   ) {
     val testProperties =
@@ -5173,6 +5788,76 @@ class JsonSchemeValidatorSpec extends FunSuite {
         }"""
 
     val jsonTemplate = constructTestTaskListDeclarationSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = Right(())
+
+    assertEquals(result, expectedResult)
+  }
+
+  test(
+    "validateJson accepts the form when an acknowledgementSection includes valid [title, fields]"
+  ) {
+    val testProperties =
+      json"""
+      {
+        "title": {
+          "en": "English title",
+          "cy": "Welsh title"
+        },
+        "fields": []
+      }"""
+
+    val jsonTemplate = constructTestAcknowledgementSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = Right(())
+
+    assertEquals(result, expectedResult)
+  }
+
+  test(
+    "validateJson accepts the form when an acknowledgementSection includes valid [title, panelTitle, showReference, instructionPdf, pdf, fields]"
+  ) {
+    val testProperties =
+      json"""
+      {
+        "title": {
+          "en": "English title",
+          "cy": "Welsh title"
+        },
+        "panelTitle": {
+          "en": "English panel title",
+          "cy": "Welsh panel title"
+        },
+        "showReference": true,
+        "instructionPdf": {
+          "header": {
+            "en": "English header",
+            "cy": "Welsh header"
+          },
+          "footer": {
+            "en": "English footer",
+            "cy": "Welsh footer"
+          }
+        },
+        "pdf": {
+          "header": {
+            "en": "English header",
+            "cy": "Welsh header"
+          },
+          "footer": {
+            "en": "English footer",
+            "cy": "Welsh footer"
+          },
+          "tabularFormat": true
+        },
+        "fields": []
+      }"""
+
+    val jsonTemplate = constructTestAcknowledgementSectionJsonTemplate(testProperties)
 
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
