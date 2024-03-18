@@ -1249,34 +1249,40 @@ object FormTemplateValidator {
 
   def validateSummarySection(formTemplate: FormTemplate): ValidationResult = {
 
-    val summarySection = formTemplate.summarySection
+    def reason(fc: FormComponent) =
+      s"""Field '${fc.id}' is not Info field. All fields in 'summarySection' must be Info or Table or MiniSummary type."""
 
-    def checkComponentTypes(fields: List[FormComponent]): List[ValidationResult] =
-      fields.map {
-        case IsInformationMessage(_) => Valid
-        case IsMiniSummaryList(_)    => Valid
-        case fc                      => Invalid(s"""Field '${fc.id}' is not Info field. All fields in 'summarySection' must be Info type.""")
+    def checkComponentType(summarySection: SummarySection) =
+      summarySection.fields.fold(List.empty[ValidationResult])(fields =>
+        fields.toList.map(f => isViewOnlyComponent(f, reason(f)))
+      )
+
+    def validatePdfLinkExpr(summarySection: SummarySection) = {
+      val smartStrings = summarySection.fields.fold(List.empty[SmartString])(f =>
+        f.collect { case IsInformationMessage(fc) =>
+          fc.infoText
+        }
+      ) :+ summarySection.footer :+ summarySection.header
+
+      smartStrings.map { s =>
+        if (s.localised.m.values.exists(_.contains("/submissions/summary/pdf/")))
+          Invalid(
+            "`/submissions/summary/pdf/${form.id}` is deprecated. Please use `${link.printSummaryPdf}` instead"
+          )
+        else Valid
       }
-
-    val isNonInformationMessagePresent: List[ValidationResult] = checkComponentTypes(
-      summarySection.fields.fold(List.empty[FormComponent])(_.toList)
-    )
-
-    val smartStrings = summarySection.fields.fold(List.empty[SmartString])(f =>
-      f.collect { case IsInformationMessage(fc) =>
-        fc.infoText
-      }
-    ) :+ summarySection.footer :+ summarySection.header
-
-    val validateSmartStrings = smartStrings.map { s =>
-      if (s.localised.m.values.exists(_.contains("/submissions/summary/pdf/")))
-        Invalid(
-          "`/submissions/summary/pdf/${form.id}` is deprecated. Please use `${link.printSummaryPdf}` instead"
-        )
-      else Valid
     }
 
-    (isNonInformationMessagePresent ++ validateSmartStrings).combineAll
+    formTemplate.formKind
+      .fold[List[ValidationResult]] { _ =>
+        val summarySection = formTemplate.summarySection
+        checkComponentType(summarySection) ++ validatePdfLinkExpr(summarySection)
+      } { taskList =>
+        taskList.sections.toList.flatMap(
+          _.tasks.toList.flatMap(_.summarySection.map(summarySection => checkComponentType(summarySection).combineAll))
+        )
+      }
+      .combineAll
   }
 
   def validateAddToListCYAPage(formTemplate: FormTemplate): ValidationResult = {
@@ -1419,7 +1425,7 @@ object FormTemplateValidator {
   def validateAddToListInfoFields(formTemplate: FormTemplate): ValidationResult = {
 
     def reason(fc: FormComponent) =
-      s"AddToList.fields must be Info or Table or MiniSummary types. Field '${fc.id.value}' is not an expected type.";
+      s"AddToList.fields must be Info or Table or MiniSummary types. Field '${fc.id.value}' is not an expected type."
 
     val isNonInformation: List[ValidationResult] =
       formTemplate.formKind.allSections.map {
