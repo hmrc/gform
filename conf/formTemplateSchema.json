@@ -301,7 +301,62 @@
       "additionalProperties": false
     },
     "acknowledgementSection": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "title": {
+          "$ref": "#/$defs/stringOrEnCyObject"
+        },
+        "panelTitle": {
+          "$ref": "#/$defs/stringOrEnCyObject"
+        },
+        "showReference": {
+          "type": "boolean"
+        },
+        "instructionPdf": {
+          "type": "object",
+          "properties": {
+            "header": {
+              "$ref": "#/$defs/stringOrEnCyObject"
+            },
+            "footer": {
+              "$ref": "#/$defs/stringOrEnCyObject"
+            }
+          },
+          "required": [
+            "header"
+          ],
+          "additionalProperties": false
+        },
+        "pdf": {
+          "type": "object",
+          "properties": {
+            "header": {
+              "$ref": "#/$defs/stringOrEnCyObject"
+            },
+            "footer": {
+              "$ref": "#/$defs/stringOrEnCyObject"
+            },
+            "tabularFormat": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "header"
+          ],
+          "additionalProperties": false
+        },
+        "fields": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/fields"
+          }
+        }
+      },
+      "required": [
+        "title",
+        "fields"
+      ],
+      "additionalProperties": false
     },
     "destinations": {
       "type": "array"
@@ -727,7 +782,10 @@
           ]
         },
         "noneChoice": {
-          "type": "integer"
+          "type": [
+            "integer",
+            "string"
+          ]
         },
         "repeatsMin": {
           "type": "integer"
