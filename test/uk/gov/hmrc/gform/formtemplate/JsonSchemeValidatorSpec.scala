@@ -4657,6 +4657,41 @@ class JsonSchemeValidatorSpec extends FunSuite {
   }
 
   test(
+    "validateJson rejects the form gracefully when an acknowledgementSection contains the property [instructionPdf] that includes an invalid property"
+  ) {
+    val testProperties =
+      json"""
+      {
+        "title": {
+          "en": "English title",
+          "cy": "Welsh title"
+        },
+        "instructionPdf": {
+          "header": {
+            "en": "English header",
+            "cy": "Welsh header"
+          },
+          "footer": {
+            "en": "English footer",
+            "cy": "Welsh footer"
+          },
+          "value": "This is not allowed"
+        },
+        "fields": []
+      }"""
+
+    val jsonTemplate = constructTestAcknowledgementSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/acknowledgementSection/instructionPdf>: instructionPdf has invalid key(s) [value]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
     "validateJson rejects the form gracefully when an acknowledgementSection contains the property [instructionPdf] that doesn't include the property [header]"
   ) {
     val testProperties =
@@ -4712,6 +4747,42 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val expectedResult = List(
       "Error at <#/acknowledgementSection/instructionPdf/footer>: Property footer expected type String or JSONObject with structure {en: String} or {en: String, cy: String}"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when an acknowledgementSection contains the property [pdf] that includes an invalid property"
+  ) {
+    val testProperties =
+      json"""
+      {
+        "title": {
+          "en": "English title",
+          "cy": "Welsh title"
+        },
+        "pdf": {
+          "header": {
+            "en": "English header",
+            "cy": "Welsh header"
+          },
+          "footer": {
+            "en": "English footer",
+            "cy": "Welsh footer"
+          },
+          "tabularFormat": true,
+          "value": "This is not allowed"
+        },
+        "fields": []
+      }"""
+
+    val jsonTemplate = constructTestAcknowledgementSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/acknowledgementSection/pdf>: pdf has invalid key(s) [value]"
     )
 
     runInvalidJsonTest(result, expectedResult)
