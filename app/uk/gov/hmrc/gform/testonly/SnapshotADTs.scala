@@ -86,8 +86,8 @@ object UpdateSnapshotRequest {
 }
 
 case class UpdateFormDataRequest(
-  formId: FormId,
-  formData: FormData
+  snapshotId: SnapshotId,
+  formId: FormId
 )
 
 object UpdateFormDataRequest {
