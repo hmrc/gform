@@ -139,12 +139,24 @@ class TestOnlyFormService(
         snapshotMongoCache.upsert(updatedSnapshot).map(_ => SnapshotOverview(updatedSnapshot, withData = true))
       }
 
+  private def getSnapshot(snapshotId: SnapshotId): Future[Snapshot] =
+    snapshotMongoCache.find(snapshotId).map {
+      case Some(snapshot) => snapshot
+      case None           => throw new Exception(s"We could not find snapshot item with id: $snapshotId")
+    }
+
   def updateFormData(request: UpdateFormDataRequest)(implicit hc: HeaderCarrier): Future[SaveReply] =
     formMongoCache
       .find(request.formId)
-      .map {
+      .flatMap {
         case Some(form) =>
-          form.copy(formData = request.formData)
+          getSnapshot(request.snapshotId).map(snapshot =>
+            form.copy(
+              formData = snapshot.originalForm.formData,
+              componentIdToFileId = snapshot.originalForm.componentIdToFileId,
+              envelopeId = snapshot.originalForm.envelopeId
+            )
+          )
         case None => throw new Exception(s"We could not find snapshot item with id: $request.snapshotId")
       }
       .flatMap { updatedForm =>
