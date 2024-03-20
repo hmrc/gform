@@ -50,6 +50,8 @@ object PropertyBehaviour {
   case object Normal extends PropertyBehaviour
   // Remove property if received value from client is empty
   case object PurgeWhenEmpty extends PropertyBehaviour
+  // Remove property if received value from client is empty
+  case object StringArrayButPurgeWhenEmpty extends PropertyBehaviour
 }
 
 case class Property(
@@ -257,7 +259,7 @@ object BuilderSupport {
 
   private def updateSummary(json: Json, summarySection: Json, history: List[CursorOp]): Json = {
     val propertyList = List(
-      Property("note"),
+      Property("note", PropertyBehaviour.PurgeWhenEmpty),
       Property("title"),
       Property("header"),
       Property("footer"),
@@ -268,7 +270,12 @@ object BuilderSupport {
     updateJsonByPropertyList(propertyList, json, summarySection, history)
   }
 
-  private def updateProperty(property: Property, propertyValue: Json, history: List[CursorOp], accJson: Json) = {
+  private def updateProperty(
+    property: Property,
+    propertyValue: Json,
+    history: List[CursorOp],
+    accJson: Json
+  ): Option[Json] = {
     val target = accJson.hcursor.replay(history)
 
     val isValueAsStringEmpty = propertyValue
@@ -278,12 +285,39 @@ object BuilderSupport {
 
     target.success.flatMap { hcursor =>
       property.behaviour match {
-        case PropertyBehaviour.PurgeWhenEmpty if isValueAsStringEmpty =>
+        case PropertyBehaviour.PurgeWhenEmpty | PropertyBehaviour.StringArrayButPurgeWhenEmpty
+            if isValueAsStringEmpty =>
           hcursor
             .downField(property.name)
             .delete
             .root
             .focus
+        case PropertyBehaviour.StringArrayButPurgeWhenEmpty =>
+          val propertyField = hcursor.downField(property.name)
+          if (propertyField.succeeded) {
+            val enLabelsOnly: Option[Json] = propertyField.values.map { values =>
+              val enOnly = values.flatMap { value =>
+                val localisedValue: ACursor = value.hcursor.replayOne(DownField("en"))
+                if (localisedValue.succeeded) {
+                  localisedValue.focus
+                } else {
+                  propertyField.focus
+                }
+              }
+              Json.arr(enOnly.toList: _*)
+            }
+
+            if (enLabelsOnly.contains(propertyValue)) {
+              hcursor.focus
+            } else {
+              propertyField
+                .set(propertyValue)
+                .root
+                .focus
+            }
+          } else {
+            hcursor.withFocus(json => json.deepMerge(Json.obj(property.name -> propertyValue))).root.focus
+          }
         case _ =>
           val propertyField = hcursor.downField(property.name)
           if (propertyField.succeeded) {
@@ -351,7 +385,7 @@ object BuilderSupport {
         Property("noneChoice", PropertyBehaviour.PurgeWhenEmpty),
         Property("noneChoiceError", PropertyBehaviour.PurgeWhenEmpty),
         Property("multivalue", PropertyBehaviour.PurgeWhenEmpty),
-        Property("choices", PropertyBehaviour.PurgeWhenEmpty),
+        Property("choices", PropertyBehaviour.StringArrayButPurgeWhenEmpty),
         Property("cityMandatory", PropertyBehaviour.PurgeWhenEmpty),
         Property("countyDisplayed", PropertyBehaviour.PurgeWhenEmpty),
         Property("line2Mandatory", PropertyBehaviour.PurgeWhenEmpty),
@@ -361,7 +395,6 @@ object BuilderSupport {
       )
 
     updateJsonByPropertyList(propertyList, formComponent, sectionData, List.empty)
-
   }
 
   private def updateJsonByPropertyList(
@@ -391,6 +424,19 @@ object BuilderSupport {
     )
 
     updateJsonByPropertyList(propertyList, json, formTemplateData, List.empty[CursorOp])
+  }
+
+  def modifySubmitSection(
+    json: Json,
+    submitSectionData: Json
+  ): Json = {
+    val propertyList = List(
+      Property("label", PropertyBehaviour.PurgeWhenEmpty),
+      Property("taskLabel", PropertyBehaviour.PurgeWhenEmpty)
+    )
+    val history = List(DownField("submitSection"))
+
+    updateJsonByPropertyList(propertyList, json, submitSectionData, history)
   }
 
   def modifyFormComponentData(
@@ -562,6 +608,12 @@ object BuilderSupport {
   ): Either[BuilderError, FormTemplateRaw] =
     modifyJson(formTemplateRaw)(modifyAtlDefaultPageData(_, atlRepeaterData, sectionPath))
 
+  def updateSubmitSection(
+    formTemplateRaw: FormTemplateRaw,
+    submitSectionData: Json
+  ): Either[BuilderError, FormTemplateRaw] =
+    modifyJson(formTemplateRaw)(modifySubmitSection(_, submitSectionData))
+
   def updateAtlCyaPage(
     formTemplateRaw: FormTemplateRaw,
     atlRepeaterData: Json,
@@ -699,6 +751,13 @@ class BuilderController(
     updateAction(formTemplateRawId) { (formTemplateRaw, requestBody) =>
       BuilderSupport
         .updateAtlDefaultPage(formTemplateRaw, requestBody, sectionPath)
+        .map(formTemplateRaw => (formTemplateRaw, Results.Ok(formTemplateRaw.value)))
+    }
+
+  def updateSubmitSection(formTemplateRawId: FormTemplateRawId) =
+    updateAction(formTemplateRawId) { (formTemplateRaw, requestBody) =>
+      BuilderSupport
+        .updateSubmitSection(formTemplateRaw, requestBody)
         .map(formTemplateRaw => (formTemplateRaw, Results.Ok(formTemplateRaw.value)))
     }
 

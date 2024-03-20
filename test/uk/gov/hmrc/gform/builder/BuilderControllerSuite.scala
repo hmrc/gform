@@ -1753,4 +1753,185 @@ class BuilderControllerSuite extends FunSuite {
     assertEquals(result.spaces2, atlCyaPageJsonExpected.spaces2)
   }
 
+  val localisedOptions = json"""
+    {
+      "id": "reasonForQuery",
+      "type": "choice",
+      "label": {
+        "en": "What do you need help about?",
+        "cy": "Am beth mae angen help arnoch chi?"
+      },
+      "errorMessage": {
+        "en": "Wrong reason",
+        "cy": "Rheswm anghywir"
+      },
+      "choices": [
+        {
+          "en": "Complex international issues",
+          "cy": "Materion rhyngwladol cymhleth"
+        },
+        {
+          "en": "Sudden increase in wealth",
+          "cy": "Cynnydd sydyn mewn cyfoeth"
+        },
+        {
+          "en": "Other complex or ambiguous tax compliance issues",
+          "cy": "Materion cydymffurfio treth cymhleth neu amwys eraill"
+        }
+      ]
+    }"""
+
+  test("Do not update choice options") {
+
+    val patch: Json = Json.obj(
+      "id" := "reasonForQuery",
+      "label" := "What do you need help about?",
+      "mandatory" := "",
+      "choices" := Json.arr(
+        "Complex international issues".asJson,
+        "Sudden increase in wealth".asJson,
+        "Other complex or ambiguous tax compliance issues".asJson
+      )
+    )
+
+    val result: Json =
+      BuilderSupport
+        .updateFormComponent(
+          localisedOptions,
+          patch
+        )
+
+    assertEquals(result.spaces2, localisedOptions.spaces2)
+  }
+
+  val updateChoicesExpectedJson = json"""
+    {
+      "id": "reasonForQuery",
+      "type": "choice",
+      "label": {
+        "en": "What do you need help about?",
+        "cy": "Am beth mae angen help arnoch chi?"
+      },
+      "errorMessage": {
+        "en": "Wrong reason",
+        "cy": "Rheswm anghywir"
+      },
+      "choices": [
+        "Yes",
+        "No"
+      ]
+    }
+    """
+
+  test("Update choice options") {
+
+    val patch: Json = Json.obj(
+      "id" := "reasonForQuery",
+      "label" := "What do you need help about?",
+      "mandatory" := "",
+      "choices" := Json.arr(
+        "Yes".asJson,
+        "No".asJson
+      )
+    )
+
+    val result: Json =
+      BuilderSupport
+        .updateFormComponent(
+          localisedOptions,
+          patch
+        )
+
+    assertEquals(result.spaces2, updateChoicesExpectedJson.spaces2)
+  }
+
+  val nonLocalisedOptions = json"""
+    {
+      "format" : "yesno",
+      "id" : "reasonForQuery",
+      "type" : "choice",
+      "label" : {
+        "en" : "What do you need help about?",
+        "cy" : "Am beth mae angen help arnoch chi?"
+      },
+      "shortName" : {
+        "en" : "What do you need?",
+        "cy" : "Beth sydd ei angen arnoch chi?"
+      },
+      "helpText" : {
+        "en" : "What do you need to make pancakes?",
+        "cy" : "Beth sydd ei angen arnoch i wneud crempogau?"
+      },
+      "errorMessage" : {
+        "en" : "Wrong reason",
+        "cy" : "Rheswm anghywir"
+      },
+      "dividerText" : {
+        "en" : "Or",
+        "cy" : "Neu"
+      }
+    }"""
+
+  val nonLocalisedOptionsExpectedJson = json"""
+    {
+      "multivalue": "true",
+      "choices": [
+        "Complex international issues",
+        "Sudden increase in wealth",
+        "Other complex or ambiguous tax compliance issues"
+      ],
+      "id" : "reasonForQuery",
+      "type" : "choice",
+      "label" : {
+        "en" : "What do you need help about?",
+        "cy" : "Am beth mae angen help arnoch chi?"
+      },
+      "shortName" : {
+        "en" : "What do you need?",
+        "cy" : "Beth sydd ei angen arnoch chi?"
+      },
+      "helpText" : {
+        "en" : "What do you need to make pancakes?",
+        "cy" : "Beth sydd ei angen arnoch i wneud crempogau?"
+      },
+      "errorMessage" : {
+        "en" : "Wrong reason",
+        "cy" : "Rheswm anghywir"
+      },
+      "dividerText" : {
+        "en" : "Or",
+        "cy" : "Neu"
+      }
+    }"""
+
+  test("Do not update choice non localised options") {
+    val patch: Json = Json.obj(
+      "id" := "reasonForQuery",
+      "label" := "What do you need help about?",
+      "helpText" := "What do you need to make pancakes?",
+      "shortName" := "What do you need?",
+      "mandatory" := "",
+      "choices" := Json.arr(
+        "Complex international issues".asJson,
+        "Sudden increase in wealth".asJson,
+        "Other complex or ambiguous tax compliance issues".asJson
+      ),
+      "format" := "",
+      "multivalue" := "true",
+      "errorMessage" := "Wrong reason",
+      "dividerPosition" := "",
+      "dividerText" := "Or",
+      "noneChoice" := "",
+      "noneChoiceError" := ""
+    )
+
+    val result: Json =
+      BuilderSupport
+        .updateFormComponent(
+          nonLocalisedOptions,
+          patch
+        )
+
+    assertEquals(result.spaces2, nonLocalisedOptionsExpectedJson.spaces2)
+  }
 }

@@ -701,7 +701,7 @@ object FormTemplateValidator {
         case fc @ IsDate(_) if isEmptyLabel(fc.label) =>
           Invalid(s"date component ${fc.id} should have a non-blank label")
         case fc @ IsChoice(_) if isEmptyLabel(fc.label) && validateChoiceSingleChoice(sectionsList).isValid =>
-          Invalid(s"choice address component ${fc.id} should have a non-blank label")
+          Invalid(s"choice component ${fc.id} should have a non-blank label")
         case fc @ IsText(_) if isEmptyLabel(fc.label) && !fc.onlyShowOnSummary =>
           Invalid(s"text component ${fc.id} should have a non-blank label, unless submitMode is summaryinfoonly")
         case fc @ IsTextArea(_) if isEmptyLabel(fc.label) && !fc.onlyShowOnSummary =>

@@ -15,3 +15,4 @@ POST /update-atl-default-page/:formTemplateId                                  u
 POST /update-atl-default-page/form-component/:formTemplateId/:formComponentId  uk.gov.hmrc.gform.builder.BuilderController.updateAtlDefaultPageFormComponent(formTemplateId: FormTemplateRawId, formComponentId: FormComponentId, sectionPath: SectionPath)
 
 POST /update-atl-cya-page/:formTemplateId                                      uk.gov.hmrc.gform.builder.BuilderController.updateAtlCyaPage(formTemplateId: FormTemplateRawId, sectionPath: SectionPath)
+POST /update-submit-section/:formTemplateId                                    uk.gov.hmrc.gform.builder.BuilderController.updateSubmitSection(formTemplateId: FormTemplateRawId)

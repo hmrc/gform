@@ -261,7 +261,7 @@
         "pdf": {
           "type": "object"
         },
-        "notes": {
+        "note": {
           "type": "string"
         },
         "fields": {
@@ -311,6 +311,9 @@
         },
         "showReference": {
           "type": "boolean"
+        },
+        "note": {
+          "type": "string"
         },
         "instructionPdf": {
           "type": "object",
