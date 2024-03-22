@@ -341,6 +341,9 @@
             },
             "tabularFormat": {
               "type": "boolean"
+            },
+            "includeSignatureBox": {
+              "type": "boolean"
             }
           },
           "required": [
