@@ -4288,7 +4288,8 @@ class JsonSchemeValidatorSpec extends FunSuite {
             "en": "English footer",
             "cy": "Welsh footer"
           },
-          "tabularFormat": true
+          "tabularFormat": true,
+          "includeSignatureBox": true
         },
         "fields": []
       }"""
@@ -4338,7 +4339,8 @@ class JsonSchemeValidatorSpec extends FunSuite {
             "en": "English footer",
             "cy": "Welsh footer"
           },
-          "tabularFormat": true
+          "tabularFormat": true,
+          "includeSignatureBox": true
         }
       }"""
 
@@ -4387,7 +4389,8 @@ class JsonSchemeValidatorSpec extends FunSuite {
             "en": "English footer",
             "cy": "Welsh footer"
           },
-          "tabularFormat": true
+          "tabularFormat": true,
+          "includeSignatureBox": true
         },
         "fields": [],
         "type": "text"
@@ -4772,6 +4775,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
             "cy": "Welsh footer"
           },
           "tabularFormat": true,
+          "includeSignatureBox": true,
           "value": "This is not allowed"
         },
         "fields": []
@@ -4803,7 +4807,8 @@ class JsonSchemeValidatorSpec extends FunSuite {
             "en": "English footer",
             "cy": "Welsh footer"
           },
-          "tabularFormat": true
+          "tabularFormat": true,
+          "includeSignatureBox": true
         },
         "fields": []
       }"""
@@ -4838,7 +4843,8 @@ class JsonSchemeValidatorSpec extends FunSuite {
             "en": "English footer",
             "cy": "Welsh footer"
           },
-          "tabularFormat": {}
+          "tabularFormat": {},
+          "includeSignatureBox": true
         },
         "fields": []
       }"""
@@ -4849,6 +4855,42 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val expectedResult = List(
       "Error at <#/acknowledgementSection/pdf/tabularFormat>: Property tabularFormat expected type [Boolean], found [JSONObject]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when an acknowledgementSection contains the property [pdf] that has the property [includeSignatureBox] of an incorrect type"
+  ) {
+    val testProperties =
+      json"""
+      {
+        "title": {
+          "en": "English title",
+          "cy": "Welsh title"
+        },
+        "pdf": {
+          "header": {
+            "en": "English header",
+            "cy": "Welsh header"
+          },
+          "footer": {
+            "en": "English footer",
+            "cy": "Welsh footer"
+          },
+          "tabularFormat": true,
+          "includeSignatureBox": []
+        },
+        "fields": []
+      }"""
+
+    val jsonTemplate = constructTestAcknowledgementSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/acknowledgementSection/pdf/includeSignatureBox>: Property includeSignatureBox expected type [Boolean], found [JSONArray]"
     )
 
     runInvalidJsonTest(result, expectedResult)
@@ -5923,7 +5965,8 @@ class JsonSchemeValidatorSpec extends FunSuite {
             "en": "English footer",
             "cy": "Welsh footer"
           },
-          "tabularFormat": true
+          "tabularFormat": true,
+          "includeSignatureBox": true
         },
         "fields": []
       }"""
