@@ -686,6 +686,9 @@
         "errorShortNameStart": {
           "$ref": "#/$defs/stringOrEnCyObject"
         },
+        "errorExample": {
+          "$ref": "#/$defs/stringOrEnCyObject"
+        },
         "displayWidth": {
           "type": "string"
         },
@@ -1137,6 +1140,34 @@
               "pattern": "^(table)$"
             }
           }
+        },
+        "errorExample": {
+          "oneOf": [
+            {
+              "required": [
+                "type"
+              ],
+              "properties": {
+                "type": {
+                  "pattern": "^(taxPeriodDate|calendarDate|date|address)$"
+                }
+              }
+            },
+            {
+              "required": [
+                "type",
+                "format"
+              ],
+              "properties": {
+                "type": {
+                  "pattern": "^(text)$"
+                },
+                "format": {
+                  "pattern": "^(number|positiveNumber|positiveWholeNumber|sterling|positiveSterling|positiveWholeSterling)$"
+                }
+              }
+            }
+          ]
         }
       }
     },
