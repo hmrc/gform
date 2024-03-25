@@ -31,7 +31,11 @@ object JsonSchemeErrorParser {
     val parsedErrors: NonEmptyList[ValidationError] = errors.map { error =>
       val parsedErrorMessage: String =
         if (error.schemaLocation.getOrElse("").contains("dependencies")) {
-          parseConditionalValidationErrorMessage(schema, json, error)
+          if (error.schemaLocation.getOrElse("").contains("oneOf")) {
+            parseConditionalValidationWithOneOfErrorMessage(schema, json, error)
+          } else {
+            parseConditionalValidationErrorMessage(schema, json, error)
+          }
         } else if (errors.filter(_.location === error.location).map(_.keyword).contains("type")) {
           parseTypeError(error, errors, json, schema)
         } else if (error.keyword === "required") {
@@ -279,6 +283,61 @@ object JsonSchemeErrorParser {
               s"Property $property can only be used with ${requiredPropertyValuesFromPattern(propertyAndPattern)}"
             constructCustomErrorMessage(errorLocation, errorMessage)
         }
+    }
+
+  private def parseConditionalValidationWithOneOfErrorMessage(
+    schema: Json,
+    json: Json,
+    error: ValidationError
+  ): String =
+    error.schemaLocation match {
+      case None => error.getMessage
+      case Some(schemaLocation) =>
+        val splitSchemaLocation: List[String] = schemaLocation.split("/").tail.toList
+        val indexOfOneOf: Int = splitSchemaLocation.indexOf("oneOf")
+
+        val maybeParsedOneOfOptions: Option[List[String]] =
+          parseAllOneOfOptions(schema, splitSchemaLocation, indexOfOneOf)
+
+        val errorProperty: String = splitSchemaLocation(indexOfOneOf - 1)
+
+        val propertyNameInLocation = error.keyword === "pattern"
+        val errorLocation: String = tryConvertErrorLocationToId(json, error.location, propertyNameInLocation)
+
+        maybeParsedOneOfOptions match {
+          case None => error.getMessage
+          case Some(parsedOneOfOptions) =>
+            val errorMessage: String =
+              s"Property $errorProperty can only be used with ${parsedOneOfOptions.mkString(" OR ")}"
+            constructCustomErrorMessage(errorLocation, errorMessage)
+        }
+    }
+
+  private def parseAllOneOfOptions(schema: Json, splitSchemaLocation: List[String], indexOfOneOf: Int) =
+    goDownSchema(schema, splitSchemaLocation.slice(0, indexOfOneOf + 1)) match {
+      case Left(_) => None
+      case Right(jsonValue) =>
+        jsonValue.asArray match {
+          case None => None
+          case Some(oneOfOptions) =>
+            getRequirementsForEveryOneOfOption(oneOfOptions) match {
+              case Nil          => None
+              case requirements => Some(requirements)
+            }
+        }
+    }
+
+  private def getRequirementsForEveryOneOfOption(oneOfOptions: Vector[Json]) =
+    oneOfOptions.toList.flatMap { component =>
+      component.findAllByKey("properties").headOption match {
+        case None => None
+        case Some(requiredProperties) =>
+          requiredProperties.as[Map[String, Map[String, String]]] match {
+            case Left(_) => None
+            case Right(requiredPropertiesMap) =>
+              Some(requiredPropertyValuesFromPattern(requiredPropertiesMap))
+          }
+      }
     }
 
   private def requiredPropertyValuesFromPattern(requiredPropertyAndPattern: Map[String, Map[String, String]]): String =
