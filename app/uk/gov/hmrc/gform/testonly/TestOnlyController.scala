@@ -291,6 +291,11 @@ class TestOnlyController(
       .map(StringEscapeUtils.unescapeHtml4)
       .getOrElse("")
 
+  def getFormData(formId: FormId) = Action.async { request =>
+    implicit val hc: HeaderCarrier = HeaderCarrier()
+    testOnlyFormService.getFormData(formId).map(formData => Ok(Json.toJson(formData)))
+  }
+
   def saveForm() =
     Action.async(parse.json[SaveRequest]) { request =>
       implicit val hc: HeaderCarrier = HeaderCarrier()

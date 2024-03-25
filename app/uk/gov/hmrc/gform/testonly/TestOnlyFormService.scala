@@ -22,7 +22,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.crypto.{ Decrypter, Encrypter }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateRawId
 import uk.gov.hmrc.gform.formtemplate.{ FormTemplateService, RequestHandlerAlg }
-import uk.gov.hmrc.gform.sharedmodel.form.FormId
+import uk.gov.hmrc.gform.sharedmodel.form.{ FormData, FormId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateRaw
 import uk.gov.hmrc.gform.save4later.FormMongoCache
 import uk.gov.hmrc.gform.core.FOpt
@@ -69,6 +69,11 @@ class TestOnlyFormService(
     val updatedValue = raw.value ++ Json.obj("showContinueOrDeletePage" -> "false")
     FormTemplateRaw(updatedValue)
   }
+
+  def getFormData(formId: FormId)(implicit hc: HeaderCarrier): Future[FormData] =
+    formMongoCache
+      .get(formId)
+      .map(_.formData)
 
   def saveForm(saveRequest: SaveRequest)(implicit hc: HeaderCarrier): Future[SnapshotOverview] =
     formMongoCache
