@@ -4976,6 +4976,119 @@ class JsonSchemeValidatorSpec extends FunSuite {
   }
 
   test(
+    "validateJson rejects the form gracefully when the property errorExample is an object missing the en key and including an invalid key"
+  ) {
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": "test label",
+            "type": "date",
+            "errorExample": {
+              "value": "This is not allowed",
+              "cy": "Welsh error example"
+            }
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult =
+      List(
+        "Error at ID <testId>: Property errorExample expected type String or JSONObject with structure {en: String} or {en: String, cy: String}. Missing key(s) [en] are required. Invalid key(s) [value] are not permitted"
+      )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when the property errorExample is used with the format property not present and the type property not [taxPeriodDate, calendarDate, date, address]"
+  ) {
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": "test label",
+            "type": "info",
+            "errorExample": {
+              "en": "English error example",
+              "cy": "Welsh error example"
+            }
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult =
+      List(
+        "Error at ID <testId>: Property errorExample can only be used with type: [taxPeriodDate, calendarDate, date, address] OR type: [text], format: [number, positiveNumber, positiveWholeNumber, sterling, positiveSterling, positiveWholeSterling]"
+      )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when the property errorExample is used with the type property set to [text] and no format property"
+  ) {
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": "test label",
+            "type": "text",
+            "errorExample": {
+              "en": "English error example",
+              "cy": "Welsh error example"
+            }
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult =
+      List(
+        "Error at ID <testId>: Property errorExample can only be used with type: [taxPeriodDate, calendarDate, date, address] OR type: [text], format: [number, positiveNumber, positiveWholeNumber, sterling, positiveSterling, positiveWholeSterling]"
+      )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when the property errorExample is used with the type property set to [text] and the format property not [number, positiveNumber, positiveWholeNumber, sterling, positiveSterling, positiveWholeSterling]"
+  ) {
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": "test label",
+            "type": "text",
+            "format": "text",
+            "errorExample": {
+              "en": "English error example",
+              "cy": "Welsh error example"
+            }
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult =
+      List(
+        "Error at ID <testId>: Property errorExample can only be used with type: [taxPeriodDate, calendarDate, date, address] OR type: [text], format: [number, positiveNumber, positiveWholeNumber, sterling, positiveSterling, positiveWholeSterling]"
+      )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
     "validateJson accepts the form when the type property is [info] and the properties that are dependent on this are present"
   ) {
     val testProperties =
@@ -5972,6 +6085,287 @@ class JsonSchemeValidatorSpec extends FunSuite {
       }"""
 
     val jsonTemplate = constructTestAcknowledgementSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = Right(())
+
+    assertEquals(result, expectedResult)
+  }
+
+  test(
+    "validateJson accepts the form when the property errorExample is used with the type property set to [taxPeriodDate]"
+  ) {
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": "test label",
+            "type": "taxPeriodDate",
+            "errorExample": {
+              "en": "English error example",
+              "cy": "Welsh error example"
+            }
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = Right(())
+
+    assertEquals(result, expectedResult)
+  }
+
+  test(
+    "validateJson accepts the form when the property errorExample is used with the type property set to [calendarDate]"
+  ) {
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": "test label",
+            "type": "calendarDate",
+            "errorExample": {
+              "en": "English error example",
+              "cy": "Welsh error example"
+            }
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = Right(())
+
+    assertEquals(result, expectedResult)
+  }
+
+  test(
+    "validateJson accepts the form when the property errorExample is used with the type property set to [date]"
+  ) {
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": "test label",
+            "type": "date",
+            "errorExample": {
+              "en": "English error example",
+              "cy": "Welsh error example"
+            }
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = Right(())
+
+    assertEquals(result, expectedResult)
+  }
+
+  test(
+    "validateJson accepts the form when the property errorExample is used with the type property set to [address]"
+  ) {
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": "test label",
+            "type": "address",
+            "errorExample": {
+              "en": "English error example",
+              "cy": "Welsh error example"
+            }
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = Right(())
+
+    assertEquals(result, expectedResult)
+  }
+
+  test(
+    "validateJson accepts the form when the property errorExample is used with the type property set to [address]"
+  ) {
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": "test label",
+            "type": "address",
+            "errorExample": {
+              "en": "English error example",
+              "cy": "Welsh error example"
+            }
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = Right(())
+
+    assertEquals(result, expectedResult)
+  }
+
+  test(
+    "validateJson accepts the form when the property errorExample is used with the type property set to [text] and the format property set to [number]"
+  ) {
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": "test label",
+            "type": "text",
+            "format": "number",
+            "errorExample": {
+              "en": "English error example",
+              "cy": "Welsh error example"
+            }
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = Right(())
+
+    assertEquals(result, expectedResult)
+  }
+
+  test(
+    "validateJson accepts the form when the property errorExample is used with the type property set to [text] and the format property set to [positiveNumber]"
+  ) {
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": "test label",
+            "type": "text",
+            "format": "positiveNumber",
+            "errorExample": {
+              "en": "English error example",
+              "cy": "Welsh error example"
+            }
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = Right(())
+
+    assertEquals(result, expectedResult)
+  }
+
+  test(
+    "validateJson accepts the form when the property errorExample is used with the type property set to [text] and the format property set to [positiveWholeNumber]"
+  ) {
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": "test label",
+            "type": "text",
+            "format": "positiveWholeNumber",
+            "errorExample": {
+              "en": "English error example",
+              "cy": "Welsh error example"
+            }
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = Right(())
+
+    assertEquals(result, expectedResult)
+  }
+
+  test(
+    "validateJson accepts the form when the property errorExample is used with the type property set to [text] and the format property set to [sterling]"
+  ) {
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": "test label",
+            "type": "text",
+            "format": "sterling",
+            "errorExample": {
+              "en": "English error example",
+              "cy": "Welsh error example"
+            }
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = Right(())
+
+    assertEquals(result, expectedResult)
+  }
+
+  test(
+    "validateJson accepts the form when the property errorExample is used with the type property set to [text] and the format property set to [positiveSterling]"
+  ) {
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": "test label",
+            "type": "text",
+            "format": "positiveSterling",
+            "errorExample": {
+              "en": "English error example",
+              "cy": "Welsh error example"
+            }
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = Right(())
+
+    assertEquals(result, expectedResult)
+  }
+
+  test(
+    "validateJson accepts the form when the property errorExample is used with the type property set to [text] and the format property set to [positiveWholeSterling]"
+  ) {
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": "test label",
+            "type": "text",
+            "format": "positiveWholeSterling",
+            "errorExample": {
+              "en": "English error example",
+              "cy": "Welsh error example"
+            }
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
     val result = JsonSchemeValidator.validateJson(jsonTemplate)
 
