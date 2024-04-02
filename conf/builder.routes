@@ -1,3 +1,4 @@
+POST /update-batch/:formTemplateId                            uk.gov.hmrc.gform.builder.BuilderController.updateBatch(formTemplateId: FormTemplateRawId)
 POST /update-header/:formTemplateId                           uk.gov.hmrc.gform.builder.BuilderController.updateSection(formTemplateId: FormTemplateRawId)
 POST /update-form-component/:formTemplateId/:formComponentId  uk.gov.hmrc.gform.builder.BuilderController.updateFormComponent(formTemplateId: FormTemplateRawId, formComponentId: FormComponentId)
 POST /update-form-template/:formTemplateId                    uk.gov.hmrc.gform.builder.BuilderController.updateFormTemplate(formTemplateId: FormTemplateRawId)
@@ -15,4 +16,3 @@ POST /update-atl-default-page/:formTemplateId                                  u
 POST /update-atl-default-page/form-component/:formTemplateId/:formComponentId  uk.gov.hmrc.gform.builder.BuilderController.updateAtlDefaultPageFormComponent(formTemplateId: FormTemplateRawId, formComponentId: FormComponentId, sectionPath: SectionPath)
 
 POST /update-atl-cya-page/:formTemplateId                                      uk.gov.hmrc.gform.builder.BuilderController.updateAtlCyaPage(formTemplateId: FormTemplateRawId, sectionPath: SectionPath)
-POST /update-submit-section/:formTemplateId                                    uk.gov.hmrc.gform.builder.BuilderController.updateSubmitSection(formTemplateId: FormTemplateRawId)

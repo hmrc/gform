@@ -19,8 +19,12 @@ package uk.gov.hmrc.gform.builder
 import io.circe.CursorOp
 import io.circe.CursorOp._
 import scala.util.matching.Regex
+import io.circe.Decoder
 
 object SectionPath {
+
+  implicit val sectionPathDecoder = implicitly[Decoder[String]].map(SectionPath(_))
+
   def apply(value: String) = new SectionPath(value)
 
   def nonRepeatedHistory(sectionIndex: Int) =
@@ -44,10 +48,18 @@ object SectionPath {
       List.fill(sectionIndex)(MoveRight) ::: List(DownArray, DownField("sections")) :::
       List.fill(taskIndex)(MoveRight) ::: List(DownArray, DownField("tasks")) :::
       List.fill(taskSectionIndex)(MoveRight) ::: List(DownArray, DownField("sections"))
+
 }
 
 class SectionPath(val value: String) {
-  def toHistory(): List[CursorOp] = value match {
+  override def toString(): String = value
+  private val sectionPattern: Regex = """^\.sections\[(\d+)\]""".r
+  private val atlPagePattern: Regex = """^\.sections\[(\d+)\]\.pages\[(\d+)\]$""".r
+  private val taskListSectionPattern: Regex = """^\.sections\[(\d+)\]\.tasks\[(\d+)\]\.sections\[(\d+)\]$""".r
+  private val taskListAtlPagePattern: Regex =
+    """^\.sections\[(\d+)\]\.tasks\[(\d+)\]\.sections\[(\d+)\]\.pages\[(\d+)\]$""".r
+  private val taskPattern: Regex = """^\.sections\[(\d+)\]\.tasks\[(\d+)\]$""".r
+  val asHistory: List[CursorOp] = value match {
     case sectionPattern(sectionIndex) =>
       SectionPath.nonRepeatedHistory(sectionIndex.toInt)
     case atlPagePattern(sectionIndex, pageIndex) =>
@@ -61,12 +73,4 @@ class SectionPath(val value: String) {
     case _ =>
       Nil
   }
-
-  private val sectionPattern: Regex = """^\.sections\[(\d+)\]""".r
-  private val atlPagePattern: Regex = """^\.sections\[(\d+)\]\.pages\[(\d+)\]$""".r
-  private val taskListSectionPattern: Regex = """^\.sections\[(\d+)\]\.tasks\[(\d+)\]\.sections\[(\d+)\]$""".r
-  private val taskListAtlPagePattern: Regex =
-    """^\.sections\[(\d+)\]\.tasks\[(\d+)\]\.sections\[(\d+)\]\.pages\[(\d+)\]$""".r
-  private val taskPattern: Regex = """^\.sections\[(\d+)\]\.tasks\[(\d+)\]$""".r
-
 }
