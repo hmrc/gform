@@ -100,5 +100,6 @@ object Task {
       LeafExpr(path + "sections", t.sections) ++
       LeafExpr(path + "summarySection", t.summarySection) ++
       LeafExpr(path + "declarationSection", t.declarationSection) ++
-      LeafExpr(path + "includeIf", t.includeIf)
+      LeafExpr(path + "includeIf", t.includeIf) ++
+      LeafExpr(path + "caption", t.caption)
 }
