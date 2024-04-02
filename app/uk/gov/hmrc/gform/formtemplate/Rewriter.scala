@@ -22,6 +22,7 @@ import cats.implicits._
 import scala.util.{ Failure, Success, Try }
 import uk.gov.hmrc.gform.core.{ FOpt, fromOptA }
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
+import uk.gov.hmrc.gform.sharedmodel.SmartString
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationIncludeIf, Destinations }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationIncludeIf.IncludeIfValue
@@ -495,7 +496,7 @@ trait Rewriter {
       def replaceConfirmation(confirmation: Option[Confirmation]): Option[Confirmation] =
         confirmation.map(c => c.copy(redirects = replaceConfirmationRedirects(c.redirects)))
 
-      def updateSection(section: Section): Section =
+      def updateClassicSection(section: Section): Section =
         section match {
           case s: Section.NonRepeatingPage =>
             s.copy(
@@ -533,10 +534,63 @@ trait Rewriter {
             )
         }
 
+      def updateTaskSection(section: Section, taskCaption: Option[SmartString]): Section =
+        section match {
+          case s: Section.NonRepeatingPage =>
+            val newCaption: Option[SmartString] = s.page.caption match {
+              case Some(value) => Some(value)
+              case None        => taskCaption
+            }
+            s.copy(
+              page = s.page.copy(
+                includeIf = replaceIncludeIf(s.page.includeIf),
+                fields = replaceFields(s.page.fields),
+                redirects = replaceRedirects(s.page.redirects),
+                confirmation = replaceConfirmation(s.page.confirmation),
+                caption = newCaption
+              )
+            )
+          case s: Section.RepeatingPage =>
+            val newCaption: Option[SmartString] = s.page.caption match {
+              case Some(value) => Some(value)
+              case None        => taskCaption
+            }
+            s.copy(
+              page = s.page.copy(
+                includeIf = replaceIncludeIf(s.page.includeIf),
+                fields = replaceFields(s.page.fields),
+                redirects = replaceRedirects(s.page.redirects),
+                confirmation = replaceConfirmation(s.page.confirmation),
+                caption = newCaption
+              )
+            )
+          case s: Section.AddToList =>
+            val newCaption: Option[SmartString] = s.caption match {
+              case Some(value) => Some(value)
+              case None        => taskCaption
+            }
+            s.copy(
+              includeIf = replaceIncludeIf(s.includeIf),
+              repeatsUntil = replaceIncludeIf(s.repeatsUntil),
+              repeatsWhile = replaceIncludeIf(s.repeatsWhile),
+              pages = s.pages.map(page =>
+                page.copy(
+                  includeIf = replaceIncludeIf(page.includeIf),
+                  fields = replaceFields(page.fields),
+                  redirects = replaceRedirects(page.redirects),
+                  confirmation = replaceConfirmation(page.confirmation)
+                )
+              ),
+              fields = replaceFieldsNel(s.fields),
+              cyaPage = s.cyaPage.map(replaceCheckYourAnswersPage),
+              caption = newCaption
+            )
+        }
+
       formTemplate.copy(
         formKind = formTemplate.formKind.fold[FormKind](classic =>
           classic.copy(
-            sections = classic.sections.map(updateSection)
+            sections = classic.sections.map(updateClassicSection)
           )
         )(taskList =>
           taskList.copy(
@@ -544,7 +598,7 @@ trait Rewriter {
               taskSection.copy(
                 tasks = taskSection.tasks.map(task =>
                   task.copy(
-                    sections = task.sections.map(updateSection),
+                    sections = task.sections.map(updateTaskSection(_, taskCaption = task.caption)),
                     summarySection = task.summarySection.map(replaceSummarySection),
                     declarationSection = task.declarationSection.map(replaceDeclarationSection)
                   )

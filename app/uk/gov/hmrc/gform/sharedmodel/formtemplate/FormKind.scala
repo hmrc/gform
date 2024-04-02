@@ -88,7 +88,8 @@ final case class Task(
   sections: NonEmptyList[Section],
   summarySection: Option[SummarySection],
   declarationSection: Option[DeclarationSection],
-  includeIf: Option[IncludeIf]
+  includeIf: Option[IncludeIf],
+  caption: Option[SmartString]
 )
 
 object Task {
