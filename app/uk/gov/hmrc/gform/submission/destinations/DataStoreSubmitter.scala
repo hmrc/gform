@@ -31,7 +31,6 @@ import uk.gov.hmrc.gform.submission.handlebars.{ FocussedHandlebarsModelTree, Ha
 import uk.gov.hmrc.gform.submission.{ DataStoreFileGenerator, RoboticsXMLGenerator }
 import org.json4s.native.JsonMethods
 import org.json4s.native.Printer.compact
-import org.slf4j.LoggerFactory
 import uk.gov.hmrc.gform.formtemplate.{ HandlebarsSchemaErrorParser, JsonSchemaValidator }
 import uk.gov.hmrc.gform.objectstore.ObjectStoreAlgebra
 import uk.gov.hmrc.gform.sdes.datastore.DataStoreWorkItemAlgebra
@@ -48,8 +47,6 @@ class DataStoreSubmitter(
 )(implicit
   ec: ExecutionContext
 ) extends DataStoreSubmitterAlgebra[FOpt] {
-
-  private val logger = LoggerFactory.getLogger(getClass)
 
   // Throws an exception, but we cannot recover from it, so it is not reflected in a type as Option[String]
   override def generatePayload(
@@ -111,9 +108,8 @@ class DataStoreSubmitter(
 
   override def validateSchema(
     dataStore: DataStore,
-    payload: String,
-    withPureJson: Boolean
-  ): String =
+    payload: String
+  ): Either[String, Unit] =
     if (dataStore.validateHandlebarPayload) {
       dataStore.jsonSchema match {
         case Some(schema) =>
@@ -124,19 +120,13 @@ class DataStoreSubmitter(
           ) match {
             case Left(validationEx) =>
               val errors = validationEx.errors.toString()
-              val message = s"JSON schema validation is failed. JSON validation errors: $errors"
-              logger.error(message)
-
-              if (withPureJson) {
-                s"$message \n${Json.prettyPrint(Json.parse(payload))}"
-              } else throw new RuntimeException(message)
-            case Right(()) => payload
+              Left(s"JSON schema validation is failed. JSON validation errors: $errors")
+            case Right(value) => Right(value)
           }
         case _ =>
-          logger.error("JSON schema does not exist")
-          throw new RuntimeException("JSON schema does not exist")
+          Left("JSON schema does not exist")
       }
-    } else payload
+    } else Right(())
 
   private def convertToJson(string: String, destinationId: DestinationId, payloadDiscriminator: String): JsObject =
     Try(

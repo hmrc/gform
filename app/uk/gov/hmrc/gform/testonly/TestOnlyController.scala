@@ -191,9 +191,11 @@ class TestOnlyController(
                   )
                   dataStoreSubmitter.validateSchema(
                     dataStore,
-                    payload,
-                    withPureJson = true
-                  )
+                    payload
+                  ) match {
+                    case Left(message) => s"$message \n ${Json.prettyPrint(Json.parse(payload))}"
+                    case _             => payload
+                  }
                 }
 
                 tryResult.fold(

@@ -45,7 +45,6 @@ trait DataStoreSubmitterAlgebra[F[_]] {
 
   def validateSchema(
     dataStore: DataStore,
-    payload: String,
-    withPureJson: Boolean
-  ): String
+    payload: String
+  ): Either[String, Unit]
 }
