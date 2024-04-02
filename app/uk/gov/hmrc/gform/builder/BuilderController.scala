@@ -18,6 +18,7 @@ package uk.gov.hmrc.gform.builder
 
 import cats.implicits._
 import io.circe._
+import io.circe.syntax._
 import io.circe.CursorOp._
 import io.circe.Json
 import play.api.libs.circe.Circe
@@ -66,7 +67,7 @@ object Property {
 
 object BuilderSupport {
 
-  private def modifyJson(
+  def modifyJson(
     formTemplateRaw: FormTemplateRaw
   )(updateFunction: Json => Json): Either[BuilderError, FormTemplateRaw] = {
     // Converting Play Json => Circe Json => Play Json is suboptimal, let's consider
@@ -164,6 +165,62 @@ object BuilderSupport {
     )
   }
 
+  def modifyTaskSection(json: Json, taskSectionData: Json, sectionPath: SectionPath): Json = {
+    val propertyList = List(
+      Property("title")
+    )
+
+    val history = sectionPath.asHistory
+    updateJsonByPropertyList(propertyList, json, taskSectionData, history)
+
+  }
+
+  def modifyTaskSummarySection(json: Json, taskSectionSummaryData: Json, sectionPath: SectionPath): Json = {
+    val propertyList = List(
+      Property("title"),
+      Property("header"),
+      Property("footer")
+    )
+
+    val isTitleEmpty: Boolean =
+      taskSectionSummaryData.hcursor.downField("title").as[String].toOption.fold(false)(_.trim.isEmpty())
+
+    val history = sectionPath.asHistory
+
+    if (isTitleEmpty) {
+      json.hcursor
+        .replay(history)
+        .downField("summarySection")
+        .delete
+        .root
+        .focus
+        .getOrElse(json)
+    } else {
+      val summarySectionHistory = DownField("summarySection") :: history
+      val noTaskSummarySection = json.hcursor.replay(summarySectionHistory).failed
+      if (noTaskSummarySection) {
+        val summarySection = Json.obj("header" := "", "footer" := "").deepMerge(taskSectionSummaryData)
+        json.hcursor
+          .replay(history)
+          .withFocus(json => json.deepMerge(Json.obj("summarySection" := summarySection)))
+          .top
+          .getOrElse(json)
+      } else {
+        updateJsonByPropertyList(propertyList, json, taskSectionSummaryData, summarySectionHistory)
+      }
+    }
+  }
+
+  def modifyTask(json: Json, taskSectionData: Json, sectionPath: SectionPath): Json = {
+    val propertyList = List(
+      Property("title")
+    )
+
+    val history = sectionPath.asHistory
+    updateJsonByPropertyList(propertyList, json, taskSectionData, history)
+
+  }
+
   def modifyAtlRepeaterDataAddAnotherQuestion(
     json: Json,
     atlRepeaterSection: Json,
@@ -189,7 +246,7 @@ object BuilderSupport {
     sectionPath: SectionPath
   ): Json = {
 
-    val history = sectionPath.toHistory()
+    val history = sectionPath.asHistory
     updateFormComponentWithHistory(json, formComponentId, atlRepeaterFormComponent, history)
 
   }
@@ -200,7 +257,7 @@ object BuilderSupport {
     sectionPath: SectionPath
   ): Json = {
 
-    val history = DownField("defaultPage") :: sectionPath.toHistory()
+    val history = DownField("defaultPage") :: sectionPath.asHistory
     updateFormComponentWithHistory(json, formComponentId, atlRepeaterFormComponent, history)
 
   }
@@ -212,7 +269,7 @@ object BuilderSupport {
     historySuffix: Option[CursorOp],
     sectionPath: SectionPath
   ) = {
-    val history = sectionPath.toHistory()
+    val history = sectionPath.asHistory
     updateJsonByPropertyList(propertyList, json, atlRepeaterSection, historySuffix.toList ::: history)
   }
 
@@ -343,7 +400,7 @@ object BuilderSupport {
   }
 
   def modifySectionData(json: Json, sectionPath: SectionPath, sectionData: Json): Json = {
-    val history: List[CursorOp] = sectionPath.toHistory()
+    val history: List[CursorOp] = sectionPath.asHistory
     val propertyList = List(
       Property("title"),
       Property("caption", PropertyBehaviour.PurgeWhenEmpty),
@@ -431,8 +488,8 @@ object BuilderSupport {
     submitSectionData: Json
   ): Json = {
     val propertyList = List(
-      Property("label", PropertyBehaviour.PurgeWhenEmpty),
-      Property("taskLabel", PropertyBehaviour.PurgeWhenEmpty)
+      Property("label", PropertyBehaviour.PurgeWhenEmpty), // Fail to insert with empty label
+      Property("taskLabel", PropertyBehaviour.PurgeWhenEmpty) // Fail to insert with empty task label
     )
     val history = List(DownField("submitSection"))
 
@@ -608,12 +665,6 @@ object BuilderSupport {
   ): Either[BuilderError, FormTemplateRaw] =
     modifyJson(formTemplateRaw)(modifyAtlDefaultPageData(_, atlRepeaterData, sectionPath))
 
-  def updateSubmitSection(
-    formTemplateRaw: FormTemplateRaw,
-    submitSectionData: Json
-  ): Either[BuilderError, FormTemplateRaw] =
-    modifyJson(formTemplateRaw)(modifySubmitSection(_, submitSectionData))
-
   def updateAtlCyaPage(
     formTemplateRaw: FormTemplateRaw,
     atlRepeaterData: Json,
@@ -751,13 +802,6 @@ class BuilderController(
     updateAction(formTemplateRawId) { (formTemplateRaw, requestBody) =>
       BuilderSupport
         .updateAtlDefaultPage(formTemplateRaw, requestBody, sectionPath)
-        .map(formTemplateRaw => (formTemplateRaw, Results.Ok(formTemplateRaw.value)))
-    }
-
-  def updateSubmitSection(formTemplateRawId: FormTemplateRawId) =
-    updateAction(formTemplateRawId) { (formTemplateRaw, requestBody) =>
-      BuilderSupport
-        .updateSubmitSection(formTemplateRaw, requestBody)
         .map(formTemplateRaw => (formTemplateRaw, Results.Ok(formTemplateRaw.value)))
     }
 
@@ -935,6 +979,43 @@ class BuilderController(
       } yield (formTemplateRaw, Results.Ok(formTemplateRaw.value))
     }
 
+  def updateBatch(formTemplateRawId: FormTemplateRawId) =
+    updateAction(formTemplateRawId) { (formTemplateRaw, requestBody) =>
+      BuilderSupport
+        .modifyJson(formTemplateRaw) { json =>
+          requestBody.as[UpdateBatch] match {
+            case Right(updateBatch) =>
+              val updatedJson = updateBatch.updates.foldRight(json) { case (focusedUpdate, json) =>
+                focusedUpdate.focus match {
+                  case FocusType.Task =>
+                    BuilderSupport.modifyTask(json, focusedUpdate.payload, focusedUpdate.path)
+                  case FocusType.TaskSection =>
+                    BuilderSupport.modifyTaskSection(json, focusedUpdate.payload, focusedUpdate.path)
+                  case FocusType.TaskSummarySection =>
+                    BuilderSupport.modifyTaskSummarySection(json, focusedUpdate.payload, focusedUpdate.path)
+                  case FocusType.SubmitSection =>
+                    BuilderSupport.modifySubmitSection(json, focusedUpdate.payload)
+                }
+              }
+              updatedJson
+            case Left(error) => throw new Exception(s"Invalid UpdateBatch: $json, error: $error")
+          }
+        }
+        .map(formTemplateRaw => (formTemplateRaw, Results.Ok(formTemplateRaw.value)))
+    }
+
+}
+
+final case class UpdateBatch(updates: List[FocusedUpdate])
+
+object UpdateBatch {
+  implicit val decodeUpdateBatch: Decoder[UpdateBatch] = deriveDecoder[UpdateBatch]
+}
+
+final case class FocusedUpdate(payload: Json, path: SectionPath, focus: FocusType)
+
+object FocusedUpdate {
+  implicit val decodeAbc: Decoder[FocusedUpdate] = deriveDecoder[FocusedUpdate]
 }
 
 final case class SectionDetails(section: Json, sectionPath: String)
