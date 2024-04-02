@@ -119,12 +119,12 @@ class DataStoreSubmitter(
             HandlebarsSchemaErrorParser.parseErrorMessages
           ) match {
             case Left(validationEx) =>
-              val errors = validationEx.errors.toString()
+              val errors = Json.prettyPrint(validationEx.errors)
               Left(s"JSON schema validation is failed. JSON validation errors: $errors")
             case Right(value) => Right(value)
           }
         case _ =>
-          Left("JSON schema does not exist")
+          Left(s"JSON schema does not exist for the destination '${dataStore.id.id}'")
       }
     } else Right(())
 
