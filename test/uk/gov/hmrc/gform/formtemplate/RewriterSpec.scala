@@ -16,10 +16,11 @@
 
 package uk.gov.hmrc.gform.formtemplate
 
+import cats.data.NonEmptyList
 import munit.FunSuite
 import scala.concurrent.Future
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
-import uk.gov.hmrc.gform.sharedmodel.{ LangADT, LocalisedString, SmartString }
+import uk.gov.hmrc.gform.sharedmodel.{ ExampleData, LangADT, LocalisedString, SmartString }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
 class RewriterSpec extends FunSuite with FormTemplateSupport {
@@ -130,6 +131,141 @@ class RewriterSpec extends FunSuite with FormTemplateSupport {
           Left(UnexpectedState(expectedError))
         )
       }
+    }
+  }
+
+  test("Task captions are propagated through all its sections when its sections all don't have captions") {
+    val pageTitle1 = SmartString(localised = LocalisedString(m = Map(LangADT.En -> "English page title 1")), Nil)
+    val page1 = defaultPage.copy(title = pageTitle1)
+
+    val pageTitle2 = SmartString(localised = LocalisedString(m = Map(LangADT.En -> "English page title 2")), Nil)
+    val page2 = defaultPage.copy(title = pageTitle2)
+
+    val section1 = Section.NonRepeatingPage(page = page1)
+    val section2 = Section.NonRepeatingPage(page = page2)
+
+    val taskTitle1 = SmartString(localised = LocalisedString(m = Map(LangADT.En -> "English task title 1")), Nil)
+    val taskCaption1 = SmartString(localised = LocalisedString(m = Map(LangADT.En -> "English task caption")), Nil)
+    val task1 = Task(
+      title = taskTitle1,
+      sections = NonEmptyList(section1, List(section2)),
+      caption = Some(taskCaption1),
+      summarySection = None,
+      declarationSection = None,
+      includeIf = None
+    )
+
+    val taskSectionTitle1 =
+      SmartString(localised = LocalisedString(m = Map(LangADT.En -> "English task section title 1")), Nil)
+    val taskSection1 = TaskSection(
+      title = taskSectionTitle1,
+      tasks = NonEmptyList(task1, Nil)
+    )
+
+    val sections: NonEmptyList[TaskSection] = NonEmptyList(taskSection1, Nil)
+
+    val expectedSections: List[Section] =
+      List(page1.copy(caption = Some(taskCaption1)), page2.copy(caption = Some(taskCaption1)))
+        .map(Section.NonRepeatingPage)
+
+    val formTemplate = ExampleData.formTemplate.copy(formKind = FormKind.TaskList(sections), emailParameters = None)
+
+    val obtainedF: Future[Either[UnexpectedState, FormTemplate]] = rewriter.rewrite(formTemplate).value
+
+    obtainedF.map { obtained =>
+      obtained.map(_.formKind.allSections.zipAll(expectedSections, None, None).foreach {
+        case (section, expectedSection) => assertEquals(section, expectedSection)
+      })
+    }
+  }
+
+  test("Task captions are propagated through only its sections that do not have captions") {
+    val pageTitle1 = SmartString(localised = LocalisedString(m = Map(LangADT.En -> "English page title 1")), Nil)
+    val pageCaption1 = SmartString(localised = LocalisedString(m = Map(LangADT.En -> "English page caption 1")), Nil)
+    val page1 = defaultPage.copy(title = pageTitle1, caption = Some(pageCaption1))
+
+    val pageTitle2 = SmartString(localised = LocalisedString(m = Map(LangADT.En -> "English page title 2")), Nil)
+    val page2 = defaultPage.copy(title = pageTitle2)
+
+    val section1 = Section.NonRepeatingPage(page = page1)
+    val section2 = Section.NonRepeatingPage(page = page2)
+
+    val taskTitle1 = SmartString(localised = LocalisedString(m = Map(LangADT.En -> "English task title 1")), Nil)
+    val taskCaption1 = SmartString(localised = LocalisedString(m = Map(LangADT.En -> "English task caption")), Nil)
+    val task1 = Task(
+      title = taskTitle1,
+      sections = NonEmptyList(section1, List(section2)),
+      caption = Some(taskCaption1),
+      summarySection = None,
+      declarationSection = None,
+      includeIf = None
+    )
+
+    val taskSectionTitle1 =
+      SmartString(localised = LocalisedString(m = Map(LangADT.En -> "English task section title 1")), Nil)
+    val taskSection1 = TaskSection(
+      title = taskSectionTitle1,
+      tasks = NonEmptyList(task1, Nil)
+    )
+
+    val sections: NonEmptyList[TaskSection] = NonEmptyList(taskSection1, Nil)
+
+    val expectedSections: List[Section] =
+      List(page1, page2.copy(caption = Some(taskCaption1))).map(Section.NonRepeatingPage)
+
+    val formTemplate = ExampleData.formTemplate.copy(formKind = FormKind.TaskList(sections), emailParameters = None)
+
+    val obtainedF: Future[Either[UnexpectedState, FormTemplate]] = rewriter.rewrite(formTemplate).value
+
+    obtainedF.map { obtained =>
+      obtained.map(_.formKind.allSections.zipAll(expectedSections, None, None).foreach {
+        case (section, expectedSection) => assertEquals(section, expectedSection)
+      })
+    }
+  }
+
+  test("Task captions are not propagated when all its sections have captions") {
+    val pageTitle1 = SmartString(localised = LocalisedString(m = Map(LangADT.En -> "English page title 1")), Nil)
+    val pageCaption1 = SmartString(localised = LocalisedString(m = Map(LangADT.En -> "English page caption 1")), Nil)
+    val page1 = defaultPage.copy(title = pageTitle1, caption = Some(pageCaption1))
+
+    val pageTitle2 = SmartString(localised = LocalisedString(m = Map(LangADT.En -> "English page title 2")), Nil)
+    val pageCaption2 = SmartString(localised = LocalisedString(m = Map(LangADT.En -> "English page caption 2")), Nil)
+    val page2 = defaultPage.copy(title = pageTitle2, caption = Some(pageCaption2))
+
+    val section1 = Section.NonRepeatingPage(page = page1)
+    val section2 = Section.NonRepeatingPage(page = page2)
+
+    val taskTitle1 = SmartString(localised = LocalisedString(m = Map(LangADT.En -> "English task title 1")), Nil)
+    val taskCaption1 = SmartString(localised = LocalisedString(m = Map(LangADT.En -> "English task caption")), Nil)
+    val task1 = Task(
+      title = taskTitle1,
+      sections = NonEmptyList(section1, List(section2)),
+      caption = Some(taskCaption1),
+      summarySection = None,
+      declarationSection = None,
+      includeIf = None
+    )
+
+    val taskSectionTitle1 =
+      SmartString(localised = LocalisedString(m = Map(LangADT.En -> "English task section title 1")), Nil)
+    val taskSection1 = TaskSection(
+      title = taskSectionTitle1,
+      tasks = NonEmptyList(task1, Nil)
+    )
+
+    val sections: NonEmptyList[TaskSection] = NonEmptyList(taskSection1, Nil)
+
+    val expectedSections: List[Section] = List(page1, page2).map(Section.NonRepeatingPage)
+
+    val formTemplate = ExampleData.formTemplate.copy(formKind = FormKind.TaskList(sections), emailParameters = None)
+
+    val obtainedF: Future[Either[UnexpectedState, FormTemplate]] = rewriter.rewrite(formTemplate).value
+
+    obtainedF.map { obtained =>
+      obtained.map(_.formKind.allSections.zipAll(expectedSections, None, None).foreach {
+        case (section, expectedSection) => assertEquals(section, expectedSection)
+      })
     }
   }
 
