@@ -18,6 +18,7 @@ package uk.gov.hmrc.gform.submission.destinations
 
 import akka.util.ByteString
 import play.api.libs.json.{ JsObject, Json }
+
 import scala.util.Try
 import uk.gov.hmrc.gform.core.FOpt
 import uk.gov.hmrc.gform.sdes.SdesRouting
@@ -30,6 +31,8 @@ import uk.gov.hmrc.gform.submission.handlebars.{ FocussedHandlebarsModelTree, Ha
 import uk.gov.hmrc.gform.submission.{ DataStoreFileGenerator, RoboticsXMLGenerator }
 import org.json4s.native.JsonMethods
 import org.json4s.native.Printer.compact
+import org.slf4j.LoggerFactory
+import uk.gov.hmrc.gform.formtemplate.{ HandlebarsSchemaErrorParser, JsonSchemaValidator }
 import uk.gov.hmrc.gform.objectstore.ObjectStoreAlgebra
 import uk.gov.hmrc.gform.sdes.datastore.DataStoreWorkItemAlgebra
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
@@ -46,6 +49,8 @@ class DataStoreSubmitter(
   ec: ExecutionContext
 ) extends DataStoreSubmitterAlgebra[FOpt] {
 
+  private val logger = LoggerFactory.getLogger(getClass)
+
   // Throws an exception, but we cannot recover from it, so it is not reflected in a type as Option[String]
   override def generatePayload(
     submissionInfo: DestinationSubmissionInfo,
@@ -57,7 +62,7 @@ class DataStoreSubmitter(
     accumulatedModel: HandlebarsTemplateProcessorModel,
     modelTree: HandlebarsModelTree
   ): String = {
-    val dateSubmittedFormater = DateTimeFormatter.ofPattern("dd/MM/yyyy").withZone(ZoneId.of("Europe/London"))
+    val dateSubmittedFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy").withZone(ZoneId.of("Europe/London"))
     val submission = submissionInfo.submission
 
     val focussedTree = FocussedHandlebarsModelTree(modelTree, modelTree.value.model)
@@ -94,7 +99,7 @@ class DataStoreSubmitter(
       "",
       dataStore.regime,
       taxpayerId.getOrElse(""),
-      dateSubmittedFormater.format(submission.submittedDate.toLocalDate),
+      dateSubmittedFormatter.format(submission.submittedDate.toLocalDate),
       submission.submittedDate.toLocalTime.toString,
       submission.submissionRef.value,
       submission.envelopeId.value,
@@ -103,6 +108,35 @@ class DataStoreSubmitter(
 
     DataStoreFileGenerator(userSession, dataStoreMetaData, payloads, dataStore.includeSessionInfo)
   }
+
+  override def validateSchema(
+    dataStore: DataStore,
+    payload: String,
+    withPureJson: Boolean
+  ): String =
+    if (dataStore.validateHandlebarPayload) {
+      dataStore.jsonSchema match {
+        case Some(schema) =>
+          JsonSchemaValidator.checkSchema(
+            payload,
+            schema.toString,
+            HandlebarsSchemaErrorParser.parseErrorMessages
+          ) match {
+            case Left(validationEx) =>
+              val errors = validationEx.errors.toString()
+              val message = s"JSON schema validation is failed. JSON validation errors: $errors"
+              logger.error(message)
+
+              if (withPureJson) {
+                s"$message \n${Json.prettyPrint(Json.parse(payload))}"
+              } else throw new RuntimeException(message)
+            case Right(()) => payload
+          }
+        case _ =>
+          logger.error("JSON schema does not exist")
+          throw new RuntimeException("JSON schema does not exist")
+      }
+    } else payload
 
   private def convertToJson(string: String, destinationId: DestinationId, payloadDiscriminator: String): JsObject =
     Try(

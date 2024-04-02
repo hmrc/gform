@@ -20,13 +20,15 @@ import uk.gov.hmrc.gform.core.{ FOpt, fromOptA }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import cats.implicits._
 import uk.gov.hmrc.gform.config.AppConfig
+import uk.gov.hmrc.gform.sharedmodel.HandlebarsSchemaId
 
 import scala.concurrent.ExecutionContext
 
 trait Verifier {
   def verify(
     formTemplate: FormTemplate,
-    appConfig: AppConfig
+    appConfig: AppConfig,
+    handlebarsSchemaIds: List[HandlebarsSchemaId]
   )(expressionsContext: ExprSubstitutions)(implicit ec: ExecutionContext): FOpt[Unit] = {
 
     val sections = formTemplate.formKind.allSections
@@ -88,8 +90,6 @@ trait Verifier {
       _ <- fromOptA(FormTemplateValidator.validateAddToListCYAPage(formTemplate).toEither)
       _ <- fromOptA(FormTemplateValidator.validateAddToListDefaultPage(formTemplate).toEither)
       _ <- fromOptA(FormTemplateValidator.validateAddToListInfoFields(formTemplate).toEither)
-      _ <- fromOptA(DestinationsValidator.validateUniqueDestinationIds(formTemplate.destinations).toEither)
-      _ <- fromOptA(DestinationsValidator.validateNoGroupInDeclaration(formTemplate.destinations).toEither)
       _ <- fromOptA(FormTemplateValidator.validateDataRetrieve(formTemplate, pages).toEither)
       _ <- fromOptA(FormTemplateValidator.validateDataRetrieveFormCtxReferences(pages).toEither)
       _ <- fromOptA(FormTemplateValidator.validateDataRetrieveCtx(formTemplate, pages, allExpressions).toEither)
@@ -102,13 +102,20 @@ trait Verifier {
       _ <- fromOptA(FormTemplateValidator.validateCsvCountryCountCheck(formTemplate).toEither)
       _ <- fromOptA(FormTemplateValidator.validateCsvOverseasCountryCheck(formTemplate, pages).toEither)
       _ <- fromOptA(FormTemplateValidator.validatePageRedirects(pages).toEither)
-      _ <- fromOptA(DestinationsValidator.validateDestinationIncludeIfs(formTemplate.destinations).toEither)
       _ <- fromOptA(FormTemplateValidator.validateTaskListDisplayWidth(formTemplate).toEither)
       _ <- fromOptA(FormTemplateValidator.validateTaskListDeclarationSection(formTemplate).toEither)
       _ <- fromOptA(FormTemplateValidator.validateDataThreshold(pages).toEither)
       _ <- fromOptA(FormTemplateValidator.validateFileUpload(formTemplate, appConfig).toEither)
       _ <- fromOptA(FormTemplateValidator.validateChoicesRevealedField(formTemplate).toEither)
       _ <- fromOptA(FormTemplateValidator.validateChoiceFormCtxOptionValues(pages, formTemplate).toEither)
+      _ <- fromOptA(DestinationsValidator.validateUniqueDestinationIds(formTemplate.destinations).toEither)
+      _ <- fromOptA(DestinationsValidator.validateNoGroupInDeclaration(formTemplate.destinations).toEither)
+      _ <- fromOptA(DestinationsValidator.validateDestinationIncludeIfs(formTemplate.destinations).toEither)
+      _ <- fromOptA(
+             DestinationsValidator
+               .validateHandlebarSchemaCheck(formTemplate._id, formTemplate.destinations, handlebarsSchemaIds)
+               .toEither
+           )
     } yield ()
 
   }

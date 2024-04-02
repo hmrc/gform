@@ -91,6 +91,7 @@ class PlayComponentsModule(
     submissionModule.formBundleController,
     formTemplateModule.formTemplatesController,
     handlebarsPayloadModule.handlebarTemplateController,
+    handlebarsPayloadModule.handlebarSchemaController,
     configModule.configController,
     desModule.desController,
     dmsModule.dmsSubmissionController,

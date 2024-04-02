@@ -23,9 +23,9 @@ import uk.gov.hmrc.gform.config.AppConfig
 import uk.gov.hmrc.gform.core.{ FOpt, _ }
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.formredirect.FormRedirect
-import uk.gov.hmrc.gform.handlebarstemplate.HandlebarsTemplateAlgebra
+import uk.gov.hmrc.gform.handlebarstemplate.{ HandlebarsSchemaAlgebra, HandlebarsTemplateAlgebra }
 import uk.gov.hmrc.gform.repo.Repo
-import uk.gov.hmrc.gform.sharedmodel.HandlebarsTemplateId
+import uk.gov.hmrc.gform.sharedmodel.{ HandlebarsSchemaId, HandlebarsTemplateId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.{ DataStore, HandlebarsHttpApi }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DestinationId, Destinations, UploadableConditioning }
@@ -43,6 +43,7 @@ class FormTemplateService(
   formTemplateRawRepo: Repo[FormTemplateRaw],
   formRedirectRepo: Repo[FormRedirect],
   handlebarsTemplateAlgebra: HandlebarsTemplateAlgebra[FOpt],
+  handlebarsSchemaAlgebra: HandlebarsSchemaAlgebra[FOpt],
   appConfig: AppConfig
 )(implicit
   ec: ExecutionContext
@@ -127,7 +128,8 @@ class FormTemplateService(
             expressionsContextSubstituted
           )
         substitutedFormTemplate <- substituteDestinations(substitutedFormTemplateBooleanExprs)
-        _                       <- verify(substitutedFormTemplate, appConfig)(expressionsContext)
+        handlebarsSchemaIds     <- handlebarsSchemaAlgebra.getAllIds
+        _                       <- verify(substitutedFormTemplate, appConfig, handlebarsSchemaIds)(expressionsContext)
         formTemplateUpdated     <- rewrite(substitutedFormTemplate)
       } yield formTemplateUpdated
 
@@ -137,6 +139,14 @@ class FormTemplateService(
           destinationList.destinations.collect {
             case h: HandlebarsHttpApi if h.payload.isEmpty => h.id
             case d: DataStore if d.handlebarPayload        => d.id
+          }
+        case _ => List.empty[DestinationId]
+      }
+
+      val schemaValidationReqDestIds = formTemplate.destinations match {
+        case destinationList: Destinations.DestinationList =>
+          destinationList.destinations.collect {
+            case d: DataStore if d.validateHandlebarPayload => d.id
           }
         case _ => List.empty[DestinationId]
       }
@@ -155,6 +165,20 @@ class FormTemplateService(
                                       )
                                       .map(r => destId -> r.payload)
                                   }
+        jsonValidators <- schemaValidationReqDestIds.traverse { destId =>
+                            val handlebarsSchemaId = HandlebarsSchemaId(formTemplate._id.value)
+                            handlebarsSchemaAlgebra
+                              .get(handlebarsSchemaId)
+                              .map(
+                                _.getOrElse(
+                                  throw new NoSuchElementException(
+                                    s"The ${destId.id} destination is not valid. ${handlebarsSchemaId.value} json schema not found"
+                                  )
+                                )
+                              )
+                              .map(r => destId -> r.schema)
+                          }
+
       } yield
         if (destIds.size === 0) formTemplate
         else
@@ -177,7 +201,15 @@ class FormTemplateService(
                       UploadableConditioning.conditionAndValidate(d.convertSingleQuotes, payload).getOrElse("")
                     )
                   if (payload.isEmpty) {
-                    throw new Exception(s"Couldn't find handlebar payload for ${d.id}")
+                    throw new Exception(s"Couldn't find handlebars payload for ${d.id}")
+                  } else if (d.validateHandlebarPayload) {
+                    val jsonSchema = jsonValidators
+                      .find(_._1 === d.id)
+                      .map(_._2)
+
+                    if (jsonSchema.isEmpty) {
+                      throw new Exception(s"Couldn't find handlebars schema for ${d.id}")
+                    } else d.copy(jsonSchema = jsonSchema, payload = payload)
                   } else d.copy(payload = payload)
                 case other => other
               })

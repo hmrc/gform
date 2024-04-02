@@ -165,6 +165,13 @@ class JsonSchemeValidatorSpec extends FunSuite {
         assertEquals(conditionalValidationErrors, expectedResult.map(toJson(_)))
     }
 
+  def validateJson(json: Json): Either[SchemaValidationException, Unit] = {
+    val inputStream = getClass.getClassLoader.getResourceAsStream("formTemplateSchema.json")
+    val schema = scala.io.Source.fromInputStream(inputStream).mkString
+
+    JsonSchemaValidator.checkSchema(json.toString, schema, JsonSchemaErrorParser.parseErrorMessages)
+  }
+
   test(
     "validateJson rejects the form gracefully when the property infoType is used and the type property is not [info]"
   ) {
@@ -180,7 +187,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List("Error at ID <testId>: Property infoType can only be used with type: [info]")
 
@@ -202,7 +209,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List("Error at ID <testId>: Property infoText can only be used with type: [info]")
 
@@ -227,7 +234,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult =
       List("Error at ID <testId>: Property choices can only be used with type: [choice, revealingChoice]")
@@ -250,7 +257,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult =
       List("Error at ID <testId>: Property multivalue can only be used with type: [choice, revealingChoice]")
@@ -276,7 +283,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult =
       List("Error at ID <testId>: Property hints can only be used with type: [choice, revealingChoice]")
@@ -304,7 +311,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at ID <testId>: Property optionHelpText can only be used with type: [choice, revealingChoice]"
@@ -328,7 +335,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at ID <testId>: Property dividerPosition can only be used with type: [choice, revealingChoice]"
@@ -355,7 +362,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at ID <testId>: Property dividerText can only be used with type: [choice, revealingChoice]"
@@ -379,7 +386,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at ID <testId>: Property noneChoice can only be used with type: [choice, revealingChoice]"
@@ -406,7 +413,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at ID <testId>: Property noneChoiceError can only be used with type: [choice, revealingChoice]"
@@ -431,7 +438,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at ID <testId>: Property displayCharCount can only be used with type: [text], multiline: [true]"
@@ -456,7 +463,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at ID <testId>: Property displayCharCount can only be used with type: [text], multiline: [true]"
@@ -480,7 +487,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at ID <testId>: Property displayCharCount can only be used with type: [text], multiline: [true]"
@@ -505,7 +512,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at ID <testId>: Property displayCharCount can only be used with type: [text], multiline: [true]"
@@ -530,7 +537,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at ID <testId>: Property dataThreshold can only be used with type: [text], multiline: [true]"
@@ -555,7 +562,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at ID <testId>: Property dataThreshold can only be used with type: [text], multiline: [true]"
@@ -579,7 +586,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at ID <testId>: Property dataThreshold can only be used with type: [text], multiline: [true]"
@@ -604,7 +611,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at ID <testId>: Property dataThreshold can only be used with type: [text], multiline: [true]"
@@ -629,7 +636,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at ID <testId>: Property infoType can only be used with type: [info]",
@@ -678,7 +685,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at ID <testId>: Property dividerPosition can only be used with type: [choice, revealingChoice]",
@@ -711,7 +718,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at ID <testId>: Property infoType can only be used with type: [info]",
@@ -737,7 +744,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at ID <testId>: Property format can only be used with type: [text, choice, date, group]"
@@ -761,7 +768,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at ID <testId>: Property cityMandatory can only be used with type: [address, overseasAddress]"
@@ -785,7 +792,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at ID <testId>: Property countyDisplayed can only be used with type: [address]"
@@ -809,7 +816,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at ID <testId>: Property international can only be used with type: [address]"
@@ -833,7 +840,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at ID <testId>: Property countryDisplayed can only be used with type: [overseasAddress]"
@@ -857,7 +864,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at ID <testId>: Property countryLookup can only be used with type: [overseasAddress]"
@@ -881,7 +888,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at ID <testId>: Property line2Mandatory can only be used with type: [overseasAddress]"
@@ -905,7 +912,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at ID <testId>: Property line3Mandatory can only be used with type: [overseasAddress]"
@@ -929,7 +936,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at ID <testId>: Property postcodeMandatory can only be used with type: [overseasAddress]"
@@ -953,7 +960,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at ID <testId>: Property confirmAddressLabel can only be used with type: [postcodeLookup]"
@@ -977,7 +984,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at ID <testId>: Property chooseAddressLabel can only be used with type: [postcodeLookup]"
@@ -1002,7 +1009,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at ID <testId>: Property prefix can only be used with type: [text], format not: [sterling, positiveSterling, positiveWholeSterling]"
@@ -1027,7 +1034,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at ID <testId>: Property prefix can only be used with type: [text], format not: [sterling, positiveSterling, positiveWholeSterling]"
@@ -1052,7 +1059,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at ID <testId>: Property prefix can only be used with type: [text], format not: [sterling, positiveSterling, positiveWholeSterling]"
@@ -1077,7 +1084,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at ID <testId>: Property prefix can only be used with type: [text], format not: [sterling, positiveSterling, positiveWholeSterling]"
@@ -1100,7 +1107,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at ID <testId>: Property prefix can only be used with type: [text], format not: [sterling, positiveSterling, positiveWholeSterling]"
@@ -1134,7 +1141,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestTwoFieldJsonTemplate(testProperties1, testProperties2)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at ID <TestID1>: Property infoText can only be used with type: [info]",
@@ -1169,7 +1176,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestTwoFieldJsonTemplate(testProperties1, testProperties2)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at ID <TestID2>: Property infoType can only be used with type: [info]"
@@ -1203,7 +1210,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestTwoSectionJsonTemplate(testProperties1, testProperties2)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at ID <TestID1>: Property infoText can only be used with type: [info]",
@@ -1239,7 +1246,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestTwoSectionJsonTemplate(testProperties1, testProperties2)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at ID <TestID1>: Property displayCharCount can only be used with type: [text], multiline: [true]",
@@ -1264,7 +1271,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at ID <testId>: Property infoType can only be used with type: [info]",
@@ -1312,7 +1319,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at ID <testId>: Property dividerPosition can only be used with type: [choice, revealingChoice]",
@@ -1343,7 +1350,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at ID <testId>: Property dataThreshold can only be used with type: [text], multiline: [true]",
@@ -1374,7 +1381,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at ID <testId>: Property type expected type [String], found [JSONArray]",
@@ -1399,7 +1406,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
         "sections": []
       }"""
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/description>: Property description expected type String or JSONObject with structure {en: String} or {en: String, cy: String}"
@@ -1435,7 +1442,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
         ]
       }"""
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/description>: Property description expected type String or JSONObject with structure {en: String} or {en: String, cy: String}. Missing key(s) [en] are required",
@@ -1460,7 +1467,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at ID <testId>: Property label expected type String or JSONObject with structure {en: String} or {en: String, cy: String}. Missing key(s) [en] are required. Invalid key(s) [value] are not permitted"
@@ -1485,7 +1492,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at ID <testId>: Property label expected type String or JSONObject with structure {en: String} or {en: String, cy: String}. Missing key(s) [en] are required. Invalid key(s) [value, anotherValue] are not permitted"
@@ -1509,7 +1516,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at ID <testId>: Property label expected type String or JSONObject with structure {en: String} or {en: String, cy: String}. Missing key(s) [en] are required"
@@ -1531,7 +1538,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at ID <testId>: Property label expected type String or JSONObject with structure {en: String} or {en: String, cy: String}. Missing key(s) [en] are required"
@@ -1565,7 +1572,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestTwoFieldJsonTemplate(testProperties1, testProperties2)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at ID <TestID1>: Property label expected type String or JSONObject with structure {en: String} or {en: String, cy: String}. Missing key(s) [en] are required. Invalid key(s) [xyz] are not permitted",
@@ -1588,7 +1595,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at ID <testId>: Property label expected type String or JSONObject with structure {en: String} or {en: String, cy: String}"
@@ -1612,7 +1619,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at ID <testId>: Property choices expected type [Array], found [String]"
@@ -1641,7 +1648,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at ID <testId: choices/1>: Property choices expected type Array of either Strings or JSONObjects with required keys [en] and optional keys [cy, dynamic, value, hint, includeIf]",
@@ -1669,7 +1676,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at ID <testId: choices/0>: Property choices expected type Array of either Strings or JSONObjects with required keys [en] and optional keys [cy, dynamic, value, hint, includeIf]",
@@ -1697,7 +1704,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at ID <testId: choices/1>: Property choices expected type Array of either Strings or JSONObjects with required keys [en] and optional keys [cy, dynamic, value, hint, includeIf]",
@@ -1730,7 +1737,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at ID <testId: choices/0>: Property choices expected type Array of either Strings or JSONObjects with required keys [en] and optional keys [cy, dynamic, value, hint, includeIf]. Invalid key(s) [val] are not permitted",
@@ -1763,7 +1770,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at ID <testId: choices/1>: Property choices expected type Array of either Strings or JSONObjects with required keys [en] and optional keys [cy, dynamic, value, hint, includeIf]. Missing key(s) [en] are required",
@@ -1795,7 +1802,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at ID <testId: choices/0>: Property choices expected type Array of either Strings or JSONObjects with required keys [en] and optional keys [cy, dynamic, value, hint, includeIf]. Missing key(s) [en] are required. Invalid key(s) [xyz] are not permitted",
@@ -1828,7 +1835,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at ID <testId: choices/0>: Property choices expected type Array of either Strings or JSONObjects with required keys [en] and optional keys [cy, dynamic, value, hint, includeIf]. Invalid key(s) [xyz] are not permitted",
@@ -1861,7 +1868,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at ID <testId: choices/0>: Property cy expected type [String], found [Boolean]",
@@ -1897,7 +1904,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at ID <testId: choices/0>: Property hint expected type String or JSONObject with structure {en: String} or {en: String, cy: String}. Missing key(s) [en] are required. Invalid key(s) [xyz] are not permitted",
@@ -1933,7 +1940,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at ID <testId: choices/0>: Property choices expected type Array of either Strings or JSONObjects with required keys [en] and optional keys [cy, dynamic, value, hint, includeIf]",
@@ -1976,7 +1983,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at ID <testId: choices/0>: Property choices expected type Array of either Strings or JSONObjects with required keys [en] and optional keys [cy, dynamic, value, hint, includeIf]",
@@ -2018,7 +2025,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at ID <testId: choices/0>: Property choices expected type Array of either Strings or JSONObjects with required keys [en] and optional keys [cy, dynamic, value, hint, includeIf]",
@@ -2046,7 +2053,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at ID <testId>: Property header can only be used with type: [table]"
@@ -2073,7 +2080,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at ID <testId>: Property header can only be used with type: [table]"
@@ -2097,7 +2104,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at ID <testId>: Property header expected type [Array], found [String]"
@@ -2126,7 +2133,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at ID <testId: header/1>: Property header expected type Array of either Strings or JSONObjects with structure {en: String} or {en: String, cy: String}",
@@ -2154,7 +2161,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at ID <testId: header/0>: Property header expected type Array of either Strings or JSONObjects with structure {en: String} or {en: String, cy: String}",
@@ -2182,7 +2189,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at ID <testId: header/1>: Property header expected type Array of either Strings or JSONObjects with structure {en: String} or {en: String, cy: String}",
@@ -2215,7 +2222,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at ID <testId: header/0>: Property header expected type Array of either Strings or JSONObjects with structure {en: String} or {en: String, cy: String}. Invalid key(s) [val] are not permitted",
@@ -2248,7 +2255,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at ID <testId: header/1>: Property header expected type Array of either Strings or JSONObjects with structure {en: String} or {en: String, cy: String}. Missing key(s) [en] are required",
@@ -2280,7 +2287,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at ID <testId: header/0>: Property header expected type Array of either Strings or JSONObjects with structure {en: String} or {en: String, cy: String}. Missing key(s) [en] are required. Invalid key(s) [xyz] are not permitted",
@@ -2313,7 +2320,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at ID <testId: header/0>: Property header expected type Array of either Strings or JSONObjects with structure {en: String} or {en: String, cy: String}. Invalid key(s) [xyz] are not permitted",
@@ -2346,7 +2353,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at ID <testId: header/0>: Property cy expected type [String], found [Boolean]",
@@ -2378,7 +2385,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at ID <testId: header/0>: Property header expected type Array of either Strings or JSONObjects with structure {en: String} or {en: String, cy: String}",
@@ -2400,7 +2407,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestSummarySectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/summarySection>: summarySection requires properties [title, header, footer] to be present"
@@ -2421,7 +2428,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestSummarySectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/summarySection>: summarySection requires properties [title, header, footer] to be present"
@@ -2454,7 +2461,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestSummarySectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/summarySection>: summarySection has invalid key(s) [type]"
@@ -2488,7 +2495,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestSummarySectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/summarySection>: summarySection has invalid key(s) [format, type]"
@@ -2517,7 +2524,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestSummarySectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/summarySection/title>: Property title expected type String or JSONObject with structure {en: String} or {en: String, cy: String}"
@@ -2546,7 +2553,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestSummarySectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/summarySection/header>: Property header expected type String or JSONObject with structure {en: String} or {en: String, cy: String}"
@@ -2575,7 +2582,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestSummarySectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/summarySection/footer>: Property footer expected type String or JSONObject with structure {en: String} or {en: String, cy: String}"
@@ -2608,7 +2615,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestSummarySectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/summarySection/displayWidth>: Property displayWidth expected type [String], found [Integer]"
@@ -2641,7 +2648,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestSummarySectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/summarySection/displayWidth>: Property displayWidth expected value [m, l, xl]"
@@ -2674,7 +2681,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestSummarySectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/summarySection/continueLabel>: Property continueLabel expected type String or JSONObject with structure {en: String} or {en: String, cy: String}"
@@ -2707,7 +2714,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestSummarySectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/summarySection/pdf>: Property pdf expected type [Object], found [String]"
@@ -2740,7 +2747,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestSummarySectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/summarySection/note>: Property note expected type [String], found [Boolean]"
@@ -2773,7 +2780,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestSummarySectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/summarySection/fields>: Property fields expected type [Array], found [JSONObject]"
@@ -2808,7 +2815,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestSummarySectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/summarySection/fields/0>: Property fields expected type Array of [Object], found Array of [String]"
@@ -2845,7 +2852,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestSummarySectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/summarySection/fields/0>: fields has invalid key(s) [summarySection]"
@@ -2865,7 +2872,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestTaskListSummarySectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/sections/0/tasks/0/summarySection>: summarySection requires properties [title, header, footer] to be present"
@@ -2886,7 +2893,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestTaskListSummarySectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/sections/0/tasks/0/summarySection>: summarySection requires properties [title, header, footer] to be present"
@@ -2919,7 +2926,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestTaskListSummarySectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/sections/0/tasks/0/summarySection>: summarySection has invalid key(s) [type]"
@@ -2953,7 +2960,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestTaskListSummarySectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/sections/0/tasks/0/summarySection>: summarySection has invalid key(s) [format, type]"
@@ -2982,7 +2989,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestTaskListSummarySectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/sections/0/tasks/0/summarySection/title>: Property title expected type String or JSONObject with structure {en: String} or {en: String, cy: String}"
@@ -3011,7 +3018,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestTaskListSummarySectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/sections/0/tasks/0/summarySection/header>: Property header expected type String or JSONObject with structure {en: String} or {en: String, cy: String}"
@@ -3040,7 +3047,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestTaskListSummarySectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/sections/0/tasks/0/summarySection/footer>: Property footer expected type String or JSONObject with structure {en: String} or {en: String, cy: String}"
@@ -3073,7 +3080,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestTaskListSummarySectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/sections/0/tasks/0/summarySection/displayWidth>: Property displayWidth expected type [String], found [Integer]"
@@ -3106,7 +3113,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestTaskListSummarySectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/sections/0/tasks/0/summarySection/displayWidth>: Property displayWidth expected value [m, l, xl]"
@@ -3139,7 +3146,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestTaskListSummarySectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/sections/0/tasks/0/summarySection/continueLabel>: Property continueLabel expected type String or JSONObject with structure {en: String} or {en: String, cy: String}"
@@ -3174,7 +3181,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestTaskListSummarySectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/sections/0/tasks/0/summarySection/includeIf>: Property includeIf expected type [String], found [JSONObject]"
@@ -3207,7 +3214,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestTaskListSummarySectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/sections/0/tasks/0/summarySection/fields>: Property fields expected type [Array], found [JSONObject]"
@@ -3242,7 +3249,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestTaskListSummarySectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/sections/0/tasks/0/summarySection/fields/0>: Property fields expected type Array of [Object], found Array of [String]"
@@ -3279,7 +3286,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestTaskListSummarySectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/sections/0/tasks/0/summarySection/fields/0>: fields has invalid key(s) [summarySection]"
@@ -3307,7 +3314,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
           ]
         }"""
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/emailCodeParameters/0/value>: Property value expected type String or JSONObject with structure {en: String} or {en: String, cy: String}"
@@ -3339,7 +3346,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
           }
         }"""
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/referrerConfig>: referrerConfig requires properties [allowedReferrerUrls, exitMessage] to be present"
@@ -3370,7 +3377,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
           }
         }"""
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/referrerConfig>: referrerConfig requires properties [allowedReferrerUrls, exitMessage] to be present"
@@ -3406,7 +3413,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
           }
         }"""
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/referrerConfig>: referrerConfig has invalid key(s) [format]"
@@ -3436,7 +3443,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
           }
         }"""
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/referrerConfig/allowedReferrerUrls>: Property allowedReferrerUrls expected type [Array], found [Boolean]"
@@ -3471,7 +3478,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
           }
         }"""
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/referrerConfig/allowedReferrerUrls/0>: Property allowedReferrerUrls expected type Array of [String], found Array of [Integer]"
@@ -3505,7 +3512,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
           }
         }"""
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/referrerConfig/exitMessage>: Property exitMessage expected type String or JSONObject with structure {en: String} or {en: String, cy: String}. Missing key(s) [en] are required. Invalid key(s) [notAllowed] are not permitted"
@@ -3537,7 +3544,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
           }
         }"""
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/referrerConfig/title>: Property title expected type String or JSONObject with structure {en: String} or {en: String, cy: String}"
@@ -3566,7 +3573,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestDeclarationSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/declarationSection>: declarationSection requires properties [title, fields] to be present"
@@ -3596,7 +3603,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestDeclarationSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/declarationSection/title>: Property title expected type String or JSONObject with structure {en: String} or {en: String, cy: String}"
@@ -3628,7 +3635,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestDeclarationSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/declarationSection>: declarationSection requires properties [title, fields] to be present"
@@ -3661,7 +3668,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestDeclarationSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/declarationSection/fields>: Property fields expected type [Array], found [Boolean]"
@@ -3696,7 +3703,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestDeclarationSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/declarationSection/fields/0>: Property fields expected type Array of [Object], found Array of [Integer]"
@@ -3734,7 +3741,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestDeclarationSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at ID <test-declarationSection-id>: Property type expected type [String], found [Integer]"
@@ -3764,7 +3771,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestDeclarationSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/declarationSection/shortName>: Property shortName expected type String or JSONObject with structure {en: String} or {en: String, cy: String}"
@@ -3794,7 +3801,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestDeclarationSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/declarationSection/continueLabel>: Property continueLabel expected type String or JSONObject with structure {en: String} or {en: String, cy: String}"
@@ -3827,7 +3834,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestDeclarationSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/declarationSection/includeIf>: Property includeIf expected type [String], found [JSONObject]"
@@ -3861,7 +3868,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestDeclarationSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/declarationSection>: declarationSection has invalid key(s) [type]"
@@ -3891,7 +3898,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestDeclarationSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/declarationSection/title>: Property title expected type String or JSONObject with structure {en: String} or {en: String, cy: String}. Invalid key(s) [value] are not permitted",
@@ -3922,7 +3929,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestTaskListDeclarationSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/sections/0/tasks/0/declarationSection>: declarationSection requires properties [title, fields] to be present"
@@ -3952,7 +3959,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestTaskListDeclarationSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/sections/0/tasks/0/declarationSection/title>: Property title expected type String or JSONObject with structure {en: String} or {en: String, cy: String}"
@@ -3984,7 +3991,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestTaskListDeclarationSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/sections/0/tasks/0/declarationSection>: declarationSection requires properties [title, fields] to be present"
@@ -4017,7 +4024,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestTaskListDeclarationSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/sections/0/tasks/0/declarationSection/fields>: Property fields expected type [Array], found [Boolean]"
@@ -4052,7 +4059,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestTaskListDeclarationSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/sections/0/tasks/0/declarationSection/fields/0>: Property fields expected type Array of [Object], found Array of [Integer]"
@@ -4090,7 +4097,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestTaskListDeclarationSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at ID <test-declarationSection-id>: Property type expected type [String], found [Integer]"
@@ -4120,7 +4127,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestTaskListDeclarationSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/sections/0/tasks/0/declarationSection/shortName>: Property shortName expected type String or JSONObject with structure {en: String} or {en: String, cy: String}"
@@ -4150,7 +4157,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestTaskListDeclarationSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/sections/0/tasks/0/declarationSection/continueLabel>: Property continueLabel expected type String or JSONObject with structure {en: String} or {en: String, cy: String}"
@@ -4183,7 +4190,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestTaskListDeclarationSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/sections/0/tasks/0/declarationSection/includeIf>: Property includeIf expected type [String], found [JSONObject]"
@@ -4217,7 +4224,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestTaskListDeclarationSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/sections/0/tasks/0/declarationSection>: declarationSection has invalid key(s) [type]"
@@ -4247,7 +4254,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestTaskListDeclarationSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/sections/0/tasks/0/declarationSection/title>: Property title expected type String or JSONObject with structure {en: String} or {en: String, cy: String}. Invalid key(s) [value] are not permitted",
@@ -4296,7 +4303,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestAcknowledgementSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/acknowledgementSection>: acknowledgementSection requires properties [title, fields] to be present"
@@ -4346,7 +4353,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestAcknowledgementSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/acknowledgementSection>: acknowledgementSection requires properties [title, fields] to be present"
@@ -4398,7 +4405,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestAcknowledgementSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/acknowledgementSection>: acknowledgementSection has invalid key(s) [type]"
@@ -4419,7 +4426,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestAcknowledgementSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/acknowledgementSection/title>: Property title expected type String or JSONObject with structure {en: String} or {en: String, cy: String}"
@@ -4442,7 +4449,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestAcknowledgementSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/acknowledgementSection/title>: Property title expected type String or JSONObject with structure {en: String} or {en: String, cy: String}. Missing key(s) [en] are required"
@@ -4467,7 +4474,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestAcknowledgementSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/acknowledgementSection/title>: Property title expected type String or JSONObject with structure {en: String} or {en: String, cy: String}. Invalid key(s) [value] are not permitted"
@@ -4491,7 +4498,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestAcknowledgementSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/acknowledgementSection/title>: Property title expected type String or JSONObject with structure {en: String} or {en: String, cy: String}. Missing key(s) [en] are required. Invalid key(s) [value] are not permitted"
@@ -4516,7 +4523,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestAcknowledgementSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/acknowledgementSection/panelTitle>: Property panelTitle expected type String or JSONObject with structure {en: String} or {en: String, cy: String}"
@@ -4543,7 +4550,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestAcknowledgementSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/acknowledgementSection/panelTitle>: Property panelTitle expected type String or JSONObject with structure {en: String} or {en: String, cy: String}. Missing key(s) [en] are required"
@@ -4572,7 +4579,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestAcknowledgementSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/acknowledgementSection/panelTitle>: Property panelTitle expected type String or JSONObject with structure {en: String} or {en: String, cy: String}. Invalid key(s) [value] are not permitted"
@@ -4600,7 +4607,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestAcknowledgementSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/acknowledgementSection/panelTitle>: Property panelTitle expected type String or JSONObject with structure {en: String} or {en: String, cy: String}. Missing key(s) [en] are required. Invalid key(s) [value] are not permitted"
@@ -4625,7 +4632,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestAcknowledgementSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/acknowledgementSection/showReference>: Property showReference expected type [Boolean], found [JSONArray]"
@@ -4650,7 +4657,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestAcknowledgementSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/acknowledgementSection/instructionPdf>: Property instructionPdf expected type [Object], found [String]"
@@ -4685,7 +4692,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestAcknowledgementSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/acknowledgementSection/instructionPdf>: instructionPdf has invalid key(s) [value]"
@@ -4715,7 +4722,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestAcknowledgementSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/acknowledgementSection/instructionPdf>: instructionPdf requires properties [header] to be present"
@@ -4746,7 +4753,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestAcknowledgementSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/acknowledgementSection/instructionPdf/footer>: Property footer expected type String or JSONObject with structure {en: String} or {en: String, cy: String}"
@@ -4783,7 +4790,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestAcknowledgementSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/acknowledgementSection/pdf>: pdf has invalid key(s) [value]"
@@ -4815,7 +4822,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestAcknowledgementSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/acknowledgementSection/pdf>: pdf requires properties [header] to be present"
@@ -4851,7 +4858,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestAcknowledgementSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/acknowledgementSection/pdf/tabularFormat>: Property tabularFormat expected type [Boolean], found [JSONObject]"
@@ -4887,7 +4894,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestAcknowledgementSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/acknowledgementSection/pdf/includeSignatureBox>: Property includeSignatureBox expected type [Boolean], found [JSONArray]"
@@ -4911,7 +4918,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestAcknowledgementSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/acknowledgementSection/fields>: Property fields expected type [Array], found [String]"
@@ -4937,7 +4944,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestAcknowledgementSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at <#/acknowledgementSection/fields/0>: Property fields expected type Array of [Object], found Array of [Integer]"
@@ -4966,7 +4973,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestAcknowledgementSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
       "Error at ID <test-acknowledgementSection-id>: Property type expected type [String], found [Integer]"
@@ -4993,7 +5000,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult =
       List(
@@ -5021,7 +5028,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult =
       List(
@@ -5049,7 +5056,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult =
       List(
@@ -5078,7 +5085,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult =
       List(
@@ -5104,7 +5111,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = Right(())
 
@@ -5126,7 +5133,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = Right(())
 
@@ -5173,7 +5180,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = Right(())
 
@@ -5219,7 +5226,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = Right(())
 
@@ -5241,7 +5248,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = Right(())
 
@@ -5263,7 +5270,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = Right(())
 
@@ -5287,7 +5294,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = Right(())
 
@@ -5311,7 +5318,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = Right(())
 
@@ -5338,7 +5345,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = Right(())
 
@@ -5361,7 +5368,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = Right(())
 
@@ -5384,7 +5391,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = Right(())
 
@@ -5404,7 +5411,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = Right(())
 
@@ -5426,7 +5433,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = Right(())
 
@@ -5449,7 +5456,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = Right(())
 
@@ -5475,7 +5482,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = Right(())
 
@@ -5507,7 +5514,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = Right(())
 
@@ -5552,7 +5559,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = Right(())
 
@@ -5589,7 +5596,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = Right(())
 
@@ -5615,7 +5622,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = Right(())
 
@@ -5647,7 +5654,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = Right(())
 
@@ -5678,7 +5685,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = Right(())
 
@@ -5708,7 +5715,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = Right(())
 
@@ -5743,7 +5750,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestSummarySectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = Right(())
 
@@ -5777,7 +5784,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestTaskListSummarySectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = Right(())
 
@@ -5803,7 +5810,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
         ]
       }"""
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = Right(())
 
@@ -5832,7 +5839,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
         ]
       }"""
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = Right(())
 
@@ -5861,7 +5868,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
           }
         }"""
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = Right(())
 
@@ -5891,7 +5898,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
           }
         }"""
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = Right(())
 
@@ -5922,7 +5929,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestDeclarationSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = Right(())
 
@@ -5953,7 +5960,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestDeclarationSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = Right(())
 
@@ -5984,7 +5991,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestTaskListDeclarationSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = Right(())
 
@@ -6015,7 +6022,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestTaskListDeclarationSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = Right(())
 
@@ -6037,7 +6044,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestAcknowledgementSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = Right(())
 
@@ -6086,7 +6093,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestAcknowledgementSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = Right(())
 
@@ -6111,7 +6118,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = Right(())
 
@@ -6136,7 +6143,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = Right(())
 
@@ -6161,7 +6168,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = Right(())
 
@@ -6186,7 +6193,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = Right(())
 
@@ -6211,7 +6218,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = Right(())
 
@@ -6237,7 +6244,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = Right(())
 
@@ -6263,7 +6270,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = Right(())
 
@@ -6289,7 +6296,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = Right(())
 
@@ -6315,7 +6322,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = Right(())
 
@@ -6341,7 +6348,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = Right(())
 
@@ -6367,7 +6374,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = Right(())
 

@@ -280,11 +280,13 @@ class DestinationSubmitter[M[_]](
       accumulatedModel,
       modelTree
     )
+    val validatedPayload = dataStore.validateSchema(d, payload, withPureJson = false)
+
     val dataStoreRouting = d.routing.sdesRouting(sdesConfig)
     monadError.handleErrorWith(
       dataStore.submitPayload(
         submissionInfo,
-        payload,
+        validatedPayload,
         dataStoreRouting,
         d.routing
       )

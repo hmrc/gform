@@ -42,4 +42,10 @@ trait DataStoreSubmitterAlgebra[F[_]] {
     accumulatedModel: HandlebarsTemplateProcessorModel,
     modelTree: HandlebarsModelTree
   ): String
+
+  def validateSchema(
+    dataStore: DataStore,
+    payload: String,
+    withPureJson: Boolean
+  ): String
 }

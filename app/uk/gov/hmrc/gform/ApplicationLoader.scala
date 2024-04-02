@@ -49,9 +49,7 @@ import uk.gov.hmrc.gform.formmetadata.FormMetadataModule
 import uk.gov.hmrc.gform.formstatistics.FormStatisticsModule
 import uk.gov.hmrc.gform.formtemplate.FormTemplateModule
 import uk.gov.hmrc.gform.graphite.GraphiteModule
-import uk.gov.hmrc.gform.handlebarstemplate.HandlebarsTemplateAlgebra
-import uk.gov.hmrc.gform.handlebarstemplate.HandlebarsTemplateModule
-import uk.gov.hmrc.gform.handlebarstemplate.HandlebarsTemplateService
+import uk.gov.hmrc.gform.handlebarstemplate.{ HandlebarsSchemaAlgebra, HandlebarsSchemaService, HandlebarsTemplateAlgebra, HandlebarsTemplateModule, HandlebarsTemplateService }
 import uk.gov.hmrc.gform.history.HistoryModule
 import uk.gov.hmrc.gform.metrics.MetricsModule
 import uk.gov.hmrc.gform.mongo.MongoModule
@@ -68,7 +66,7 @@ import uk.gov.hmrc.gform.repo.Repo
 import uk.gov.hmrc.gform.save4later.FormMongoCache
 import uk.gov.hmrc.gform.scheduler.SchedulerModule
 import uk.gov.hmrc.gform.sdes.SdesModule
-import uk.gov.hmrc.gform.sharedmodel.HandlebarsTemplate
+import uk.gov.hmrc.gform.sharedmodel.{ HandlebarsSchema, HandlebarsTemplate }
 import uk.gov.hmrc.gform.shutter.ShutterModule
 import uk.gov.hmrc.gform.submission.SubmissionModule
 import uk.gov.hmrc.gform.submission.destinations.DestinationModule
@@ -132,6 +130,11 @@ class ApplicationModule(context: Context)
   private val handlebarsTemplateService: HandlebarsTemplateAlgebra[Future] = new HandlebarsTemplateService(
     handlebarsTemplateRepo
   )
+  private val handlebarsSchemaRepo: Repo[HandlebarsSchema] =
+    new Repo[HandlebarsSchema]("handlebarsSchema", mongoModule.mongoComponent, _._id.value)
+  private val handlebarsSchemaService: HandlebarsSchemaAlgebra[Future] = new HandlebarsSchemaService(
+    handlebarsSchemaRepo
+  )
   val historyModule = new HistoryModule(configModule, mongoModule)
 
   val formTemplateModule =
@@ -141,12 +144,18 @@ class ApplicationModule(context: Context)
       shutterModule,
       notificationBannerModule,
       handlebarsTemplateService,
+      handlebarsSchemaService,
       historyModule,
       configModule
     )
 
   private val handlebarsPayloadModule =
-    new HandlebarsTemplateModule(controllerComponents, handlebarsTemplateService, formTemplateModule)
+    new HandlebarsTemplateModule(
+      controllerComponents,
+      handlebarsTemplateService,
+      formTemplateModule,
+      handlebarsSchemaService
+    )
 
   private val emailModule = new EmailModule(configModule, wSHttpModule, notifierModule, formTemplateModule)
   private val translationModule = new TranslationModule(formTemplateModule, historyModule, configModule)
