@@ -22,14 +22,16 @@ sealed trait FocusType extends Product with Serializable
 
 object FocusType {
   case object TaskSection extends FocusType
-  case object Task extends FocusType
+  case object TaskTitle extends FocusType
+  case object TaskCaption extends FocusType
   case object TaskSummarySection extends FocusType
   case object SubmitSection extends FocusType
 
   private def parse(s: String): Option[FocusType] =
     s match {
       case "taskSection"        => Some(TaskSection)
-      case "task"               => Some(Task)
+      case "taskTitle"          => Some(TaskTitle)
+      case "taskCaption"        => Some(TaskCaption)
       case "taskSummarySection" => Some(TaskSummarySection)
       case "submitSection"      => Some(SubmitSection)
       case _                    => None
