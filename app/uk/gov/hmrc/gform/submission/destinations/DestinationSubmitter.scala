@@ -21,6 +21,7 @@ import cats.MonadError
 import cats.syntax.applicative._
 import cats.syntax.flatMap._
 import cats.syntax.functor._
+import play.api.libs.json._
 import uk.gov.hmrc.gform.logging.Loggers
 import uk.gov.hmrc.gform.notifier.NotifierAlgebra
 import uk.gov.hmrc.gform.sdes.SdesConfig
@@ -282,7 +283,10 @@ class DestinationSubmitter[M[_]](
     )
     dataStore.validateSchema(d, payload) match {
       case Left(message) =>
-        Loggers.destinations.error(message)
+        val json = Json.parse(payload)
+        val payloadWithoutPII = Json.prettyPrint(replaceStringsWithLengths(json))
+        val messageWithPayload = s"$message Payload: $payloadWithoutPII"
+        Loggers.destinations.error(messageWithPayload)
         throw new RuntimeException(message)
       case _ =>
         val dataStoreRouting = d.routing.sdesRouting(sdesConfig)
@@ -348,6 +352,18 @@ class DestinationSubmitter[M[_]](
     response: HttpResponse
   ): M[HandlebarsDestinationResponse] =
     monadError.pure(HandlebarsDestinationResponse(d, response))
+
+  private def replaceStringsWithLengths(json: JsValue): JsValue = json match {
+    case JsObject(fields) =>
+      JsObject(fields.map { case (key, value) =>
+        value match {
+          case JsString(str) => (key, JsString(str.length.toString))
+          case other         => (key, replaceStringsWithLengths(other))
+        }
+      })
+    case JsArray(values) => JsArray(values.map(replaceStringsWithLengths))
+    case _               => json
+  }
 }
 
 object DestinationSubmitter {
