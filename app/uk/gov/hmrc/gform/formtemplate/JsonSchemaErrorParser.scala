@@ -25,7 +25,7 @@ import uk.gov.hmrc.gform.exceptions.SchemaValidationException
 
 import scala.annotation.tailrec
 
-object JsonSchemeErrorParser {
+object JsonSchemaErrorParser {
 
   def parseErrorMessages(errors: NonEmptyList[ValidationError], schema: Json, json: Json): SchemaValidationException = {
     val parsedErrors: NonEmptyList[ValidationError] = errors.map { error =>

@@ -16,36 +16,39 @@
 
 package uk.gov.hmrc.gform.formtemplate
 
-import cats.data.ValidatedNel
+import cats.data.{ NonEmptyList, ValidatedNel }
 import io.circe.Json
 import io.circe.jawn.JawnParser
 import io.circe.schema.Schema
 import io.circe.schema.ValidationError
 import uk.gov.hmrc.gform.exceptions.SchemaValidationException
 
-object JsonSchemeValidator {
-
-  val inputStream = getClass.getClassLoader.getResourceAsStream("formTemplateSchema.json")
-
-  val schemaStream = scala.io.Source.fromInputStream(inputStream).mkString
+object JsonSchemaValidator {
 
   val parser = JawnParser(allowDuplicateKeys = false)
-  val parsedSchema = parser.parse(schemaStream)
 
-  def checkSchema(json: String): Either[SchemaValidationException, Unit] = parser.parse(json) match {
-    case Right(json)          => validateJson(json)
+  def checkSchema(
+    json: String,
+    schema: String,
+    errorParser: (NonEmptyList[ValidationError], Json, Json) => SchemaValidationException
+  ): Either[SchemaValidationException, Unit] = parser.parse(json) match {
+    case Right(json)          => validateJson(json, schema, errorParser)
     case Left(parsingFailure) => Left(SchemaValidationException("Json error: " + parsingFailure))
   }
 
-  def validateJson(json: Json): Either[SchemaValidationException, Unit] =
-    parsedSchema match {
+  private def validateJson(
+    json: Json,
+    schema: String,
+    errorParser: (NonEmptyList[ValidationError], Json, Json) => SchemaValidationException
+  ): Either[SchemaValidationException, Unit] =
+    parser.parse(schema) match {
       case Left(parsingFailure) => Left(SchemaValidationException("Schema error: " + parsingFailure))
       case Right(schema) =>
         val formTemplateSchema: Schema = Schema.load(schema)
         val validated: ValidatedNel[ValidationError, Unit] = formTemplateSchema.validate(json)
 
         validated.leftMap { errors =>
-          JsonSchemeErrorParser.parseErrorMessages(errors, schema, json)
+          errorParser(errors, schema, json)
         }.toEither
     }
 }

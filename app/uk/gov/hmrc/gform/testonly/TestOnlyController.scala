@@ -46,7 +46,6 @@ import uk.gov.hmrc.gform.submission.{ DmsMetaData, Submission, SubmissionId }
 import uk.gov.hmrc.gform.submission.handlebars.{ FocussedHandlebarsModelTree, HandlebarsModelTree, RealHandlebarsTemplateProcessor }
 import uk.gov.hmrc.gform.BuildInfo
 import uk.gov.hmrc.mongo.MongoComponent
-
 import uk.gov.hmrc.http.HeaderCarrier
 
 class TestOnlyController(
@@ -179,8 +178,8 @@ class TestOnlyController(
                 val taxpayerId: Option[String] = destinationResult.flatMap(_.taxpayerId)
                 val accumulatedModel: HandlebarsTemplateProcessorModel = HandlebarsTemplateProcessorModel.empty
 
-                val tryResult = Try(
-                  dataStoreSubmitter.generatePayload(
+                val tryResult = Try {
+                  val payload = dataStoreSubmitter.generatePayload(
                     submissionInfo,
                     structuredFormData,
                     dataStore,
@@ -190,7 +189,14 @@ class TestOnlyController(
                     accumulatedModel,
                     modelTree
                   )
-                )
+                  dataStoreSubmitter.validateSchema(
+                    dataStore,
+                    payload
+                  ) match {
+                    case Left(message) => s"$message \n ${Json.prettyPrint(Json.parse(payload))}"
+                    case _             => payload
+                  }
+                }
 
                 tryResult.fold(
                   error => BadRequest(flattenExceptionMessage(error).mkString("\n")),

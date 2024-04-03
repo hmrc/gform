@@ -280,20 +280,30 @@ class DestinationSubmitter[M[_]](
       accumulatedModel,
       modelTree
     )
-    val dataStoreRouting = d.routing.sdesRouting(sdesConfig)
-    monadError.handleErrorWith(
-      dataStore.submitPayload(
-        submissionInfo,
-        payload,
-        dataStoreRouting,
-        d.routing
-      )
-    ) { msg =>
-      if (d.failOnError)
-        raiseError(submissionInfo.formId, d.id, msg)
-      else {
-        logErrorInMonad(submissionInfo.formId, d.id, "Failed execution but has 'failOnError' set to false. Ignoring.")
-      }
+    dataStore.validateSchema(d, payload) match {
+      case Left(message) =>
+        Loggers.destinations.error(message)
+        throw new RuntimeException(message)
+      case _ =>
+        val dataStoreRouting = d.routing.sdesRouting(sdesConfig)
+        monadError.handleErrorWith(
+          dataStore.submitPayload(
+            submissionInfo,
+            payload,
+            dataStoreRouting,
+            d.routing
+          )
+        ) { msg =>
+          if (d.failOnError)
+            raiseError(submissionInfo.formId, d.id, msg)
+          else {
+            logErrorInMonad(
+              submissionInfo.formId,
+              d.id,
+              "Failed execution but has 'failOnError' set to false. Ignoring."
+            )
+          }
+        }
     }
   }
 

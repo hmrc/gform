@@ -56,6 +56,11 @@ GET           /handlebarstemplates/:handlebarsTemplateId                        
 GET           /handlebarstemplates/:handlebarsTemplateId/raw                                            uk.gov.hmrc.gform.handlebarstemplate.HandlebarsTemplateController.getRaw(handlebarsTemplateId: HandlebarsTemplateId)
 DELETE        /handlebarstemplates/:handlebarsTemplateId                                                uk.gov.hmrc.gform.handlebarstemplate.HandlebarsTemplateController.delete(handlebarsTemplateId: HandlebarsTemplateId)
 
+GET           /handlebars-schemas                                                                       uk.gov.hmrc.gform.handlebarstemplate.HandlebarsSchemaController.allIds
+POST          /handlebars-schemas/:handlebarsSchemaId                                                   uk.gov.hmrc.gform.handlebarstemplate.HandlebarsSchemaController.upsert(handlebarsSchemaId: HandlebarsSchemaId)
+GET           /handlebars-schemas/:handlebarsSchemaId                                                   uk.gov.hmrc.gform.handlebarstemplate.HandlebarsSchemaController.get(handlebarsSchemaId: HandlebarsSchemaId)
+DELETE        /handlebars-schemas/:handlebarsSchemaId                                                   uk.gov.hmrc.gform.handlebarstemplate.HandlebarsSchemaController.delete(handlebarsSchemaId: HandlebarsSchemaId)
+
 GET           /exposed-config                                                                           uk.gov.hmrc.gform.config.ConfigController.exposedConfig()
 
 POST          /des/organisation/:utr                                                                    uk.gov.hmrc.gform.des.DesController.organisation(utr: String)

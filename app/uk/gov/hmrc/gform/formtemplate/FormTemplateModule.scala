@@ -22,14 +22,13 @@ import uk.gov.hmrc.gform.core.FOpt
 import uk.gov.hmrc.gform.core.fromFutureA
 import uk.gov.hmrc.gform.formredirect.FormRedirect
 import uk.gov.hmrc.gform.formredirect.FormRedirectService
-import uk.gov.hmrc.gform.handlebarstemplate.HandlebarsTemplateAlgebra
+import uk.gov.hmrc.gform.handlebarstemplate.{ HandlebarsSchemaAlgebra, HandlebarsTemplateAlgebra }
 import uk.gov.hmrc.gform.history.HistoryModule
 import uk.gov.hmrc.gform.mongo.MongoModule
 import uk.gov.hmrc.gform.notificationbanner.NotificationBannerModule
 import uk.gov.hmrc.gform.repo.DeleteResult
 import uk.gov.hmrc.gform.repo.Repo
-import uk.gov.hmrc.gform.sharedmodel.HandlebarsTemplate
-import uk.gov.hmrc.gform.sharedmodel.HandlebarsTemplateId
+import uk.gov.hmrc.gform.sharedmodel.{ HandlebarsSchema, HandlebarsSchemaId, HandlebarsTemplate, HandlebarsTemplateId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateRaw
@@ -44,6 +43,7 @@ class FormTemplateModule(
   shutterModule: ShutterModule,
   notificationBannerModule: NotificationBannerModule,
   handlebarsTemplateService: HandlebarsTemplateAlgebra[Future],
+  handlebarsSchemaService: HandlebarsSchemaAlgebra[Future],
   historyModule: HistoryModule,
   configModule: ConfigModule
 )(implicit
@@ -70,12 +70,28 @@ class FormTemplateModule(
     override def getAll: FOpt[List[HandlebarsTemplateId]] =
       fromFutureA(handlebarsTemplateService.getAll)
   }
+
+  val foptHandlebarsSchemaService: HandlebarsSchemaAlgebra[FOpt] = new HandlebarsSchemaAlgebra[FOpt] {
+    override def save(handlebarsSchema: HandlebarsSchema): FOpt[Unit] =
+      fromFutureA(handlebarsSchemaService.save(handlebarsSchema))
+
+    override def get(handlebarsSchemaId: HandlebarsSchemaId): FOpt[Option[HandlebarsSchema]] =
+      fromFutureA(handlebarsSchemaService.get(handlebarsSchemaId))
+
+    override def delete(handlebarsSchemaId: HandlebarsSchemaId): FOpt[DeleteResult] =
+      fromFutureA(handlebarsSchemaService.delete(handlebarsSchemaId))
+
+    override def getAllIds: FOpt[List[HandlebarsSchemaId]] =
+      fromFutureA(handlebarsSchemaService.getAllIds)
+  }
+
   val formTemplateService: FormTemplateService =
     new FormTemplateService(
       formTemplateRepo,
       formTemplateRawRepo,
       formRedirectRepo,
       foptHandlebarsPayloadService,
+      foptHandlebarsSchemaService,
       configModule.appConfig
     )
   val formRedirectService: FormRedirectService =
@@ -94,7 +110,6 @@ class FormTemplateModule(
       formRedirectService,
       shutterModule.shutterService,
       notificationBannerModule.notificationService,
-      historyModule.historyService,
       handler
     )
 

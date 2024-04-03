@@ -27,6 +27,7 @@ import play.api.libs.json._
 import uk.gov.hmrc.gform.config.AppConfig
 import uk.gov.hmrc.gform.core.{ FOpt, fromFutureA }
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
+import uk.gov.hmrc.gform.sharedmodel.HandlebarsSchemaId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplate, FormTemplateRaw }
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -476,7 +477,9 @@ class FormTemplatesControllerRequestHandlerTest extends AnyWordSpec with Matcher
     val formTemplate: Option[FormTemplate] = FormTemplate.transformAndReads(json).asOpt
     val appConfig = AppConfig.loadOrThrow(ConfigFactory.load())
     val verifySideEffect: Option[FOpt[Unit]] =
-      formTemplate.map(formTemplate => new Verifier {}.verify(formTemplate, appConfig)(ExprSubstitutions.empty))
+      formTemplate.map(formTemplate =>
+        new Verifier {}.verify(formTemplate, appConfig, List.empty[HandlebarsSchemaId])(ExprSubstitutions.empty)
+      )
 
     f(sideEffect, verifySideEffect, templateRaw)
   }

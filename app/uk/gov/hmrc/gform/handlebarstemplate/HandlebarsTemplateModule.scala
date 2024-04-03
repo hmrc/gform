@@ -25,7 +25,8 @@ import scala.concurrent.Future
 class HandlebarsTemplateModule(
   controllerComponents: ControllerComponents,
   handlebarsTemplateService: HandlebarsTemplateAlgebra[Future],
-  formTemplateModule: FormTemplateModule
+  formTemplateModule: FormTemplateModule,
+  handlebarsSchemaAlgebra: HandlebarsSchemaAlgebra[Future]
 )(implicit
   ex: ExecutionContext
 ) {
@@ -33,6 +34,14 @@ class HandlebarsTemplateModule(
     new HandlebarsTemplateController(
       controllerComponents,
       handlebarsTemplateService,
+      formTemplateModule.handler,
+      formTemplateModule.formTemplateService
+    )
+
+  val handlebarSchemaController: HandlebarsSchemaController =
+    new HandlebarsSchemaController(
+      controllerComponents,
+      handlebarsSchemaAlgebra,
       formTemplateModule.handler,
       formTemplateModule.formTemplateService
     )

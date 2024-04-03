@@ -18,6 +18,7 @@ package uk.gov.hmrc.gform.submission.destinations
 
 import akka.util.ByteString
 import play.api.libs.json.{ JsObject, Json }
+
 import scala.util.Try
 import uk.gov.hmrc.gform.core.FOpt
 import uk.gov.hmrc.gform.sdes.SdesRouting
@@ -30,6 +31,7 @@ import uk.gov.hmrc.gform.submission.handlebars.{ FocussedHandlebarsModelTree, Ha
 import uk.gov.hmrc.gform.submission.{ DataStoreFileGenerator, RoboticsXMLGenerator }
 import org.json4s.native.JsonMethods
 import org.json4s.native.Printer.compact
+import uk.gov.hmrc.gform.formtemplate.{ HandlebarsSchemaErrorParser, JsonSchemaValidator }
 import uk.gov.hmrc.gform.objectstore.ObjectStoreAlgebra
 import uk.gov.hmrc.gform.sdes.datastore.DataStoreWorkItemAlgebra
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
@@ -57,7 +59,7 @@ class DataStoreSubmitter(
     accumulatedModel: HandlebarsTemplateProcessorModel,
     modelTree: HandlebarsModelTree
   ): String = {
-    val dateSubmittedFormater = DateTimeFormatter.ofPattern("dd/MM/yyyy").withZone(ZoneId.of("Europe/London"))
+    val dateSubmittedFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy").withZone(ZoneId.of("Europe/London"))
     val submission = submissionInfo.submission
 
     val focussedTree = FocussedHandlebarsModelTree(modelTree, modelTree.value.model)
@@ -94,7 +96,7 @@ class DataStoreSubmitter(
       "",
       dataStore.regime,
       taxpayerId.getOrElse(""),
-      dateSubmittedFormater.format(submission.submittedDate.toLocalDate),
+      dateSubmittedFormatter.format(submission.submittedDate.toLocalDate),
       submission.submittedDate.toLocalTime.toString,
       submission.submissionRef.value,
       submission.envelopeId.value,
@@ -103,6 +105,28 @@ class DataStoreSubmitter(
 
     DataStoreFileGenerator(userSession, dataStoreMetaData, payloads, dataStore.includeSessionInfo)
   }
+
+  override def validateSchema(
+    dataStore: DataStore,
+    payload: String
+  ): Either[String, Unit] =
+    if (dataStore.validateHandlebarPayload) {
+      dataStore.jsonSchema match {
+        case Some(schema) =>
+          JsonSchemaValidator.checkSchema(
+            payload,
+            schema.toString,
+            HandlebarsSchemaErrorParser.parseErrorMessages
+          ) match {
+            case Left(validationEx) =>
+              val errors = Json.prettyPrint(validationEx.errors)
+              Left(s"JSON schema validation is failed. JSON validation errors: $errors")
+            case Right(value) => Right(value)
+          }
+        case _ =>
+          Left(s"JSON schema does not exist for the destination '${dataStore.id.id}'")
+      }
+    } else Right(())
 
   private def convertToJson(string: String, destinationId: DestinationId, payloadDiscriminator: String): JsObject =
     Try(

@@ -91,7 +91,9 @@ object Destination {
     handlebarPayload: Boolean,
     formDataPayload: Boolean,
     convertSingleQuotes: Option[Boolean],
-    payload: Option[String]
+    payload: Option[String],
+    validateHandlebarPayload: Boolean,
+    jsonSchema: Option[JsValue]
   ) extends Destination with DestinationWithTaxpayerId
 
   case class HandlebarsHttpApi(
@@ -261,7 +263,9 @@ case class UploadableDataStoreDestination(
   convertSingleQuotes: Option[Boolean],
   handlebarPayload: Boolean,
   formDataPayload: Boolean,
-  routing: SdesDestination
+  routing: SdesDestination,
+  validateHandlebarPayload: Option[Boolean],
+  jsonSchema: Option[JsValue]
 ) {
   def toDataStoreDestination: Either[String, Destination.DataStore] =
     for {
@@ -279,7 +283,9 @@ case class UploadableDataStoreDestination(
       handlebarPayload,
       formDataPayload,
       convertSingleQuotes,
-      None
+      None,
+      validateHandlebarPayload.getOrElse(false),
+      jsonSchema
     )
 }
 

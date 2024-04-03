@@ -20,8 +20,9 @@ import cats.implicits._
 import cats.data.NonEmptyList
 import uk.gov.hmrc.gform.core.ValidationResult.BooleanToValidationResultSyntax
 import uk.gov.hmrc.gform.core.{ Invalid, Valid, ValidationResult }
+import uk.gov.hmrc.gform.sharedmodel.HandlebarsSchemaId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationIncludeIf.{ HandlebarValue, IncludeIfValue }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponent, FormComponentId, IsGroup }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponent, FormComponentId, FormTemplateId, IsGroup }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationId, Destinations }
 
 object DestinationsValidator {
@@ -86,6 +87,29 @@ object DestinationsValidator {
         case None     => Valid
       }
   }
+
+  def validateHandlebarSchemaCheck(
+    formTemplateId: FormTemplateId,
+    destinations: Destinations,
+    handlebarsSchemaIds: List[HandlebarsSchemaId]
+  ): ValidationResult =
+    destinations match {
+      case destinationList: Destinations.DestinationList =>
+        destinationList.destinations.map {
+          case ds: Destination.DataStore =>
+            if (ds.validateHandlebarPayload && (ds.validateHandlebarPayload =!= ds.handlebarPayload))
+              Invalid(
+                s"The destination '${ds.id.id}' is not valid. Once the property 'validateHandlebarPayload' is set to true, the required property 'handlebarPayload' must be true."
+              )
+            else if (ds.validateHandlebarPayload && !handlebarsSchemaIds.map(_.value).contains(formTemplateId.value))
+              Invalid(
+                s"The destination '${ds.id.id}' is not valid. The schema '${formTemplateId.value}' does not exist."
+              )
+            else Valid
+          case _ => Valid
+        }.combineAll
+      case _ => Valid
+    }
 
   def extractGroupComponentId(fcs: List[FormComponent]): Option[FormComponentId] =
     fcs.collectFirst { case fc @ IsGroup(_) =>

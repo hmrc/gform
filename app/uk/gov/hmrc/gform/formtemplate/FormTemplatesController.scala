@@ -24,7 +24,6 @@ import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.formredirect.FormRedirectService
 import uk.gov.hmrc.gform.formtemplate.FormTemplatePIIRefsHelper.PIIDetailsResponse
-import uk.gov.hmrc.gform.history.HistoryService
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplate, FormTemplateContext, FormTemplateId, FormTemplateRaw, FormTemplateRawId }
 import uk.gov.hmrc.gform.shutter.ShutterService
 import uk.gov.hmrc.gform.core.FOpt
@@ -39,7 +38,6 @@ class FormTemplatesController(
   formRedirectService: FormRedirectService,
   shutterService: ShutterService,
   notificationService: NotificationService,
-  historyService: HistoryService,
   handler: RequestHandlerAlg[FOpt]
 )(implicit
   ex: ExecutionContext
@@ -48,8 +46,10 @@ class FormTemplatesController(
 
   def upsert() = Action.async(parse.tolerantText) { implicit request =>
     val templateString: String = request.body
+    val inputStream = getClass.getClassLoader.getResourceAsStream("formTemplateSchema.json")
+    val schemaStream = scala.io.Source.fromInputStream(inputStream).mkString
 
-    JsonSchemeValidator.checkSchema(templateString) match {
+    JsonSchemaValidator.checkSchema(templateString, schemaStream, JsonSchemaErrorParser.parseErrorMessages) match {
       case Left(error) => error.asBadRequest.pure[Future]
       case Right(()) =>
         val jsValue: JsObject =
