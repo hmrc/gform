@@ -6380,4 +6380,41 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     assertEquals(result, expectedResult)
   }
+
+  test(
+    "validateJson accepts the form when a choices property contains an underscored includeIf (_includeIf)"
+  ) {
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": "test label",
+            "type": "choice",
+            "choices": [
+              {
+                "en": "en choice 1",
+                "cy": "cy choice 1",
+                "dynamic": "dynamic.one",
+                "hint": {
+                  "en": "en hint 1",
+                  "cy": "cy hint 1"
+                },
+                "value": "NONE",
+                "_includeIf": "1=1"
+              },
+              {
+                "en": "en choice 2"
+              }
+            ]
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = validateJson(jsonTemplate)
+
+    val expectedResult = Right(())
+
+    assertEquals(result, expectedResult)
+  }
 }
