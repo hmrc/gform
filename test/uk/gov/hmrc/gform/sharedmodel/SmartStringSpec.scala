@@ -161,6 +161,112 @@ class SmartStringSpec extends Spec with ScalaCheckDrivenPropertyChecks {
     }
   }
 
+  it should "read a SmartStringConditional" in {
+
+    val jsonString =
+      """|[{
+         |      "includeIf": "${foo contains 0}",
+         |      "en": "Englishstart ${var1} middleEnglish   ${var2} englishend",
+         |      "cy": "Welshstart ${var1}   ${var3} welshend"
+         |    }, {
+         |      "en": "${if true then 'foo' else var1} Can you pay ${var3} in full within 30 days?",
+         |      "cy": "Can you pay ${var4} in full within 30 days?"
+         | }]""".stripMargin
+
+    val expected = SmartString(
+      localised = LocalisedString(m = Map(LangADT.En -> "{0}", LangADT.Cy -> "{1}")),
+      interpolations = List(
+        IfElse(
+          cond = Contains(
+            multiValueField = FormCtx(formComponentId = FormComponentId(value = "foo")),
+            value = Constant(value = "0")
+          ),
+          field1 = Concat(
+            exprs = List(
+              Constant(value = "Englishstart "),
+              FormCtx(formComponentId = FormComponentId(value = "var1")),
+              Constant(value = " middleEnglish   "),
+              FormCtx(formComponentId = FormComponentId(value = "var2")),
+              Constant(value = " englishend")
+            )
+          ),
+          field2 = Concat(
+            exprs = List(
+              IfElse(
+                cond = IsTrue,
+                field1 = Constant(value = "foo"),
+                field2 = FormCtx(formComponentId = FormComponentId(value = "var1"))
+              ),
+              Constant(value = " Can you pay "),
+              FormCtx(formComponentId = FormComponentId(value = "var3")),
+              Constant(value = " in full within 30 days?")
+            )
+          )
+        ),
+        IfElse(
+          cond = Contains(
+            multiValueField = FormCtx(formComponentId = FormComponentId(value = "foo")),
+            value = Constant(value = "0")
+          ),
+          field1 = Concat(
+            exprs = List(
+              Constant(value = "Welshstart "),
+              FormCtx(formComponentId = FormComponentId(value = "var1")),
+              Constant(value = "   "),
+              FormCtx(formComponentId = FormComponentId(value = "var3")),
+              Constant(value = " welshend")
+            )
+          ),
+          field2 = Concat(
+            exprs = List(
+              Constant(value = "Can you pay "),
+              FormCtx(formComponentId = FormComponentId(value = "var4")),
+              Constant(value = " in full within 30 days?")
+            )
+          )
+        )
+      )
+    )
+
+    verifyRead(
+      expected,
+      jsonString
+    )
+
+  }
+
+  it should "read a SmartStringConditional with no includeIfs" in {
+    val jsonString =
+      """|[{
+         |      "en": "Englishstart ${var1} middleEnglish   ${var2} englishend",
+         |      "cy": "Welshstart ${var1}   ${var3} welshend"
+         |    }, {
+         |      "en": "${if true then 'foo' else var1} Can you pay ${var3} in full within 30 days?",
+         |      "cy": "Can you pay ${var4} in full within 30 days?"
+         | }]""".stripMargin
+    verifyReadFailure[SmartString](
+      "An array of objects for a smartString must have includeIf expressions defined",
+      jsonString
+    )
+  }
+
+  it should "read a SmartStringConditional with all includeIfs" in {
+    val jsonString =
+      """|[{
+         |      "includeIf": "${foo contains 0}",
+         |      "en": "Englishstart ${var1} middleEnglish   ${var2} englishend",
+         |      "cy": "Welshstart ${var1}   ${var3} welshend"
+         |    }, {
+         |      "includeIf": "${foo contains 0}",
+         |      "en": "${if true then 'foo' else var1} Can you pay ${var3} in full within 30 days?",
+         |      "cy": "Can you pay ${var4} in full within 30 days?"
+         | }]""".stripMargin
+    verifyReadFailure[SmartString](
+      "An array of objects for a smartString must have at least 1 object without an includeIf",
+      jsonString
+    )
+  }
+
   private def condition(s: String): String =
     s.flatMap { c =>
       if (c >= 32 && c <= 127 && c != '"' && c != '\\' && c != '$') Seq(c)

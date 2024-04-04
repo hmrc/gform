@@ -1115,4 +1115,133 @@ class TextExtractorSuite extends FunSuite {
     val res = TextExtractor.translateFile(csv, json.spaces2)
     assertEquals(parse(res).toOption.get, expected)
   }
+
+  test("csv generation with conditional SmartString") {
+    val json =
+      json"""
+          {
+            "expressions": {
+              "vesselInstallationExp": "if empVesselInstallChoice contains 0 then 'vessel' else 'installation'",
+              "employeesYourCap": "if employee || agent then 'Your'|'Cy-Your' + ' ' else 'Employee’s'",
+              "enBasicGrossedTax": {
+                "value": "enBasicValueBenefit * (enBasicRate / 100) * (100 / (100 - enBasicRate))",
+                "type": "sterling",
+                "round": "HalfUp"
+              }
+            },
+            "exitPages": [
+              {
+                "label": [
+                  {
+                    "includeIf": "true",
+                    "en": "En includeIf 1",
+                    "cy": "CY inlcudeIf 1"
+                  },
+                  {
+                    "includeIf": "false",
+                    "en": "En includeIf 2",
+                    "cy": "CY inlcudeIf 2"
+                  },
+                  {
+                    "en": "En no includeIf",
+                    "cy": "CY no inlcudeIf"
+                  }
+                ],
+                "exitMessage": "Page is unavailable until next week"
+              }
+            ]
+          }
+          """
+    val expectedCsv =
+      """|en,cy
+         |Employee’s,
+         |En includeIf 1,CY inlcudeIf 1
+         |En includeIf 2,CY inlcudeIf 2
+         |En no includeIf,CY no inlcudeIf
+         |Page is unavailable until next week,
+         |Your,Cy-Your
+         |installation,
+         |vessel,
+         |""".stripMargin.replaceAll("\n", "\r\n")
+
+    val baos = new ByteArrayOutputStream()
+    val bos = new BufferedOutputStream(baos)
+    TextExtractor.generateTranslatableCvsFromString(json.spaces2, bos)
+    val csv = new String(baos.toByteArray())
+    bos.close()
+    baos.close()
+    assertEquals(csv, expectedCsv)
+  }
+
+  test("csv ingestion with Conditional SmartString") {
+    val json =
+      json"""
+          {
+            "exitPages": [
+              {
+                "label": [
+                  {
+                    "includeIf": "true",
+                    "en": "En includeIf 1"
+                  },
+                  {
+                    "includeIf": "false",
+                    "en": "En includeIf 2"
+                  },
+                  {
+                    "en": "En no includeIf"
+                  }
+                ],
+                "exitMessage": "Page is unavailable until next week"
+              }
+            ]
+          }
+          """
+
+    val expected =
+      json"""
+          {
+            "exitPages": [
+              {
+                "label": [
+                  {
+                    "en": "En includeIf 1",
+                    "cy": "CY inlcudeIf 1",
+                    "includeIf": "true"
+                  },
+                  {
+                    "en": "En includeIf 2",
+                    "cy": "CY inlcudeIf 2",
+                    "includeIf": "false"
+                  },
+                  {
+                    "en": "En no includeIf",
+                    "cy": "CY no inlcudeIf"
+                  }
+                ],
+                "exitMessage" : {
+                  "en" : "Page is unavailable until next week",
+                  "cy" : ""
+                }
+              }
+            ]
+          }
+          """
+
+    val csv =
+      """|en,cy
+         |Employee’s,
+         |En includeIf 1,CY inlcudeIf 1
+         |En includeIf 2,CY inlcudeIf 2
+         |En no includeIf,CY no inlcudeIf
+         |Page is unavailable until next week,
+         |Your,Cy-Your
+         |installation,
+         |vessel,
+         |""".stripMargin.replaceAll("\n", "\r\n")
+
+    val res = TextExtractor.translateFile(csv, json.spaces2)
+    assertEquals(parse(res).toOption.get, expected)
+
+  }
 }

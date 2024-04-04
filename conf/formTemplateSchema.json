@@ -1175,22 +1175,45 @@
       }
     },
     "stringOrEnCyObject": {
-      "type": [
-        "string",
-        "object"
-      ],
-      "properties": {
-        "en": {
+      "oneOf": [
+        {
           "type": "string"
         },
-        "cy": {
-          "type": "string"
+        {
+          "type": "object",
+          "properties": {
+            "en": {
+              "type": "string"
+            },
+            "cy": {
+              "type": "string"
+            }
+          },
+          "required": ["en"],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "type": "object",
+            "properties": {
+              "includeIf": {
+                "type": "string"
+              },
+              "en": {
+                "type": "string"
+              },
+              "cy": {
+                "type": "string"
+              }
+            },
+            "required": ["en", "cy"],
+            "additionalProperties": false
+          }
         }
-      },
-      "required": [
-        "en"
-      ],
-      "additionalProperties": false
+      ]
     }
+
   }
 }
