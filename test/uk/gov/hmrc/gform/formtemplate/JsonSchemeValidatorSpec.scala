@@ -5125,7 +5125,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestTaskListJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult =
       List(
@@ -6435,7 +6435,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestTaskListJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = Right(())
 
@@ -6458,7 +6458,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestTaskListJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = Right(())
 
@@ -6482,7 +6482,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestTaskListJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = Right(())
 
@@ -6502,7 +6502,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val jsonTemplate = constructTestTaskListJsonTemplate(testProperties)
 
-    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+    val result = validateJson(jsonTemplate)
 
     val expectedResult = Right(())
 
