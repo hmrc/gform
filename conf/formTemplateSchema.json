@@ -647,6 +647,17 @@
             },
             {
               "items": {
+                "patternProperties": {
+                  "^(_)": {
+                    "type": [
+                      "array",
+                      "boolean",
+                      "number",
+                      "object",
+                      "string"
+                    ]
+                  }
+                },
                 "type": "object",
                 "properties": {
                   "en": {
