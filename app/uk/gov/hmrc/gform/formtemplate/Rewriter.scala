@@ -496,7 +496,7 @@ trait Rewriter {
       def replaceConfirmation(confirmation: Option[Confirmation]): Option[Confirmation] =
         confirmation.map(c => c.copy(redirects = replaceConfirmationRedirects(c.redirects)))
 
-      def updateClassicSection(section: Section): Section =
+      def updateSection(section: Section): Section =
         section match {
           case s: Section.NonRepeatingPage =>
             s.copy(
@@ -534,63 +534,32 @@ trait Rewriter {
             )
         }
 
-      def updateTaskSection(section: Section, taskCaption: Option[SmartString]): Section =
+      def updateTaskSectionCaptions(section: Section, taskCaption: Option[SmartString]): Section =
         section match {
           case s: Section.NonRepeatingPage =>
             val newCaption: Option[SmartString] = s.page.caption match {
               case Some(value) => Some(value)
               case None        => taskCaption
             }
-            s.copy(
-              page = s.page.copy(
-                includeIf = replaceIncludeIf(s.page.includeIf),
-                fields = replaceFields(s.page.fields),
-                redirects = replaceRedirects(s.page.redirects),
-                confirmation = replaceConfirmation(s.page.confirmation),
-                caption = newCaption
-              )
-            )
+            s.copy(page = s.page.copy(caption = newCaption))
           case s: Section.RepeatingPage =>
             val newCaption: Option[SmartString] = s.page.caption match {
               case Some(value) => Some(value)
               case None        => taskCaption
             }
-            s.copy(
-              page = s.page.copy(
-                includeIf = replaceIncludeIf(s.page.includeIf),
-                fields = replaceFields(s.page.fields),
-                redirects = replaceRedirects(s.page.redirects),
-                confirmation = replaceConfirmation(s.page.confirmation),
-                caption = newCaption
-              )
-            )
+            s.copy(page = s.page.copy(caption = newCaption))
           case s: Section.AddToList =>
             val newCaption: Option[SmartString] = s.caption match {
               case Some(value) => Some(value)
               case None        => taskCaption
             }
-            s.copy(
-              includeIf = replaceIncludeIf(s.includeIf),
-              repeatsUntil = replaceIncludeIf(s.repeatsUntil),
-              repeatsWhile = replaceIncludeIf(s.repeatsWhile),
-              pages = s.pages.map(page =>
-                page.copy(
-                  includeIf = replaceIncludeIf(page.includeIf),
-                  fields = replaceFields(page.fields),
-                  redirects = replaceRedirects(page.redirects),
-                  confirmation = replaceConfirmation(page.confirmation)
-                )
-              ),
-              fields = replaceFieldsNel(s.fields),
-              cyaPage = s.cyaPage.map(replaceCheckYourAnswersPage),
-              caption = newCaption
-            )
+            s.copy(caption = newCaption)
         }
 
       formTemplate.copy(
         formKind = formTemplate.formKind.fold[FormKind](classic =>
           classic.copy(
-            sections = classic.sections.map(updateClassicSection)
+            sections = classic.sections.map(updateSection)
           )
         )(taskList =>
           taskList.copy(
@@ -598,7 +567,8 @@ trait Rewriter {
               taskSection.copy(
                 tasks = taskSection.tasks.map(task =>
                   task.copy(
-                    sections = task.sections.map(updateTaskSection(_, taskCaption = task.caption)),
+                    sections =
+                      task.sections.map(updateTaskSectionCaptions(_, taskCaption = task.caption)).map(updateSection),
                     summarySection = task.summarySection.map(replaceSummarySection),
                     declarationSection = task.declarationSection.map(replaceDeclarationSection)
                   )

@@ -996,10 +996,10 @@ class BuilderController(
             case Right(updateBatch) =>
               val updatedJson = updateBatch.updates.foldRight(json) { case (focusedUpdate, json) =>
                 focusedUpdate.focus match {
-                  case FocusType.TaskTitle =>
-                    BuilderSupport.modifyTaskTitle(json, focusedUpdate.payload, focusedUpdate.path)
-                  case FocusType.TaskCaption =>
-                    BuilderSupport.modifyTaskCaption(json, focusedUpdate.payload, focusedUpdate.path)
+                  case FocusType.Task =>
+                    val jsonWithModifiedTitle: Json =
+                      BuilderSupport.modifyTaskTitle(json, focusedUpdate.payload, focusedUpdate.path)
+                    BuilderSupport.modifyTaskCaption(jsonWithModifiedTitle, focusedUpdate.payload, focusedUpdate.path)
                   case FocusType.TaskSection =>
                     BuilderSupport.modifyTaskSection(json, focusedUpdate.payload, focusedUpdate.path)
                   case FocusType.TaskSummarySection =>
