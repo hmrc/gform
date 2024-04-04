@@ -6508,4 +6508,92 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     assertEquals(result, expectedResult)
   }
+
+  test(
+    "validateJson accepts the form when a task contains the property caption as a string"
+  ) {
+    val testProperties =
+      json"""
+          {
+            "title": "Test title",
+            "caption": "Test caption",
+            "sections": []
+          }
+        """
+
+    val jsonTemplate = constructTestTaskListJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = Right(())
+
+    assertEquals(result, expectedResult)
+  }
+
+  test(
+    "validateJson accepts the form when a task contains the property caption as a stringOrEnCy object only containing the en key"
+  ) {
+    val testProperties =
+      json"""
+          {
+            "title": "Test title",
+            "caption": {
+              "en": "English caption"
+            },
+            "sections": []
+          }
+        """
+
+    val jsonTemplate = constructTestTaskListJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = Right(())
+
+    assertEquals(result, expectedResult)
+  }
+
+  test(
+    "validateJson accepts the form when a task contains the property caption as a stringOrEnCy object containing both the en and cy keys"
+  ) {
+    val testProperties =
+      json"""
+          {
+            "title": "Test title",
+            "caption": {
+              "en": "English caption",
+              "cy": "Welsh caption"
+            },
+            "sections": []
+          }
+        """
+
+    val jsonTemplate = constructTestTaskListJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = Right(())
+
+    assertEquals(result, expectedResult)
+  }
+
+  test(
+    "validateJson accepts the form when a task does not contain the caption property"
+  ) {
+    val testProperties =
+      json"""
+          {
+            "title": "Test title",
+            "sections": []
+          }
+        """
+
+    val jsonTemplate = constructTestTaskListJsonTemplate(testProperties)
+
+    val result = JsonSchemeValidator.validateJson(jsonTemplate)
+
+    val expectedResult = Right(())
+
+    assertEquals(result, expectedResult)
+  }
 }
