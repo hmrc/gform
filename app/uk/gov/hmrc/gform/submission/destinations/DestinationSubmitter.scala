@@ -285,9 +285,9 @@ class DestinationSubmitter[M[_]](
       case Left(message) =>
         val json = Json.parse(payload)
         val payloadWithoutPII = Json.prettyPrint(replaceStringsWithLengths(json))
-        val messageWithPayload = s"$message Payload: $payloadWithoutPII"
-        Loggers.destinations.error(messageWithPayload)
-        throw new RuntimeException(message)
+        throw new RuntimeException(
+          s"Schema validation failed for submission id '${submissionInfo.formId.value}': $message \nPayload: $payloadWithoutPII"
+        )
       case _ =>
         val dataStoreRouting = d.routing.sdesRouting(sdesConfig)
         monadError.handleErrorWith(
