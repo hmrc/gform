@@ -221,15 +221,6 @@ object BuilderSupport {
     updateJsonByPropertyList(propertyList, json, taskSectionData, history)
   }
 
-//  def modifyTaskCaption(json: Json, taskSectionData: Json, sectionPath: SectionPath): Json = {
-//    val propertyList = List(
-//      Property("caption", PropertyBehaviour.PurgeWhenEmpty)
-//    )
-//
-//    val history = sectionPath.asHistory
-//    updateJsonByPropertyList(propertyList, json, taskSectionData, history)
-//  }
-
   def modifyAtlRepeaterDataAddAnotherQuestion(
     json: Json,
     atlRepeaterSection: Json,
