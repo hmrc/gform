@@ -22,6 +22,7 @@ import cats.implicits._
 import scala.util.{ Failure, Success, Try }
 import uk.gov.hmrc.gform.core.{ FOpt, fromOptA }
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
+import uk.gov.hmrc.gform.sharedmodel.SmartString
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationIncludeIf, Destinations }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationIncludeIf.IncludeIfValue
@@ -533,6 +534,28 @@ trait Rewriter {
             )
         }
 
+      def updateTaskSectionCaptions(section: Section, taskCaption: Option[SmartString]): Section =
+        section match {
+          case s: Section.NonRepeatingPage =>
+            val newCaption: Option[SmartString] = s.page.caption match {
+              case Some(value) => Some(value)
+              case None        => taskCaption
+            }
+            s.copy(page = s.page.copy(caption = newCaption))
+          case s: Section.RepeatingPage =>
+            val newCaption: Option[SmartString] = s.page.caption match {
+              case Some(value) => Some(value)
+              case None        => taskCaption
+            }
+            s.copy(page = s.page.copy(caption = newCaption))
+          case s: Section.AddToList =>
+            val newCaption: Option[SmartString] = s.caption match {
+              case Some(value) => Some(value)
+              case None        => taskCaption
+            }
+            s.copy(caption = newCaption)
+        }
+
       formTemplate.copy(
         formKind = formTemplate.formKind.fold[FormKind](classic =>
           classic.copy(
@@ -544,7 +567,8 @@ trait Rewriter {
               taskSection.copy(
                 tasks = taskSection.tasks.map(task =>
                   task.copy(
-                    sections = task.sections.map(updateSection),
+                    sections =
+                      task.sections.map(updateTaskSectionCaptions(_, taskCaption = task.caption)).map(updateSection),
                     summarySection = task.summarySection.map(replaceSummarySection),
                     declarationSection = task.declarationSection.map(replaceDeclarationSection)
                   )

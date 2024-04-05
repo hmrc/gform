@@ -213,12 +213,12 @@ object BuilderSupport {
 
   def modifyTask(json: Json, taskSectionData: Json, sectionPath: SectionPath): Json = {
     val propertyList = List(
-      Property("title")
+      Property("title"),
+      Property("caption", PropertyBehaviour.PurgeWhenEmpty)
     )
 
     val history = sectionPath.asHistory
     updateJsonByPropertyList(propertyList, json, taskSectionData, history)
-
   }
 
   def modifyAtlRepeaterDataAddAnotherQuestion(
