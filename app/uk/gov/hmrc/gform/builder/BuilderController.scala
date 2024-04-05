@@ -211,24 +211,24 @@ object BuilderSupport {
     }
   }
 
-  def modifyTaskTitle(json: Json, taskSectionData: Json, sectionPath: SectionPath): Json = {
+  def modifyTask(json: Json, taskSectionData: Json, sectionPath: SectionPath): Json = {
     val propertyList = List(
-      Property("title")
-    )
-
-    val history = sectionPath.asHistory
-    updateJsonByPropertyList(propertyList, json, taskSectionData, history)
-
-  }
-
-  def modifyTaskCaption(json: Json, taskSectionData: Json, sectionPath: SectionPath): Json = {
-    val propertyList = List(
+      Property("title"),
       Property("caption", PropertyBehaviour.PurgeWhenEmpty)
     )
 
     val history = sectionPath.asHistory
     updateJsonByPropertyList(propertyList, json, taskSectionData, history)
   }
+
+//  def modifyTaskCaption(json: Json, taskSectionData: Json, sectionPath: SectionPath): Json = {
+//    val propertyList = List(
+//      Property("caption", PropertyBehaviour.PurgeWhenEmpty)
+//    )
+//
+//    val history = sectionPath.asHistory
+//    updateJsonByPropertyList(propertyList, json, taskSectionData, history)
+//  }
 
   def modifyAtlRepeaterDataAddAnotherQuestion(
     json: Json,
@@ -997,9 +997,7 @@ class BuilderController(
               val updatedJson = updateBatch.updates.foldRight(json) { case (focusedUpdate, json) =>
                 focusedUpdate.focus match {
                   case FocusType.Task =>
-                    val jsonWithModifiedTitle: Json =
-                      BuilderSupport.modifyTaskTitle(json, focusedUpdate.payload, focusedUpdate.path)
-                    BuilderSupport.modifyTaskCaption(jsonWithModifiedTitle, focusedUpdate.payload, focusedUpdate.path)
+                    BuilderSupport.modifyTask(json, focusedUpdate.payload, focusedUpdate.path)
                   case FocusType.TaskSection =>
                     BuilderSupport.modifyTaskSection(json, focusedUpdate.payload, focusedUpdate.path)
                   case FocusType.TaskSummarySection =>
