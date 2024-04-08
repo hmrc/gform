@@ -159,6 +159,7 @@ object TopLevelExpressions {
         case d @ DateCtx(dateExpr)         => d
         case d @ DateFunction(_)           => d
         case i @ IfElse(cond, l, r)        => IfElse(loopBooleanExpr(cond), loop(l), loop(r))
+        case i @ SmartStringIf(cond, l, r) => SmartStringIf(loopBooleanExpr(cond), loop(l), loop(r))
         case f @ FormCtx(formComponentId)  => expressions.getOrElse(ExpressionId(formComponentId.value), e)
         case AddressLens(_, _)             => e
         case AuthCtx(_)                    => e

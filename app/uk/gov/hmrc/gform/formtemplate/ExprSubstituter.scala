@@ -37,6 +37,8 @@ object ExprSubstituter extends Substituter[ExprSubstitutions, FormTemplate] {
         case DateFunction(dateFunc) => DateFunction(dateFunc(substitutions))
         case i @ IfElse(cond, l, r) =>
           IfElse(cond(substitutions), substitute(substitutions, l), substitute(substitutions, r))
+        case i @ SmartStringIf(cond, l, r) =>
+          SmartStringIf(cond(substitutions), substitute(substitutions, l), substitute(substitutions, r))
         case f @ FormCtx(formComponentId) =>
           // Replace FormComponentId with top level expression if one exists
           substitutions.expressions.getOrElse(ExpressionId(formComponentId.value), f)

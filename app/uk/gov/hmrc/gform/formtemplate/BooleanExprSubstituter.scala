@@ -37,6 +37,8 @@ object BooleanExprSubstituter extends Substituter[BooleanExprSubstitutions, Form
         case d @ DateFunction(_)   => d
         case i @ IfElse(cond, l, r) =>
           IfElse(cond(substitutions), substitute(substitutions, l), substitute(substitutions, r))
+        case SmartStringIf(cond, l, r) =>
+          SmartStringIf(cond(substitutions), substitute(substitutions, l), substitute(substitutions, r))
         case f @ FormCtx(formComponentId)  => f
         case AddressLens(_, _)             => t
         case AuthCtx(_)                    => t

@@ -176,7 +176,7 @@ class SmartStringSpec extends Spec with ScalaCheckDrivenPropertyChecks {
     val expected = SmartString(
       localised = LocalisedString(m = Map(LangADT.En -> "{0}", LangADT.Cy -> "{1}")),
       interpolations = List(
-        IfElse(
+        SmartStringIf(
           cond = Contains(
             multiValueField = FormCtx(formComponentId = FormComponentId(value = "foo")),
             value = Constant(value = "0")
@@ -203,7 +203,7 @@ class SmartStringSpec extends Spec with ScalaCheckDrivenPropertyChecks {
             )
           )
         ),
-        IfElse(
+        SmartStringIf(
           cond = Contains(
             multiValueField = FormCtx(formComponentId = FormComponentId(value = "foo")),
             value = Constant(value = "0")
@@ -235,7 +235,7 @@ class SmartStringSpec extends Spec with ScalaCheckDrivenPropertyChecks {
 
   }
 
-  it should "read a SmartStringConditional with no includeIfs" in {
+  it should " not read a SmartStringConditional with no includeIfs" in {
     val jsonString =
       """|[{
          |      "en": "Englishstart ${var1} middleEnglish   ${var2} englishend",
@@ -250,7 +250,7 @@ class SmartStringSpec extends Spec with ScalaCheckDrivenPropertyChecks {
     )
   }
 
-  it should "read a SmartStringConditional with all includeIfs" in {
+  it should "not read a SmartStringConditional with all includeIfs" in {
     val jsonString =
       """|[{
          |      "includeIf": "${foo contains 0}",

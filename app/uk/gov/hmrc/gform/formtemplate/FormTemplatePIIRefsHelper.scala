@@ -107,6 +107,7 @@ object FormTemplatePIIRefsHelper {
       case Subtraction(field1, field2)                        => extractRefs(field1) ++ extractRefs(field2)
       case Divide(field1, field2)                             => extractRefs(field1) ++ extractRefs(field2)
       case IfElse(_, field1, field2)                          => extractRefs(field1) ++ extractRefs(field2)
+      case SmartStringIf(_, field1, field2)                   => extractRefs(field1) ++ extractRefs(field2)
       case Else(field1, field2)                               => extractRefs(field1) ++ extractRefs(field2)
       case Sum(field1)                                        => extractRefs(field1)
       case Count(FormComponentId(value))                      => List(value)

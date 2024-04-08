@@ -22,7 +22,7 @@ import play.api.libs.functional.Monoid
 import play.api.libs.functional.syntax._
 import play.api.libs.json.{ Format, JsArray, JsError, JsObject, JsResult, JsString, JsSuccess, JsValue, Reads }
 import uk.gov.hmrc.gform.core.parsers.ValueParser
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ BooleanExpr, Concat, Constant, Expr, ExprWithPath, IfElse, LeafExpr, OFormatWithTemplateReadFallback, TemplatePath }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ BooleanExpr, Concat, Constant, Expr, ExprWithPath, LeafExpr, OFormatWithTemplateReadFallback, SmartStringIf, TemplatePath }
 import uk.gov.hmrc.gform.sharedmodel.booleanParser.booleanExprParser
 
 import scala.util.matching.Regex
@@ -207,7 +207,7 @@ object SmartStringConditional {
           val combinedMap: Map[LangADT, Expr] = allKeys
             .map(key => (key, exprMap1.get(key), exprMap2.get(key)))
             .map {
-              case (key, Some(expr1), Some(expr2)) => (key, IfElse(includeIf, expr1, expr2))
+              case (key, Some(expr1), Some(expr2)) => (key, SmartStringIf(includeIf, expr1, expr2))
               case (key, Some(expr1), None)        => (key, expr1)
               case (key, None, Some(expr2))        => (key, expr2)
               case (key, None, None)               => (key, Constant(""))
@@ -240,6 +240,10 @@ object SmartStringConditional {
 
         }
       )
-      .mapValues(vs => Concat(vs.flatten).asInstanceOf[Expr])
+      .mapValues(_.toList.flatten)
+      .mapValues {
+        case e :: Nil => e.asInstanceOf[Expr]
+        case vs       => Concat(vs).asInstanceOf[Expr]
+      }
   }.toMap
 }
