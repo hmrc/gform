@@ -128,11 +128,11 @@ object SmartStringTemplateReader {
 
   private def readFromTemplateArray(array: JsArray): JsResult[SmartString] = {
     val jsObjects = array.value.collect { case jsObj: JsObject => jsObj }
-    val abc = jsObjects.map { jsObj =>
+    val objects = jsObjects.map { jsObj =>
       toSmartStringConditional(jsObj)
     }.reverse
-    abc.headOption
-      .map(abc.tail.foldLeft(_)((acc, e) => e |+| acc))
+    objects.headOption
+      .map(objects.tail.foldLeft(_)((acc, e) => e |+| acc))
       .getOrElse(JsError("There are no elements in the conditional SmartString"))
       .map(_.smartString)
   }
