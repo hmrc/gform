@@ -154,7 +154,10 @@ class TestOnlyFormService(
             form.copy(
               formData = snapshot.originalForm.formData,
               componentIdToFileId = snapshot.originalForm.componentIdToFileId,
-              envelopeId = snapshot.originalForm.envelopeId
+              envelopeId = snapshot.originalForm.envelopeId,
+              thirdPartyData = snapshot.originalForm.thirdPartyData,
+              status = snapshot.originalForm.status,
+              visitsIndex = snapshot.originalForm.visitsIndex
             )
           )
         case None => throw new Exception(s"We could not find snapshot item with id: $request.snapshotId")
