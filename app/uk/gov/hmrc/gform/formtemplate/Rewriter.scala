@@ -527,7 +527,7 @@ trait Rewriter {
                   fields = replaceFields(page.fields),
                   redirects = replaceRedirects(page.redirects),
                   confirmation = replaceConfirmation(page.confirmation),
-                  caption = if (page.caption.nonEmpty) page.caption else s.caption
+                  caption = page.caption.orElse(s.caption)
                 )
               ),
               fields = replaceFieldsNel(s.fields),
@@ -538,9 +538,9 @@ trait Rewriter {
       def updateTaskSectionCaptions(section: Section, taskCaption: Option[SmartString]): Section =
         section match {
           case s: Section.NonRepeatingPage =>
-            s.copy(page = s.page.copy(caption = if (s.page.caption.nonEmpty) s.page.caption else taskCaption))
+            s.copy(page = s.page.copy(caption = s.page.caption.orElse(taskCaption)))
           case s: Section.RepeatingPage =>
-            s.copy(page = s.page.copy(caption = if (s.page.caption.nonEmpty) s.page.caption else taskCaption))
+            s.copy(page = s.page.copy(caption = s.page.caption.orElse(taskCaption)))
           case s: Section.AddToList => s
         }
 

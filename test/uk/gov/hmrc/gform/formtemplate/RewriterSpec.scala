@@ -247,8 +247,8 @@ class RewriterSpec extends FunSuite with FormTemplateSupport with RewriterSuppor
 
       val expectedSections: List[Page] =
         List(
-          page1.copy(caption = if (pageCaption1.isEmpty) atlCaption else pageCaption1),
-          page2.copy(caption = if (pageCaption2.isEmpty) atlCaption else pageCaption2)
+          page1.copy(caption = pageCaption1.orElse(atlCaption)),
+          page2.copy(caption = pageCaption2.orElse(atlCaption))
         )
       val expectedAtl = List(
         section1.copy(pages = NonEmptyList.fromListUnsafe(expectedSections), defaultPage = Some(defaultPage))

@@ -101,8 +101,8 @@ trait RewriterSupport {
 
     val expectedSections: List[Section] =
       List(
-        page1.copy(caption = if (page1.caption.isEmpty) taskCaption else page1.caption),
-        page2.copy(caption = if (page2.caption.isEmpty) taskCaption else page2.caption)
+        page1.copy(caption = page1.caption.orElse(taskCaption)),
+        page2.copy(caption = page2.caption.orElse(taskCaption))
       )
         .map(Section.NonRepeatingPage)
 
@@ -119,8 +119,8 @@ trait RewriterSupport {
 
     val expectedSections: List[Section] =
       List(
-        page1.copy(caption = if (page1.caption.isEmpty) taskCaption else page1.caption),
-        page2.copy(caption = if (page2.caption.isEmpty) taskCaption else page2.caption)
+        page1.copy(caption = page1.caption.orElse(taskCaption)),
+        page2.copy(caption = page2.caption.orElse(taskCaption))
       )
         .map(Section.RepeatingPage(_, Count(FormComponentId("Form component ID"))))
 
@@ -150,11 +150,9 @@ trait RewriterSupport {
 
     val expectedSections: List[Section] =
       List(
-        Section.NonRepeatingPage(page =
-          page1.copy(caption = if (page1.caption.isEmpty) taskCaption else page1.caption)
-        ),
+        Section.NonRepeatingPage(page = page1.copy(caption = page1.caption.orElse(taskCaption))),
         Section.RepeatingPage(
-          page = page2.copy(caption = if (page2.caption.isEmpty) taskCaption else page2.caption),
+          page = page2.copy(caption = page2.caption.orElse(taskCaption)),
           repeats = Count(FormComponentId("Form component ID"))
         )
       )
@@ -172,9 +170,7 @@ trait RewriterSupport {
 
     val expectedSections: List[Section] =
       List(
-        Section.NonRepeatingPage(page =
-          page1.copy(caption = if (page1.caption.isEmpty) taskCaption else page1.caption)
-        ),
+        Section.NonRepeatingPage(page = page1.copy(caption = page1.caption.orElse(taskCaption))),
         section2
       )
 
@@ -192,7 +188,7 @@ trait RewriterSupport {
     val expectedSections: List[Section] =
       List(
         Section.RepeatingPage(
-          page = page1.copy(caption = if (page1.caption.isEmpty) taskCaption else page1.caption),
+          page = page1.copy(caption = page1.caption.orElse(taskCaption)),
           repeats = Count(FormComponentId("Form component ID"))
         ),
         section2
