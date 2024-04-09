@@ -224,9 +224,9 @@ class RewriterSpec extends FunSuite with FormTemplateSupport with RewriterSuppor
   }
 
   val atlCaptionTestNamesTable = List(
-    "Add to list captions are propagated through all its pages when none of them have captions, including the default page",
-    "Add to list captions are propagated through only its pages that do not have captions, including the default page",
-    "Add to list captions are not propagated when all its pages have captions, including the default page"
+    "Add to list captions are propagated through all its pages when none of them have captions, excluding the default page",
+    "Add to list captions are propagated through only its pages that do not have captions, excluding the default page",
+    "Add to list captions are not propagated when all its pages have captions, excluding the default page"
   )
 
   captionTable.zip(atlCaptionTestNamesTable).foreach { case ((atlCaption, pageCaption1, pageCaption2), testName) =>
