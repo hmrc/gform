@@ -521,12 +521,15 @@ trait Rewriter {
               includeIf = replaceIncludeIf(s.includeIf),
               repeatsUntil = replaceIncludeIf(s.repeatsUntil),
               repeatsWhile = replaceIncludeIf(s.repeatsWhile),
+              defaultPage =
+                s.defaultPage.map(page => page.copy(caption = if (page.caption.nonEmpty) page.caption else s.caption)),
               pages = s.pages.map(page =>
                 page.copy(
                   includeIf = replaceIncludeIf(page.includeIf),
                   fields = replaceFields(page.fields),
                   redirects = replaceRedirects(page.redirects),
-                  confirmation = replaceConfirmation(page.confirmation)
+                  confirmation = replaceConfirmation(page.confirmation),
+                  caption = if (page.caption.nonEmpty) page.caption else s.caption
                 )
               ),
               fields = replaceFieldsNel(s.fields),
@@ -537,23 +540,10 @@ trait Rewriter {
       def updateTaskSectionCaptions(section: Section, taskCaption: Option[SmartString]): Section =
         section match {
           case s: Section.NonRepeatingPage =>
-            val newCaption: Option[SmartString] = s.page.caption match {
-              case Some(value) => Some(value)
-              case None        => taskCaption
-            }
-            s.copy(page = s.page.copy(caption = newCaption))
+            s.copy(page = s.page.copy(caption = if (s.page.caption.nonEmpty) s.page.caption else taskCaption))
           case s: Section.RepeatingPage =>
-            val newCaption: Option[SmartString] = s.page.caption match {
-              case Some(value) => Some(value)
-              case None        => taskCaption
-            }
-            s.copy(page = s.page.copy(caption = newCaption))
-          case s: Section.AddToList =>
-            val newCaption: Option[SmartString] = s.caption match {
-              case Some(value) => Some(value)
-              case None        => taskCaption
-            }
-            s.copy(caption = newCaption)
+            s.copy(page = s.page.copy(caption = if (s.page.caption.nonEmpty) s.page.caption else taskCaption))
+          case s: Section.AddToList => s
         }
 
       formTemplate.copy(
