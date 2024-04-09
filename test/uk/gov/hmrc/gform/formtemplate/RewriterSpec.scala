@@ -239,10 +239,8 @@ class RewriterSpec extends FunSuite with FormTemplateSupport with RewriterSuppor
 
       val defaultPageTitle = SmartString(localised = LocalisedString(m = Map(LangADT.En -> "Default page title")), Nil)
       val defaultPageCaption =
-        if (pageCaption1.isDefined)
-          Some(SmartString(localised = LocalisedString(m = Map(LangADT.En -> "Default page caption")), Nil))
-        else None
-      val defaultPage = simplePage.copy(title = defaultPageTitle, caption = defaultPageCaption)
+        SmartString(localised = LocalisedString(m = Map(LangADT.En -> "Default page caption")), Nil)
+      val defaultPage = simplePage.copy(title = defaultPageTitle, caption = Some(defaultPageCaption))
 
       val section1 =
         mkDefaultAtl(NonEmptyList(page1, List(page2))).copy(caption = atlCaption, defaultPage = Some(defaultPage))
@@ -252,10 +250,8 @@ class RewriterSpec extends FunSuite with FormTemplateSupport with RewriterSuppor
           page1.copy(caption = if (pageCaption1.isEmpty) atlCaption else pageCaption1),
           page2.copy(caption = if (pageCaption2.isEmpty) atlCaption else pageCaption2)
         )
-      val expectedDefaultPage =
-        defaultPage.copy(caption = if (defaultPageCaption.isEmpty) atlCaption else defaultPageCaption)
       val expectedAtl = List(
-        section1.copy(pages = NonEmptyList.fromListUnsafe(expectedSections), defaultPage = Some(expectedDefaultPage))
+        section1.copy(pages = NonEmptyList.fromListUnsafe(expectedSections), defaultPage = Some(defaultPage))
       )
 
       val formTemplate =

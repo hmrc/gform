@@ -521,8 +521,6 @@ trait Rewriter {
               includeIf = replaceIncludeIf(s.includeIf),
               repeatsUntil = replaceIncludeIf(s.repeatsUntil),
               repeatsWhile = replaceIncludeIf(s.repeatsWhile),
-              defaultPage =
-                s.defaultPage.map(page => page.copy(caption = if (page.caption.nonEmpty) page.caption else s.caption)),
               pages = s.pages.map(page =>
                 page.copy(
                   includeIf = replaceIncludeIf(page.includeIf),
