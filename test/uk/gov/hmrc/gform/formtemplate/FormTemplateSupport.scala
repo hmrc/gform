@@ -45,27 +45,6 @@ trait FormTemplateSupport {
       false
     )
 
-  val defaultPage = Page(
-    title = SmartString(localised = LocalisedString(m = Map(LangADT.En -> "Default title")), Nil),
-    caption = None,
-    id = None,
-    noPIITitle = None,
-    description = None,
-    shortName = None,
-    includeIf = None,
-    fields = Nil,
-    continueLabel = None,
-    continueIf = None,
-    instruction = None,
-    presentationHint = None,
-    dataRetrieve = None,
-    confirmation = None,
-    redirects = None,
-    hideSaveAndComeBackButton = None,
-    removeItemIf = None,
-    displayWidth = None
-  )
-
   def mkFormTemplate(sections: List[Section]) = {
     val formTemplate = ExampleData.formTemplate.copy(formKind = FormKind.Classic(sections), emailParameters = None)
     formTemplate
