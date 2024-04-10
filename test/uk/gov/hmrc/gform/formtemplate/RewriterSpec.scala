@@ -23,7 +23,7 @@ import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.sharedmodel.{ ExampleData, LangADT, LocalisedString, SmartString }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
-class RewriterSpec extends FunSuite with FormTemplateSupport {
+class RewriterSpec extends FunSuite with FormTemplateSupport with RewriterSupport {
 
   val rewriter = new Rewriter {}
 
@@ -134,7 +134,7 @@ class RewriterSpec extends FunSuite with FormTemplateSupport {
     }
   }
 
-  val taskCaptionTable = List(
+  val captionTable = List(
     (
       Some(SmartString(localised = LocalisedString(m = Map(LangADT.En -> "English task caption")), Nil)),
       None,
@@ -153,52 +153,66 @@ class RewriterSpec extends FunSuite with FormTemplateSupport {
   )
 
   val taskCaptionTestNamesTable = List(
-    "Task captions are propagated through all its sections when its sections all don't have captions",
+    "Task captions are propagated through all its sections when none of them have captions",
     "Task captions are propagated through only its sections that do not have captions",
     "Task captions are not propagated when all its sections have captions"
   )
 
-  taskCaptionTable.zip(taskCaptionTestNamesTable).foreach {
-    case ((taskCaption, pageCaption1, pageCaption2), testName) =>
-      test(testName) {
-        val pageTitle1 = SmartString(localised = LocalisedString(m = Map(LangADT.En -> "English page title 1")), Nil)
-        val page1 = defaultPage.copy(title = pageTitle1, caption = pageCaption1)
+  def generateRewrittenFormTemplate(
+    section1: Section,
+    section2: Section,
+    taskCaption: Option[SmartString]
+  ): Future[Either[UnexpectedState, FormTemplate]] = {
+    val taskTitle1 = SmartString(localised = LocalisedString(m = Map(LangADT.En -> "English task title 1")), Nil)
+    val task1 = Task(
+      title = taskTitle1,
+      sections = NonEmptyList(section1, List(section2)),
+      caption = taskCaption,
+      summarySection = None,
+      declarationSection = None,
+      includeIf = None
+    )
 
-        val pageTitle2 = SmartString(localised = LocalisedString(m = Map(LangADT.En -> "English page title 2")), Nil)
-        val page2 = defaultPage.copy(title = pageTitle2, caption = pageCaption2)
+    val taskSectionTitle1 =
+      SmartString(localised = LocalisedString(m = Map(LangADT.En -> "English task section title 1")), Nil)
+    val taskSection1 = TaskSection(
+      title = taskSectionTitle1,
+      tasks = NonEmptyList(task1, Nil)
+    )
 
-        val section1 = Section.NonRepeatingPage(page = page1)
-        val section2 = Section.NonRepeatingPage(page = page2)
+    val sections: NonEmptyList[TaskSection] = NonEmptyList(taskSection1, Nil)
 
-        val taskTitle1 = SmartString(localised = LocalisedString(m = Map(LangADT.En -> "English task title 1")), Nil)
-        val task1 = Task(
-          title = taskTitle1,
-          sections = NonEmptyList(section1, List(section2)),
-          caption = taskCaption,
-          summarySection = None,
-          declarationSection = None,
-          includeIf = None
-        )
+    val formTemplate = ExampleData.formTemplate.copy(formKind = FormKind.TaskList(sections), emailParameters = None)
 
-        val taskSectionTitle1 =
-          SmartString(localised = LocalisedString(m = Map(LangADT.En -> "English task section title 1")), Nil)
-        val taskSection1 = TaskSection(
-          title = taskSectionTitle1,
-          tasks = NonEmptyList(task1, Nil)
-        )
+    rewriter.rewrite(formTemplate).value
+  }
 
-        val sections: NonEmptyList[TaskSection] = NonEmptyList(taskSection1, Nil)
+  captionTable.zip(taskCaptionTestNamesTable).foreach { case ((taskCaption, pageCaption1, pageCaption2), testName) =>
+    val pageTitle1 = SmartString(localised = LocalisedString(m = Map(LangADT.En -> "English page title 1")), Nil)
+    val page1 = simplePage.copy(title = pageTitle1, caption = pageCaption1)
 
-        val expectedSections: List[Section] =
-          List(
-            page1.copy(caption = if (pageCaption1.isEmpty) taskCaption else pageCaption1),
-            page2.copy(caption = if (pageCaption2.isEmpty) taskCaption else pageCaption2)
-          )
-            .map(Section.NonRepeatingPage)
+    val pageTitle2 = SmartString(localised = LocalisedString(m = Map(LangADT.En -> "English page title 2")), Nil)
+    val page2 = simplePage.copy(title = pageTitle2, caption = pageCaption2)
 
-        val formTemplate = ExampleData.formTemplate.copy(formKind = FormKind.TaskList(sections), emailParameters = None)
+    val allTests = List(
+      (mkTaskListNonRepeatingPages(page1, page2, taskCaption), "only NonRepeatingPages"),
+      (mkTaskListRepeatingPages(page1, page2, taskCaption), "only RepeatingPages"),
+      (mkTaskListAddToList(page1, page2), "not for AddToList"),
+      (
+        mkTaskListNonRepeatingPageAndRepeatingPage(page1, page2, taskCaption),
+        "for a mix of NonRepeatingPages and RepeatingPages"
+      ),
+      (
+        mkTaskListNonRepeatingPageAndAddToList(page1, page2, taskCaption),
+        "for a NonRepeatingPage but not an AddToList"
+      ),
+      (mkTaskListRepeatingPageAndAddToList(page1, page2, taskCaption), "for a RepeatingPage but not an AddToList")
+    )
 
-        val obtainedF: Future[Either[UnexpectedState, FormTemplate]] = rewriter.rewrite(formTemplate).value
+    allTests.foreach { case ((section1, section2, expectedSections), testDescription) =>
+      test(testName + " - " + testDescription) {
+        val obtainedF: Future[Either[UnexpectedState, FormTemplate]] =
+          generateRewrittenFormTemplate(section1, section2, taskCaption)
 
         obtainedF.map { obtained =>
           obtained.map(_.formKind.allSections.zipAll(expectedSections, None, None).foreach {
@@ -206,5 +220,50 @@ class RewriterSpec extends FunSuite with FormTemplateSupport {
           })
         }
       }
+    }
+  }
+
+  val atlCaptionTestNamesTable = List(
+    "Add to list captions are propagated through all its pages when none of them have captions, excluding the default page",
+    "Add to list captions are propagated through only its pages that do not have captions, excluding the default page",
+    "Add to list captions are not propagated when all its pages have captions, excluding the default page"
+  )
+
+  captionTable.zip(atlCaptionTestNamesTable).foreach { case ((atlCaption, pageCaption1, pageCaption2), testName) =>
+    test(testName) {
+      val pageTitle1 = SmartString(localised = LocalisedString(m = Map(LangADT.En -> "English page title 1")), Nil)
+      val page1 = simplePage.copy(title = pageTitle1, caption = pageCaption1)
+
+      val pageTitle2 = SmartString(localised = LocalisedString(m = Map(LangADT.En -> "English page title 2")), Nil)
+      val page2 = simplePage.copy(title = pageTitle2, caption = pageCaption2)
+
+      val defaultPageTitle = SmartString(localised = LocalisedString(m = Map(LangADT.En -> "Default page title")), Nil)
+      val defaultPageCaption =
+        SmartString(localised = LocalisedString(m = Map(LangADT.En -> "Default page caption")), Nil)
+      val defaultPage = simplePage.copy(title = defaultPageTitle, caption = Some(defaultPageCaption))
+
+      val section1 =
+        mkDefaultAtl(NonEmptyList(page1, List(page2))).copy(caption = atlCaption, defaultPage = Some(defaultPage))
+
+      val expectedSections: List[Page] =
+        List(
+          page1.copy(caption = pageCaption1.orElse(atlCaption)),
+          page2.copy(caption = pageCaption2.orElse(atlCaption))
+        )
+      val expectedAtl = List(
+        section1.copy(pages = NonEmptyList.fromListUnsafe(expectedSections), defaultPage = Some(defaultPage))
+      )
+
+      val formTemplate =
+        ExampleData.formTemplate.copy(formKind = FormKind.Classic(List(section1)), emailParameters = None)
+
+      val obtainedF: Future[Either[UnexpectedState, FormTemplate]] = rewriter.rewrite(formTemplate).value
+
+      obtainedF.map { obtained =>
+        obtained.map(_.formKind.allSections.zipAll(expectedAtl, None, None).foreach { case (section, expectedSection) =>
+          assertEquals(section, expectedSection)
+        })
+      }
+    }
   }
 }
