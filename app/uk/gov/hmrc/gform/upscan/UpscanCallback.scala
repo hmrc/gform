@@ -98,6 +98,7 @@ object UpscanValidationFailure {
   case object EntityTooLarge extends UpscanValidationFailure
   case object EntityTooSmall extends UpscanValidationFailure
   case object FileNameTooLong extends UpscanValidationFailure
+  case class InvalidFileExtension(expectedExtension: String) extends UpscanValidationFailure
   case class InvalidFileType(errorDetail: String, fileMimeType: ContentType) extends UpscanValidationFailure
 
   implicit val format: Format[UpscanValidationFailure] = derived.oformat()

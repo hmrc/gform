@@ -31,7 +31,7 @@ import play.api.mvc.{ Action, AnyContent, ControllerComponents, Result }
 
 import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.crypto.{ Crypted, Decrypter, Encrypter, PlainText }
-import uk.gov.hmrc.gform.config.AppConfig
+import uk.gov.hmrc.gform.config.{ AppConfig, FileInfoConfig }
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.form.FormAlgebra
 import uk.gov.hmrc.gform.formtemplate.FormTemplateService
@@ -115,6 +115,7 @@ class UpscanController(
 
             val allowedFileTypes: AllowedFileTypes =
               maybeFileUpload.flatMap(_.allowedFileTypes).getOrElse(formTemplate.allowedFileTypes)
+
             val fileSizeLimit = maybeFileUpload
               .flatMap(_.fileSizeLimit)
               .getOrElse(formTemplate.fileSizeLimit.getOrElse(appConfig.formMaxAttachmentSizeMB))
@@ -201,6 +202,10 @@ class UpscanController(
   ): Validated[UpscanValidationFailure, Unit] = {
     val fileNameCheckResult = validateFileExtension(uploadDetails.fileName)
     val fileMimeTypeResult = validateFileType(allowedFileTypes, ContentType(uploadDetails.fileMimeType))
+
+    val validateMatchingExtension: Validated[UpscanValidationFailure, Unit] =
+      validateFileExtensionMatchesContentType(uploadDetails.fileName, ContentType(uploadDetails.fileMimeType))
+
     Valid(uploadDetails)
       .ensure(UpscanValidationFailure.EntityTooSmall)(_.size =!= 0)
       .ensure(UpscanValidationFailure.EntityTooLarge)(_ => validateFileSize(fileSizeLimit, uploadDetails.size))
@@ -210,6 +215,7 @@ class UpscanController(
           ContentType(uploadDetails.fileMimeType)
         )
       )(_ => fileNameCheckResult && fileMimeTypeResult)
+      .andThen(_ => validateMatchingExtension)
       .map(_ => ())
   }
 
@@ -227,6 +233,21 @@ class UpscanController(
   private def validateFileExtension(fileName: String): Boolean =
     getFileExtension(fileName).fold(false) { v =>
       !appConfig.restrictedFileExtensions.map(_.value).contains(CIString(v))
+    }
+
+  private def validateFileExtensionMatchesContentType(
+    fileName: String,
+    contentType: ContentType
+  ): Validated[UpscanValidationFailure, Unit] =
+    getFileExtension(fileName).flatMap { fileExtension =>
+      FileInfoConfig.fileExtension(contentType).map { expectedExtensions =>
+        if (expectedExtensions.toList.contains(fileExtension)) {
+          Valid(())
+        } else Invalid(UpscanValidationFailure.InvalidFileExtension(expectedExtensions.head))
+      }
+    } match {
+      case Some(v) => v
+      case None    => Valid(()) // If extension is missing or unknown, we cannot handle it here
     }
 
   private def validateFileType(allowedFileTypes: AllowedFileTypes, contentType: ContentType): Boolean =
