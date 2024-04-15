@@ -30,6 +30,7 @@ object BooleanExprSubstituter extends Substituter[BooleanExprSubstitutions, Form
         case Multiply(l, r)        => Multiply(substitute(substitutions, l), substitute(substitutions, r))
         case Subtraction(l, r)     => Subtraction(substitute(substitutions, l), substitute(substitutions, r))
         case Divide(l, r)          => Divide(substitute(substitutions, l), substitute(substitutions, r))
+        case HideZeroDecimals(l)   => HideZeroDecimals(substitute(substitutions, l))
         case Period(l, r)          => Period(substitute(substitutions, l), substitute(substitutions, r))
         case Sum(l)                => Sum(substitute(substitutions, l))
         case PeriodExt(p, pe)      => PeriodExt(substitute(substitutions, p), pe)

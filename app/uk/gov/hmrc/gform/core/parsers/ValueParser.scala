@@ -279,6 +279,10 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
     | FormComponentId.unanchoredIdValidation <~ ".sum" ^^ { case value =>
       Sum(FormCtx(FormComponentId(value)))
     }
+    | "hideZeroDecimals(" ~ _expr1 ~ ")" ^^ { case _ ~ value ~ _ =>
+//      println("HIDING ZERO DECIMALS")
+      HideZeroDecimals(value)
+    }
     | FormComponentId.unanchoredIdValidation <~ ".count" ^^ { value =>
       Count(FormComponentId(value))
     }

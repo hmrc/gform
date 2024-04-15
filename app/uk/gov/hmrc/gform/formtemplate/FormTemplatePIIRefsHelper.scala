@@ -106,6 +106,7 @@ object FormTemplatePIIRefsHelper {
       case Multiply(field1, field2)                           => extractRefs(field1) ++ extractRefs(field2)
       case Subtraction(field1, field2)                        => extractRefs(field1) ++ extractRefs(field2)
       case Divide(field1, field2)                             => extractRefs(field1) ++ extractRefs(field2)
+      case HideZeroDecimals(field1)                           => extractRefs(field1)
       case IfElse(_, field1, field2)                          => extractRefs(field1) ++ extractRefs(field2)
       case Else(field1, field2)                               => extractRefs(field1) ++ extractRefs(field2)
       case Sum(field1)                                        => extractRefs(field1)
