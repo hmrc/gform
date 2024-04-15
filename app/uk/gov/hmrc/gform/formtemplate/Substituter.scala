@@ -55,25 +55,23 @@ object Substituter {
     }
   }
 
-  private def updateSpecimenSmartString(smartString: SmartString): SmartString = {
-    val interpolationUpdated = smartString.interpolations.map {
-      case _: IfElse                       => Constant("[dynamic value]")
-      case s: Else                         => Constant("[dynamic value]")
-      case FormCtx(FormComponentId(value)) => Constant(s"[$value]")
-      case otherwise                       => otherwise
-    }
-    smartString.copy(interpolations = interpolationUpdated)
-  }
+  private def updateSpecimenSmartString(smartString: SmartString): SmartString =
+    smartString
+      .updateInterpolations {
+        case _: IfElse                       => Constant("[dynamic value]")
+        case s: Else                         => Constant("[dynamic value]")
+        case FormCtx(FormComponentId(value)) => Constant(s"[$value]")
+        case otherwise                       => otherwise
+      }
 
   implicit def smartStringSubstituter[A](implicit
     ev: Substituter[A, Expr]
   ): Substituter[A, SmartString] = { (substitutions, t) =>
     import shapeless._
     val specimentTypable = Typeable[SpecimenExprSubstitutions]
+    val substituter = implicitly[Substituter[A, Expr]]
     if (specimentTypable.cast(substitutions).isEmpty) {
-      t.copy(
-        interpolations = t.interpolations(substitutions)
-      )
+      t.updateInterpolations(expr => substituter.substitute(substitutions, expr))
     } else {
       updateSpecimenSmartString(t)
     }
