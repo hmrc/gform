@@ -487,8 +487,20 @@ object TableValueRow {
   implicit val format: Format[TableValueRow] = derived.oformat()
 }
 
+case class TableHeaderCell(
+  label: SmartString,
+  classes: Option[String]
+)
+
+object TableHeaderCell {
+  implicit val leafExprs: LeafExpr[TableHeaderCell] = (path: TemplatePath, r: TableHeaderCell) =>
+    LeafExpr(path + "label", r.label)
+
+  implicit val format: Format[TableHeaderCell] = derived.oformat()
+}
+
 case class TableComp(
-  header: List[SmartString],
+  header: List[TableHeaderCell],
   rows: List[TableValueRow],
   summaryValue: SmartString,
   caption: Option[String] = None,

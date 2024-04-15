@@ -1,0 +1,115 @@
+{
+  "_id": "table-comp-in-add-to-list",
+  "formName": "Table comp in ATL",
+  "description": "",
+  "version": 1,
+  "emailTemplateId": "eeitt_submission_confirmation",
+  "authConfig": {
+    "authModule": "anonymous"
+  },
+  "sections": [
+    {
+      "id": "partnerList",
+      "type": "addToList",
+      "title": "Lists of partners you have added",
+      "summaryName": "Partners",
+      "shortName": "Partner",
+      "description": "**$n .** ${partnerName}",
+      "summaryDescription": "${partnerName}",
+      "addAnotherQuestion": {
+        "id": "addAnotherPartnerChoice",
+        "type": "choice",
+        "label": "Do you want to add another partner?",
+        "choices": [
+          "Yes",
+          "No"
+        ],
+        "errorMessage": "Select whether you want to add another partner?"
+      },
+      "fields": [
+        {
+          "id": "partnersIneligible",
+          "type": "info",
+          "infoType": "important",
+          "label": "IneligibleInfo",
+          "infoText": "All partners are ineligible"
+        },
+        {
+          "id": "netConstructionTable",
+          "type": "table",
+          "summaryValue": "1",
+          "label": "Net turnover",
+          "header": [
+            {
+              "en": "Description",
+              "cy": "Disgrifiad"
+            },
+            {
+              "en": "Weight",
+              "cy": "Pwysau",
+              "classes": "govuk-!-text-align-right"
+            }
+          ],
+          "rows": [
+            {
+              "values": [
+                {
+                  "value": "Gross payments (excluding VAT)"
+                },
+                {
+                  "value": "1"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "pages": [
+        {
+          "title": "What is the partner name?",
+          "fields": [
+            {
+              "id": "partnerName",
+              "type": "text",
+              "label": "What is the partner name?",
+              "format": "text"
+            },
+            {
+              "id": "netConstructionTable1",
+              "type": "table",
+              "summaryValue": "1",
+              "label": "Net turnover",
+              "header": [
+                "Description",
+                "Weight"
+              ],
+              "rows": [
+                {
+                  "values": [
+                    {
+                      "value": "Gross payments (excluding VAT)"
+                    },
+                    {
+                      "value": "1"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "acknowledgementSection": {
+    "title": "Confirmation page ",
+    "fields": []
+  },
+  "destinations": [
+    {
+      "id": "transitionToSubmitted",
+      "type": "stateTransition",
+      "requiredState": "Submitted"
+    }
+  ]
+}

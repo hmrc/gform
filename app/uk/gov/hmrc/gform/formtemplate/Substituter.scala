@@ -160,6 +160,10 @@ object Substituter {
         TableValueRow(values(substitutions), includeIf(substitutions), dynamic)
     }
 
+  implicit def tableHeaderCellSubstituter[A](implicit
+    ev: Substituter[A, Expr]
+  ): Substituter[A, TableHeaderCell] = (substitutions, t) => t.copy(label = t.label(substitutions))
+
   implicit def componentTypeSubstituter[A](implicit
     ev: Substituter[A, Expr],
     ev2: Substituter[A, BooleanExpr]

@@ -851,6 +851,9 @@
                   },
                   "cy": {
                     "type": "string"
+                  },
+                  "classes": {
+                    "type": "string"
                   }
                 },
                 "required": [
