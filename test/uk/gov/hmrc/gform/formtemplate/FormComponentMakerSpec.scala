@@ -464,14 +464,20 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
                                  |   "type": "table",
                                  |   "label": "Table of data",
                                  |   "summaryValue": "Summary value",
-                                 |  "caption": "This is caption",
-                                 |  "captionClasses": "test-caption-classes",
-                                 |  "firstCellIsHeader": "false",
-                                 |  "classes": "test-classes",
+                                 |   "caption": "This is caption",
+                                 |   "captionClasses": "test-caption-classes",
+                                 |   "firstCellIsHeader": "false",
+                                 |   "classes": "test-classes",
                                  |   "header": [
-                                 |     "Column 1",
-                                 |     "Column 2",
-                                 |     "Column 3"
+                                 |     {
+                                 |        "label": "Column 1"
+                                 |     },
+                                 |     {
+                                 |        "label": "Column 2"
+                                 |     },
+                                 |     {
+                                 |        "label": "Column 3"
+                                 |     }
                                  |   ],
                                  |   "rows": [
                                  |     {
@@ -528,9 +534,9 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
         FormComponentId("gformTable"),
         TableComp(
           List(
-            SmartString(LocalisedString(Map(LangADT.En -> "Column 1")), List()),
-            SmartString(LocalisedString(Map(LangADT.En -> "Column 2")), List()),
-            SmartString(LocalisedString(Map(LangADT.En -> "Column 3")), List())
+            TableHeaderCell(SmartString(LocalisedString(Map(LangADT.En -> "Column 1")), List()), None),
+            TableHeaderCell(SmartString(LocalisedString(Map(LangADT.En -> "Column 2")), List()), None),
+            TableHeaderCell(SmartString(LocalisedString(Map(LangADT.En -> "Column 3")), List()), None)
           ),
           List(
             TableValueRow(

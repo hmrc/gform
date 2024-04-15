@@ -228,25 +228,22 @@ object FormTemplatesControllerRequestHandler {
         case _: JsUndefined   => Json.obj()
       }
 
-    val choicesFieldUpdater: Reads[JsValue] = Reads { json =>
-      json match {
-        case JsObject(_) =>
-          val includeIfField = getDownField("includeIf", json)
-          val valueField = getDownField("value", json)
-          val hintField = getDownField("hint", json)
-          val dynamicField = getDownField("dynamic", json)
-          val enField = getDownField("en", json)
-          val cyField = getDownField("cy", json)
+    val choicesFieldUpdater: Reads[JsValue] = Reads {
+      case json @ JsObject(_) =>
+        val includeIfField = getDownField("includeIf", json)
+        val valueField = getDownField("value", json)
+        val hintField = getDownField("hint", json)
+        val dynamicField = getDownField("dynamic", json)
+        val enField = getDownField("en", json)
+        val cyField = getDownField("cy", json)
 
-          val labelField: JsObject = Json.obj("label" -> (enField ++ cyField))
+        val labelField: JsObject = Json.obj("label" -> (enField ++ cyField))
 
-          val newJson: JsObject = includeIfField ++ valueField ++ hintField ++ dynamicField ++ labelField
+        val newJson: JsObject = includeIfField ++ valueField ++ hintField ++ dynamicField ++ labelField
 
-          JsSuccess(newJson)
+        JsSuccess(newJson)
 
-        case otherwise => JsSuccess(Json.obj("label" -> otherwise))
-      }
-
+      case otherwise => JsSuccess(Json.obj("label" -> otherwise))
     }
 
     val updateChoicesField = (__ \ "choices").json.update(list(choicesFieldUpdater))
@@ -369,6 +366,69 @@ object FormTemplatesControllerRequestHandler {
       ) orElse JsSuccess(json)
     }
 
+    val transformTableComps: Reads[JsValue] = Reads { json =>
+      val tableHeaderCellUpdater: Reads[JsValue] = Reads {
+        case json @ JsObject(_) =>
+          val classes = getDownField("classes", json)
+          val enField = getDownField("en", json)
+          val cyField = getDownField("cy", json)
+
+          val labelField: JsObject = Json.obj("label" -> (enField ++ cyField))
+          val newJson: JsObject = labelField ++ classes
+
+          JsSuccess(newJson)
+        case otherwise =>
+          JsSuccess(Json.obj("label" -> otherwise))
+      }
+
+      val updateTableHeaderCell = (__ \ "header").json.update(list(tableHeaderCellUpdater))
+
+      val tableUpdater: Reads[JsValue] = Reads { json =>
+        json \ "type" match {
+          case JsDefined(JsString(tpe)) if tpe === "table" =>
+            json.transform(updateTableHeaderCell)
+          case _ => JsSuccess(json)
+        }
+      }
+
+      val transformFields =
+        (__ \ "fields").json.update(list(tableUpdater))
+
+      val regularFieldsOrAddToListFieldsReads =
+        (__ \ "pages").json.update(list(transformFields))
+
+      val updateDeclarationSection =
+        (__ \ "declarationSection").json.update(transformFields)
+
+      val updateSummarySection =
+        (__ \ "summarySection").json.update(transformFields)
+
+      val updateTaskSections =
+        (__ \ "sections").json.update(list(transformFields))
+
+      val updateSummaryAndDeclarationSections =
+        (updateDeclarationSection andThen updateSummarySection) orElse updateDeclarationSection orElse updateSummarySection
+
+      val updateTaskList =
+        (__ \ "tasks").json.update(
+          list(
+            (updateSummaryAndDeclarationSections andThen updateTaskSections) orElse updateSummaryAndDeclarationSections orElse
+              updateTaskSections
+          )
+        )
+
+      val updateTableComp =
+        (__ \ "sections").json.update(
+          list(updateTaskList) orElse list(
+            (regularFieldsOrAddToListFieldsReads andThen transformFields) orElse regularFieldsOrAddToListFieldsReads orElse transformFields
+          )
+        )
+
+      json.transform(
+        updateTableComp
+      ) orElse JsSuccess(json)
+    }
+
     val transformDestinations: Reads[JsValue] = Reads { json =>
       val transformIncludeIfs: Reads[JsValue] = Reads { json =>
         json \ "includeIf" match {
@@ -450,6 +510,7 @@ object FormTemplatesControllerRequestHandler {
       pruneShowContinueOrDeletePage andThen
         pruneAcknowledgementSection andThen
         prunePrintSection andThen
+        transformTableComps andThen
         transformChoices andThen
         transformAddAnotherQuestion andThen
         transformConfirmationQuestion andThen

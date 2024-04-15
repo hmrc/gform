@@ -19,13 +19,13 @@ package uk.gov.hmrc.gform.formtemplate
 import munit.FunSuite
 import uk.gov.hmrc.gform.Helpers.toSmartString
 import uk.gov.hmrc.gform.core.{ Invalid, Valid }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Dynamic, IncludeIf, TableComp, TableValue, TableValueRow }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Dynamic, IncludeIf, TableComp, TableHeaderCell, TableValue, TableValueRow }
 
 class TableCompValidatorSuite extends FunSuite {
   test("TableCompValidator.validateTableComp (1)") {
     val table = TableComp(
       List(
-        toSmartString("Column 1")
+        TableHeaderCell(toSmartString("Column 1"), None)
       ),
       List(
         TableValueRow(
@@ -45,11 +45,11 @@ class TableCompValidatorSuite extends FunSuite {
   test("TableCompValidator.validateTableComp (2)") {
     val table = TableComp(
       List(
-        toSmartString("Column 1"),
-        toSmartString("Column 2"),
-        toSmartString("Column 3"),
-        toSmartString("Column 4"),
-        toSmartString("Column 5")
+        TableHeaderCell(toSmartString("Column 1"), None),
+        TableHeaderCell(toSmartString("Column 2"), None),
+        TableHeaderCell(toSmartString("Column 3"), None),
+        TableHeaderCell(toSmartString("Column 4"), None),
+        TableHeaderCell(toSmartString("Column 5"), None)
       ),
       List(
         TableValueRow(
@@ -73,11 +73,11 @@ class TableCompValidatorSuite extends FunSuite {
   test("TableCompValidator.validateTableComp (3)") {
     val table = TableComp(
       List(
-        toSmartString("Column 1"),
-        toSmartString("Column 2"),
-        toSmartString("Column 3"),
-        toSmartString("Column 4"),
-        toSmartString("Column 5")
+        TableHeaderCell(toSmartString("Column 1"), None),
+        TableHeaderCell(toSmartString("Column 2"), None),
+        TableHeaderCell(toSmartString("Column 3"), None),
+        TableHeaderCell(toSmartString("Column 4"), None),
+        TableHeaderCell(toSmartString("Column 5"), None)
       ),
       List(
         TableValueRow(
@@ -101,8 +101,8 @@ class TableCompValidatorSuite extends FunSuite {
   test("TableCompValidator.validateTableComp (4)") {
     val table = TableComp(
       List(
-        toSmartString("Column 1"),
-        toSmartString("Column 2")
+        TableHeaderCell(toSmartString("Column 1"), None),
+        TableHeaderCell(toSmartString("Column 2"), None)
       ),
       List(
         TableValueRow(
@@ -122,8 +122,8 @@ class TableCompValidatorSuite extends FunSuite {
   test("TableCompValidator.validateTableComp (5)") {
     val table = TableComp(
       List(
-        toSmartString("Column 1"),
-        toSmartString("Column 2")
+        TableHeaderCell(toSmartString("Column 1"), None),
+        TableHeaderCell(toSmartString("Column 2"), None)
       ),
       List(
         TableValueRow(
@@ -145,8 +145,8 @@ class TableCompValidatorSuite extends FunSuite {
   test("TableCompValidator.validateTableComp (6)") {
     val table = TableComp(
       List(
-        toSmartString("Column 1"),
-        toSmartString("Column 2")
+        TableHeaderCell(toSmartString("Column 1"), None),
+        TableHeaderCell(toSmartString("Column 2"), None)
       ),
       List(
         TableValueRow(
@@ -167,8 +167,8 @@ class TableCompValidatorSuite extends FunSuite {
   test("TableCompValidator.validateTableComp (7)") {
     val table = TableComp(
       List(
-        toSmartString("Column 1"),
-        toSmartString("Column 2")
+        TableHeaderCell(toSmartString("Column 1"), None),
+        TableHeaderCell(toSmartString("Column 2"), None)
       ),
       List(
         TableValueRow(
@@ -189,8 +189,8 @@ class TableCompValidatorSuite extends FunSuite {
   test("TableCompValidator.validateTableComp (8)") {
     val table = TableComp(
       List(
-        toSmartString("Column 1"),
-        toSmartString("Column 2")
+        TableHeaderCell(toSmartString("Column 1"), None),
+        TableHeaderCell(toSmartString("Column 2"), None)
       ),
       List(
         TableValueRow(
@@ -211,10 +211,10 @@ class TableCompValidatorSuite extends FunSuite {
   test("TableCompValidator.validateTableComp (9)") {
     val table = TableComp(
       List(
-        toSmartString("Column 1"),
-        toSmartString("Column 2"),
-        toSmartString("Column 3"),
-        toSmartString("Column 4")
+        TableHeaderCell(toSmartString("Column 1"), None),
+        TableHeaderCell(toSmartString("Column 2"), None),
+        TableHeaderCell(toSmartString("Column 3"), None),
+        TableHeaderCell(toSmartString("Column 4"), None)
       ),
       List(
         TableValueRow(
@@ -237,7 +237,7 @@ class TableCompValidatorSuite extends FunSuite {
   test("TableCompValidator.validateTableComp (10)") {
     val table = TableComp(
       List(
-        toSmartString("Column 1")
+        TableHeaderCell(toSmartString("Column 1"), None)
       ),
       List(
         TableValueRow(
@@ -261,8 +261,8 @@ class TableCompValidatorSuite extends FunSuite {
   test("TableCompValidator.validateTableComp (11)") {
     val table = TableComp(
       List(
-        toSmartString("Column 1"),
-        toSmartString("Column 2")
+        TableHeaderCell(toSmartString("Column 1"), None),
+        TableHeaderCell(toSmartString("Column 2"), None)
       ),
       List(
         TableValueRow(
@@ -300,8 +300,8 @@ class TableCompValidatorSuite extends FunSuite {
   test("TableCompValidator.validateTableComp (12)") {
     val table = TableComp(
       List(
-        toSmartString("Column 1"),
-        toSmartString("Column 2")
+        TableHeaderCell(toSmartString("Column 1"), None),
+        TableHeaderCell(toSmartString("Column 2"), None)
       ),
       List(
         TableValueRow(
@@ -340,7 +340,7 @@ class TableCompValidatorSuite extends FunSuite {
   test("TableCompValidator.validateTableComp (13)") {
     val table = TableComp(
       List(
-        toSmartString("Column 1")
+        TableHeaderCell(toSmartString("Column 1"), None)
       ),
       List(
         TableValueRow(
@@ -361,8 +361,8 @@ class TableCompValidatorSuite extends FunSuite {
   test("TableCompValidator.validateTableComp (14)") {
     val table = TableComp(
       List(
-        toSmartString("Column 1"),
-        toSmartString("Column 2")
+        TableHeaderCell(toSmartString("Column 1"), None),
+        TableHeaderCell(toSmartString("Column 2"), None)
       ),
       List(
         TableValueRow(
@@ -398,9 +398,9 @@ class TableCompValidatorSuite extends FunSuite {
   test("TableCompValidator.validateTableComp (15)") {
     val table = TableComp(
       List(
-        toSmartString("Header 1"),
-        toSmartString("Header 2"),
-        toSmartString("Header 3")
+        TableHeaderCell(toSmartString("Header 1"), None),
+        TableHeaderCell(toSmartString("Header 2"), None),
+        TableHeaderCell(toSmartString("Header 3"), None)
       ),
       List(
         TableValueRow(
@@ -474,7 +474,7 @@ class TableCompValidatorSuite extends FunSuite {
   test("TableCompValidator.normaliseTableComp (1)") {
     val table = TableComp(
       List(
-        toSmartString("Column 1")
+        TableHeaderCell(toSmartString("Column 1"), None)
       ),
       List(
         TableValueRow(
@@ -496,7 +496,7 @@ class TableCompValidatorSuite extends FunSuite {
 
     val expectedTable = TableComp(
       List(
-        toSmartString("Column 1")
+        TableHeaderCell(toSmartString("Column 1"), None)
       ),
       List(
         TableValueRow(
@@ -524,8 +524,8 @@ class TableCompValidatorSuite extends FunSuite {
   test("TableCompValidator.normaliseTableComp (2)") {
     val table = TableComp(
       List(
-        toSmartString("Column 1"),
-        toSmartString("Column 2")
+        TableHeaderCell(toSmartString("Column 1"), None),
+        TableHeaderCell(toSmartString("Column 2"), None)
       ),
       List(
         TableValueRow(
@@ -555,8 +555,8 @@ class TableCompValidatorSuite extends FunSuite {
 
     val expectedTable = TableComp(
       List(
-        toSmartString("Column 1"),
-        toSmartString("Column 2")
+        TableHeaderCell(toSmartString("Column 1"), None),
+        TableHeaderCell(toSmartString("Column 2"), None)
       ),
       List(
         TableValueRow(
@@ -594,9 +594,9 @@ class TableCompValidatorSuite extends FunSuite {
   test("TableCompValidator.normaliseTableComp (3)") {
     val table = TableComp(
       List(
-        toSmartString("Column 1"),
-        toSmartString("Column 2"),
-        toSmartString("Column 3")
+        TableHeaderCell(toSmartString("Column 1"), None),
+        TableHeaderCell(toSmartString("Column 2"), None),
+        TableHeaderCell(toSmartString("Column 3"), None)
       ),
       List(
         TableValueRow(
@@ -639,9 +639,9 @@ class TableCompValidatorSuite extends FunSuite {
 
     val expectedTable = TableComp(
       List(
-        toSmartString("Column 1"),
-        toSmartString("Column 2"),
-        toSmartString("Column 3")
+        TableHeaderCell(toSmartString("Column 1"), None),
+        TableHeaderCell(toSmartString("Column 2"), None),
+        TableHeaderCell(toSmartString("Column 3"), None)
       ),
       List(
         TableValueRow(
@@ -701,7 +701,7 @@ class TableCompValidatorSuite extends FunSuite {
   test("TableCompValidator.normaliseTableComp (4)") {
     val table = TableComp(
       List(
-        toSmartString("Column 1")
+        TableHeaderCell(toSmartString("Column 1"), None)
       ),
       List(
         TableValueRow(
@@ -717,7 +717,7 @@ class TableCompValidatorSuite extends FunSuite {
 
     val expectedTable = TableComp(
       List(
-        toSmartString("Column 1")
+        TableHeaderCell(toSmartString("Column 1"), None)
       ),
       List(
         TableValueRow(
@@ -743,7 +743,7 @@ class TableCompValidatorSuite extends FunSuite {
   test("TableCompValidator.normaliseTableComp (5)") {
     val table = TableComp(
       List(
-        toSmartString("Column 1")
+        TableHeaderCell(toSmartString("Column 1"), None)
       ),
       List(
         TableValueRow(
@@ -759,7 +759,7 @@ class TableCompValidatorSuite extends FunSuite {
 
     val expectedTable = TableComp(
       List(
-        toSmartString("Column 1")
+        TableHeaderCell(toSmartString("Column 1"), None)
       ),
       List(
         TableValueRow(
@@ -781,12 +781,12 @@ class TableCompValidatorSuite extends FunSuite {
   test("TableCompValidator.normaliseTableComp (6)") {
     val table = TableComp(
       List(
-        toSmartString("Header 1"),
-        toSmartString("Header 2"),
-        toSmartString("Header 3"),
-        toSmartString("Header 4"),
-        toSmartString("Header 5"),
-        toSmartString("Header 6")
+        TableHeaderCell(toSmartString("Header 1"), None),
+        TableHeaderCell(toSmartString("Header 2"), None),
+        TableHeaderCell(toSmartString("Header 3"), None),
+        TableHeaderCell(toSmartString("Header 4"), None),
+        TableHeaderCell(toSmartString("Header 5"), None),
+        TableHeaderCell(toSmartString("Header 6"), None)
       ),
       List(
         TableValueRow(
@@ -815,12 +815,12 @@ class TableCompValidatorSuite extends FunSuite {
 
     val expectedTable = TableComp(
       List(
-        toSmartString("Header 1"),
-        toSmartString("Header 2"),
-        toSmartString("Header 3"),
-        toSmartString("Header 4"),
-        toSmartString("Header 5"),
-        toSmartString("Header 6")
+        TableHeaderCell(toSmartString("Header 1"), None),
+        TableHeaderCell(toSmartString("Header 2"), None),
+        TableHeaderCell(toSmartString("Header 3"), None),
+        TableHeaderCell(toSmartString("Header 4"), None),
+        TableHeaderCell(toSmartString("Header 5"), None),
+        TableHeaderCell(toSmartString("Header 6"), None)
       ),
       List(
         TableValueRow(
@@ -859,11 +859,11 @@ class TableCompValidatorSuite extends FunSuite {
   test("TableCompValidator.normaliseTableComp (7)") {
     val table = TableComp(
       List(
-        toSmartString("Header 1"),
-        toSmartString("Header 2"),
-        toSmartString("Header 3"),
-        toSmartString("Header 4"),
-        toSmartString("Header 5")
+        TableHeaderCell(toSmartString("Header 1"), None),
+        TableHeaderCell(toSmartString("Header 2"), None),
+        TableHeaderCell(toSmartString("Header 3"), None),
+        TableHeaderCell(toSmartString("Header 4"), None),
+        TableHeaderCell(toSmartString("Header 5"), None)
       ),
       List(
         TableValueRow(
@@ -919,11 +919,11 @@ class TableCompValidatorSuite extends FunSuite {
 
     val expectedTable = TableComp(
       List(
-        toSmartString("Header 1"),
-        toSmartString("Header 2"),
-        toSmartString("Header 3"),
-        toSmartString("Header 4"),
-        toSmartString("Header 5")
+        TableHeaderCell(toSmartString("Header 1"), None),
+        TableHeaderCell(toSmartString("Header 2"), None),
+        TableHeaderCell(toSmartString("Header 3"), None),
+        TableHeaderCell(toSmartString("Header 4"), None),
+        TableHeaderCell(toSmartString("Header 5"), None)
       ),
       List(
         TableValueRow(
@@ -993,11 +993,11 @@ class TableCompValidatorSuite extends FunSuite {
   test("TableCompValidator.normaliseTableComp (8)") {
     val table = TableComp(
       List(
-        toSmartString("Header 1"),
-        toSmartString("Header 2"),
-        toSmartString("Header 3"),
-        toSmartString("Header 4"),
-        toSmartString("Header 5")
+        TableHeaderCell(toSmartString("Header 1"), None),
+        TableHeaderCell(toSmartString("Header 2"), None),
+        TableHeaderCell(toSmartString("Header 3"), None),
+        TableHeaderCell(toSmartString("Header 4"), None),
+        TableHeaderCell(toSmartString("Header 5"), None)
       ),
       List(
         TableValueRow(
@@ -1053,11 +1053,11 @@ class TableCompValidatorSuite extends FunSuite {
 
     val expectedTable = TableComp(
       List(
-        toSmartString("Header 1"),
-        toSmartString("Header 2"),
-        toSmartString("Header 3"),
-        toSmartString("Header 4"),
-        toSmartString("Header 5")
+        TableHeaderCell(toSmartString("Header 1"), None),
+        TableHeaderCell(toSmartString("Header 2"), None),
+        TableHeaderCell(toSmartString("Header 3"), None),
+        TableHeaderCell(toSmartString("Header 4"), None),
+        TableHeaderCell(toSmartString("Header 5"), None)
       ),
       List(
         TableValueRow(
@@ -1130,9 +1130,9 @@ class TableCompValidatorSuite extends FunSuite {
   test("TableCompValidator.normaliseTableComp (9)") {
     val table = TableComp(
       List(
-        toSmartString("Header 1"),
-        toSmartString("Header 2"),
-        toSmartString("Header 3")
+        TableHeaderCell(toSmartString("Header 1"), None),
+        TableHeaderCell(toSmartString("Header 2"), None),
+        TableHeaderCell(toSmartString("Header 3"), None)
       ),
       List(
         TableValueRow(
@@ -1197,9 +1197,9 @@ class TableCompValidatorSuite extends FunSuite {
 
     val expectedTable = TableComp(
       List(
-        toSmartString("Header 1"),
-        toSmartString("Header 2"),
-        toSmartString("Header 3")
+        TableHeaderCell(toSmartString("Header 1"), None),
+        TableHeaderCell(toSmartString("Header 2"), None),
+        TableHeaderCell(toSmartString("Header 3"), None)
       ),
       List(
         TableValueRow(

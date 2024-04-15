@@ -268,7 +268,7 @@ class FormComponentMaker(json: JsValue) {
 
     for {
       rows           <- rows(json)
-      header         <- toOpt((json \ "header").validate[List[SmartString]], "/header")
+      header         <- toOpt((json \ "header").validate[List[TableHeaderCell]], "/header")
       summaryValue   <- toOpt((json \ "summaryValue").validate[SmartString], "/summaryValue")
       caption        <- toOpt((json \ "caption").validateOpt[String], "/caption")
       captionClasses <- toOpt((json \ "captionClasses").validateOpt[String].map(_.getOrElse("")), "/captionClasses")
