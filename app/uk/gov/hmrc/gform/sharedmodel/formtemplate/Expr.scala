@@ -301,14 +301,4 @@ object StringFnc {
   case object RemoveSpaces extends StringFnc
   case class SubString(beginIndex: Int, endIndex: Int) extends StringFnc
   implicit val format: OFormat[StringFnc] = derived.oformat()
-
-//  case object HideZeroDecimals2 extends StringFnc
 }
-
-//sealed trait StringNumberFnc
-//
-//object StringNumberFnc {
-//  case object HideZeroDecimals extends StringNumberFnc
-//
-//  implicit val format: OFormat[StringNumberFnc] = derived.oformat()
-//}

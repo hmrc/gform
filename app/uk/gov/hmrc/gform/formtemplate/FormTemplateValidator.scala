@@ -1051,7 +1051,7 @@ object FormTemplateValidator {
       case Subtraction(field1, field2)  => checkFields(field1, field2)
       case Multiply(field1, field2)     => checkFields(field1, field2)
       case Divide(field1, field2)       => checkFields(field1, field2)
-      case HideZeroDecimals(field1)     => Valid
+      case HideZeroDecimals(field1)     => validate(field1, sections)
       case IfElse(cond, field1, field2) => checkFields(field1, field2) // cond is covered by LeafExpr
       case Else(field1, field2)         => checkFields(field1, field2)
       case Sum(value)                   => validate(value, sections)
