@@ -99,7 +99,10 @@ object SmartString {
 
   private def readFromTemplateArray(array: JsArray): JsResult[SmartStringCond] = {
     val jsObjects = array.value.collect { case jsObj: JsObject => jsObj }.toList
-    jsObjects.reverse match {
+    jsObjects.reverse.filterNot {
+      case jsObj: JsObject => (jsObj \ "_includeIf").isDefined
+      case _               => true
+    } match {
       case lastObject :: ifObjects =>
         val last: JsResult[SmartStringInternal] = Json.fromJson[SmartStringInternal](lastObject)
         if ((lastObject \ "includeIf").isDefined) {
