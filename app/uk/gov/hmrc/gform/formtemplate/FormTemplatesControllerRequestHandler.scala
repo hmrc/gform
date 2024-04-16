@@ -403,8 +403,18 @@ object FormTemplatesControllerRequestHandler {
       val updateSummarySection =
         (__ \ "summarySection").json.update(transformFields)
 
-      val updateTaskSections =
-        (__ \ "sections").json.update(list(transformFields))
+      val updateTaskSections: Reads[JsObject] =
+        (__ \ "sections").json.update(of[JsArray].map { case JsArray(arr) =>
+          JsArray(
+            arr.map(item =>
+              item
+                .transform(
+                  (transformFields andThen regularFieldsOrAddToListFieldsReads) orElse regularFieldsOrAddToListFieldsReads orElse transformFields
+                )
+                .getOrElse(item)
+            )
+          )
+        })
 
       val updateSummaryAndDeclarationSections =
         (updateDeclarationSection andThen updateSummarySection) orElse updateDeclarationSection orElse updateSummarySection
