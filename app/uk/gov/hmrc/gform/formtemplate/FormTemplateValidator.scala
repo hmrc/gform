@@ -694,7 +694,7 @@ object FormTemplateValidator {
     def isEmptyLabel(label: SmartString): Boolean =
       label.internals
         .forall(internalSmartString =>
-          internalSmartString.rawValue(LangADT.En).trim == "" || internalSmartString.rawValue(LangADT.Cy).trim == ""
+          internalSmartString.rawValue(LangADT.En).trim === "" || internalSmartString.rawValue(LangADT.Cy).trim === ""
         )
 
     val validationResults = sectionsList.flatMap { page =>
