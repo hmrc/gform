@@ -334,15 +334,15 @@ class TopLevelExpressionsSuite extends FunSuite {
     check(
       Json.obj(
         "foobar" -> "3.00",
-        "foo" -> "bar",
-        "bar" -> "baz",
-        "baz" -> "hideZeroDecimals(foobar + 2.00)"
+        "foo"    -> "bar",
+        "bar"    -> "baz",
+        "baz"    -> "hideZeroDecimals(foobar + 2.00)"
       ),
       Map(
         ExpressionId("foobar") -> Constant("3.00"),
-        ExpressionId("foo") -> HideZeroDecimals(Add(Constant("3.00"), Constant("2.00"))),
-        ExpressionId("bar") -> HideZeroDecimals(Add(Constant("3.00"), Constant("2.00"))),
-        ExpressionId("baz") -> HideZeroDecimals(Add(Constant("3.00"),Constant("2.00")))
+        ExpressionId("foo")    -> HideZeroDecimals(Add(Constant("3.00"), Constant("2.00"))),
+        ExpressionId("bar")    -> HideZeroDecimals(Add(Constant("3.00"), Constant("2.00"))),
+        ExpressionId("baz")    -> HideZeroDecimals(Add(Constant("3.00"), Constant("2.00")))
       )
     )
   }

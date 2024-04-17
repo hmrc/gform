@@ -20,11 +20,11 @@ import cats.data.NonEmptyList
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.TableDrivenPropertyChecks
 import org.scalatest.wordspec.AnyWordSpecLike
-import uk.gov.hmrc.gform.Helpers.{toLocalisedString, toSmartString}
+import uk.gov.hmrc.gform.Helpers.{ toLocalisedString, toSmartString }
 import uk.gov.hmrc.gform.core.parsers.ValueParser
-import uk.gov.hmrc.gform.core.{Invalid, Valid}
-import uk.gov.hmrc.gform.sharedmodel.{LangADT, LocalisedString, SmartString}
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{AnyDate, Constant, CsvCountryCheck, Date, DateCtx, DateFormCtxVar, ExprWithPath, FormComponentId, FormComponentValidator, FormCtx, HideZeroDecimals, IfElse, InformationMessage, Instruction, IsTrue, LeafExpr, LinkCtx, Offset, PageId, StandardInfo, TemplatePath, ValidIf}
+import uk.gov.hmrc.gform.core.{ Invalid, Valid }
+import uk.gov.hmrc.gform.sharedmodel.{ LangADT, LocalisedString, SmartString }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AnyDate, Constant, CsvCountryCheck, Date, DateCtx, DateFormCtxVar, ExprWithPath, FormComponentId, FormComponentValidator, FormCtx, HideZeroDecimals, IfElse, InformationMessage, Instruction, IsTrue, LeafExpr, LinkCtx, Offset, PageId, StandardInfo, TemplatePath, ValidIf }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.PageLink
 
 class FormTemplateValidatorSpec
