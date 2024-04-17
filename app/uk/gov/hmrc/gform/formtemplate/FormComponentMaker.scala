@@ -132,7 +132,7 @@ class FormComponentMaker(json: JsValue) {
   lazy val multivalue: Option[String] = (json \ "multivalue").asOpt[String]
   lazy val total: Option[String] = (json \ "total").asOpt[String]
   lazy val international: Option[String] = (json \ "international").asOpt[String]
-  lazy val infoText: Option[SmartString] = (json \ "infoText").asOpt[SmartString]
+  lazy val infoText: JsResult[SmartString] = (json \ "infoText").validate[SmartString]
   lazy val infoType: Option[String] = (json \ "infoType").asOpt[String]
   lazy val shortName: Option[SmartString] = (json \ "shortName").asOpt[SmartString]
   lazy val errorShortName: Option[SmartString] = (json \ "errorShortName").asOpt[SmartString]
@@ -699,12 +699,13 @@ class FormComponentMaker(json: JsValue) {
   } yield FileUpload(fileUploadProvider, maybeFileSizeLimit, maybeAllowedFileTypes)
 
   private lazy val infoOpt: Opt[InformationMessage] = (infoType, infoText) match {
-    case (IsInfoType(StandardInfo), Some(infText))  => InformationMessage(StandardInfo, infText).asRight
-    case (IsInfoType(LongInfo), Some(infText))      => InformationMessage(LongInfo, infText).asRight
-    case (IsInfoType(ImportantInfo), Some(infText)) => InformationMessage(ImportantInfo, infText).asRight
-    case (IsInfoType(BannerInfo), Some(infText))    => InformationMessage(BannerInfo, infText).asRight
-    case (IsInfoType(NoFormat), Some(infText))      => InformationMessage(NoFormat, infText).asRight
-    case (infType, infText)                         => UnexpectedState(s"""
+    case (IsInfoType(StandardInfo), JsSuccess(infText, _))  => InformationMessage(StandardInfo, infText).asRight
+    case (IsInfoType(LongInfo), JsSuccess(infText, _))      => InformationMessage(LongInfo, infText).asRight
+    case (IsInfoType(ImportantInfo), JsSuccess(infText, _)) => InformationMessage(ImportantInfo, infText).asRight
+    case (IsInfoType(BannerInfo), JsSuccess(infText, _))    => InformationMessage(BannerInfo, infText).asRight
+    case (IsInfoType(NoFormat), JsSuccess(infText, _))      => InformationMessage(NoFormat, infText).asRight
+    case (infType, JsError(errors))                         => UnexpectedState(errors.toString).asLeft
+    case (infType, infText)                                 => UnexpectedState(s"""
                                                   | Invalid or missing arguments in 'info' field. The 'info' field should contain the infoType and
                                                   | infoText arguments. infoType is one of: standard, long, important, banner or noformat.
                                                   | infoText is the text to display.
