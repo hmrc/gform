@@ -132,7 +132,7 @@ class FormComponentMaker(json: JsValue) {
   lazy val multivalue: Option[String] = (json \ "multivalue").asOpt[String]
   lazy val total: Option[String] = (json \ "total").asOpt[String]
   lazy val international: Option[String] = (json \ "international").asOpt[String]
-  lazy val infoText: Option[SmartString] = (json \ "infoText").asOpt[SmartString]
+  lazy val optInfoText: Opt[SmartString] = toOpt((json \ "infoText").validate[SmartString], "/infoText")
   lazy val infoType: Option[String] = (json \ "infoType").asOpt[String]
   lazy val shortName: Option[SmartString] = (json \ "shortName").asOpt[SmartString]
   lazy val errorShortName: Option[SmartString] = (json \ "errorShortName").asOpt[SmartString]
@@ -698,20 +698,17 @@ class FormComponentMaker(json: JsValue) {
     maybeAllowedFileTypes <- toOpt((json \ "allowedFileTypes").validateOpt[AllowedFileTypes], "/allowedFileTypes")
   } yield FileUpload(fileUploadProvider, maybeFileSizeLimit, maybeAllowedFileTypes)
 
-  private lazy val infoOpt: Opt[InformationMessage] = (infoType, infoText) match {
-    case (IsInfoType(StandardInfo), Some(infText))  => InformationMessage(StandardInfo, infText).asRight
-    case (IsInfoType(LongInfo), Some(infText))      => InformationMessage(LongInfo, infText).asRight
-    case (IsInfoType(ImportantInfo), Some(infText)) => InformationMessage(ImportantInfo, infText).asRight
-    case (IsInfoType(BannerInfo), Some(infText))    => InformationMessage(BannerInfo, infText).asRight
-    case (IsInfoType(NoFormat), Some(infText))      => InformationMessage(NoFormat, infText).asRight
-    case (infType, infText)                         => UnexpectedState(s"""
-                                                  | Invalid or missing arguments in 'info' field. The 'info' field should contain the infoType and
-                                                  | infoText arguments. infoType is one of: standard, long, important, banner or noformat.
-                                                  | infoText is the text to display.
-                                                  | InfoType: $infType
-                                                  | InfoText: $infText
-       """.stripMargin).asLeft
-  }
+  private lazy val infoOpt: Opt[InformationMessage] =
+    for {
+      infoText <- optInfoText
+      informationMessage <- infoType match {
+                              case IsInfoType(iType) => InformationMessage(iType, infoText).asRight
+                              case _ =>
+                                UnexpectedState(
+                                  s"$infoType is invalid value of infoType. infoType must be one of: standard, long, important, banner or noformat"
+                                ).asLeft
+                            }
+    } yield informationMessage
 
   private lazy val timeOpt: Opt[Time] = (ranges, intervalMins) match {
     case (Some(ranges), Some(mins)) if !ranges.exists(r => r.startTime.time.isAfter(r.endTime.time)) && mins >= 1 =>
