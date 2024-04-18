@@ -29,19 +29,21 @@ sealed trait Expr {
     case Multiply(l, r)      => Multiply(l.rewrite, r.rewrite)
     case Subtraction(l, r)   => Subtraction(l.rewrite, r.rewrite)
     case Divide(l, r)        => Divide(l.rewrite, r.rewrite)
+    case HideZeroDecimals(l) => HideZeroDecimals(l.rewrite)
     case Sum(l)              => Sum(l.rewrite)
     case otherwise           => otherwise
   }
 
   def ifElses: List[IfElse] = this match {
-    case Else(l, r)        => l.ifElses ++ r.ifElses
-    case Add(l, r)         => l.ifElses ++ r.ifElses
-    case Multiply(l, r)    => l.ifElses ++ r.ifElses
-    case Subtraction(l, r) => l.ifElses ++ r.ifElses
-    case Divide(l, r)      => l.ifElses ++ r.ifElses
-    case Period(l, r)      => l.ifElses ++ r.ifElses
-    case Sum(l)            => l.ifElses
-    case PeriodExt(p, _)   => p.ifElses
+    case Else(l, r)          => l.ifElses ++ r.ifElses
+    case Add(l, r)           => l.ifElses ++ r.ifElses
+    case Multiply(l, r)      => l.ifElses ++ r.ifElses
+    case Subtraction(l, r)   => l.ifElses ++ r.ifElses
+    case Divide(l, r)        => l.ifElses ++ r.ifElses
+    case HideZeroDecimals(l) => l.ifElses
+    case Period(l, r)        => l.ifElses ++ r.ifElses
+    case Sum(l)              => l.ifElses
+    case PeriodExt(p, _)     => p.ifElses
     case i @ IfElse(cond, l, r) =>
       i :: implicitly[LeafExpr[BooleanExpr]]
         .exprs(TemplatePath.root, cond)
@@ -50,14 +52,15 @@ sealed trait Expr {
   }
 
   def constants: List[TranslatableConstant] = this match {
-    case Else(l, r)        => l.constants ++ r.constants
-    case Add(l, r)         => l.constants ++ r.constants
-    case Multiply(l, r)    => l.constants ++ r.constants
-    case Subtraction(l, r) => l.constants ++ r.constants
-    case Divide(l, r)      => l.constants ++ r.constants
-    case Period(l, r)      => l.constants ++ r.constants
-    case Sum(l)            => l.constants
-    case PeriodExt(p, _)   => p.constants
+    case Else(l, r)          => l.constants ++ r.constants
+    case Add(l, r)           => l.constants ++ r.constants
+    case Multiply(l, r)      => l.constants ++ r.constants
+    case Subtraction(l, r)   => l.constants ++ r.constants
+    case Divide(l, r)        => l.constants ++ r.constants
+    case HideZeroDecimals(l) => l.constants
+    case Period(l, r)        => l.constants ++ r.constants
+    case Sum(l)              => l.constants
+    case PeriodExt(p, _)     => p.constants
     case IfElse(cond, l, r) =>
       cond match {
         case Equals(LangCtx, Constant("en")) =>
@@ -76,6 +79,7 @@ final case class Add(field1: Expr, field2: Expr) extends Expr
 final case class Multiply(field1: Expr, field2: Expr) extends Expr
 final case class Subtraction(field1: Expr, field2: Expr) extends Expr
 final case class Divide(field1: Expr, field2: Expr) extends Expr
+final case class HideZeroDecimals(expr: Expr) extends Expr
 final case class IfElse(cond: BooleanExpr, field1: Expr, field2: Expr) extends Expr
 final case class Else(field1: Expr, field2: Expr) extends Expr
 final case class Sum(field1: Expr) extends Expr

@@ -153,6 +153,7 @@ object TopLevelExpressions {
         case Multiply(l, r)                => Multiply(loop(l), loop(r))
         case Subtraction(l, r)             => Subtraction(loop(l), loop(r))
         case Divide(l, r)                  => Divide(loop(l), loop(r))
+        case HideZeroDecimals(l)           => HideZeroDecimals(loop(l))
         case Period(l, r)                  => Period(loop(l), loop(r))
         case Sum(l)                        => Sum(loop(l))
         case PeriodExt(p, pe)              => PeriodExt(loop(p), pe)

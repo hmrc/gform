@@ -330,6 +330,23 @@ class TopLevelExpressionsSuite extends FunSuite {
     )
   }
 
+  test("TopLevelExpressions (16)") {
+    check(
+      Json.obj(
+        "foobar" -> "3.00",
+        "foo"    -> "bar",
+        "bar"    -> "baz",
+        "baz"    -> "hideZeroDecimals(foobar + 2.00)"
+      ),
+      Map(
+        ExpressionId("foobar") -> Constant("3.00"),
+        ExpressionId("foo")    -> HideZeroDecimals(Add(Constant("3.00"), Constant("2.00"))),
+        ExpressionId("bar")    -> HideZeroDecimals(Add(Constant("3.00"), Constant("2.00"))),
+        ExpressionId("baz")    -> HideZeroDecimals(Add(Constant("3.00"), Constant("2.00")))
+      )
+    )
+  }
+
   test("TopLevelExpressions - explicit type (1)") {
     check(
       Json.obj(
@@ -422,6 +439,27 @@ class TopLevelExpressionsSuite extends FunSuite {
   }
 
   test("TopLevelExpressions - self-referencing") {
+    expressionsContextFromJson(
+      Json.obj(
+        "foo" -> "bar",
+        "bar" -> "bar",
+        "baz" -> "foo"
+      )
+    ) { exprSubstitutions =>
+      TopLevelExpressions.resolveReferences(exprSubstitutions) match {
+        case Left(node) =>
+          assertEquals(
+            node,
+            UnexpectedState(
+              "The expression bar cannot reference itself"
+            )
+          )
+        case Right(iterable) => fail("Failed self-referencing detection")
+      }
+    }
+  }
+
+  test("TopLevelExpressions - hideZeroDecimals") {
     expressionsContextFromJson(
       Json.obj(
         "foo" -> "bar",

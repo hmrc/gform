@@ -1169,4 +1169,16 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     )
   }
 
+  it should "parse the hideZeroDecimals function" in {
+    val res = ValueParser.validate("${hideZeroDecimals(age)}")
+
+    res.toOption.value should be(TextExpression(HideZeroDecimals(FormCtx("age"))))
+  }
+
+  it should "parse the hideZeroDecimals function with other functions" in {
+    val res = ValueParser.validate("${hideZeroDecimals(age + 2)}")
+
+    res.toOption.value should be(TextExpression(HideZeroDecimals(Add(FormCtx("age"), Constant("2")))))
+  }
+
 }
