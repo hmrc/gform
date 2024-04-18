@@ -140,7 +140,7 @@ class SubstituteExpressionsSuite extends FunSuite with FormTemplateSupport {
             expectedTodayCtx,
             DateCtx(DateValueExpr(ExactDateExprValue(2014, 12, 31)))
           )
-          assertEquals(page.title.interpolations, expected)
+          assertEquals(page.title.internals.flatMap(_.interpolations), expected)
         case unexpectedSection => fail(s"Unexpected Section $unexpectedSection")
       }
     }
@@ -194,7 +194,7 @@ class SubstituteExpressionsSuite extends FunSuite with FormTemplateSupport {
             expectedAdd,
             expectedAdd
           )
-          assertEquals(page.title.interpolations, expected)
+          assertEquals(page.title.internals.flatMap(_.interpolations), expected)
         case unexpectedSection => fail(s"Unexpected Section $unexpectedSection")
       }
     }
