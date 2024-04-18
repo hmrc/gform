@@ -107,7 +107,7 @@ object FormTemplateValidator {
   }
 
   def validateInstructions(pages: List[Page]): ValidationResult =
-    if (!pages.flatMap(_.instruction).flatMap(_.name).forall(_.nonEmpty)) {
+    if (!pages.flatMap(_.instruction).flatMap(_.name).forall(_.allNonEmpty)) {
       Invalid("One or more sections have instruction attribute with empty names")
     } else if (!pages.flatMap(_.instruction.flatMap(_.order)).forall(_ >= 0)) {
       Invalid("One or more sections have instruction attribute with negative order")
@@ -117,7 +117,7 @@ object FormTemplateValidator {
         .size
     ) {
       Invalid("One or more sections have instruction attribute with duplicate order value")
-    } else if (!pages.flatMap(_.fields).flatMap(_.instruction).flatMap(_.name).forall(_.nonEmpty)) {
+    } else if (!pages.flatMap(_.fields).flatMap(_.instruction).flatMap(_.name).forall(_.allNonEmpty)) {
       Invalid("One or more section fields have instruction attribute with empty names")
     } else if (!pages.flatMap(_.fields).flatMap(_.instruction.flatMap(_.order)).forall(_ >= 0)) {
       Invalid("One or more section fields have instruction attribute with negative order")
@@ -271,12 +271,12 @@ object FormTemplateValidator {
 
     def checkEmpty(maybeSmartString: Option[SmartString]): Boolean =
       maybeSmartString.fold(false) { smartString =>
-        smartString.localised.m.values.exists(_.trim.isEmpty)
+        smartString.internals.forall(_.localised.m.values.exists(_.trim.isEmpty))
       }
 
     def checkPage(page: Page): ValidationResult =
       if (checkEmpty(page.shortName)) {
-        val title = page.title.rawValue(LangADT.En)
+        val title = page.title.defaultRawValue(LangADT.En)
         Invalid(
           s"shortName is empty for title: '$title'. If you want to hide page title on summary page, use 'presentationHint': 'invisiblePageTitle' instead."
         )
@@ -332,7 +332,7 @@ object FormTemplateValidator {
       noPIITitle: Option[SmartString],
       piiErrorMessage: PIIErrorMessage
     ): List[(PIIErrorMessage, PIIFormComponentId)] = {
-      val exprs = noPIITitle.fold(title.interpolations)(_ => List.empty)
+      val exprs = noPIITitle.fold(title.internals.flatMap(_.interpolations))(_ => List.empty)
       val fcIds = exprRefs.collect { case (e, fcId) if exprs.contains(e) => fcId }
       fcIds.filterNot(idsWithNoPII.contains).map(_.value).distinct.map(x => (piiErrorMessage, x))
     }
@@ -669,16 +669,20 @@ object FormTemplateValidator {
 
   def validatePageRedirects(sectionsList: List[Page]): ValidationResult = {
     val redirectCtxs: List[RedirectCtx] = sectionsList.flatMap(_.redirects.toList).flatMap(_.toList)
-    redirectCtxs.map { redirectCtx =>
-      val rawValue = redirectCtx.redirectUrl.rawValue(LangADT.En).trim
-      val singleExpressionOnly = rawValue === "{0}"
-      val validationResult: ValidationResult = redirectCtx.redirectUrl.interpolations match {
-        case Nil                                       => Valid // Free text is ok
-        case LinkCtx(_) :: Nil if singleExpressionOnly => Valid
-        case _                                         => Invalid(s"redirectUrl: $rawValue is not valid. Only 'text only' or single link expression is allowed")
+    redirectCtxs
+      .flatMap(redirectCtx => redirectCtx.redirectUrl.internals)
+      .map { ss =>
+        val rawValue = ss.rawValue(LangADT.En).trim
+        val singleExpressionOnly = rawValue === "{0}"
+        val validationResult: ValidationResult = ss.interpolations match {
+          case Nil                                       => Valid // Free text is ok
+          case LinkCtx(_) :: Nil if singleExpressionOnly => Valid
+          case _ =>
+            Invalid(s"redirectUrl: $rawValue is not valid. Only 'text only' or single link expression is allowed")
+        }
+        validationResult
       }
-      validationResult
-    }.combineAll
+      .combineAll
   }
 
   def validateLabel(sectionsList: List[Page]): ValidationResult = {
@@ -688,7 +692,10 @@ object FormTemplateValidator {
       validateChoice(sectionsList, check, "more than one options in the choice component")
     }
     def isEmptyLabel(label: SmartString): Boolean =
-      label.rawValue(LangADT.En).trim == "" || label.rawValue(LangADT.Cy).trim == ""
+      label.internals
+        .forall(internalSmartString =>
+          internalSmartString.rawValue(LangADT.En).trim === "" || internalSmartString.rawValue(LangADT.Cy).trim === ""
+        )
 
     val validationResults = sectionsList.flatMap { page =>
       (page.allFormComponents ++ page.fields).collect {
@@ -1232,7 +1239,7 @@ object FormTemplateValidator {
 
     def checkComponentTypes(page: Page): List[ValidationResult] = {
       val reason =
-        s"AddToList, '${page.title.rawValue(LangADT.En)}', cannot contains fields in defaultPage other than Info type. " +
+        s"AddToList, '${page.title.defaultRawValue(LangADT.En)}', cannot contains fields in defaultPage other than Info type. " +
           s"All fields in defaultPage for AddToList must be Info or Table or MiniSummary type."
 
       page.fields map { fc => isViewOnlyComponent(fc, reason) }
@@ -1264,7 +1271,7 @@ object FormTemplateValidator {
         }
       ) :+ summarySection.footer :+ summarySection.header
 
-      smartStrings.map { s =>
+      smartStrings.flatMap(_.internals).map { s =>
         if (s.localised.m.values.exists(_.contains("/submissions/summary/pdf/")))
           Invalid(
             "`/submissions/summary/pdf/${form.id}` is deprecated. Please use `${link.printSummaryPdf}` instead"

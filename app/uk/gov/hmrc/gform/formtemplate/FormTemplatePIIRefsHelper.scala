@@ -56,7 +56,7 @@ object FormTemplatePIIRefsHelper {
 
     titles.flatMap { title =>
       val smartString = JsString(title).as[SmartString]
-      val smartStringRefs = smartString.interpolations.flatMap(extractRefs)
+      val smartStringRefs = smartString.internals.flatMap(_.interpolations.flatMap(extractRefs))
       val filteredSmartStringRefs =
         if (filtersLower.isEmpty) smartStringRefs
         else smartStringRefs.filter(fcRef => filtersLower.exists(fcRef.toLowerCase.contains))

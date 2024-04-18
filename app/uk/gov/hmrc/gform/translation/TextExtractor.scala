@@ -146,9 +146,10 @@ class Translator(json: Json, paths: List[List[Instruction]], val topLevelExprDat
       }
     }
 
+    val smartStringPaths = paths.map(Instruction.TraverseArray :: _) ++ paths
     val topCursor: HCursor = json.hcursor
     val cursorOps: List[List[CursorOp]] =
-      paths.flatMap { path =>
+      smartStringPaths.flatMap { path =>
         loop(path, topCursor).map(generateOpHistory)
       }
 
@@ -228,18 +229,23 @@ class Translator(json: Json, paths: List[List[Instruction]], val topLevelExprDat
         val aCursor = f(acc)
         aCursor.withFocus { json =>
           val path = CursorOp.opsToPath(aCursor.history)
-          val attemptLang = aCursor.as[Lang]
-          val attemptString = aCursor.as[String]
-          lookup.get(path) match {
-            case None => throw new Exception(s"Path $path is not translated. Focus $json")
-            case Some(row) =>
-              val tran = Json.obj(
-                "en" -> Json.fromString(row.en),
-                "cy" -> Json.fromString(row.cy)
-              )
-              if (attemptString.isRight) tran
-              else if (attemptLang.isRight) json.deepMerge(tran)
-              else throw new Exception(s"Cannot translate path: $path. Invalid focus: $json")
+          if (json.isArray) {
+            json
+          } else {
+            val attemptLang = aCursor.as[Lang]
+            val attemptString = aCursor.as[String]
+            lookup.get(path) match {
+              case None => throw new Exception(s"Path $path is not translated. Focus $json")
+              case Some(row) =>
+                val tran = Json.obj(
+                  "en" -> Json.fromString(row.en),
+                  "cy" -> Json.fromString(row.cy)
+                )
+                if (attemptString.isRight) tran
+                else if (attemptLang.isRight) json.deepMerge(tran)
+                else throw new Exception(s"Cannot translate path: $path. Invalid focus: $json")
+            }
+
           }
         }.root
       }
@@ -255,23 +261,25 @@ class Translator(json: Json, paths: List[List[Instruction]], val topLevelExprDat
       }
 
   private def smartStringsRows(cursors: List[HCursor => ACursor]): List[Row] =
-    cursors.foldLeft(List.empty[Row]) { case (rows, f) =>
-      val aCursor = f(json.hcursor)
-      val attemptLang = aCursor.as[Lang]
-      val attemptString = aCursor.as[String]
-      val path = CursorOp.opsToPath(aCursor.history)
-      attemptString
-        .map { en =>
-          Row(path, TextExtractor.escapeNewLine(en.trim), "") :: rows
-        }
-        .orElse(attemptLang.map { lang =>
-          Row(path, TextExtractor.escapeNewLine(lang.en.trim), TextExtractor.escapeNewLine(lang.cy.trim)) :: rows
-        })
-        .toOption
-        .getOrElse(rows)
-        .sortBy(_.path)
+    cursors
+      .foldLeft(List.empty[Row]) { case (rows, f) =>
+        val aCursor = f(json.hcursor)
+        val attemptLang = aCursor.as[Lang]
+        val attemptString = aCursor.as[String]
+        val path = CursorOp.opsToPath(aCursor.history)
+        attemptString
+          .map { en =>
+            Row(path, TextExtractor.escapeNewLine(en.trim), "") :: rows
+          }
+          .orElse(attemptLang.map { lang =>
+            Row(path, TextExtractor.escapeNewLine(lang.en.trim), TextExtractor.escapeNewLine(lang.cy.trim)) :: rows
+          })
+          .toOption
+          .getOrElse(rows)
+          .sortBy(_.path)
 
-    }
+      }
+      .distinct
 
   def fetchRows: List[Row] = smartStringsRows(smartStringCursors) ++ topLevelExprData.toRows
 

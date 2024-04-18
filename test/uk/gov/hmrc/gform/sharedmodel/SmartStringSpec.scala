@@ -161,6 +161,83 @@ class SmartStringSpec extends Spec with ScalaCheckDrivenPropertyChecks {
     }
   }
 
+  it should "read a SmartStringCond" in {
+
+    val jsonString =
+      """|[{
+         |      "includeIf": "${foo contains 0}",
+         |      "en": "Englishstart ${var1} middleEnglish   ${var2} englishend",
+         |      "cy": "Welshstart ${var1}   ${var3} welshend"
+         |    }, {
+         |      "en": "${if true then 'foo' else var1} Can you pay ${var3} in full within 30 days?",
+         |      "cy": "Can you pay ${var4} in full within 30 days?"
+         | }]""".stripMargin
+
+    val expected: SmartString = SmartString.SmartStringCond(
+      List(
+        (
+          Contains(FormCtx("foo"), Constant("0")),
+          SmartStringInternal(
+            LocalisedString(
+              Map(
+                LangADT.En -> "Englishstart {0} middleEnglish   {1} englishend",
+                LangADT.Cy -> "Welshstart {2}   {3} welshend"
+              )
+            ),
+            List(FormCtx("var1"), FormCtx("var2"), FormCtx("var1"), FormCtx("var3"))
+          )
+        )
+      ),
+      SmartStringInternal(
+        LocalisedString(
+          Map(
+            LangADT.En -> "{0} Can you pay {1} in full within 30 days?",
+            LangADT.Cy -> "Can you pay {2} in full within 30 days?"
+          )
+        ),
+        List(IfElse(IsTrue, Constant("foo"), FormCtx("var1")), FormCtx("var3"), FormCtx("var4"))
+      )
+    )
+
+    verifyRead(
+      expected,
+      jsonString
+    )
+
+  }
+
+  it should " not read a SmartStringConditional with no includeIfs" in {
+    val jsonString =
+      """|[{
+         |      "en": "Englishstart ${var1} middleEnglish   ${var2} englishend",
+         |      "cy": "Welshstart ${var1}   ${var3} welshend"
+         |    }, {
+         |      "en": "${if true then 'foo' else var1} Can you pay ${var3} in full within 30 days?",
+         |      "cy": "Can you pay ${var4} in full within 30 days?"
+         | }]""".stripMargin
+    verifyReadFailure[SmartString](
+      "Failed to parse includeIf: includeIf is missing",
+      jsonString
+    )
+  }
+
+  it should "not read a SmartStringConditional with all includeIfs" in {
+    val jsonString =
+      """|[{
+         |      "includeIf": "${foo contains 0}",
+         |      "en": "Englishstart ${var1} middleEnglish   ${var2} englishend",
+         |      "cy": "Welshstart ${var1}   ${var3} welshend"
+         |    }, {
+         |      "includeIf": "${foo contains 0}",
+         |      "en": "${if true then 'foo' else var1} Can you pay ${var3} in full within 30 days?",
+         |      "cy": "Can you pay ${var4} in full within 30 days?"
+         | }]""".stripMargin
+    verifyReadFailure[SmartString](
+      "An array of objects for a smartString must have at least 1 object without an includeIf",
+      jsonString
+    )
+  }
+
   private def condition(s: String): String =
     s.flatMap { c =>
       if (c >= 32 && c <= 127 && c != '"' && c != '\\' && c != '$') Seq(c)
