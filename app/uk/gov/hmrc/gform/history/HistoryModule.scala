@@ -22,7 +22,7 @@ import uk.gov.hmrc.gform.mongo.MongoModule
 
 class HistoryModule(configModule: ConfigModule, mongoModule: MongoModule)(implicit ex: ExecutionContext) {
   private val formTemplateHistoryRepo: HistoryRepository =
-    new HistoryRepository(mongoModule)
+    new HistoryRepository(mongoModule, configModule.appConfig)
 
   val historyService: HistoryService = new HistoryService(formTemplateHistoryRepo)
 

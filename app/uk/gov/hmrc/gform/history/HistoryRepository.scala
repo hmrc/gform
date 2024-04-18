@@ -20,6 +20,7 @@ import cats.Eq
 import cats.data.EitherT
 import cats.syntax.all._
 import java.time.Instant
+import java.util.concurrent.TimeUnit
 import org.bson.types.ObjectId
 import org.mongodb.scala.bson.conversions.Bson
 import org.mongodb.scala.bson.{ BsonValue, Document }
@@ -28,8 +29,10 @@ import org.mongodb.scala.model.Projections.computed
 import org.mongodb.scala.model.Sorts.descending
 import org.mongodb.scala.model.{ Aggregates, Updates }
 import org.mongodb.scala.model.Filters.equal
+import org.mongodb.scala.model.{ IndexModel, IndexOptions, Indexes }
 import play.api.libs.json.{ Json, OFormat, Reads, Writes }
 import scala.concurrent.{ ExecutionContext, Future }
+import uk.gov.hmrc.gform.config.AppConfig
 import uk.gov.hmrc.gform.core.FOpt
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.mongo.MongoModule
@@ -88,12 +91,20 @@ object HistoryOverview {
   }
 }
 
-class HistoryRepository(mongoModule: MongoModule)(implicit ec: ExecutionContext)
+class HistoryRepository(mongoModule: MongoModule, appConfig: AppConfig)(implicit ec: ExecutionContext)
     extends PlayMongoRepository[FormTemplateHistory](
       collectionName = "history",
       mongoComponent = mongoModule.mongoComponent,
       domainFormat = FormTemplateHistory.mongoFormat,
-      indexes = Seq()
+      indexes = Seq(
+        IndexModel(
+          Indexes.ascending("createdAt"),
+          IndexOptions()
+            .background(false)
+            .name("createdAtIndex")
+            .expireAfter(appConfig.`history-ttl`.toMillis, TimeUnit.MILLISECONDS)
+        )
+      )
     ) {
 
   def allFormTemplateIds(): Future[List[FormTemplateRawId]] =
