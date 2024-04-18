@@ -2006,7 +2006,6 @@ class JsonSchemeValidatorSpec extends FunSuite {
       "Error at ID <testId: choices/1>: Property choices expected type Array of either Strings or JSONObjects with required keys [en] and optional keys [cy, dynamic, value, hint, includeIf]",
       "Error at ID <testId: choices/0>: Property includeIf expected type [String], found [Null]",
       "Error at ID <testId: choices/0>: Property cy expected type [String], found [Boolean]",
-      "Error at ID <testId: choices/0>: Property hint expected type String or JSONObject with structure {en: String} or {en: String, cy: String}",
       "Error at ID <testId: choices/0>: Property en expected type [String], found [Integer]",
       "Error at ID <testId: choices/0>: Property dynamic expected type [String], found [JSONObject]",
       "Error at ID <testId: choices/0>: Property value expected type [String], found [Integer]",
@@ -2592,7 +2591,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
             "en": "en header",
             "cy": "cy header"
           },
-          "footer": []
+          "footer": false
         }
       """
 
@@ -3057,7 +3056,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
             "en": "en header",
             "cy": "cy header"
           },
-          "footer": []
+          "footer": false
         }
       """
 
@@ -3556,7 +3555,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
               "en": "English exit message",
               "cy": "Welsh exit message"
             },
-            "title": []
+            "title": false
           }
         }"""
 
@@ -3604,7 +3603,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val testProperties =
       json"""
         {
-          "title": [],
+          "title": false,
           "shortName": {
             "en": "English short name",
             "cy": "Welsh short name"
@@ -3960,7 +3959,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val testProperties =
       json"""
         {
-          "title": [],
+          "title": false,
           "shortName": {
             "en": "English short name",
             "cy": "Welsh short name"

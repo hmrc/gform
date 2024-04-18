@@ -1192,22 +1192,52 @@
       }
     },
     "stringOrEnCyObject": {
-      "type": [
-        "string",
-        "object"
-      ],
-      "properties": {
-        "en": {
+      "oneOf": [
+        {
           "type": "string"
         },
-        "cy": {
-          "type": "string"
+        {
+          "type": "object",
+          "properties": {
+            "en": {
+              "type": "string"
+            },
+            "cy": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "en"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "patternProperties": {
+              "^(_)": {
+                "type": "string"
+              }
+            },
+            "properties": {
+              "includeIf": {
+                "type": "string"
+              },
+              "en": {
+                "type": "string"
+              },
+              "cy": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "en"
+            ],
+            "additionalProperties": false
+          }
         }
-      },
-      "required": [
-        "en"
-      ],
-      "additionalProperties": false
+      ]
     }
   }
 }

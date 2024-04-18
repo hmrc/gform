@@ -33,6 +33,7 @@ import uk.gov.hmrc.gform.formtemplate.FormComponentMakerService._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.JsonUtils._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.{ LangADT, LocalisedString, SmartString }
+import SmartString._
 
 case class MES(
   mandatory: Boolean,
@@ -445,15 +446,8 @@ class FormComponentMaker(json: JsValue) {
   private lazy val addressOpt: Opt[Address] = {
 
     val addressValueOpt = for {
-      maybeValue <- toOpt((json \ "value").validateOpt[SmartString], "/value")
-      expr <- maybeValue.fold[Opt[Option[Expr]]](None.asRight) {
-                case s: SmartString if s.interpolations.size != 1 =>
-                  UnexpectedState("address value should contain only one expression").asLeft
-                case s: SmartString if !s.nonEmpty =>
-                  UnexpectedState("address value should not have any strings").asLeft
-                case s => s.interpolations.headOption.asRight
-              }
-    } yield expr
+      maybeValue <- toOpt((json \ "value").validateOpt[TextExpression], "/value")
+    } yield maybeValue.map(_.expr)
 
     import Address.Configurable._
     for {
@@ -619,7 +613,7 @@ class FormComponentMaker(json: JsValue) {
           def rcFromSelection(selections: List[Boolean]): Either[String, RevealingChoice] = {
             val hints =
               optionHints.fold[List[Option[SmartString]]](List.fill(revealingFields.size)(None))(
-                _.toList.map(hint => if (hint.nonEmpty) Some(hint) else None)
+                _.toList.map(hint => if (hint.allNonEmpty) Some(hint) else None)
               )
 
             val revealingChoiceElements: List[RevealingChoiceElement] =
@@ -724,15 +718,8 @@ class FormComponentMaker(json: JsValue) {
   private val overseasAddressOpt: Opt[OverseasAddress] = {
 
     val valueOpt = for {
-      maybeValue <- toOpt((json \ "value").validateOpt[SmartString], "/value")
-      expr <- maybeValue.fold[Opt[Option[Expr]]](None.asRight) {
-                case s: SmartString if s.interpolations.size != 1 =>
-                  UnexpectedState("overseas address value should contain only one expression").asLeft
-                case s: SmartString if !s.nonEmpty =>
-                  UnexpectedState("overseas address value should not have any strings").asLeft
-                case s => s.interpolations.headOption.asRight
-              }
-    } yield expr
+      maybeValue <- toOpt((json \ "value").validateOpt[TextExpression], "/value")
+    } yield maybeValue.map(_.expr)
 
     import OverseasAddress.Configurable._
     for {
