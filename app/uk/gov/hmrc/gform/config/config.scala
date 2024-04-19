@@ -33,7 +33,8 @@ case class AppConfig(
   formMaxAttachments: Int,
   formMaxAttachmentTotalSizeMB: Int,
   `upscan-confirmation-ttl`: FiniteDuration,
-  restrictedFileExtensionList: List[String]
+  restrictedFileExtensionList: List[String],
+  `history-ttl`: FiniteDuration
 ) {
 
   def restrictedFileExtensions: List[FileExtension] =
