@@ -26,6 +26,7 @@ import play.api.libs.functional.syntax._
 import play.api.libs.json._
 import uk.gov.hmrc.gform.core.parsers.ValueParser
 import uk.gov.hmrc.gform.formtemplate.FormComponentMakerService.{ IsFalseish, IsTrueish }
+import uk.gov.hmrc.gform.formtemplate.TableHeaderCellMaker
 import uk.gov.hmrc.gform.sharedmodel.{ LocalisedString, SmartString, ValueClassFormat }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.DisplayWidth.DisplayWidth
 import uk.gov.hmrc.gform.sharedmodel.structuredform.{ FieldName, RoboticsXml, StructuredFormDataFieldNamePurpose }
@@ -496,7 +497,13 @@ object TableHeaderCell {
   implicit val leafExprs: LeafExpr[TableHeaderCell] = (path: TemplatePath, r: TableHeaderCell) =>
     LeafExpr(path + "label", r.label)
 
-  implicit val format: Format[TableHeaderCell] = derived.oformat()
+  private val tableHeaderCellReads: Reads[TableHeaderCell] = Reads(json =>
+    new TableHeaderCellMaker(json)
+      .optTableHeaderCell()
+      .fold(us => JsError(us.toString), as => JsSuccess(as))
+  )
+
+  implicit val format: OFormat[TableHeaderCell] = OFormatWithTemplateReadFallback(tableHeaderCellReads)
 }
 
 case class TableComp(
