@@ -37,9 +37,7 @@ class NormaliseJsonSuite extends FunSuite {
     "tasklist-choice",
     "file-upload-with-object-store",
     "choice-with-dynamic-options",
-    "choices-in-group",
-    "table-comp-in-task-declaration-section",
-    "table-comp-in-add-to-list"
+    "choices-in-group"
   )
 
   table.foreach { case fileName =>
