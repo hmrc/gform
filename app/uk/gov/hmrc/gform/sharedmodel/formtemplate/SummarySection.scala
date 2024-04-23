@@ -17,7 +17,8 @@
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
 import cats.data.NonEmptyList
-import play.api.libs.json.{ JsValue, Json, OFormat }
+import play.api.libs.json._
+import uk.gov.hmrc.gform.formtemplate.SummarySectionMaker
 import uk.gov.hmrc.gform.sharedmodel.{ LangADT, SmartString }
 
 case class SummarySection(
@@ -29,7 +30,8 @@ case class SummarySection(
   fields: Option[NonEmptyList[FormComponent]],
   displayWidth: LayoutDisplayWidth.LayoutDisplayWidth = LayoutDisplayWidth.M,
   includeIf: Option[IncludeIf],
-  pdf: Option[PdfCtx]
+  pdf: Option[PdfCtx],
+  excludeFromPdf: Option[List[FormComponentId]]
 )
 
 object SummarySection extends JsonUtils {
@@ -42,7 +44,16 @@ object SummarySection extends JsonUtils {
       LeafExpr(path + "continueLabel", t.continueLabel) ++
       LeafExpr(path + "fields", t.fields) ++
       LeafExpr(path + "includeIf", t.includeIf) ++
-      LeafExpr(path + "pdf", t.pdf)
+      LeafExpr(path + "pdf", t.pdf) ++
+      LeafExpr(path + "excludeFromPdf", t.excludeFromPdf)
+
+  private val templateReads: Reads[SummarySection] = Reads(json =>
+    new SummarySectionMaker(json)
+      .optSummarySection()
+      .fold(us => JsError(us.toString), as => JsSuccess(as))
+  )
+
+  implicit val format: OFormat[SummarySection] = OFormatWithTemplateReadFallback(templateReads)
 
   def defaultJson(formCategory: FormCategory): JsValue = {
 
@@ -64,7 +75,4 @@ object SummarySection extends JsonUtils {
       )
     )
   }
-
-  val jsWithDefaults = Json.using[Json.WithDefaultValues]
-  implicit val format: OFormat[SummarySection] = jsWithDefaults.format[SummarySection]
 }

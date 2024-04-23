@@ -17,6 +17,7 @@
 package uk.gov.hmrc.gform.sharedmodel.formtemplate.generators
 
 import org.scalacheck.Gen
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.FormComponentGen.formComponentIdGen
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.SectionGen.pdfContextGen
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ LayoutDisplayWidth, SummarySection }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.SmartStringGen.smartStringGen
@@ -24,14 +25,26 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.SmartStringGen.smar
 trait SummarySectionGen {
   def summarySectionGen: Gen[SummarySection] =
     for {
-      title         <- smartStringGen
-      caption       <- Gen.option(smartStringGen)
-      header        <- smartStringGen
-      footer        <- smartStringGen
-      continueLabel <- Gen.option(smartStringGen)
-      fields        <- Gen.option(PrimitiveGen.oneOrMoreGen(FormComponentGen.formComponentGen()))
-      pdf           <- Gen.option(pdfContextGen)
-    } yield SummarySection(title, caption, header, footer, continueLabel, fields, LayoutDisplayWidth.M, None, pdf)
+      title          <- smartStringGen
+      caption        <- Gen.option(smartStringGen)
+      header         <- smartStringGen
+      footer         <- smartStringGen
+      continueLabel  <- Gen.option(smartStringGen)
+      fields         <- Gen.option(PrimitiveGen.oneOrMoreGen(FormComponentGen.formComponentGen()))
+      pdf            <- Gen.option(pdfContextGen)
+      excludeFromPdf <- Gen.option(PrimitiveGen.zeroOrMoreGen(formComponentIdGen))
+    } yield SummarySection(
+      title,
+      caption,
+      header,
+      footer,
+      continueLabel,
+      fields,
+      LayoutDisplayWidth.M,
+      None,
+      pdf,
+      excludeFromPdf
+    )
 }
 
 object SummarySectionGen extends SummarySectionGen

@@ -490,6 +490,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
       None,
       LayoutDisplayWidth.M,
       None,
+      None,
       None
     ),
     None,

@@ -786,6 +786,9 @@
         "infoType": {
           "type": "string"
         },
+        "excludeFromPdf": {
+          "type": "boolean"
+        },
         "instruction": {
           "type": "object"
         },
