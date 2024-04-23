@@ -34,6 +34,10 @@ sealed trait ConstructAttribute extends Product with Serializable
 object ConstructAttribute {
   final case class AsIs(value: Fetch) extends ConstructAttribute
   final case class Concat(value: List[Fetch]) extends ConstructAttribute
+  // Unlike Concat, Combine does not specify how to render values from the fetches.
+  // It only retrieves the data from the fetches
+  // and defers the rendering to the service that will utilize the data.
+  final case class Combine(value: List[(DataRetrieve.Attribute, Fetch)]) extends ConstructAttribute
 
   implicit val format: OFormat[ConstructAttribute] = derived.oformat()
 }

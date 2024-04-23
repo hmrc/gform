@@ -222,36 +222,67 @@ object DataRetrieveDefinitions {
     )
   )
 
-  val companyRegistrationNumber = DataRetrieveDefinition(
-    DataRetrieve.Type("companyRegistrationNumber"),
-    Attr.FromObject(
-      List(
-        AttributeInstruction(
-          DataRetrieve.Attribute("companyName"),
-          ConstructAttribute.AsIs(Fetch(List("company_name")))
-        ),
-        AttributeInstruction(
-          DataRetrieve.Attribute("companyStatus"),
-          ConstructAttribute.AsIs(Fetch(List("company_status")))
-        ),
-        AttributeInstruction(
-          DataRetrieve.Attribute("registeredOfficeAddress"),
-          ConstructAttribute.Concat(
-            List(
-              Fetch(List("registered_office_address", "address_line_1")),
-              Fetch(List("registered_office_address", "address_line_2")),
-              Fetch(List("registered_office_address", "postal_code")),
-              Fetch(List("registered_office_address", "locality")),
-              Fetch(List("registered_office_address", "region"))
+  val companyRegistrationNumber =
+    DataRetrieveDefinition(
+      DataRetrieve.Type("companyRegistrationNumber"),
+      Attr.FromObject(
+        List(
+          AttributeInstruction(
+            DataRetrieve.Attribute("companyName"),
+            ConstructAttribute.AsIs(Fetch(List("company_name")))
+          ),
+          AttributeInstruction(
+            DataRetrieve.Attribute("companyStatus"),
+            ConstructAttribute.AsIs(Fetch(List("company_status")))
+          ),
+          AttributeInstruction(
+            DataRetrieve.Attribute("address_line_1"),
+            ConstructAttribute.AsIs(Fetch(List("registered_office_address", "address_line_1")))
+          ),
+          AttributeInstruction(
+            DataRetrieve.Attribute("address_line_2"),
+            ConstructAttribute.AsIs(Fetch(List("registered_office_address", "address_line_2")))
+          ),
+          AttributeInstruction(
+            DataRetrieve.Attribute("po_box"),
+            ConstructAttribute.AsIs(Fetch(List("registered_office_address", "po_box")))
+          ),
+          AttributeInstruction(
+            DataRetrieve.Attribute("locality"),
+            ConstructAttribute.AsIs(Fetch(List("registered_office_address", "locality")))
+          ),
+          AttributeInstruction(
+            DataRetrieve.Attribute("region"),
+            ConstructAttribute.AsIs(Fetch(List("registered_office_address", "region")))
+          ),
+          AttributeInstruction(
+            DataRetrieve.Attribute("postal_code"),
+            ConstructAttribute.AsIs(Fetch(List("registered_office_address", "postal_code")))
+          ),
+          AttributeInstruction(
+            DataRetrieve.Attribute("country"),
+            ConstructAttribute.AsIs(Fetch(List("registered_office_address", "country")))
+          ),
+          AttributeInstruction(
+            DataRetrieve.Attribute("registeredOfficeAddress"),
+            ConstructAttribute.Combine(
+              List(
+                DataRetrieve.Attribute("address_line_1") -> Fetch(List("registered_office_address", "address_line_1")),
+                DataRetrieve.Attribute("address_line_2") -> Fetch(List("registered_office_address", "address_line_2")),
+                DataRetrieve.Attribute("po_box")         -> Fetch(List("registered_office_address", "po_box")),
+                DataRetrieve.Attribute("locality")       -> Fetch(List("registered_office_address", "locality")),
+                DataRetrieve.Attribute("region")         -> Fetch(List("registered_office_address", "region")),
+                DataRetrieve.Attribute("postal_code")    -> Fetch(List("registered_office_address", "postal_code")),
+                DataRetrieve.Attribute("country")        -> Fetch(List("registered_office_address", "country"))
+              )
             )
           )
         )
+      ),
+      List(
+        Parameter("companyNumber")
       )
-    ),
-    List(
-      Parameter("companyNumber")
     )
-  )
 
   val ninoInsights = DataRetrieveDefinition(
     DataRetrieve.Type("ninoInsights"),
