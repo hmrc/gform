@@ -1,0 +1,108 @@
+{
+  "draftRetrievalMethod": {
+    "showContinueOrDeletePage": "true",
+    "value": "formAccessCodeForAgents"
+  },
+  "formCategory": "default",
+  "languages": [
+    "en"
+  ],
+  "authConfig": {
+    "authModule": "anonymous"
+  },
+  "destinations": {
+    "destinations": [
+      {
+        "includeIf": "true",
+        "id": "transitionToSubmitted",
+        "type": "stateTransition",
+        "requiredState": "Submitted"
+      }
+    ],
+    "acknowledgementSection": {
+      "title": "Your registration has been submitted Genesis",
+      "fields": [],
+      "displayFeedbackLink": true
+    }
+  },
+  "description": "",
+  "allowedFileTypes": [
+    "pdf",
+    "jpg",
+    "xlsx",
+    "ods",
+    "docx",
+    "odt",
+    "pptx",
+    "odp"
+  ],
+  "version": 1,
+  "formKind": {
+    "type": "classic",
+    "sections": [
+      {
+        "fields": [
+          {
+            "id": "fieldA",
+            "label": "Field A",
+            "type": "text",
+            "format": "text"
+          }
+        ],
+        "title": "Page A"
+      }
+    ]
+  },
+  "summarySection": {
+    "footer": {
+      "cy": "##Nawr anfonwch eich ffurflen\n\nMae angen i chi gyflwyno’ch ffurflen ar y sgrin nesaf.\n\nCyn i chi wneud hyn gallwch [argraffu neu gadw copi PDF o’ch atebion (yn agor ffenestr neu dab newydd)](${link.printSummaryPdf}).",
+      "en": "##Now send your form\n\nYou need to submit your form on the next screen.\n\nBefore you do this you can [print or save a PDF copy of your answers (opens in a new window or tab)](${link.printSummaryPdf})."
+    },
+    "excludeFromPdf": [
+      "infoField1",
+      "infoField4"
+    ],
+    "header": "",
+    "fields": [
+      {
+        "id": "infoField1",
+        "type": "info",
+        "excludeFromPdf": true,
+        "label": "",
+        "infoText": "redacted1",
+        "infoType": "noformat"
+      },
+      {
+        "id": "infoField2",
+        "type": "info",
+        "label": "",
+        "excludeFromPdf": false,
+        "infoText": "redacted2",
+        "infoType": "noformat"
+      },
+      {
+        "id": "infoField3",
+        "type": "info",
+        "label": "",
+        "infoText": "redacted3",
+        "infoType": "noformat"
+      },
+      {
+        "id": "infoField4",
+        "type": "info",
+        "label": "",
+        "excludeFromPdf": true,
+        "infoText": "redacted3",
+        "infoType": "noformat"
+      }
+    ],
+    "title": "Check your answers",
+    "continueLabel": "Accept and submit"
+  },
+  "formName": "Test",
+  "emailTemplateId": "al_registration_confirmation",
+  "originalId": "exclude-from-pdf-in-summary-section",
+  "_id": "exclude-from-pdf-in-summary-section",
+  "displayHMRCLogo": false,
+  "parentFormSubmissionRefs": []
+}

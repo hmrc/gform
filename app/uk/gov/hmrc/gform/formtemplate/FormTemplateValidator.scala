@@ -176,6 +176,19 @@ object FormTemplateValidator {
         )
       )
 
+    val summarySectionFcIds: List[FormComponentId] =
+      formTemplate.formKind.fold { _ =>
+        formTemplate.summarySection.fields.fold(List.empty[FormComponentId])(fields => fields.toList.map(_.id))
+      } { taskList =>
+        taskList.sections.toList.flatMap { section =>
+          section.tasks.toList.flatMap { task =>
+            task.summarySection.fold(List.empty[FormComponentId])(ss =>
+              ss.fields.fold(List.empty[FormComponentId])(fields => fields.toList.map(_.id))
+            )
+          }
+        }
+      }
+
     val allFcIds: Set[FormComponentId] = formTemplate.formKind.allSections
       .collect {
         case s: Section.NonRepeatingPage => s.page.allFormComponentIds.toSet
@@ -185,7 +198,7 @@ object FormTemplateValidator {
             .flatMap(_.allFormComponentIds) ::: s.fields.map(_.toList.map(_.id)).getOrElse(Nil)).toSet
       }
       .toSet
-      .flatten
+      .flatten ++ summarySectionFcIds
 
     val allChoiceIds: Set[FormComponentId] = formTemplate.formComponents { case fc @ IsChoice(_) =>
       fc.id

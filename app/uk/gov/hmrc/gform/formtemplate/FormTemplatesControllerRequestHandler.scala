@@ -27,7 +27,7 @@ import uk.gov.hmrc.gform.config.FileInfoConfig
 import uk.gov.hmrc.gform.core.{ FOpt, Opt, fromOptA }
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.history.FormTemplateHistory
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Default, Expr, ExpressionOutput, FormCategory, FormTemplate, FormTemplateRaw, SummarySection }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Default, Expr, ExpressionOutput, FormCategory, FormComponentId, FormTemplate, FormTemplateRaw, SummarySection }
 
 trait RequestHandlerAlg[F[_]] {
   def handleRequest(templateRaw: FormTemplateRaw): F[Unit]
@@ -207,6 +207,26 @@ object FormTemplatesControllerRequestHandler {
     val transformAndMoveAcknowledgementSection =
       (__ \ "destinations" \ "acknowledgementSection").json
         .copyFrom((__ \ "acknowledgementSection").json.pick.map(transformAcknowledgementSection)) orElse Reads
+        .pure(
+          Json.obj()
+        )
+
+    val transformExcludeFromPdf = (jsValue: JsValue) => {
+      val jsObject = jsValue.as[JsObject]
+      val maybeExcludeFromPdf = (jsValue \ "fields").asOpt[List[JsValue]].flatMap { fieldList =>
+        val formComponentIds = fieldList.flatMap { value =>
+          (value \ "excludeFromPdf").asOpt[Boolean].collect { case true =>
+            (value \ "id").asOpt[FormComponentId]
+          }
+        }.flatten
+        Some(formComponentIds).filter(_.nonEmpty)
+      }
+      maybeExcludeFromPdf.fold(jsObject)(excludeFromPdf => jsObject ++ Json.obj("excludeFromPdf" -> excludeFromPdf))
+    }
+
+    val transformSummarySection =
+      (__ \ "summarySection").json
+        .copyFrom((__ \ "summarySection").json.pick.map(transformExcludeFromPdf)) orElse Reads
         .pure(
           Json.obj()
         )
@@ -537,6 +557,7 @@ object FormTemplatesControllerRequestHandler {
         ensureDisplayHMRCLogo and
         ensureFormCategory and
         ensureLanguages and
+        transformSummarySection and
         ensureSummarySection and
         ensureParentFormSubmissionRefs and
         destinationsOrPrintSection and

@@ -18,7 +18,6 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
 import cats.data.NonEmptyList
 import play.api.libs.json._
-import uk.gov.hmrc.gform.formtemplate.SummarySectionMaker
 import uk.gov.hmrc.gform.sharedmodel.{ LangADT, SmartString }
 
 case class SummarySection(
@@ -47,14 +46,6 @@ object SummarySection extends JsonUtils {
       LeafExpr(path + "pdf", t.pdf) ++
       LeafExpr(path + "excludeFromPdf", t.excludeFromPdf)
 
-  private val templateReads: Reads[SummarySection] = Reads(json =>
-    new SummarySectionMaker(json)
-      .optSummarySection()
-      .fold(us => JsError(us.toString), as => JsSuccess(as))
-  )
-
-  implicit val format: OFormat[SummarySection] = OFormatWithTemplateReadFallback(templateReads)
-
   def defaultJson(formCategory: FormCategory): JsValue = {
 
     val categoryEn = formCategory.localised(LangADT.En)
@@ -75,4 +66,7 @@ object SummarySection extends JsonUtils {
       )
     )
   }
+
+  val jsWithDefaults = Json.using[Json.WithDefaultValues]
+  implicit val format: OFormat[SummarySection] = jsWithDefaults.format[SummarySection]
 }
