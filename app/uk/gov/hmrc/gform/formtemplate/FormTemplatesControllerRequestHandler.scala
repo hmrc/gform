@@ -436,83 +436,6 @@ object FormTemplatesControllerRequestHandler {
         case (Some(_), None, _, None)          => JsSuccess(())
       }
 
-    val invalidExcludeFromPdf = (id: String) =>
-      s"For field '$id', the excludeFromPdf only be defined on main summarySection."
-
-    def excludeFromPdfValidation: JsResult[Unit] =
-      (jsonValue \ "sections").toOption match {
-        case Some(sections) =>
-          def extractErrorMessages(fields: JsArray) =
-            fields.value
-              .map { field =>
-                ((field \ "type").asOpt[String], (field \ "id").as[String], (field \ "excludeFromPdf").asOpt[Boolean])
-              }
-              .flatMap {
-                case (Some(tpe), id, Some(_)) if tpe === "info" => Some(invalidExcludeFromPdf(id))
-                case _                                          => None
-              }
-
-          val fieldsErrors = sections.as[JsArray].value.flatMap { section =>
-            val fields = (section \ "fields").asOpt[JsArray].getOrElse(Json.arr())
-            extractErrorMessages(fields)
-          }
-
-          val atlErrors = sections.as[JsArray].value.flatMap { section =>
-            val pages = (section \ "pages").asOpt[JsArray].getOrElse(Json.arr())
-            val pageFields = pages.value.flatMap { page =>
-              val fields = (page \ "fields").asOpt[JsArray].getOrElse(Json.arr())
-              extractErrorMessages(fields)
-            }
-            pageFields
-          }
-
-          val taskCyaPageErrors = sections.as[JsArray].value.flatMap { section =>
-            val tasks = (section \ "tasks").asOpt[JsArray].getOrElse(Json.arr())
-            val taskSections = tasks.value.flatMap { task =>
-              (task \ "sections").asOpt[JsArray].getOrElse(Json.arr()).value
-            }
-            val cyaPages = taskSections.flatMap { taskSection =>
-              (taskSection \ "cyaPage").asOpt[JsObject]
-            }
-            cyaPages.flatMap { cyaPage =>
-              val fields = (cyaPage \ "fields").asOpt[JsArray].getOrElse(Json.arr())
-              extractErrorMessages(fields)
-            }
-          }
-
-          val taskSummarySectionErrors = sections.as[JsArray].value.flatMap { section =>
-            val tasks = (section \ "tasks").asOpt[JsArray].getOrElse(Json.arr())
-            val taskSummarySections =
-              tasks.value
-                .flatMap(task => (task \ "summarySection").asOpt[JsObject].map(Json.arr(_)).getOrElse(Json.arr()).value)
-            taskSummarySections.flatMap { section =>
-              val fields = (section \ "fields").asOpt[JsArray].getOrElse(Json.arr())
-              extractErrorMessages(fields)
-            }
-          }
-
-          val taskAtlErrors = sections.as[JsArray].value.flatMap { section =>
-            val tasks = (section \ "tasks").asOpt[JsArray].getOrElse(Json.arr())
-            val taskSections = tasks.value.flatMap { task =>
-              (task \ "sections").asOpt[JsArray].getOrElse(Json.arr()).value
-            }
-            val pages = taskSections.flatMap { section =>
-              (section \ "pages").asOpt[JsArray].getOrElse(Json.arr()).value
-            }
-            pages.flatMap { page =>
-              val fields = (page \ "fields").asOpt[JsArray].getOrElse(Json.arr())
-              extractErrorMessages(fields)
-            }
-          }
-
-          val errorMessages =
-            fieldsErrors ++ atlErrors ++ taskCyaPageErrors ++ taskSummarySectionErrors ++ taskAtlErrors
-
-          if (errorMessages.isEmpty) JsSuccess(())
-          else JsError(errorMessages.mkString(" "))
-        case _ => JsSuccess(())
-      }
-
     val dmsFormIdValidations: JsResult[Unit] =
       (jsonValue \ "destinations").toOption match {
         case Some(id) =>
@@ -540,7 +463,7 @@ object FormTemplatesControllerRequestHandler {
         case None => JsSuccess(())
       }
 
-    sectionValidations andKeep dmsFormIdValidations andKeep excludeFromPdfValidation andKeep jsonValue.transform(
+    sectionValidations andKeep dmsFormIdValidations andKeep jsonValue.transform(
       pruneShowContinueOrDeletePage andThen
         pruneAcknowledgementSection andThen
         prunePrintSection andThen

@@ -43,8 +43,7 @@ object SummarySection extends JsonUtils {
       LeafExpr(path + "continueLabel", t.continueLabel) ++
       LeafExpr(path + "fields", t.fields) ++
       LeafExpr(path + "includeIf", t.includeIf) ++
-      LeafExpr(path + "pdf", t.pdf) ++
-      LeafExpr(path + "excludeFromPdf", t.excludeFromPdf)
+      LeafExpr(path + "pdf", t.pdf)
 
   def defaultJson(formCategory: FormCategory): JsValue = {
 
