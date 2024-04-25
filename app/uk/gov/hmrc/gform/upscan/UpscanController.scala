@@ -241,7 +241,7 @@ class UpscanController(
   ): Validated[UpscanValidationFailure, Unit] =
     getFileExtension(fileName).flatMap { fileExtension =>
       FileInfoConfig.fileExtension(contentType).map { expectedExtensions =>
-        if (expectedExtensions.toList.contains(fileExtension)) {
+        if (expectedExtensions.toList.contains(fileExtension.toLowerCase)) {
           Valid(())
         } else Invalid(UpscanValidationFailure.InvalidFileExtension(expectedExtensions.head))
       }
