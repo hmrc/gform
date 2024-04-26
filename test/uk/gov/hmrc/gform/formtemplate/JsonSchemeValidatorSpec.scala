@@ -3257,7 +3257,9 @@ class JsonSchemeValidatorSpec extends FunSuite {
             "cy": "cy footer"
           },
           "fields": [
-            "incorrect"
+            {
+              "excludeFromPdf": false
+            }
           ]
         }
       """
@@ -3267,7 +3269,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
-      "Error at <#/sections/0/tasks/0/summarySection/fields/0>: Property fields expected type Array of [Object], found Array of [String]"
+      "Error at <#/sections/0/tasks/0/summarySection/fields/0>: The excludeFromPdf only be defined on main summarySection"
     )
 
     runInvalidJsonTest(result, expectedResult)
@@ -4068,7 +4070,9 @@ class JsonSchemeValidatorSpec extends FunSuite {
           },
           "includeIf": "1=1",
           "fields": [
-            1
+            {
+              "excludeFromPdf": false
+            }
           ]
         }"""
 
@@ -4077,7 +4081,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
-      "Error at <#/sections/0/tasks/0/declarationSection/fields/0>: Property fields expected type Array of [Object], found Array of [Integer]"
+      "Error at <#/sections/0/tasks/0/declarationSection/fields/0>: The excludeFromPdf only be defined on main summarySection"
     )
 
     runInvalidJsonTest(result, expectedResult)
