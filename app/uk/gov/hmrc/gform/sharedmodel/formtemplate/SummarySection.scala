@@ -17,7 +17,7 @@
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
 import cats.data.NonEmptyList
-import play.api.libs.json.{ JsValue, Json, OFormat }
+import play.api.libs.json._
 import uk.gov.hmrc.gform.sharedmodel.{ LangADT, SmartString }
 
 case class SummarySection(
@@ -29,7 +29,8 @@ case class SummarySection(
   fields: Option[NonEmptyList[FormComponent]],
   displayWidth: LayoutDisplayWidth.LayoutDisplayWidth = LayoutDisplayWidth.M,
   includeIf: Option[IncludeIf],
-  pdf: Option[PdfCtx]
+  pdf: Option[PdfCtx],
+  excludeFromPdf: Option[List[FormComponentId]]
 )
 
 object SummarySection extends JsonUtils {

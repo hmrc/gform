@@ -1,0 +1,76 @@
+{
+  "_id": "exclude-from-pdf-in-summary-section",
+  "formName": "Test",
+  "description": "",
+  "version": 1,
+  "emailTemplateId": "al_registration_confirmation",
+  "authConfig": {
+    "authModule": "anonymous"
+  },
+  "sections": [
+    {
+      "title": "Page A",
+      "fields": [
+        {
+          "id": "fieldA",
+          "label": "Field A",
+          "type": "text",
+          "format": "text"
+        }
+      ]
+    }
+  ],
+  "summarySection": {
+    "title": "Check your answers",
+    "header": "",
+    "footer": {
+      "en": "##Now send your form\n\nYou need to submit your form on the next screen.\n\nBefore you do this you can [print or save a PDF copy of your answers (opens in a new window or tab)](${link.printSummaryPdf}).",
+      "cy": "##Nawr anfonwch eich ffurflen\n\nMae angen i chi gyflwyno’ch ffurflen ar y sgrin nesaf.\n\nCyn i chi wneud hyn gallwch [argraffu neu gadw copi PDF o’ch atebion (yn agor ffenestr neu dab newydd)](${link.printSummaryPdf})."
+    },
+    "continueLabel": "Accept and submit",
+    "fields": [
+      {
+        "id": "infoField1",
+        "type": "info",
+        "excludeFromPdf": true,
+        "label": "",
+        "infoText": "redacted1",
+        "infoType": "noformat"
+      },
+      {
+        "id": "infoField2",
+        "type": "info",
+        "label": "",
+        "excludeFromPdf": false,
+        "infoText": "redacted2",
+        "infoType": "noformat"
+      },
+      {
+        "id": "infoField3",
+        "type": "info",
+        "label": "",
+        "infoText": "redacted3",
+        "infoType": "noformat"
+      },
+      {
+        "id": "infoField4",
+        "type": "info",
+        "label": "",
+        "excludeFromPdf": true,
+        "infoText": "redacted3",
+        "infoType": "noformat"
+      }
+    ]
+  },
+  "acknowledgementSection": {
+    "title": "Your registration has been submitted Genesis",
+    "fields": []
+  },
+  "destinations": [
+    {
+      "id": "transitionToSubmitted",
+      "type": "stateTransition",
+      "requiredState": "Submitted"
+    }
+  ]
+}

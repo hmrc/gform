@@ -529,7 +529,19 @@
                   "fields": {
                     "type": "array",
                     "items": {
-                      "$ref": "#/$defs/fields"
+                      "allOf": [
+                        {
+                          "$ref": "#/$defs/fields"
+                        },
+                        {
+                          "not": {
+                            "required": [
+                              "excludeFromPdf"
+                            ],
+                            "errorMessage": "The excludeFromPdf only be defined on main summarySection"
+                          }
+                        }
+                      ]
                     }
                   }
                 }
@@ -552,7 +564,19 @@
                   "fields": {
                     "type": "array",
                     "items": {
-                      "$ref": "#/$defs/fields"
+                      "allOf": [
+                        {
+                          "$ref": "#/$defs/fields"
+                        },
+                        {
+                          "not": {
+                            "required": [
+                              "excludeFromPdf"
+                            ],
+                            "errorMessage": "The excludeFromPdf only be defined on main summarySection"
+                          }
+                        }
+                      ]
                     }
                   }
                 },
@@ -582,7 +606,19 @@
         "fields": {
           "type": "array",
           "items": {
-            "$ref": "#/$defs/fields"
+            "allOf": [
+              {
+                "$ref": "#/$defs/fields"
+              },
+              {
+                "not": {
+                  "required": [
+                    "excludeFromPdf"
+                  ],
+                  "errorMessage": "The excludeFromPdf only be defined on main summarySection"
+                }
+              }
+            ]
           }
         }
       }
@@ -785,6 +821,9 @@
         },
         "infoType": {
           "type": "string"
+        },
+        "excludeFromPdf": {
+          "type": "boolean"
         },
         "instruction": {
           "type": "object"

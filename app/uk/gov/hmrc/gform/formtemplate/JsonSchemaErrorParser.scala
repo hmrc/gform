@@ -24,8 +24,11 @@ import io.circe.schema.ValidationError
 import uk.gov.hmrc.gform.exceptions.SchemaValidationException
 
 import scala.annotation.tailrec
+import scala.util.matching.Regex
 
 object JsonSchemaErrorParser {
+
+  private val errorMessagePattern: Regex = """.*"errorMessage":"(.*?)".*""".r
 
   def parseErrorMessages(errors: NonEmptyList[ValidationError], schema: Json, json: Json): SchemaValidationException = {
     val parsedErrors: NonEmptyList[ValidationError] = errors.map { error =>
@@ -36,6 +39,8 @@ object JsonSchemaErrorParser {
           } else {
             parseConditionalValidationErrorMessage(schema, json, error)
           }
+        } else if (errorMessagePattern.findFirstIn(error.getMessage).isDefined) {
+          parseErrorMessage(error)
         } else if (errors.filter(_.location === error.location).map(_.keyword).contains("type")) {
           parseTypeError(error, errors, json, schema)
         } else if (error.keyword === "required") {
@@ -53,6 +58,13 @@ object JsonSchemaErrorParser {
 
     SchemaValidationException(parsedErrors.map(_.getMessage).distinct)
   }
+
+  private def parseErrorMessage(error: ValidationError): String =
+    error.getMessage match {
+      case errorMessagePattern(msg) =>
+        constructCustomErrorMessage(error.location, msg)
+      case _ => error.getMessage
+    }
 
   private def parseRequiredError(schema: Json, json: Json, error: ValidationError): String = {
     val errorLocation: String = tryConvertErrorLocationToId(json, error.location, propertyNameInLocation = true)
