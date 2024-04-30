@@ -803,7 +803,7 @@ class DestinationSubmitterSpec
     val submissionConsolidator = mock[SubmissionConsolidatorAlgebra[Possible]]
     val dataStoreSubmitter = mock[DataStoreSubmitterAlgebra[Possible]]
     val sdesRouting = SdesRouting("api-key", "information-type", "recipient-or-sender")
-    val sdesConfig = SdesConfig("base-path", "file-location-url", sdesRouting, sdesRouting, sdesRouting)
+    val sdesConfig = SdesConfig("base-path", "file-location-url", sdesRouting, sdesRouting, sdesRouting, 100L)
     val submitter =
       new DestinationSubmitter[Possible](
         dmsSubmitter,

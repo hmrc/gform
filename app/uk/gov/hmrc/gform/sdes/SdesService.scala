@@ -30,13 +30,14 @@ import uk.gov.hmrc.gform.core._
 import uk.gov.hmrc.gform.envelope.EnvelopeAlgebra
 import uk.gov.hmrc.gform.fileupload.FileUploadService
 import uk.gov.hmrc.gform.history.DateFilter
+import uk.gov.hmrc.gform.objectstore.ObjectStoreAlgebra
 import uk.gov.hmrc.gform.repo.Repo
 import uk.gov.hmrc.gform.sdes.datastore.DataStoreWorkItemAlgebra
 import uk.gov.hmrc.gform.sdes.dms.DmsWorkItemAlgebra
 import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
-import uk.gov.hmrc.gform.sharedmodel.sdes.NotificationStatus.{ FileReady, fromName }
+import uk.gov.hmrc.gform.sharedmodel.sdes.NotificationStatus.{ FileProcessed, FileReady, fromName }
 import uk.gov.hmrc.gform.sharedmodel.sdes._
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 import uk.gov.hmrc.mongo.play.json.Codecs
@@ -84,6 +85,8 @@ trait SdesAlgebra[F[_]] {
 
   def sdesMigration(from: String, to: String): F[UpdateResult]
 
+  def update(notification: CallBackNotification)(implicit hc: HeaderCarrier): F[Unit]
+
 }
 
 class SdesService(
@@ -93,7 +96,8 @@ class SdesService(
   dataStoreWorkItemAlgebra: DataStoreWorkItemAlgebra[Future],
   envelopeAlgebra: EnvelopeAlgebra[Future],
   sdesConfig: SdesConfig,
-  sdesHistoryAlgebra: SdesHistoryAlgebra[Future]
+  sdesHistoryAlgebra: SdesHistoryAlgebra[Future],
+  objectStoreAlgebra: ObjectStoreAlgebra[Future]
 )(implicit
   ec: ExecutionContext
 ) extends SdesAlgebra[Future] {
@@ -313,6 +317,66 @@ class SdesService(
 
   override def sdesMigration(from: String, to: String): Future[UpdateResult] =
     repoSdesSubmission.sdesMigration(from, to)
+
+  override def update(notification: CallBackNotification)(implicit hc: HeaderCarrier): Future[Unit] = {
+    val CallBackNotification(responseStatus, fileName, correlationID, responseFailureReason) = notification
+
+    repoSdesSubmission
+      .find(correlationID)
+      .flatMap(
+        _.map(submission =>
+          if (isLocked(submission)) {
+            Future.failed(new RuntimeException(s"Correlation Id: $correlationID is locked"))
+          } else {
+            val envelopeId = submission.envelopeId
+            logger.info(
+              s"Received callback for envelopeId: ${envelopeId.value}, destination: ${submission.destination.getOrElse("dms")}"
+            )
+            for {
+              _ <- saveSdesSubmission(submission.copy(lockedAt = Some(Instant.now()))) // lock the record
+              updatedSdesSubmission = submission.copy(
+                                        isProcessed = responseStatus === FileProcessed,
+                                        status = responseStatus,
+                                        confirmedAt = Some(Instant.now),
+                                        failureReason = responseFailureReason,
+                                        lockedAt = None
+                                      )
+              _ <- if (!submission.isProcessed) {
+                     for {
+                       _ <- saveSdesSubmission(updatedSdesSubmission)
+                       _ <- if (responseStatus === FileProcessed) { deleteFiles(submission, fileName) }
+                            else Future.unit
+                     } yield ()
+                   } else saveSdesSubmission(submission.copy(lockedAt = None))
+              sdesHistory = SdesHistory.create(
+                              envelopeId,
+                              CorrelationId(correlationID),
+                              responseStatus,
+                              fileName,
+                              responseFailureReason,
+                              None
+                            )
+              _ <- sdesHistoryAlgebra.save(sdesHistory)
+            } yield ()
+          }
+        ).getOrElse(
+          Future.failed(new RuntimeException(s"Correlation id [$correlationID] not found in mongo collection"))
+        )
+      )
+  }
+  private def deleteFiles(submission: SdesSubmission, fileName: String)(implicit hc: HeaderCarrier): Future[Unit] = {
+    val sdesDestination = submission.sdesDestination
+    val envelopeId = submission.envelopeId
+    val paths = sdesDestination.objectStorePaths(envelopeId)
+    sdesDestination match {
+      case SdesDestination.DataStore | SdesDestination.DataStoreLegacy | SdesDestination.HmrcIlluminate =>
+        objectStoreAlgebra.deleteFile(paths.ephemeral, fileName)
+      case SdesDestination.Dms => objectStoreAlgebra.deleteZipFile(envelopeId, paths)
+    }
+  }
+
+  private def isLocked(submission: SdesSubmission): Boolean =
+    submission.lockedAt.exists(_.isAfter(Instant.now().minusMillis(sdesConfig.lockTTL)))
 }
 
 final case class SdesSubmissionsStats(destination: String, count: Long)

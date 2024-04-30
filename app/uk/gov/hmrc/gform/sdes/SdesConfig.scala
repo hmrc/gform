@@ -23,7 +23,8 @@ final case class SdesConfig(
   fileLocationUrl: String,
   dms: SdesRouting,
   hmrcIlluminate: SdesRouting,
-  dataStore: SdesRouting
+  dataStore: SdesRouting,
+  lockTTL: Long
 )
 
 final case class SdesRouting(apiKey: String, informationType: String, recipientOrSender: String)
