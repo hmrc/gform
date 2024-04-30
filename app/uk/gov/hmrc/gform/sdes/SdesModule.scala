@@ -136,7 +136,8 @@ class SdesModule(
       dataStoreWorkItemService,
       envelopeModule.envelopeService,
       configModule.sdesConfig,
-      sdesHistoryService
+      sdesHistoryService,
+      objectStoreModule.objectStoreService
     )
 
   private val lockRepoSdesAlert: MongoLockRepository = new MongoLockRepository(
@@ -172,10 +173,8 @@ class SdesModule(
   val sdesCallbackController: SdesCallbackController =
     new SdesCallbackController(
       configModule.controllerComponents,
-      sdesService,
-      objectStoreModule.objectStoreService,
-      sdesHistoryService
-    )
+      sdesService
+    )(ex, akkaModule.actorSystem.scheduler)
 
   val sdesRenotifyService = new SdesRenotifyService(
     sdesService,
@@ -254,6 +253,8 @@ class SdesModule(
     override def sdesMigration(from: String, to: String): FOpt[UpdateResult] =
       fromFutureA(sdesService.sdesMigration(from, to))
 
+    override def update(notification: CallBackNotification)(implicit hc: HeaderCarrier): FOpt[Unit] =
+      fromFutureA(sdesService.update(notification))
   }
 
   val foptDataStoreWorkItemService: DataStoreWorkItemAlgebra[FOpt] = new DataStoreWorkItemAlgebra[FOpt] {

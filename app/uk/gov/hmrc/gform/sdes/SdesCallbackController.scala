@@ -16,75 +16,35 @@
 
 package uk.gov.hmrc.gform.sdes
 
-import cats.syntax.eq._
+import akka.actor.Scheduler
 import org.slf4j.LoggerFactory
 import play.api.mvc.{ Action, ControllerComponents }
 import uk.gov.hmrc.gform.controllers.BaseController
-import uk.gov.hmrc.gform.objectstore.ObjectStoreAlgebra
-import uk.gov.hmrc.gform.sharedmodel.sdes.NotificationStatus.FileProcessed
-import uk.gov.hmrc.gform.sharedmodel.sdes.{ CallBackNotification, CorrelationId, SdesDestination, SdesHistory }
+import uk.gov.hmrc.gform.fileupload.Retrying
+import uk.gov.hmrc.gform.sharedmodel.sdes.NotificationStatus.fromName
+import uk.gov.hmrc.gform.sharedmodel.sdes.CallBackNotification
 
-import java.time.Instant
+import scala.concurrent.duration.DurationInt
 import scala.concurrent.{ ExecutionContext, Future }
 
 class SdesCallbackController(
   cc: ControllerComponents,
-  sdesAlgebra: SdesAlgebra[Future],
-  objectStoreAlgebra: ObjectStoreAlgebra[Future],
-  sdesHistoryAlgebra: SdesHistoryAlgebra[Future]
-)(implicit ex: ExecutionContext)
-    extends BaseController(cc) {
+  sdesAlgebra: SdesAlgebra[Future]
+)(implicit ex: ExecutionContext, schduler: Scheduler)
+    extends BaseController(cc) with Retrying {
   private val logger = LoggerFactory.getLogger(getClass)
   def callback: Action[CallBackNotification] = Action.async(parse.json[CallBackNotification]) { implicit request =>
-    val CallBackNotification(responseStatus, fileName, correlationID, responseFailureReason) = request.body
+    val notification: CallBackNotification = request.body
     logger.info(
-      s"SDES: Received callback for fileName: $fileName, correlationId: $correlationID, status: $responseStatus and failedReason: $responseFailureReason"
+      s"SDES: Received callback for fileName: ${notification.filename}, correlationId: ${notification.correlationID}, status: ${fromName(
+        notification.notification
+      )} and possible failedReason: ${notification.failureReason.getOrElse("")}"
     )
-    val correlationId = CorrelationId(correlationID)
 
-    for {
-      maybeSdesSubmission <- sdesAlgebra.findSdesSubmission(correlationId)
-      _ <- maybeSdesSubmission match {
-             case Some(sdesSubmission) =>
-               val envelopeId = sdesSubmission.envelopeId
-               logger.info(
-                 s"Received callback for envelopeId: $envelopeId, destination: ${sdesSubmission.destination.getOrElse("dms")}"
-               )
-
-               val sdesHistory = SdesHistory.create(
-                 envelopeId,
-                 correlationId,
-                 responseStatus,
-                 fileName,
-                 responseFailureReason,
-                 None
-               )
-
-               val updatedSdesSubmission = sdesSubmission.copy(
-                 isProcessed = responseStatus === FileProcessed,
-                 status = responseStatus,
-                 confirmedAt = Some(Instant.now),
-                 failureReason = responseFailureReason
-               )
-               for {
-                 _ <- sdesHistoryAlgebra.save(sdesHistory)
-                 _ <- if (!sdesSubmission.isProcessed) {
-                        sdesAlgebra.saveSdesSubmission(updatedSdesSubmission)
-                        if (responseStatus === FileProcessed) {
-                          val sdesDestination = sdesSubmission.sdesDestination
-                          val paths = sdesDestination.objectStorePaths(envelopeId)
-                          sdesDestination match {
-                            case SdesDestination.DataStore | SdesDestination.DataStoreLegacy |
-                                SdesDestination.HmrcIlluminate =>
-                              objectStoreAlgebra.deleteFile(paths.ephemeral, fileName)
-                            case SdesDestination.Dms => objectStoreAlgebra.deleteZipFile(envelopeId, paths)
-                          }
-                        } else Future.unit
-                      } else Future.unit
-               } yield ()
-             case None =>
-               Future.failed(new RuntimeException(s"Correlation id [$correlationID] not found in mongo collection"))
-           }
-    } yield Ok
+    retry(
+      sdesAlgebra.update(notification),
+      List(100.milliseconds, 1.seconds, 2.seconds),
+      s"SDES correlation id : ${notification.correlationID}"
+    ).map(_ => Ok)
   }
 }

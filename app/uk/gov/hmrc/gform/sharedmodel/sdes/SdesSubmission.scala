@@ -40,7 +40,8 @@ final case class SdesSubmission(
   createdAt: Instant = Instant.now,
   lastUpdated: Option[Instant] = None,
   destination: Option[SdesDestination],
-  isAlerted: Option[Boolean] = None
+  isAlerted: Option[Boolean] = None,
+  lockedAt: Option[Instant] = None
 ) {
   val sdesDestination: SdesDestination = destination.getOrElse(SdesDestination.Dms)
 }
