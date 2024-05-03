@@ -194,10 +194,10 @@ class ApplicationModule(context: Context)
   val prodExpiryDays: Int = configModule.appConfig.formExpiryDays
   val prodCreatedExpiryDays: Int = configModule.appConfig.createdFormExpiryDays
   val prodSubmittedExpiryHours: Int = configModule.appConfig.submittedFormExpiryHours
-  val mongoCacheRepository =
+  val formsCacheRepository =
     createMongoCacheRepository("forms", prodExpiryDays, prodCreatedExpiryDays, prodSubmittedExpiryHours)
   val formMongoCache = new FormMongoCache(
-    mongoCacheRepository,
+    formsCacheRepository,
     jsonCrypto,
     timeModule.timeProvider
   )
@@ -349,7 +349,7 @@ class ApplicationModule(context: Context)
   )
 
   val formStatisticsModule = new FormStatisticsModule(
-    mongoModule,
+    formsCacheRepository,
     formTemplateModule,
     configModule
   )

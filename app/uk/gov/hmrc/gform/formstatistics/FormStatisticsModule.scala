@@ -19,30 +19,21 @@ package uk.gov.hmrc.gform.formstatistics
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.core.{ FOpt, fromFutureA }
 import uk.gov.hmrc.gform.formtemplate.FormTemplateModule
-import uk.gov.hmrc.gform.mongo.MongoModule
-import uk.gov.hmrc.gform.repo.Repo
-import uk.gov.hmrc.gform.sharedmodel.form.{ AllSavedVersions, Form, SavedFormDetail, SignedFormDetails, VersionStats }
+import uk.gov.hmrc.gform.sharedmodel.form.{ AllSavedVersions, SavedFormDetail, SignedFormDetails, VersionStats }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
+import uk.gov.hmrc.mongo.cache.MongoCacheRepository
 
 import scala.concurrent.{ ExecutionContext, Future }
 
 class FormStatisticsModule(
-  mongoModule: MongoModule,
+  formsCacheRepository: MongoCacheRepository[String],
   formTemplateModule: FormTemplateModule,
   configModule: ConfigModule
 )(implicit
   ex: ExecutionContext
 ) {
-
-  private val formRepo: Repo[Form] =
-    new Repo[Form](
-      "forms",
-      mongoModule.mongoComponent,
-      _._id.value
-    )
-
   val formStatisticsService: FormStatisticsAlgebra[Future] =
-    new FormStatisticsService(formRepo, formTemplateModule.formTemplateService)
+    new FormStatisticsService(formsCacheRepository, formTemplateModule.formTemplateService)
 
   val formStatisticsController: FormStatisticsController =
     new FormStatisticsController(configModule.controllerComponents, formStatisticsService)
