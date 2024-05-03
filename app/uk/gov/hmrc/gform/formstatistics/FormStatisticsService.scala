@@ -18,17 +18,16 @@ package uk.gov.hmrc.gform.formstatistics
 
 import java.time.LocalDateTime
 import org.bson.conversions.Bson
-import org.mongodb.scala.bson.Document
-import org.mongodb.scala.bson.{ BsonArray, BsonDocument }
+import org.mongodb.scala.bson.{ BsonArray, BsonDocument, BsonValue, Document }
 import org.mongodb.scala.model.Accumulators.{ first, sum }
 import org.mongodb.scala.model.{ Accumulators, Aggregates, Field, Filters, Updates }
 import org.mongodb.scala.model.Filters.{ and, equal, gte, lte, notEqual }
 import org.mongodb.scala.model.Projections.{ computed, excludeId }
 import org.mongodb.scala.model.Sorts.{ ascending, descending }
 import uk.gov.hmrc.gform.formtemplate.FormTemplateService
-import uk.gov.hmrc.gform.repo.Repo
-import uk.gov.hmrc.gform.sharedmodel.form.{ AllSavedVersions, Form, SavedFormDetail, Signed, SignedFormDetails, Submitted, VersionStats }
+import uk.gov.hmrc.gform.sharedmodel.form.{ AllSavedVersions, SavedFormDetail, Signed, SignedFormDetails, Submitted, VersionStats }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplateId, NotPermitted }
+import uk.gov.hmrc.mongo.cache.MongoCacheRepository
 import uk.gov.hmrc.mongo.play.json.Codecs
 import uk.gov.hmrc.mongo.play.json.Codecs.JsonOps
 
@@ -42,7 +41,10 @@ trait FormStatisticsAlgebra[F[_]] {
   def getSignedFormDetails(): F[Seq[SignedFormDetails]]
 }
 
-class FormStatisticsService(formRepo: Repo[Form], formTemplateService: FormTemplateService)(implicit
+class FormStatisticsService(
+  formsCacheRepository: MongoCacheRepository[String],
+  formTemplateService: FormTemplateService
+)(implicit
   ec: ExecutionContext
 ) extends FormStatisticsAlgebra[Future] {
   override def getAllSavedVersions(): Future[AllSavedVersions] = {
@@ -101,8 +103,7 @@ class FormStatisticsService(formRepo: Repo[Form], formTemplateService: FormTempl
     val pipeline: List[Bson] =
       List(matchStage, groupStage, sortStage, groupStage2, unsetStage)
 
-    formRepo
-      .aggregate(pipeline)
+    aggregate(pipeline)
       .map(_.map(Codecs.fromBson[AllSavedVersions]).headOption.getOrElse(AllSavedVersions.empty))
 
   }
@@ -222,11 +223,7 @@ class FormStatisticsService(formRepo: Repo[Form], formTemplateService: FormTempl
       formTemplate <- formTemplateService.get(formTemplateId)
       res <- formTemplate.draftRetrievalMethod match {
                case NotPermitted => Future.successful(Seq.empty)
-               case _ =>
-                 formRepo
-                   .aggregate(pipeline)
-                   .map(_.map(Codecs.fromBson[VersionStats]))
-
+               case _            => aggregate(pipeline).map(_.map(Codecs.fromBson[VersionStats]))
              }
     } yield res
   }
@@ -291,8 +288,7 @@ class FormStatisticsService(formRepo: Repo[Form], formTemplateService: FormTempl
 
     val pipeline = List(filter, project, group, sort)
 
-    formRepo
-      .aggregate(pipeline)
+    aggregate(pipeline)
       .map(_.map(Codecs.fromBson[SavedFormDetail]))
   }
 
@@ -320,8 +316,12 @@ class FormStatisticsService(formRepo: Repo[Form], formTemplateService: FormTempl
 
     val pipeline = List(filter, project, ignoreRecent, sort)
 
-    formRepo
-      .aggregate(pipeline)
+    aggregate(pipeline)
       .map(_.map(Codecs.fromBson[SignedFormDetails]))
   }
+
+  private def aggregate(pipeline: Seq[Bson]): Future[Seq[BsonValue]] =
+    formsCacheRepository.collection
+      .aggregate[BsonValue](pipeline)
+      .toFuture()
 }
