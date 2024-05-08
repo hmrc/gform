@@ -31,7 +31,7 @@ object Dependencies {
     "com.softwaremill.quicklens"   %% "quicklens"                         % "1.9.1",
     "uk.gov.service.notify"         % "notifications-java-client"         % "3.19.1-RELEASE",
     "org.apache.commons"            % "commons-text"                      % "1.10.0",
-    "uk.gov.hmrc.objectstore"      %% "object-store-client-play-28"       % "1.1.0",
+    "uk.gov.hmrc.objectstore"      %% "object-store-client-play-28"       % "1.3.0",
     "io.circe"                     %% "circe-core"                        % circeVersion,
     "io.circe"                     %% "circe-generic"                     % circeVersion,
     "io.circe"                     %% "circe-parser"                      % circeVersion,
