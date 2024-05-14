@@ -443,6 +443,7 @@ object BuilderSupport {
         Property("noneChoiceError", PropertyBehaviour.PurgeWhenEmpty),
         Property("multivalue", PropertyBehaviour.PurgeWhenEmpty),
         Property("choices", PropertyBehaviour.StringArrayButPurgeWhenEmpty),
+        Property("hints", PropertyBehaviour.StringArrayButPurgeWhenEmpty),
         Property("cityMandatory", PropertyBehaviour.PurgeWhenEmpty),
         Property("countyDisplayed", PropertyBehaviour.PurgeWhenEmpty),
         Property("line2Mandatory", PropertyBehaviour.PurgeWhenEmpty),

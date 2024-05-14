@@ -580,7 +580,8 @@ object FormTemplateValidator {
   }
 
   def validateChoiceNoneChoiceAndError(sectionsList: List[Page]): ValidationResult = {
-    def check(choice: Choice): Boolean = choice.noneChoice.isDefined != choice.noneChoiceError.isDefined
+    def check(choice: Choice): Boolean =
+      choice.`type` === Checkbox && choice.noneChoice.isDefined =!= choice.noneChoiceError.isDefined
 
     validateChoice(sectionsList, check, "noneChoice and noneChoiceError should be defined")
   }
