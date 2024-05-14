@@ -27,7 +27,6 @@ import uk.gov.hmrc.gform.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.{ AvailableLanguages, DataRetrieve, DataRetrieveId }
 import uk.gov.hmrc.gform.sharedmodel.email.LocalisedEmailTemplateId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.{ NewForm, NewFormForTemplate, NewSession, PageLink, SignOut }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.StringFnc.SubString
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.UserField.Enrolment
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
@@ -1187,7 +1186,10 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     val res = ValueParser.validate("${substring(user.enrolments.HMRC-CUS-ORG.EORINumber,0,2)}")
     res.toOption.value should be(
       TextExpression(
-        StringOps(UserCtx(Enrolment(ServiceName("HMRC-CUS-ORG"), IdentifierName("EORINumber"), None)), SubString(0, 2))
+        StringOps(
+          UserCtx(Enrolment(ServiceName("HMRC-CUS-ORG"), IdentifierName("EORINumber"), None)),
+          StringFnc.SubString(0, 2)
+        )
       )
     )
   }

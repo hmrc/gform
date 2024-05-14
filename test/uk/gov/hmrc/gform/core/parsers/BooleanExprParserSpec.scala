@@ -24,8 +24,6 @@ import scala.language.implicitConversions
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.formtemplate.BooleanExprId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.AddressDetail.Country
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.StringFnc.SubString
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.UserField.Enrolment
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
 class BooleanExprParserSpec extends AnyFlatSpec with Matchers with EitherValues with OptionValues {
@@ -396,13 +394,16 @@ class BooleanExprParserSpec extends AnyFlatSpec with Matchers with EitherValues 
 
   it should "parse an expression that includes substring" in {
     val res = BooleanExprParser.validate("${substring('test string',0,2) = 'XI'}")
-    res.toOption.value shouldBe Equals(StringOps(Constant("test string"), SubString(0, 2)), Constant("XI"))
+    res.toOption.value shouldBe Equals(StringOps(Constant("test string"), StringFnc.SubString(0, 2)), Constant("XI"))
   }
 
   it should "parse an expression that includes substring with user field enrolments" in {
     val res = BooleanExprParser.validate("${substring(user.enrolments.HMRC-CUS-ORG.EORINumber,0,2) = 'XI'}")
     res.toOption.value shouldBe Equals(
-      StringOps(UserCtx(Enrolment(ServiceName("HMRC-CUS-ORG"), IdentifierName("EORINumber"), None)), SubString(0, 2)),
+      StringOps(
+        UserCtx(UserField.Enrolment(ServiceName("HMRC-CUS-ORG"), IdentifierName("EORINumber"), None)),
+        StringFnc.SubString(0, 2)
+      ),
       Constant("XI")
     )
   }
