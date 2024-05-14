@@ -71,9 +71,9 @@ class FormComponentMaker(json: JsValue) {
   }
 
   lazy val optExtraLetterSpacing: Opt[Option[Boolean]] = (json \ "extraLetterSpacing") match {
-    case JsDefined(JsString(IsTrueish()))  => Right(Some(true))
-    case JsDefined(JsString(IsFalseish())) => Right(Some(false))
-    case _                                 => Right(None)
+    case JsDefined(JsTrue)  => Right(Some(true))
+    case JsDefined(JsFalse) => Right(Some(false))
+    case _                  => Right(None)
   }
 
   def optFileUploadProvider(compression: Boolean): Opt[FileUploadProvider] = (json \ "service") match {

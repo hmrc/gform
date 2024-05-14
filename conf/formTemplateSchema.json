@@ -932,7 +932,7 @@
           "type": "integer"
         },
         "extraLetterSpacing": {
-          "type": "string"
+          "type": "boolean"
         },
         "fields": {
           "type": "array",
