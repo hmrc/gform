@@ -931,6 +931,9 @@
         "intervalMins": {
           "type": "integer"
         },
+        "extraLetterSpacing": {
+          "type": "boolean"
+        },
         "fields": {
           "type": "array",
           "items": {
