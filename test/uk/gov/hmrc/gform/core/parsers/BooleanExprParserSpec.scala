@@ -391,4 +391,20 @@ class BooleanExprParserSpec extends AnyFlatSpec with Matchers with EitherValues 
     val res = BooleanExprParser.validate("${auth.ggLogin}")
     res.toOption.value shouldBe IsLogin(LoginInfo.GGLogin)
   }
+
+  it should "parse an expression that includes substring" in {
+    val res = BooleanExprParser.validate("${substring('test string',0,2) = 'XI'}")
+    res.toOption.value shouldBe Equals(StringOps(Constant("test string"), StringFnc.SubString(0, 2)), Constant("XI"))
+  }
+
+  it should "parse an expression that includes substring with user field enrolments" in {
+    val res = BooleanExprParser.validate("${substring(user.enrolments.HMRC-CUS-ORG.EORINumber,0,2) = 'XI'}")
+    res.toOption.value shouldBe Equals(
+      StringOps(
+        UserCtx(UserField.Enrolment(ServiceName("HMRC-CUS-ORG"), IdentifierName("EORINumber"), None)),
+        StringFnc.SubString(0, 2)
+      ),
+      Constant("XI")
+    )
+  }
 }

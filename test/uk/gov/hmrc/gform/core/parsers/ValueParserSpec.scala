@@ -1182,4 +1182,16 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     res.toOption.value should be(TextExpression(HideZeroDecimals(Add(FormCtx("age"), Constant("2")))))
   }
 
+  it should "parse substring function with user field enrolments" in {
+    val res = ValueParser.validate("${substring(user.enrolments.HMRC-CUS-ORG.EORINumber,0,2)}")
+    res.toOption.value should be(
+      TextExpression(
+        StringOps(
+          UserCtx(Enrolment(ServiceName("HMRC-CUS-ORG"), IdentifierName("EORINumber"), None)),
+          StringFnc.SubString(0, 2)
+        )
+      )
+    )
+  }
+
 }

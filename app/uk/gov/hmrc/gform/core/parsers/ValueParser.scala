@@ -440,11 +440,11 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
     UserField.Enrolment(sn, in, None)
   }
 
-  lazy val serviceName: Parser[ServiceName] = """[^.!= }]+""".r ^^ { str =>
+  lazy val serviceName: Parser[ServiceName] = """[^.,!= }]+""".r ^^ { str =>
     ServiceName(str)
   }
 
-  lazy val identifierName: Parser[IdentifierName] = """[^.!= }]+""".r ^^ { str =>
+  lazy val identifierName: Parser[IdentifierName] = """[^.,!= }]+""".r ^^ { str =>
     IdentifierName(str)
   }
 
