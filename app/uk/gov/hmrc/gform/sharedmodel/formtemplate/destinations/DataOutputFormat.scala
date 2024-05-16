@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations
 
+import cats.Eq
 import play.api.libs.json.{ JsError, JsString, JsSuccess, OFormat, Reads }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.OFormatWithTemplateReadFallback
 
@@ -30,14 +31,18 @@ object DataOutputFormat {
   case object XML extends DataOutputFormat {
     override val content: String = "xml"
   }
+  case object HBS extends DataOutputFormat {
+    override val content: String = "xml"
+  }
 
   val templateReads: Reads[DataOutputFormat] = Reads {
     case JsString("json") => JsSuccess(JSON)
     case JsString("xml")  => JsSuccess(XML)
+    case JsString("hbs")  => JsSuccess(HBS)
     case JsString(err)    => JsError(s"dataOutputFormat on destination must be json or xml. $err is not allowed")
     case _                => JsError("Failure")
   }
 
   implicit val format: OFormat[DataOutputFormat] = OFormatWithTemplateReadFallback(templateReads)
-
+  implicit val equal: Eq[DataOutputFormat] = Eq.fromUniversalEquals
 }

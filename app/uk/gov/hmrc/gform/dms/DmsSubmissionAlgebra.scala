@@ -30,7 +30,7 @@ import uk.gov.hmrc.gform.pdfgenerator.PdfGeneratorAlgebra
 import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FormId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DataOutputFormat, DestinationId, DestinationIncludeIf }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DataOutputFormat, DestinationId, DestinationIncludeIf, TemplateType }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Constant, FormTemplateId }
 import uk.gov.hmrc.gform.submission._
 import uk.gov.hmrc.http.HeaderCarrier
@@ -109,7 +109,10 @@ object DmsSubmissionService {
       Some(DataOutputFormat.XML),
       true,
       metadata.backscan,
-      false
+      false,
+      None,
+      None,
+      TemplateType.XML
     )
 
   def createSubmission(

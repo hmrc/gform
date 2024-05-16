@@ -63,14 +63,14 @@ class UploadableDestinationSpec extends Spec with ScalaCheckDrivenPropertyChecks
 
   it should "not condition the includeIf if convertSingleQuotes is Some(false)" in {
     forAll(DestinationGen.hmrcDmsGen) { destination =>
-      val withQuotes = addQuotes(destination, """"'abc'"""")
+      val withQuotes = addQuotes(destination, """"'abc'"""").copy(convertSingleQuotes = Some(false))
       createUploadable(withQuotes, Some(false)).toHmrcDmsDestination shouldBe Right(withQuotes)
     }
   }
 
   it should "condition the includeIf if convertSingleQuotes is Some(true)" in {
     forAll(DestinationGen.hmrcDmsGen) { destination =>
-      val withQuotes = addQuotes(destination, """"'abc'"""")
+      val withQuotes = addQuotes(destination, """"'abc'"""").copy(convertSingleQuotes = Some(true))
       val expected = withQuotes.copy(
         includeIf = replaceHandlebarValue(withQuotes.includeIf)
       )
@@ -130,7 +130,7 @@ class UploadableDestinationSpec extends Spec with ScalaCheckDrivenPropertyChecks
 
   private def createUploadable(
     destination: Destination.HmrcDms,
-    convertSingleQuotes: Option[Boolean]
+    convertSingleQuotesParam: Option[Boolean]
   ): UploadableHmrcDmsDestination = {
     import destination._
     UploadableHmrcDmsDestination(
@@ -139,7 +139,7 @@ class UploadableDestinationSpec extends Spec with ScalaCheckDrivenPropertyChecks
       TextExpression(customerId),
       classificationType,
       businessArea,
-      convertSingleQuotes,
+      convertSingleQuotesParam,
       includeIf,
       Some(failOnError),
       Some(DataOutputFormat.XML),

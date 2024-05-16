@@ -25,7 +25,7 @@ import play.api.libs.json._
 import uk.gov.hmrc.gform.logging.Loggers
 import uk.gov.hmrc.gform.notifier.NotifierAlgebra
 import uk.gov.hmrc.gform.sdes.SdesConfig
-import uk.gov.hmrc.gform.sharedmodel.{ DestinationEvaluation, DestinationResult, EmailVerifierService, LangADT, PdfHtml, UserSession }
+import uk.gov.hmrc.gform.sharedmodel.{ DestinationEvaluation, DestinationResult, EmailVerifierService, LangADT, UserSession }
 import uk.gov.hmrc.gform.sharedmodel.form.{ FormData, FormId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations._
 import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
@@ -141,9 +141,8 @@ class DestinationSubmitter[M[_]](
       case d: Destination.HmrcDms =>
         submitToDms(
           submissionInfo,
-          modelTree.value.pdfData,
-          modelTree.value.instructionPdfData,
-          modelTree.value.structuredFormData,
+          accumulatedModel,
+          modelTree,
           d,
           l
         ).map(_ => None)
@@ -247,13 +246,12 @@ class DestinationSubmitter[M[_]](
 
   def submitToDms(
     submissionInfo: DestinationSubmissionInfo,
-    pdfData: PdfHtml,
-    instructionPdfData: Option[PdfHtml],
-    structuredFormData: StructuredFormValue.ObjectStructure,
+    accumulatedModel: HandlebarsTemplateProcessorModel,
+    modelTree: HandlebarsModelTree,
     d: Destination.HmrcDms,
     l: LangADT
   )(implicit hc: HeaderCarrier): M[Unit] =
-    monadError.handleErrorWith(dms(submissionInfo, pdfData, instructionPdfData, structuredFormData, d, l)) { msg =>
+    monadError.handleErrorWith(dms(submissionInfo, accumulatedModel, modelTree, d, l)) { msg =>
       if (d.failOnError)
         raiseError(submissionInfo.formId, d.id, msg)
       else {

@@ -250,21 +250,19 @@ class DestinationsSubmitterSpec
     def expectSubmitToDms(
       destination: HmrcDms,
       submissionInfo: DestinationSubmissionInfo,
-      pdfData: PdfHtml,
-      instructionPdfData: Option[PdfHtml],
-      structuredFormData: StructuredFormValue.ObjectStructure,
+      accumulatedModel: HandlebarsTemplateProcessorModel,
+      modelTree: HandlebarsModelTree,
       l: LangADT
     ): SubmitterParts[F] = {
       (destinationSubmitter
         .submitToDms(
           _: DestinationSubmissionInfo,
-          _: PdfHtml,
-          _: Option[PdfHtml],
-          _: StructuredFormValue.ObjectStructure,
+          _: HandlebarsTemplateProcessorModel,
+          _: HandlebarsModelTree,
           _: HmrcDms,
           _: LangADT
         )(_: HeaderCarrier))
-        .expects(submissionInfo, pdfData, instructionPdfData, structuredFormData, destination, l, hc)
+        .expects(submissionInfo, accumulatedModel, modelTree, destination, l, hc)
         .returning(().pure)
       this
     }

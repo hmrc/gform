@@ -17,12 +17,11 @@
 package uk.gov.hmrc.gform.sharedmodel
 
 import java.time.LocalDateTime
-
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.fileupload.{ MetadataXml, ReconciliationId }
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FormId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DataOutputFormat, DestinationId, DestinationIncludeIf }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DataOutputFormat, DestinationId, DestinationIncludeIf, TemplateType }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
 import uk.gov.hmrc.gform.submission._
 
@@ -55,7 +54,10 @@ class MetadataXmlSpec extends Spec {
       Some(DataOutputFormat.XML),
       true,
       Some(true),
-      true
+      true,
+      None,
+      None,
+      TemplateType.XML
     )
 
     val expected =

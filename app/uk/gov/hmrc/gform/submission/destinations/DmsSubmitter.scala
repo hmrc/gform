@@ -25,11 +25,12 @@ import uk.gov.hmrc.gform.fileupload.{ Available, Envelope, File, FileUploadServi
 import uk.gov.hmrc.gform.form.FormAlgebra
 import uk.gov.hmrc.gform.formtemplate.FormTemplateAlgebra
 import uk.gov.hmrc.gform.pdfgenerator.PdfGeneratorService
-import uk.gov.hmrc.gform.sharedmodel.{ LangADT, PdfHtml }
+import uk.gov.hmrc.gform.sharedmodel.LangADT
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId, Submitted }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
-import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.HandlebarsTemplateProcessorModel
 import uk.gov.hmrc.gform.submission.PdfAndXmlSummariesFactory
+import uk.gov.hmrc.gform.submission.handlebars.HandlebarsModelTree
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.ExecutionContext
@@ -46,9 +47,8 @@ class DmsSubmitter(
 
   def apply(
     submissionInfo: DestinationSubmissionInfo,
-    pdfData: PdfHtml,
-    instructionPdfData: Option[PdfHtml],
-    structuredFormData: StructuredFormValue.ObjectStructure,
+    accumulatedModel: HandlebarsTemplateProcessorModel,
+    modelTree: HandlebarsModelTree,
     hmrcDms: HmrcDms,
     l: LangADT
   )(implicit hc: HeaderCarrier): FOpt[Unit] = {
@@ -57,11 +57,12 @@ class DmsSubmitter(
     for {
       form         <- formService.get(formId)
       formTemplate <- formTemplateService.get(form.formTemplateId)
-      summaries <- fromFutureA(
-                     PdfAndXmlSummariesFactory
-                       .withPdf(pdfGeneratorService, pdfData, instructionPdfData)
-                       .apply(form, formTemplate, structuredFormData, customerId, submission.submissionRef, hmrcDms, l)
-                   )
+      summaries <-
+        fromFutureA(
+          PdfAndXmlSummariesFactory
+            .withPdf(pdfGeneratorService, modelTree.value.pdfData, modelTree.value.instructionPdfData)
+            .apply(form, formTemplate, accumulatedModel, modelTree, customerId, submission.submissionRef, hmrcDms, l)
+        )
       maybeEnvelope <- envelopeAlgebra.find(submission.envelopeId)
       res <-
         fromFutureA(

@@ -246,7 +246,7 @@ class DestinationSubmitterSpec
         tree(si.formId, model, si.submission.submissionRef, template, pdfData, instructionPdfData, structuredFormData)
 
       createSubmitter
-        .expectHmrcDmsSubmission(si, pdfData, instructionPdfData, structuredFormData, hmrcDms, LangADT.En)
+        .expectHmrcDmsSubmission(si, HandlebarsTemplateProcessorModel.empty, theTree, hmrcDms, LangADT.En)
         .expectIncludeIfEvaluation(
           "true",
           HandlebarsTemplateProcessorModel.empty,
@@ -289,7 +289,7 @@ class DestinationSubmitterSpec
           FocussedHandlebarsModelTree(theTree),
           requiredResult = true
         )
-        .expectHmrcDmsSubmission(si, pdfData, instructionPdfData, structuredFormData, hmrcDms, LangADT.En)
+        .expectHmrcDmsSubmission(si, HandlebarsTemplateProcessorModel.empty, theTree, hmrcDms, LangADT.En)
         .expectDestinationAudit(hmrcDms, None, None, si.formId, pdfData, si.submission.submissionRef, template, model)
         .sut
         .submitIfIncludeIf(
@@ -357,9 +357,8 @@ class DestinationSubmitterSpec
       createSubmitter
         .expectHmrcDmsSubmissionFailure(
           si,
-          pdfData,
-          instructionPdfData,
-          structuredFormData,
+          HandlebarsTemplateProcessorModel.empty,
+          theTree,
           hmrcDms,
           "an error",
           LangADT.En
@@ -402,9 +401,8 @@ class DestinationSubmitterSpec
       createSubmitter
         .expectHmrcDmsSubmissionFailure(
           si,
-          pdfData,
-          instructionPdfData,
-          structuredFormData,
+          HandlebarsTemplateProcessorModel.empty,
+          theTree,
           hmrcDms,
           "an error",
           LangADT.En
@@ -643,22 +641,20 @@ class DestinationSubmitterSpec
 
     def expectHmrcDmsSubmission(
       si: DestinationSubmissionInfo,
-      pdfData: PdfHtml,
-      instructionPdfData: Option[PdfHtml],
-      structuredFormData: StructuredFormValue.ObjectStructure,
+      accumulatedModel: HandlebarsTemplateProcessorModel,
+      modelTree: HandlebarsModelTree,
       hmrcDms: HmrcDms,
       l: LangADT
     )(implicit F: Applicative[F]): SubmitterParts[F] = {
       (dmsSubmitter
         .apply(
           _: DestinationSubmissionInfo,
-          _: PdfHtml,
-          _: Option[PdfHtml],
-          _: StructuredFormValue.ObjectStructure,
+          _: HandlebarsTemplateProcessorModel,
+          _: HandlebarsModelTree,
           _: HmrcDms,
           _: LangADT
         )(_: HeaderCarrier))
-        .expects(si, pdfData, instructionPdfData, structuredFormData, hmrcDms, l, hc)
+        .expects(si, accumulatedModel, modelTree, hmrcDms, l, hc)
         .returning(F.pure(()))
       this
     }
@@ -710,9 +706,8 @@ class DestinationSubmitterSpec
 
     def expectHmrcDmsSubmissionFailure(
       si: DestinationSubmissionInfo,
-      pdfData: PdfHtml,
-      instructionPdfData: Option[PdfHtml],
-      structuredFormData: StructuredFormValue.ObjectStructure,
+      accumulatedModel: HandlebarsTemplateProcessorModel,
+      model: HandlebarsModelTree,
       hmrcDms: HmrcDms,
       error: String,
       l: LangADT
@@ -720,13 +715,12 @@ class DestinationSubmitterSpec
       (dmsSubmitter
         .apply(
           _: DestinationSubmissionInfo,
-          _: PdfHtml,
-          _: Option[PdfHtml],
-          _: StructuredFormValue.ObjectStructure,
+          _: HandlebarsTemplateProcessorModel,
+          _: HandlebarsModelTree,
           _: HmrcDms,
           _: LangADT
         )(_: HeaderCarrier))
-        .expects(si, pdfData, instructionPdfData, structuredFormData, hmrcDms, l, hc)
+        .expects(si, accumulatedModel, model, hmrcDms, l, hc)
         .returning(F.raiseError(error))
       this
     }
