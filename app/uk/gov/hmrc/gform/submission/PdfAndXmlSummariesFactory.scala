@@ -22,10 +22,10 @@ import org.json4s.native.Printer.compact
 import uk.gov.hmrc.gform.pdfgenerator.{ PdfGeneratorService, XmlGeneratorService }
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, Form }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DataOutputFormat
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DataOutputFormat, HandlebarsTemplateProcessorModel, TemplateType }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
-import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
 import uk.gov.hmrc.gform.sharedmodel.{ LangADT, PdfHtml, SubmissionRef }
+import uk.gov.hmrc.gform.submission.handlebars.{ FocussedHandlebarsModelTree, HandlebarsModelTree, RealHandlebarsTemplateProcessor }
 
 import java.time.Instant
 import scala.concurrent.{ ExecutionContext, Future }
@@ -34,7 +34,8 @@ trait PdfAndXmlSummariesFactory {
   def apply(
     form: Form,
     formTemplate: FormTemplate,
-    structuredFormData: StructuredFormValue.ObjectStructure,
+    accumulatedModel: HandlebarsTemplateProcessorModel,
+    modelTree: HandlebarsModelTree,
     customerId: String,
     submissionRef: SubmissionRef,
     hmrcDms: HmrcDms,
@@ -51,7 +52,8 @@ object PdfAndXmlSummariesFactory {
     override def apply(
       form: Form,
       formTemplate: FormTemplate,
-      structuredFormData: StructuredFormValue.ObjectStructure,
+      accumulatedModel: HandlebarsTemplateProcessorModel,
+      modelTree: HandlebarsModelTree,
       customerId: String,
       submissionRef: SubmissionRef,
       hmrcDms: HmrcDms,
@@ -65,10 +67,17 @@ object PdfAndXmlSummariesFactory {
       } yield PdfAndXmlSummaries(
         pdfSummary = createPdfSummary(pdf),
         instructionPdfSummary = instructionPdf.map(createPdfSummary),
-        roboticsFile =
-          createRoboticsFile(formTemplate, structuredFormData, hmrcDms, submissionRef, l, Some(form.envelopeId)),
+        roboticsFile = createRoboticsFile(
+          formTemplate,
+          accumulatedModel,
+          modelTree,
+          hmrcDms,
+          submissionRef,
+          l,
+          Some(form.envelopeId)
+        ),
         roboticsFileExtension = hmrcDms.dataOutputFormat.map(_.content),
-        formDataXml = createFormdataXml(formTemplate, structuredFormData, hmrcDms, submissionRef, l, None)
+        formDataXml = createFormdataXml(formTemplate, accumulatedModel, modelTree, hmrcDms, submissionRef, l, None)
       )
 
     private def createPdfSummary(pdf: Array[Byte]) = {
@@ -79,7 +88,8 @@ object PdfAndXmlSummariesFactory {
 
     private def createFormdataXml(
       formTemplate: FormTemplate,
-      structuredFormData: StructuredFormValue.ObjectStructure,
+      accumulatedModel: HandlebarsTemplateProcessorModel,
+      modelTree: HandlebarsModelTree,
       hmrcDms: HmrcDms,
       submissionRef: SubmissionRef,
       l: LangADT,
@@ -88,7 +98,8 @@ object PdfAndXmlSummariesFactory {
       if (hmrcDms.formdataXml)
         generateRoboticsFile(
           formTemplate,
-          structuredFormData,
+          accumulatedModel,
+          modelTree,
           hmrcDms,
           submissionRef,
           Some(DataOutputFormat.XML),
@@ -99,7 +110,8 @@ object PdfAndXmlSummariesFactory {
 
     private def createRoboticsFile(
       formTemplate: FormTemplate,
-      structuredFormData: StructuredFormValue.ObjectStructure,
+      accumulatedModel: HandlebarsTemplateProcessorModel,
+      modelTree: HandlebarsModelTree,
       hmrcDms: HmrcDms,
       submissionRef: SubmissionRef,
       l: LangADT,
@@ -107,7 +119,8 @@ object PdfAndXmlSummariesFactory {
     )(implicit now: Instant): Option[String] =
       generateRoboticsFile(
         formTemplate,
-        structuredFormData,
+        accumulatedModel,
+        modelTree,
         hmrcDms,
         submissionRef,
         hmrcDms.dataOutputFormat,
@@ -117,7 +130,8 @@ object PdfAndXmlSummariesFactory {
 
     private def generateRoboticsFile(
       formTemplate: FormTemplate,
-      structuredFormData: StructuredFormValue.ObjectStructure,
+      accumulatedModel: HandlebarsTemplateProcessorModel,
+      modelTree: HandlebarsModelTree,
       hmrcDms: HmrcDms,
       submissionRef: SubmissionRef,
       dataOutputFormat: Option[DataOutputFormat],
@@ -131,7 +145,7 @@ object PdfAndXmlSummariesFactory {
               formTemplate._id,
               hmrcDms.dmsFormId,
               submissionRef,
-              structuredFormData,
+              modelTree.value.structuredFormData,
               now,
               l,
               envelopeId,
@@ -150,13 +164,18 @@ object PdfAndXmlSummariesFactory {
               formTemplate._id,
               hmrcDms.dmsFormId,
               submissionRef,
-              structuredFormData,
+              modelTree.value.structuredFormData,
               now,
               l,
               envelopeId,
               sanitizeRequired = false
             )
           ).map(xml => compact(JsonMethods.render(org.json4s.Xml.toJson(xml))))
+        case DataOutputFormat.HBS =>
+          val focussedTree = FocussedHandlebarsModelTree(modelTree, modelTree.value.model)
+          hmrcDms.payload.fold(
+            throw new RuntimeException(s"Payload is empty in the destination '${formTemplate._id}-${hmrcDms.id.id}'.")
+          )(payload => Some(RealHandlebarsTemplateProcessor(payload, accumulatedModel, focussedTree, TemplateType.XML)))
       }
   }
 }

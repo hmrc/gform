@@ -27,7 +27,8 @@ import uk.gov.hmrc.gform.handlebarstemplate.{ HandlebarsSchemaAlgebra, Handlebar
 import uk.gov.hmrc.gform.repo.Repo
 import uk.gov.hmrc.gform.sharedmodel.{ HandlebarsSchemaId, HandlebarsTemplateId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.{ DataStore, HandlebarsHttpApi }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DataOutputFormat.HBS
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.{ DataStore, HandlebarsHttpApi, HmrcDms }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DestinationId, Destinations, UploadableConditioning }
 
 import scala.concurrent.{ ExecutionContext, Future }
@@ -137,8 +138,9 @@ class FormTemplateService(
       val destIds = formTemplate.destinations match {
         case destinationList: Destinations.DestinationList =>
           destinationList.destinations.collect {
-            case h: HandlebarsHttpApi if h.payload.isEmpty => h.id
-            case d: DataStore if d.handlebarPayload        => d.id
+            case h: HandlebarsHttpApi if h.payload.isEmpty          => h.id
+            case d: DataStore if d.handlebarPayload                 => d.id
+            case h: HmrcDms if h.dataOutputFormat.exists(_ === HBS) => h.id
           }
         case _ => List.empty[DestinationId]
       }
@@ -179,48 +181,46 @@ class FormTemplateService(
                               .map(r => destId -> r.schema)
                           }
 
-      } yield
+      } yield {
+
+        def getPayload(destinationId: DestinationId, convertSingleQuotes: Option[Boolean]) =
+          destinationIdsPayloads.toMap
+            .get(destinationId)
+            .map(payload => UploadableConditioning.conditionAndValidate(convertSingleQuotes, payload).getOrElse(""))
+
         if (destIds.size === 0) formTemplate
         else
           formTemplate.copy(destinations = formTemplate.destinations match {
             case destinationList: Destinations.DestinationList =>
               destinationList.copy(destinations = destinationList.destinations.map {
                 case h: HandlebarsHttpApi if h.payload.isEmpty =>
-                  val payload = destinationIdsPayloads
-                    .find(_._1 === h.id)
-                    .map(_._2)
-                    .map(payload =>
-                      UploadableConditioning.conditionAndValidate(h.convertSingleQuotes, payload).getOrElse("")
-                    )
+                  val payload = getPayload(h.id, h.convertSingleQuotes)
+                  h.copy(payload = payload)
+                case h: HmrcDms if h.payload.isEmpty =>
+                  val payload = getPayload(h.id, h.convertSingleQuotes)
                   h.copy(payload = payload)
                 case d: DataStore if d.handlebarPayload =>
-                  val payload = destinationIdsPayloads
-                    .find(_._1 === d.id)
-                    .map(_._2)
-                    .map(payload =>
-                      UploadableConditioning.conditionAndValidate(d.convertSingleQuotes, payload).getOrElse("")
-                    )
+                  val payload = getPayload(d.id, d.convertSingleQuotes)
                   if (payload.isEmpty) {
                     throw new Exception(s"Couldn't find handlebars payload for ${d.id}")
                   } else if (d.validateHandlebarPayload) {
-                    val jsonSchema = jsonValidators
-                      .find(_._1 === d.id)
-                      .map(_._2)
+                    val jsonSchema = jsonValidators.toMap.get(d.id)
 
                     if (jsonSchema.isEmpty) {
                       throw new Exception(s"Couldn't find handlebars schema for ${d.id}")
                     } else d.copy(jsonSchema = jsonSchema, payload = payload)
                   } else d.copy(payload = payload)
-                case other => other
+                case otherDestination => otherDestination
               })
-            case other => other
+            case otherDestinationList => otherDestinationList
           })
+      }
     }
 
     for {
       formTemplateToSave <- substitute(formTemplate)
-      specimentTemplateSubstituted = substituteExpressions(formTemplate, new SpecimenExprSubstitutions())
-      formTemplateSpecimenToSave <- substitute(specimentTemplateSubstituted)
+      specimenTemplateSubstituted = substituteExpressions(formTemplate, new SpecimenExprSubstitutions())
+      formTemplateSpecimenToSave <- substitute(specimenTemplateSubstituted)
       _                          <- formTemplateRepo.replace(mkSpecimen(formTemplateSpecimenToSave))
       _                          <- formRedirectRepo.deleteByFieldName("redirect", formTemplate._id.value)
       _ <- formTemplate.legacyFormIds.fold(success(())) { legacyFormIds =>

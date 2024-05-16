@@ -30,7 +30,8 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.{ NewForm, NewFor
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.UserField.Enrolment
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DataOutputFormat, DestinationId, DestinationIncludeIf, Destinations }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DataOutputFormat, DestinationId, DestinationIncludeIf, Destinations, TemplateType }
+
 import scala.language.implicitConversions
 
 class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
@@ -449,7 +450,10 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
             Some(DataOutputFormat.XML),
             true,
             Some(true),
-            true
+            true,
+            None,
+            None,
+            TemplateType.XML
           )
         ),
         ackSection,
