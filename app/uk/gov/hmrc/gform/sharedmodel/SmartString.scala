@@ -224,7 +224,7 @@ object SmartStringTemplateReader {
 
   private def readFromTemplateObject(value: Map[String, JsValue]) =
     for {
-      localisedString <- readLocalisedStringFromTemplateObject(value - "includeIf")
+      localisedString <- readLocalisedStringFromTemplateObject(value)
       interpolations  <- readInterpolationsFromTemplateObject(value)
       ss              <- buildSmartStringFromLocalisedStringAndInterpolations(localisedString, interpolations)
     } yield ss

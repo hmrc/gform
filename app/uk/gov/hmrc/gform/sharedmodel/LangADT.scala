@@ -32,9 +32,10 @@ object LangADT {
 
   def langADTToString(langADT: LangADT): String = langADT.langADTToString
 
-  def stringToLangADT(string: String): LangADT = string match {
-    case "cy" => Cy
-    case _    => En
+  def stringToLangADT(string: String): Option[LangADT] = string match {
+    case "en" => Some(En)
+    case "cy" => Some(Cy)
+    case _    => None
   }
 
   private def convertToLang(jsValue: JsValue): JsResult[LangADT] =

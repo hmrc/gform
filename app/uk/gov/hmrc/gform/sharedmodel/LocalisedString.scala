@@ -31,7 +31,7 @@ object LocalisedString {
   val empty: LocalisedString = LocalisedString(Map.empty)
 
   val formatMap: Format[Map[LangADT, String]] =
-    JsonUtils.formatMap(LangADT.stringToLangADT, LangADT.langADTToString)
+    JsonUtils.formatMapO(LangADT.stringToLangADT, LangADT.langADTToString)
 
   val basicFormat: Format[LocalisedString] =
     formatMap.inmap[LocalisedString](m => LocalisedString(m), ls => ls.m)
