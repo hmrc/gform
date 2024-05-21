@@ -166,9 +166,9 @@ class SmartStringSpec extends Spec with ScalaCheckDrivenPropertyChecks {
     val jsonString =
       """|[
          |  {
-         |    "includeIf": "${foo contains 0}",
          |    "en": "Englishstart ${var1} middleEnglish   ${var2} englishend",
-         |    "cy": "Welshstart ${var1}   ${var3} welshend"
+         |    "cy": "Welshstart ${var1}   ${var3} welshend",
+         |    "includeIf": "${foo contains 0}"
          |  },
          |  {
          |    "en": "${if true then 'foo' else var1} Can you pay ${var3} in full within 30 days?",
