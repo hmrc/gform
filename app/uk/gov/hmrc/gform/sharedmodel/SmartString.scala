@@ -57,6 +57,14 @@ sealed trait SmartString {
         ssc.elseCondition.copy(interpolations = ssc.elseCondition.interpolations.map(f))
       )
     )
+
+  def updateIncludeIfs(f: BooleanExpr => BooleanExpr): SmartString =
+    fold[SmartString](identity)(ssc =>
+      SmartString.SmartStringCond(
+        ssc.ifConditions.map { case (b, ssi) => (f(b), ssi) },
+        ssc.elseCondition
+      )
+    )
 }
 
 case class SmartStringInternal(localised: LocalisedString, interpolations: List[Expr]) {

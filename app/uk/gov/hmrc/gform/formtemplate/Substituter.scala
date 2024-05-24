@@ -65,13 +65,15 @@ object Substituter {
       }
 
   implicit def smartStringSubstituter[A](implicit
-    ev: Substituter[A, Expr]
+    ev: Substituter[A, Expr],
+    ev2: Substituter[A, BooleanExpr]
   ): Substituter[A, SmartString] = { (substitutions, t) =>
     import shapeless._
     val specimentTypable = Typeable[SpecimenExprSubstitutions]
     val substituter = implicitly[Substituter[A, Expr]]
     if (specimentTypable.cast(substitutions).isEmpty) {
       t.updateInterpolations(expr => substituter.substitute(substitutions, expr))
+        .updateIncludeIfs(t => t(substitutions))
     } else {
       updateSpecimenSmartString(t)
     }
@@ -143,7 +145,8 @@ object Substituter {
     }
 
   implicit def tableValue[A](implicit
-    ev: Substituter[A, Expr]
+    ev: Substituter[A, Expr],
+    ev2: Substituter[A, BooleanExpr]
   ): Substituter[A, TableValue] = (substitutions, t) =>
     t match {
       case TableValue(value, cssClass, colspan, rowspan) => TableValue(value(substitutions), cssClass, colspan, rowspan)
@@ -159,7 +162,8 @@ object Substituter {
     }
 
   implicit def tableHeaderCellSubstituter[A](implicit
-    ev: Substituter[A, Expr]
+    ev: Substituter[A, Expr],
+    ev2: Substituter[A, BooleanExpr]
   ): Substituter[A, TableHeaderCell] = (substitutions, t) => t.copy(label = t.label(substitutions))
 
   implicit def componentTypeSubstituter[A](implicit
@@ -266,7 +270,8 @@ object Substituter {
     )
 
   implicit def instructionSubstituter[A](implicit
-    ev: Substituter[A, Expr]
+    ev: Substituter[A, Expr],
+    ev2: Substituter[A, BooleanExpr]
   ): Substituter[A, Instruction] = (substitutions, t) => t.copy(name = t.name(substitutions))
 
   implicit def formComponentSubstituter[A](implicit
@@ -370,7 +375,8 @@ object Substituter {
     }
 
   implicit def printSectionPageSubstituter[A](implicit
-    ev: Substituter[A, Expr]
+    ev: Substituter[A, Expr],
+    ev2: Substituter[A, BooleanExpr]
   ): Substituter[A, PrintSection.Page] = (substitutions, t) =>
     t.copy(
       title = t.title(substitutions),
@@ -378,7 +384,8 @@ object Substituter {
     )
 
   implicit def printSectionPdfSubstituter[A](implicit
-    ev: Substituter[A, Expr]
+    ev: Substituter[A, Expr],
+    ev2: Substituter[A, BooleanExpr]
   ): Substituter[A, PrintSection.Pdf] = (substitutions, t) =>
     t.copy(
       header = t.header(substitutions),
@@ -386,7 +393,8 @@ object Substituter {
     )
 
   implicit def printSectionPdfNotificationSubstituter[A](implicit
-    ev: Substituter[A, Expr]
+    ev: Substituter[A, Expr],
+    ev2: Substituter[A, BooleanExpr]
   ): Substituter[A, PrintSection.PdfNotification] =
     (substitutions, t) =>
       t.copy(
@@ -395,7 +403,8 @@ object Substituter {
       )
 
   implicit def pdfContextSubstituter[A](implicit
-    ev: Substituter[A, Expr]
+    ev: Substituter[A, Expr],
+    ev2: Substituter[A, BooleanExpr]
   ): Substituter[A, PdfCtx] =
     (substitutions, t) =>
       t.copy(
