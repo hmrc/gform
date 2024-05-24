@@ -16,8 +16,8 @@
 
 package uk.gov.hmrc.gform.scheduler.quartz.jobs
 
-import akka.actor.{ ActorRef, ActorSystem, Props }
-import com.typesafe.akka.extension.quartz.QuartzSchedulerExtension
+import org.apache.pekko.actor.{ ActorRef, ActorSystem, Props }
+import org.apache.pekko.extension.quartz.QuartzSchedulerExtension
 import play.api.inject.ApplicationLifecycle
 import uk.gov.hmrc.gform.scheduler.quartz.QSchedulingActor.SdesWorkItemAlert
 import uk.gov.hmrc.gform.scheduler.quartz.{ QScheduledJob, QSchedulingActor }

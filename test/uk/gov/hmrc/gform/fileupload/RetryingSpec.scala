@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.gform.fileupload
 
-import akka.actor.{ ActorSystem, Scheduler }
+import org.apache.pekko.actor.{ ActorSystem, Scheduler }
 import org.scalamock.function.StubFunction0
 import scala.concurrent.ExecutionContext
 import uk.gov.hmrc.gform.Spec

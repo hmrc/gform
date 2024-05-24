@@ -16,8 +16,8 @@
 
 package uk.gov.hmrc.gform.fileupload
 
-import akka.actor.Scheduler
-import akka.util.ByteString
+import org.apache.pekko.actor.Scheduler
+import org.apache.pekko.util.ByteString
 import org.slf4j.LoggerFactory
 import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.core.FutureSyntax

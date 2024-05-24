@@ -31,7 +31,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
 
 class FormComponentRejectSpec extends Spec with TableDrivenPropertyChecks {
 
-  implicit val defaultPatience = PatienceConfig(timeout = Span(6, Seconds), interval = Span(5, Millis))
+  implicit val defaultPatience: PatienceConfig = PatienceConfig(timeout = Span(6, Seconds), interval = Span(5, Millis))
 
   it should "reject all invalid templates" in {
     val table = Table(

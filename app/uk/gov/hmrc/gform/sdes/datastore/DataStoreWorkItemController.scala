@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.gform.sdes.datastore
 
-import play.api.libs.json.Json
+import play.api.libs.json.{ Format, Json }
 import play.api.mvc.ControllerComponents
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
@@ -63,7 +63,8 @@ class DataStoreWorkItemController(
     }
   }
 
-  implicit val workItemFormat = WorkItem.formatForFields[SdesWorkItem](WorkItemFields.default)
+  implicit val workItemFormat: Format[WorkItem[SdesWorkItem]] =
+    WorkItem.formatForFields[SdesWorkItem](WorkItemFields.default)
   def getByEnvelopeId(envelopeId: EnvelopeId) = Action.async { _ =>
     dataStoreWorkItemAlgebra.findByEnvelopeId(envelopeId).map {
       case Nil =>

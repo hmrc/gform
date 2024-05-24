@@ -38,7 +38,7 @@ case class MyEntity(
   num: Int,
   ref: String,
   parentRefs: List[String],
-  createdDate: LocalDateTime,
+  createdDate: Instant,
   updatedInstant: Instant
 )
 
@@ -72,7 +72,9 @@ class RepoSpec extends AnyFlatSpec with Matchers with DefaultPlayMongoRepository
         IndexModel(ascending("parentRefs")),
         IndexModel(ascending("createdDate"))
       )
-    )
+    ) {
+      override lazy val requiresTtlIndex = false
+    }
 
   "findDocumentAsJson" should "find the entity by given id as JsValue" in new TestFixture {
     repository.collection.insertOne(entity).toFuture().futureValue
@@ -154,7 +156,9 @@ class RepoSpec extends AnyFlatSpec with Matchers with DefaultPlayMongoRepository
     val entities = (1 to 10).map(i => buildEntity(i, s"r$i", List(s"p$i")))
     repository.collection.insertMany(entities).toFuture().futureValue
     val pageResults =
-      repository.page(Filters.gte("createdDate", now), Filters.equal("createdDate", -1), 0, 5).futureValue
+      repository
+        .page(Filters.gte("createdDate", now.toInstant(ZoneOffset.UTC)), Filters.equal("createdDate", -1), 0, 5)
+        .futureValue
     pageResults shouldBe entities.drop(5).reverse
   }
 
@@ -175,7 +179,7 @@ class RepoSpec extends AnyFlatSpec with Matchers with DefaultPlayMongoRepository
         "num"         -> JsNumber(e.num),
         "ref"         -> JsString(e.ref),
         "parentRefs"  -> JsArray(e.parentRefs.map(JsString)),
-        "createdDate" -> Json.obj("$date" -> JsString(e.createdDate.format(DATE_TIME_FORMAT)))
+        "createdDate" -> Json.obj("$date" -> JsString(s"${DATE_TIME_FORMAT.format(now)}"))
       )
     )
   }
@@ -288,5 +292,5 @@ class RepoSpec extends AnyFlatSpec with Matchers with DefaultPlayMongoRepository
   def buildEntity(num: Int, ref: String = "", parentRefs: List[String] = List.empty)(implicit
     now: LocalDateTime
   ): MyEntity =
-    MyEntity(s"id$num", num, ref, parentRefs, now, now.toInstant(ZoneOffset.UTC))
+    MyEntity(s"id$num", num, ref, parentRefs, now.toInstant(ZoneOffset.UTC), now.toInstant(ZoneOffset.UTC))
 }

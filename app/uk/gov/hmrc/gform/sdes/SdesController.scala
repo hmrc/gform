@@ -24,6 +24,7 @@ import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.sdes.{ CorrelationId, SdesFilter, SdesHistoryNotification, SdesHistoryView, SdesSubmissionData }
 
 import scala.concurrent.{ ExecutionContext, Future }
+import java.time.{ LocalDateTime, ZoneOffset }
 
 class SdesController(
   cc: ControllerComponents,
@@ -118,7 +119,12 @@ class SdesController(
       histories <- sdesHistoryAlgebra.get(correlationId).map(_.sortBy(_.createdAt).reverse)
       historyNotification <-
         histories.traverse(h =>
-          SdesHistoryNotification(h.notificationStatus, h.createdAt, h.failureReason, h.notifyRequest).pure[Future]
+          SdesHistoryNotification(
+            h.notificationStatus,
+            LocalDateTime.ofInstant(h.createdAt, ZoneOffset.UTC),
+            h.failureReason,
+            h.notifyRequest
+          ).pure[Future]
         )
     } yield
       if (histories.nonEmpty) {

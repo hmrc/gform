@@ -35,7 +35,7 @@ import uk.gov.hmrc.mongo.workitem.ProcessingStatus.Implicits.format
 
 object ValueClassBinder {
 
-  implicit val jLiteralAffinityGroup = new JavascriptLiteral[AffinityGroup] {
+  implicit val jLiteralAffinityGroup: JavascriptLiteral[AffinityGroup] = new JavascriptLiteral[AffinityGroup] {
     def to(value: AffinityGroup): String = AffinityGroupUtil.affinityGroupName(value)
   }
   implicit val notifierEmailAddressBinder: PathBindable[NotifierEmailAddress] = valueClassBinder(_.value)

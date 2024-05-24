@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.gform.form
 
-import akka.http.scaladsl.model.StatusCodes
+import org.apache.pekko.http.scaladsl.model.StatusCodes
 import org.slf4j.LoggerFactory
 import play.api.http.HttpEntity
 import play.api.libs.json.Json

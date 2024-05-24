@@ -46,7 +46,7 @@ class DbLookupControllerSpec
 
   trait Fixture {
     val mockDbLookupService = mock[DbLookupService]
-    implicit val uniqueIdGenerator = new UniqueIdGenerator {
+    implicit val uniqueIdGenerator: UniqueIdGenerator = new UniqueIdGenerator {
       override def generate: String = "some-unique-id"
     }
     val controller = new DbLookupController(stubControllerComponents(), mockDbLookupService)

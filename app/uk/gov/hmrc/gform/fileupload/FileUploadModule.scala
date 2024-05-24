@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.gform.fileupload
 
-import akka.util.ByteString
+import org.apache.pekko.util.ByteString
 import uk.gov.hmrc.gform.akka.AkkaModule
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.core.{ FOpt, fromFutureA }

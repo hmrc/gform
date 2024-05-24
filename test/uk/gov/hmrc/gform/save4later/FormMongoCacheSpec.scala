@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.gform.save4later
 
-import akka.http.scaladsl.model.StatusCodes
+import org.apache.pekko.http.scaladsl.model.StatusCodes
 import com.typesafe.config.ConfigFactory.parseString
 import org.scalacheck.Gen
 import org.scalacheck.rng.Seed

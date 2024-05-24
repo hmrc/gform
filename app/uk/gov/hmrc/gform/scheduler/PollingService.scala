@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.gform.scheduler
 
-import akka.actor.{ ActorSystem, Cancellable }
+import org.apache.pekko.actor.{ ActorSystem, Cancellable }
 import org.slf4j.{ Logger, LoggerFactory }
 
 import scala.concurrent.{ ExecutionContext, Future }

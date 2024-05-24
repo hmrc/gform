@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package uk.gov.hmrc.gform.it
 
-import akka.http.scaladsl.model.StatusCodes
+import org.apache.pekko.http.scaladsl.model.StatusCodes
 import cats.data.NonEmptyList
 import com.mongodb.{ BasicDBObject, ReadPreference }
 import org.mongodb.scala.model.Filters

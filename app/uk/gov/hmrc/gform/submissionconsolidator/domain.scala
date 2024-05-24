@@ -17,11 +17,12 @@
 package uk.gov.hmrc.gform.submissionconsolidator
 
 import play.api.libs.json.{ Format, Json }
+import play.api.libs.json.OFormat
 
 case class SCFormField(id: String, value: String)
 
 object SCFormField {
-  implicit val formats = Json.format[SCFormField]
+  implicit val formats: OFormat[SCFormField] = Json.format[SCFormField]
 }
 
 case class SCForm(

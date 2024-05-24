@@ -23,7 +23,7 @@ import io.circe.Decoder
 
 object SectionPath {
 
-  implicit val sectionPathDecoder = implicitly[Decoder[String]].map(SectionPath(_))
+  implicit val sectionPathDecoder: Decoder[SectionPath] = implicitly[Decoder[String]].map(SectionPath(_))
 
   def apply(value: String) = new SectionPath(value)
 

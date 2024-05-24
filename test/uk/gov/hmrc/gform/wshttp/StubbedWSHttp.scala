@@ -16,8 +16,8 @@
 
 package uk.gov.hmrc.gform.wshttp
 
-import akka.actor.{ ActorSystem, Terminated }
-import akka.util.ByteString
+import org.apache.pekko.actor.{ ActorSystem, Terminated }
+import org.apache.pekko.util.ByteString
 import com.typesafe.config.Config
 import play.api.libs.ws.WSClient
 import scala.concurrent.ExecutionContext

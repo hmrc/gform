@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.gform.fileupload
 import java.time.LocalDateTime
-import akka.util.ByteString
+import org.apache.pekko.util.ByteString
 import cats.instances.list._
 import cats.syntax.flatMap._
 import cats.syntax.functor._

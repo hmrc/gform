@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.gform.fileupload
 
-import akka.util.ByteString
+import org.apache.pekko.util.ByteString
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
 import uk.gov.hmrc.gform.upscan.UploadDetails

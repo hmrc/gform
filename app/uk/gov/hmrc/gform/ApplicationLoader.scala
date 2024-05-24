@@ -215,7 +215,7 @@ class ApplicationModule(context: Context)
     new CurrentTimestampSupport(),
     SimpleCacheId
   ) {
-    override def ensureIndexes: Future[Seq[String]] = {
+    override def ensureIndexes(): Future[Seq[String]] = {
       val formExpiry = expiryDays.days.toMillis
       val createdFormExpiry = createdExpiryDays.days.toMillis
       val submittedExpiry = submittedExpiryHours.hours.toMillis

@@ -23,7 +23,7 @@ trait UniqueIdGenerator {
 }
 
 object UniqueIdGenerator {
-  implicit val uuidStringGenerator = new UniqueIdGenerator {
+  implicit val uuidStringGenerator: UniqueIdGenerator = new UniqueIdGenerator {
     override def generate: String = UUID.randomUUID().toString
   }
 }

@@ -16,10 +16,10 @@
 
 package uk.gov.hmrc.gform.objectstore
 
-import akka.NotUsed
-import akka.actor.ActorSystem
-import akka.stream.scaladsl.Source
-import akka.util.ByteString
+import org.apache.pekko.NotUsed
+import org.apache.pekko.actor.ActorSystem
+import org.apache.pekko.stream.scaladsl.Source
+import org.apache.pekko.util.ByteString
 import uk.gov.hmrc.gform.models.helpers.ObjectStoreHelper._
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.http.HeaderCarrier

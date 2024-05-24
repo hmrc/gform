@@ -16,8 +16,8 @@
 
 package uk.gov.hmrc.gform.fileupload
 
-import akka.http.scaladsl.model.StatusCodes
-import akka.util.ByteString
+import org.apache.pekko.http.scaladsl.model.StatusCodes
+import org.apache.pekko.util.ByteString
 import org.slf4j.LoggerFactory
 import play.api.libs.json.JsObject
 import uk.gov.hmrc.gform.auditing.loggingHelpers

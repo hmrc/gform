@@ -30,7 +30,7 @@ case class Attachments(files: List[String]) {
 
 object Attachments {
   val empty = Attachments(Nil)
-  implicit val format = Json.format[Attachments]
+  implicit val format: OFormat[Attachments] = Json.format[Attachments]
 }
 
 case class FUConfig(
@@ -69,7 +69,7 @@ object RouteEnvelopeRequest {
 
   val reads = Json.reads[RouteEnvelopeRequest]
 
-  implicit val format = OFormat(reads, owrites)
+  implicit val format: OFormat[RouteEnvelopeRequest] = OFormat(reads, owrites)
 }
 
 case class Envelope(files: List[File])

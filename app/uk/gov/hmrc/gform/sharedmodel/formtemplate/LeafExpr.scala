@@ -95,21 +95,21 @@ object LeafExpr {
 
   def apply[T](path: TemplatePath, t: T)(implicit le: LeafExpr[T]): List[ExprWithPath] = le.exprs(path, t)
 
-  implicit def optionalLeafExpr[T: LeafExpr] = new LeafExpr[Option[T]] {
+  implicit def optionalLeafExpr[T: LeafExpr]: LeafExpr[Option[T]] = new LeafExpr[Option[T]] {
     def exprs(path: TemplatePath, t: Option[T]): List[ExprWithPath] = t match {
       case None    => Nil
       case Some(x) => implicitly[LeafExpr[T]].exprs(path, x)
     }
   }
 
-  implicit def listLeafExpr[T: LeafExpr] = new LeafExpr[List[T]] {
+  implicit def listLeafExpr[T: LeafExpr]: LeafExpr[List[T]] = new LeafExpr[List[T]] {
     def exprs(path: TemplatePath, ts: List[T]): List[ExprWithPath] = {
       val leafExprT = implicitly[LeafExpr[T]]
       ts.flatMap(t => leafExprT.exprs(path, t))
     }
   }
 
-  implicit def nelLeafExpr[T: LeafExpr] = new LeafExpr[NonEmptyList[T]] {
+  implicit def nelLeafExpr[T: LeafExpr]: LeafExpr[NonEmptyList[T]] = new LeafExpr[NonEmptyList[T]] {
     def exprs(path: TemplatePath, ts: NonEmptyList[T]): List[ExprWithPath] =
       implicitly[LeafExpr[List[T]]].exprs(path, ts.toList)
   }

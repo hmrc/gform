@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.gform.sdes
 
-import akka.actor.Scheduler
+import org.apache.pekko.actor.Scheduler
 import org.slf4j.LoggerFactory
 import play.api.mvc.{ Action, ControllerComponents }
 import uk.gov.hmrc.gform.controllers.BaseController

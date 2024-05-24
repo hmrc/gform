@@ -21,7 +21,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.typesafe.config.{ ConfigFactory, ConfigRenderOptions }
 
 import java.time.{ LocalDateTime, ZoneId }
-import akka.util.ByteString
+import org.apache.pekko.util.ByteString
 import org.apache.commons.text.StringEscapeUtils
 import org.slf4j.LoggerFactory
 import play.api.http.HttpEntity
@@ -266,7 +266,7 @@ class TestOnlyController(
       getJson(o)
     }
 
-    implicit val format = OFormat[User](reads, write)
+    implicit val format: OFormat[User] = OFormat[User](reads, write)
   }
 
   def config() = Action { r =>
