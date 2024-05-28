@@ -17,9 +17,10 @@
 package uk.gov.hmrc.gform.formtemplate
 
 import munit.{ FunSuite, Location }
+import org.scalatest.matchers.should.Matchers
 import play.api.libs.json.{ JsDefined, JsError, JsString, JsSuccess, JsValue, Json }
 
-class FormTemplatesControllerRequestHandlerSuite extends FunSuite {
+class FormTemplatesControllerRequestHandlerSuite extends FunSuite with Matchers {
   test(
     "normaliseJSON should lowercased '_id' field and create new 'originalId' field holding original value of '_id' field"
   ) {
@@ -248,7 +249,7 @@ class FormTemplatesControllerRequestHandlerSuite extends FunSuite {
     FormTemplatesControllerRequestHandler.normaliseJSON(json) match {
       case JsSuccess(normalised, _) =>
         normalised \ "formKind" \ "sections" match {
-          case JsDefined(sections) => assertEquals(Json.prettyPrint(sections), Json.prettyPrint(Json.parse(expected)))
+          case JsDefined(sections) => sections shouldBe Json.parse(expected)
           case otherwise           => fail(s"No sections field present in: $normalised")
         }
       case JsError(error) => fail("Unable to normalise json: " + error)
@@ -389,7 +390,7 @@ class FormTemplatesControllerRequestHandlerSuite extends FunSuite {
       case JsSuccess(normalised, _) =>
         normalised \ "formKind" \ "sections" match {
           case JsDefined(addAnotherQuestion) =>
-            assertEquals(Json.prettyPrint(addAnotherQuestion), Json.prettyPrint(Json.parse(expected)))
+            addAnotherQuestion shouldBe Json.parse(expected)
           case otherwise => fail(s"No sections field present in: $normalised")
         }
 
