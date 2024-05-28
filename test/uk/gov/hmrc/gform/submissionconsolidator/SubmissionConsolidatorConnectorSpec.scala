@@ -16,8 +16,8 @@
 
 package uk.gov.hmrc.gform.submissionconsolidator
 
-import akka.actor.ActorSystem
-import akka.util.ByteString
+import org.apache.pekko.actor.ActorSystem
+import org.apache.pekko.util.ByteString
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.typesafe.config.{ Config, ConfigFactory }
 import org.scalacheck.Gen
@@ -42,7 +42,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 class SubmissionConsolidatorConnectorSpec
     extends AnyFlatSpec with MockFactory with WiremockSupport with SCFormGen with ScalaFutures with Matchers {
 
-  override implicit val patienceConfig = PatienceConfig(Span(10, Seconds), Span(1, Millis))
+  override implicit val patienceConfig: PatienceConfig = PatienceConfig(Span(10, Seconds), Span(1, Millis))
   val _actorSystem: ActorSystem = ActorSystem("SubmissionConsolidatorConnectorSpec")
   val _wsClient: WSClient = new InternalWSClient("http", wiremockPort)
   val wsHttp: WSHttp = new WSHttp {

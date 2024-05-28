@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.gform.des
 
-import akka.http.scaladsl.model.StatusCodes
+import org.apache.pekko.http.scaladsl.model.StatusCodes
 import cats.instances.int._
 import cats.instances.string._
 import cats.syntax.eq._
@@ -60,7 +60,7 @@ class DesConnector(wSHttp: WSHttp, baseUrl: String, desConfig: DesConnectorConfi
 
   private val logger = LoggerFactory.getLogger(getClass)
 
-  private implicit val hc = HeaderCarrier(
+  private implicit val hc: HeaderCarrier = HeaderCarrier(
     extraHeaders = Seq("Environment" -> desConfig.environment)
   )
 

@@ -15,7 +15,7 @@
  */
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate.generators
-import java.time.{ LocalDate, LocalDateTime }
+import java.time.{ Instant, LocalDate, LocalDateTime, ZoneOffset }
 
 import cats.data.NonEmptyList
 import org.scalacheck.Gen
@@ -91,15 +91,11 @@ trait PrimitiveGen {
       second     <- Gen.chooseNum(0, 59)
     } yield LocalDateTime.of(year, month, dayOfMonth, hour, minute, second)
 
-  def jodaLocalDateTimeGen: Gen[org.joda.time.LocalDateTime] =
-    for {
-      year       <- Gen.chooseNum(1900, 2100)
-      month      <- Gen.chooseNum(1, 12)
-      dayOfMonth <- Gen.chooseNum(1, 28)
-      hour       <- Gen.chooseNum(0, 23)
-      minute     <- Gen.chooseNum(0, 59)
-      second     <- Gen.chooseNum(0, 59)
-    } yield new org.joda.time.LocalDateTime(year, month, dayOfMonth, hour, minute, second)
+  def instantGen: Gen[Instant] = {
+    val minEpoch = LocalDateTime.of(1970, 1, 1, 0, 0).toInstant(ZoneOffset.UTC).getEpochSecond
+    val maxEpoch = LocalDateTime.of(2100, 1, 1, 0, 0).toInstant(ZoneOffset.UTC).getEpochSecond
+    Gen.choose(minEpoch, maxEpoch).map(Instant.ofEpochSecond)
+  }
 
   def localDateGen: Gen[LocalDate] =
     for {

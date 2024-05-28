@@ -8,14 +8,14 @@ resolvers += "Typesafe Releases" at "https://repo.typesafe.com/typesafe/releases
 
 addSbtPlugin("uk.gov.hmrc" % "sbt-auto-build" % "3.21.0")
 
-addSbtPlugin("uk.gov.hmrc" % "sbt-distributables" % "2.2.0")
+addSbtPlugin("uk.gov.hmrc" % "sbt-distributables" % "2.5.0")
 
-addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.8.21")
+addSbtPlugin("org.playframework" % "sbt-plugin" % "3.0.3")
 
-addSbtPlugin("org.scalameta" % "sbt-scalafmt" % "2.4.2")
+addSbtPlugin("org.scalameta" % "sbt-scalafmt" % "2.5.0")
 
-addSbtPlugin("com.timushev.sbt" % "sbt-updates" % "0.3.4") //sbt dependencyUpdates
+addSbtPlugin("com.timushev.sbt" % "sbt-updates" % "0.5.1") //sbt dependencyUpdates
 
-addSbtPlugin("org.scoverage" % "sbt-scoverage" % "1.9.1")
+addSbtPlugin("org.scoverage" % "sbt-scoverage" % "2.0.11")
 
 addDependencyTreePlugin

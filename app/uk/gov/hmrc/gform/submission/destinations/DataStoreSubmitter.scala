@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.gform.submission.destinations
 
-import akka.util.ByteString
+import org.apache.pekko.util.ByteString
 import play.api.libs.json.{ JsObject, Json }
 
 import scala.util.Try

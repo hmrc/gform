@@ -16,8 +16,8 @@
 
 package uk.gov.hmrc.gform.scheduler.quartz
 
-import akka.actor.ActorRef
-import com.typesafe.akka.extension.quartz.QuartzSchedulerExtension
+import org.apache.pekko.actor.ActorRef
+import org.apache.pekko.extension.quartz.QuartzSchedulerExtension
 import play.api.Logging
 import uk.gov.hmrc.gform.scheduler.quartz.QSchedulingActor.QScheduledMessage
 

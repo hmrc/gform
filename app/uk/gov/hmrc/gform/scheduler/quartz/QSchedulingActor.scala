@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.gform.scheduler.quartz
 
-import akka.actor.{ Actor, ActorLogging }
+import org.apache.pekko.actor.{ Actor, ActorLogging }
 import uk.gov.hmrc.gform.scheduler.quartz.QSchedulingActor.QScheduledMessage
 import uk.gov.hmrc.gform.sdes.alert.{ SdesSubmissionAlertService, SdesWorkItemAlertService }
 import uk.gov.hmrc.gform.sdes.renotify.SdesRenotifyQScheduledService

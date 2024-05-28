@@ -17,15 +17,15 @@
 package uk.gov.hmrc.gform.sharedmodel.sdes
 
 import julienrf.json.derived
-import play.api.libs.json.{ Format, OFormat, Reads, Writes }
+import play.api.libs.json.{ Format, OFormat }
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 
-import java.time.LocalDateTime
+import java.time.{ Instant, LocalDateTime, ZoneOffset }
 import java.util.UUID
 
 final case class SdesHistory(
   _id: UUID,
-  createdAt: LocalDateTime,
+  createdAt: Instant,
   notificationStatus: NotificationStatus,
   envelopeId: EnvelopeId,
   correlationId: CorrelationId,
@@ -46,7 +46,7 @@ object SdesHistory {
   ): SdesHistory =
     SdesHistory(
       UUID.randomUUID,
-      LocalDateTime.now(),
+      LocalDateTime.now().toInstant(ZoneOffset.UTC),
       notificationStatus,
       envelopeId,
       correlationId,
@@ -56,7 +56,6 @@ object SdesHistory {
     )
 
   implicit val format: OFormat[SdesHistory] = {
-    implicit val dtf: Format[LocalDateTime] = Format(Reads.DefaultLocalDateTimeReads, Writes.DefaultLocalDateTimeWrites)
     implicit val correlationIdFormat: Format[CorrelationId] = CorrelationId.mongoVformat
     implicit val envelopeIdFormat: Format[EnvelopeId] = EnvelopeId.vformat
     implicit val notificationStatusFormat: Format[NotificationStatus] = NotificationStatus.format

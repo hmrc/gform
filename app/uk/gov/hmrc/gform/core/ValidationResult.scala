@@ -33,7 +33,7 @@ case class Invalid(reason: String) extends ValidationResult
 
 object ValidationResult {
 
-  implicit val validationResultMonoid = new Monoid[ValidationResult] {
+  implicit val validationResultMonoid: Monoid[ValidationResult] = new Monoid[ValidationResult] {
     def empty: ValidationResult = Valid
     def combine(x: ValidationResult, y: ValidationResult): ValidationResult = (x, y) match {
       case (Valid, Valid)      => Valid

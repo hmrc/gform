@@ -124,7 +124,7 @@ class PlayComponentsModule(
   lazy val builderRoutes: builder.Routes = new builder.Routes(errorHandler, builderModule.builderController)
 
   lazy val prodRoutes: prod.Routes =
-    new prod.Routes(errorHandler, appRoutes, healthController, metricsModule.metricsController)
+    new prod.Routes(errorHandler, appRoutes, healthController)
 
   lazy val testOnlyDoNotUseInAppConfRoutes: testOnlyDoNotUseInAppConf.Routes =
     new testOnlyDoNotUseInAppConf.Routes(

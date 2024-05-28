@@ -31,9 +31,10 @@ import uk.gov.hmrc.http.HeaderCarrier
 
 class RepoDestinationAuditerSpec
     extends Spec with DestinationAuditGen with SubmissionRefGen with ScalaCheckDrivenPropertyChecks {
-  implicit val pc = patienceConfig.copy(timeout = scaled(Span(500, Millis)), interval = scaled(Span(50, Millis)))
+  implicit val pc: PatienceConfig =
+    patienceConfig.copy(timeout = scaled(Span(500, Millis)), interval = scaled(Span(50, Millis)))
 
-  private implicit val hc = HeaderCarrier()
+  private implicit val hc: HeaderCarrier = HeaderCarrier()
 
   "getLatestForForm" should "returns an error when there are no audits for the form ID" in {
     val fixture = createAuditer

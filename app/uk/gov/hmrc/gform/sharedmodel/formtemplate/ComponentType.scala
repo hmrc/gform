@@ -522,14 +522,14 @@ object TableComp {
 
 object ComponentType {
 
-  implicit def readsNonEmptyList[T: Reads] = Reads[NonEmptyList[T]] { json =>
+  implicit def readsNonEmptyList[T: Reads]: Reads[NonEmptyList[T]] = Reads[NonEmptyList[T]] { json =>
     Json.fromJson[List[T]](json).flatMap {
       case Nil     => JsError(JsonValidationError(s"Required at least one element. Got: $json"))
       case x :: xs => JsSuccess(NonEmptyList(x, xs))
     }
   }
 
-  implicit def writesNonEmptyList[T: Writes] = Writes[NonEmptyList[T]] { v =>
+  implicit def writesNonEmptyList[T: Writes]: Writes[NonEmptyList[T]] = Writes[NonEmptyList[T]] { v =>
     JsArray((v.head :: v.tail).map(Json.toJson(_)))
   }
   implicit val format: OFormat[ComponentType] = derived.oformat()

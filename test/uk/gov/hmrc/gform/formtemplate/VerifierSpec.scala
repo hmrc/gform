@@ -31,7 +31,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 class VerifierSpec extends AnyWordSpecLike with Matchers with ScalaFutures with FormTemplateSupport {
 
-  implicit val defaultPatience = PatienceConfig(timeout = Span(6, Seconds), interval = Span(5, Millis))
+  implicit val defaultPatience: PatienceConfig = PatienceConfig(timeout = Span(6, Seconds), interval = Span(5, Millis))
 
   "verify" should {
     "validate instructions" in {

@@ -50,7 +50,7 @@ import org.scalatest.wordspec.AnyWordSpecLike
 class SubmissionConsolidatorServiceSpec
     extends AnyWordSpecLike with MockFactory with Matchers with ScalaCheckDrivenPropertyChecks with ScalaFutures {
 
-  override implicit val patienceConfig = PatienceConfig(Span(10, Seconds), Span(1, Millis))
+  override implicit val patienceConfig: PatienceConfig = PatienceConfig(Span(10, Seconds), Span(1, Millis))
   private val DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
   private implicit val hc: HeaderCarrier = HeaderCarrier()
 

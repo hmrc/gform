@@ -18,8 +18,8 @@ package uk.gov.hmrc.gform.fileupload
 
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import akka.actor.Scheduler
-import akka.pattern.after
+import org.apache.pekko.actor.Scheduler
+import org.apache.pekko.pattern.after
 import org.slf4j.LoggerFactory
 import play.api.http.HeaderNames.LOCATION
 import play.api.libs.json.{ JsObject, Json }

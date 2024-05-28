@@ -60,7 +60,7 @@ object SavedFormDetail {
     JsString(date.format(dateTimeFormatter))
   }
 
-  implicit val localDateTimeFormat = Format(localDateReads, localDateWrites)
+  implicit val localDateTimeFormat: Format[LocalDate] = Format(localDateReads, localDateWrites)
 
   implicit val format: OFormat[SavedFormDetail] = Json.format[SavedFormDetail]
 }

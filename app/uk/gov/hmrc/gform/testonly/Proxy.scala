@@ -16,8 +16,8 @@
 
 package uk.gov.hmrc.gform.testonly
 
-import akka.stream.scaladsl.Source
-import akka.util.ByteString
+import org.apache.pekko.stream.scaladsl.Source
+import org.apache.pekko.util.ByteString
 import play.api.http.HttpEntity.{ Streamed, Strict }
 import play.api.libs.streams.Accumulator
 import play.api.libs.ws.{ BodyWritable, WSClient, WSRequest, WSResponse }

@@ -27,20 +27,21 @@ object ReferenceKind {
       extends ReferenceKind // Repeated section has no explicit identifier, so let's use its index instead
 
   object Group {
-    implicit val referenceKindDescriptor = new ReferenceKindDescriptor[Group] {
+    implicit val referenceKindDescriptor: ReferenceKindDescriptor[Group] = new ReferenceKindDescriptor[Group] {
       def describe: String = "Group component"
     }
   }
   object AddToList {
-    implicit val referenceKindDescriptor = new ReferenceKindDescriptor[AddToList] {
+    implicit val referenceKindDescriptor: ReferenceKindDescriptor[AddToList] = new ReferenceKindDescriptor[AddToList] {
       def describe: String = "Add To List section"
     }
   }
 
   object RepeatingPage {
-    implicit val referenceKindDescriptor = new ReferenceKindDescriptor[RepeatingPage] {
-      def describe: String = "Repeated section"
-    }
+    implicit val referenceKindDescriptor: ReferenceKindDescriptor[RepeatingPage] =
+      new ReferenceKindDescriptor[RepeatingPage] {
+        def describe: String = "Repeated section"
+      }
   }
 }
 

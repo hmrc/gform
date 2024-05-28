@@ -35,7 +35,7 @@ import scala.concurrent.Future
 
 class FormTemplatesControllerRequestHandlerTest extends AnyWordSpec with Matchers with ScalaFutures { // TODO Change to use an Id monad
 
-  implicit val defaultPatience = PatienceConfig(timeout = Span(6, Seconds), interval = Span(5, Millis))
+  implicit val defaultPatience: PatienceConfig = PatienceConfig(timeout = Span(6, Seconds), interval = Span(5, Millis))
 
   val saveHistory: FOpt[Unit] = EitherT(Future.successful(().asRight))
 

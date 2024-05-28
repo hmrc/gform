@@ -38,7 +38,7 @@ trait DestinationAuditGen {
       submissionRef <- SubmissionRefGen.submissionRefGen
       summaryHtmlId <- Gen.uuid.map(SummaryHtmlId(_))
       id            <- Gen.uuid
-      timestamp     <- PrimitiveGen.jodaLocalDateTimeGen
+      timestamp     <- PrimitiveGen.instantGen
     } yield DestinationAudit(
       formId,
       formTemplateId,

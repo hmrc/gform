@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.gform.objectstore
 
-import akka.util.ByteString
+import org.apache.pekko.util.ByteString
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.flatspec.AnyFlatSpec

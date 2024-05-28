@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.gform.fileupload
 
-import akka.util.ByteString
+import org.apache.pekko.util.ByteString
 import org.slf4j.LoggerFactory
 import uk.gov.hmrc.gform.core.FutureSyntax
 import uk.gov.hmrc.gform.dms.FileAttachment

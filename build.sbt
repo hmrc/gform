@@ -5,15 +5,20 @@ import play.sbt.routes.RoutesKeys.routesImport
 import sbt.Keys.{ resolvers, _ }
 import sbt._
 import uk.gov.hmrc.DefaultBuildSettings.{ addTestReportOption, defaultSettings, scalaSettings }
+import uk.gov.hmrc.DefaultBuildSettings
 import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin
 import uk.gov.hmrc.versioning.SbtGitVersioning
 import uk.gov.hmrc.versioning.SbtGitVersioning.autoImport.majorVersion
+
+ThisBuild / majorVersion := 0
+
+ThisBuild / scalaVersion := "2.13.12"
 
 lazy val scoverageSettings = {
   import scoverage.ScoverageKeys
   Seq(
     ScoverageKeys.coverageExcludedPackages := """uk.gov.hmrc.BuildInfo;._.Routes;._.RoutesPrefix;._Filters?;MicroserviceAuditConnector;Module;GraphiteStartUp;._.Reverse[^.]*""",
-    ScoverageKeys.coverageMinimum := 80.00,
+    ScoverageKeys.coverageMinimumStmtTotal := 80.00,
     ScoverageKeys.coverageFailOnMinimum := false,
     ScoverageKeys.coverageHighlighting := true,
     Test / parallelExecution := false
@@ -31,12 +36,11 @@ lazy val microservice = (project in file("."))
   .settings(
     name := "gform",
     organization := "uk.gov.hmrc",
-    majorVersion := 0,
     PlayKeys.playDefaultPort := 9196,
     scalaSettings,
     defaultSettings(),
     scalafmtOnCompile := true,
-    scalaVersion := "2.13.10",
+    // coverageEnabled := true,
     Test / testOptions := (Test / testOptions).value
       .map {
         // Default Argument added by https://github.com/hmrc/sbt-settings
@@ -90,16 +94,6 @@ lazy val microservice = (project in file("."))
     Compile / console / scalacOptions ~= { _.filterNot(Set("-Xfatal-warnings")) },
     testFrameworks += new TestFramework("org.scalameter.ScalaMeterFramework")
   )
-  .configs(IntegrationTest)
-  .settings(
-    inConfig(IntegrationTest)(Defaults.itSettings),
-    inConfig(IntegrationTest)(ScalafmtPlugin.scalafmtConfigSettings),
-    IntegrationTest / Keys.fork := false,
-    IntegrationTest / unmanagedSourceDirectories := (IntegrationTest / baseDirectory)(base => Seq(base / "it")).value,
-    addTestReportOption(IntegrationTest, "int-test-reports"),
-    IntegrationTest / parallelExecution := false,
-    scalafmtOnCompile := true
-  )
   .configs(BenchmarkTest)
   .settings(
     inConfig(BenchmarkTest)(Defaults.testSettings),
@@ -108,4 +102,15 @@ lazy val microservice = (project in file("."))
   .settings(
     buildInfoKeys := Seq[BuildInfoKey](version),
     buildInfoPackage := "uk.gov.hmrc.gform"
+  )
+
+lazy val it = project
+  .enablePlugins(play.sbt.PlayScala)
+  .dependsOn(microservice % "test->test") // the "test->test" allows reusing test code and test dependencies
+  .settings(DefaultBuildSettings.itSettings(),
+    addTestReportOption(Test, "int-test-reports"),
+    scalafmtOnCompile := true,
+    run / fork := true, // Enable forking for run
+    Test / fork := true, // Enable forking for Test
+    Test / javaOptions += "-Dlogger.resource=logback-test.xml"
   )

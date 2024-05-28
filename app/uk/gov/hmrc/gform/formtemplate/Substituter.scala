@@ -33,7 +33,7 @@ object Substituter {
 
   def apply[A, T](implicit substituter: Substituter[A, T]): Substituter[A, T] = substituter
 
-  implicit def nonEmptyListSubstituter[A, T](implicit ev: Substituter[A, T]) =
+  implicit def nonEmptyListSubstituter[A, T](implicit ev: Substituter[A, T]): Substituter[A, NonEmptyList[T]] =
     new Substituter[A, NonEmptyList[T]] {
       def substitute(substitutions: A, ts: NonEmptyList[T]): NonEmptyList[T] = {
         val substituter = implicitly[Substituter[A, T]]
@@ -41,19 +41,21 @@ object Substituter {
       }
     }
 
-  implicit def listSubstituter[A, T](implicit ev: Substituter[A, T]) = new Substituter[A, List[T]] {
-    def substitute(substitutions: A, ts: List[T]): List[T] = {
-      val substituter = implicitly[Substituter[A, T]]
-      ts.map(t => substituter.substitute(substitutions, t))
+  implicit def listSubstituter[A, T](implicit ev: Substituter[A, T]): Substituter[A, List[T]] =
+    new Substituter[A, List[T]] {
+      def substitute(substitutions: A, ts: List[T]): List[T] = {
+        val substituter = implicitly[Substituter[A, T]]
+        ts.map(t => substituter.substitute(substitutions, t))
+      }
     }
-  }
 
-  implicit def optionSubstituter[A, T](implicit ev: Substituter[A, T]) = new Substituter[A, Option[T]] {
-    def substitute(substitutions: A, ts: Option[T]): Option[T] = {
-      val substituter = implicitly[Substituter[A, T]]
-      ts.map(t => substituter.substitute(substitutions, t))
+  implicit def optionSubstituter[A, T](implicit ev: Substituter[A, T]): Substituter[A, Option[T]] =
+    new Substituter[A, Option[T]] {
+      def substitute(substitutions: A, ts: Option[T]): Option[T] = {
+        val substituter = implicitly[Substituter[A, T]]
+        ts.map(t => substituter.substitute(substitutions, t))
+      }
     }
-  }
 
   private def updateSpecimenSmartString(smartString: SmartString): SmartString =
     smartString

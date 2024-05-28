@@ -19,7 +19,7 @@ package uk.gov.hmrc.gform.translation
 import cats.implicits._
 import java.io.{ BufferedOutputStream, ByteArrayInputStream, ByteArrayOutputStream }
 import play.api.libs.json.{ JsObject, Json }
-import akka.stream.scaladsl.StreamConverters
+import org.apache.pekko.stream.scaladsl.StreamConverters
 import play.api.mvc.{ Action, AnyContent, ControllerComponents, Result }
 import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.gform.controllers.BaseController

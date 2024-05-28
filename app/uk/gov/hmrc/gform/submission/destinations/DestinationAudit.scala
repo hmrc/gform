@@ -16,12 +16,14 @@
 
 package uk.gov.hmrc.gform.submission.destinations
 
-import org.joda.time.{ DateTimeZone, LocalDateTime }
-import play.api.libs.json.{ JsArray, JsError, JsNumber, JsObject, JsResult, JsString, JsSuccess, JsValue, OFormat, Reads, _ }
+import java.time.{ Instant, LocalDateTime, ZoneOffset }
+import play.api.libs.json.{ JsArray, JsError, JsNumber, JsObject, JsResult, JsString, JsSuccess, JsValue, OFormat }
 import uk.gov.hmrc.gform.sharedmodel.form.{ FormId, FormStatus }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationId
 import uk.gov.hmrc.gform.sharedmodel.{ SubmissionRef, UserId }
+
+import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats.Implicits._
 
 import java.util.UUID
 
@@ -40,20 +42,10 @@ case class DestinationAudit(
   submissionRef: SubmissionRef,
   summaryHtmlId: SummaryHtmlId,
   id: UUID = UUID.randomUUID,
-  timestamp: LocalDateTime = LocalDateTime.now
+  timestamp: Instant = LocalDateTime.now(ZoneOffset.UTC).toInstant(ZoneOffset.UTC)
 )
 
 object DestinationAudit {
-
-  val localDateTimeRead: Reads[LocalDateTime] =
-    (__ \ "$date").read[Long].map { dateTime =>
-      new LocalDateTime(dateTime, DateTimeZone.UTC)
-    }
-
-  val localDateTimeWrite: Writes[LocalDateTime] = (dateTime: LocalDateTime) =>
-    Json.obj(
-      "$date" -> dateTime.toDateTime(DateTimeZone.UTC).getMillis
-    )
 
   implicit val format: OFormat[DestinationAudit] = new OFormat[DestinationAudit] {
 
@@ -72,7 +64,7 @@ object DestinationAudit {
         submissionRef                <- (json \ "submissionRef").validate[String].map(SubmissionRef(_))
         summaryHtmlId                <- (json \ "summaryHtmlId").validate[String].map(SummaryHtmlId(_))
         id                           <- (json \ "id").validate[String].map(UUID.fromString)
-        timestamp                    <- (json \ "timestamp").validate(localDateTimeRead)
+        timestamp                    <- (json \ "timestamp").validate[Instant]
         reviewData                   <- (json \ "reviewData").validateOpt[Map[String, String]]
       } yield DestinationAudit(
         formId,
@@ -105,7 +97,7 @@ object DestinationAudit {
             "workflowState"            -> JsString(workflowState.toString),
             "userId"                   -> JsString(userId.value),
             "id"                       -> JsString(id.toString),
-            "timestamp"                -> localDateTimeWrite.writes(timestamp),
+            "timestamp"                -> jatInstantFormat.writes(timestamp),
             "submissionRef"            -> JsString(submissionRef.value),
             "summaryHtmlId"            -> JsString(summaryHtmlId.value.toString),
             "parentFormSubmissionRefs" -> JsArray(parentFormSubmissionRefs.map(JsString)),

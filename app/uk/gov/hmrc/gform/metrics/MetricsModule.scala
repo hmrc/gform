@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.gform.metrics
 
-import com.kenshoo.play.metrics.{ MetricsController, MetricsFilter, MetricsFilterImpl, MetricsImpl }
+import uk.gov.hmrc.play.bootstrap.metrics.{ MetricsFilter, MetricsFilterImpl, MetricsImpl }
 import uk.gov.hmrc.gform.akka.AkkaModule
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.playcomponents.PlayComponents
@@ -33,7 +33,5 @@ class MetricsModule(
   val metrics = new MetricsImpl(playComponents.context.lifecycle, playComponents.context.initialConfiguration)
 
   val metricsFilter: MetricsFilter = new MetricsFilterImpl(metrics)(akkaModule.materializer, ec)
-
-  val metricsController = new MetricsController(metrics, configModule.controllerComponents)
 
 }

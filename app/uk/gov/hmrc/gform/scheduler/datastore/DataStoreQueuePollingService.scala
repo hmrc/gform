@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.gform.scheduler.datastore
 
-import akka.actor.ActorSystem
+import org.apache.pekko.actor.ActorSystem
 import uk.gov.hmrc.gform.scheduler.PollingService
 import uk.gov.hmrc.gform.sharedmodel.sdes.SdesWorkItem
 
