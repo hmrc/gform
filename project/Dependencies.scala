@@ -19,7 +19,7 @@ object Dependencies {
     "uk.gov.hmrc.mongo"            %% "hmrc-mongo-work-item-repo-play-30" % hmrcMongoVersion,
     "uk.gov.hmrc"                  %% "bootstrap-backend-play-30"         % bootstrapVersion,
     "uk.gov.hmrc"                  %% "domain-play-30"                    % "9.0.0",
-    "org.julienrf"                 %% "play-json-derived-codecs"          % "10.1.0",
+    "org.julienrf"                 %% "play-json-derived-codecs"          % "11.0.0",
     "com.dripower"                 %% "play-circe"                        % "3014.1",
     "org.typelevel"                %% "cats-core"                         % "2.9.0",
     "org.typelevel"                %% "case-insensitive"                  % "1.3.0",

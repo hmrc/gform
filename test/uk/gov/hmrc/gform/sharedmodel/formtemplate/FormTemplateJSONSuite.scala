@@ -17,10 +17,12 @@
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
 import munit.FunSuite
-import play.api.libs.json.{ JsObject, JsSuccess, Json }
+import play.api.libs.json.{ JsObject, Json }
+import org.scalatest.matchers.should.Matchers
+import uk.gov.hmrc.gform.JsResultMatcher
 import uk.gov.hmrc.gform.formtemplate.FormTemplatesControllerRequestHandler
 
-class FormTemplateJSONSuite extends FunSuite {
+class FormTemplateJSONSuite extends FunSuite with JsResultMatcher with Matchers {
 
   test("annotate sections with kind: classic") {
 
@@ -132,10 +134,8 @@ class FormTemplateJSONSuite extends FunSuite {
         )
         .as[JsObject]
 
-    assertEquals(
-      FormTemplatesControllerRequestHandler.normaliseJSON(formKindClassicInput).map(Json.prettyPrint),
-      JsSuccess(Json.prettyPrint(expectedAnnotatedClassic))
-    )
+    val result = FormTemplatesControllerRequestHandler.normaliseJSON(formKindClassicInput)
+    result should beJsSuccess(expectedAnnotatedClassic)
   }
 
   test("annotate sections with kind: taskList") {
@@ -272,10 +272,8 @@ class FormTemplateJSONSuite extends FunSuite {
         )
         .as[JsObject]
 
-    assertEquals(
-      FormTemplatesControllerRequestHandler.normaliseJSON(formKindTaskListInput).map(Json.prettyPrint),
-      JsSuccess(Json.prettyPrint(expectedAnnotatedTaskList))
-    )
+    val result = FormTemplatesControllerRequestHandler.normaliseJSON(formKindTaskListInput)
+    result should beJsSuccess(expectedAnnotatedTaskList)
 
   }
 }
