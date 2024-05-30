@@ -116,7 +116,8 @@ trait FormatParser extends ValueParser {
           TextFormat(ReferenceNumber(min, min))
         } | "referenceNumber(" ~> positiveInteger ~ "," ~ positiveInteger <~ ")" ^^ { case min ~ _ ~ max =>
           TextFormat(ReferenceNumber(min, max))
-        }
+        } |
+        "time" ^^^ TextFormat(TimeFormat)
     }
 
   lazy val register: Parser[Register] = {

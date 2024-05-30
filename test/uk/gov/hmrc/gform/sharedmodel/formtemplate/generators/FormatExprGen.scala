@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate.generators
 import org.scalacheck.Gen
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ After, AnyDate, Before, BeforeAfterPrecisely, ChildBenefitNumber, CompanyRegistrationNumber, ConcreteDate, CountryCode, CtUTR, DateConstraint, DateConstraintInfo, DateConstraintType, DateConstraints, DateField, Day, EORI, Email, Month, NINO, NonUkCountryCode, Number, OffsetDate, PayeReference, PositiveNumber, Precisely, RoundingMode, SaUTR, ShortText, Sterling, TelephoneNumber, TextConstraint, TextWithRestrictions, Today, UkBankAccountNumber, UkEORI, UkSortCodeFormat, UkVrn, Year }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ After, AnyDate, Before, BeforeAfterPrecisely, ChildBenefitNumber, CompanyRegistrationNumber, ConcreteDate, CountryCode, CtUTR, DateConstraint, DateConstraintInfo, DateConstraintType, DateConstraints, DateField, Day, EORI, Email, Month, NINO, NonUkCountryCode, Number, OffsetDate, PayeReference, PositiveNumber, Precisely, RoundingMode, SaUTR, ShortText, Sterling, TelephoneNumber, TextConstraint, TextWithRestrictions, TimeFormat, Today, UkBankAccountNumber, UkEORI, UkSortCodeFormat, UkVrn, Year }
 
 trait FormatExprGen {
   def numberGen: Gen[Number] =
@@ -83,7 +83,8 @@ trait FormatExprGen {
     Gen.const(CompanyRegistrationNumber),
     Gen.const(EORI),
     Gen.const(UkEORI),
-    Gen.const(ChildBenefitNumber)
+    Gen.const(ChildBenefitNumber),
+    Gen.const(TimeFormat)
   )
 
   def beforeOrAfterOrPreciselyGen: Gen[BeforeAfterPrecisely] = Gen.oneOf(Before, After, Precisely)
