@@ -39,7 +39,6 @@ class FormModule(
     new FormController(
       configModule.controllerComponents,
       configModule.appConfig,
-      formTemplateModule.formTemplateService,
       fileUploadModule.fileUploadService,
       formService
     )

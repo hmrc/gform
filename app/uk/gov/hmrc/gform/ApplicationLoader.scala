@@ -314,9 +314,10 @@ class ApplicationModule(context: Context)
   val testOnlyFormService = new TestOnlyFormService(
     snapshotMongoCache,
     formMongoCache,
-    jsonCrypto,
     formTemplateModule.formTemplateService,
-    formTemplateModule.handler
+    formTemplateModule.handler,
+    envelopeModule.foptEnvelopeService,
+    objectStoreModule.foptObjectStoreService
   )
   private val testOnlyModule =
     new TestOnlyModule(

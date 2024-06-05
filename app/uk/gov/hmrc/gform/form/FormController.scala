@@ -25,7 +25,6 @@ import uk.gov.hmrc.gform.sharedmodel.AffinityGroup
 import uk.gov.hmrc.gform.config.AppConfig
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.fileupload.FileUploadAlgebra
-import uk.gov.hmrc.gform.formtemplate.FormTemplateService
 import uk.gov.hmrc.gform.sharedmodel.form.{ FormIdData, QueryParams }
 import uk.gov.hmrc.gform.sharedmodel.AccessCode
 import uk.gov.hmrc.gform.sharedmodel.form.{ FileId, FormId, UserData }
@@ -38,7 +37,6 @@ import scala.concurrent.{ ExecutionContext, Future }
 class FormController(
   controllerComponents: ControllerComponents,
   config: AppConfig,
-  formTemplateService: FormTemplateService,
   fileUpload: FileUploadAlgebra[Future],
   formService: FormAlgebra[Future]
 )(implicit ex: ExecutionContext)
