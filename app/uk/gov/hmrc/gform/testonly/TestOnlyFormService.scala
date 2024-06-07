@@ -19,24 +19,28 @@ package uk.gov.hmrc.gform.testonly
 import play.api.mvc.Results
 import play.api.libs.json._
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.crypto.{ Decrypter, Encrypter }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateRawId
 import uk.gov.hmrc.gform.formtemplate.{ FormTemplateService, RequestHandlerAlg }
-import uk.gov.hmrc.gform.sharedmodel.form.FormId
+import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId, FormId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateRaw
 import uk.gov.hmrc.gform.save4later.FormMongoCache
 import uk.gov.hmrc.gform.core.FOpt
 import uk.gov.hmrc.gform.BuildInfo
+
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import cats.implicits._
+import uk.gov.hmrc.gform.envelope.EnvelopeAlgebra
+import uk.gov.hmrc.gform.fileupload.FileUploadService
+import uk.gov.hmrc.gform.objectstore.ObjectStoreAlgebra
 
 class TestOnlyFormService(
   snapshotMongoCache: SnapshotMongoCache,
   formMongoCache: FormMongoCache,
-  jsonCrypto: Encrypter with Decrypter,
   formTemplateService: FormTemplateService,
-  requestHandler: RequestHandlerAlg[FOpt]
+  requestHandler: RequestHandlerAlg[FOpt],
+  envelopeAlgebra: EnvelopeAlgebra[FOpt],
+  objectStoreAlgebra: ObjectStoreAlgebra[FOpt]
 )(implicit ec: ExecutionContext) {
 
   private def maybeReplaceDestinations(raw: FormTemplateRaw): FormTemplateRaw = {
@@ -168,5 +172,18 @@ class TestOnlyFormService(
 
   def deleteSnapshot(snapshotId: SnapshotId): Future[Unit] =
     snapshotMongoCache.delete(snapshotId)
+
+  def deleteGeneratedFiles(envelopeId: EnvelopeId)(implicit hc: HeaderCarrier): FOpt[Unit] = for {
+    envelope <- envelopeAlgebra.get(envelopeId)
+    generatedFileIds: List[FileId] = envelope.files
+                                       .map(_.fileId)
+                                       .map(FileId(_))
+                                       .filter(FileUploadService.FileIds.generatedFileIds.contains)
+    _ <- generatedFileIds
+           .traverse { fileId =>
+             objectStoreAlgebra.deleteFile(envelopeId, fileId)
+           }
+           .map(_ => ())
+  } yield ()
 
 }

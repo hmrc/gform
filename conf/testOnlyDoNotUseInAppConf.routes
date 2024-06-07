@@ -41,9 +41,11 @@ GET           /gform/test-only/object-store/hmrc-illuminate/envelopes/:envelopeI
 
 POST          /gform/test-only/save-form                                              uk.gov.hmrc.gform.testonly.TestOnlyController.saveForm()
 POST          /gform/test-only/update-snapshot                                        uk.gov.hmrc.gform.testonly.TestOnlyController.updateSnapshot()
-POST          /gform/test-only/update-form-data                                        uk.gov.hmrc.gform.testonly.TestOnlyController.updateFormData()
+POST          /gform/test-only/update-form-data                                       uk.gov.hmrc.gform.testonly.TestOnlyController.updateFormData()
 GET           /gform/test-only/restore-form/:snapshotId/:restoreId                    uk.gov.hmrc.gform.testonly.TestOnlyController.restoreForm(snapshotId: String, restoreId: String, useOriginalTemplate: Boolean)
 PUT           /gform/test-only/restore-snapshot-template                              uk.gov.hmrc.gform.testonly.TestOnlyController.restoreSnapshotTemplate()
 POST          /gform/test-only/snapshots                                              uk.gov.hmrc.gform.testonly.TestOnlyController.getSnapshots()
 GET           /gform/test-only/snapshot-data/:snapshotId                              uk.gov.hmrc.gform.testonly.TestOnlyController.getSnapshotData(snapshotId: SnapshotId)
 DELETE        /gform/test-only/snapshot/:snapshotId                                   uk.gov.hmrc.gform.testonly.TestOnlyController.deleteSnapshot(snapshotId: SnapshotId)
+
+DELETE        /gform/test-only/generated-files/:envelopeId                            uk.gov.hmrc.gform.testonly.TestOnlyController.deleteGeneratedFiles(envelopeId: EnvelopeId)

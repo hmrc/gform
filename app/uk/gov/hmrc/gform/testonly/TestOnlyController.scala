@@ -39,7 +39,7 @@ import uk.gov.hmrc.gform.sharedmodel._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.TemplateType
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplate, FormTemplateId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationId, Destinations, HandlebarsTemplateProcessorModel }
-import uk.gov.hmrc.gform.sharedmodel.form.FormId
+import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FormId }
 import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
 import uk.gov.hmrc.gform.submission.destinations.{ DataStoreSubmitter, DestinationSubmissionInfo, DestinationsProcessorModelAlgebra }
 import uk.gov.hmrc.gform.submission.{ DmsMetaData, Submission, SubmissionId }
@@ -358,6 +358,15 @@ class TestOnlyController(
     testOnlyFormService
       .deleteSnapshot(snapshotId)
       .map(_ => NoContent)
+  }
+
+  def deleteGeneratedFiles(envelopeId: EnvelopeId): Action[AnyContent] = Action.async { implicit request =>
+    testOnlyFormService
+      .deleteGeneratedFiles(envelopeId)
+      .fold(
+        _ => throw new Exception(s"Unable to delete the generated files for the envelope '${envelopeId.value}'"),
+        _ => NoContent
+      )
   }
 }
 
