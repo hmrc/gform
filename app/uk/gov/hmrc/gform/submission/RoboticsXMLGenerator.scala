@@ -45,6 +45,22 @@ object RoboticsXMLGenerator {
       maybeEnvelopeId.map(correlationId).getOrElse("")
     }</gform>
 
+  def apply(
+    formId: FormTemplateId,
+    dmsId: String,
+    submissionRef: SubmissionRef,
+    now: Instant,
+    l: LangADT,
+    maybeEnvelopeId: Option[EnvelopeId],
+    filledHandlebarTemplate: String
+  ): NodeSeq =
+    // Used for XML produced with a handlebar template
+    <gform id={formId.value} dms-id={dmsId} submission-reference={submissionRef.withoutHyphens}>{
+      dateSubmitted(now)
+    }{datetimeSubmitted(now)}{userLanguage(l)}{maybeEnvelopeId.map(correlationId).getOrElse("")}{
+      xml.XML.loadStringNodes(filledHandlebarTemplate)
+    }</gform>
+
   private val replacements =
     Map('<' -> "&lt;", '>' -> "&gt;", '&' -> "&#38;", ']' -> "&#93;", '\'' -> "&#39;", '"' -> "&#34;")
 
@@ -117,5 +133,4 @@ object RoboticsXMLGenerator {
         case _                   => acc
       }
     }
-
 }

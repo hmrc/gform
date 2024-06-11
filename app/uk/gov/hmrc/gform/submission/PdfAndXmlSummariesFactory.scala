@@ -29,6 +29,7 @@ import uk.gov.hmrc.gform.submission.handlebars.{ FocussedHandlebarsModelTree, Ha
 
 import java.time.Instant
 import scala.concurrent.{ ExecutionContext, Future }
+import scala.xml.NodeSeq
 
 trait PdfAndXmlSummariesFactory {
   def apply(
@@ -172,10 +173,46 @@ object PdfAndXmlSummariesFactory {
             )
           ).map(xml => compact(JsonMethods.render(org.json4s.Xml.toJson(xml))))
         case DataOutputFormat.HBS =>
-          val focussedTree = FocussedHandlebarsModelTree(modelTree, modelTree.value.model)
           hmrcDms.payload.fold(
             throw new RuntimeException(s"Payload is empty in the destination '${formTemplate._id}-${hmrcDms.id.id}'.")
-          )(payload => Some(RealHandlebarsTemplateProcessor(payload, accumulatedModel, focussedTree, TemplateType.XML)))
+          ) { payload =>
+            val focussedTree: FocussedHandlebarsModelTree =
+              FocussedHandlebarsModelTree(modelTree, modelTree.value.model)
+            val filledHandlebarTemplate: String =
+              RealHandlebarsTemplateProcessor(payload, accumulatedModel, focussedTree, TemplateType.XML)
+
+            Some(
+              RoboticsXMLGenerator(
+                formTemplate._id,
+                hmrcDms.dmsFormId,
+                submissionRef,
+                now,
+                l,
+                envelopeId,
+                filledHandlebarTemplate
+              )
+            ).map(formatHandlebarWithXmlElements)
+          }
+      }
+
+    private def formatHandlebarWithXmlElements(handlebarWithRoboticsElements: NodeSeq): String = {
+      val formattedHandlebar = handlebarWithRoboticsElements.toString().replace("><", ">\n<")
+
+      val indentedHandlebar = wrapAndIndentHandlebarXml(None, formattedHandlebar)
+
+      XmlGeneratorService.xmlDec + "\n" + wrapAndIndentHandlebarXml(
+        Some("<data xmlns:xfa=\"http://www.xfa.org/schema/xfa-data/1.0/\">"),
+        indentedHandlebar
+      )
+    }
+
+    private def wrapAndIndentHandlebarXml(wrappingTag: Option[String], contents: String): String =
+      wrappingTag.fold {
+        val indexOfLastNewLine = contents.lastIndexOf("\n")
+        contents.substring(0, indexOfLastNewLine).replace("\n", "\n  ") + contents.substring(indexOfLastNewLine)
+      } { tag =>
+        val (tagName, _) = tag.splitAt(tag.indexOf(" "))
+        s"$tag\n  " + contents.replace("\n", "\n  ") + s"\n${tagName.replace("<", "</").replace(">", "")}>"
       }
   }
 }
