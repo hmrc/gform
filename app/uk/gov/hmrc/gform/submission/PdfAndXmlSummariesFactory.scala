@@ -21,7 +21,7 @@ import org.json4s.native.JsonMethods
 import org.json4s.native.Printer.compact
 import uk.gov.hmrc.gform.pdfgenerator.{ PdfGeneratorService, XmlGeneratorService }
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, Form }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplate, FormTemplateId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DataOutputFormat, HandlebarsTemplateProcessorModel, TemplateType }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
 import uk.gov.hmrc.gform.sharedmodel.{ LangADT, PdfHtml, SubmissionRef }
@@ -29,6 +29,7 @@ import uk.gov.hmrc.gform.submission.handlebars.{ FocussedHandlebarsModelTree, Ha
 
 import java.time.Instant
 import scala.concurrent.{ ExecutionContext, Future }
+import scala.xml.PrettyPrinter
 
 trait PdfAndXmlSummariesFactory {
   def apply(
@@ -97,7 +98,7 @@ object PdfAndXmlSummariesFactory {
     )(implicit now: Instant): Option[String] =
       if (hmrcDms.formdataXml)
         generateRoboticsFile(
-          formTemplate,
+          formTemplate._id,
           accumulatedModel,
           modelTree,
           hmrcDms,
@@ -118,7 +119,7 @@ object PdfAndXmlSummariesFactory {
       envelopeId: Option[EnvelopeId]
     )(implicit now: Instant): Option[String] =
       generateRoboticsFile(
-        formTemplate,
+        formTemplate._id,
         accumulatedModel,
         modelTree,
         hmrcDms,
@@ -129,7 +130,7 @@ object PdfAndXmlSummariesFactory {
       )
 
     private def generateRoboticsFile(
-      formTemplate: FormTemplate,
+      formTemplateId: FormTemplateId,
       accumulatedModel: HandlebarsTemplateProcessorModel,
       modelTree: HandlebarsModelTree,
       hmrcDms: HmrcDms,
@@ -142,7 +143,7 @@ object PdfAndXmlSummariesFactory {
         case DataOutputFormat.XML =>
           Some(
             RoboticsXMLGenerator(
-              formTemplate._id,
+              formTemplateId,
               hmrcDms.dmsFormId,
               submissionRef,
               modelTree.value.structuredFormData,
@@ -161,7 +162,7 @@ object PdfAndXmlSummariesFactory {
         case DataOutputFormat.JSON =>
           Some(
             RoboticsXMLGenerator(
-              formTemplate._id,
+              formTemplateId,
               hmrcDms.dmsFormId,
               submissionRef,
               modelTree.value.structuredFormData,
@@ -172,10 +173,32 @@ object PdfAndXmlSummariesFactory {
             )
           ).map(xml => compact(JsonMethods.render(org.json4s.Xml.toJson(xml))))
         case DataOutputFormat.HBS =>
-          val focussedTree = FocussedHandlebarsModelTree(modelTree, modelTree.value.model)
           hmrcDms.payload.fold(
-            throw new RuntimeException(s"Payload is empty in the destination '${formTemplate._id}-${hmrcDms.id.id}'.")
-          )(payload => Some(RealHandlebarsTemplateProcessor(payload, accumulatedModel, focussedTree, TemplateType.XML)))
+            throw new RuntimeException(s"Payload is empty in the destination '$formTemplateId-${hmrcDms.id.id}'.")
+          ) { payload =>
+            val focussedTree: FocussedHandlebarsModelTree =
+              FocussedHandlebarsModelTree(modelTree, modelTree.value.model)
+            val filledHandlebarTemplate: String =
+              RealHandlebarsTemplateProcessor(payload, accumulatedModel, focussedTree, TemplateType.XML)
+
+            val filledHandlebarWithMetadata =
+              <data xmlns:xfa="http://www.xfa.org/schema/xfa-data/1.0/">
+                {
+                RoboticsXMLGenerator(
+                  formTemplateId,
+                  hmrcDms.dmsFormId,
+                  submissionRef,
+                  now,
+                  l,
+                  envelopeId,
+                  filledHandlebarTemplate
+                )
+              }
+              </data>
+
+            val prettyPrinter = new PrettyPrinter(1000, 2, minimizeEmpty = true)
+            Some(XmlGeneratorService.xmlDec + "\n" + prettyPrinter.formatNodes(filledHandlebarWithMetadata))
+          }
       }
   }
 }

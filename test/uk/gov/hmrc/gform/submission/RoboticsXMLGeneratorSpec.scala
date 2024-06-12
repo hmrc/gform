@@ -117,6 +117,57 @@ class RoboticsXMLGeneratorSpec extends Spec {
 
   }
 
+  "apply (for handlebars)" should "generate the correct XML for an empty handlebar" in {
+    val emptyHandlebarFormData: String =
+      <formData>
+      </formData>
+        .toString()
+
+    verifyHandlebarXml(emptyHandlebarFormData)
+  }
+
+  it should "generate the correct XML for a simple handlebar" in {
+    val simpleHandlebarFormData: String =
+      <formData>
+        <user>
+          <name>John Johnson</name>
+          <telephone>07777777777</telephone>
+          <email>user@test.com</email>
+        </user>
+      </formData>
+        .toString()
+
+    verifyHandlebarXml(simpleHandlebarFormData)
+  }
+
+  it should "generate the correct XML for handlebars with more than one nesting" in {
+    val complexHandlebarFormData: String =
+      <formData>
+        <claim>
+          <taxYear>2024</taxYear>
+          <nilReturn>false</nilReturn>
+          <england>
+            <taxDue>1.00</taxDue>
+            <niDue>2.00</niDue>
+          </england>
+          <scotland>
+            <taxDue>3.00</taxDue>
+            <niDue>4.00</niDue>
+          </scotland>
+          <wales>
+            <taxDue>5.00</taxDue>
+            <niDue>6.00</niDue>
+          </wales>
+          <totalTaxDue>9.00</totalTaxDue>
+          <totalNiDue>12.00</totalNiDue>
+          <totalOverallDue>21.00</totalOverallDue>
+        </claim>
+      </formData>
+        .toString()
+
+    verifyHandlebarXml(complexHandlebarFormData)
+  }
+
   "buildDataStoreXML" should "generate the correct XML for the data-store with a field that is also an object structure" in {
 
     RoboticsXMLGenerator.buildDataStoreXML(
@@ -176,6 +227,59 @@ case object RoboticsXMLGeneratorSpec extends Spec {
         lCy,
         Some(envelopeId),
         sanitizeRequired = false
+      ) shouldBe expectedBST
+  }
+
+  private def verifyHandlebarXml(formData: String) = {
+
+    val formId = FormTemplateId("formId")
+    val dmsId = "dmsId"
+    val submissionRef = SubmissionRef("submissionRef")
+    val envelopeId = EnvelopeId("envelopeId")
+    val lEn = LangADT.En
+    val lCy = LangADT.Cy
+
+    val expected: Elem =
+      <gform id={formId.value} dms-id={dmsId} submission-reference={
+        submissionRef.value
+      }><dateSubmitted>02/01/2019</dateSubmitted><datetimeSubmitted>2019-01-02T00:00:00Z</datetimeSubmitted><userLanguage>EN</userLanguage><correlationId>{
+        envelopeId.value
+      }</correlationId>{
+        xml.XML.loadStringNodes(formData)
+      }</gform>
+
+    val dateSubmitted = Instant.from(LocalDate.of(2019, 1, 2).atStartOfDay(ZoneId.of("Europe/London")))
+
+    val dateSubmittedBST = Instant.from(LocalDate.of(2019, 6, 1).atStartOfDay(ZoneId.of("Europe/London")))
+
+    val expectedBST: Elem =
+      <gform id={formId.value} dms-id={dmsId} submission-reference={
+        submissionRef.value
+      }><dateSubmitted>01/06/2019</dateSubmitted><datetimeSubmitted>2019-06-01T00:00:00+01:00</datetimeSubmitted><userLanguage>CY</userLanguage><correlationId>{
+        envelopeId.value
+      }</correlationId>{
+        xml.XML.loadStringNodes(formData)
+      }</gform>
+
+    RoboticsXMLGenerator
+      .apply(
+        formId,
+        dmsId,
+        submissionRef,
+        dateSubmitted,
+        lEn,
+        Some(envelopeId),
+        formData
+      ) shouldBe expected
+    RoboticsXMLGenerator
+      .apply(
+        formId,
+        dmsId,
+        submissionRef,
+        dateSubmittedBST,
+        lCy,
+        Some(envelopeId),
+        formData
       ) shouldBe expectedBST
   }
 
