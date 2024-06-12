@@ -29,7 +29,7 @@ import uk.gov.hmrc.gform.submission.handlebars.{ FocussedHandlebarsModelTree, Ha
 
 import java.time.Instant
 import scala.concurrent.{ ExecutionContext, Future }
-import scala.xml.NodeSeq
+import scala.xml.PrettyPrinter
 
 trait PdfAndXmlSummariesFactory {
   def apply(
@@ -181,38 +181,24 @@ object PdfAndXmlSummariesFactory {
             val filledHandlebarTemplate: String =
               RealHandlebarsTemplateProcessor(payload, accumulatedModel, focussedTree, TemplateType.XML)
 
-            Some(
-              RoboticsXMLGenerator(
-                formTemplateId,
-                hmrcDms.dmsFormId,
-                submissionRef,
-                now,
-                l,
-                envelopeId,
-                filledHandlebarTemplate
-              )
-            ).map(formatHandlebarWithXmlElements)
+            val filledHandlebarWithMetadata =
+              <data xmlns:xfa="http://www.xfa.org/schema/xfa-data/1.0/">
+                {
+                RoboticsXMLGenerator(
+                  formTemplateId,
+                  hmrcDms.dmsFormId,
+                  submissionRef,
+                  now,
+                  l,
+                  envelopeId,
+                  filledHandlebarTemplate
+                )
+              }
+              </data>
+
+            val prettyPrinter = new PrettyPrinter(1000, 2, minimizeEmpty = true)
+            Some(XmlGeneratorService.xmlDec + "\n" + prettyPrinter.formatNodes(filledHandlebarWithMetadata))
           }
-      }
-
-    private def formatHandlebarWithXmlElements(handlebarWithRoboticsElements: NodeSeq): String = {
-      val formattedHandlebar = handlebarWithRoboticsElements.toString().replace("><", ">\n<")
-
-      val indentedHandlebar = wrapAndIndentHandlebarXml(None, formattedHandlebar)
-
-      XmlGeneratorService.xmlDec + "\n" + wrapAndIndentHandlebarXml(
-        Some("<data xmlns:xfa=\"http://www.xfa.org/schema/xfa-data/1.0/\">"),
-        indentedHandlebar
-      )
-    }
-
-    private def wrapAndIndentHandlebarXml(wrappingTag: Option[String], contents: String): String =
-      wrappingTag.fold {
-        val indexOfLastNewLine = contents.lastIndexOf("\n")
-        contents.substring(0, indexOfLastNewLine).replace("\n", "\n  ") + contents.substring(indexOfLastNewLine)
-      } { tag =>
-        val (tagName, _) = tag.splitAt(tag.indexOf(" "))
-        s"$tag\n  " + contents.replace("\n", "\n  ") + s"\n${tagName.replace("<", "</").replace(">", "")}>"
       }
   }
 }
