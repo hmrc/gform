@@ -18,7 +18,6 @@ package uk.gov.hmrc.gform.submission.destinations
 
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.core._
-import uk.gov.hmrc.gform.fileupload.{ FileDownloadAlgebra, FileUploadModule }
 import uk.gov.hmrc.gform.form.FormModule
 import uk.gov.hmrc.gform.formmetadata.FormMetadataModule
 import uk.gov.hmrc.gform.logging.Loggers
@@ -37,7 +36,6 @@ class DestinationModule(
   configModule: ConfigModule,
   mongoModule: MongoModule,
   formModule: FormModule,
-  fileUploadModule: FileUploadModule,
   metadataModule: FormMetadataModule,
   objectStoreModule: ObjectStoreModule
 )(implicit ex: ExecutionContext) {
@@ -58,19 +56,6 @@ class DestinationModule(
 
   val formTreeService: FormTreeAlgebra[FOpt] = new FormTreeService(metadataModule.foptFormMetadataService)
 
-  private val fileDownloadServiceIfPopulating: Option[FileDownloadAlgebra[FOpt]] =
-    if (configModule.DestinationsServicesConfig.populateHandlebarsModelWithDocuments) {
-      Loggers.destinations.info(
-        "The fileDownloadService IS configured for the submission service, so the Handlebars model WILL be populated with uploaded documents"
-      )
-      Some(fileUploadModule.foptFileDownloadService)
-    } else {
-      Loggers.destinations.info(
-        "The fileDownloadService IS NOT configured for the submission service, so the Handlebars model WILL NOT be populated with uploaded documents"
-      )
-      None
-    }
-
   private val objectStoreServiceIfPopulating: Option[ObjectStoreAlgebra[FOpt]] =
     if (configModule.DestinationsServicesConfig.populateHandlebarsModelWithDocuments) {
       Loggers.destinations.info(
@@ -85,10 +70,7 @@ class DestinationModule(
     }
 
   val destinationsProcessorModelService: DestinationsProcessorModelAlgebra[FOpt] =
-    new DestinationsProcessorModelService[FOpt](
-      fileDownloadServiceIfPopulating,
-      objectStoreServiceIfPopulating
-    )
+    new DestinationsProcessorModelService[FOpt](objectStoreServiceIfPopulating)
 
   val futureDestinationsProcessorModelService: DestinationsProcessorModelAlgebra[Future] =
     new DestinationsProcessorModelAlgebra[Future] {
@@ -97,11 +79,10 @@ class DestinationModule(
         frontEndSubmissionVariables: FrontEndSubmissionVariables,
         pdfData: PdfHtml,
         instructionPdfHtml: Option[PdfHtml],
-        structuredFormData: StructuredFormValue.ObjectStructure,
-        objectStore: Boolean
+        structuredFormData: StructuredFormValue.ObjectStructure
       )(implicit hc: HeaderCarrier): Future[HandlebarsTemplateProcessorModel] =
         destinationsProcessorModelService
-          .create(form, frontEndSubmissionVariables, pdfData, instructionPdfHtml, structuredFormData, objectStore)
+          .create(form, frontEndSubmissionVariables, pdfData, instructionPdfHtml, structuredFormData)
           .toFuture
     }
 }

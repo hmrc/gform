@@ -16,112 +16,31 @@
 
 package uk.gov.hmrc.gform.objectstore
 
+import cats.implicits.toFunctorOps
 import org.apache.pekko.NotUsed
 import org.apache.pekko.stream.Materializer
 import org.apache.pekko.stream.scaladsl.Source
 import org.apache.pekko.util.ByteString
-import cats.instances.list._
 import cats.syntax.eq._
-import cats.syntax.flatMap._
-import cats.syntax.functor._
 import cats.syntax.traverse._
-import cats.{ Applicative, Monad }
 import org.slf4j.LoggerFactory
 import uk.gov.hmrc.gform.envelope.EnvelopeAlgebra
-import uk.gov.hmrc.gform.fileupload.{ File, UploadedFile }
+import uk.gov.hmrc.gform.objectstore.ObjectStoreService.FileIds._
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 import uk.gov.hmrc.gform.sharedmodel.envelope.{ Available, EnvelopeData, EnvelopeFile }
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
+import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination
+import uk.gov.hmrc.gform.submission.{ PdfAndXmlSummaries, Submission }
+import uk.gov.hmrc.gform.time.TimeProvider
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.objectstore.client
 import uk.gov.hmrc.objectstore.client.{ ObjectSummaryWithMd5, Path }
 
 import java.net.URL
+import java.time.format.DateTimeFormatter
 import scala.concurrent.{ ExecutionContext, Future }
-
-trait ObjectStoreAlgebra[F[_]] {
-  def getFileBytes(envelopeId: EnvelopeId, fileName: String)(implicit hc: HeaderCarrier): F[ByteString]
-
-  def uploadFile(
-    envelopeId: EnvelopeId,
-    fileId: FileId,
-    fileName: String,
-    content: ByteString,
-    contentType: ContentType
-  )(implicit hc: HeaderCarrier): F[ObjectSummaryWithMd5]
-
-  def uploadFile(
-    directory: Path.Directory,
-    fileName: String,
-    content: ByteString,
-    contentType: ContentType
-  )(implicit hc: HeaderCarrier): F[ObjectSummaryWithMd5]
-
-  def getEnvelope(envelopeId: EnvelopeId): F[EnvelopeData]
-
-  def isObjectStore(envelopeId: EnvelopeId): F[Boolean]
-
-  def allUploadedFiles(envelopeId: EnvelopeId)(implicit F: Monad[F], hc: HeaderCarrier): F[List[UploadedFile]] =
-    for {
-      env  <- getEnvelope(envelopeId)
-      file <- uploadedFiles(envelopeId, env)
-    } yield file
-
-  private def uploadedFiles(envelopeId: EnvelopeId, envelope: EnvelopeData)(implicit
-    hc: HeaderCarrier,
-    applicativeM: Applicative[F]
-  ): F[List[UploadedFile]] =
-    envelope.files.traverse[F, UploadedFile] { file: EnvelopeFile =>
-      getFileBytes(envelopeId, file.fileName)
-        .map { bytes =>
-          UploadedFile(
-            File(FileId(file.fileId), uk.gov.hmrc.gform.fileupload.Available, file.fileName, file.length),
-            bytes
-          )
-        }
-    }
-
-  def deleteFile(envelopeId: EnvelopeId, fileIds: FileId)(implicit hc: HeaderCarrier): F[Unit]
-
-  def deleteFile(directory: Path.Directory, fileName: String)(implicit hc: HeaderCarrier): F[Unit]
-
-  def getFile(
-    directory: Path.Directory,
-    fileName: String
-  )(implicit
-    hc: HeaderCarrier
-  ): F[Option[client.Object[Source[ByteString, NotUsed]]]]
-
-  def zipFiles(
-    envelopeId: EnvelopeId,
-    objectStorePaths: ObjectStorePaths
-  )(implicit
-    hc: HeaderCarrier
-  ): F[ObjectSummaryWithMd5]
-
-  def deleteZipFile(
-    envelopeId: EnvelopeId,
-    objectStorePaths: ObjectStorePaths
-  )(implicit hc: HeaderCarrier): F[Unit]
-
-  def getZipFile(
-    envelopeId: EnvelopeId,
-    objectStorePaths: ObjectStorePaths
-  )(implicit
-    hc: HeaderCarrier,
-    m: Materializer
-  ): F[Option[client.Object[Source[ByteString, NotUsed]]]]
-
-  def uploadFromUrl(
-    from: java.net.URL,
-    envelopeId: EnvelopeId,
-    fileId: FileId,
-    contentType: ContentType,
-    fileName: String
-  )(implicit
-    hc: HeaderCarrier
-  ): F[ObjectSummaryWithMd5]
-}
 
 class ObjectStoreService(
   objectStoreConnector: ObjectStoreConnector,
@@ -130,6 +49,17 @@ class ObjectStoreService(
   ec: ExecutionContext
 ) extends ObjectStoreAlgebra[Future] {
   private val logger = LoggerFactory.getLogger(getClass)
+
+  def createEnvelope(
+    formTemplateId: FormTemplateId
+  ): Future[EnvelopeId] = {
+    logger.info(s"creating envelope, formTemplateId: '${formTemplateId.value}'}")
+
+    val newEnvelope = EnvelopeData.createEnvelope
+    for {
+      _ <- envelopeService.save(newEnvelope)
+    } yield newEnvelope._id
+  }
 
   override def getFileBytes(envelopeId: EnvelopeId, fileName: String)(implicit hc: HeaderCarrier): Future[ByteString] =
     objectStoreConnector.getFileBytes(envelopeId, fileName)
@@ -175,7 +105,7 @@ class ObjectStoreService(
     } yield res
   }
 
-  override def uploadFile(
+  override def uploadFileWithDir(
     directory: Path.Directory,
     fileName: String,
     content: ByteString,
@@ -236,9 +166,6 @@ class ObjectStoreService(
   )(implicit hc: HeaderCarrier, m: Materializer): Future[Option[client.Object[Source[ByteString, NotUsed]]]] =
     objectStoreConnector.getZipFile(envelopeId, objectStorePaths)
 
-  override def isObjectStore(envelopeId: EnvelopeId): Future[Boolean] =
-    envelopeService.find(envelopeId).map(e => e.isDefined)
-
   override def uploadFromUrl(
     from: URL,
     envelopeId: EnvelopeId,
@@ -275,6 +202,121 @@ class ObjectStoreService(
         envelopeService.save(envelopeData.copy(files = newFiles))
       }
     } yield res
+  }
 
+  override def submitEnvelope(
+    submission: Submission,
+    summaries: PdfAndXmlSummaries,
+    hmrcDms: HmrcDms,
+    formTemplateId: FormTemplateId
+  )(implicit hc: HeaderCarrier): Future[ObjectSummaryWithMd5] = {
+    logger.debug(s"env-id submit: ${submission.envelopeId}")
+    val timeProvider = new TimeProvider
+    val date = timeProvider.localDateTime().format(DateTimeFormatter.ofPattern("yyyyMMdd"))
+    val fileNamePrefix = s"${submission.submissionRef.withoutHyphens}-$date"
+
+    def uploadPfdF: Future[Unit] = {
+      val (fileId, fileNameSuffix) = {
+        if (hmrcDms.includeInstructionPdf)
+          (customerSummaryPdf, "customerSummary")
+        else (pdf, "iform")
+      }
+
+      uploadFile(
+        submission.envelopeId,
+        fileId,
+        s"$fileNamePrefix-$fileNameSuffix.pdf",
+        ByteString(summaries.pdfSummary.pdfContent),
+        ContentType.`application/pdf`
+      ).void
+    }
+
+    def uploadInstructionPdfF: Future[Unit] =
+      summaries.instructionPdfSummary.fold(Future.successful(())) { iPdf =>
+        uploadFile(
+          submission.envelopeId,
+          pdf,
+          s"$fileNamePrefix-iform.pdf",
+          ByteString(iPdf.pdfContent),
+          ContentType.`application/pdf`
+        ).void
+      }
+
+    def uploadFormDataF: Future[Unit] =
+      summaries.formDataXml
+        .map(elem =>
+          uploadFile(
+            submission.envelopeId,
+            formdataXml,
+            s"$fileNamePrefix-formdata.xml",
+            ByteString(elem.getBytes),
+            ContentType.`application/xml`
+          ).void
+        )
+        .getOrElse(Future.successful(()))
+
+    def uploadMetadataXmlF: Future[Unit] = {
+      val reconciliationId = ReconciliationId.create(submission.submissionRef)
+      val metadataXml = MetadataXml.xmlDec + "\n" + MetadataXml
+        .getXml(
+          submission,
+          reconciliationId,
+          summaries.instructionPdfSummary.fold(summaries.pdfSummary.numberOfPages)(_.numberOfPages),
+          submission.noOfAttachments + summaries.instructionPdfSummary.fold(0)(_ => 1),
+          hmrcDms
+        )
+      uploadFile(
+        submission.envelopeId,
+        xml,
+        s"$fileNamePrefix-metadata.xml",
+        ByteString(metadataXml.getBytes),
+        ContentType.`application/xml`
+      ).void
+    }
+
+    def uploadRoboticsContentF: Future[Unit] = summaries.roboticsFile match {
+      case Some(elem) =>
+        val roboticsFileExtension = summaries.roboticsFileExtension.map(_.toLowerCase).getOrElse("xml")
+        uploadFile(
+          submission.envelopeId,
+          roboticsFileId(roboticsFileExtension),
+          s"$fileNamePrefix-robotic." + roboticsFileExtension,
+          ByteString(elem.getBytes),
+          getContentType(roboticsFileExtension)
+        ).void
+      case _ => Future.successful(())
+    }
+
+    for {
+      _ <- uploadPfdF
+      _ <- uploadInstructionPdfF
+      _ <- uploadFormDataF
+      _ <- uploadRoboticsContentF
+      _ <- uploadMetadataXmlF
+      envelopeId = submission.envelopeId
+      objectSummary <- zipFiles(envelopeId, SdesDestination.Dms.objectStorePaths(envelopeId))
+    } yield objectSummary
+  }
+
+  private def getContentType(contentType: String) = contentType match {
+    case "json" => ContentType.`application/json`
+    case "pdf"  => ContentType.`application/pdf`
+    case _      => ContentType.`application/xml`
+  }
+
+}
+
+object ObjectStoreService {
+
+  //forbidden keys. make sure they aren't used in templates
+  object FileIds {
+    val pdf = FileId("pdf")
+    val customerSummaryPdf = FileId("customerSummaryPdf")
+    val formdataXml = FileId("formdataXml")
+    val xml = FileId("xmlDocument")
+    val dataStore = FileId("dataStore")
+    def roboticsFileId(extension: String) = FileId(s"robotics${extension.capitalize}")
+    val generatedFileIds =
+      List(pdf, xml, dataStore, formdataXml, customerSummaryPdf, roboticsFileId("json"), roboticsFileId("xml"))
   }
 }

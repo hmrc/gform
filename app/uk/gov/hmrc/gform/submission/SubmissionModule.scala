@@ -20,7 +20,6 @@ import org.mongodb.scala.model.{ IndexModel, IndexOptions }
 import org.mongodb.scala.model.Indexes.ascending
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.email.EmailModule
-import uk.gov.hmrc.gform.fileupload.FileUploadModule
 import uk.gov.hmrc.gform.form.FormModule
 import uk.gov.hmrc.gform.formtemplate.FormTemplateModule
 import uk.gov.hmrc.gform.mongo.MongoModule
@@ -44,7 +43,6 @@ class SubmissionModule(
   pdfGeneratorModule: PdfGeneratorModule,
   formModule: FormModule,
   formTemplateModule: FormTemplateModule,
-  fileUploadModule: FileUploadModule,
   timeModule: TimeModule,
   emailModule: EmailModule,
   submissionConsolidatorModule: SubmissionConsolidatorModule,
@@ -69,7 +67,8 @@ class SubmissionModule(
   )
 
   private val fileUploadServiceDmsSubmitter = new DmsSubmitter(
-    fileUploadModule.fileUploadService,
+    objectStoreModule.foptObjectStoreService,
+    sdesModule.foptDmsWorkItemService,
     formModule.fOptFormService,
     formTemplateModule.fOptFormTemplateAlgebra,
     pdfGeneratorModule.pdfGeneratorService,

@@ -28,9 +28,8 @@ import org.slf4j.LoggerFactory
 import play.api.libs.json.{ Json, OFormat }
 import uk.gov.hmrc.gform.core._
 import uk.gov.hmrc.gform.envelope.EnvelopeAlgebra
-import uk.gov.hmrc.gform.fileupload.FileUploadService
 import uk.gov.hmrc.gform.history.DateFilter
-import uk.gov.hmrc.gform.objectstore.ObjectStoreAlgebra
+import uk.gov.hmrc.gform.objectstore.{ ObjectStoreAlgebra, ObjectStoreService }
 import uk.gov.hmrc.gform.repo.Repo
 import uk.gov.hmrc.gform.sdes.datastore.DataStoreWorkItemAlgebra
 import uk.gov.hmrc.gform.sdes.dms.DmsWorkItemAlgebra
@@ -234,8 +233,8 @@ class SdesService(
                   val envelope = envelopeAlgebra.get(sdesSubmission.envelopeId)
                   envelope.map(e =>
                     (
-                      e.files.count(f => f.fileId =!= FileUploadService.FileIds.dataStore.value),
-                      e.files.count(f => !FileUploadService.FileIds.generatedFileIds.map(_.value).contains(f.fileId)),
+                      e.files.count(f => f.fileId =!= ObjectStoreService.FileIds.dataStore.value),
+                      e.files.count(f => !ObjectStoreService.FileIds.generatedFileIds.map(_.value).contains(f.fileId)),
                       e.files.map(_.length).sum
                     )
                   )
