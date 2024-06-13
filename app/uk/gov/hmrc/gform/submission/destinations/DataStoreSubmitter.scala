@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.gform.submission.destinations
 
+import cats.implicits.catsSyntaxEq
 import org.apache.pekko.util.ByteString
 import play.api.libs.json.{ JsObject, Json }
 
@@ -40,6 +41,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import scala.concurrent.ExecutionContext
+import scala.util.matching.Regex
 
 class DataStoreSubmitter(
   objectStoreAlgebra: ObjectStoreAlgebra[FOpt],
@@ -128,15 +130,29 @@ class DataStoreSubmitter(
       }
     } else Right(())
 
-  private def convertToJson(string: String, destinationId: DestinationId, payloadDiscriminator: String): JsObject =
-    Try(
+  def convertToJson(string: String, destinationId: DestinationId, payloadDiscriminator: String): JsObject =
+    Try {
       Json.parse(string)
-    ).fold(
-      error =>
+    }.fold(
+      error => {
+        val stringRegex: Regex = """"[^:"]*":\s*".*"""".r
+
+        val errorWithoutPii: String = stringRegex.replaceAllIn(
+          error.getMessage,
+          regexMatch => {
+            val matchedString: String = regexMatch.matched
+            val (field, value) = matchedString.splitAt(matchedString.indexOf(":"))
+            val numberOfSpaces = value.splitAt(value.indexOf(":") + 1)._2.takeWhile(_ === ' ').length
+            val valueLength: Int = value.length - 3 - numberOfSpaces // Minus 3 for the colon and quotation marks
+            field + s""":${" " * numberOfSpaces}"$valueLength""""
+          }
+        )
+
         throw new Exception(
-          s"Data store destination '${destinationId.id}' error, failed to parse $payloadDiscriminator payload into a json:\n${error.getMessage}",
+          s"Data store destination '${destinationId.id}' error, failed to parse $payloadDiscriminator payload into a json:\n$errorWithoutPii",
           error
-        ),
+        )
+      },
       jsValue =>
         jsValue.asOpt[JsObject].getOrElse {
           throw new Exception(
