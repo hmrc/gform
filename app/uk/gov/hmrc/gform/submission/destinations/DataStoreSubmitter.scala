@@ -149,8 +149,7 @@ class DataStoreSubmitter(
         )
 
         throw new Exception(
-          s"Data store destination '${destinationId.id}' error, failed to parse $payloadDiscriminator payload into a json:\n$errorWithoutPii",
-          error
+          s"Data store destination '${destinationId.id}' error, failed to parse $payloadDiscriminator payload into a json:\n$errorWithoutPii"
         )
       },
       jsValue =>
