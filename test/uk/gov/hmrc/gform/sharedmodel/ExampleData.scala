@@ -19,7 +19,7 @@ package uk.gov.hmrc.gform.sharedmodel
 import cats.data.NonEmptyList
 import uk.gov.hmrc.gform.Helpers._
 import uk.gov.hmrc.gform.config.FileInfoConfig
-import uk.gov.hmrc.gform.fileupload.RouteEnvelopeRequest
+import uk.gov.hmrc.gform.objectstore.RouteEnvelopeRequest
 import uk.gov.hmrc.gform.sharedmodel.email.LocalisedEmailTemplateId
 import uk.gov.hmrc.gform.sharedmodel.form._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
@@ -197,7 +197,7 @@ trait ExampleFieldValue { dependecies: ExampleFieldId =>
   def `fieldValue - facePhoto` =
     FormComponent(
       `fieldId - facePhoto`,
-      FileUpload(FileUploadProvider.FileUploadFrontend, None, None),
+      FileUpload(None, None),
       label = toSmartString("Attach evidence of your smile"),
       helpText = None,
       None,
@@ -526,7 +526,6 @@ trait ExampleFormTemplate {
     None,
     None,
     Some(accessibilityUrl),
-    None,
     None,
     None,
     None,

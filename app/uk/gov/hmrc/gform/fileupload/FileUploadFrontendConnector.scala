@@ -21,13 +21,13 @@ import org.apache.pekko.util.ByteString
 import org.slf4j.LoggerFactory
 import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.core.FutureSyntax
+import uk.gov.hmrc.gform.objectstore.FUConfig
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
-import uk.gov.hmrc.gform.upscan.UploadDetails
 import uk.gov.hmrc.gform.wshttp.{ FutureHttpResponseSyntax, WSHttp }
 
 import scala.concurrent.{ ExecutionContext, Future }
-import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
+import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.duration._
 
@@ -52,20 +52,6 @@ class FileUploadFrontendConnector(config: FUConfig, wSHttp: WSHttp)(implicit ex:
       List(10.milliseconds, 100.milliseconds, 2.seconds),
       msg
     ).void
-  }
-
-  def uploadFile(
-    envelopeId: EnvelopeId,
-    fileId: FileId,
-    uploadDetails: UploadDetails,
-    bytes: ByteString
-  )(implicit hc: HeaderCarrier): Future[HttpResponse] = {
-    val id = fileId.value
-    val fileName = id + "_" + uploadDetails.fileName
-    val url = s"$baseUrl/file-upload/upload/envelopes/${envelopeId.value}/files/$id"
-    wSHttp
-      .POSTFile(url, fileName, bytes, Seq.empty[(String, String)], uploadDetails.fileMimeType)
-      .failWithNonSuccessStatusCodes(url)
   }
 
   private lazy val baseUrl = config.fileUploadFrontendBaseUrl

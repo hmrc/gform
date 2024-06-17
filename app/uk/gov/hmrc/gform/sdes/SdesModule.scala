@@ -257,6 +257,37 @@ class SdesModule(
       fromFutureA(sdesService.update(notification))
   }
 
+  val foptDmsWorkItemService: DmsWorkItemAlgebra[FOpt] = new DmsWorkItemAlgebra[FOpt] {
+    override def pushWorkItem(
+      envelopeId: EnvelopeId,
+      formTemplateId: FormTemplateId,
+      submissionRef: SubmissionRef,
+      objWithSummary: ObjectSummaryWithMd5
+    ): FOpt[Unit] = fromFutureA(
+      dmsWorkItemService.pushWorkItem(envelopeId, formTemplateId, submissionRef, objWithSummary)
+    )
+
+    override def createNotifyRequest(objSummary: ObjectSummaryWithMd5, correlationId: String): SdesNotifyRequest =
+      dmsWorkItemService.createNotifyRequest(objSummary, correlationId)
+
+    override def search(
+      page: Int,
+      pageSize: Int,
+      formTemplateId: Option[FormTemplateId],
+      status: Option[ProcessingStatus]
+    ): FOpt[SdesWorkItemPageData] = fromFutureA(dmsWorkItemService.search(page, pageSize, formTemplateId, status))
+
+    override def enqueue(id: String): FOpt[Unit] = fromFutureA(dmsWorkItemService.enqueue(id))
+
+    override def find(id: String): FOpt[Option[WorkItem[SdesWorkItem]]] = fromFutureA(dmsWorkItemService.find(id))
+
+    override def findByEnvelopeId(envelopeId: EnvelopeId): FOpt[List[WorkItem[SdesWorkItem]]] = fromFutureA(
+      dmsWorkItemService.findByEnvelopeId(envelopeId)
+    )
+
+    override def delete(id: String): FOpt[Unit] = fromFutureA(dmsWorkItemService.delete(id))
+  }
+
   val foptDataStoreWorkItemService: DataStoreWorkItemAlgebra[FOpt] = new DataStoreWorkItemAlgebra[FOpt] {
     override def pushWorkItem(
       envelopeId: EnvelopeId,

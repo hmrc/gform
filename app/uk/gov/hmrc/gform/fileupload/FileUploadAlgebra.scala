@@ -23,6 +23,8 @@ import cats.syntax.functor._
 import cats.syntax.traverse._
 import cats.{ Applicative, Monad }
 import uk.gov.hmrc.gform.dms.FileAttachment
+import uk.gov.hmrc.gform.objectstore
+import uk.gov.hmrc.gform.objectstore.{ Envelope, File, UploadedFile }
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AllowedFileTypes, FormTemplateId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
@@ -46,7 +48,7 @@ trait FileDownloadAlgebra[F[_]] {
   ): F[List[UploadedFile]] =
     envelope.files.traverse[F, UploadedFile] { file: File =>
       getFileBytes(envelopeId, file.fileId)
-        .map(bytes => UploadedFile(file, bytes))
+        .map(bytes => objectstore.UploadedFile(file, bytes))
     }
 }
 

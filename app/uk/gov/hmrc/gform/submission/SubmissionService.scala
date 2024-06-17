@@ -128,8 +128,7 @@ class SubmissionService(
         submissionData.variables,
         submissionData.pdfData,
         submissionData.instructionPDFData,
-        submissionData.structuredFormData,
-        formTemplate.isObjectStore
+        submissionData.structuredFormData
       )
       .map(model =>
         HandlebarsModelTree(
