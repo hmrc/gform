@@ -34,7 +34,8 @@ import uk.gov.hmrc.gform.sharedmodel.{ AccessCode, SubmissionRef, UserId }
 import uk.gov.hmrc.gform.time.TimeProvider
 import uk.gov.hmrc.http.HeaderCarrier
 
-import java.time.{ Duration, Instant }
+import java.time.temporal.ChronoUnit
+import java.time.Instant
 
 class FormService[F[_]: Monad](
   formPersistence: FormPersistenceAlgebra[F],
@@ -154,9 +155,9 @@ class FormService[F[_]: Monad](
 
   private def calcExpiryDate(createdAt: Instant) = {
     val timeProvider = new TimeProvider
-    val daysFromCreated = Duration.between(createdAt, timeProvider.instant()).toDays
-    if (daysFromCreated + formExpiryDays >= formExpiryDaysFromCreation) {
-      val remainingDays = formExpiryDaysFromCreation - daysFromCreated
+    val daysSinceCreation = ChronoUnit.DAYS.between(createdAt, timeProvider.instant())
+    if (daysSinceCreation + formExpiryDays >= formExpiryDaysFromCreation) {
+      val remainingDays = Math.max(formExpiryDaysFromCreation - daysSinceCreation, 0)
       timeProvider.localDateTime().plusDays(remainingDays)
     } else {
       timeProvider.localDateTime().plusDays(formExpiryDays.toLong)

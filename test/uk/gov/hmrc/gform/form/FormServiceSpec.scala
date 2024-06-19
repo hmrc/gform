@@ -16,18 +16,16 @@
 
 package uk.gov.hmrc.gform.form
 
-import java.time.LocalDateTime
-
 import cats.Id
 import cats.implicits._
 import uk.gov.hmrc.gform.Spec
-import uk.gov.hmrc.gform.fileupload.FileUploadAlgebra
 import uk.gov.hmrc.gform.formmetadata.FormMetadataAlgebra
 import uk.gov.hmrc.gform.formtemplate.FormTemplateAlgebra
+import uk.gov.hmrc.gform.objectstore.ObjectStoreAlgebra
 import uk.gov.hmrc.gform.save4later.FormPersistenceAlgebra
 import uk.gov.hmrc.gform.sharedmodel.UserId
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, Form, FormIdData, QueryParams }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AllowedFileTypes, FormTemplateId }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.http.HeaderCarrier
 
 class FormServiceSpec extends Spec {
@@ -36,7 +34,7 @@ class FormServiceSpec extends Spec {
     val formTemplateId = formTemplate._id
     val formIdData = FormIdData.Plain(UserId("usr"), FormTemplateId("AAA999"))
     val persistenceAlgebra = mock[FormPersistenceAlgebra[Id]]
-    val fileUploadAlgebra = mock[FileUploadAlgebra[Id]]
+    val objectStoreAlgebra = mock[ObjectStoreAlgebra[Id]]
     val formTemplateAlgebra = mock[FormTemplateAlgebra[Id]]
     val metadataAlgebra = mock[FormMetadataAlgebra[Id]]
 
@@ -50,11 +48,9 @@ class FormServiceSpec extends Spec {
       .expects(formIdData.lowerCaseId)
       .returning(().pure[Id])
 
-    (fileUploadAlgebra
-      .createEnvelope(_: FormTemplateId, _: AllowedFileTypes, _: LocalDateTime, _: Option[Int], _: Boolean)(
-        _: HeaderCarrier
-      ))
-      .expects(formTemplateId, *, *, *, *, *)
+    (objectStoreAlgebra
+      .createEnvelope(_: FormTemplateId))
+      .expects(formTemplateId)
       .returning(EnvelopeId("ev").pure[Id])
 
     (formTemplateAlgebra
@@ -63,7 +59,7 @@ class FormServiceSpec extends Spec {
       .returning(formTemplate.pure[Id])
 
     val service =
-      new FormService[Id](persistenceAlgebra, fileUploadAlgebra, formTemplateAlgebra, metadataAlgebra, 28, 90)
+      new FormService[Id](persistenceAlgebra, objectStoreAlgebra, formTemplateAlgebra, metadataAlgebra, 28, 90)
 
     service.create(UserId("usr"), formTemplateId, None, QueryParams.empty)(
       HeaderCarrier()
