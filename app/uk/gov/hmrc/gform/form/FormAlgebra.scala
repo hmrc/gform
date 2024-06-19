@@ -37,7 +37,6 @@ trait FormAlgebra[F[_]] {
     userId: UserId,
     formTemplateId: FormTemplateId,
     accessCode: Option[AffinityGroup],
-    expiryDays: Long,
     queryParams: QueryParams
   )(implicit hc: HeaderCarrier): F[FormIdData]
 

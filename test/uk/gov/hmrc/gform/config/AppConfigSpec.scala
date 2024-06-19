@@ -27,7 +27,7 @@ class AppConfigSpec extends AnyFlatSpec with Matchers {
     val appConfig = AppConfig.loadOrThrow(ConfigFactory.load())
     appConfig.appName shouldBe "gform"
     appConfig.formExpiryDays shouldBe 28
-    appConfig.createdFormExpiryDays shouldBe 90
+    appConfig.formExpiryDaysFromCreation shouldBe 90
     appConfig.submittedFormExpiryHours shouldBe 48
     appConfig.formMaxAttachments shouldBe 15
     appConfig.formMaxAttachmentSizeMB shouldBe 10

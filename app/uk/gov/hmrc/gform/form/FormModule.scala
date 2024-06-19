@@ -65,10 +65,9 @@ class FormModule(
       userId: UserId,
       formTemplateId: FormTemplateId,
       affinityGroup: Option[AffinityGroup],
-      expiryDays: Long,
       queryParams: QueryParams
     )(implicit hc: HeaderCarrier): FOpt[FormIdData] =
-      fromFutureA(formService.create(userId, formTemplateId, affinityGroup, expiryDays, queryParams))
+      fromFutureA(formService.create(userId, formTemplateId, affinityGroup, queryParams))
 
     override def updateUserData(formIdData: FormIdData, userData: UserData)(implicit hc: HeaderCarrier): FOpt[Unit] =
       fromFutureA(formService.updateUserData(formIdData, userData))

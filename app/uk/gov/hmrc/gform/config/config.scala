@@ -27,7 +27,7 @@ import pureconfig.generic.auto._
 case class AppConfig(
   appName: String,
   formExpiryDays: Int,
-  createdFormExpiryDays: Int,
+  formExpiryDaysFromCreation: Int,
   submittedFormExpiryHours: Int,
   formMaxAttachmentSizeMB: Int,
   formMaxAttachments: Int,
@@ -50,8 +50,8 @@ object AppConfig {
     val appConfig = ConfigSource.fromConfig(config).loadOrThrow[AppConfig]
 
     appConfig.formExpiryDays.verifyThat(_ > 0, s"'formExpiryDays' must be positive, was ${appConfig.formExpiryDays}")
-    appConfig.createdFormExpiryDays
-      .verifyThat(_ > 0, s"'createdFormExpiryDays' must be positive, was ${appConfig.createdFormExpiryDays}")
+    appConfig.formExpiryDaysFromCreation
+      .verifyThat(_ > 0, s"'createdFormExpiryDays' must be positive, was ${appConfig.formExpiryDaysFromCreation}")
     appConfig.submittedFormExpiryHours
       .verifyThat(_ > 0, s"'submittedFormExpiryHours' must be positive, was ${appConfig.submittedFormExpiryHours}")
     appConfig.formMaxAttachments
