@@ -191,7 +191,7 @@ class ApplicationModule(context: Context)
     SymmetricCryptoFactory.aesCryptoFromConfig(baseConfigKey = "json.encryption", configModule.typesafeConfig)
 
   val prodExpiryDays: Int = configModule.appConfig.formExpiryDays
-  val prodCreatedExpiryDays: Int = configModule.appConfig.createdFormExpiryDays
+  val prodCreatedExpiryDays: Int = configModule.appConfig.formExpiryDaysFromCreation
   val prodSubmittedExpiryHours: Int = configModule.appConfig.submittedFormExpiryHours
   val formsCacheRepository =
     createMongoCacheRepository("forms", prodExpiryDays, prodCreatedExpiryDays, prodSubmittedExpiryHours)
@@ -257,7 +257,9 @@ class ApplicationModule(context: Context)
       cache,
       objectStoreModule.objectStoreService,
       formTemplateModule.formTemplateService,
-      formMetadaModule.formMetadataService
+      formMetadaModule.formMetadataService,
+      configModule.appConfig.formExpiryDays,
+      configModule.appConfig.formExpiryDaysFromCreation
     )
 
   val formModule =

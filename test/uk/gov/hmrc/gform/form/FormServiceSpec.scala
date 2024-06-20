@@ -58,9 +58,10 @@ class FormServiceSpec extends Spec {
       .expects(formTemplateId)
       .returning(formTemplate.pure[Id])
 
-    val service = new FormService[Id](persistenceAlgebra, objectStoreAlgebra, formTemplateAlgebra, metadataAlgebra)
+    val service =
+      new FormService[Id](persistenceAlgebra, objectStoreAlgebra, formTemplateAlgebra, metadataAlgebra, 28, 90)
 
-    service.create(UserId("usr"), formTemplateId, None, 2L, QueryParams.empty)(
+    service.create(UserId("usr"), formTemplateId, None, QueryParams.empty)(
       HeaderCarrier()
     ) shouldBe formIdData.lowerCaseId
   }

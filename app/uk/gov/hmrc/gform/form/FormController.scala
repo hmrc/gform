@@ -50,7 +50,7 @@ class FormController(
   ): Action[QueryParams] =
     formAction(parse.json[QueryParams])("newForm", FormIdData.Plain(userId, formTemplateId)) { implicit request =>
       formService
-        .create(userId, formTemplateId, affinityGroup, config.formExpiryDays.toLong, request.body)
+        .create(userId, formTemplateId, affinityGroup, request.body)
         .asOkJson
     }
 

@@ -34,11 +34,16 @@ import uk.gov.hmrc.gform.sharedmodel.{ AccessCode, SubmissionRef, UserId }
 import uk.gov.hmrc.gform.time.TimeProvider
 import uk.gov.hmrc.http.HeaderCarrier
 
+import java.time.temporal.ChronoUnit
+import java.time.Instant
+
 class FormService[F[_]: Monad](
   formPersistence: FormPersistenceAlgebra[F],
   objectStoreAlgebra: ObjectStoreAlgebra[F],
   formTemplateAlgebra: FormTemplateAlgebra[F],
-  formMetadataAlgebra: FormMetadataAlgebra[F]
+  formMetadataAlgebra: FormMetadataAlgebra[F],
+  formExpiryDays: Int,
+  formExpiryDaysFromCreation: Int
 ) extends FormAlgebra[F] {
 
   def get(formId: FormId)(implicit hc: HeaderCarrier): F[Form] =
@@ -96,11 +101,10 @@ class FormService[F[_]: Monad](
     userId: UserId,
     formTemplateId: FormTemplateId,
     affinityGroup: Option[AffinityGroup],
-    expiryDays: Long,
     queryParams: QueryParams
   )(implicit hc: HeaderCarrier): F[FormIdData] = {
     val timeProvider = new TimeProvider
-    val expiryDate = timeProvider.localDateTime().plusDays(expiryDays)
+    val expiryDate = timeProvider.localDateTime().plusDays(formExpiryDays.toLong)
 
     for {
       formTemplate <- formTemplateAlgebra.get(formTemplateId)
@@ -128,10 +132,11 @@ class FormService[F[_]: Monad](
   def updateUserData(formIdData: FormIdData, userData: UserData)(implicit hc: HeaderCarrier): F[Unit] = {
 
     val lowerCased = formIdData.lowerCaseId
-
     for {
-      form <- get(formIdData)
+      form         <- get(formIdData)
+      formMetaData <- formMetadataAlgebra.get(formIdData)
       formData = if (lowerCased.formTemplateId.isSpecimen) FormData(Seq.empty[FormField]) else userData.formData
+      expiryDate = calcExpiryDate(formMetaData.createdAt)
       newForm = form
                   .copy(
                     _id = lowerCased.toFormId,
@@ -140,13 +145,24 @@ class FormService[F[_]: Monad](
                     status = newStatus(form, userData.formStatus),
                     visitsIndex = userData.visitsIndex,
                     thirdPartyData = userData.thirdPartyData,
-                    componentIdToFileId = userData.componentIdToFileId
+                    componentIdToFileId = userData.componentIdToFileId,
+                    envelopeExpiryDate = Some(EnvelopeExpiryDate(expiryDate))
                   )
       _ <- formPersistence.upsert(newForm)
       _ <- refreshMetadata(form.formData != newForm.formData, lowerCased, newForm.formData)
     } yield ()
   }
 
+  private def calcExpiryDate(createdAt: Instant) = {
+    val timeProvider = new TimeProvider
+    val daysSinceCreation = ChronoUnit.DAYS.between(createdAt, timeProvider.instant())
+    if (daysSinceCreation + formExpiryDays >= formExpiryDaysFromCreation) {
+      val remainingDays = Math.max(formExpiryDaysFromCreation - daysSinceCreation, 0)
+      timeProvider.localDateTime().plusDays(remainingDays)
+    } else {
+      timeProvider.localDateTime().plusDays(formExpiryDays.toLong)
+    }
+  }
   def createFormFromLegacy(formIdData: FormIdData, newFormIdData: FormIdData)(implicit hc: HeaderCarrier): F[Form] = {
     val lowerCased = newFormIdData.lowerCaseId
 
