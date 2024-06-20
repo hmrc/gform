@@ -19,7 +19,7 @@ package uk.gov.hmrc.gform.sharedmodel
 import java.time.LocalDateTime
 
 import uk.gov.hmrc.gform.Spec
-import uk.gov.hmrc.gform.objectstore.ReconciliationId
+import uk.gov.hmrc.gform.fileupload.ReconciliationId
 import uk.gov.hmrc.gform.typeclasses.Now
 
 class ReconciliationIdSpec extends Spec {

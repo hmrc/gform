@@ -51,7 +51,7 @@ class SdesRenotifyService(
                                                               obj.content.runFold(ByteString.empty)(_ ++ _)
 
                                                             byteStringFuture.flatMap { concatenatedByteString =>
-                                                              objectStoreAlgebra.uploadFileWithDir(
+                                                              objectStoreAlgebra.uploadFile(
                                                                 paths.ephemeral,
                                                                 fileName,
                                                                 concatenatedByteString,

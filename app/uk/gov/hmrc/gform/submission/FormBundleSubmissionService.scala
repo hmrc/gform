@@ -194,13 +194,15 @@ class FormBundleSubmissionService[F[_]](
   )(implicit hc: HeaderCarrier) =
     buildMap(formTree)(_.formIdData) { id =>
       for {
+        formTemplate <- formTemplateAlgebra.get(id.formTemplateId)
         baseModel <- destinationProcessorModelAlgebra
                        .create(
                          formsById(id),
                          FrontEndSubmissionVariables(JsObject(Nil)),
                          pdfHtmlByFormId(id),
                          None,
-                         submissionDataByFormId(id).structuredFormData
+                         submissionDataByFormId(id).structuredFormData,
+                         formTemplate.isObjectStore
                        )
         treeModel = DestinationsProcessorModelAlgebra.createBundledFormTree(formTree)
       } yield baseModel + treeModel

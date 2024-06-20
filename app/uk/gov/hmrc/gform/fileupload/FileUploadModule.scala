@@ -16,13 +16,17 @@
 
 package uk.gov.hmrc.gform.fileupload
 
+import org.apache.pekko.util.ByteString
 import uk.gov.hmrc.gform.akka.AkkaModule
 import uk.gov.hmrc.gform.config.ConfigModule
+import uk.gov.hmrc.gform.core.{ FOpt, fromFutureA }
 import uk.gov.hmrc.gform.envelope.EnvelopeModule
-import uk.gov.hmrc.gform.objectstore.{ FUConfig, ObjectStoreModule }
+import uk.gov.hmrc.gform.objectstore.ObjectStoreModule
 import uk.gov.hmrc.gform.sdes.SdesModule
+import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
 import uk.gov.hmrc.gform.time.TimeModule
 import uk.gov.hmrc.gform.wshttp.WSHttpModule
+import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.ExecutionContext
 
@@ -55,6 +59,14 @@ class FileUploadModule(
       objectStoreModule.objectStoreService,
       sdesModule.dmsWorkItemService
     )
+
+  val foptFileDownloadService = new FileDownloadAlgebra[FOpt] {
+    override def getEnvelope(envelopeId: EnvelopeId)(implicit hc: HeaderCarrier): FOpt[Envelope] =
+      fromFutureA(fileUploadService.getEnvelope(envelopeId))
+
+    override def getFileBytes(envelopeId: EnvelopeId, fileId: FileId)(implicit hc: HeaderCarrier): FOpt[ByteString] =
+      fromFutureA(fileUploadService.getFileBytes(envelopeId, fileId))
+  }
 
   private lazy val config: FUConfig = FUConfig(
     fileUploadBaseUrl,

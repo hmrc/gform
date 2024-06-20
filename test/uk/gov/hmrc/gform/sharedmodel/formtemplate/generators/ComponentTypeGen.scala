@@ -131,7 +131,11 @@ trait ComponentTypeGen {
       infoText <- SmartStringGen.smartStringGen
     } yield InformationMessage(infoType, infoText)
 
-  def fileUploadGen: Gen[FileUpload] = FileUpload(None, None)
+  def fileUploadGen: Gen[FileUpload] = PrimitiveGen.booleanGen.flatMap(compression =>
+    Gen
+      .oneOf(FileUploadProvider.FileUploadFrontend, FileUploadProvider.Upscan(compression))
+      .map(FileUpload(_, None, None))
+  )
 
   def localTimeGen(baseTime: LocalTime): Gen[LocalTime] =
     Gen.oneOf(

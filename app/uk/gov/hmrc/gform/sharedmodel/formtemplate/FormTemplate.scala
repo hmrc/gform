@@ -54,6 +54,7 @@ case class FormTemplate(
   accessibilityUrl: Option[AccessibilityUrl],
   exitPages: Option[NonEmptyList[ExitPage]],
   expressionsOutput: Option[ExpressionOutput],
+  objectStore: Option[Boolean],
   displayWidth: Option[LayoutDisplayWidth],
   emailCodeParameters: Option[NonEmptyList[EmailCodeParameter]],
   dataRetrieve: Option[NonEmptyList[DataRetrieve]]
@@ -66,6 +67,8 @@ case class FormTemplate(
 
   def expandedFormComponentsInMainSections: List[FormComponent] =
     formKind.allSections.flatMap(_.expandedFormComponents())
+
+  val isObjectStore: Boolean = objectStore.getOrElse(true)
 }
 
 object FormTemplate {

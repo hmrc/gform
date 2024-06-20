@@ -22,9 +22,9 @@ import java.util.Base64
 import cats.instances.int._
 import cats.syntax.eq._
 import com.fasterxml.jackson.databind.JsonNode
+import uk.gov.hmrc.gform.fileupload.UploadedFile
 import uk.gov.hmrc.gform.form.BundledFormTreeNode
 import uk.gov.hmrc.gform.models.helpers.TaxPeriodHelper.formatDate
-import uk.gov.hmrc.gform.objectstore.UploadedFile
 import uk.gov.hmrc.gform.sharedmodel.{ FrontEndSubmissionVariables, NotChecked, ObligationDetail, PdfHtml, RetrievedObligations, SubmissionRef, TaxResponse }
 import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormId, FormStatus }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponentId, FormTemplateId }
@@ -40,7 +40,8 @@ trait DestinationsProcessorModelAlgebra[M[_]] {
     frontEndSubmissionVariables: FrontEndSubmissionVariables,
     pdfData: PdfHtml,
     instructionPdfHtml: Option[PdfHtml],
-    structuredFormData: StructuredFormValue.ObjectStructure
+    structuredFormData: StructuredFormValue.ObjectStructure,
+    objectStore: Boolean
   )(implicit hc: HeaderCarrier): M[HandlebarsTemplateProcessorModel]
 }
 
