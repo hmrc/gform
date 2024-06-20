@@ -23,10 +23,10 @@ import cats.syntax.flatMap._
 import cats.syntax.functor._
 import cats.syntax.traverse._
 import uk.gov.hmrc.gform.sharedmodel.AffinityGroup
+import uk.gov.hmrc.gform.fileupload.FileUploadAlgebra
 import uk.gov.hmrc.gform.formmetadata.{ FormMetadata, FormMetadataAlgebra }
 import uk.gov.hmrc.gform.formtemplate.FormTemplateAlgebra
 import uk.gov.hmrc.gform.logging.Loggers
-import uk.gov.hmrc.gform.objectstore.ObjectStoreAlgebra
 import uk.gov.hmrc.gform.save4later.FormPersistenceAlgebra
 import uk.gov.hmrc.gform.sharedmodel.form.{ FormStatus, _ }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ BySubmissionReference, FormAccessCodeForAgents, FormComponentId, FormTemplate, FormTemplateId }
@@ -39,7 +39,7 @@ import java.time.Instant
 
 class FormService[F[_]: Monad](
   formPersistence: FormPersistenceAlgebra[F],
-  objectStoreAlgebra: ObjectStoreAlgebra[F],
+  fileUpload: FileUploadAlgebra[F],
   formTemplateAlgebra: FormTemplateAlgebra[F],
   formMetadataAlgebra: FormMetadataAlgebra[F],
   formExpiryDays: Int,
@@ -108,7 +108,14 @@ class FormService[F[_]: Monad](
 
     for {
       formTemplate <- formTemplateAlgebra.get(formTemplateId)
-      envelopeId   <- objectStoreAlgebra.createEnvelope(formTemplateId)
+      envelopeId <-
+        fileUpload.createEnvelope(
+          formTemplateId,
+          formTemplate.allowedFileTypes,
+          expiryDate,
+          formTemplate.fileSizeLimit,
+          formTemplate.isObjectStore
+        )
       formIdData = createNewFormData(userId, formTemplate, envelopeId, affinityGroup)
       lowerCased = formIdData.lowerCaseId
       form = Form(

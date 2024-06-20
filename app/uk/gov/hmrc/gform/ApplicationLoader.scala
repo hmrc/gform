@@ -40,6 +40,7 @@ import uk.gov.hmrc.gform.dms.DmsModule
 import uk.gov.hmrc.gform.email.EmailModule
 import uk.gov.hmrc.gform.employments.EmploymentsModule
 import uk.gov.hmrc.gform.envelope.EnvelopeModule
+import uk.gov.hmrc.gform.fileupload.FileUploadFrontendAlgebra
 import uk.gov.hmrc.gform.fileupload.FileUploadModule
 import uk.gov.hmrc.gform.form.FormModule
 import uk.gov.hmrc.gform.form.FormService
@@ -255,7 +256,7 @@ class ApplicationModule(context: Context)
   def createFormService(cache: FormMongoCache): FormService[Future] =
     new FormService(
       cache,
-      objectStoreModule.objectStoreService,
+      fileUploadModule.fileUploadService,
       formTemplateModule.formTemplateService,
       formMetadaModule.formMetadataService,
       configModule.appConfig.formExpiryDays,
@@ -266,7 +267,7 @@ class ApplicationModule(context: Context)
     new FormModule(configModule, formTemplateModule, fileUploadModule, formService)
 
   val destinationModule =
-    new DestinationModule(configModule, mongoModule, formModule, formMetadaModule, objectStoreModule)
+    new DestinationModule(configModule, mongoModule, formModule, fileUploadModule, formMetadaModule, objectStoreModule)
 
   val validationModule = new DesModule(wSHttpModule, configModule)
 
@@ -281,6 +282,7 @@ class ApplicationModule(context: Context)
       pdfGeneratorModule,
       formModule,
       formTemplateModule,
+      fileUploadModule,
       timeModule,
       emailModule,
       submissionConsolidatorModule,
@@ -302,7 +304,7 @@ class ApplicationModule(context: Context)
   private val obligationModule = new ObligationModule(wSHttpModule, configModule)
   private val employmentsModule = new EmploymentsModule(wSHttpModule, configModule)
 
-  private val snapshotsMongoCache = createMongoCacheRepository(
+  val snapshotsMongoCache = createMongoCacheRepository(
     "snapshots",
     configModule.snapshotExpiryDays,
     configModule.snapshotCreatedExpiryDays,
@@ -336,6 +338,8 @@ class ApplicationModule(context: Context)
     )
 
   val dbLookupModule = new DbLookupModule(controllerComponents, mongoModule)
+
+  val fileUploadFrontendAlgebra: FileUploadFrontendAlgebra[Future] = fileUploadModule.fileUploadFrontendConnector
 
   val upscanModule = new UpscanModule(
     formService,

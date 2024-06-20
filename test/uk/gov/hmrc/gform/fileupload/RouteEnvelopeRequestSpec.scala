@@ -18,7 +18,6 @@ package uk.gov.hmrc.gform.fileupload
 
 import play.api.libs.json.{ JsObject, JsSuccess, Json }
 import uk.gov.hmrc.gform.Spec
-import uk.gov.hmrc.gform.objectstore.RouteEnvelopeRequest
 import uk.gov.hmrc.gform.sharedmodel.ExampleData
 
 class RouteEnvelopeRequestSpec extends Spec {

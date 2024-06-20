@@ -31,7 +31,8 @@ import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import cats.implicits._
 import uk.gov.hmrc.gform.envelope.EnvelopeAlgebra
-import uk.gov.hmrc.gform.objectstore.{ ObjectStoreAlgebra, ObjectStoreService }
+import uk.gov.hmrc.gform.fileupload.FileUploadService
+import uk.gov.hmrc.gform.objectstore.ObjectStoreAlgebra
 
 class TestOnlyFormService(
   snapshotMongoCache: SnapshotMongoCache,
@@ -177,7 +178,7 @@ class TestOnlyFormService(
     generatedFileIds: List[FileId] = envelope.files
                                        .map(_.fileId)
                                        .map(FileId(_))
-                                       .filter(ObjectStoreService.FileIds.generatedFileIds.contains)
+                                       .filter(FileUploadService.FileIds.generatedFileIds.contains)
     _ <- generatedFileIds
            .traverse { fileId =>
              objectStoreAlgebra.deleteFile(envelopeId, fileId)

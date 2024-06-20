@@ -21,11 +21,10 @@ import cats.instances.future._
 import org.slf4j.LoggerFactory
 import uk.gov.hmrc.gform.core.{ FOpt, fromFutureA, success }
 import uk.gov.hmrc.gform.envelope.EnvelopeAlgebra
+import uk.gov.hmrc.gform.fileupload.{ Available, Envelope, File, FileUploadService }
 import uk.gov.hmrc.gform.form.FormAlgebra
 import uk.gov.hmrc.gform.formtemplate.FormTemplateAlgebra
-import uk.gov.hmrc.gform.objectstore.{ Available, Envelope, File, ObjectStoreAlgebra }
 import uk.gov.hmrc.gform.pdfgenerator.PdfGeneratorService
-import uk.gov.hmrc.gform.sdes.dms.DmsWorkItemAlgebra
 import uk.gov.hmrc.gform.sharedmodel.LangADT
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId, Submitted }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
@@ -37,8 +36,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 import scala.concurrent.ExecutionContext
 
 class DmsSubmitter(
-  objectStoreAlgebra: ObjectStoreAlgebra[FOpt],
-  dmsWorkItemAlgebra: DmsWorkItemAlgebra[FOpt],
+  fileUploadService: FileUploadService,
   formService: FormAlgebra[FOpt],
   formTemplateService: FormTemplateAlgebra[FOpt],
   pdfGeneratorService: PdfGeneratorService,
@@ -65,17 +63,21 @@ class DmsSubmitter(
             .withPdf(pdfGeneratorService, modelTree.value.pdfData, modelTree.value.instructionPdfData)
             .apply(form, formTemplate, accumulatedModel, modelTree, customerId, submission.submissionRef, hmrcDms, l)
         )
-      envelope      <- envelopeAlgebra.get(submission.envelopeId)
-      objectSummary <- objectStoreAlgebra.submitEnvelope(submission, summaries, hmrcDms, formTemplate._id)
-      _ <-
-        dmsWorkItemAlgebra
-          .pushWorkItem(submission.envelopeId, form.formTemplateId, submission.submissionRef, objectSummary)
-      envelopeDetails <- success(
-                           Envelope(envelope.files.map(f => File(FileId(f.fileId), Available, f.fileName, f.length)))
-                         )
+      maybeEnvelope <- envelopeAlgebra.find(submission.envelopeId)
+      res <-
+        fromFutureA(
+          fileUploadService.submitEnvelope(submission, summaries, hmrcDms, maybeEnvelope.isDefined, formTemplate._id)
+        )
+      envelopeDetails <- maybeEnvelope match {
+                           case Some(envelope) =>
+                             val files: List[File] =
+                               envelope.files.map(f => File(FileId(f.fileId), Available, f.fileName, f.length))
+                             success(Envelope(files))
+                           case None => fromFutureA(fileUploadService.getEnvelope(submission.envelopeId))
+                         }
       _ <- success(logFileSizeBreach(submission.envelopeId, envelopeDetails.files))
       _ <- formService.updateFormStatus(submissionInfo.formId, Submitted)
-    } yield ()
+    } yield res
   }
 
   /** This log line is used in alert-config, to trigger a pager duty alert when files sizes exceeds the threshold

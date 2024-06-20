@@ -23,7 +23,6 @@ import org.apache.pekko.pattern.after
 import org.slf4j.LoggerFactory
 import play.api.http.HeaderNames.LOCATION
 import play.api.libs.json.{ JsObject, Json }
-import uk.gov.hmrc.gform.objectstore.{ FUConfig, SpoiltLocationHeader }
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AllowedFileTypes, FormTemplateId, JsonUtils }
 import uk.gov.hmrc.http.HttpResponse

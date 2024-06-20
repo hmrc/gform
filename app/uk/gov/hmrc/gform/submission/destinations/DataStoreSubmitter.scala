@@ -174,14 +174,14 @@ class DataStoreSubmitter(
     val byteString = ByteString(payload.getBytes)
     val paths = destination.objectStorePaths(submission.envelopeId)
     for {
-      _ <- objectStoreAlgebra.uploadFileWithDir(
+      _ <- objectStoreAlgebra.uploadFile(
              paths.permanent,
              fileName,
              byteString,
              ContentType.`application/json`
            )
 
-      objWithSummary <- objectStoreAlgebra.uploadFileWithDir(
+      objWithSummary <- objectStoreAlgebra.uploadFile(
                           paths.ephemeral,
                           fileName,
                           byteString,
