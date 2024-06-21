@@ -434,6 +434,7 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
     "affinityGroup" ^^ { _ => UserField.AffinityGroup }
       | userFieldEnrolments
       | "enrolledIdentifier" ^^ (_ => UserField.EnrolledIdentifier)
+      | "credentialRole" ^^ (_ => UserField.CredentialRole)
   )
 
   lazy val enrolment: Parser[UserField.Enrolment] = serviceName ~ "." ~ identifierName ^^ { case sn ~ _ ~ in =>
