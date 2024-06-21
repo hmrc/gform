@@ -88,7 +88,7 @@ case class DateOrElse(field1: DateExpr, field2: DateExpr) extends DateExpr
 object DateExpr {
   implicit val format: OFormat[DateExpr] = derived.oformat()
 
-  def allFormCtxExprs(dateExpr: DateExpr): List[FormCtx] = dateExpr match {
+  private def allFormCtxExprs(dateExpr: DateExpr): List[FormCtx] = dateExpr match {
     case DateValueExpr(_)              => Nil
     case DateFormCtxVar(formCtx)       => formCtx :: Nil
     case DateExprWithOffset(dExpr, _)  => allFormCtxExprs(dExpr)

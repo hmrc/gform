@@ -17,16 +17,15 @@
 package uk.gov.hmrc.gform.submission.handlebars
 
 import java.text.DecimalFormat
-
 import cats.instances.string._
 import cats.syntax.option._
 import cats.syntax.eq._
 import shapeless.syntax.typeable._
 import uk.gov.hmrc.gform.time.TimeProvider
+
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.util.Base64
-
 import com.fasterxml.jackson.databind.node.{ ArrayNode, ObjectNode, TextNode }
 import com.github.jknack.handlebars.{ Handlebars, Options }
 import uk.gov.hmrc.gform.logging.Loggers
@@ -34,6 +33,8 @@ import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
 import uk.gov.hmrc.gform.sharedmodel.form._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationId, Destinations, HandlebarsTemplateProcessorModel }
+
+import scala.annotation.tailrec
 
 trait RecursiveHandlebarsTemplateProcessor {
   def apply(
@@ -110,7 +111,7 @@ class HandlebarsTemplateProcessorHelpers(
   private def extractNonEmptyStringFieldValue(date: java.util.Map[String, String], field: String): Option[String] =
     for {
       value <- Option(date.get(field))
-      if !value.isEmpty
+      if value.nonEmpty
     } yield value
 
   def either(first: Any, o: Options): CharSequence = eitherN(first :: o.params.toList: _*)
@@ -701,6 +702,7 @@ class HandlebarsTemplateProcessorHelpers(
     formTemplate: FormTemplate,
     destinationId: DestinationId
   ): Either[String, Destination.HandlebarsHttpApi] = {
+    @tailrec
     def findInList(list: List[Destination]): Option[Destination.HandlebarsHttpApi] = list match {
       case Nil                                                               => None
       case (d: Destination.HandlebarsHttpApi) :: _ if destinationId === d.id => Some(d)
@@ -753,7 +755,7 @@ class HandlebarsTemplateProcessorHelpers(
 
   private def asNotNullNonBlankString(a: Any): Option[String] = {
     val foo = asNotNullString(a).collect {
-      case s if !s.trim.isEmpty => s
+      case s if s.trim.nonEmpty => s
     }
     foo
   }

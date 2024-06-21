@@ -23,6 +23,7 @@ import play.api.libs.json._
 import scalax.collection.{ Graph, GraphEdge }
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 
+import scala.annotation.tailrec
 import scala.util.matching.Regex
 
 sealed trait BooleanExpr
@@ -116,6 +117,7 @@ object BooleanExpr {
 
   private def toBooleanExprIds(xs: BooleanExpr*): List[BooleanExprId] = xs.toList.flatMap(x => resolveReferences(x))
 
+  @tailrec
   private def resolveReferences(t: BooleanExpr): List[BooleanExprId] = t match {
     case Not(e: BooleanExpr)                        => resolveReferences(e)
     case Or(left: BooleanExpr, right: BooleanExpr)  => toBooleanExprIds(left, right)

@@ -51,9 +51,9 @@ object DataSource {
     case _ => none
   }
 
-  val seiss = "seiss"
-  val mongoPrefix = "mongo"
-  val enrolmentPrefix = "enrolment"
-  val delegatedEnrolmentPrefix = "delegatedEnrolment"
+  private val seiss = "seiss"
+  private val mongoPrefix = "mongo"
+  private val enrolmentPrefix = "enrolment"
+  private val delegatedEnrolmentPrefix = "delegatedEnrolment"
 
 }

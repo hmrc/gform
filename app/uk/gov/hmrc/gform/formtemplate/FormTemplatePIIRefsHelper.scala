@@ -122,8 +122,8 @@ object FormTemplatePIIRefsHelper {
       case PeriodValue(value)                                 => Nil
       case LinkCtx(link)                                      => Nil
       case FormTemplateCtx(value)                             => Nil
-      case DateCtx(value)                                     => value.maybeFormCtx.toList.map(_.formComponentId.value)
-      case DateFunction(value)                                => value.dateExpr.maybeFormCtx.toList.map(_.formComponentId.value)
+      case DateCtx(value)                                     => value.maybeFormCtx.map(_.formComponentId.value)
+      case DateFunction(value)                                => value.dateExpr.maybeFormCtx.map(_.formComponentId.value)
       case Value                                              => Nil
       case LangCtx                                            => Nil
       case DataRetrieveCtx(_, _)                              => Nil

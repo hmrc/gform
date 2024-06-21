@@ -55,7 +55,7 @@ case object TableCompRaw extends ComponentTypeRaw
 
 object ComponentTypeRaw {
 
-  val componentMap: Map[String, ComponentTypeRaw] =
+  private val componentMap: Map[String, ComponentTypeRaw] =
     Map(
       "text"            -> TextRaw,
       "date"            -> DateRaw,

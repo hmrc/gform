@@ -111,7 +111,7 @@ object ValueClassBinder {
       }
 
     override def unbind(key: String, coordinates: Coordinates): String =
-      s"""$key=${coordinates.value.toString}"""
+      s"""$key=${coordinates.value}"""
   }
 
   def valueClassBinder[A: Reads](fromAtoString: A => String)(implicit stringBinder: PathBindable[String]) = {

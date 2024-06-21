@@ -136,7 +136,7 @@ object FormTemplateValidator {
   def validateCsvCountryCountCheck(formTemplate: FormTemplate): ValidationResult = {
     val allExprs: List[ExprWithPath] = FormTemplate.leafExprs.exprs(TemplatePath.root, formTemplate)
     val results = allExprs.collect { case ExprWithPath(path, CsvCountryCountCheck(fcId, _, _)) =>
-      val fc = SectionHelper.addToListFormComponents(formTemplate.formKind.allSections).filter(_.id == fcId).headOption
+      val fc = SectionHelper.addToListFormComponents(formTemplate.formKind.allSections).find(_.id == fcId)
       val result: ValidationResult = fc
         .map {
           case IsCountryLookup(fc) => Valid
@@ -506,37 +506,31 @@ object FormTemplateValidator {
   }
 
   def validateChoiceDividerPositionValue(sectionsList: List[Page]): ValidationResult = {
-    def check(choice: Choice): Boolean = choice.dividerPosition
-      .map {
-        case DividerPosition.Number(i) => false
-        case DividerPosition.Value(d) =>
-          choice.options.collectFirst {
-            case OptionData.ValueBased(_, _, _, _, OptionDataValue.StringBased(value)) if value === d => true
-          }.isEmpty
-      }
-      .getOrElse(false)
+    def check(choice: Choice): Boolean = choice.dividerPosition.exists {
+      case DividerPosition.Number(i) => false
+      case DividerPosition.Value(d) =>
+        choice.options.collectFirst {
+          case OptionData.ValueBased(_, _, _, _, OptionDataValue.StringBased(value)) if value === d => true
+        }.isEmpty
+    }
 
     validateChoice(sectionsList, check, "dividerPosition value should be one of the non dynamic choice options")
   }
 
   def validateChoiceDividerPositionLowerBound(sectionsList: List[Page]): ValidationResult = {
-    def check(choice: Choice): Boolean = choice.dividerPosition
-      .map {
-        case DividerPosition.Number(i) => i <= 0
-        case DividerPosition.Value(_)  => false
-      }
-      .getOrElse(false)
+    def check(choice: Choice): Boolean = choice.dividerPosition.exists {
+      case DividerPosition.Number(i) => i <= 0
+      case DividerPosition.Value(_)  => false
+    }
 
     validateChoice(sectionsList, check, "dividerPosition should be greater than 0 value")
   }
 
   def validateChoiceDividerPositionUpperBound(sectionsList: List[Page]): ValidationResult = {
-    def check(choice: Choice): Boolean = choice.dividerPosition
-      .map {
-        case DividerPosition.Number(i) => i >= choice.options.size
-        case DividerPosition.Value(_)  => false
-      }
-      .getOrElse(false)
+    def check(choice: Choice): Boolean = choice.dividerPosition.exists {
+      case DividerPosition.Number(i) => i >= choice.options.size
+      case DividerPosition.Value(_)  => false
+    }
 
     validateChoice(sectionsList, check, "dividerPosition should be less than the number of choices")
   }
@@ -547,7 +541,7 @@ object FormTemplateValidator {
         v
       }
       choice.noneChoice.fold(false) {
-        case NoneChoice.IndexBased(index) => !values.isEmpty
+        case NoneChoice.IndexBased(index) => values.nonEmpty
         case NoneChoice.ValueBased(value) => !values.contains(value)
       }
     }
@@ -1173,7 +1167,7 @@ object FormTemplateValidator {
     val formComponents: List[FormComponent] =
       SectionHelper.pages(formTemplate.formKind.allSections).flatMap(_.fields)
 
-    val invalidResults: List[ValidationResult] = formComponents.map { case c =>
+    val invalidResults: List[ValidationResult] = formComponents.map { c =>
       c.`type` match {
         case r: RevealingChoice
             if c.presentationHint.toList.flatten
@@ -1457,7 +1451,7 @@ object FormTemplateValidator {
   def validateTaskListDeclarationSection(formTemplate: FormTemplate): ValidationResult = {
 
     def reason(fc: FormComponent) =
-      s"""A declarationSection in a task list cannot contain enterable fields. Field '${fc.id.value}' is not Info or Mini Summary or Table field.""";
+      s"""A declarationSection in a task list cannot contain enterable fields. Field '${fc.id.value}' is not Info or Mini Summary or Table field."""
 
     formTemplate.formKind.fold[ValidationResult](_ => Valid) { taskList =>
       taskList.sections.toList.flatMap { section =>

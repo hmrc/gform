@@ -48,7 +48,7 @@ object Form {
 
   val readVisitIndex: Reads[VisitIndex] = VisitIndex.format
 
-  val thirdPartyDataWithFallback: Reads[ThirdPartyData] =
+  private val thirdPartyDataWithFallback: Reads[ThirdPartyData] =
     (__ \ thirdPartyData)
       .readNullable[ThirdPartyData]
       .map(_.getOrElse(ThirdPartyData.empty))

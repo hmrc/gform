@@ -27,7 +27,6 @@ import uk.gov.hmrc.gform.objectstore.{ Envelope, FUConfig, RouteEnvelopeRequest 
 import uk.gov.hmrc.gform.sharedmodel.envelope.EnvelopeData
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AllowedFileTypes, FormTemplateId }
-import uk.gov.hmrc.gform.time.TimeProvider
 import uk.gov.hmrc.gform.wshttp.{ FutureHttpResponseSyntax, WSHttp }
 import uk.gov.hmrc.http.HttpReads.Implicits.readFromJson
 import uk.gov.hmrc.http._
@@ -38,7 +37,6 @@ import scala.concurrent.{ ExecutionContext, Future }
 class FileUploadConnector(
   config: FUConfig,
   wSHttp: WSHttp,
-  timeProvider: TimeProvider,
   envelopeService: EnvelopeAlgebra[Future]
 )(implicit ex: ExecutionContext) {
   private val logger = LoggerFactory.getLogger(getClass)

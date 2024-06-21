@@ -32,16 +32,16 @@ trait SCFormGen {
 
   def genFormField: Gen[SCFormField] =
     for {
-      id    <- Gen.alphaNumStr.suchThat(!_.isEmpty)
-      value <- Gen.alphaNumStr.suchThat(!_.isEmpty)
+      id    <- Gen.alphaNumStr.suchThat(_.nonEmpty)
+      value <- Gen.alphaNumStr.suchThat(_.nonEmpty)
     } yield SCFormField(id, value)
 
   def genForm: Gen[SCForm] =
     for {
       submissionRef       <- Gen.uuid.map(_.toString)
-      projectId           <- Gen.alphaNumStr.suchThat(!_.isEmpty)
-      templateId          <- Gen.alphaNumStr.suchThat(!_.isEmpty)
-      customerId          <- Gen.alphaNumStr.suchThat(!_.isEmpty)
+      projectId           <- Gen.alphaNumStr.suchThat(_.nonEmpty)
+      templateId          <- Gen.alphaNumStr.suchThat(_.nonEmpty)
+      customerId          <- Gen.alphaNumStr.suchThat(_.nonEmpty)
       submissionTimestamp <- genTimestampStr
       formData            <- Gen.listOf(genFormField)
     } yield SCForm(

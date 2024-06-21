@@ -111,7 +111,7 @@ class ErrorHandler(environment: Environment, configuration: Configuration, sourc
   }
 
   private def onJsValidationException(e: JsValidationException) = {
-    val temporaryDetails = Some(Json.obj("details" -> e.errors.toString))
+    val temporaryDetails = Some(Json.obj("details" -> e.errors))
     val response = ErrResponse("Invalid json", temporaryDetails)
     logger.info(response.toString, e)
     Future.successful(BadRequest(Json.toJson(response)))

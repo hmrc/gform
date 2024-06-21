@@ -121,7 +121,7 @@ object DataRetrieveDefinitions {
     )
   )
 
-  val personalBankAccountExistenceWithName = DataRetrieveDefinition(
+  private val personalBankAccountExistenceWithName = DataRetrieveDefinition(
     DataRetrieve.Type("personalBankAccountExistenceWithName"),
     Attr.FromObject(
       List(
@@ -428,7 +428,7 @@ object DataRetrieveDefinitions {
     )
   )
 
-  val staticDefinitions = DataRetrieveDefinitions(
+  private val staticDefinitions = DataRetrieveDefinitions(
     List(
       validateBankDetails,
       businessBankAccountExistence,
@@ -443,7 +443,7 @@ object DataRetrieveDefinitions {
     )
   )
 
-  def findDefinition(tpe: DataRetrieve.Type): Option[DataRetrieveDefinition] =
+  private def findDefinition(tpe: DataRetrieve.Type): Option[DataRetrieveDefinition] =
     staticDefinitions.definitions.find(_.tpe == tpe)
 
   def read(json: JsValue): Opt[DataRetrieve] =

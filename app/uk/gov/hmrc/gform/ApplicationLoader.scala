@@ -101,7 +101,7 @@ class ApplicationModule(context: Context)
 
   private val logger = LoggerFactory.getLogger(getClass)
 
-  val appName = AppName.fromConfiguration(configuration)
+  private val appName = AppName.fromConfiguration(configuration)
 
   logger.info(s"Starting microservice $appName")
 
@@ -109,7 +109,7 @@ class ApplicationModule(context: Context)
   protected val playComponents = new PlayComponents(context, self, self)
 
   protected val configModule = new ConfigModule(configuration, controllerComponents)
-  private val metricsModule = new MetricsModule(configModule, playComponents, akkaModule, executionContext)
+  private val metricsModule = new MetricsModule(playComponents, akkaModule, executionContext)
   private val graphiteModule = new GraphiteModule(configuration, applicationLifecycle, metricsModule)
   protected val auditingModule =
     new AuditingModule(configModule, graphiteModule, akkaModule, applicationLifecycle)
@@ -133,7 +133,7 @@ class ApplicationModule(context: Context)
   private val handlebarsSchemaService: HandlebarsSchemaAlgebra[Future] = new HandlebarsSchemaService(
     handlebarsSchemaRepo
   )
-  val historyModule = new HistoryModule(configModule, mongoModule)
+  private val historyModule = new HistoryModule(configModule, mongoModule)
 
   val formTemplateModule =
     new FormTemplateModule(
@@ -157,7 +157,7 @@ class ApplicationModule(context: Context)
 
   private val emailModule = new EmailModule(configModule, wSHttpModule, notifierModule, formTemplateModule)
   private val translationModule = new TranslationModule(formTemplateModule, historyModule, configModule)
-  val pdfGeneratorModule = new PdfGeneratorModule()
+  private val pdfGeneratorModule = new PdfGeneratorModule()
 
   private val sdesModule =
     new SdesModule(
@@ -169,7 +169,7 @@ class ApplicationModule(context: Context)
       envelopeModule,
       emailModule
     )
-  val fileUploadModule =
+  private val fileUploadModule =
     new FileUploadModule(
       configModule,
       wSHttpModule,
@@ -180,28 +180,28 @@ class ApplicationModule(context: Context)
       sdesModule
     )
 
-  val formMetadaModule = new FormMetadataModule(mongoModule)
+  private val formMetadaModule = new FormMetadataModule(mongoModule)
 
-  val queryParameterCrypto = SymmetricCryptoFactory.aesCryptoFromConfig(
+  private val queryParameterCrypto = SymmetricCryptoFactory.aesCryptoFromConfig(
     baseConfigKey = "upscan.callback.encryption",
     configModule.typesafeConfig
   )
 
-  val jsonCrypto =
+  private val jsonCrypto =
     SymmetricCryptoFactory.aesCryptoFromConfig(baseConfigKey = "json.encryption", configModule.typesafeConfig)
 
-  val prodExpiryDays: Int = configModule.appConfig.formExpiryDays
-  val prodCreatedExpiryDays: Int = configModule.appConfig.formExpiryDaysFromCreation
-  val prodSubmittedExpiryHours: Int = configModule.appConfig.submittedFormExpiryHours
-  val formsCacheRepository =
+  private val prodExpiryDays: Int = configModule.appConfig.formExpiryDays
+  private val prodCreatedExpiryDays: Int = configModule.appConfig.formExpiryDaysFromCreation
+  private val prodSubmittedExpiryHours: Int = configModule.appConfig.submittedFormExpiryHours
+  private val formsCacheRepository =
     createMongoCacheRepository("forms", prodExpiryDays, prodCreatedExpiryDays, prodSubmittedExpiryHours)
-  val formMongoCache = new FormMongoCache(
+  private val formMongoCache = new FormMongoCache(
     formsCacheRepository,
     jsonCrypto,
     timeModule.timeProvider
   )
 
-  def createMongoCacheRepository(
+  private def createMongoCacheRepository(
     collectionName: String,
     expiryDays: Int,
     createdExpiryDays: Int,
@@ -251,8 +251,8 @@ class ApplicationModule(context: Context)
     }
   }
 
-  val formService: FormService[Future] = createFormService(formMongoCache)
-  def createFormService(cache: FormMongoCache): FormService[Future] =
+  private val formService: FormService[Future] = createFormService(formMongoCache)
+  private def createFormService(cache: FormMongoCache): FormService[Future] =
     new FormService(
       cache,
       objectStoreModule.objectStoreService,
@@ -262,13 +262,13 @@ class ApplicationModule(context: Context)
       configModule.appConfig.formExpiryDaysFromCreation
     )
 
-  val formModule =
-    new FormModule(configModule, formTemplateModule, fileUploadModule, formService)
+  private val formModule =
+    new FormModule(configModule, objectStoreModule.objectStoreService, formService)
 
-  val destinationModule =
+  private val destinationModule =
     new DestinationModule(configModule, mongoModule, formModule, formMetadaModule, objectStoreModule)
 
-  val validationModule = new DesModule(wSHttpModule, configModule)
+  private val validationModule = new DesModule(wSHttpModule, configModule)
 
   private val handlebarsModule = new HandlebarsHttpApiModule(wSHttpModule, configModule)
 
@@ -308,10 +308,10 @@ class ApplicationModule(context: Context)
     configModule.snapshotCreatedExpiryDays,
     configModule.snapshotSubmittedExpiryHours
   )
-  val snapshotMongoCache = new SnapshotMongoCache(
+  private val snapshotMongoCache = new SnapshotMongoCache(
     snapshotsMongoCache
   )
-  val testOnlyFormService = new TestOnlyFormService(
+  private val testOnlyFormService = new TestOnlyFormService(
     snapshotMongoCache,
     formMongoCache,
     formTemplateModule.formTemplateService,
@@ -347,7 +347,7 @@ class ApplicationModule(context: Context)
     objectStoreModule
   )
 
-  val formStatisticsModule = new FormStatisticsModule(
+  private val formStatisticsModule = new FormStatisticsModule(
     formsCacheRepository,
     formTemplateModule,
     configModule
@@ -361,9 +361,10 @@ class ApplicationModule(context: Context)
 
   new SchedulerModule(configModule, mongoModule, sdesModule, akkaModule, applicationLifecycle)
 
-  val builderModule = new BuilderModule(controllerComponents, formTemplateModule.formTemplateService, historyModule)
+  private val builderModule =
+    new BuilderModule(controllerComponents, formTemplateModule.formTemplateService, historyModule)
 
-  val playComponentsModule = new PlayComponentsModule(
+  private val playComponentsModule = new PlayComponentsModule(
     playComponents,
     akkaModule,
     configModule,
@@ -398,7 +399,7 @@ class ApplicationModule(context: Context)
 
   override def router: Router = playComponentsModule.router
 
-  val customInjector: Injector = new SimpleInjector(injector) + wsClient
+  private val customInjector: Injector = new SimpleInjector(injector) + wsClient
   override lazy val application = new DefaultApplication(
     environment,
     applicationLifecycle,

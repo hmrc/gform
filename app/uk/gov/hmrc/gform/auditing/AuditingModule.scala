@@ -39,9 +39,9 @@ class AuditingModule(
 ) {
   self =>
 
-  val datastreamMetrics: DatastreamMetrics = graphiteModule.datastreamMetrics
+  private val datastreamMetrics: DatastreamMetrics = graphiteModule.datastreamMetrics
 
-  val defaultAuditChannel =
+  private val defaultAuditChannel =
     new DefaultAuditChannel(
       configModule.auditingConfig,
       akkaModule.materializer,

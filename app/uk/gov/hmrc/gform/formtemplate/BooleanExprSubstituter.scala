@@ -114,7 +114,7 @@ trait SubstituteBooleanExprs {
   ): FormTemplate = {
     val substitutedBooleanExpressions = substitutions.expressions.map { case (id, boolExpr) =>
       (id, boolExpr(exprSubstitutions))
-    }.toMap
+    }
     BooleanExprSubstituter.substitute(BooleanExprSubstitutions(substitutedBooleanExpressions), formTemplate)
   }
 

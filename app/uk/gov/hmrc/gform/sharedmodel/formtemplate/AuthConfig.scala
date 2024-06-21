@@ -168,13 +168,13 @@ object HasEnrolmentSection {
 
 object AuthConfig {
 
-  def toEnrolmentPostCheck(maybeRegimeId: Option[RegimeId]): EnrolmentPostCheck =
+  private def toEnrolmentPostCheck(maybeRegimeId: Option[RegimeId]): EnrolmentPostCheck =
     maybeRegimeId.fold(NoCheck: EnrolmentPostCheck)(RegimeIdCheck.apply)
 
   def enrolmentActionMatch(enrolmentAction: Option[EnrolmentAction]): EnrolmentAction =
     enrolmentAction.getOrElse(NoAction)
 
-  def toEnrolmentAuth(
+  private def toEnrolmentAuth(
     serviceId: ServiceId,
     maybeRegimeId: Option[RegimeId],
     maybeEnrolmentAction: Option[EnrolmentAction],
@@ -349,9 +349,9 @@ case object DenyAnyAgentAffinityUser extends AgentAccess
 case object AllowAnyAgentAffinityUser extends AgentAccess
 
 object AgentAccess {
-  val requireMTDAgentEnrolment = "requireMTDAgentEnrolment"
-  val denyAnyAgentAffinityUser = "denyAnyAgentAffinityUser"
-  val allowAnyAgentAffinityUser = "allowAnyAgentAffinityUser"
+  private val requireMTDAgentEnrolment = "requireMTDAgentEnrolment"
+  private val denyAnyAgentAffinityUser = "denyAnyAgentAffinityUser"
+  private val allowAnyAgentAffinityUser = "allowAnyAgentAffinityUser"
 
   implicit val format: Format[AgentAccess] = ADTFormat.formatEnumerationWithDefault(
     RequireMTDAgentEnrolment,

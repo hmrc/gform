@@ -18,13 +18,11 @@ package uk.gov.hmrc.gform.metrics
 
 import uk.gov.hmrc.play.bootstrap.metrics.{ MetricsFilter, MetricsFilterImpl, MetricsImpl }
 import uk.gov.hmrc.gform.akka.AkkaModule
-import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.playcomponents.PlayComponents
 
 import scala.concurrent.ExecutionContext
 
 class MetricsModule(
-  configModule: ConfigModule,
   playComponents: PlayComponents,
   akkaModule: AkkaModule,
   ec: ExecutionContext

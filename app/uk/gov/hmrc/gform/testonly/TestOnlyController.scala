@@ -48,6 +48,8 @@ import uk.gov.hmrc.gform.BuildInfo
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.http.HeaderCarrier
 
+import scala.annotation.tailrec
+
 class TestOnlyController(
   controllerComponents: ControllerComponents,
   mongoComponent: MongoComponent,
@@ -250,6 +252,7 @@ class TestOnlyController(
   }
 
   private def flattenExceptionMessage(ex: Throwable): List[String] = {
+    @tailrec
     def loop(ex: Throwable, acc: List[String]): List[String] =
       if (ex == null) acc
       else loop(ex.getCause, ex.getMessage :: acc)

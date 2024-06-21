@@ -40,7 +40,6 @@ class FileUploadModule(
     new FileUploadConnector(
       config,
       wSHttpModule.auditableWSHttp,
-      timeModule.timeProvider,
       envelopeModule.envelopeService
     )
 

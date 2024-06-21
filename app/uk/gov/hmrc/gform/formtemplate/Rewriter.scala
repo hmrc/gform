@@ -403,7 +403,7 @@ trait Rewriter {
         validIf.flatMap(validIfRulesLookup.get)
 
       def replaceValidator(validator: FormComponentValidator): FormComponentValidator =
-        validator.copy(validIf = validIfRulesLookup.get(validator.validIf).getOrElse(validator.validIf))
+        validator.copy(validIf = validIfRulesLookup.getOrElse(validator.validIf, validator.validIf))
 
       def replaceFormComponentNested(formComponent: FormComponent): FormComponent = formComponent match {
         case IsGroup(group) =>

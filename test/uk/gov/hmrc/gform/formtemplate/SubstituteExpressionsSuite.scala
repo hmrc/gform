@@ -114,7 +114,7 @@ class SubstituteExpressionsSuite extends FunSuite with FormTemplateSupport {
 
     toFormTemplateAndSubstitutions(jsonStr) { (formTemplate, substitutions) =>
       val res = substituteExpressions.substituteExpressions(formTemplate, substitutions)
-      val section = res.formKind.allSections(0)
+      val section = res.formKind.allSections.head
       section match {
         case Section.NonRepeatingPage(page) =>
           val expectedDateCtx = DateCtx(
@@ -185,7 +185,7 @@ class SubstituteExpressionsSuite extends FunSuite with FormTemplateSupport {
 
     toFormTemplateAndSubstitutions(jsonStr) { (formTemplate, substitutions) =>
       val res = substituteExpressions.substituteExpressions(formTemplate, substitutions)
-      val section = res.formKind.allSections(0)
+      val section = res.formKind.allSections.head
       section match {
         case Section.NonRepeatingPage(page) =>
           val expectedAdd = Add(Add(FormCtx("a"), Add(FormCtx("foo"), FormCtx("bar"))), FormCtx("c"))

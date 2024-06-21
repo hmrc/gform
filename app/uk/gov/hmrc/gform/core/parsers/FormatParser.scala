@@ -48,7 +48,7 @@ trait FormatParser extends ValueParser {
     }
   }
 
-  lazy val dateConstraint: Parser[DateConstraint] = {
+  private lazy val dateConstraint: Parser[DateConstraint] = {
     beforeAfterPreciselyParser ~ exactDateExpr ~ offsetExpression ^^ { case beforeOrAfter ~ dateExpr ~ offset =>
       DateConstraint(beforeOrAfter, dateExpr, offset)
     } | beforeAfterPreciselyParser ~ exactDateExpr ^^ { case beforeOrAfter ~ dateExpr =>
@@ -56,7 +56,7 @@ trait FormatParser extends ValueParser {
     }
   }
 
-  lazy val anyDateConstraint: Parser[DateConstraintType] = "anyDate" ^^^ AnyDate
+  private lazy val anyDateConstraint: Parser[DateConstraintType] = "anyDate" ^^^ AnyDate
 
   lazy val beforeAfterPreciselyParser: Parser[BeforeAfterPrecisely] = (
     "after" ^^^ After
