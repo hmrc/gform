@@ -23,7 +23,7 @@ import org.bson.types.ObjectId
 import org.mongodb.scala.model.Filters
 import org.mongodb.scala.model.Filters.equal
 import uk.gov.hmrc.gform.envelope.EnvelopeAlgebra
-import uk.gov.hmrc.gform.fileupload.FileUploadService
+import uk.gov.hmrc.gform.objectstore.ObjectStoreService
 import uk.gov.hmrc.gform.scheduler.dms.DmsWorkItemRepo
 import uk.gov.hmrc.gform.sdes.SdesRouting
 import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
@@ -129,7 +129,7 @@ class DmsWorkItemService(
             numberOfFiles <-
               envelopeAlgebra
                 .get(workItem.item.envelopeId)
-                .map(_.files.count(_.fileId =!= FileUploadService.FileIds.dataStore.value))
+                .map(_.files.count(_.fileId =!= ObjectStoreService.FileIds.dataStore.value))
           } yield SdesWorkItemData.fromWorkItem(workItem, numberOfFiles)
         )
       count <- dmsWorkItemRepo.collection.countDocuments(query).toFuture()

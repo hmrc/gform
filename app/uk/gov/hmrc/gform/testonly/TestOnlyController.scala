@@ -102,8 +102,7 @@ class TestOnlyController(
                      submissionData.variables,
                      submissionData.pdfData,
                      submissionData.instructionPDFData,
-                     submissionData.structuredFormData,
-                     formTemplate.isObjectStore
+                     submissionData.structuredFormData
                    )
       } yield {
         val jsValue: JsValue = Json.toJson[JsonNode](model.model)
@@ -136,8 +135,7 @@ class TestOnlyController(
                      submissionData.variables,
                      submissionData.pdfData,
                      submissionData.instructionPDFData,
-                     submissionData.structuredFormData,
-                     formTemplate.isObjectStore
+                     submissionData.structuredFormData
                    )
       } yield {
         val maybeDestination: Option[Destination] =

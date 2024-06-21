@@ -136,7 +136,6 @@ trait FormTemplateGen {
       None,
       None,
       None,
-      None,
       emailCodeParameters,
       None
     )

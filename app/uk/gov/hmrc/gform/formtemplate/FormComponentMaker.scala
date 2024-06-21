@@ -60,11 +60,6 @@ class FormComponentMaker(json: JsValue) {
     case _: JsUndefined => Right(EmailVerification.noVerification)
   }
 
-  lazy val optCompression: Opt[Boolean] = (json \ "compression") match {
-    case JsDefined(JsString(IsTrueish())) => Right(true)
-    case _                                => Right(false)
-  }
-
   lazy val optNotPII: Opt[Boolean] = (json \ "notPII") match {
     case JsDefined(JsString(IsTrueish())) => Right(true)
     case _                                => Right(false)
@@ -74,14 +69,6 @@ class FormComponentMaker(json: JsValue) {
     case JsDefined(JsTrue)  => Right(Some(true))
     case JsDefined(JsFalse) => Right(Some(false))
     case _                  => Right(None)
-  }
-
-  def optFileUploadProvider(compression: Boolean): Opt[FileUploadProvider] = (json \ "service") match {
-    case JsDefined(JsString("upscan"))     => Right(FileUploadProvider.Upscan(compression))
-    case JsDefined(JsString("fileUpload")) => Right(FileUploadProvider.FileUploadFrontend)
-    case JsDefined(unknown) =>
-      Left(UnexpectedState(s"Unsupported file upload service '$unknown'. Only 'upscan' or 'fileUpload' are supported"))
-    case _: JsUndefined => Right(FileUploadProvider.FileUploadFrontend)
   }
 
   lazy val optMaybeFormatExpr
@@ -686,11 +673,9 @@ class FormComponentMaker(json: JsValue) {
   }
 
   private lazy val fileUploadOpt: Opt[FileUpload] = for {
-    compression           <- optCompression
-    fileUploadProvider    <- optFileUploadProvider(compression)
     maybeFileSizeLimit    <- toOpt((json \ "fileSizeLimit").validateOpt[Int], "/fileSizeLimit")
     maybeAllowedFileTypes <- toOpt((json \ "allowedFileTypes").validateOpt[AllowedFileTypes], "/allowedFileTypes")
-  } yield FileUpload(fileUploadProvider, maybeFileSizeLimit, maybeAllowedFileTypes)
+  } yield FileUpload(maybeFileSizeLimit, maybeAllowedFileTypes)
 
   private lazy val infoOpt: Opt[InformationMessage] =
     for {

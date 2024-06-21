@@ -19,19 +19,11 @@ package uk.gov.hmrc.gform.fileupload
 import org.apache.pekko.util.ByteString
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
-import uk.gov.hmrc.gform.upscan.UploadDetails
-import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
+import uk.gov.hmrc.http.HeaderCarrier
 
 trait FileUploadFrontendAlgebra[F[_]] {
 
   def upload(envelopeId: EnvelopeId, fileId: FileId, fileName: String, body: ByteString, contentType: ContentType)(
     implicit hc: HeaderCarrier
   ): F[Unit]
-
-  def uploadFile(
-    envelopeId: EnvelopeId,
-    fileId: FileId,
-    uploadDetails: UploadDetails,
-    bytes: ByteString
-  )(implicit hc: HeaderCarrier): F[HttpResponse]
 }

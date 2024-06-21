@@ -20,8 +20,7 @@ import cats.Monad
 import cats.instances.option._
 import cats.syntax.functor._
 import cats.syntax.traverse._
-import uk.gov.hmrc.gform.fileupload.{ FileDownloadAlgebra, UploadedFile }
-import uk.gov.hmrc.gform.objectstore.ObjectStoreAlgebra
+import uk.gov.hmrc.gform.objectstore.{ ObjectStoreAlgebra, UploadedFile }
 import uk.gov.hmrc.gform.sharedmodel.{ FrontEndSubmissionVariables, PdfHtml }
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, Form }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.HandlebarsTemplateProcessorModel
@@ -29,7 +28,6 @@ import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
 import uk.gov.hmrc.http.HeaderCarrier
 
 class DestinationsProcessorModelService[M[_]: Monad](
-  fileDownloadAlgebra: Option[FileDownloadAlgebra[M]],
   objectStoreAlgebra: Option[ObjectStoreAlgebra[M]]
 ) extends DestinationsProcessorModelAlgebra[M] {
   override def create(
@@ -37,21 +35,14 @@ class DestinationsProcessorModelService[M[_]: Monad](
     frontEndSubmissionVariables: FrontEndSubmissionVariables,
     pdfData: PdfHtml,
     instructionPdfData: Option[PdfHtml],
-    structuredFormData: StructuredFormValue.ObjectStructure,
-    objectStore: Boolean
+    structuredFormData: StructuredFormValue.ObjectStructure
   )(implicit hc: HeaderCarrier): M[HandlebarsTemplateProcessorModel] =
     for {
-      files <- uploadedFiles(form.envelopeId, objectStore)
+      files <- uploadedFiles(form.envelopeId)
     } yield DestinationsProcessorModelAlgebra
       .createModel(frontEndSubmissionVariables, pdfData, instructionPdfData, structuredFormData, form, files)
 
-  private def uploadedFiles(envelopedId: EnvelopeId, objectStore: Boolean)(implicit
+  private def uploadedFiles(envelopedId: EnvelopeId)(implicit
     hc: HeaderCarrier
-  ): M[Option[List[UploadedFile]]] =
-    if (objectStore) {
-      objectStoreAlgebra.traverse(_.allUploadedFiles(envelopedId))
-    } else {
-      fileDownloadAlgebra.traverse(_.allUploadedFiles(envelopedId))
-    }
-
+  ): M[Option[List[UploadedFile]]] = objectStoreAlgebra.traverse(_.allUploadedFiles(envelopedId))
 }

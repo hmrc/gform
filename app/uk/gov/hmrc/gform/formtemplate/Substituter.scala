@@ -245,8 +245,8 @@ object Substituter {
 
       case InformationMessage(infoType, infoText) =>
         InformationMessage(infoType, infoText(substitutions))
-      case f @ FileUpload(_, _, _) => f
-      case t @ Time(_, _)          => t
+      case f @ FileUpload(_, _) => f
+      case t @ Time(_, _)       => t
       case p @ PostcodeLookup(_, _, _) =>
         PostcodeLookup(
           chooseAddressLabel = p.chooseAddressLabel(substitutions),

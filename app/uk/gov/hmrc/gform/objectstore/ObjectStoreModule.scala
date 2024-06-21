@@ -28,6 +28,9 @@ import uk.gov.hmrc.gform.envelope.EnvelopeModule
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 import uk.gov.hmrc.gform.sharedmodel.envelope.EnvelopeData
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination
+import uk.gov.hmrc.gform.submission.{ PdfAndXmlSummaries, Submission }
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.objectstore.client
 import uk.gov.hmrc.objectstore.client.config.ObjectStoreClientConfig
@@ -71,6 +74,10 @@ class ObjectStoreModule(
     new ObjectStoreController(configModule.controllerComponents, objectStoreService)
 
   val foptObjectStoreService: ObjectStoreAlgebra[FOpt] = new ObjectStoreAlgebra[FOpt] {
+
+    override def createEnvelope(formTemplateId: FormTemplateId): FOpt[EnvelopeId] =
+      fromFutureA(objectStoreService.createEnvelope(formTemplateId))
+
     override def getFileBytes(envelopeId: EnvelopeId, fileName: String)(implicit hc: HeaderCarrier): FOpt[ByteString] =
       fromFutureA(objectStoreService.getFileBytes(envelopeId, fileName))
 
@@ -105,16 +112,13 @@ class ObjectStoreModule(
     ): FOpt[Option[client.Object[Source[ByteString, NotUsed]]]] =
       fromFutureA(objectStoreService.getZipFile(envelopeId, objectStorePaths))
 
-    override def isObjectStore(envelopeId: EnvelopeId): FOpt[Boolean] =
-      fromFutureA(objectStoreService.isObjectStore(envelopeId))
-
-    override def uploadFile(
+    override def uploadFileWithDir(
       path: Path.Directory,
       fileName: String,
       content: ByteString,
       contentType: ContentType
     )(implicit hc: HeaderCarrier): FOpt[ObjectSummaryWithMd5] =
-      fromFutureA(objectStoreService.uploadFile(path, fileName, content, contentType))
+      fromFutureA(objectStoreService.uploadFileWithDir(path, fileName, content, contentType))
 
     override def deleteFile(directory: Path.Directory, fileName: String)(implicit hc: HeaderCarrier): FOpt[Unit] =
       fromFutureA(objectStoreService.deleteFile(directory, fileName))
@@ -134,5 +138,13 @@ class ObjectStoreModule(
       hc: HeaderCarrier
     ): FOpt[ObjectSummaryWithMd5] =
       fromFutureA(objectStoreService.uploadFromUrl(from, envelopeId, fileId, contentType, fileName))
+
+    override def submitEnvelope(
+      submission: Submission,
+      summaries: PdfAndXmlSummaries,
+      hmrcDms: Destination.HmrcDms,
+      formTemplateId: FormTemplateId
+    )(implicit hc: HeaderCarrier): FOpt[ObjectSummaryWithMd5] =
+      fromFutureA(objectStoreService.submitEnvelope(submission, summaries, hmrcDms, formTemplateId))
   }
 }
