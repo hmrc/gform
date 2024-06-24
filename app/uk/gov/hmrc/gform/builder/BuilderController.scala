@@ -92,6 +92,7 @@ object BuilderSupport {
   ): Json = {
     val propertyList = List(
       Property("note", PropertyBehaviour.PurgeWhenEmpty),
+      Property("doneNote", PropertyBehaviour.PurgeWhenEmpty),
       Property("caption", PropertyBehaviour.PurgeWhenEmpty),
       Property("continueLabel", PropertyBehaviour.PurgeWhenEmpty),
       Property("title")
@@ -113,6 +114,7 @@ object BuilderSupport {
   ): Json = {
     val propertyList = List(
       Property("note", PropertyBehaviour.PurgeWhenEmpty),
+      Property("doneNote", PropertyBehaviour.PurgeWhenEmpty),
       Property("caption", PropertyBehaviour.PurgeWhenEmpty),
       Property("continueLabel", PropertyBehaviour.PurgeWhenEmpty),
       Property("title", PropertyBehaviour.PurgeWhenEmpty),
@@ -141,6 +143,7 @@ object BuilderSupport {
   ): Json = {
     val propertyList = List(
       Property("note", PropertyBehaviour.PurgeWhenEmpty),
+      Property("doneNote", PropertyBehaviour.PurgeWhenEmpty),
       Property("caption", PropertyBehaviour.PurgeWhenEmpty),
       Property("description"),
       Property("title"),
@@ -308,7 +311,8 @@ object BuilderSupport {
       Property("title"),
       Property("panelTitle", PropertyBehaviour.PurgeWhenEmpty),
       Property("showReference"),
-      Property("note", PropertyBehaviour.PurgeWhenEmpty)
+      Property("note", PropertyBehaviour.PurgeWhenEmpty),
+      Property("doneNote", PropertyBehaviour.PurgeWhenEmpty)
     )
 
     updateJsonByPropertyList(propertyList, json, acknowledgement, history)
@@ -317,6 +321,7 @@ object BuilderSupport {
   private def updateSummary(json: Json, summarySection: Json, history: List[CursorOp]): Json = {
     val propertyList = List(
       Property("note", PropertyBehaviour.PurgeWhenEmpty),
+      Property("doneNote", PropertyBehaviour.PurgeWhenEmpty),
       Property("title"),
       Property("header"),
       Property("footer"),
@@ -409,6 +414,7 @@ object BuilderSupport {
       Property("continueLabel", PropertyBehaviour.PurgeWhenEmpty),
       Property("presentationHint", PropertyBehaviour.PurgeWhenEmpty),
       Property("note", PropertyBehaviour.PurgeWhenEmpty),
+      Property("doneNote", PropertyBehaviour.PurgeWhenEmpty),
       Property("summarySection", PropertyBehaviour.PurgeWhenEmpty)
     )
 
@@ -478,7 +484,8 @@ object BuilderSupport {
     val propertyList = List(
       Property("displayWidth", PropertyBehaviour.PurgeWhenEmpty),
       Property("submitSection", PropertyBehaviour.PurgeWhenEmpty),
-      Property("note", PropertyBehaviour.PurgeWhenEmpty)
+      Property("note", PropertyBehaviour.PurgeWhenEmpty),
+      Property("doneNote", PropertyBehaviour.PurgeWhenEmpty)
     )
 
     updateJsonByPropertyList(propertyList, json, formTemplateData, List.empty[CursorOp])
