@@ -214,6 +214,7 @@ object UserField {
   final case class Enrolment(serviceName: ServiceName, identifierName: IdentifierName, func: Option[UserFieldFunc])
       extends UserField
   final case object EnrolledIdentifier extends UserField
+  final case object CredentialRole extends UserField
 
   implicit val format: OFormat[UserField] = derived.oformat()
 }

@@ -157,6 +157,11 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     )
   }
 
+  it should "parse ${user.credentialRole}" in {
+    val res = ValueParser.validate("${user.credentialRole}")
+    res.toOption.value should be(TextExpression(UserCtx(UserField.CredentialRole)))
+  }
+
   it should "parse ${user.enrolments.<identifierName>.<referenceName>}" in {
 
     val validIdentifiersCombinations = Table(
