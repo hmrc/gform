@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.fileupload
+package uk.gov.hmrc.gform.objectstore
 
 import org.apache.pekko.util.ByteString
 

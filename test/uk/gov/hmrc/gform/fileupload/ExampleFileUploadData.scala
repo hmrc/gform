@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.gform.fileupload
 
+import uk.gov.hmrc.gform.objectstore.FUConfig
+
 trait ExampleFileUploadData {
 
   lazy val config = FUConfig(

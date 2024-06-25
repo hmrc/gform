@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.fileupload
-
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
+package uk.gov.hmrc.gform.objectstore
 
 import play.api.libs.json._
 import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
 import uk.gov.hmrc.gform.typeclasses.Now
+
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 case class Attachments(files: List[String]) {
   def size = files.size

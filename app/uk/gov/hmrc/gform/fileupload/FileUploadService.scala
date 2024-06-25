@@ -20,8 +20,8 @@ import org.apache.pekko.util.ByteString
 import org.slf4j.LoggerFactory
 import uk.gov.hmrc.gform.core.FutureSyntax
 import uk.gov.hmrc.gform.dms.FileAttachment
-import uk.gov.hmrc.gform.fileupload.FileUploadService.FileIds._
-import uk.gov.hmrc.gform.objectstore.ObjectStoreAlgebra
+import uk.gov.hmrc.gform.objectstore.{ Envelope, MetadataXml, ObjectStoreAlgebra, ReconciliationId, RouteEnvelopeRequest }
+import uk.gov.hmrc.gform.objectstore.ObjectStoreService.FileIds._
 import uk.gov.hmrc.gform.sdes.dms.DmsWorkItemAlgebra
 import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
@@ -166,6 +166,15 @@ class FileUploadService(
     } yield ()
   }
 
+  private def zipAndPushWorkItem(envelopeId: EnvelopeId, formTemplateId: FormTemplateId, submissionRef: SubmissionRef)(
+    implicit hc: HeaderCarrier
+  ): Future[Unit] =
+    for {
+      objectSummary <-
+        objectStoreService.zipFiles(envelopeId, SdesDestination.Dms.objectStorePaths(envelopeId))
+      _ <- dmsWorkItemAlgebra.pushWorkItem(envelopeId, formTemplateId, submissionRef, objectSummary)
+    } yield ()
+
   private def getContentType(contentType: String) = contentType match {
     case "json" => ContentType.`application/json`
     case "pdf"  => ContentType.`application/pdf`
@@ -209,28 +218,4 @@ class FileUploadService(
       ContentType(fileAttachment.contentType.getOrElse("application/json")),
       objectStore
     )
-
-  private def zipAndPushWorkItem(envelopeId: EnvelopeId, formTemplateId: FormTemplateId, submissionRef: SubmissionRef)(
-    implicit hc: HeaderCarrier
-  ): Future[Unit] =
-    for {
-      objectSummary <-
-        objectStoreService.zipFiles(envelopeId, SdesDestination.Dms.objectStorePaths(envelopeId))
-      _ <- dmsWorkItemAlgebra.pushWorkItem(envelopeId, formTemplateId, submissionRef, objectSummary)
-    } yield ()
-}
-
-object FileUploadService {
-
-  //forbidden keys. make sure they aren't used in templates
-  object FileIds {
-    val pdf = FileId("pdf")
-    val customerSummaryPdf = FileId("customerSummaryPdf")
-    val formdataXml = FileId("formdataXml")
-    val xml = FileId("xmlDocument")
-    val dataStore = FileId("dataStore")
-    def roboticsFileId(extension: String) = FileId(s"robotics${extension.capitalize}")
-    val generatedFileIds =
-      List(pdf, xml, dataStore, formdataXml, customerSummaryPdf, roboticsFileId("json"), roboticsFileId("xml"))
-  }
 }
