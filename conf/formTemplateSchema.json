@@ -78,7 +78,13 @@
       "$ref": "#/$defs/stringOrEnCyObject"
     },
     "note": {
-      "type": "string"
+      "anyOf": [
+        { "type": "string" },
+        { "type": "array" }
+      ]
+    },
+    "doneNote": {
+       "type": "array"
     },
     "emailTemplateId": {
       "$ref": "#/$defs/stringOrEnCyObject"
@@ -262,7 +268,13 @@
           "type": "object"
         },
         "note": {
-          "type": "string"
+          "anyOf": [
+            { "type": "string" },
+            { "type": "array" }
+          ]
+        },
+        "doneNote": {
+          "type": "array"
         },
         "fields": {
           "type": "array",
@@ -313,7 +325,13 @@
           "type": "boolean"
         },
         "note": {
-          "type": "string"
+          "type": [
+              "string",
+              "array"
+          ]
+        },
+        "doneNote": {
+          "type": "array"
         },
         "instructionPdf": {
           "type": "object",
@@ -480,7 +498,13 @@
           "type": "object"
         },
         "note": {
-          "type": "string"
+          "anyOf": [
+            { "type": "string" },
+            { "type": "array" }
+          ]
+        },
+        "doneNote": {
+          "type": "array"
         },
         "tasks": {
           "type": "array",

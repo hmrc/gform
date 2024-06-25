@@ -177,7 +177,11 @@ class JsonSchemeValidatorSpec extends FunSuite {
       case Left(errors) =>
         val errorsAsList = errors.errors.as[JsArray].value.toList
 
-        val conditionalValidationErrors = errorsAsList.filter(_.toString().contains("Error at"))
+        val conditionalValidationErrors = errorsAsList.filter(e =>
+          e.toString().contains("Error at") || e
+            .toString()
+            .contains("no subschema matched out of the total 2 subschemas")
+        )
         assertEquals(conditionalValidationErrors, expectedResult.map(toJson(_)))
     }
 
@@ -2764,10 +2768,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val result = validateJson(jsonTemplate)
 
-    val expectedResult = List(
-      "Error at <#/summarySection/note>: Property note expected type [String], found [Boolean]"
-    )
-
+    val expectedResult = List("#/summarySection/note: #: no subschema matched out of the total 2 subschemas")
     runInvalidJsonTest(result, expectedResult)
   }
 
