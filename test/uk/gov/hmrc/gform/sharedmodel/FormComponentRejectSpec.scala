@@ -29,6 +29,8 @@ import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.formtemplate.{ ExprSubstitutions, Rewriter, Verifier }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
 
+import scala.util.Using
+
 class FormComponentRejectSpec extends Spec with TableDrivenPropertyChecks {
 
   implicit val defaultPatience: PatienceConfig = PatienceConfig(timeout = Span(6, Seconds), interval = Span(5, Millis))
@@ -150,7 +152,9 @@ class FormComponentRejectSpec extends Spec with TableDrivenPropertyChecks {
   }
 
   private def readFile(fileName: String): String =
-    Source.fromFile(s"test/resources/templates-to-reject/$fileName.json").mkString
+    Using.resource(Source.fromFile(s"test/resources/templates-to-reject/$fileName.json")) { source =>
+      source.mkString
+    }
 
   private def readAsFormTemplate(fileName: String): JsResult[FormTemplate] = {
     val source = readFile(fileName)

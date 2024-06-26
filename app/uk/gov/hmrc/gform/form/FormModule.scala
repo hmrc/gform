@@ -19,8 +19,7 @@ package uk.gov.hmrc.gform.form
 import uk.gov.hmrc.gform.sharedmodel.AffinityGroup
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.core.{ FOpt, fromFutureA }
-import uk.gov.hmrc.gform.fileupload.FileUploadModule
-import uk.gov.hmrc.gform.formtemplate.FormTemplateModule
+import uk.gov.hmrc.gform.objectstore.ObjectStoreAlgebra
 import uk.gov.hmrc.gform.sharedmodel.UserId
 import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormId, FormIdData, FormOverview, FormStatus, QueryParams, UserData }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
@@ -30,16 +29,14 @@ import scala.concurrent.{ ExecutionContext, Future }
 
 class FormModule(
   configModule: ConfigModule,
-  formTemplateModule: FormTemplateModule,
-  fileUploadModule: FileUploadModule,
+  objectStoreService: ObjectStoreAlgebra[Future],
   formService: FormService[Future]
 )(implicit ex: ExecutionContext) {
 
   val formController: FormController =
     new FormController(
       configModule.controllerComponents,
-      configModule.appConfig,
-      fileUploadModule.fileUploadService,
+      objectStoreService,
       formService
     )
 

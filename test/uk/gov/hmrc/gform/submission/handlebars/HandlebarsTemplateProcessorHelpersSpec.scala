@@ -18,7 +18,6 @@ package uk.gov.hmrc.gform.submission.handlebars
 
 import java.text.DecimalFormat
 import java.util.Base64
-
 import cats.data.NonEmptyList
 import cats.syntax.eq._
 import com.fasterxml.jackson.databind.JsonNode
@@ -32,6 +31,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.{ DestinationGen, F
 import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
 import uk.gov.hmrc.gform.submission.destinations.DestinationsProcessorModelAlgebra
 
+import scala.annotation.tailrec
 import scala.language.implicitConversions
 import scala.util.Random
 
@@ -407,6 +407,7 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
   }
 
   it must "throw an exception with a good message if the match fails" in {
+    @tailrec
     def rootCause(t: Throwable): Throwable =
       if (t.getCause == null) t
       else rootCause(t.getCause)
@@ -760,7 +761,7 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
       PrimitiveGen.nonEmptyAlphaNumStrGen.filter(_.length >= 3).map(_.substring(0, 3)),
       Gen.chooseNum(0, 5)
     ) { (firstBlock, endTriple, ws) =>
-      whenever(!firstBlock.isEmpty && endTriple.length == 3) {
+      whenever(firstBlock.nonEmpty && endTriple.length == 3) {
         val withSpaces = insertRandomSpaces(firstBlock + endTriple, ws)
         process(s"""{{normalisePostcode "$withSpaces"}}""") shouldBe s"$firstBlock $endTriple"
       }

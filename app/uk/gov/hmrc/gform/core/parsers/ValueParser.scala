@@ -41,13 +41,13 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
 
   lazy val today: Parser[TodayDateValue.type] = "today" ^^^ TodayDateValue
 
-  lazy val exactDate: Parser[ExactDateValue] = exactYearParser ~ exactMonthDay ^^ { case x =>
-    ExactDateValue(x._1, x._2._1, x._2._2)
-  } | exactYearMonth <~ "firstDay" ^^ { case (year, month) =>
-    ExactDateValue(year, month, 1)
-  } | exactYearMonth <~ "lastDay" ^^ { case (year, month) =>
-    ExactDateValue(year, month, LocalDate.of(year, month, 1).lengthOfMonth)
-  }
+  lazy val exactDate: Parser[ExactDateValue] =
+    exactYearParser ~ exactMonthDay ^^ (x => ExactDateValue(x._1, x._2._1, x._2._2)) | exactYearMonth <~ "firstDay" ^^ {
+      case (year, month) =>
+        ExactDateValue(year, month, 1)
+    } | exactYearMonth <~ "lastDay" ^^ { case (year, month) =>
+      ExactDateValue(year, month, LocalDate.of(year, month, 1).lengthOfMonth)
+    }
 
   lazy val nextDate: Parser[NextDateValue] =
     nextOrPreviousValue("next", NextDateValue.apply)
@@ -276,9 +276,7 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
       Period(DateCtx(dateExpr1), DateCtx(dateExpr2))
     }
     | quotedLocalisedConstant
-    | FormComponentId.unanchoredIdValidation <~ ".sum" ^^ { case value =>
-      Sum(FormCtx(FormComponentId(value)))
-    }
+    | FormComponentId.unanchoredIdValidation <~ ".sum" ^^ (value => Sum(FormCtx(FormComponentId(value))))
     | "hideZeroDecimals(" ~ _expr1 ~ ")" ^^ { case _ ~ value ~ _ =>
       HideZeroDecimals(value)
     }
@@ -338,12 +336,8 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
     })
 
   lazy val sizeRefTypeParser: Parser[SizeRefType] =
-    positiveInteger ^^ { case index =>
-      SizeRefType.IndexBased(index)
-    } |
-      SizeRefType.regex ^^ { case value =>
-        SizeRefType.ValueBased(value)
-      }
+    positiveInteger ^^ (index => SizeRefType.IndexBased(index)) |
+      SizeRefType.regex ^^ (value => SizeRefType.ValueBased(value))
 
   lazy val addressDetail: Parser[AddressDetail] =
     "line1" ^^^ AddressDetail.Line1 |
@@ -593,9 +587,7 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
       OptionDataValue.FormCtxBased(formCtx)
     } | alphabeticOnly ~ expr ^^ { case prefix ~ expr =>
       OptionDataValue.ExprBased(prefix, expr)
-    } | formatParserAlphabeticOnly ^^ { case str =>
-      OptionDataValue.StringBased(str)
-    }
+    } | formatParserAlphabeticOnly ^^ (str => OptionDataValue.StringBased(str))
 }
 
 object ValueParser extends ValueParser with PackratParsingHelper {

@@ -49,7 +49,7 @@ class BaseController(controllerComponents: ControllerComponents)(implicit ec: Ex
     def asNoContent = f.map(_ => NoContent)
   }
 
-  type LeftResult[T] = EitherT[Future, Result, T]
+  private type LeftResult[T] = EitherT[Future, Result, T]
 
   def asRes[T](fa: Future[T]): LeftResult[T] =
     EitherT[Future, Result, T](fa.map(_.asRight))
@@ -82,7 +82,7 @@ class BaseController(controllerComponents: ControllerComponents)(implicit ec: Ex
       block(request)
     }
 
-  protected def addFormIdToMdc(formId: FormId): Unit =
+  private def addFormIdToMdc(formId: FormId): Unit =
     MDC.put("FormId", formId.value)
 
   def formTemplateAction(endPoint: String, formTemplateId: FormTemplateId)(

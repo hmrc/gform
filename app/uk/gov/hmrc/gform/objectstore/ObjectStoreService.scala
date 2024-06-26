@@ -76,7 +76,7 @@ class ObjectStoreService(
     )
 
     for {
-      envelopeData <- envelopeService.get(envelopeId)
+      envelopeData <- getEnvelope(envelopeId)
       _ <- envelopeData.files
              .find(_.fileId === fileId.value)
              .traverse { file =>
@@ -122,7 +122,7 @@ class ObjectStoreService(
 
   override def deleteFile(envelopeId: EnvelopeId, fileId: FileId)(implicit hc: HeaderCarrier): Future[Unit] =
     for {
-      envelope <- envelopeService.get(envelopeId)
+      envelope <- getEnvelope(envelopeId)
       maybeFileName = envelope.files.find(_.fileId === fileId.value).map(_.fileName)
       _ <- maybeFileName match {
              case Some(fileName) =>
@@ -180,7 +180,7 @@ class ObjectStoreService(
     )
 
     for {
-      envelopeData <- envelopeService.get(envelopeId)
+      envelopeData <- getEnvelope(envelopeId)
       _ <- envelopeData.files
              .find(_.fileId === fileId.value)
              .traverse { file =>

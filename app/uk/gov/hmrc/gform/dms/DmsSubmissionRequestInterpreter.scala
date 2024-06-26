@@ -34,6 +34,6 @@ object DmsSubmissionRequestInterpreter {
       case _ => Left("request should contain a pdf file with Content-Type:'application/pdf'")
     }
 
-  def validContentType(filePart: MultipartFormData.FilePart[TemporaryFile]) =
+  private def validContentType(filePart: MultipartFormData.FilePart[TemporaryFile]) =
     filePart.contentType.map(_.toLowerCase).contains("application/pdf")
 }

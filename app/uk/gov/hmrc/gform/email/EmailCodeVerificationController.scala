@@ -80,7 +80,7 @@ class EmailCodeVerificationController(
     emailCodeParameters
       .fold(List.empty[EmailCodeParameter])(_.toList)
       .map { case EmailCodeParameter(emailTemplateVariable, value) =>
-        (emailTemplateVariable, value.m.get(lang).getOrElse(""))
+        (emailTemplateVariable, value.m.getOrElse(lang, ""))
       }
       .toMap
 }

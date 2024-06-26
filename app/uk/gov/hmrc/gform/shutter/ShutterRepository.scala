@@ -17,7 +17,7 @@
 package uk.gov.hmrc.gform.shutter
 
 import org.mongodb.scala.bson.Document
-import org.mongodb.scala.model.{ FindOneAndReplaceOptions }
+import org.mongodb.scala.model.FindOneAndReplaceOptions
 import org.mongodb.scala.result.DeleteResult
 
 import scala.concurrent.{ ExecutionContext, Future }

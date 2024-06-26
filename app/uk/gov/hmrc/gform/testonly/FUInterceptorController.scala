@@ -68,7 +68,7 @@ class FUInterceptorController(
 
   private var predefinedResponses = Map[String, JsValue]()
 
-  private def shouldIntercept(envelope: String): Boolean = predefinedResponses.get(envelope).isDefined
+  private def shouldIntercept(envelope: String): Boolean = predefinedResponses.contains(envelope)
   private def respondWithPredefinedResponse(path: String): Future[Result] = Ok(predefinedResponses(path)).pure[Future]
   private lazy val originalFileUploadBaseUrl = serviceConfig.baseUrl("file-upload-interceptor")
 }

@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.gform.sharedmodel.structuredform
 
-import play.api.libs.json.{ Format }
+import play.api.libs.json.Format
 import uk.gov.hmrc.gform.sharedmodel.ValueClassFormat
 
 case class FieldName(name: String) extends AnyVal

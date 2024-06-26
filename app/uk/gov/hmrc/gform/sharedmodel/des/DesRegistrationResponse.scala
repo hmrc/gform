@@ -23,7 +23,7 @@ sealed trait Address extends Product with Serializable
 
 object Address {
 
-  val desReads: Reads[Address] = Reads(json =>
+  private val desReads: Reads[Address] = Reads(json =>
     (json \ "countryCode").asOpt[String] match {
       case Some("GB") => UkAddress.format.reads(json)
       case _          => InternationalAddress.format.reads(json)
@@ -86,7 +86,7 @@ sealed trait DesEntity {
 
 object DesEntity {
 
-  val desReads: Reads[DesEntity] = Reads(json =>
+  private val desReads: Reads[DesEntity] = Reads(json =>
     ((json \ "individual"), (json \ "organisation")) match {
       case (JsDefined(js), JsUndefined()) => Individual.format.reads(js)
       case (JsUndefined(), JsDefined(js)) => Organisation.format.reads(js)

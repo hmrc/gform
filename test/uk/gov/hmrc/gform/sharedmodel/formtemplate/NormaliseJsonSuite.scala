@@ -18,13 +18,18 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
 import munit.FunSuite
 import play.api.libs.json.{ JsResult, JsSuccess, JsValue, Json }
+
 import scala.io.Source
 import uk.gov.hmrc.gform.formtemplate.FormTemplatesControllerRequestHandler
+
+import scala.util.Using
 
 class NormaliseJsonSuite extends FunSuite {
 
   private def readFile(fileName: String): String =
-    Source.fromFile(s"test/resources/templates-to-normalise/$fileName.json").mkString
+    Using.resource(Source.fromFile(s"test/resources/templates-to-normalise/$fileName.json")) { source =>
+      source.mkString
+    }
 
   private def readAsJson(fileName: String): JsValue = {
     val source = readFile(fileName)
@@ -41,7 +46,7 @@ class NormaliseJsonSuite extends FunSuite {
     "exclude-from-pdf-in-summary-section"
   )
 
-  table.foreach { case fileName =>
+  table.foreach { fileName =>
     val input = readAsJson(fileName)
     val expected = readAsJson(fileName + "-expected")
 

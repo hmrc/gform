@@ -1,5 +1,5 @@
 import play.core.PlayVersion
-import sbt._
+import sbt.*
 object Dependencies {
 
   val appName = "gform"

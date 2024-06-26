@@ -48,7 +48,7 @@ class CustomHttpRequestHandler(
 }
 
 object CustomHttpRequestHandler {
-  def dropTrailingSlash(request: RequestHeader): Option[RequestHeader] =
+  private def dropTrailingSlash(request: RequestHeader): Option[RequestHeader] =
     Some(request.target.path)
       .filter(_.endsWith("/"))
       .map(p => request.withTarget(request.target.withPath(p.dropRight(1))))

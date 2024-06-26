@@ -448,7 +448,7 @@ object FormTemplatesControllerRequestHandler {
             .flatMap {
               // format: off
               case (_, "hmrcDms", Some(dmsFormId))
-                  if dmsFormId.length > 0 && dmsFormId.length <= 12  => None
+                  if dmsFormId.nonEmpty && dmsFormId.length <= 12  => None
               case (id, "hmrcDms", Some(_))                          => Some(invalidDmsFormId(id))
               case (id, "hmrcDms", None)                             => Some(missingDmsFormId(id))
               case _                                                 => None

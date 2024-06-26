@@ -178,7 +178,7 @@ class DestinationSubmitter[M[_]](
         submitToSubmissionConsolidator(d, submissionInfo, accumulatedModel, modelTree, formData).map(_ => None)
     }
 
-  def submitToSubmissionConsolidator(
+  private def submitToSubmissionConsolidator(
     d: Destination.SubmissionConsolidator,
     submissionInfo: DestinationSubmissionInfo,
     accumulatedModel: HandlebarsTemplateProcessorModel,
@@ -195,7 +195,7 @@ class DestinationSubmitter[M[_]](
       }
     }
 
-  def submitToEmail(
+  private def submitToEmail(
     d: Destination.Email,
     submissionInfo: DestinationSubmissionInfo,
     structuredFormData: StructuredFormValue.ObjectStructure,
@@ -259,7 +259,7 @@ class DestinationSubmitter[M[_]](
       }
     }
 
-  def submitToDataStore(
+  private def submitToDataStore(
     submissionInfo: DestinationSubmissionInfo,
     structuredFormData: StructuredFormValue.ObjectStructure,
     d: Destination.DataStore,

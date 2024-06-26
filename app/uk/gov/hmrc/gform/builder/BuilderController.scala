@@ -304,7 +304,7 @@ object BuilderSupport {
         updateSummary(jsonWithSummarySection, summarySection, history)
     }
 
-  def modifyAcknowledgementData(json: Json, acknowledgement: Json): Json = {
+  private def modifyAcknowledgementData(json: Json, acknowledgement: Json): Json = {
     val history = List(DownField("acknowledgementSection"))
 
     val propertyList = List(
@@ -589,7 +589,7 @@ object BuilderSupport {
 
   }
 
-  def modifyAcknowledgementFormComponentData(
+  private def modifyAcknowledgementFormComponentData(
     json: Json,
     formComponentId: FormComponentId,
     formComponentData: Json

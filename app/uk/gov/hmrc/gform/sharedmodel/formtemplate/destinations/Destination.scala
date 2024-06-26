@@ -273,7 +273,7 @@ case class UploadableDataStoreDestination(
   validateHandlebarPayload: Option[Boolean],
   jsonSchema: Option[JsValue]
 ) {
-  def toDataStoreDestination: Either[String, Destination.DataStore] =
+  private def toDataStoreDestination: Either[String, Destination.DataStore] =
     for {
       cvii <- addErrorInfo(id, convertSingleQuotes, includeIf)
     } yield Destination.DataStore(
@@ -318,7 +318,7 @@ case class UploadableCompositeDestination(
   includeIf: DestinationIncludeIf,
   destinations: NonEmptyList[Destination]
 ) {
-  def toCompositeDestination: Either[String, Destination.Composite] =
+  private def toCompositeDestination: Either[String, Destination.Composite] =
     for {
       cvii <- addErrorInfo(id, convertSingleQuotes, includeIf)
     } yield Destination.Composite(
@@ -343,7 +343,7 @@ case class UploadableStateTransitionDestination(
   includeIf: DestinationIncludeIf,
   failOnError: Option[Boolean] = None
 ) {
-  def toStateTransitionDestination: Either[String, Destination.StateTransition] =
+  private def toStateTransitionDestination: Either[String, Destination.StateTransition] =
     for {
       cvii <- addErrorInfo(id, convertSingleQuotes, includeIf)
       rs <- addErrorInfo(id, "requiredState")(
@@ -410,7 +410,7 @@ object UploadableHandlebarsHttpApiDestination {
 }
 
 case class UploadableLogDestination(id: DestinationId) {
-  def toLogDestination: Either[String, Destination.Log] = Right(Destination.Log(id))
+  private def toLogDestination: Either[String, Destination.Log] = Right(Destination.Log(id))
 }
 
 object UploadableLogDestination {
@@ -430,7 +430,7 @@ case class UploadableEmailDestination(
   to: FormComponentId,
   personalisation: Map[NotifierPersonalisationFieldId, FormComponentId]
 ) {
-  def toEmailDestination: Either[String, Destination.Email] =
+  private def toEmailDestination: Either[String, Destination.Email] =
     for {
       cvii <- addErrorInfo(id, convertSingleQuotes, includeIf)
     } yield Destination

@@ -22,9 +22,8 @@ import play.api.http.HttpEntity
 import play.api.libs.json.Json
 import play.api.mvc._
 import uk.gov.hmrc.gform.sharedmodel.AffinityGroup
-import uk.gov.hmrc.gform.config.AppConfig
 import uk.gov.hmrc.gform.controllers.BaseController
-import uk.gov.hmrc.gform.fileupload.FileUploadAlgebra
+import uk.gov.hmrc.gform.objectstore.ObjectStoreAlgebra
 import uk.gov.hmrc.gform.sharedmodel.form.{ FormIdData, QueryParams }
 import uk.gov.hmrc.gform.sharedmodel.AccessCode
 import uk.gov.hmrc.gform.sharedmodel.form.{ FileId, FormId, UserData }
@@ -36,8 +35,7 @@ import scala.concurrent.{ ExecutionContext, Future }
 
 class FormController(
   controllerComponents: ControllerComponents,
-  config: AppConfig,
-  fileUpload: FileUploadAlgebra[Future],
+  objectStoreService: ObjectStoreAlgebra[Future],
   formService: FormAlgebra[Future]
 )(implicit ex: ExecutionContext)
     extends BaseController(controllerComponents) {
@@ -124,7 +122,7 @@ class FormController(
     formAction("deleteFile", formIdData, s"fileId: ${fileId.value}") { implicit request =>
       val result = for {
         form <- formService.get(formIdData)
-        _    <- fileUpload.deleteFile(form.envelopeId, fileId)
+        _    <- objectStoreService.deleteFile(form.envelopeId, fileId)
       } yield ()
       result.asNoContent
     }

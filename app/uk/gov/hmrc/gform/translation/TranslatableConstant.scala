@@ -47,11 +47,9 @@ case class TopLevelExprData(xs: List[PathWithTranslatableConstants]) {
   def toRows: List[Row] = xs.flatMap { pathWithTranslatableConstant =>
     val path = pathWithTranslatableConstant.path
     val constants = pathWithTranslatableConstant.constants
-    constants.map { constant =>
-      constant match {
-        case NonTranslated(en)  => Row(path, en.value, "")
-        case Translated(en, cy) => Row(path, en.value, cy.value)
-      }
+    constants.map {
+      case NonTranslated(en)  => Row(path, en.value, "")
+      case Translated(en, cy) => Row(path, en.value, cy.value)
     }
   }
 

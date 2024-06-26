@@ -44,11 +44,10 @@ object LookupMatchStringParser extends RegexParsers {
 
     def charSequenceParser: Parser[String] = "[^']*".r
 
-    def nullParser: Parser[KeyComponent] = "null" ^^ { case _ => KeyComponent.Null }
-    def wildcardParser: Parser[KeyComponent] = "*" ^^ { case _ => KeyComponent.Wildcard }
-    def literalStringKeyComponentParser: Parser[KeyComponent] = quotedStringParser ^^ { case s =>
-      KeyComponent.LiteralString(s)
-    }
+    def nullParser: Parser[KeyComponent] = "null" ^^ (_ => KeyComponent.Null)
+    def wildcardParser: Parser[KeyComponent] = "*" ^^ (_ => KeyComponent.Wildcard)
+    def literalStringKeyComponentParser: Parser[KeyComponent] =
+      quotedStringParser ^^ (s => KeyComponent.LiteralString(s))
 
     def compositeKeyComponentParser: LookupMatchStringParser.Parser[KeyComponent] =
       literalStringKeyComponentParser | wildcardParser | nullParser

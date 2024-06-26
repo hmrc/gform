@@ -19,7 +19,7 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate
 import cats.instances.string._
 import cats.syntax.eq._
 import cats.data.NonEmptyList
-import uk.gov.hmrc.gform.models.constraints.{ ReferenceInfo }
+import uk.gov.hmrc.gform.models.constraints.ReferenceInfo
 
 case class TemplatePath(path: String) extends AnyVal {
   def +(subPath: String) = if (path === TemplatePath.root.path)

@@ -46,7 +46,7 @@ object SubmissionRef {
   def apply(value: EnvelopeId): SubmissionRef = SubmissionRef(getSubmissionReference(value))
 
   private def getSubmissionReference(envelopeId: EnvelopeId): String =
-    if (!envelopeId.value.isEmpty) {
+    if (envelopeId.value.nonEmpty) {
       // As 36^11 (number of combinations of 11 base 36 digits) < 2^63 (number of combinations of 63 base 2 digits) we can get full significance from this digest.
       val digest = MessageDigest.getInstance("SHA-256").digest(envelopeId.value.getBytes()).take(8)
       val initialValue = new BigInteger(digest).abs()

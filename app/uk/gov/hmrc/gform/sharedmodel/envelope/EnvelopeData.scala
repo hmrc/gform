@@ -41,7 +41,7 @@ case class EnvelopeFile(
 )
 
 object EnvelopeFile {
-  val fileWrites: Writes[EnvelopeFile] =
+  private val fileWrites: Writes[EnvelopeFile] =
     ((__ \ "id").write[String] and
       (JsPath \ "name").write[String] and
       (JsPath \ "status").write[FileStatus] and
@@ -49,7 +49,7 @@ object EnvelopeFile {
       (JsPath \ "length").write[Long] and
       (JsPath \ "metadata").write[Map[String, List[String]]])(unlift(EnvelopeFile.unapply))
 
-  val fileReads: Reads[EnvelopeFile] = (
+  private val fileReads: Reads[EnvelopeFile] = (
     (JsPath \ "id").read[String] and
       (JsPath \ "name").read[String] and
       (JsPath \ "status").read[FileStatus] and

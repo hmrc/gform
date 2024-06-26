@@ -37,7 +37,7 @@ class JsonParseTestPresentationHint extends Spec {
          }"""
 
     var jsr: JsResult[FormComponent] = null
-    jsr = implicitly[Reads[FormComponent]].reads(Json.parse(jsonStr));
+    jsr = implicitly[Reads[FormComponent]].reads(Json.parse(jsonStr))
   }
 
   "A component with a presentationHint that is not a String" should "fail to parse" in {

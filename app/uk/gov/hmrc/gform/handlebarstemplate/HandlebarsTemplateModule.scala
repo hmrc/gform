@@ -26,7 +26,7 @@ class HandlebarsTemplateModule(
   controllerComponents: ControllerComponents,
   handlebarsTemplateService: HandlebarsTemplateAlgebra[Future],
   formTemplateModule: FormTemplateModule,
-  handlebarsSchemaAlgebra: HandlebarsSchemaAlgebra[Future]
+  handlebarsSchemaService: HandlebarsSchemaAlgebra[Future]
 )(implicit
   ex: ExecutionContext
 ) {
@@ -41,7 +41,7 @@ class HandlebarsTemplateModule(
   val handlebarSchemaController: HandlebarsSchemaController =
     new HandlebarsSchemaController(
       controllerComponents,
-      handlebarsSchemaAlgebra,
+      handlebarsSchemaService,
       formTemplateModule.handler,
       formTemplateModule.formTemplateService
     )
