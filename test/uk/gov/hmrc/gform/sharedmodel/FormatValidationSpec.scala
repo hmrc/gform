@@ -65,6 +65,7 @@ class FormatValidationSpec extends Spec {
         id = FormComponentId(id),
         `type` = Text(constraint, Value),
         label = toSmartString(label),
+        isPageHeading = false,
         helpText = None,
         shortName = None,
         includeIf = None,

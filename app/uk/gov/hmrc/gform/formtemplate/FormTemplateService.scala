@@ -129,9 +129,10 @@ class FormTemplateService(
             expressionsContextSubstituted
           )
         substitutedFormTemplate <- substituteDestinations(substitutedFormTemplateBooleanExprs)
-        handlebarsSchemaIds     <- handlebarsSchemaAlgebra.getAllIds
-        _                       <- verify(substitutedFormTemplate, appConfig, handlebarsSchemaIds)(expressionsContext)
-        formTemplateUpdated     <- rewrite(substitutedFormTemplate)
+        formTemplateWithPageHeadings = PageHeadingHelper.fillBlankPageHeadings(substitutedFormTemplate)
+        handlebarsSchemaIds <- handlebarsSchemaAlgebra.getAllIds
+        _                   <- verify(formTemplateWithPageHeadings, appConfig, handlebarsSchemaIds)(expressionsContext)
+        formTemplateUpdated <- rewrite(formTemplateWithPageHeadings)
       } yield formTemplateUpdated
 
     def substituteDestinations(formTemplate: FormTemplate) = {

@@ -1,0 +1,46 @@
+{
+  "_id": "choice-none-choice",
+  "formName": "Choice",
+  "version": 1,
+  "description": "",
+  "emailTemplateId": "",
+  "authConfig": {
+    "authModule": "hmrc"
+  },
+  "sections": [
+    {
+      "title": "Page",
+      "fields": [
+        {
+          "id": "hasDifferentName",
+          "type": "choice",
+          "label": "Does your company trade under a different name?",
+          "multivalue": "true",
+          "choices": [
+            {
+              "value": "foo",
+              "en": "A"
+            },
+            {
+              "value": "bar",
+              "en": "B"
+            }
+          ],
+          "noneChoice": "baz",
+          "noneChoiceError": "error"
+        }
+      ]
+    }
+  ],
+  "acknowledgementSection": {
+    "title": "Acknowledgement",
+    "fields": []
+  },
+  "destinations": [
+    {
+      "id": "transitionToSubmitted",
+      "type": "stateTransition",
+      "requiredState": "Submitted"
+    }
+  ]
+}

@@ -247,7 +247,12 @@ object OptionData {
     }
 }
 
-sealed trait NoneChoice extends Product with Serializable
+sealed trait NoneChoice extends Product with Serializable {
+  def fold[A](f: NoneChoice.IndexBased => A)(g: NoneChoice.ValueBased => A): A = this match {
+    case i: NoneChoice.IndexBased => f(i)
+    case v: NoneChoice.ValueBased => g(v)
+  }
+}
 
 object NoneChoice {
 

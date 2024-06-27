@@ -48,6 +48,7 @@ trait RewriterSupport {
     id = FormComponentId("Default form component ID"),
     `type` = PostcodeLookup(None, None, None),
     label = SmartString(localised = LocalisedString(m = Map(LangADT.En -> "Default label")), Nil),
+    isPageHeading = false,
     helpText = None,
     shortName = None,
     includeIf = None,

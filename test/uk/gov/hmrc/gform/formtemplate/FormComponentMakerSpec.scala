@@ -439,6 +439,7 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
           )
         ),
         SmartString(LocalisedString(Map(LangADT.En -> "summaryListLabel")), List()),
+        false,
         None,
         None,
         None,
@@ -628,6 +629,7 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
           false
         ),
         SmartString(LocalisedString(Map(LangADT.En -> "Table of data")), List()),
+        false,
         None,
         None,
         None,

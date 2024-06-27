@@ -47,7 +47,7 @@ class FormComponentMaker(json: JsValue) {
 
   lazy val id: FormComponentId = (json \ "id").as[FormComponentId]
   lazy val `type`: Option[ComponentTypeRaw] = (json \ "type").asOpt[ComponentTypeRaw]
-  lazy val optLabel: Opt[SmartString] = toOpt((json \ "label").validate[SmartString], "/label")
+  lazy val optLabel: Opt[Option[SmartString]] = toOpt((json \ "label").validateOpt[SmartString], "/label")
 
   lazy val optMaybeValueExpr: Opt[Option[ValueExpr]] = parse("value", ValueParser.validate)
 
@@ -312,7 +312,7 @@ class FormComponentMaker(json: JsValue) {
     }
 
   private def mkFieldValue(
-    label: SmartString,
+    label: Option[SmartString],
     helpText: Option[SmartString],
     presHint: Option[List[PresentationHint]],
     mes: MES,
@@ -328,7 +328,14 @@ class FormComponentMaker(json: JsValue) {
     FormComponent(
       id = id,
       `type` = ct,
-      label = label,
+      label = label.getOrElse(
+        // This value is replaced later in PageHeadingHelper by "Page title" (if all conditions are met)
+        SmartString(
+          LocalisedString.empty,
+          List.empty[Expr]
+        )
+      ),
+      isPageHeading = label.isEmpty,
       helpText = helpText,
       shortName = shortName,
       includeIf = includeIf,

@@ -171,6 +171,7 @@ class JsonParseTestFormat extends Spec with TableDrivenPropertyChecks {
           FormComponentId("gid"),
           Text(ShortText.default, Value, DisplayWidth.DEFAULT),
           toSmartString("glabel"),
+          false,
           None,
           None,
           None,
