@@ -429,7 +429,7 @@ object BuilderSupport {
     val propertyList =
       List(
         Property("type"),
-        Property("label"),
+        Property("label", PropertyBehaviour.PurgeWhenEmpty),
         Property("helpText", PropertyBehaviour.PurgeWhenEmpty),
         Property("shortName", PropertyBehaviour.PurgeWhenEmpty),
         Property("format", PropertyBehaviour.PurgeWhenEmpty),
@@ -507,7 +507,7 @@ object BuilderSupport {
   def modifyFormComponentData(
     json: Json,
     formComponentId: FormComponentId,
-    sectionData: Json
+    formComponentData: Json
   ): Json = {
 
     val id = Json.fromString(formComponentId.value)
@@ -566,7 +566,7 @@ object BuilderSupport {
         histories.collectFirst { case Some(history) => history }
       }
 
-    patchFormComponent(maybeHistory, json, sectionData)
+    patchFormComponent(maybeHistory, json, formComponentData)
 
   }
 
@@ -642,10 +642,10 @@ object BuilderSupport {
 
   def updateFormComponent(
     formTemplateRaw: FormTemplateRaw,
-    sectionData: Json,
+    formComponentData: Json,
     formComponentId: FormComponentId
   ): Either[BuilderError, FormTemplateRaw] =
-    modifyJson(formTemplateRaw)(modifyFormComponentData(_, formComponentId, sectionData))
+    modifyJson(formTemplateRaw)(modifyFormComponentData(_, formComponentId, formComponentData))
 
   def updateSectionByPath(
     formTemplateRaw: FormTemplateRaw,
@@ -875,20 +875,12 @@ class BuilderController(
     updateAction(formTemplateRawId) { (formTemplateRaw, requestBody) =>
       for {
         sectionUpdateRequest <-
-          requestBody.as[SectionUpdateRequest].leftMap(e => BuilderError.CirceDecodingError(e))
-        componentUpdatedFormTemplateRaw <-
-          sectionUpdateRequest.formComponent
-            .map(data =>
-              extractFormComponentId(data).flatMap(formComponentId =>
-                BuilderSupport.updateFormComponent(formTemplateRaw, data, formComponentId)
-              )
-            )
-            .getOrElse(Right(formTemplateRaw))
+          requestBody.as[SectionDetails].leftMap(e => BuilderError.CirceDecodingError(e))
         sectionUpdatedFormTemplateRaw <-
           BuilderSupport
             .updateSectionByPath(
-              componentUpdatedFormTemplateRaw,
-              sectionUpdateRequest.sectionDetails
+              formTemplateRaw,
+              sectionUpdateRequest
             )
       } yield (sectionUpdatedFormTemplateRaw, Results.Ok(sectionUpdatedFormTemplateRaw.value))
     }
@@ -905,12 +897,6 @@ class BuilderController(
               formTemplateUpdateRequest.formTemplate
             )
       } yield (updatedFormTemplateRaw, Results.Ok(updatedFormTemplateRaw.value))
-    }
-
-  private def extractFormComponentId(json: Json): Either[BuilderError, FormComponentId] =
-    json.hcursor.get[String]("id") match {
-      case Right(idValue) => Right(FormComponentId(idValue))
-      case Left(failure)  => Left(BuilderError.CirceDecodingError(failure))
     }
 
   def updateSummarySectionFormComponent(
@@ -937,17 +923,12 @@ class BuilderController(
   def updateFormComponent(formTemplateRawId: FormTemplateRawId, formComponentId: FormComponentId) =
     updateAction(formTemplateRawId) { (formTemplateRaw, requestBody) =>
       for {
-        componentUpdateRequest <-
-          requestBody.as[ComponentUpdateRequest].leftMap(e => BuilderError.CirceDecodingError(e))
-        sectionUpdatedFormTemplateRaw <-
-          componentUpdateRequest.sectionDetails
-            .map(s => BuilderSupport.updateSectionByPath(formTemplateRaw, s))
-            .getOrElse(Right(formTemplateRaw))
+        componentUpdateRequest <- requestBody.as[Json].leftMap(e => BuilderError.CirceDecodingError(e))
         componentUpdatedFormTemplateRaw <-
           BuilderSupport
             .updateFormComponent(
-              sectionUpdatedFormTemplateRaw,
-              componentUpdateRequest.formComponent,
+              formTemplateRaw,
+              componentUpdateRequest,
               formComponentId
             )
       } yield (componentUpdatedFormTemplateRaw, Results.Ok(componentUpdatedFormTemplateRaw.value))
@@ -1032,12 +1013,7 @@ object SectionDetails {
   implicit val decodeSectionDetails: Decoder[SectionDetails] = deriveDecoder[SectionDetails]
 }
 
-final case class SectionUpdateRequest(sectionDetails: SectionDetails, formComponent: Option[Json])
-
-object SectionUpdateRequest {
-  implicit val sectionUpdateRequest: Decoder[SectionUpdateRequest] = deriveDecoder[SectionUpdateRequest]
-}
-
+// TODO Get rid of this, it is not longer needed
 final case class ComponentUpdateRequest(formComponent: Json, sectionDetails: Option[SectionDetails])
 
 object ComponentUpdateRequest {

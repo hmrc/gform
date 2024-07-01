@@ -464,7 +464,8 @@ object FormTemplateValidator {
   def validateChoice(
     sectionsList: List[Page],
     choiceChecker: Choice => Boolean,
-    errorMessage: String
+    errorMessage: String,
+    detailedError: Choice => String = _ => ""
   ): ValidationResult = {
     val choiceFieldIds = allFormComponents(sectionsList)
       .map(fv => (fv.id, fv.`type`))
@@ -473,7 +474,21 @@ object FormTemplateValidator {
           fId
       }
 
-    choiceFieldIds.isEmpty.validationResult(errorMessage + ": " + choiceFieldIds.mkString(","))
+    def detailedReport(formComponentId: FormComponentId): String =
+      allFormComponents(sectionsList)
+        .map(fv => (fv.id, fv.`type`))
+        .collectFirst {
+          case (fId, choice: Choice) if formComponentId === fId =>
+            val de = detailedError(choice)
+            if (de.isEmpty) de else " " + de
+        }
+        .getOrElse("")
+
+    choiceFieldIds.isEmpty.validationResult(
+      errorMessage + ": " + choiceFieldIds.headOption
+        .map(fcId => fcId.value + "." + detailedReport(fcId))
+        .getOrElse("")
+    )
   }
 
   def validateRevealingChoice(
@@ -546,7 +561,26 @@ object FormTemplateValidator {
       }
     }
 
-    validateChoice(sectionsList, check, "'noneChoice' should match one of choices 'value'")
+    def details(choice: Choice): String = {
+      val values = choice.options.collect { case OptionData.ValueBased(_, _, _, _, OptionDataValue.StringBased(v)) =>
+        v
+      }
+
+      val got = choice.noneChoice.fold("noneChoice was not provided") {
+        case NoneChoice.IndexBased(index) => index.toString
+        case NoneChoice.ValueBased(value) => value
+      }
+
+      "Got " + got + ", expected one of " + values
+
+    }
+
+    validateChoice(
+      sectionsList,
+      check,
+      s"'noneChoice' should match one of choices 'value'",
+      details
+    )
   }
 
   def validateChoiceNoneChoiceLowerBound(sectionsList: List[Page]): ValidationResult = {
@@ -577,7 +611,13 @@ object FormTemplateValidator {
     def check(choice: Choice): Boolean =
       choice.`type` === Checkbox && choice.noneChoice.isDefined =!= choice.noneChoiceError.isDefined
 
-    validateChoice(sectionsList, check, "noneChoice and noneChoiceError should be defined")
+    def details(choice: Choice): String = {
+      val c = choice.noneChoice.map(_.fold(_.index.toString())(_.value))
+      val ce = choice.noneChoiceError.map(_.m.values.mkString(","))
+      s"Got noneChoice: $c, noneChoiceError: $ce"
+    }
+
+    validateChoice(sectionsList, check, "noneChoice and noneChoiceError should be defined", details)
   }
 
   def validateChoiceOptions(sectionsList: List[Page]): ValidationResult = {

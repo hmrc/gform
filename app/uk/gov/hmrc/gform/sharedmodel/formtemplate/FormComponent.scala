@@ -27,6 +27,7 @@ case class FormComponent(
   id: FormComponentId,
   `type`: ComponentType,
   label: SmartString,
+  isPageHeading: Boolean,
   helpText: Option[SmartString],
   shortName: Option[SmartString],
   includeIf: Option[IncludeIf],

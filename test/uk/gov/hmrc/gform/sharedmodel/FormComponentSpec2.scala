@@ -61,6 +61,7 @@ class FormComponentSpec2 extends Spec {
           None
         ),
         toSmartString("Select the tax type"),
+        false,
         None,
         None,
         None,
@@ -122,6 +123,7 @@ class FormComponentSpec2 extends Spec {
           None
         ),
         toSmartString("Select the tax type"),
+        false,
         None,
         None,
         None,

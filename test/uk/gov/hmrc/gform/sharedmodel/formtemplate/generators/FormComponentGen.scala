@@ -51,6 +51,7 @@ trait FormComponentGen {
       id                <- formComponentIdGen
       tpe               <- ComponentTypeGen.componentTypeGen(maxDepth)
       label             <- labelGen
+      isPageHeading     <- PrimitiveGen.booleanGen
       helpText          <- Gen.option(helpTextGen)
       shortName         <- Gen.option(shortNameGen)
       includeIf         <- Gen.option(IncludeIfGen.includeIfGen)
@@ -67,6 +68,7 @@ trait FormComponentGen {
       id,
       tpe,
       label,
+      isPageHeading,
       helpText,
       shortName,
       includeIf,

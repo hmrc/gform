@@ -57,24 +57,4 @@ class UpdateRequestDecoderSpec extends AnyFlatSpec with Matchers {
 
     decode[ComponentUpdateRequest](json) shouldEqual Right(expected)
   }
-
-  "SectionUpdateRequest Decoder" should "decode correctly" in {
-    val json = """
-      {
-        "sectionDetails": {
-          "section": {
-            "title": "foo"
-          },
-          "sectionPath": "test/path"
-        },
-        "formComponent": {
-          "label": "bar"
-        }
-      }
-    """
-    val expected =
-      SectionUpdateRequest(SectionDetails(Json.obj("title" := "foo"), "test/path"), Some(Json.obj("label" := "bar")))
-
-    decode[SectionUpdateRequest](json) shouldEqual Right(expected)
-  }
 }

@@ -26,7 +26,7 @@ import uk.gov.hmrc.gform.sharedmodel.booleanParser.booleanExprParser
 import scala.annotation.tailrec
 
 sealed trait SmartString {
-  private def fold[B](f: SmartString.SmartStringBase => B)(g: SmartString.SmartStringCond => B): B =
+  def fold[B](f: SmartString.SmartStringBase => B)(g: SmartString.SmartStringCond => B): B =
     this match {
       case n: SmartString.SmartStringBase => f(n)
       case r: SmartString.SmartStringCond => g(r)
