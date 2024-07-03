@@ -51,8 +51,8 @@ object PropertyBehaviour {
   case object Normal extends PropertyBehaviour
   // Remove property if received value from client is empty
   case object PurgeWhenEmpty extends PropertyBehaviour
-  // Remove property if received value from client is empty
-  case object StringArrayButPurgeWhenEmpty extends PropertyBehaviour
+  // Custom logic for "choices" field
+  case object Choices extends PropertyBehaviour
 }
 
 case class Property(
@@ -332,6 +332,93 @@ object BuilderSupport {
     updateJsonByPropertyList(propertyList, json, summarySection, history)
   }
 
+  private def updateChoiceLang(propertyValue: Json, accJson: Json): Json = {
+    val maybeIncomingEn = propertyValue.hcursor.downField("en").focus
+    val maybeTemplateEn = if (accJson.isString) Some(accJson) else accJson.hcursor.downField("en").focus
+
+    if (maybeIncomingEn === maybeTemplateEn) {
+      if (accJson.isString) {
+        Json.obj("en" := accJson)
+      } else {
+        accJson
+      }
+    } else {
+      maybeIncomingEn.fold(accJson) { incomingEn =>
+        if (accJson.isString) {
+          Json.obj("en" := incomingEn)
+        } else {
+          accJson.hcursor
+            .downField("cy")
+            .delete
+            .root
+            .downField("en")
+            .set(incomingEn)
+            .root
+            .focus
+            .getOrElse(accJson)
+        }
+
+      }
+    }
+  }
+
+  private def updateIncludeIf(propertyValue: Json, accJson: Json): Json = {
+    val maybeIncomingIncludeIf = propertyValue.hcursor.downField("includeIf").focus
+    val isValueAsStringEmpty = maybeIncomingIncludeIf.flatMap(_.as[String].toOption).fold(false)(_.trim.isEmpty())
+
+    maybeIncomingIncludeIf match {
+      case Some(incomingIncludeIf) if !isValueAsStringEmpty =>
+        val includeIfCursor = accJson.hcursor.downField("includeIf")
+
+        if (includeIfCursor.succeeded) {
+          includeIfCursor.set(incomingIncludeIf).root.focus.getOrElse(accJson)
+        } else {
+          accJson.deepMerge(Json.obj("includeIf" := incomingIncludeIf))
+        }
+
+      case _ =>
+        accJson.hcursor.downField("includeIf").delete.root.focus.getOrElse(accJson)
+    }
+  }
+
+  private def updateHint(propertyValue: Json, accJson: Json): Json = {
+    val maybeIncomingHints = propertyValue.hcursor.downField("hint").focus
+    val maybeTemplateHints = accJson.hcursor.downField("hint").focus
+
+    val isValueAsStringEmpty = maybeIncomingHints.flatMap(_.as[String].toOption).fold(false)(_.trim.isEmpty())
+
+    maybeIncomingHints match {
+      case Some(incomingHint) if !isValueAsStringEmpty =>
+        maybeTemplateHints match {
+          case Some(existingHint) =>
+            val localisedValue: ACursor = existingHint.hcursor.downField("en")
+            val en: Option[Json] = if (localisedValue.succeeded) {
+              localisedValue.focus
+            } else {
+              Some(existingHint)
+            }
+            if (en.contains(incomingHint)) {
+              accJson
+            } else {
+              accJson.hcursor.downField("hint").set(incomingHint).root.focus.getOrElse(accJson)
+            }
+          case None =>
+            accJson.deepMerge(Json.obj("hint" := incomingHint))
+        }
+
+      case _ =>
+        accJson.hcursor.downField("hint").delete.root.focus.getOrElse(accJson)
+    }
+  }
+
+  private def updateChoices(browserValue: Json, templateValue: Json): Json = {
+    val templateValueUpd1 = updateChoiceLang(browserValue, templateValue)
+    val templateValueUpd2 = updateHint(browserValue, templateValueUpd1)
+    val templateValueUpd3 = updateIncludeIf(browserValue, templateValueUpd2)
+
+    templateValueUpd3
+  }
+
   private def updateProperty(
     property: Property,
     propertyValue: Json,
@@ -347,39 +434,44 @@ object BuilderSupport {
 
     target.success.flatMap { hcursor =>
       property.behaviour match {
-        case PropertyBehaviour.PurgeWhenEmpty | PropertyBehaviour.StringArrayButPurgeWhenEmpty
-            if isValueAsStringEmpty =>
+        case PropertyBehaviour.PurgeWhenEmpty | PropertyBehaviour.Choices if isValueAsStringEmpty =>
           hcursor
             .downField(property.name)
             .delete
             .root
             .focus
-        case PropertyBehaviour.StringArrayButPurgeWhenEmpty =>
-          val propertyField = hcursor.downField(property.name)
-          if (propertyField.succeeded) {
-            val enLabelsOnly: Option[Json] = propertyField.values.map { values =>
-              val enOnly = values.flatMap { value =>
-                val localisedValue: ACursor = value.hcursor.replayOne(DownField("en"))
-                if (localisedValue.succeeded) {
-                  localisedValue.focus
-                } else {
-                  propertyField.focus
-                }
-              }
-              Json.arr(enOnly.toList: _*)
-            }
 
-            if (enLabelsOnly.contains(propertyValue)) {
-              hcursor.focus
-            } else {
-              propertyField
-                .set(propertyValue)
-                .root
-                .focus
-            }
-          } else {
-            hcursor.withFocus(json => json.deepMerge(Json.obj(property.name -> propertyValue))).root.focus
+        case PropertyBehaviour.Choices =>
+          val browserValues: Option[Iterable[Json]] = propertyValue.hcursor.values
+          val templateValues: Option[Iterable[Json]] = hcursor.downField(property.name).values
+
+          val choices: Json = (browserValues, templateValues) match {
+            case (Some(browserValues), Some(templateValues)) =>
+              val res = browserValues.zip(templateValues).map { case (browserValue, templateValue) =>
+                updateChoices(browserValue, templateValue)
+              }
+              Json.arr(res.toList: _*)
+            case (Some(browserValues), None) =>
+              val res = browserValues.map { browserValue =>
+                val templateValue = Json.fromString("")
+                updateChoices(browserValue, templateValue)
+              }
+              Json.arr(res.toList: _*)
+
+            case _ => accJson
           }
+
+          val choicesCursor = hcursor.downField(property.name) // This can fail when migration away from 'yesno'
+
+          if (choicesCursor.succeeded) {
+            choicesCursor
+              .set(choices)
+              .root
+              .focus
+          } else {
+            hcursor.focus.map(obj => Json.obj("choices" := choices).deepMerge(obj))
+          }
+
         case _ =>
           val propertyField = hcursor.downField(property.name)
           if (propertyField.succeeded) {
@@ -448,8 +540,7 @@ object BuilderSupport {
         Property("noneChoice", PropertyBehaviour.PurgeWhenEmpty),
         Property("noneChoiceError", PropertyBehaviour.PurgeWhenEmpty),
         Property("multivalue", PropertyBehaviour.PurgeWhenEmpty),
-        Property("choices", PropertyBehaviour.StringArrayButPurgeWhenEmpty),
-        Property("hints", PropertyBehaviour.StringArrayButPurgeWhenEmpty),
+        Property("choices", PropertyBehaviour.Choices),
         Property("cityMandatory", PropertyBehaviour.PurgeWhenEmpty),
         Property("countyDisplayed", PropertyBehaviour.PurgeWhenEmpty),
         Property("line2Mandatory", PropertyBehaviour.PurgeWhenEmpty),
@@ -618,12 +709,51 @@ object BuilderSupport {
 
   }
 
+  // Top level hints are deprecated, move them into choices
+  private def moveHints(json: Json): Json =
+    if (json.hcursor.downField("type").focus.contains(Json.fromString("choice"))) {
+
+      val maybeHints: Option[Iterable[Json]] = json.hcursor.downField("hints").values
+      val maybeChoices: Option[Iterable[Json]] = json.hcursor.downField("choices").values
+
+      (maybeHints, maybeChoices) match {
+        case (Some(hints), Some(choices)) =>
+          val merged: Iterable[io.circe.Json] = hints.zip(choices).map { case (hint, choice) =>
+            val choiceNormalised = if (choice.isString) {
+              Json.obj("en" := choice)
+            } else {
+              choice
+            }
+            // Top level hint has priority over choice's hint
+            choiceNormalised.deepMerge(Json.obj("hint" := hint))
+          }
+          val choicesUpd = Json.arr(merged.toList: _*)
+
+          json.hcursor
+            .downField("hints") // Delete top level hints
+            .delete
+            .root
+            .downField("choices")
+            .set(choicesUpd)
+            .root
+            .focus
+            .getOrElse(json)
+
+        case _ => json
+      }
+    } else {
+      json
+    }
+
   private def patchFormComponent(maybeHistory: Option[List[CursorOp]], json: Json, formComponentData: Json): Json =
     maybeHistory
       .flatMap { history =>
         json.hcursor
           .replay(history)
-          .withFocus(field => updateFormComponent(field, formComponentData))
+          .withFocus { field =>
+            val fieldUpd = moveHints(field)
+            updateFormComponent(fieldUpd, formComponentData)
+          }
           .root
           .focus
       }

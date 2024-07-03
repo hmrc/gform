@@ -23,6 +23,681 @@ import munit.FunSuite
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Coordinates, FormComponentId, TaskNumber, TaskSectionNumber }
 
 class BuilderControllerSuite extends FunSuite {
+
+  val convertFromYesNoChoice: Json = json"""
+    {
+      "sections": [
+        {
+          "fields": [
+            {
+              "format": "yesno",
+              "id": "choice",
+              "type": "choice",
+              "label": "Choice label"
+            }
+          ]
+        }
+      ]
+    }"""
+
+  val convertFromYesNoChoiceExpected: Json = json"""
+    {
+      "sections": [
+        {
+          "fields": [
+            {
+              "id": "choice",
+              "type": "choice",
+              "label": "Choice label",
+              "choices": [
+                {
+                  "en": "Yes"
+                },
+                {
+                  "en": "No"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }"""
+
+  test("Migrate choices from 'yesno' format to object") {
+
+    val patch: Json = Json.obj(
+      "choices" := Json.arr(
+        Json.obj("en" := "Yes"),
+        Json.obj("en" := "No")
+      ),
+      "format" := ""
+    )
+
+    val formComponentId: FormComponentId = FormComponentId("choice")
+
+    val result: Json =
+      BuilderSupport
+        .modifyFormComponentData(
+          convertFromYesNoChoice,
+          formComponentId,
+          patch
+        )
+
+    assertEquals(result.spaces2, convertFromYesNoChoiceExpected.spaces2)
+  }
+
+  val convertToYesNoChoice: Json = json"""
+    {
+      "sections": [
+        {
+          "fields": [
+            {
+              "id": "choice",
+              "type": "choice",
+              "label": "Choice label",
+              "choices": [
+                "RDEC",
+                "SME"
+              ]
+            }
+          ]
+        }
+      ]
+    }"""
+
+  val convertToYesNoChoiceExpected: Json = json"""
+    {
+      "sections": [
+        {
+          "fields": [
+            {
+              "format": "yesno",
+              "id": "choice",
+              "type": "choice",
+              "label": "Choice label"
+            }
+          ]
+        }
+      ]
+    }"""
+
+  test("Migrate choices object to 'yesno' format") {
+
+    val patch: Json = Json.obj(
+      "choices" := "",
+      "format" := "yesno"
+    )
+
+    val formComponentId: FormComponentId = FormComponentId("choice")
+
+    val result: Json =
+      BuilderSupport
+        .modifyFormComponentData(
+          convertToYesNoChoice,
+          formComponentId,
+          patch
+        )
+
+    assertEquals(result.spaces2, convertToYesNoChoiceExpected.spaces2)
+  }
+
+  val stringChoices: Json = json"""
+    {
+      "sections": [
+        {
+          "fields": [
+            {
+              "id": "choice",
+              "type": "choice",
+              "label": "Choice label",
+              "choices": [
+                "RDEC",
+                "SME"
+              ]
+            }
+          ]
+        }
+      ]
+    }"""
+
+  val stringChoicesExpected: Json = json"""
+    {
+      "sections": [
+        {
+          "fields": [
+            {
+              "id": "choice",
+              "type": "choice",
+              "label": "Choice label",
+              "choices": [
+                {
+                  "en": "RDECX"
+                },
+                {
+                  "en": "SME"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }"""
+
+  test("Migrate choices from string to object") {
+
+    val patch: Json = Json.obj(
+      "choices" := Json.arr(
+        Json.obj("en" := "RDECX"),
+        Json.obj("en" := "SME")
+      )
+    )
+
+    val formComponentId: FormComponentId = FormComponentId("choice")
+
+    val result: Json =
+      BuilderSupport
+        .modifyFormComponentData(
+          stringChoices,
+          formComponentId,
+          patch
+        )
+
+    assertEquals(result.spaces2, stringChoicesExpected.spaces2)
+  }
+
+  val topLevelHints: Json = json"""
+    {
+      "sections": [
+        {
+          "fields": [
+            {
+              "id": "choice",
+              "type": "choice",
+              "label": "Choice label",
+              "choices": [
+                {
+                  "en": "RDEC",
+                  "value": "projectIsRDEC",
+                  "hint": "inline-hint"
+                },
+                {
+                  "en": "SME",
+                  "value": "projectIsSME"
+                }
+              ],
+              "hints": [
+                {
+                  "en": "Hint 1 en",
+                  "cy": "Hint 1 cy"
+                },
+                {
+                  "en": "Hint 2 en",
+                  "cy": "Hint 2 cy"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }"""
+
+  val topLevelHintsExpected: Json = json"""
+    {
+      "sections": [
+        {
+          "fields": [
+            {
+              "id": "choice",
+              "type": "choice",
+              "label": "Choice label",
+              "choices": [
+                {
+                  "hint": {
+                    "en": "Hint 1 en",
+                    "cy": "Hint 1 cy"
+                  },
+                  "en": "RDEC",
+                  "value": "projectIsRDEC"
+                },
+                {
+                  "hint": {
+                    "en": "Hint 2 en",
+                    "cy": "Hint 2 cy"
+                  },
+                  "en": "SME",
+                  "value": "projectIsSME"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }"""
+
+  test("Move top level hints to choices") {
+
+    val patch: Json = Json.obj() // Empty patch
+
+    val formComponentId: FormComponentId = FormComponentId("choice")
+
+    val result: Json =
+      BuilderSupport
+        .modifyFormComponentData(
+          topLevelHints,
+          formComponentId,
+          patch
+        )
+
+    assertEquals(result.spaces2, topLevelHintsExpected.spaces2)
+  }
+
+  val topLevelHints2: Json = json"""
+    {
+      "sections": [
+        {
+          "fields": [
+            {
+              "id": "choice",
+              "type": "choice",
+              "label": "Choice label",
+              "choices": [
+                "RDEC",
+                "SME"
+              ],
+              "hints": [
+                {
+                  "en": "Hint 1 en",
+                  "cy": "Hint 1 cy"
+                },
+                {
+                  "en": "Hint 2 en",
+                  "cy": "Hint 2 cy"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }"""
+
+  val topLevelHints2Expected: Json = json"""
+    {
+      "sections": [
+        {
+          "fields": [
+            {
+              "id": "choice",
+              "type": "choice",
+              "label": "Choice label",
+              "choices": [
+                {
+                  "hint": {
+                    "en": "Hint 1 en",
+                    "cy": "Hint 1 cy"
+                  },
+                  "en": "RDEC"
+                },
+                {
+                  "hint": {
+                    "en": "Hint 2 en",
+                    "cy": "Hint 2 cy"
+                  },
+                  "en": "SME"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }"""
+
+  test("Move top level hints to choices xxx") {
+
+    val patch: Json = Json.obj() // Empty patch
+
+    val formComponentId: FormComponentId = FormComponentId("choice")
+
+    val result: Json =
+      BuilderSupport
+        .modifyFormComponentData(
+          topLevelHints2,
+          formComponentId,
+          patch
+        )
+
+    assertEquals(result.spaces2, topLevelHints2Expected.spaces2)
+  }
+
+  val choiceWelshRemovedWhenEnUpdated: Json = json"""
+    {
+      "sections": [
+        {
+          "fields": [
+            {
+              "id": "choice",
+              "type": "choice",
+              "label": "Choice label",
+              "choices": [
+                {
+                  "en": "RDEC en",
+                  "cy": "RDEC cy",
+                  "value": "projectIsRDEC",
+                  "hint": {
+                    "en": "Hint 1 en",
+                    "cy": "Hint 1 cy"
+                  }
+                },
+                {
+                  "en": "SME en",
+                  "cy": "SME cy",
+                  "value": "projectIsSME",
+                  "hint": {
+                    "en": "Hint 2 en",
+                    "cy": "Hint 2 cy"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }"""
+
+  val choiceWelshRemovedWhenEnUpdatedExpected: Json = json"""
+    {
+      "sections": [
+        {
+          "fields": [
+            {
+              "id": "choice",
+              "type": "choice",
+              "label": "Choice label",
+              "choices": [
+                {
+                  "en": "RDEC en X",
+                  "value": "projectIsRDEC",
+                  "hint": {
+                    "en": "Hint 1 en",
+                    "cy": "Hint 1 cy"
+                  }
+                },
+                {
+                  "en": "SME en",
+                  "cy": "SME cy",
+                  "value": "projectIsSME",
+                  "hint": {
+                    "en": "Hint 2 en",
+                    "cy": "Hint 2 cy"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+  }"""
+
+  test("Remove 'cy' field of the choice when 'en' field is updated") {
+    val patch: Json = Json.obj(
+      "choices" := Json.arr(
+        Json.obj("en" := "RDEC en X", "hint" := "Hint 1 en"),
+        Json.obj("en" := "SME en", "hint" := "Hint 2 en")
+      )
+    )
+
+    val formComponentId: FormComponentId = FormComponentId("choice")
+
+    val result: Json =
+      BuilderSupport
+        .modifyFormComponentData(
+          choiceWelshRemovedWhenEnUpdated,
+          formComponentId,
+          patch
+        )
+
+    assertEquals(result.spaces2, choiceWelshRemovedWhenEnUpdatedExpected.spaces2)
+  }
+
+  val choiceHintUpdateJson: Json = json"""
+    {
+      "sections": [
+        {
+          "fields": [
+            {
+              "id": "choice",
+              "type": "choice",
+              "label": "Choice label",
+              "choices": [
+                {
+                  "en": "RDEC en",
+                  "cy": "RDEC cy",
+                  "value": "projectIsRDEC",
+                  "hint": {
+                    "en": "Hint 1 en",
+                    "cy": "Hint 1 cy"
+                  }
+                },
+                {
+                  "en": "SME en",
+                  "cy": "SME cy",
+                  "value": "projectIsSME",
+                  "hint": {
+                    "en": "Hint 2 en",
+                    "cy": "Hint 2 cy"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }"""
+
+  val choiceHintUpdateJsonExpected: Json = json"""
+    {
+      "sections": [
+        {
+          "fields": [
+            {
+              "id": "choice",
+              "type": "choice",
+              "label": "Choice label",
+              "choices": [
+                {
+                  "en": "RDEC en",
+                  "cy": "RDEC cy",
+                  "value": "projectIsRDEC",
+                  "hint": "Hint 1 en X"
+                },
+                {
+                  "en": "SME en",
+                  "cy": "SME cy",
+                  "value": "projectIsSME",
+                  "hint": {
+                    "en": "Hint 2 en",
+                    "cy": "Hint 2 cy"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }"""
+
+  test("Update choice hints") {
+    val patch: Json = Json.obj(
+      "choices" := Json.arr(
+        Json.obj("en" := "RDEC en", "hint" := "Hint 1 en X"),
+        Json.obj("en" := "SME en", "hint" := "Hint 2 en")
+      )
+    )
+
+    val formComponentId: FormComponentId = FormComponentId("choice")
+
+    val result: Json =
+      BuilderSupport
+        .modifyFormComponentData(
+          choiceHintUpdateJson,
+          formComponentId,
+          patch
+        )
+
+    assertEquals(result.spaces2, choiceHintUpdateJsonExpected.spaces2)
+  }
+
+  val choiceHintAddJson: Json = json"""
+    {
+      "sections": [
+        {
+          "fields": [
+            {
+              "id": "choice",
+              "type": "choice",
+              "label": "Choice label",
+              "choices": [
+                {
+                  "en": "RDEC en",
+                  "cy": "RDEC cy",
+                  "value": "projectIsRDEC"
+                },
+                {
+                  "en": "SME en",
+                  "cy": "SME cy",
+                  "value": "projectIsSME"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }"""
+
+  val choiceHintAddJsonExpected: Json = json"""
+    {
+      "sections": [
+        {
+          "fields": [
+            {
+              "id": "choice",
+              "type": "choice",
+              "label": "Choice label",
+              "choices": [
+                {
+                  "hint": "Hint 1 en",
+                  "en": "RDEC en",
+                  "cy": "RDEC cy",
+                  "value": "projectIsRDEC"
+                },
+                {
+                  "en": "SME en",
+                  "cy": "SME cy",
+                  "value": "projectIsSME"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }"""
+
+  test("Add choice hint") {
+    val patch: Json = Json.obj(
+      "choices" := Json.arr(
+        Json.obj("en" := "RDEC en", "hint" := "Hint 1 en"),
+        Json.obj("en" := "SME en")
+      )
+    )
+
+    val formComponentId: FormComponentId = FormComponentId("choice")
+
+    val result: Json =
+      BuilderSupport
+        .modifyFormComponentData(
+          choiceHintAddJson,
+          formComponentId,
+          patch
+        )
+
+    assertEquals(result.spaces2, choiceHintAddJsonExpected.spaces2)
+  }
+
+  val choiceHintDeleteJson: Json = json"""
+    {
+      "sections": [
+        {
+          "fields": [
+            {
+              "id": "choice",
+              "type": "choice",
+              "label": "Choice label",
+              "choices": [
+                {
+                  "en": "RDEC en",
+                  "cy": "RDEC cy",
+                  "value": "projectIsRDEC",
+                  "hint": "Hint 1 en"
+                },
+                {
+                  "en": "SME en",
+                  "cy": "SME cy",
+                  "value": "projectIsSME"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }"""
+
+  val choiceHintDeleteJsonExpected: Json = json"""
+    {
+      "sections": [
+        {
+          "fields": [
+            {
+              "id": "choice",
+              "type": "choice",
+              "label": "Choice label",
+              "choices": [
+                {
+                  "en": "RDEC en",
+                  "cy": "RDEC cy",
+                  "value": "projectIsRDEC"
+                },
+                {
+                  "en": "SME en",
+                  "cy": "SME cy",
+                  "value": "projectIsSME"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }"""
+
+  test("Delete choice hint") {
+    val patch: Json = Json.obj(
+      "choices" := Json.arr(
+        Json.obj("en" := "RDEC en", "hint" := ""),
+        Json.obj("en" := "SME en")
+      )
+    )
+
+    val formComponentId: FormComponentId = FormComponentId("choice")
+
+    val result: Json =
+      BuilderSupport
+        .modifyFormComponentData(
+          choiceHintDeleteJson,
+          formComponentId,
+          patch
+        )
+
+    assertEquals(result.spaces2, choiceHintDeleteJsonExpected.spaces2)
+  }
+
   val json: Json = json"""
     {
       "sections": [
@@ -1037,7 +1712,7 @@ class BuilderControllerSuite extends FunSuite {
   val noSummarySectionWithFormCategoryJson: Json = json"""
     {
       "formName": "Default summary section",
-      "formCategory" : "hmrcReturnForm"
+      "formCategory": "hmrcReturnForm"
     }"""
 
   val noSummarySectionWithFormCategoryJsonExpected: Json = json"""
@@ -1804,104 +2479,69 @@ class BuilderControllerSuite extends FunSuite {
     assertEquals(result.spaces2, localisedOptions.spaces2)
   }
 
-  val updateChoicesExpectedJson = json"""
+  val nonLocalisedOptions = json"""
     {
+      "format": "yesno",
       "id": "reasonForQuery",
       "type": "choice",
       "label": {
         "en": "What do you need help about?",
         "cy": "Am beth mae angen help arnoch chi?"
       },
+      "shortName": {
+        "en": "What do you need?",
+        "cy": "Beth sydd ei angen arnoch chi?"
+      },
+      "helpText": {
+        "en": "What do you need to make pancakes?",
+        "cy": "Beth sydd ei angen arnoch i wneud crempogau?"
+      },
       "errorMessage": {
         "en": "Wrong reason",
         "cy": "Rheswm anghywir"
       },
-      "choices": [
-        "Yes",
-        "No"
-      ]
-    }
-    """
-
-  test("Update choice options") {
-
-    val patch: Json = Json.obj(
-      "id" := "reasonForQuery",
-      "label" := "What do you need help about?",
-      "mandatory" := "",
-      "choices" := Json.arr(
-        "Yes".asJson,
-        "No".asJson
-      )
-    )
-
-    val result: Json =
-      BuilderSupport
-        .updateFormComponent(
-          localisedOptions,
-          patch
-        )
-
-    assertEquals(result.spaces2, updateChoicesExpectedJson.spaces2)
-  }
-
-  val nonLocalisedOptions = json"""
-    {
-      "format" : "yesno",
-      "id" : "reasonForQuery",
-      "type" : "choice",
-      "label" : {
-        "en" : "What do you need help about?",
-        "cy" : "Am beth mae angen help arnoch chi?"
-      },
-      "shortName" : {
-        "en" : "What do you need?",
-        "cy" : "Beth sydd ei angen arnoch chi?"
-      },
-      "helpText" : {
-        "en" : "What do you need to make pancakes?",
-        "cy" : "Beth sydd ei angen arnoch i wneud crempogau?"
-      },
-      "errorMessage" : {
-        "en" : "Wrong reason",
-        "cy" : "Rheswm anghywir"
-      },
-      "dividerText" : {
-        "en" : "Or",
-        "cy" : "Neu"
+      "dividerText": {
+        "en": "Or",
+        "cy": "Neu"
       }
     }"""
 
   val nonLocalisedOptionsExpectedJson = json"""
     {
       "multivalue": "true",
+      "id": "reasonForQuery",
+      "type": "choice",
+      "label": {
+        "en": "What do you need help about?",
+        "cy": "Am beth mae angen help arnoch chi?"
+      },
+      "shortName": {
+        "en": "What do you need?",
+        "cy": "Beth sydd ei angen arnoch chi?"
+      },
+      "helpText": {
+        "en": "What do you need to make pancakes?",
+        "cy": "Beth sydd ei angen arnoch i wneud crempogau?"
+      },
+      "errorMessage": {
+        "en": "Wrong reason",
+        "cy": "Rheswm anghywir"
+      },
+      "dividerText": {
+        "en": "Or",
+        "cy": "Neu"
+      },
       "choices": [
-        "Complex international issues",
-        "Sudden increase in wealth",
-        "Other complex or ambiguous tax compliance issues"
-      ],
-      "id" : "reasonForQuery",
-      "type" : "choice",
-      "label" : {
-        "en" : "What do you need help about?",
-        "cy" : "Am beth mae angen help arnoch chi?"
-      },
-      "shortName" : {
-        "en" : "What do you need?",
-        "cy" : "Beth sydd ei angen arnoch chi?"
-      },
-      "helpText" : {
-        "en" : "What do you need to make pancakes?",
-        "cy" : "Beth sydd ei angen arnoch i wneud crempogau?"
-      },
-      "errorMessage" : {
-        "en" : "Wrong reason",
-        "cy" : "Rheswm anghywir"
-      },
-      "dividerText" : {
-        "en" : "Or",
-        "cy" : "Neu"
-      }
+        {
+          "en": "Complex international issues"
+        },
+        {
+          "en": "Sudden increase in wealth"
+        },
+        {
+          "en": "Other complex or ambiguous tax compliance issues"
+        }
+      ]
     }"""
 
   test("Do not update choice non localised options") {
@@ -1912,9 +2552,9 @@ class BuilderControllerSuite extends FunSuite {
       "shortName" := "What do you need?",
       "mandatory" := "",
       "choices" := Json.arr(
-        "Complex international issues".asJson,
-        "Sudden increase in wealth".asJson,
-        "Other complex or ambiguous tax compliance issues".asJson
+        Json.obj("en" := "Complex international issues"),
+        Json.obj("en" := "Sudden increase in wealth"),
+        Json.obj("en" := "Other complex or ambiguous tax compliance issues")
       ),
       "format" := "",
       "multivalue" := "true",
