@@ -26,6 +26,7 @@ import cats.syntax.eq._
 import cats.syntax.option._
 import cats.syntax.traverse._
 import play.api.libs.json._
+import shapeless.syntax.typeable._
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.core.parsers.{ AddressParser, BasicParsers, FormatParser, LabelSizeParser, OverseasAddressParser, PresentationHintParser, SummaryListParser, ValueParser }
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
@@ -335,7 +336,7 @@ class FormComponentMaker(json: JsValue) {
           List.empty[Expr]
         )
       ),
-      isPageHeading = label.isEmpty,
+      isPageHeading = label.isEmpty && ct.cast[InformationMessage].isEmpty,
       helpText = helpText,
       shortName = shortName,
       includeIf = includeIf,
