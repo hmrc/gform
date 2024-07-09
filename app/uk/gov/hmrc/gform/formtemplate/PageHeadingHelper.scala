@@ -17,7 +17,7 @@
 package uk.gov.hmrc.gform.formtemplate
 
 import uk.gov.hmrc.gform.sharedmodel.SmartString
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormKind, FormTemplate, IsGroup, IsInformationMessage, Page, Section }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponent, FormKind, FormTemplate, IsGroup, IsInformationMessage, Page, Section }
 
 object PageHeadingHelper {
   def fillBlankPageHeadings(formTemplate: FormTemplate): FormTemplate = {
@@ -46,28 +46,41 @@ object PageHeadingHelper {
     internal.localised.m.isEmpty && internal.interpolations.isEmpty
   }(cond => false)
 
-  private def fillPage(page: Page): Page =
-    page.fields match {
-      case Nil => page
+  private def fillPage(page: Page): Page = {
+    val fields = putLabelOnFirstEditableField(page.title, Nil, page.fields)
+    page.copy(fields = fields)
+  }
+
+  private def putLabelOnFirstEditableField(
+    title: SmartString,
+    onlyShowOnSummaryHead: List[FormComponent],
+    rest: List[FormComponent]
+  ): List[FormComponent] =
+    rest match {
+      case Nil => onlyShowOnSummaryHead
       case formComponent :: tail =>
-        val tailIsNonEditable = tail.forall(formComponent =>
+        if (formComponent.onlyShowOnSummary) {
+          putLabelOnFirstEditableField(title, onlyShowOnSummaryHead ::: List(formComponent), tail)
+        } else {
+          val tailIsNonEditable = tail.forall(formComponent =>
+            formComponent match {
+              case IsInformationMessage(_) => true
+              case fc                      => fc.onlyShowOnSummary || !fc.editable
+            }
+          )
           formComponent match {
-            case IsInformationMessage(_) => true
-            case fc                      => fc.onlyShowOnSummary || !fc.editable
+            case IsGroup(g)              => onlyShowOnSummaryHead ::: rest
+            case IsInformationMessage(_) => onlyShowOnSummaryHead ::: rest
+            case fc =>
+              if (
+                formComponent.editable &&
+                formComponent.isPageHeading &&
+                wasMarkedAsEmpty(formComponent.label) &&
+                tailIsNonEditable
+              )
+                onlyShowOnSummaryHead ::: formComponent.copy(label = title) :: tail
+              else onlyShowOnSummaryHead ::: rest
           }
-        )
-        formComponent match {
-          case IsGroup(g)              => page
-          case IsInformationMessage(_) => page
-          case fc =>
-            if (
-              formComponent.editable &&
-              formComponent.isPageHeading &&
-              wasMarkedAsEmpty(formComponent.label) &&
-              tailIsNonEditable
-            )
-              page.copy(fields = formComponent.copy(label = page.title) :: tail)
-            else page
         }
     }
 }
