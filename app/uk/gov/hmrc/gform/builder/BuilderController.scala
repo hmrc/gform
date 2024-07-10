@@ -123,6 +123,7 @@ object BuilderSupport {
       Property("noPIIUpdateTitle", PropertyBehaviour.PurgeWhenEmpty),
       Property("presentationHint", PropertyBehaviour.PurgeWhenEmpty),
       Property("removeItemIf", PropertyBehaviour.PurgeWhenEmpty),
+      Property("displayWidth", PropertyBehaviour.PurgeWhenEmpty),
       Property("header", PropertyBehaviour.PurgeWhenEmpty),
       Property("footer", PropertyBehaviour.PurgeWhenEmpty)
     )

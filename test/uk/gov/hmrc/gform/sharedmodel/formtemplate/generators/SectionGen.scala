@@ -98,7 +98,7 @@ trait SectionGen {
       presentationHint <- Gen.option(PresentationHintGen.presentationHintGen)
       removeItemIf     <- Gen.option(RemoveItemIfGen.removeItemIfGen)
       fields           <- Gen.option(PrimitiveGen.oneOrMoreGen(FormComponentGen.formComponentGen()))
-      displayWidth <- Gen.option(Gen.oneOf(LayoutDisplayWidth.values.toSeq))
+      displayWidth     <- Gen.option(Gen.oneOf(LayoutDisplayWidth.values.toSeq))
     } yield CheckYourAnswersPage(
       title,
       caption,
