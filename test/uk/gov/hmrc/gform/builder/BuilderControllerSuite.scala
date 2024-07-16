@@ -24,6 +24,127 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Coordinates, FormComponentId
 
 class BuilderControllerSuite extends FunSuite {
 
+  val smartStringKeepLocalised: Json = json"""
+    {
+      "sections": [
+        {
+          "caption": {
+            "en": "Caption A en",
+            "cy": "Caption A cy"
+          },
+          "description": "Description",
+          "title": "Title"
+        }
+      ]
+    }"""
+
+  val smartStringKeepLocalisedExpected: Json = json"""
+    {
+      "sections": [
+        {
+          "caption": {
+            "en": "Caption A en",
+            "cy": "Caption A cy"
+          },
+          "description": "Description X",
+          "title": "Title"
+        }
+      ]
+    }"""
+
+  test("Keep localised string") {
+
+    val patch: Json = Json.obj(
+      "caption" := Json.obj("en" := "Caption A en"),
+      "description" := "Description X"
+    )
+
+    val sectionPath = SectionPath(".sections[0]")
+
+    val result = BuilderSupport.modifySectionData(smartStringKeepLocalised, sectionPath, patch)
+
+    assertEquals(result.spaces2, smartStringKeepLocalisedExpected.spaces2)
+  }
+
+  val smartStringCondUpdate: Json = json"""
+    {
+      "sections": [
+        {
+          "caption": [
+            {
+              "includeIf": "$${1 = 2}",
+              "en": "Caption A en",
+              "cy": "Caption A cy"
+            },
+            {
+              "en": "Caption B en",
+              "cy": "Caption B cy"
+            }
+          ],
+          "description": "Description",
+          "title": [
+            {
+              "includeIf": "$${1 = 2}",
+              "en": "Page - Text 2 - 1"
+            },
+            {
+              "en": "Page - Text 2 - 2"
+            }
+          ],
+          "fields": []
+        }
+      ]
+    }"""
+
+  val smartStringCondUpdateExpected: Json = json"""
+    {
+      "sections": [
+        {
+          "caption": [
+            {
+              "includeIf": "$${1 = 2}",
+              "en": "Caption A en",
+              "cy": "Caption A cy"
+            },
+            {
+              "en": "Caption B en X"
+            }
+          ],
+          "description": "Description",
+          "title": [
+            {
+              "includeIf": "$${5 = 6}",
+              "en": "Page - Text 1"
+            },
+            {
+              "en": "Page - Text 2 Y"
+            }
+          ],
+          "fields": []
+        }
+      ]
+    }"""
+
+  test("Update smart string conditional") {
+
+    val patch: Json = Json.obj(
+      "title" := Json.arr(
+        Json.obj("includeIf" := "${5 = 6}", "en" := "Page - Text 1"),
+        Json.obj("en" := "Page - Text 2 Y")
+      ),
+      "caption" := Json.arr(
+        Json.obj("includeIf" := "${1 = 2}", "en" := "Caption A en"),
+        Json.obj("en" := "Caption B en X")
+      )
+    )
+
+    val sectionPath = SectionPath(".sections[0]")
+
+    val result = BuilderSupport.modifySectionData(smartStringCondUpdate, sectionPath, patch)
+
+    assertEquals(result.spaces2, smartStringCondUpdateExpected.spaces2)
+  }
+
   val convertFromYesNoChoice: Json = json"""
     {
       "sections": [

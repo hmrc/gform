@@ -420,12 +420,23 @@ object BuilderSupport {
     templateValueUpd3
   }
 
+  private def isSmartStringObj(s: Json): Boolean =
+    s.asObject.fold(false) { obj =>
+      obj.contains("en")
+    }
+
+  private def isSmartStringArray(s: Json): Boolean =
+    s.asArray.fold(false) { smartStringConds =>
+      smartStringConds.forall(isSmartStringObj)
+    }
+
   private def updateProperty(
     property: Property,
     propertyValue: Json,
     history: List[CursorOp],
     accJson: Json
   ): Option[Json] = {
+
     val target = accJson.hcursor.replay(history)
 
     val isValueAsStringEmpty = propertyValue
@@ -476,23 +487,58 @@ object BuilderSupport {
         case _ =>
           val propertyField = hcursor.downField(property.name)
           if (propertyField.succeeded) {
-            val localisedValue: ACursor = propertyField.replayOne(DownField("en"))
-            val oldValue = if (localisedValue.succeeded) {
-              localisedValue.focus
+            val isSmartStringArrayPropertyValue = isSmartStringArray(propertyValue)
+            if (isSmartStringArrayPropertyValue) {
+              (propertyValue.hcursor.values, propertyField.values) match {
+                case (Some(incomingValues), Some(templateValues)) =>
+                  val updates = incomingValues.zip(templateValues).map { case (incoming, existing) =>
+                    val upd1 = modifyEn(incoming, existing)
+                    updateIncludeIf(incoming, upd1)
+                  }
+                  propertyField.set(Json.arr(updates.toList: _*)).root.focus
+                case _ => propertyField.root.focus
+              }
             } else {
-              propertyField.focus
-            }
-            if (oldValue.contains(propertyValue)) {
-              propertyField.root.focus // Do not update what didn't change, to keep welsch untouched
-            } else {
-              propertyField
-                .set(propertyValue)
-                .root
-                .focus
+              val localisedValue: ACursor = propertyField.replayOne(DownField("en"))
+              val oldValue = if (localisedValue.succeeded) {
+                localisedValue.focus
+              } else {
+                propertyField.focus
+              }
+
+              val isSmartStringObjPropertyValue = isSmartStringObj(propertyValue)
+              if (isSmartStringObjPropertyValue) {
+                propertyField.focus.flatMap { pf =>
+                  val updatedPropertryValue = updateChoiceLang(propertyValue, pf)
+                  propertyField
+                    .set(updatedPropertryValue)
+                    .root
+                    .focus
+                }
+              } else if (oldValue.contains(propertyValue)) {
+                propertyField.root.focus // Do not update what didn't change, to keep welsch untouched
+              } else {
+                propertyField
+                  .set(propertyValue)
+                  .root
+                  .focus
+              }
             }
           } else {
             hcursor.withFocus(json => json.deepMerge(Json.obj(property.name -> propertyValue))).root.focus
           }
+      }
+    }
+  }
+
+  private def modifyEn(incoming: Json, existing: Json): Json = {
+    val exEn: ACursor = existing.hcursor.downField("en")
+    val incomingEn: ACursor = incoming.hcursor.downField("en")
+    if (exEn.focus === incomingEn.focus) {
+      existing
+    } else {
+      incomingEn.focus.fold(existing) { ie =>
+        exEn.set(ie).up.downField("cy").delete.root.focus.getOrElse(existing)
       }
     }
   }
@@ -711,8 +757,11 @@ object BuilderSupport {
   }
 
   // Top level hints are deprecated, move them into choices
-  private def moveHints(json: Json): Json =
-    if (json.hcursor.downField("type").focus.contains(Json.fromString("choice"))) {
+  private def moveHints(json: Json): Json = {
+    val tpe = json.hcursor.downField("type").focus
+    val choice = Json.fromString("choice")
+    val revealingChoice = Json.fromString("revealingChoice")
+    if (tpe.contains(choice) || tpe.contains(revealingChoice)) {
 
       val maybeHints: Option[Iterable[Json]] = json.hcursor.downField("hints").values
       val maybeChoices: Option[Iterable[Json]] = json.hcursor.downField("choices").values
@@ -745,6 +794,7 @@ object BuilderSupport {
     } else {
       json
     }
+  }
 
   private def patchFormComponent(maybeHistory: Option[List[CursorOp]], json: Json, formComponentData: Json): Json =
     maybeHistory
@@ -972,11 +1022,11 @@ class BuilderController(
     updateAction(formTemplateRawId) { (formTemplateRaw, requestBody) =>
       for {
         componentUpdateRequest <-
-          requestBody.as[ComponentUpdateRequest].leftMap(e => BuilderError.CirceDecodingError(e))
+          requestBody.as[Json].leftMap(e => BuilderError.CirceDecodingError(e))
         formTemplateRaw <- BuilderSupport
                              .updateAtlRepeaterFormComponent(
                                formTemplateRaw,
-                               componentUpdateRequest.formComponent,
+                               componentUpdateRequest,
                                formComponentId,
                                sectionPath
                              )
@@ -990,12 +1040,11 @@ class BuilderController(
   ) =
     updateAction(formTemplateRawId) { (formTemplateRaw, requestBody) =>
       for {
-        componentUpdateRequest <-
-          requestBody.as[ComponentUpdateRequest].leftMap(e => BuilderError.CirceDecodingError(e))
+        componentUpdateRequest <- requestBody.as[Json].leftMap(e => BuilderError.CirceDecodingError(e))
         formTemplateRaw <- BuilderSupport
                              .updateAtlDefaultPageFormComponent(
                                formTemplateRaw,
-                               componentUpdateRequest.formComponent,
+                               componentUpdateRequest,
                                formComponentId,
                                sectionPath
                              )
@@ -1038,12 +1087,12 @@ class BuilderController(
     updateAction(formTemplateRawId) { (formTemplateRaw, requestBody) =>
       for {
         componentUpdateRequest <-
-          requestBody.as[ComponentUpdateRequest].leftMap(e => BuilderError.CirceDecodingError(e))
+          requestBody.as[Json].leftMap(e => BuilderError.CirceDecodingError(e))
         formTemplateRaw <-
           BuilderSupport
             .updateSummarySectionFormComponent(
               formTemplateRaw,
-              componentUpdateRequest.formComponent,
+              componentUpdateRequest,
               formComponentId,
               maybeCoordinates
             )
@@ -1087,13 +1136,13 @@ class BuilderController(
     updateAction(formTemplateRawId) { (formTemplateRaw, requestBody) =>
       for {
         componentUpdateRequest <-
-          requestBody.as[ComponentUpdateRequest].leftMap(e => BuilderError.CirceDecodingError(e))
+          requestBody.as[Json].leftMap(e => BuilderError.CirceDecodingError(e))
 
         formTemplateRaw <-
           BuilderSupport
             .updateAcknowledgementFormComponent(
               formTemplateRaw,
-              componentUpdateRequest.formComponent,
+              componentUpdateRequest,
               formComponentId
             )
       } yield (formTemplateRaw, Results.Ok(formTemplateRaw.value))
@@ -1142,13 +1191,6 @@ final case class SectionDetails(section: Json, sectionPath: String)
 
 object SectionDetails {
   implicit val decodeSectionDetails: Decoder[SectionDetails] = deriveDecoder[SectionDetails]
-}
-
-// TODO Get rid of this, it is not longer needed
-final case class ComponentUpdateRequest(formComponent: Json, sectionDetails: Option[SectionDetails])
-
-object ComponentUpdateRequest {
-  implicit val componentUpdateRequest: Decoder[ComponentUpdateRequest] = deriveDecoder[ComponentUpdateRequest]
 }
 
 final case class FormTemplateUpdateRequest(formTemplate: Json)
