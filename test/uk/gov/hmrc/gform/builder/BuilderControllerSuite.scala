@@ -145,6 +145,73 @@ class BuilderControllerSuite extends FunSuite {
     assertEquals(result.spaces2, smartStringCondUpdateExpected.spaces2)
   }
 
+  val addIncludeIfToAChoice: Json = json"""
+    {
+      "sections": [
+        {
+          "fields": [
+            {
+              "id": "choice",
+              "type": "choice",
+              "label": "Choice label",
+              "choices": [
+                {
+                  "en": "Choice 1"
+                },
+                {
+                  "en": "Choice 2"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }"""
+  val addIncludeIfToAChoiceExpected: Json = json"""
+    {
+      "sections": [
+        {
+          "fields": [
+            {
+              "id": "choice",
+              "type": "choice",
+              "label": "Choice label",
+              "choices": [
+                {
+                  "en": "Choice 1",
+                  "includeIf": "$${1 = 2}"
+                },
+                {
+                  "en": "Choice 2"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }"""
+  test("Add includeIf to a choice") {
+
+    val formComponentId: FormComponentId = FormComponentId("choice")
+
+    val patch: Json = Json.obj(
+      "choices" := Json.arr(
+        Json.obj("en" := "Choice 1", "includeIf" := "${1 = 2}"),
+        Json.obj("en" := "Choice 2")
+      )
+    )
+
+    val result: Json =
+      BuilderSupport
+        .modifyFormComponentData(
+          addIncludeIfToAChoice,
+          formComponentId,
+          patch
+        )
+
+    assertEquals(result.spaces2, addIncludeIfToAChoiceExpected.spaces2)
+  }
+
   val convertFromYesNoChoice: Json = json"""
     {
       "sections": [
@@ -373,20 +440,20 @@ class BuilderControllerSuite extends FunSuite {
               "label": "Choice label",
               "choices": [
                 {
+                  "en": "RDEC",
+                  "value": "projectIsRDEC",
                   "hint": {
                     "en": "Hint 1 en",
                     "cy": "Hint 1 cy"
-                  },
-                  "en": "RDEC",
-                  "value": "projectIsRDEC"
+                  }
                 },
                 {
+                  "en": "SME",
+                  "value": "projectIsSME",
                   "hint": {
                     "en": "Hint 2 en",
                     "cy": "Hint 2 cy"
-                  },
-                  "en": "SME",
-                  "value": "projectIsSME"
+                  }
                 }
               ]
             }
@@ -395,7 +462,7 @@ class BuilderControllerSuite extends FunSuite {
       ]
     }"""
 
-  test("Move top level hints to choices") {
+  test("Move top level hints to choices (1)") {
 
     val patch: Json = Json.obj() // Empty patch
 
@@ -452,18 +519,18 @@ class BuilderControllerSuite extends FunSuite {
               "label": "Choice label",
               "choices": [
                 {
+                  "en": "RDEC",
                   "hint": {
                     "en": "Hint 1 en",
                     "cy": "Hint 1 cy"
-                  },
-                  "en": "RDEC"
+                  }
                 },
                 {
+                  "en": "SME",
                   "hint": {
                     "en": "Hint 2 en",
                     "cy": "Hint 2 cy"
-                  },
-                  "en": "SME"
+                  }
                 }
               ]
             }
@@ -472,7 +539,7 @@ class BuilderControllerSuite extends FunSuite {
       ]
     }"""
 
-  test("Move top level hints to choices xxx") {
+  test("Move top level hints to choices (2)") {
 
     val patch: Json = Json.obj() // Empty patch
 
@@ -577,6 +644,76 @@ class BuilderControllerSuite extends FunSuite {
         )
 
     assertEquals(result.spaces2, choiceWelshRemovedWhenEnUpdatedExpected.spaces2)
+  }
+
+  val choiceUndoYesNoType: Json = json"""
+    {
+      "sections": [
+        {
+          "fields": [
+            {
+              "id": "choice",
+              "type": "choice",
+              "label": "Choice label",
+              "choices": [
+                {
+                  "en": "Yes"
+                },
+                {
+                  "en": "No"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }"""
+  val choiceUndoYesNoTypeExpected: Json = json"""
+    {
+      "sections": [
+        {
+          "fields": [
+            {
+              "id": "choice",
+              "type": "choice",
+              "label": "Choice label",
+              "choices": [
+                {
+                  "en": "Complex issues"
+                },
+                {
+                  "en": "Increase in wealth"
+                },
+                {
+                  "en": "Other tax issues"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }"""
+
+  test("Choice undo YesNo type selection") {
+    val patch: Json = Json.obj(
+      "choices" := Json.arr(
+        Json.obj("en" := "Complex issues"),
+        Json.obj("en" := "Increase in wealth"),
+        Json.obj("en" := "Other tax issues")
+      )
+    )
+
+    val formComponentId: FormComponentId = FormComponentId("choice")
+
+    val result: Json =
+      BuilderSupport
+        .modifyFormComponentData(
+          choiceUndoYesNoType,
+          formComponentId,
+          patch
+        )
+
+    assertEquals(result.spaces2, choiceUndoYesNoTypeExpected.spaces2)
   }
 
   val choiceHintUpdateJson: Json = json"""

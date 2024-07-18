@@ -374,7 +374,7 @@ object BuilderSupport {
         if (includeIfCursor.succeeded) {
           includeIfCursor.set(incomingIncludeIf).root.focus.getOrElse(accJson)
         } else {
-          accJson.deepMerge(Json.obj("includeIf" := incomingIncludeIf))
+          Json.obj("includeIf" := incomingIncludeIf).deepMerge(accJson)
         }
 
       case _ =>
@@ -459,8 +459,15 @@ object BuilderSupport {
 
           val choices: Json = (browserValues, templateValues) match {
             case (Some(browserValues), Some(templateValues)) =>
-              val res = browserValues.zip(templateValues).map { case (browserValue, templateValue) =>
-                updateChoices(browserValue, templateValue)
+              val res = if (browserValues.size === templateValues.size) {
+                browserValues.zip(templateValues).map { case (browserValue, templateValue) =>
+                  updateChoices(browserValue, templateValue)
+                }
+              } else {
+                // This case covers using Undo on YesNo choice which originally didn't have 2 choices
+                browserValues.map { browserValue =>
+                  updateChoices(browserValue, browserValue)
+                }
               }
               Json.arr(res.toList: _*)
             case (Some(browserValues), None) =>
@@ -772,10 +779,10 @@ object BuilderSupport {
             val choiceNormalised = if (choice.isString) {
               Json.obj("en" := choice)
             } else {
-              choice
+              choice.hcursor.downField("hint").delete.root.focus.getOrElse(choice)
             }
             // Top level hint has priority over choice's hint
-            choiceNormalised.deepMerge(Json.obj("hint" := hint))
+            Json.obj("hint" := hint).deepMerge(choiceNormalised)
           }
           val choicesUpd = Json.arr(merged.toList: _*)
 
