@@ -547,7 +547,17 @@ object FormTemplateValidator {
       case DividerPosition.Value(_)  => false
     }
 
-    validateChoice(sectionsList, check, "dividerPosition should be less than the number of choices")
+    def details(choice: Choice): String = {
+      val choices = choice.options.map {
+        case OptionData.ValueBased(ss, _, _, _, _) => ss.defaultRawValue(LangADT.En)
+        case OptionData.IndexBased(ss, _, _, _)    => ss.defaultRawValue(LangADT.En)
+      }
+
+      "Got choices:" + choices + ", dividerPosition: " + choice.dividerPosition
+
+    }
+
+    validateChoice(sectionsList, check, "dividerPosition should be less than the number of choices", details)
   }
 
   def validateChoiceNoneChoiceValue(sectionsList: List[Page]): ValidationResult = {
