@@ -129,6 +129,8 @@ object ExprSubstituter extends Substituter[ExprSubstitutions, FormTemplate] {
         case t @ TopLevelRef(id)              => t
         case f @ First(_)                     => f
         case l @ IsLogin(_)                   => l
+        case d @ DuplicateExists(_)           => d
+        case d @ DuplicateNotExists(_)        => d
       }
     }
 

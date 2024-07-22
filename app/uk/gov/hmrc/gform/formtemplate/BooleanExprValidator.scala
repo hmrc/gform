@@ -80,6 +80,18 @@ class BooleanExprValidator(
         .getOrElse(Invalid(s"page id '${fcId.value}' does not exist in the form"))
     }
 
+  private def validateIdList(fields: Seq[FormCtx]): List[ValidationResult] =
+    fields
+      .map(f =>
+        indexLookup
+          .get(f.formComponentId)
+          .map { _ =>
+            Valid
+          }
+          .getOrElse(Invalid(s"id '${f.formComponentId}' named in $wrapperType expression does not exist in the form"))
+      )
+      .toList
+
   def apply(includeIf: BooleanExpr): List[ValidationResult] = includeIf match {
     case Equals(left, right)                          => validateExprs(left, right)
     case GreaterThan(left, right)                     => validateExprs(left, right)
@@ -97,6 +109,8 @@ class BooleanExprValidator(
     case MatchRegex(value, _)                         => validateValueField(value)
     case TopLevelRef(_)                               => Nil
     case First(value)                                 => validateAddToListId(value)
+    case DuplicateExists(fields)                      => validateIdList(fields)
+    case DuplicateNotExists(fields)                   => validateIdList(fields)
   }
 }
 
