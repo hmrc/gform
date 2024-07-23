@@ -258,6 +258,7 @@ class ApplicationModule(context: Context)
       objectStoreModule.objectStoreService,
       formTemplateModule.formTemplateService,
       formMetadaModule.formMetadataService,
+      formTemplateModule.formRedirectService,
       configModule.appConfig.formExpiryDays,
       configModule.appConfig.formExpiryDaysFromCreation
     )
