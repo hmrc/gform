@@ -19,12 +19,12 @@ package uk.gov.hmrc.gform.submission
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.json4s.native.JsonMethods
 import org.json4s.native.Printer.compact
-import uk.gov.hmrc.gform.pdfgenerator.{ PdfGeneratorService, XmlGeneratorService }
+import uk.gov.hmrc.gform.pdfgenerator.{ FopService, PdfGeneratorService, XmlGeneratorService }
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, Form }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplate, FormTemplateId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DataOutputFormat, HandlebarsTemplateProcessorModel, TemplateType }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
-import uk.gov.hmrc.gform.sharedmodel.{ LangADT, PdfHtml, SubmissionRef }
+import uk.gov.hmrc.gform.sharedmodel.{ LangADT, PdfContent, SubmissionRef }
 import uk.gov.hmrc.gform.submission.handlebars.{ FocussedHandlebarsModelTree, HandlebarsModelTree, RealHandlebarsTemplateProcessor }
 
 import java.time.Instant
@@ -46,7 +46,12 @@ trait PdfAndXmlSummariesFactory {
 
 object PdfAndXmlSummariesFactory {
 
-  def withPdf(pdfGeneratorService: PdfGeneratorService, pdfData: PdfHtml, instructionPdfData: Option[PdfHtml])(implicit
+  def withPdf(
+    pdfGeneratorService: PdfGeneratorService,
+    fopService: FopService,
+    pdfData: PdfContent,
+    instructionPdfData: Option[PdfContent]
+  )(implicit
     ec: ExecutionContext
   ): PdfAndXmlSummariesFactory = new PdfAndXmlSummariesFactory {
 
@@ -61,9 +66,17 @@ object PdfAndXmlSummariesFactory {
       l: LangADT
     )(implicit now: Instant): Future[PdfAndXmlSummaries] =
       for {
-        pdf <- pdfGeneratorService.generatePDFBytesLocal(pdfData.html.replace("<br>", "<br/>"))
+        pdf <- if (formTemplate.accessiblePdf) {
+                 fopService.render(pdfData.content)
+               } else {
+                 pdfGeneratorService.generatePDFBytesLocal(pdfData.content.replace("<br>", "<br/>"))
+               }
         instructionPdf <- instructionPdfData.fold(Future.successful(Option.empty[Array[Byte]]))(iPdfData =>
-                            pdfGeneratorService.generatePDFBytesLocal(iPdfData.html).map(Option(_))
+                            if (formTemplate.accessiblePdf) {
+                              fopService.render(iPdfData.content).map(Option(_))
+                            } else {
+                              pdfGeneratorService.generatePDFBytesLocal(iPdfData.content).map(Option(_))
+                            }
                           )
       } yield PdfAndXmlSummaries(
         pdfSummary = createPdfSummary(pdf),

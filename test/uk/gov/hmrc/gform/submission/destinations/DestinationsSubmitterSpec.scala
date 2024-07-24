@@ -24,7 +24,7 @@ import org.scalacheck.Gen
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import play.api.libs.json._
 import uk.gov.hmrc.gform.Spec
-import uk.gov.hmrc.gform.sharedmodel.{ DestinationEvaluation, FrontEndSubmissionVariables, LangADT, PdfHtml, SubmissionRef, UserSession }
+import uk.gov.hmrc.gform.sharedmodel.{ DestinationEvaluation, FrontEndSubmissionVariables, LangADT, PdfContent, SubmissionRef, UserSession }
 import uk.gov.hmrc.gform.sharedmodel.form.FormData
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
@@ -131,7 +131,7 @@ class DestinationsSubmitterSpec
             submissionInfo.formId,
             SubmissionRef(""),
             exampleTemplateWithDestinations(handlebarsHttpApi1, handlebarsHttpApi2),
-            PdfHtml(""),
+            PdfContent(""),
             None,
             StructuredFormValue.ObjectStructure(Nil),
             initialModel
