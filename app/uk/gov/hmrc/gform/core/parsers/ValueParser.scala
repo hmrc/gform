@@ -545,7 +545,7 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
       DuplicateExists(fieldList.split(",").map(field => FormCtx(FormComponentId(field))).toList)
     }
     | "duplicateNotExists(" ~ formatIdList ~ ")" ^^ { case _ ~ fieldList ~ _ =>
-      DuplicateNotExists(fieldList.split(",").map(field => FormCtx(FormComponentId(field))).toList)
+      Not(DuplicateExists(fieldList.split(",").map(field => FormCtx(FormComponentId(field))).toList))
     }
     | "auth" ~ "." ~ loginInfo ^^ { case _ ~ _ ~ loginInfo =>
       IsLogin(loginInfo)

@@ -145,7 +145,6 @@ object TopLevelExpressions {
       case f @ First(_)                     => f
       case l @ IsLogin(_)                   => l
       case d @ DuplicateExists(_)           => d
-      case d @ DuplicateNotExists(_)        => d
     }
 
     def loop(e: Expr): Expr =

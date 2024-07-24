@@ -415,6 +415,6 @@ class BooleanExprParserSpec extends AnyFlatSpec with Matchers with EitherValues 
 
   it should "parse a dulicateNotExists expression" in {
     val res = BooleanExprParser.validate("${duplicateNotExists(name,dob)}")
-    res.toOption.value shouldBe DuplicateNotExists(Seq(FormCtx("name"), FormCtx("dob")))
+    res.toOption.value shouldBe Not(DuplicateExists(Seq(FormCtx("name"), FormCtx("dob"))))
   }
 }

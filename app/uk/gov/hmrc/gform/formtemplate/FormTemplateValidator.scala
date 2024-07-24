@@ -1050,9 +1050,15 @@ object FormTemplateValidator {
   def validateForwardReference(sections: List[Section]): ValidationResult = {
     val indexLookup: Map[FormComponentId, Int] = indexedFieldIds(sections).toMap
     val addToListIds: List[FormComponentId] = SectionHelper.addToListIds(sections).map(_.id)
-    val verifyValidIf = new BooleanExprValidator(indexLookup, BooleanExprWrapperType.ValidIf, addToListIds)(_)
-    val verifyIncludeIf = new BooleanExprValidator(indexLookup, BooleanExprWrapperType.IncludeIf, addToListIds)(_)
-    val verifyRemoveItemIf = new BooleanExprValidator(indexLookup, BooleanExprWrapperType.RemoveItemIf, addToListIds)(_)
+    val addToListComponentIds: List[FormComponentId] = SectionHelper.addToListFormComponents(sections).map(_.id)
+    val verifyValidIf =
+      new BooleanExprValidator(indexLookup, BooleanExprWrapperType.ValidIf, addToListIds, addToListComponentIds)(
+        _
+      )
+    val verifyIncludeIf =
+      new BooleanExprValidator(indexLookup, BooleanExprWrapperType.IncludeIf, addToListIds, addToListComponentIds)(_)
+    val verifyRemoveItemIf =
+      new BooleanExprValidator(indexLookup, BooleanExprWrapperType.RemoveItemIf, addToListIds, addToListComponentIds)(_)
     Monoid[ValidationResult]
       .combineAll(
         SectionHelper

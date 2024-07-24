@@ -38,8 +38,7 @@ final case class And(left: BooleanExpr, right: BooleanExpr) extends BooleanExpr
 final case object IsTrue extends BooleanExpr
 final case object IsFalse extends BooleanExpr
 final case class Contains(multiValueField: FormCtx, value: Expr) extends BooleanExpr
-final case class DuplicateExists(fields: Seq[FormCtx]) extends BooleanExpr
-final case class DuplicateNotExists(fields: Seq[FormCtx]) extends BooleanExpr
+final case class DuplicateExists(fieldList: Seq[FormCtx]) extends BooleanExpr
 final case class In(value: Expr, dataSource: DataSource) extends BooleanExpr
 final case class MatchRegex(expr: Expr, regex: Regex) extends BooleanExpr
 
@@ -93,7 +92,6 @@ object BooleanExpr {
       case First(formCtx)                                  => withPath(formCtx)
       case IsLogin(_)                                      => Nil
       case DuplicateExists(_)                              => Nil
-      case DuplicateNotExists(_)                           => Nil
     }
     loop(be)
 
@@ -143,7 +141,6 @@ object BooleanExpr {
     case DateAfter(_, _)                            => Nil
     case First(_)                                   => Nil
     case DuplicateExists(_)                         => Nil
-    case DuplicateNotExists(_)                      => Nil
   }
 }
 
