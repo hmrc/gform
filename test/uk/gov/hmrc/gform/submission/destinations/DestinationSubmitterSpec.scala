@@ -22,7 +22,7 @@ import org.scalacheck.Gen
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import uk.gov.hmrc.gform.notifier.NotifierAlgebra
 import uk.gov.hmrc.gform.sdes.{ SdesConfig, SdesRouting }
-import uk.gov.hmrc.gform.sharedmodel.{ DestinationEvaluation, DestinationResult, LangADT, PdfHtml, SubmissionRef, UserSession }
+import uk.gov.hmrc.gform.sharedmodel.{ DestinationEvaluation, DestinationResult, LangADT, PdfContent, SubmissionRef, UserSession }
 import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormData, FormId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationIncludeIf.HandlebarValue
@@ -443,7 +443,7 @@ class DestinationSubmitterSpec
         model,
         submissionInfo.submission.submissionRef,
         formTemplate,
-        PdfHtml(""),
+        PdfContent(""),
         None,
         structuredFormData
       )
@@ -460,7 +460,7 @@ class DestinationSubmitterSpec
           None,
           None,
           submissionInfo.formId,
-          PdfHtml(""),
+          PdfContent(""),
           submissionInfo.submission.submissionRef,
           formTemplate,
           model
@@ -495,7 +495,7 @@ class DestinationSubmitterSpec
         model,
         submissionInfo.submission.submissionRef,
         formTemplate,
-        PdfHtml(""),
+        PdfContent(""),
         None,
         structuredFormData
       )
@@ -535,7 +535,7 @@ class DestinationSubmitterSpec
         model,
         submissionInfo.submission.submissionRef,
         formTemplate,
-        PdfHtml(""),
+        PdfContent(""),
         None,
         structuredFormData
       )
@@ -559,7 +559,7 @@ class DestinationSubmitterSpec
           None,
           None,
           submissionInfo.formId,
-          PdfHtml(""),
+          PdfContent(""),
           submissionInfo.submission.submissionRef,
           formTemplate,
           model
@@ -594,7 +594,7 @@ class DestinationSubmitterSpec
         model,
         submissionInfo.submission.submissionRef,
         formTemplate,
-        PdfHtml(""),
+        PdfContent(""),
         None,
         structuredFormData
       )
@@ -765,7 +765,7 @@ class DestinationSubmitterSpec
       responseCode: Option[Int],
       responseBody: Option[String],
       formId: FormId,
-      pdfHtml: PdfHtml,
+      pdfHtml: PdfContent,
       submissionRef: SubmissionRef,
       template: FormTemplate,
       model: HandlebarsTemplateProcessorModel
@@ -776,7 +776,7 @@ class DestinationSubmitterSpec
           _: Option[Int],
           _: Option[String],
           _: FormId,
-          _: PdfHtml,
+          _: PdfContent,
           _: SubmissionRef,
           _: FormTemplate,
           _: HandlebarsTemplateProcessorModel
@@ -831,8 +831,8 @@ class DestinationSubmitterSpec
     model: HandlebarsTemplateProcessorModel,
     submissionRef: SubmissionRef,
     formTemplate: FormTemplate,
-    pdfData: PdfHtml,
-    instructionPdfData: Option[PdfHtml],
+    pdfData: PdfContent,
+    instructionPdfData: Option[PdfContent],
     structuredFormData: StructuredFormValue.ObjectStructure
   ) =
     HandlebarsModelTree(id, submissionRef, formTemplate, pdfData, instructionPdfData, structuredFormData, model)

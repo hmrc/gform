@@ -19,7 +19,7 @@ package uk.gov.hmrc.gform.submission.handlebars
 import cats.MonadError
 import org.scalacheck.Gen
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
-import uk.gov.hmrc.gform.sharedmodel.PdfHtml
+import uk.gov.hmrc.gform.sharedmodel.PdfContent
 import uk.gov.hmrc.gform.sharedmodel.form.FormId
 import uk.gov.hmrc.gform.{ Possible, Spec, possibleMonadError }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations._
@@ -536,7 +536,7 @@ class HandlebarsHttpApiSubmitterSpec extends Spec with ScalaCheckDrivenPropertyC
       FormId("someFormId"),
       submissionRef,
       null,
-      PdfHtml(""),
+      PdfContent(""),
       None,
       StructuredFormValue.ObjectStructure(Nil),
       model

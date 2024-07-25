@@ -17,7 +17,6 @@
 package uk.gov.hmrc.gform.submissionconsolidator
 
 import java.time.format.DateTimeFormatter
-
 import cats.data.EitherT
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.concurrent.ScalaFutures
@@ -26,7 +25,7 @@ import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import uk.gov.hmrc.gform.core.FOpt
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.form.FormAlgebra
-import uk.gov.hmrc.gform.sharedmodel.PdfHtml
+import uk.gov.hmrc.gform.sharedmodel.PdfContent
 import uk.gov.hmrc.gform.sharedmodel.form.{ FormData, FormField, FormId, FormStatus, Submitted }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.SubmissionConsolidator
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, HandlebarsTemplateProcessorModel, JsonNodes }
@@ -236,7 +235,7 @@ class SubmissionConsolidatorServiceSpec
                   destinationSubmissionInfo.formId,
                   destinationSubmissionInfo.submission.submissionRef,
                   formTemplate,
-                  PdfHtml(""),
+                  PdfContent(""),
                   None,
                   structuredFormData,
                   model

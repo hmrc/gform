@@ -139,6 +139,7 @@ trait FormTemplateGen {
       None,
       emailCodeParameters,
       None,
+      false,
       displayAccountHeader
     )
 }

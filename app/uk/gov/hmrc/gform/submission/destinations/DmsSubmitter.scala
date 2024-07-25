@@ -24,7 +24,7 @@ import uk.gov.hmrc.gform.envelope.EnvelopeAlgebra
 import uk.gov.hmrc.gform.form.FormAlgebra
 import uk.gov.hmrc.gform.formtemplate.FormTemplateAlgebra
 import uk.gov.hmrc.gform.objectstore.{ Available, Envelope, File, ObjectStoreAlgebra }
-import uk.gov.hmrc.gform.pdfgenerator.PdfGeneratorService
+import uk.gov.hmrc.gform.pdfgenerator.{ FopService, PdfGeneratorService }
 import uk.gov.hmrc.gform.sdes.dms.DmsWorkItemAlgebra
 import uk.gov.hmrc.gform.sharedmodel.LangADT
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId, Submitted }
@@ -42,6 +42,7 @@ class DmsSubmitter(
   formService: FormAlgebra[FOpt],
   formTemplateService: FormTemplateAlgebra[FOpt],
   pdfGeneratorService: PdfGeneratorService,
+  fopService: FopService,
   envelopeAlgebra: EnvelopeAlgebra[FOpt]
 )(implicit ec: ExecutionContext)
     extends DmsSubmitterAlgebra[FOpt] {
@@ -62,7 +63,7 @@ class DmsSubmitter(
       summaries <-
         fromFutureA(
           PdfAndXmlSummariesFactory
-            .withPdf(pdfGeneratorService, modelTree.value.pdfData, modelTree.value.instructionPdfData)
+            .withPdf(pdfGeneratorService, fopService, modelTree.value.pdfData, modelTree.value.instructionPdfData)
             .apply(form, formTemplate, accumulatedModel, modelTree, customerId, submission.submissionRef, hmrcDms, l)
         )
       envelope      <- envelopeAlgebra.get(submission.envelopeId)

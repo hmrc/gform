@@ -17,11 +17,10 @@
 package uk.gov.hmrc.gform.submission.destinations
 
 import java.util.UUID
-
 import play.api.libs.json.{ JsNumber, JsObject, JsResult, JsString, JsValue, OFormat }
-import uk.gov.hmrc.gform.sharedmodel.PdfHtml
+import uk.gov.hmrc.gform.sharedmodel.PdfContent
 
-case class SummaryHtml(id: SummaryHtmlId, summaryHtml: PdfHtml)
+case class SummaryHtml(id: SummaryHtmlId, summaryHtml: PdfContent)
 
 object SummaryHtml {
   implicit val format: OFormat[SummaryHtml] = new OFormat[SummaryHtml] {
@@ -29,7 +28,7 @@ object SummaryHtml {
       for {
         id          <- (json \ "id").validate[UUID]
         summaryHtml <- (json \ "summaryHtml").validate[String]
-      } yield SummaryHtml(SummaryHtmlId(id), PdfHtml(summaryHtml))
+      } yield SummaryHtml(SummaryHtmlId(id), PdfContent(summaryHtml))
 
     override def writes(summary: SummaryHtml): JsObject = {
       import summary._
@@ -38,7 +37,7 @@ object SummaryHtml {
         Seq(
           "id"          -> JsString(id.value.toString),
           "hash"        -> JsNumber(summaryHtml.hashCode),
-          "summaryHtml" -> JsString(summaryHtml.html)
+          "summaryHtml" -> JsString(summaryHtml.content)
         )
       )
     }
