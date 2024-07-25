@@ -24,6 +24,7 @@ import cats.syntax.functor._
 import cats.syntax.traverse._
 import uk.gov.hmrc.gform.sharedmodel.AffinityGroup
 import uk.gov.hmrc.gform.formmetadata.{ FormMetadata, FormMetadataAlgebra }
+import uk.gov.hmrc.gform.formredirect.FormRedirectAlgebra
 import uk.gov.hmrc.gform.formtemplate.FormTemplateAlgebra
 import uk.gov.hmrc.gform.logging.Loggers
 import uk.gov.hmrc.gform.objectstore.ObjectStoreAlgebra
@@ -42,6 +43,7 @@ class FormService[F[_]: Monad](
   objectStoreAlgebra: ObjectStoreAlgebra[F],
   formTemplateAlgebra: FormTemplateAlgebra[F],
   formMetadataAlgebra: FormMetadataAlgebra[F],
+  formRedirectAlgebra: FormRedirectAlgebra[F],
   formExpiryDays: Int,
   formExpiryDaysFromCreation: Int
 ) extends FormAlgebra[F] {
@@ -134,7 +136,9 @@ class FormService[F[_]: Monad](
     val lowerCased = formIdData.lowerCaseId
     for {
       form         <- get(formIdData)
-      formMetaData <- formMetadataAlgebra.get(formIdData)
+      formRedirect <- formRedirectAlgebra.find(formIdData.formTemplateId)
+      originalTemplateId = formRedirect.map(_.redirect).getOrElse(formIdData.formTemplateId)
+      formMetaData <- formMetadataAlgebra.get(formIdData.withFormTemplateId(originalTemplateId))
       formData = if (lowerCased.formTemplateId.isSpecimen) FormData(Seq.empty[FormField]) else userData.formData
       expiryDate = calcExpiryDate(formMetaData.createdAt)
       newForm = form
