@@ -19,12 +19,12 @@ package uk.gov.hmrc.gform.submission.destinations
 import org.scalacheck.Gen
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import uk.gov.hmrc.gform.Spec
-import uk.gov.hmrc.gform.sharedmodel.PdfHtml
+import uk.gov.hmrc.gform.sharedmodel.PdfContent
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.verifyRoundTrip
 
 class SummaryHtmlSpec extends Spec with ScalaCheckDrivenPropertyChecks {
   "JSON" should "round trip" in {
-    forAll(Gen.uuid.map(SummaryHtmlId(_)), Gen.asciiStr.map(PdfHtml(_))) { (id, pdfHtml) =>
+    forAll(Gen.uuid.map(SummaryHtmlId(_)), Gen.asciiStr.map(PdfContent(_))) { (id, pdfHtml) =>
       verifyRoundTrip(SummaryHtml(id, pdfHtml))
     }
   }

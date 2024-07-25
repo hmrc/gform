@@ -88,5 +88,6 @@
   "_id": "choice-in-declaration-section",
   "originalId": "choice-in-declaration-section",
   "displayHMRCLogo": false,
-  "parentFormSubmissionRefs": []
+  "parentFormSubmissionRefs": [],
+  "accessiblePdf":false
 }
