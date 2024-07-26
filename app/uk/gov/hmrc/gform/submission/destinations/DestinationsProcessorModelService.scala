@@ -21,7 +21,7 @@ import cats.instances.option._
 import cats.syntax.functor._
 import cats.syntax.traverse._
 import uk.gov.hmrc.gform.objectstore.{ ObjectStoreAlgebra, UploadedFile }
-import uk.gov.hmrc.gform.sharedmodel.{ FrontEndSubmissionVariables, PdfHtml }
+import uk.gov.hmrc.gform.sharedmodel.{ FrontEndSubmissionVariables, PdfContent }
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, Form }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.HandlebarsTemplateProcessorModel
 import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
@@ -33,8 +33,8 @@ class DestinationsProcessorModelService[M[_]: Monad](
   override def create(
     form: Form,
     frontEndSubmissionVariables: FrontEndSubmissionVariables,
-    pdfData: PdfHtml,
-    instructionPdfData: Option[PdfHtml],
+    pdfData: PdfContent,
+    instructionPdfData: Option[PdfContent],
     structuredFormData: StructuredFormValue.ObjectStructure
   )(implicit hc: HeaderCarrier): M[HandlebarsTemplateProcessorModel] =
     for {

@@ -56,6 +56,7 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
                                              |    "type": "taskList"
                                              |  },
                                              |  "displayHMRCLogo": false,
+                                             |  "accessiblePdf":false,
                                              |  "parentFormSubmissionRefs": [],
                                              |  "summarySection": $summarySection,
                                              |  "allowedFileTypes": [
@@ -178,6 +179,7 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
                                              |   }
                                              |  },
                                              |  "displayHMRCLogo": false,
+                                             |  "accessiblePdf":false,
                                              |  "parentFormSubmissionRefs": [
                                              |    "123",
                                              |    "456"
@@ -318,6 +320,7 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
                                  |    }
                                  |  },
                                  |  "displayHMRCLogo": false,
+                                 |  "accessiblePdf":false,
                                  |  "testText": "hello",
                                  |  "testJsonArr": [
                                  |    "en",
@@ -463,6 +466,7 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
                                                                    |    }
                                                                    |  },
                                                                    |  "displayHMRCLogo": false,
+                                                                   |  "accessiblePdf":false,
                                                                    |  "testText": "hello",
                                                                    |  "testJsonArr": [
                                                                    |    "en",

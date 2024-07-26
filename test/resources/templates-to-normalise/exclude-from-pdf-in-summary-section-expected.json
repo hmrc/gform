@@ -104,5 +104,6 @@
   "originalId": "exclude-from-pdf-in-summary-section",
   "_id": "exclude-from-pdf-in-summary-section",
   "displayHMRCLogo": false,
-  "parentFormSubmissionRefs": []
+  "parentFormSubmissionRefs": [],
+  "accessiblePdf":false
 }

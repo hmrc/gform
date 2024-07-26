@@ -16,8 +16,11 @@
 
 package uk.gov.hmrc.gform.pdfgenerator
 
-class PdfGeneratorModule() {
+import play.api.Environment
+
+class PdfGeneratorModule(environment: Environment) {
 
   val pdfGeneratorService = new PdfGeneratorService()
 
+  val fopService = new FopService(environment)
 }

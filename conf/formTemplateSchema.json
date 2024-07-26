@@ -60,6 +60,9 @@
     "accessibilityUrl": {
       "type": "string"
     },
+    "accessiblePdf": {
+      "type": "boolean"
+    },
     "languages": {
       "type": "array"
     },

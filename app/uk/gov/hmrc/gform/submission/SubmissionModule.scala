@@ -72,6 +72,7 @@ class SubmissionModule(
     formModule.fOptFormService,
     formTemplateModule.fOptFormTemplateAlgebra,
     pdfGeneratorModule.pdfGeneratorService,
+    pdfGeneratorModule.fopService,
     envelopeModule.foptEnvelopeService
   )
 

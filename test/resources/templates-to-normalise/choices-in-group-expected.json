@@ -116,5 +116,6 @@
   "originalId": "choices-in-group",
   "_id": "choices-in-group",
   "displayHMRCLogo": false,
-  "parentFormSubmissionRefs": []
+  "parentFormSubmissionRefs": [],
+  "accessiblePdf":false
 }
