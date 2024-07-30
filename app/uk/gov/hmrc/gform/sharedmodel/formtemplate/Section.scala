@@ -185,3 +185,23 @@ case class VerifierRecipe(key: String, value: FormCtx)
 object VerifierRecipe {
   implicit val format: OFormat[VerifierRecipe] = Json.format[VerifierRecipe]
 }
+
+final case class EnrolmentOutcomes(
+  notMatchedPage: EnrolmentOutcome,
+  alreadyLinkedPage: EnrolmentOutcome,
+  technicalFailurePage: EnrolmentOutcome,
+  successPage: EnrolmentOutcome
+)
+
+object EnrolmentOutcomes {
+  implicit val format: OFormat[EnrolmentOutcomes] = Json.format[EnrolmentOutcomes]
+}
+
+final case class EnrolmentOutcome(
+  title: SmartString,
+  content: SmartString
+)
+
+object EnrolmentOutcome {
+  implicit val format: OFormat[EnrolmentOutcome] = Json.format[EnrolmentOutcome]
+}

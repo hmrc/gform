@@ -428,6 +428,8 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
                                                 |'}' expected but end of source found""".stripMargin))
   }
 
+  val enrolmentOutcome = EnrolmentOutcome(toSmartString("title"), toSmartString("content"))
+
   val plainFormTemplate = FormTemplate(
     FormTemplateId("ipt100"),
     FormTemplateId("IPT100"),
@@ -476,7 +478,11 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
       ),
     HmrcAgentWithEnrolmentModule(
       RequireMTDAgentEnrolment,
-      EnrolmentAuth(ServiceId("TEST"), DoCheck(Always, RejectAccess, RegimeIdCheck(RegimeId("TEST"))))
+      EnrolmentAuth(
+        ServiceId("TEST"),
+        DoCheck(Always, RejectAccess, RegimeIdCheck(RegimeId("TEST"))),
+        EnrolmentOutcomes(enrolmentOutcome, enrolmentOutcome, enrolmentOutcome, enrolmentOutcome)
+      )
     ),
     Some(LocalisedEmailTemplateId("test-email-template-id-en", Some("test-email-template-id-cy"))),
     Some(
