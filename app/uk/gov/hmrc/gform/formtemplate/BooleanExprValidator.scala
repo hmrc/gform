@@ -24,8 +24,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 class BooleanExprValidator(
   indexLookup: Map[FormComponentId, Int],
   wrapperType: BooleanExprWrapperType,
-  addToListIds: List[FormComponentId],
-  addToListComponentIds: List[FormComponentId]
+  addToListIds: List[FormComponentId]
 )(
   pageIdx: Int
 ) {
@@ -81,24 +80,10 @@ class BooleanExprValidator(
         .getOrElse(Invalid(s"page id '${fcId.value}' does not exist in the form"))
     }
 
-  private def validateIdList(fields: Seq[FormCtx]): List[ValidationResult] = {
-    val fcIds = fields.flatMap(extractFcIds)
-
+  private def validateIdList(fields: List[FormCtx]): List[ValidationResult] =
     fields
-      .map(f =>
-        addToListComponentIds
-          .find(_ === f.formComponentId)
-          .map { _ =>
-            Valid
-          }
-          .getOrElse(
-            Invalid(
-              s"id '${f.formComponentId}' named in $wrapperType expression does not exist in an Add To List component"
-            )
-          )
-      )
-      .toList ++ fcIds.map(validateIdIdx)
-  }
+      .flatMap(extractFcIds)
+      .map(validateIdIdx)
 
   def apply(includeIf: BooleanExpr): List[ValidationResult] = includeIf match {
     case Equals(left, right)                          => validateExprs(left, right)

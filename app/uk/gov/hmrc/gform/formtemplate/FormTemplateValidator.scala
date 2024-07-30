@@ -169,6 +169,43 @@ object FormTemplateValidator {
     expressionIds: List[ExpressionId]
   ): ValidationResult = {
 
+    val sections: List[Section] = formTemplate.formKind.allSections
+    val addToListComponentIds: List[FormComponentId] = SectionHelper.addToListFormComponents(sections).map(_.id)
+
+    val verifyValidIf = new AddToListValidator(BooleanExprWrapperType.ValidIf, addToListComponentIds)
+    val verifyIncludeIf = new AddToListValidator(BooleanExprWrapperType.IncludeIf, addToListComponentIds)
+    val verifyRemoveItemIf = new AddToListValidator(BooleanExprWrapperType.RemoveItemIf, addToListComponentIds)
+
+    val addToListValidationResults: List[ValidationResult] = SectionHelper
+      .pages(sections)
+      .flatMap { page =>
+        val verifiedValidIfs: List[ValidationResult] =
+          page.allFormComponents
+            .flatMap(_.allValidIfs)
+            .map(_.booleanExpr)
+            .flatMap(verifyValidIf.apply)
+
+        val verifiedComponentIncludeIfs: List[ValidationResult] =
+          page.allFormComponents
+            .flatMap(_.includeIf)
+            .map(_.booleanExpr)
+            .flatMap(verifyIncludeIf.apply)
+
+        val verifiedRemoveItemIf: List[ValidationResult] =
+          page.removeItemIf
+            .map(_.booleanExpr)
+            .map(verifyRemoveItemIf.apply)
+            .getOrElse(List(Valid))
+
+        val verifiedIncludeIf: List[ValidationResult] =
+          page.includeIf
+            .map(_.booleanExpr)
+            .map(verifyIncludeIf.apply)
+            .getOrElse(List(Valid))
+
+        verifiedValidIfs ++ verifiedComponentIncludeIfs ++ verifiedRemoveItemIf ++ verifiedIncludeIf
+      }
+
     val allPageIds: List[PageId] =
       formTemplate.formKind.allSections.flatMap(
         _.fold(_.page.id.toList)(_.page.id.toList)(p =>
@@ -264,7 +301,9 @@ object FormTemplateValidator {
         }
       )
 
-    exprValidationResults.combine(pageValidationResults.combineAll)
+    exprValidationResults
+      .combine(pageValidationResults.combineAll)
+      .combine(addToListValidationResults.combineAll)
   }
 
   def validateSectionShortNames(formTemplate: FormTemplate): ValidationResult = {
@@ -1050,15 +1089,9 @@ object FormTemplateValidator {
   def validateForwardReference(sections: List[Section]): ValidationResult = {
     val indexLookup: Map[FormComponentId, Int] = indexedFieldIds(sections).toMap
     val addToListIds: List[FormComponentId] = SectionHelper.addToListIds(sections).map(_.id)
-    val addToListComponentIds: List[FormComponentId] = SectionHelper.addToListFormComponents(sections).map(_.id)
-    val verifyValidIf =
-      new BooleanExprValidator(indexLookup, BooleanExprWrapperType.ValidIf, addToListIds, addToListComponentIds)(
-        _
-      )
-    val verifyIncludeIf =
-      new BooleanExprValidator(indexLookup, BooleanExprWrapperType.IncludeIf, addToListIds, addToListComponentIds)(_)
-    val verifyRemoveItemIf =
-      new BooleanExprValidator(indexLookup, BooleanExprWrapperType.RemoveItemIf, addToListIds, addToListComponentIds)(_)
+    val verifyValidIf = new BooleanExprValidator(indexLookup, BooleanExprWrapperType.ValidIf, addToListIds)(_)
+    val verifyIncludeIf = new BooleanExprValidator(indexLookup, BooleanExprWrapperType.IncludeIf, addToListIds)(_)
+    val verifyRemoveItemIf = new BooleanExprValidator(indexLookup, BooleanExprWrapperType.RemoveItemIf, addToListIds)(_)
     Monoid[ValidationResult]
       .combineAll(
         SectionHelper

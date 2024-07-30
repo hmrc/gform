@@ -386,11 +386,6 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
     str
   }
 
-  lazy val formatIdList: Parser[String] =
-    s"""${FormComponentId.idValidation}(,${FormComponentId.idValidation})*""".r ^^ { str =>
-      str
-    }
-
   lazy val formatParserAlphabeticOnly: Parser[String] = """\w+""".r ^^ { str =>
     str
   }
@@ -541,11 +536,13 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
     | PageId.unanchoredIdValidation ~ ".first" ^^ { case value ~ _ =>
       First(FormCtx(FormComponentId(value)))
     }
-    | "duplicateExists(" ~ formatIdList ~ ")" ^^ { case _ ~ fieldList ~ _ =>
-      DuplicateExists(fieldList.split(",").map(field => FormCtx(FormComponentId(field))).toList)
+    | "duplicateExists(" ~ FormComponentId.unanchoredIdValidation ~ (("," ~> FormComponentId.unanchoredIdValidation) *) ~ ")" ^^ {
+      case _ ~ expr ~ exprs ~ _ =>
+        DuplicateExists((expr +: exprs).map(field => FormCtx(FormComponentId(field))))
     }
-    | "duplicateNotExists(" ~ formatIdList ~ ")" ^^ { case _ ~ fieldList ~ _ =>
-      Not(DuplicateExists(fieldList.split(",").map(field => FormCtx(FormComponentId(field))).toList))
+    | "duplicateNotExists(" ~ FormComponentId.unanchoredIdValidation ~ (("," ~> FormComponentId.unanchoredIdValidation) *) ~ ")" ^^ {
+      case _ ~ expr ~ exprs ~ _ =>
+        Not(DuplicateExists((expr +: exprs).map(field => FormCtx(FormComponentId(field)))))
     }
     | "auth" ~ "." ~ loginInfo ^^ { case _ ~ _ ~ loginInfo =>
       IsLogin(loginInfo)
