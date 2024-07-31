@@ -82,12 +82,16 @@
     },
     "note": {
       "anyOf": [
-        { "type": "string" },
-        { "type": "array" }
+        {
+          "type": "string"
+        },
+        {
+          "type": "array"
+        }
       ]
     },
     "doneNote": {
-       "type": "array"
+      "type": "array"
     },
     "emailTemplateId": {
       "$ref": "#/$defs/stringOrEnCyObject"
@@ -215,6 +219,9 @@
         "legacyFcEnrolmentVerifier": {
           "type": "string"
         },
+        "enrolmentOutcomes": {
+          "type": "object"
+        },
         "enrolmentSection": {
           "type": "object"
         },
@@ -272,8 +279,12 @@
         },
         "note": {
           "anyOf": [
-            { "type": "string" },
-            { "type": "array" }
+            {
+              "type": "string"
+            },
+            {
+              "type": "array"
+            }
           ]
         },
         "doneNote": {
@@ -329,8 +340,8 @@
         },
         "note": {
           "type": [
-              "string",
-              "array"
+            "string",
+            "array"
           ]
         },
         "doneNote": {
@@ -502,8 +513,12 @@
         },
         "note": {
           "anyOf": [
-            { "type": "string" },
-            { "type": "array" }
+            {
+              "type": "string"
+            },
+            {
+              "type": "array"
+            }
           ]
         },
         "doneNote": {
