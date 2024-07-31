@@ -64,11 +64,29 @@ trait AuthConfigGen {
     doCheckGen,
     Gen.const(Never)
   )
+
+  def enrolmentOutcomeGen = for {
+    title   <- SmartStringGen.smartStringGen
+    content <- SmartStringGen.smartStringGen
+  } yield EnrolmentOutcome(title, content)
+
+  def enrolmentOutcomesGen = for {
+    notMatchedPage       <- enrolmentOutcomeGen
+    alreadyLinkedPage    <- enrolmentOutcomeGen
+    technicalFailurePage <- enrolmentOutcomeGen
+    successPage          <- enrolmentOutcomeGen
+  } yield EnrolmentOutcomes(notMatchedPage, alreadyLinkedPage, technicalFailurePage, successPage)
+
   def enrolmentAuthGen: Gen[EnrolmentAuth] =
     for {
-      serviceId      <- serviceIdGen
-      enrolmentCheck <- enrolmentCheckGen
-    } yield EnrolmentAuth(serviceId, enrolmentCheck)
+      serviceId         <- serviceIdGen
+      enrolmentCheck    <- enrolmentCheckGen
+      enrolmentOutcomes <- enrolmentOutcomesGen
+    } yield EnrolmentAuth(
+      serviceId,
+      enrolmentCheck,
+      enrolmentOutcomes
+    )
 
   def hmrcEnrolmentModuleGen: Gen[HmrcEnrolmentModule] = enrolmentAuthGen.map(HmrcEnrolmentModule)
 

@@ -959,8 +959,8 @@ object FormTemplateValidator {
         .validationResult("Regime id must be between 2 and 8 characters long")
 
     formTemplate.authConfig match {
-      case HmrcEnrolmentModule(EnrolmentAuth(_, DoCheck(_, _, RegimeIdCheck(regimeId)))) => regimeIdCheck(regimeId)
-      case HmrcAgentWithEnrolmentModule(_, EnrolmentAuth(_, DoCheck(_, _, RegimeIdCheck(regimeId)))) =>
+      case HmrcEnrolmentModule(EnrolmentAuth(_, DoCheck(_, _, RegimeIdCheck(regimeId)), _)) => regimeIdCheck(regimeId)
+      case HmrcAgentWithEnrolmentModule(_, EnrolmentAuth(_, DoCheck(_, _, RegimeIdCheck(regimeId)), _)) =>
         regimeIdCheck(regimeId)
       case _ => Valid
     }
