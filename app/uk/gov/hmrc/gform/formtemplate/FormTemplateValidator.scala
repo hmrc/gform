@@ -169,43 +169,6 @@ object FormTemplateValidator {
     expressionIds: List[ExpressionId]
   ): ValidationResult = {
 
-    val sections: List[Section] = formTemplate.formKind.allSections
-    val addToListComponentIds: List[FormComponentId] = SectionHelper.addToListFormComponents(sections).map(_.id)
-
-    val verifyValidIf = new AddToListValidator(BooleanExprWrapperType.ValidIf, addToListComponentIds)
-    val verifyIncludeIf = new AddToListValidator(BooleanExprWrapperType.IncludeIf, addToListComponentIds)
-    val verifyRemoveItemIf = new AddToListValidator(BooleanExprWrapperType.RemoveItemIf, addToListComponentIds)
-
-    val addToListValidationResults: List[ValidationResult] = SectionHelper
-      .pages(sections)
-      .flatMap { page =>
-        val verifiedValidIfs: List[ValidationResult] =
-          page.allFormComponents
-            .flatMap(_.allValidIfs)
-            .map(_.booleanExpr)
-            .flatMap(verifyValidIf.apply)
-
-        val verifiedComponentIncludeIfs: List[ValidationResult] =
-          page.allFormComponents
-            .flatMap(_.includeIf)
-            .map(_.booleanExpr)
-            .flatMap(verifyIncludeIf.apply)
-
-        val verifiedRemoveItemIf: List[ValidationResult] =
-          page.removeItemIf
-            .map(_.booleanExpr)
-            .map(verifyRemoveItemIf.apply)
-            .getOrElse(List(Valid))
-
-        val verifiedIncludeIf: List[ValidationResult] =
-          page.includeIf
-            .map(_.booleanExpr)
-            .map(verifyIncludeIf.apply)
-            .getOrElse(List(Valid))
-
-        verifiedValidIfs ++ verifiedComponentIncludeIfs ++ verifiedRemoveItemIf ++ verifiedIncludeIf
-      }
-
     val allPageIds: List[PageId] =
       formTemplate.formKind.allSections.flatMap(
         _.fold(_.page.id.toList)(_.page.id.toList)(p =>
@@ -301,9 +264,7 @@ object FormTemplateValidator {
         }
       )
 
-    exprValidationResults
-      .combine(pageValidationResults.combineAll)
-      .combine(addToListValidationResults.combineAll)
+    exprValidationResults.combine(pageValidationResults.combineAll)
   }
 
   def validateSectionShortNames(formTemplate: FormTemplate): ValidationResult = {

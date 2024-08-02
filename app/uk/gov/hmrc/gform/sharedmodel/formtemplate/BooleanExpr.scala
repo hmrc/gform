@@ -91,7 +91,7 @@ object BooleanExpr {
       case TopLevelRef(_)                                  => Nil
       case First(formCtx)                                  => withPath(formCtx)
       case IsLogin(_)                                      => Nil
-      case DuplicateExists(_)                              => Nil
+      case DuplicateExists(fieldList)                      => withPath(fieldList: _*)
     }
     loop(be)
 

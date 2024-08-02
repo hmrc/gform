@@ -22,7 +22,7 @@ import org.scalatest.prop.TableDrivenPropertyChecks._
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import uk.gov.hmrc.gform.Helpers._
 import uk.gov.hmrc.gform.Spec
-import uk.gov.hmrc.gform.formtemplate.{ ExpressionId, FormTemplateValidator }
+import uk.gov.hmrc.gform.formtemplate.FormTemplateValidator
 import uk.gov.hmrc.gform.sharedmodel.{ LangADT, LocalisedString }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.DataSource.SeissEligible
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
@@ -790,58 +790,6 @@ class TemplateValidatorSpec extends Spec {
 
   }
 
-  it should "allow references only to AddToList fields within duplicateExists boolean expressions" in {
-
-    val yesNoLocalisedStrings =
-      NonEmptyList.of(toSmartString("Yes"), toSmartString("No")).map(OptionData.IndexBased(_, None, None, None))
-
-    val fieldA = FormCtx(FormComponentId("fieldA"))
-    val fieldB = FormCtx(FormComponentId("fieldB"))
-    val fieldC = FormCtx(FormComponentId("fieldC"))
-
-    val validIfTests = Map(
-      DuplicateExists(List(fieldB, fieldA)) -> Invalid(
-        "id 'fieldA' named in validIf expression does not exist in an Add To List component"
-      ),
-      DuplicateExists(List(fieldB, fieldC)) -> Valid
-    )
-    val addToListPage1 = mkSection("addToListPage", List(mkFormComponent("fieldB", Value))).page
-    val addAnotherQuestion =
-      mkFormComponent(
-        "addAnother",
-        Choice(
-          YesNo,
-          yesNoLocalisedStrings,
-          Horizontal,
-          Nil,
-          None,
-          None,
-          None,
-          LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
-          None,
-          None
-        )
-      )
-    val outsideAddToList = mkFormComponent("fieldA", Value)
-
-    for ((duplicateExists, validationResult) <- validIfTests) {
-      val addToListPage2 =
-        mkSection("addToListPage", List(mkFormComponent("fieldC", Value, Some(ValidIf(duplicateExists))))).page
-
-      val sectionA = mkSection("NonRepeated", List(outsideAddToList))
-      val sectionB =
-        mkAddToList("AddToList", NonEmptyList.of(addToListPage1, addToListPage2), addAnotherQuestion)
-
-      val formTemplate = mkFormTemplate(List(sectionA, sectionB))
-      val allExpressions: List[ExprWithPath] = LeafExpr(TemplatePath.root, formTemplate)
-      val expressionIds: List[ExpressionId] = List.empty
-
-      val res = FormTemplateValidator.validateInvalidReferences(formTemplate, allExpressions, expressionIds)
-      res shouldBe validationResult
-    }
-
-  }
-
   private def mkDate(
     year: Year,
     month: Month,
@@ -955,16 +903,6 @@ class TemplateValidatorSpec extends Spec {
     formTemplate
       .copy(formKind = FormKind.Classic(List(section)), emailParameters = emailParameters, destinations = destinations)
   }
-
-  private def mkFormTemplate(
-    sections: List[Section]
-  ): FormTemplate =
-    formTemplate
-      .copy(
-        formKind = FormKind.Classic(sections),
-        emailParameters = emailParameters,
-        destinations = formTemplate.destinations
-      )
 
   private def mkGroupFormComponent(formComponents: FormComponent*): FormComponent =
     mkFormComponent("group", Group(formComponents.toList))
