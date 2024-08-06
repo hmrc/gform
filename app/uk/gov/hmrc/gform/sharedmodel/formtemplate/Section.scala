@@ -168,7 +168,8 @@ case class EnrolmentSection(
   shortName: Option[SmartString],
   fields: List[FormComponent],
   identifiers: NonEmptyList[IdentifierRecipe],
-  verifiers: List[VerifierRecipe]
+  verifiers: List[VerifierRecipe],
+  continueLabel: Option[SmartString]
 )
 
 object EnrolmentSection {
