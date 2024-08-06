@@ -105,6 +105,7 @@ trait FormTemplateGen {
       userResearchUrl          <- Gen.option(userResearchUrlGen)
       accessibilityUrl         <- Gen.option(accessibilityUrlGen)
       emailCodeParameters      <- emailCodeParameterListGen
+      displayAccountHeader     <- Gen.option(false)
 
     } yield FormTemplate(
       id,
@@ -137,7 +138,8 @@ trait FormTemplateGen {
       None,
       None,
       emailCodeParameters,
-      None
+      None,
+      displayAccountHeader
     )
 }
 
