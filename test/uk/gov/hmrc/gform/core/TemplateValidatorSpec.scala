@@ -741,6 +741,55 @@ class TemplateValidatorSpec extends Spec {
     res shouldBe Valid
   }
 
+  it should "validate forward references in AddToList fields within duplicateExists boolean expressions" in {
+
+    val yesNoLocalisedStrings =
+      NonEmptyList.of(toSmartString("Yes"), toSmartString("No")).map(OptionData.IndexBased(_, None, None, None))
+
+    val fieldA = FormCtx(FormComponentId("fieldA"))
+    val fieldB = FormCtx(FormComponentId("fieldB"))
+    val fieldC = FormCtx(FormComponentId("fieldC"))
+
+    val validIfTests = Map(
+      DuplicateExists(List(fieldA, fieldC)) -> Invalid(
+        "id 'fieldC' named in validIf is forward reference, which is not permitted"
+      ),
+      DuplicateExists(List(fieldA, fieldB)) -> Valid
+    )
+    val addToListPage1 = mkSection("addToListPage", List(mkFormComponent("fieldA", Value))).page
+    val addToListPage3 = mkSection("addToListPage", List(mkFormComponent("fieldC", Value))).page
+    val addAnotherQuestion =
+      mkFormComponent(
+        "addAnother",
+        Choice(
+          YesNo,
+          yesNoLocalisedStrings,
+          Horizontal,
+          Nil,
+          None,
+          None,
+          None,
+          LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
+          None,
+          None
+        )
+      )
+    val outsideAddToList = mkFormComponent("fieldD", Value)
+
+    for ((duplicateExists, validationResult) <- validIfTests) {
+      val addToListPage2 =
+        mkSection("addToListPage", List(mkFormComponent("fieldB", Value, Some(ValidIf(duplicateExists))))).page
+
+      val sectionA = mkSection("NonRepeated", List(outsideAddToList))
+      val sectionB =
+        mkAddToList("AddToList", NonEmptyList.of(addToListPage1, addToListPage2, addToListPage3), addAnotherQuestion)
+
+      val res = FormTemplateValidator.validateForwardReference(List(sectionA, sectionB))
+      res shouldBe validationResult
+    }
+
+  }
+
   private def mkDate(
     year: Year,
     month: Month,
@@ -806,7 +855,7 @@ class TemplateValidatorSpec extends Spec {
       None
     )
 
-  private def mkFormComponent(name: String, expr: Expr) =
+  private def mkFormComponent(name: String, expr: Expr, validIf: Option[ValidIf] = None) =
     FormComponent(
       FormComponentId(name),
       Text(ShortText.default, expr),
@@ -815,7 +864,7 @@ class TemplateValidatorSpec extends Spec {
       None,
       None,
       None,
-      None,
+      validIf,
       true,
       false,
       true,
