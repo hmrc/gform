@@ -37,13 +37,14 @@ trait SectionGen {
 
   def enrolmentSectionGen: Gen[EnrolmentSection] =
     for {
-      title       <- smartStringGen
-      noPIITitle  <- Gen.option(smartStringGen)
-      shortName   <- Gen.option(smartStringGen)
-      fields      <- PrimitiveGen.oneOrMoreGen(FormComponentGen.formComponentGen())
-      identifiers <- PrimitiveGen.oneOrMoreGen(identifierRecipeGen)
-      verifiers   <- PrimitiveGen.zeroOrMoreGen(verifierRecipeGen)
-    } yield EnrolmentSection(title, noPIITitle, shortName, fields.toList, identifiers, verifiers)
+      title         <- smartStringGen
+      noPIITitle    <- Gen.option(smartStringGen)
+      shortName     <- Gen.option(smartStringGen)
+      fields        <- PrimitiveGen.oneOrMoreGen(FormComponentGen.formComponentGen())
+      identifiers   <- PrimitiveGen.oneOrMoreGen(identifierRecipeGen)
+      verifiers     <- PrimitiveGen.zeroOrMoreGen(verifierRecipeGen)
+      continueLabel <- Gen.option(smartStringGen)
+    } yield EnrolmentSection(title, noPIITitle, shortName, fields.toList, identifiers, verifiers, continueLabel)
 
   def acknowledgementSectionGen: Gen[AcknowledgementSection] =
     for {

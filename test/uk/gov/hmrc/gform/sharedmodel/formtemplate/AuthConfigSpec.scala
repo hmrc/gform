@@ -179,7 +179,8 @@ class AuthConfigSpec extends Spec with ScalaCheckDrivenPropertyChecks {
                 NonEmptyList.of(
                   IdentifierRecipe("EtmpRegistrationNumber", FormCtx(FormComponentId("eeittReferenceNumber")))
                 ),
-                List.empty
+                List.empty,
+                None
               ),
               NoAction
             ),
@@ -209,7 +210,8 @@ class AuthConfigSpec extends Spec with ScalaCheckDrivenPropertyChecks {
     |          "value": "${eeittReferenceNumber}"
     |        }
     |     ],
-    |     "verifiers": []
+    |     "verifiers": [],
+    |     "continueLabel": "Save"
     |   },
     |  "enrolmentOutcomes": {
     |    "notMatchedPage": {
@@ -246,7 +248,8 @@ class AuthConfigSpec extends Spec with ScalaCheckDrivenPropertyChecks {
                 NonEmptyList.of(
                   IdentifierRecipe("EtmpRegistrationNumber", FormCtx(FormComponentId("eeittReferenceNumber")))
                 ),
-                List.empty
+                List.empty,
+                Some(toSmartString("Save"))
               ),
               LegacyFcEnrolmentVerifier("NonUKCountryCode")
             ),
