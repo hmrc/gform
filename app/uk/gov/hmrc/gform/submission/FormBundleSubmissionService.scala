@@ -30,7 +30,7 @@ import play.api.libs.json.JsObject
 import uk.gov.hmrc.gform.form.{ BundledFormTreeNode, FormAlgebra }
 import uk.gov.hmrc.gform.formtemplate.FormTemplateAlgebra
 import uk.gov.hmrc.gform.repo.RepoAlgebra
-import uk.gov.hmrc.gform.sharedmodel.{ BundledFormSubmissionData, DestinationEvaluation, FrontEndSubmissionVariables, LangADT, PdfHtml, SubmissionRef, UserSession }
+import uk.gov.hmrc.gform.sharedmodel.{ BundledFormSubmissionData, DestinationEvaluation, FrontEndSubmissionVariables, LangADT, PdfContent, SubmissionRef, UserSession }
 import uk.gov.hmrc.gform.sharedmodel.form._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplate, FormTemplateId }
 import uk.gov.hmrc.gform.submission.destinations.{ DestinationAuditAlgebra, DestinationSubmissionInfo, DestinationsProcessorModelAlgebra, DestinationsSubmitterAlgebra, FormTreeAlgebra, PdfSummaryAlgebra }
@@ -173,10 +173,10 @@ class FormBundleSubmissionService[F[_]](
       _        <- logger.info(show"FormBundleSubmissionService.findFormTemplate($id) - found").pure[F]
     } yield template
 
-  private def findSummaryPdf(id: FormIdData)(implicit hc: HeaderCarrier): F[PdfHtml] =
+  private def findSummaryPdf(id: FormIdData)(implicit hc: HeaderCarrier): F[PdfContent] =
     for {
       _   <- logger.info(show"FormBundleSubmissionService.findSummaryPdf($id) - formId = ${id.toFormId}").pure[F]
-      pdf <- pdfSummaryAlgebra.getLatestPdfHtml(id.toFormId)
+      pdf <- pdfSummaryAlgebra.getLatestPdfContent(id.toFormId)
       _   <- logger.info(show"FormBundleSubmissionService.findSummaryPdf($id) - found").pure[F]
     } yield pdf
 
@@ -189,7 +189,7 @@ class FormBundleSubmissionService[F[_]](
   private def buildProcessorModelByFormId(
     formTree: Tree[BundledFormTreeNode],
     formsById: Map[FormIdData, Form],
-    pdfHtmlByFormId: Map[FormIdData, PdfHtml],
+    pdfContentByFormId: Map[FormIdData, PdfContent],
     submissionDataByFormId: Map[FormIdData, BundledFormSubmissionData]
   )(implicit hc: HeaderCarrier) =
     buildMap(formTree)(_.formIdData) { id =>
@@ -198,7 +198,7 @@ class FormBundleSubmissionService[F[_]](
                        .create(
                          formsById(id),
                          FrontEndSubmissionVariables(JsObject(Nil)),
-                         pdfHtmlByFormId(id),
+                         pdfContentByFormId(id),
                          None,
                          submissionDataByFormId(id).structuredFormData
                        )

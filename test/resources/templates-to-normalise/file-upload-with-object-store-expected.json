@@ -75,5 +75,6 @@
   "_id": "file-upload-with-object-store",
   "originalId": "file-upload-with-object-store",
   "displayHMRCLogo": false,
-  "parentFormSubmissionRefs": []
+  "parentFormSubmissionRefs": [],
+  "accessiblePdf":false
 }

@@ -24,7 +24,7 @@ import uk.gov.hmrc.gform.logging.Loggers
 import uk.gov.hmrc.gform.mongo.MongoModule
 import uk.gov.hmrc.gform.objectstore.{ ObjectStoreAlgebra, ObjectStoreModule }
 import uk.gov.hmrc.gform.repo.{ Repo, RepoAlgebra }
-import uk.gov.hmrc.gform.sharedmodel.{ FrontEndSubmissionVariables, PdfHtml }
+import uk.gov.hmrc.gform.sharedmodel.{ FrontEndSubmissionVariables, PdfContent }
 import uk.gov.hmrc.gform.sharedmodel.form.Form
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.HandlebarsTemplateProcessorModel
 import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
@@ -77,8 +77,8 @@ class DestinationModule(
       override def create(
         form: Form,
         frontEndSubmissionVariables: FrontEndSubmissionVariables,
-        pdfData: PdfHtml,
-        instructionPdfHtml: Option[PdfHtml],
+        pdfData: PdfContent,
+        instructionPdfHtml: Option[PdfContent],
         structuredFormData: StructuredFormValue.ObjectStructure
       )(implicit hc: HeaderCarrier): Future[HandlebarsTemplateProcessorModel] =
         destinationsProcessorModelService

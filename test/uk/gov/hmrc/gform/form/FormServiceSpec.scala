@@ -20,6 +20,7 @@ import cats.Id
 import cats.implicits._
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.formmetadata.FormMetadataAlgebra
+import uk.gov.hmrc.gform.formredirect.FormRedirectAlgebra
 import uk.gov.hmrc.gform.formtemplate.FormTemplateAlgebra
 import uk.gov.hmrc.gform.objectstore.ObjectStoreAlgebra
 import uk.gov.hmrc.gform.save4later.FormPersistenceAlgebra
@@ -37,6 +38,7 @@ class FormServiceSpec extends Spec {
     val objectStoreAlgebra = mock[ObjectStoreAlgebra[Id]]
     val formTemplateAlgebra = mock[FormTemplateAlgebra[Id]]
     val metadataAlgebra = mock[FormMetadataAlgebra[Id]]
+    val formRedirectAlgebra = mock[FormRedirectAlgebra[Id]]
 
     (persistenceAlgebra
       .upsert(_: Form)(_: HeaderCarrier))
@@ -59,7 +61,15 @@ class FormServiceSpec extends Spec {
       .returning(formTemplate.pure[Id])
 
     val service =
-      new FormService[Id](persistenceAlgebra, objectStoreAlgebra, formTemplateAlgebra, metadataAlgebra, 28, 90)
+      new FormService[Id](
+        persistenceAlgebra,
+        objectStoreAlgebra,
+        formTemplateAlgebra,
+        metadataAlgebra,
+        formRedirectAlgebra,
+        28,
+        90
+      )
 
     service.create(UserId("usr"), formTemplateId, None, QueryParams.empty)(
       HeaderCarrier()

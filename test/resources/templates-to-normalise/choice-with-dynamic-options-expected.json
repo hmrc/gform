@@ -94,5 +94,6 @@
   "_id": "choice-with-dynamic-options",
   "originalId": "choice-with-dynamic-options",
   "displayHMRCLogo": false,
-  "parentFormSubmissionRefs": []
+  "parentFormSubmissionRefs": [],
+  "accessiblePdf":false
 }

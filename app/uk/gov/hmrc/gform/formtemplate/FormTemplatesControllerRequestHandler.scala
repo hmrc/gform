@@ -153,6 +153,10 @@ object FormTemplatesControllerRequestHandler {
       (__ \ "displayHMRCLogo").json
         .copyFrom((__ \ "displayHMRCLogo").json.pick orElse Reads.pure(JsFalse))
 
+    val ensureAccessiblePdf =
+      (__ \ "accessiblePdf").json
+        .copyFrom((__ \ "accessiblePdf").json.pick orElse Reads.pure(JsFalse))
+
     val ensureOriginalId = (__ \ "originalId").json.copyFrom((__ \ "_id").json.pick) orElse noTemplateId
 
     val lowerCaseId: Reads[JsObject] = (__ \ "_id").json.copyFrom(
@@ -478,6 +482,7 @@ object FormTemplatesControllerRequestHandler {
         ensureOriginalId and
         lowerCaseId and
         ensureDisplayHMRCLogo and
+        ensureAccessiblePdf and
         ensureFormCategory and
         ensureLanguages and
         transformSummarySection and

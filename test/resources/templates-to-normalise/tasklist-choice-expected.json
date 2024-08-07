@@ -85,5 +85,6 @@
   "_id": "task-list",
   "originalId": "task-list",
   "displayHMRCLogo": false,
-  "parentFormSubmissionRefs": []
+  "parentFormSubmissionRefs": [],
+  "accessiblePdf":false
 }

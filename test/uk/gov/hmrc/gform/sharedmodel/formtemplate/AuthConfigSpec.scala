@@ -27,6 +27,10 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.AuthConfigGen
 import uk.gov.hmrc.gform.sharedmodel.notifier.NotifierTemplateId
 
 class AuthConfigSpec extends Spec with ScalaCheckDrivenPropertyChecks {
+
+  val enrolmentOutcome = EnrolmentOutcome(toSmartString("title"), toSmartString("content"))
+  val enrolmentOutcomes = EnrolmentOutcomes(enrolmentOutcome, enrolmentOutcome, enrolmentOutcome, enrolmentOutcome)
+
   "Default Read and Write" should "round trip derived JSON" in {
     forAll(AuthConfigGen.authConfigGen) { c =>
       verifyRoundTrip(c)
@@ -51,16 +55,39 @@ class AuthConfigSpec extends Spec with ScalaCheckDrivenPropertyChecks {
   }
 
   it should "parse HMRC auth with serviceId" in {
-    val authConfigValue = toAuthConfig(s"""|{
-     |  "authModule": "hmrc",
-     |  "agentAccess": "allowAnyAgentAffinityUser",
-     |  "enrolmentCheck": "always",
-     |  "serviceId": "Z"
-     |}""")
+    val authConfigValue = toAuthConfig("""
+      |{
+      |  "authModule": "hmrc",
+      |  "agentAccess": "allowAnyAgentAffinityUser",
+      |  "enrolmentCheck": "always",
+      |  "serviceId": "Z",
+      |  "enrolmentOutcomes": {
+      |    "notMatchedPage": {
+      |      "title": "title",
+      |      "content": "content"
+      |    },
+      |    "alreadyLinkedPage": {
+      |      "title": "title",
+      |      "content": "content"
+      |    },
+      |    "technicalFailurePage": {
+      |      "title": "title",
+      |      "content": "content"
+      |    },
+      |    "successPage": {
+      |      "title": "title",
+      |      "content": "content"
+      |    }
+      |  }
+      |}""")
     authConfigValue shouldBe JsSuccess(
       HmrcAgentWithEnrolmentModule(
         AllowAnyAgentAffinityUser,
-        EnrolmentAuth(ServiceId("Z"), DoCheck(Always, RejectAccess, NoCheck))
+        EnrolmentAuth(
+          ServiceId("Z"),
+          DoCheck(Always, RejectAccess, NoCheck),
+          enrolmentOutcomes
+        )
       )
     )
   }
@@ -71,34 +98,71 @@ class AuthConfigSpec extends Spec with ScalaCheckDrivenPropertyChecks {
      |  "agentAccess": "allowAnyAgentAffinityUser",
      |  "enrolmentCheck": "always",
      |  "serviceId": "Z",
-     |  "regimeId": "IP"
+     |  "regimeId": "IP",
+     |  "enrolmentOutcomes": {
+     |    "notMatchedPage": {
+     |      "title": "title",
+     |      "content": "content"
+     |    },
+     |    "alreadyLinkedPage": {
+     |      "title": "title",
+     |      "content": "content"
+     |    },
+     |    "technicalFailurePage": {
+     |      "title": "title",
+     |      "content": "content"
+     |    },
+     |    "successPage": {
+     |      "title": "title",
+     |      "content": "content"
+     |    }
+     |  }
      |}""")
     authConfigValue shouldBe JsSuccess(
       HmrcAgentWithEnrolmentModule(
         AllowAnyAgentAffinityUser,
-        EnrolmentAuth(ServiceId("Z"), DoCheck(Always, RejectAccess, RegimeIdCheck(RegimeId("IP"))))
+        EnrolmentAuth(ServiceId("Z"), DoCheck(Always, RejectAccess, RegimeIdCheck(RegimeId("IP"))), enrolmentOutcomes)
       )
     )
   }
 
   it should "parse HMRC auth with enrolmentSection" in {
-    val authConfigValue = toAuthConfig("""|{
-                                          |  "authModule": "hmrc",
-                                          |  "agentAccess": "allowAnyAgentAffinityUser",
-                                          |  "enrolmentCheck": "always",
-                                          |  "serviceId": "Z",
-                                          |  "enrolmentSection": {
-                                          |     "title": "t",
-                                          |     "fields":[],
-                                          |     "identifiers": [
-                                          |        {
-                                          |          "key": "EtmpRegistrationNumber",
-                                          |          "value": "${eeittReferenceNumber}"
-                                          |        }
-                                          |     ],
-                                          |     "verifiers": []
-                                          |   }
-                                          |}""")
+    val authConfigValue = toAuthConfig("""
+      |{
+      |  "authModule": "hmrc",
+      |  "agentAccess": "allowAnyAgentAffinityUser",
+      |  "enrolmentCheck": "always",
+      |  "serviceId": "Z",
+      |  "enrolmentSection": {
+      |     "title": "t",
+      |     "fields":[],
+      |     "identifiers": [
+      |        {
+      |          "key": "EtmpRegistrationNumber",
+      |          "value": "${eeittReferenceNumber}"
+      |        }
+      |     ],
+      |     "verifiers": []
+      |   },
+      |  "enrolmentOutcomes": {
+      |    "notMatchedPage": {
+      |      "title": "title",
+      |      "content": "content"
+      |    },
+      |    "alreadyLinkedPage": {
+      |      "title": "title",
+      |      "content": "content"
+      |    },
+      |    "technicalFailurePage": {
+      |      "title": "title",
+      |      "content": "content"
+      |    },
+      |    "successPage": {
+      |      "title": "title",
+      |      "content": "content"
+      |    }
+      |  }
+      |}""")
     authConfigValue shouldBe JsSuccess(
       HmrcAgentWithEnrolmentModule(
         AllowAnyAgentAffinityUser,
@@ -115,37 +179,59 @@ class AuthConfigSpec extends Spec with ScalaCheckDrivenPropertyChecks {
                 NonEmptyList.of(
                   IdentifierRecipe("EtmpRegistrationNumber", FormCtx(FormComponentId("eeittReferenceNumber")))
                 ),
-                List.empty
+                List.empty,
+                None
               ),
               NoAction
             ),
             NoCheck
-          )
+          ),
+          enrolmentOutcomes
         )
       )
     )
   }
 
   it should "parse HMRC auth with everything" in {
-    val authConfigValue = toAuthConfig("""|{
-                                          |  "authModule": "hmrc",
-                                          |  "agentAccess": "allowAnyAgentAffinityUser",
-                                          |  "serviceId": "Z",
-                                          |  "enrolmentCheck": "always",
-                                          |  "regimeId": "IP",
-                                          |  "legacyFcEnrolmentVerifier": "NonUKCountryCode",
-                                          |  "enrolmentSection": {
-                                          |     "title": "t",
-                                          |     "fields":[],
-                                          |     "identifiers": [
-                                          |        {
-                                          |          "key": "EtmpRegistrationNumber",
-                                          |          "value": "${eeittReferenceNumber}"
-                                          |        }
-                                          |     ],
-                                          |     "verifiers": []
-                                          |   }
-                                          |}""")
+    val authConfigValue = toAuthConfig("""
+    |{
+    |  "authModule": "hmrc",
+    |  "agentAccess": "allowAnyAgentAffinityUser",
+    |  "serviceId": "Z",
+    |  "enrolmentCheck": "always",
+    |  "regimeId": "IP",
+    |  "legacyFcEnrolmentVerifier": "NonUKCountryCode",
+    |  "enrolmentSection": {
+    |     "title": "t",
+    |     "fields":[],
+    |     "identifiers": [
+    |        {
+    |          "key": "EtmpRegistrationNumber",
+    |          "value": "${eeittReferenceNumber}"
+    |        }
+    |     ],
+    |     "verifiers": [],
+    |     "continueLabel": "Save"
+    |   },
+    |  "enrolmentOutcomes": {
+    |    "notMatchedPage": {
+    |      "title": "title",
+    |      "content": "content"
+    |    },
+    |    "alreadyLinkedPage": {
+    |      "title": "title",
+    |      "content": "content"
+    |    },
+    |    "technicalFailurePage": {
+    |      "title": "title",
+    |      "content": "content"
+    |    },
+    |    "successPage": {
+    |      "title": "title",
+    |      "content": "content"
+    |    }
+    |  }
+    |}""")
     authConfigValue shouldBe JsSuccess(
       HmrcAgentWithEnrolmentModule(
         AllowAnyAgentAffinityUser,
@@ -162,12 +248,14 @@ class AuthConfigSpec extends Spec with ScalaCheckDrivenPropertyChecks {
                 NonEmptyList.of(
                   IdentifierRecipe("EtmpRegistrationNumber", FormCtx(FormComponentId("eeittReferenceNumber")))
                 ),
-                List.empty
+                List.empty,
+                Some(toSmartString("Save"))
               ),
               LegacyFcEnrolmentVerifier("NonUKCountryCode")
             ),
             RegimeIdCheck(RegimeId("IP"))
-          )
+          ),
+          enrolmentOutcomes
         )
       )
     )

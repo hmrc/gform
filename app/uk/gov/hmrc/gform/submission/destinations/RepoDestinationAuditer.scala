@@ -17,7 +17,6 @@
 package uk.gov.hmrc.gform.submission.destinations
 
 import java.util.UUID
-
 import cats.instances.future._
 import cats.syntax.applicative._
 import cats.syntax.eq._
@@ -32,7 +31,7 @@ import uk.gov.hmrc.gform.logging.Loggers
 import uk.gov.hmrc.gform.repo.RepoAlgebra
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationId, HandlebarsTemplateProcessorModel }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponentId, FormTemplate }
-import uk.gov.hmrc.gform.sharedmodel.{ PdfHtml, SubmissionRef }
+import uk.gov.hmrc.gform.sharedmodel.{ PdfContent, SubmissionRef }
 import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormData, FormId }
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -49,7 +48,7 @@ class RepoDestinationAuditer(
     handlebarsDestinationResponseStatusCode: Option[Int],
     handlebarsDestinationResponseErrorBody: Option[String],
     formId: FormId,
-    summaryHtml: PdfHtml,
+    summaryHtml: PdfContent,
     submissionReference: SubmissionRef,
     template: FormTemplate,
     model: HandlebarsTemplateProcessorModel
@@ -127,7 +126,7 @@ class RepoDestinationAuditer(
       .sortWith((x, y) => x.timestamp.isAfter(y.timestamp))
       .headOption
 
-  def getLatestPdfHtml(formId: FormId)(implicit hc: HeaderCarrier): FOpt[PdfHtml] =
+  def getLatestPdfContent(formId: FormId)(implicit hc: HeaderCarrier): FOpt[PdfContent] =
     getLatestForForm(formId).flatMap { audit =>
       summaryHtmlRepository.get(audit.summaryHtmlId.value.toString).map(_.summaryHtml)
     }
@@ -153,16 +152,16 @@ class RepoDestinationAuditer(
     template.parentFormSubmissionRefs.flatMap(extractValuesForFormComponent)
   }
 
-  private def findOrInsertSummaryHtml(summaryHtml: PdfHtml): FOpt[SummaryHtmlId] =
+  private def findOrInsertSummaryHtml(summaryHtml: PdfContent): FOpt[SummaryHtmlId] =
     findSummaryHtml(summaryHtml)
       .flatMap(_.fold(insertSummaryHtml(summaryHtml))(_.id.pure[FOpt]))
 
-  private def insertSummaryHtml(summaryHtml: PdfHtml): FOpt[SummaryHtmlId] = {
+  private def insertSummaryHtml(summaryHtml: PdfContent): FOpt[SummaryHtmlId] = {
     val id = SummaryHtmlId(UUID.randomUUID)
     summaryHtmlRepository.upsert(SummaryHtml(id, summaryHtml)).map(_ => id)
   }
 
-  private def findSummaryHtml(summaryHtml: PdfHtml): FOpt[Option[SummaryHtml]] =
+  private def findSummaryHtml(summaryHtml: PdfContent): FOpt[Option[SummaryHtml]] =
     summaryHtmlRepository
       .search(Filters.equal("hash", summaryHtml.hashCode))
       .map(_.find(_.summaryHtml === summaryHtml))

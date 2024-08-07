@@ -16,10 +16,10 @@
 
 package uk.gov.hmrc.gform.submission.destinations
 
-import uk.gov.hmrc.gform.sharedmodel.PdfHtml
+import uk.gov.hmrc.gform.sharedmodel.PdfContent
 import uk.gov.hmrc.gform.sharedmodel.form.FormId
 import uk.gov.hmrc.http.HeaderCarrier
 
 trait PdfSummaryAlgebra[M[_]] {
-  def getLatestPdfHtml(formId: FormId)(implicit hc: HeaderCarrier): M[PdfHtml]
+  def getLatestPdfContent(formId: FormId)(implicit hc: HeaderCarrier): M[PdfContent]
 }

@@ -26,7 +26,8 @@ import uk.gov.hmrc.gform.sharedmodel.{ EmailVerifierService, LocalisedString, Va
 
 case class EnrolmentAuth(
   serviceId: ServiceId,
-  enrolmentCheck: EnrolmentCheck
+  enrolmentCheck: EnrolmentCheck,
+  enrolmentOutcomes: EnrolmentOutcomes
 )
 object EnrolmentAuth {
   implicit val format: OFormat[EnrolmentAuth] = derived.oformat()
@@ -155,11 +156,11 @@ case class Composite(configs: NonEmptyList[AuthConfig]) extends AuthConfig
 
 object HasEnrolmentSection {
   def unapply(ac: AuthConfig): Option[(ServiceId, EnrolmentSection, EnrolmentAction)] = ac match {
-    case HmrcEnrolmentModule(EnrolmentAuth(serviceId, DoCheck(_, RequireEnrolment(es, enrolmentAction), _))) =>
+    case HmrcEnrolmentModule(EnrolmentAuth(serviceId, DoCheck(_, RequireEnrolment(es, enrolmentAction), _), _)) =>
       Some((serviceId, es, enrolmentAction))
     case HmrcAgentWithEnrolmentModule(
           _,
-          EnrolmentAuth(serviceId, DoCheck(_, RequireEnrolment(es, enrolmentAction), _))
+          EnrolmentAuth(serviceId, DoCheck(_, RequireEnrolment(es, enrolmentAction), _), _)
         ) =>
       Some((serviceId, es, enrolmentAction))
     case _ => None
@@ -179,7 +180,8 @@ object AuthConfig {
     maybeRegimeId: Option[RegimeId],
     maybeEnrolmentAction: Option[EnrolmentAction],
     maybeEnrolmentCheck: Option[EnrolmentCheckVerb],
-    maybeEnrolmentSection: Option[EnrolmentSection]
+    maybeEnrolmentSection: Option[EnrolmentSection],
+    enrolmentOutcomes: EnrolmentOutcomes
   ): EnrolmentAuth =
     (maybeEnrolmentCheck, maybeEnrolmentSection) match {
       case (Some(AlwaysVerb), Some(enrolmentSection)) =>
@@ -189,7 +191,8 @@ object AuthConfig {
             Always,
             RequireEnrolment(enrolmentSection, enrolmentActionMatch(maybeEnrolmentAction)),
             toEnrolmentPostCheck(maybeRegimeId)
-          )
+          ),
+          enrolmentOutcomes
         )
       case (Some(ForNonAgentsVerb), Some(enrolmentSection)) =>
         EnrolmentAuth(
@@ -198,13 +201,22 @@ object AuthConfig {
             ForNonAgents,
             RequireEnrolment(enrolmentSection, enrolmentActionMatch(maybeEnrolmentAction)),
             toEnrolmentPostCheck(maybeRegimeId)
-          )
+          ),
+          enrolmentOutcomes
         )
       case (Some(AlwaysVerb), None) =>
-        EnrolmentAuth(serviceId, DoCheck(Always, RejectAccess, toEnrolmentPostCheck(maybeRegimeId)))
+        EnrolmentAuth(
+          serviceId,
+          DoCheck(Always, RejectAccess, toEnrolmentPostCheck(maybeRegimeId)),
+          enrolmentOutcomes
+        )
       case (Some(ForNonAgentsVerb), None) =>
-        EnrolmentAuth(serviceId, DoCheck(ForNonAgents, RejectAccess, toEnrolmentPostCheck(maybeRegimeId)))
-      case (Some(NeverVerb) | None, _) => EnrolmentAuth(serviceId, Never)
+        EnrolmentAuth(
+          serviceId,
+          DoCheck(ForNonAgents, RejectAccess, toEnrolmentPostCheck(maybeRegimeId)),
+          enrolmentOutcomes
+        )
+      case (Some(NeverVerb) | None, _) => EnrolmentAuth(serviceId, Never, enrolmentOutcomes)
     }
 
   implicit val format: OFormat[AuthConfig] = {
@@ -226,6 +238,7 @@ object AuthConfig {
         maybeEmailConfirmation         <- (json \ "emailConfirmation").validateOpt[LocalisedString]
         maybeEmailService              <- (json \ "emailService").validateOpt[String]
         maybeCompositeConfigs          <- (json \ "configs").validateOpt[NonEmptyList[AuthConfig]]
+        maybeEnrolmentOutcomes         <- (json \ "enrolmentOutcomes").validateOpt[EnrolmentOutcomes]
 
         authConfig <- authModule match {
                         case AuthModule.AnonymousAccess => JsSuccess(Anonymous)
@@ -250,21 +263,28 @@ object AuthConfig {
                                 JsSuccess(HmrcAgentModule(agentAccess))
                               )
                             case Some(serviceId) =>
-                              val enrolmentAuth =
-                                toEnrolmentAuth(
-                                  serviceId,
-                                  maybeRegimeId,
-                                  maybeLegacyFcEnrolmentVerifier,
-                                  maybeEnrolmentCheck,
-                                  maybeEnrolmentSection
-                                )
+                              maybeEnrolmentOutcomes match {
+                                case Some(enrolmentOutcomes) =>
+                                  val enrolmentAuth =
+                                    toEnrolmentAuth(
+                                      serviceId,
+                                      maybeRegimeId,
+                                      maybeLegacyFcEnrolmentVerifier,
+                                      maybeEnrolmentCheck,
+                                      maybeEnrolmentSection,
+                                      enrolmentOutcomes
+                                    )
 
-                              JsSuccess(
-                                maybeAgentAccess.fold(HmrcEnrolmentModule(enrolmentAuth): AuthConfig)(
-                                  HmrcAgentWithEnrolmentModule(_, enrolmentAuth)
-                                )
-                              )
-
+                                  JsSuccess(
+                                    maybeAgentAccess.fold(HmrcEnrolmentModule(enrolmentAuth): AuthConfig)(
+                                      HmrcAgentWithEnrolmentModule(_, enrolmentAuth)
+                                    )
+                                  )
+                                case None =>
+                                  JsError(
+                                    "Error: Missing required field 'enrolmentOutcomes'. When 'enrolmentSection' is defined it must contain field name 'enrolmentOutcomes'"
+                                  )
+                              }
                           }
                         case AuthModule.Email =>
                           maybeEmailCodeTemplate match {

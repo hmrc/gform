@@ -17,12 +17,12 @@
 package uk.gov.hmrc.gform.sharedmodel.generators
 
 import org.scalacheck.Gen
-import uk.gov.hmrc.gform.sharedmodel.PdfHtml
+import uk.gov.hmrc.gform.sharedmodel.PdfContent
 
 trait PdfDataGen {
-  def pdfDataGen: Gen[PdfHtml] = Gen.alphaNumStr.map(PdfHtml(_))
+  def pdfDataGen: Gen[PdfContent] = Gen.alphaNumStr.map(PdfContent(_))
 
-  def instructionPdfDataGen: Gen[Option[PdfHtml]] = Gen.option(pdfDataGen)
+  def instructionPdfDataGen: Gen[Option[PdfContent]] = Gen.option(pdfDataGen)
 }
 
 object PdfDataGen extends PdfDataGen

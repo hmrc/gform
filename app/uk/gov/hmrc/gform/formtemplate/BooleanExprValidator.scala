@@ -80,6 +80,11 @@ class BooleanExprValidator(
         .getOrElse(Invalid(s"page id '${fcId.value}' does not exist in the form"))
     }
 
+  private def validateIdList(fields: List[FormCtx]): List[ValidationResult] =
+    fields
+      .flatMap(extractFcIds)
+      .map(validateIdIdx)
+
   def apply(includeIf: BooleanExpr): List[ValidationResult] = includeIf match {
     case Equals(left, right)                          => validateExprs(left, right)
     case GreaterThan(left, right)                     => validateExprs(left, right)
@@ -97,6 +102,7 @@ class BooleanExprValidator(
     case MatchRegex(value, _)                         => validateValueField(value)
     case TopLevelRef(_)                               => Nil
     case First(value)                                 => validateAddToListId(value)
+    case DuplicateExists(fieldList)                   => validateIdList(fieldList)
   }
 }
 

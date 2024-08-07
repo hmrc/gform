@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.gform.submission.handlebars
 
-import uk.gov.hmrc.gform.sharedmodel.{ PdfHtml, SubmissionRef }
+import uk.gov.hmrc.gform.sharedmodel.{ PdfContent, SubmissionRef }
 import uk.gov.hmrc.gform.sharedmodel.form.FormId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.HandlebarsTemplateProcessorModel
@@ -27,7 +27,7 @@ case class HandlebarsModelTreeNode(
   submissionRef: SubmissionRef,
   formTemplate: FormTemplate,
   model: HandlebarsTemplateProcessorModel,
-  pdfData: PdfHtml,
-  instructionPdfData: Option[PdfHtml],
+  pdfData: PdfContent,
+  instructionPdfData: Option[PdfContent],
   structuredFormData: StructuredFormValue.ObjectStructure
 )

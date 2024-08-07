@@ -510,7 +510,25 @@ class FormTemplatesControllerRequestHandlerTest extends AnyWordSpec with Matcher
        |  "authConfig": {
        |    "authModule": "$authModule",
        |    ${serviceId.getOrElse("")}
-       |    "agentAccess": "allowAnyAgentAffinityUser"
+       |    "agentAccess": "allowAnyAgentAffinityUser",
+       |    "enrolmentOutcomes": {
+       |      "notMatchedPage": {
+       |        "title": "title",
+       |        "content": "content"
+       |      },
+       |      "alreadyLinkedPage": {
+       |        "title": "title",
+       |        "content": "content"
+       |      },
+       |      "technicalFailurePage": {
+       |        "title": "title",
+       |        "content": "content"
+       |      },
+       |      "successPage": {
+       |        "title": "title",
+       |        "content": "content"
+       |      }
+       |    }
        |  },
        |  "emailTemplateId": "",
        |  "sections": [{
@@ -574,7 +592,25 @@ class FormTemplatesControllerRequestHandlerTest extends AnyWordSpec with Matcher
        |  "authConfig": {
        |    "authModule": "$authModule",
        |    ${serviceId.getOrElse("")}
-       |    "agentAccess": "allowAnyAgentAffinityUser"
+       |    "agentAccess": "allowAnyAgentAffinityUser",
+       |    "enrolmentOutcomes": {
+       |      "notMatchedPage": {
+       |        "title": "title",
+       |        "content": "content"
+       |      },
+       |      "alreadyLinkedPage": {
+       |        "title": "title",
+       |        "content": "content"
+       |      },
+       |      "technicalFailurePage": {
+       |        "title": "title",
+       |        "content": "content"
+       |      },
+       |      "successPage": {
+       |        "title": "title",
+       |        "content": "content"
+       |      }
+       |    }
        |  },
        |  "emailTemplateId": "",
        |  "sections": [{
@@ -625,7 +661,25 @@ class FormTemplatesControllerRequestHandlerTest extends AnyWordSpec with Matcher
        |  "authConfig": {
        |    "authModule": "$authModule",
        |    ${serviceId.getOrElse("")}
-       |    "agentAccess": "allowAnyAgentAffinityUser"
+       |    "agentAccess": "allowAnyAgentAffinityUser",
+       |    "enrolmentOutcomes": {
+       |      "notMatchedPage": {
+       |        "title": "title",
+       |        "content": "content"
+       |      },
+       |      "alreadyLinkedPage": {
+       |        "title": "title",
+       |        "content": "content"
+       |      },
+       |      "technicalFailurePage": {
+       |        "title": "title",
+       |        "content": "content"
+       |      },
+       |      "successPage": {
+       |        "title": "title",
+       |        "content": "content"
+       |      }
+       |    }
        |  },
        |  "emailTemplateId": "",
        |  "sections": [{
@@ -671,7 +725,25 @@ class FormTemplatesControllerRequestHandlerTest extends AnyWordSpec with Matcher
        |  "authConfig": {
        |    "authModule": "$authModule",
        |    ${serviceId.getOrElse("")}
-       |    "agentAccess": "allowAnyAgentAffinityUser"
+       |    "agentAccess": "allowAnyAgentAffinityUser",
+       |    "enrolmentOutcomes": {
+       |      "notMatchedPage": {
+       |        "title": "title",
+       |        "content": "content"
+       |      },
+       |      "alreadyLinkedPage": {
+       |        "title": "title",
+       |        "content": "content"
+       |      },
+       |      "technicalFailurePage": {
+       |        "title": "title",
+       |        "content": "content"
+       |      },
+       |      "successPage": {
+       |        "title": "title",
+       |        "content": "content"
+       |      }
+       |    }
        |  },
        |  "emailTemplateId": "",
        |  "sections": [{
@@ -722,7 +794,25 @@ class FormTemplatesControllerRequestHandlerTest extends AnyWordSpec with Matcher
        |  "authConfig": {
        |    "authModule": "$authModule",
        |    ${serviceId.getOrElse("")}
-       |    "agentAccess": "allowAnyAgentAffinityUser"
+       |    "agentAccess": "allowAnyAgentAffinityUser",
+       |    "enrolmentOutcomes": {
+       |      "notMatchedPage": {
+       |        "title": "title",
+       |        "content": "content"
+       |      },
+       |      "alreadyLinkedPage": {
+       |        "title": "title",
+       |        "content": "content"
+       |      },
+       |      "technicalFailurePage": {
+       |        "title": "title",
+       |        "content": "content"
+       |      },
+       |      "successPage": {
+       |        "title": "title",
+       |        "content": "content"
+       |      }
+       |    }
        |  },
        |  "emailTemplateId": "",
        |  "sections": [{
@@ -914,7 +1004,25 @@ class FormTemplatesControllerRequestHandlerTest extends AnyWordSpec with Matcher
        |  "authConfig": {
        |    "authModule": "$authModule",
        |    ${serviceId.getOrElse("")}
-       |    "agentAccess": "allowAnyAgentAffinityUser"
+       |    "agentAccess": "allowAnyAgentAffinityUser",
+       |    "enrolmentOutcomes": {
+       |      "notMatchedPage": {
+       |        "title": "title",
+       |        "content": "content"
+       |      },
+       |      "alreadyLinkedPage": {
+       |        "title": "title",
+       |        "content": "content"
+       |      },
+       |      "technicalFailurePage": {
+       |        "title": "title",
+       |        "content": "content"
+       |      },
+       |      "successPage": {
+       |        "title": "title",
+       |        "content": "content"
+       |      }
+       |    }
        |  },
        |  "emailTemplateId": "",
        |  "sections": [{
@@ -1076,7 +1184,25 @@ class FormTemplatesControllerRequestHandlerTest extends AnyWordSpec with Matcher
        |  "authConfig": {
        |    "authModule": "$authModule",
        |    ${serviceId.getOrElse("")}
-       |    "agentAccess": "allowAnyAgentAffinityUser"
+       |    "agentAccess": "allowAnyAgentAffinityUser",
+       |    "enrolmentOutcomes": {
+       |      "notMatchedPage": {
+       |        "title": "title",
+       |        "content": "content"
+       |      },
+       |      "alreadyLinkedPage": {
+       |        "title": "title",
+       |        "content": "content"
+       |      },
+       |      "technicalFailurePage": {
+       |        "title": "title",
+       |        "content": "content"
+       |      },
+       |      "successPage": {
+       |        "title": "title",
+       |        "content": "content"
+       |      }
+       |    }
        |  },
        |  "emailTemplateId": "",
        |  "sections": [{

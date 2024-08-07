@@ -19,10 +19,10 @@ package uk.gov.hmrc.gform.sharedmodel
 import cats.Eq
 import play.api.libs.json.Format
 
-case class PdfHtml(html: String) extends AnyVal
+case class PdfContent(content: String) extends AnyVal
 
-object PdfHtml {
-  implicit val format: Format[PdfHtml] = ValueClassFormat.simpleFormat[PdfHtml](PdfHtml(_))(_.html)
+object PdfContent {
+  implicit val format: Format[PdfContent] = ValueClassFormat.simpleFormat[PdfContent](PdfContent(_))(_.content)
 
-  implicit val equal: Eq[PdfHtml] = Eq.fromUniversalEquals
+  implicit val equal: Eq[PdfContent] = Eq.fromUniversalEquals
 }

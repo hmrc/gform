@@ -536,6 +536,14 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
     | PageId.unanchoredIdValidation ~ ".first" ^^ { case value ~ _ =>
       First(FormCtx(FormComponentId(value)))
     }
+    | "duplicateExists(" ~ FormComponentId.unanchoredIdValidation ~ (("," ~> FormComponentId.unanchoredIdValidation) *) ~ ")" ^^ {
+      case _ ~ expr ~ exprs ~ _ =>
+        DuplicateExists((expr +: exprs).map(field => FormCtx(FormComponentId(field))))
+    }
+    | "duplicateNotExists(" ~ FormComponentId.unanchoredIdValidation ~ (("," ~> FormComponentId.unanchoredIdValidation) *) ~ ")" ^^ {
+      case _ ~ expr ~ exprs ~ _ =>
+        Not(DuplicateExists((expr +: exprs).map(field => FormCtx(FormComponentId(field)))))
+    }
     | "auth" ~ "." ~ loginInfo ^^ { case _ ~ _ ~ loginInfo =>
       IsLogin(loginInfo)
     }

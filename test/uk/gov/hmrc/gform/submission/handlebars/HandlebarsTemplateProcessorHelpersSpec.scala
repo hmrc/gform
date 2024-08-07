@@ -24,7 +24,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import org.scalacheck.Gen
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import uk.gov.hmrc.gform.Spec
-import uk.gov.hmrc.gform.sharedmodel.{ PdfHtml, SubmissionRef }
+import uk.gov.hmrc.gform.sharedmodel.{ PdfContent, SubmissionRef }
 import uk.gov.hmrc.gform.sharedmodel.form._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destinations, HandlebarsTemplateProcessorModel, TemplateType }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.{ DestinationGen, FormTemplateGen, PrimitiveGen }
@@ -819,7 +819,7 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
             FormId("parentId"),
             SubmissionRef("parent"),
             null,
-            PdfHtml(""),
+            PdfContent(""),
             None,
             StructuredFormValue.ObjectStructure(Nil),
             rootModel,
@@ -827,7 +827,7 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
               FormId("childId"),
               childSubmissionReference,
               formTemplateWithDestination,
-              PdfHtml(""),
+              PdfContent(""),
               None,
               StructuredFormValue.ObjectStructure(Nil),
               childModel
@@ -859,7 +859,7 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
           FormId("someFormId"),
           SubmissionRef(""),
           null,
-          PdfHtml(""),
+          PdfContent(""),
           None,
           StructuredFormValue.ObjectStructure(Nil),
           model
@@ -879,7 +879,7 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
           FormId("someFormId"),
           SubmissionRef(""),
           null,
-          PdfHtml(""),
+          PdfContent(""),
           None,
           StructuredFormValue.ObjectStructure(Nil),
           model

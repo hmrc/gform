@@ -18,14 +18,13 @@ package uk.gov.hmrc.gform.submission.destinations
 
 import java.nio.charset.StandardCharsets
 import java.util.Base64
-
 import cats.instances.int._
 import cats.syntax.eq._
 import com.fasterxml.jackson.databind.JsonNode
 import uk.gov.hmrc.gform.form.BundledFormTreeNode
 import uk.gov.hmrc.gform.models.helpers.TaxPeriodHelper.formatDate
 import uk.gov.hmrc.gform.objectstore.UploadedFile
-import uk.gov.hmrc.gform.sharedmodel.{ FrontEndSubmissionVariables, NotChecked, ObligationDetail, PdfHtml, RetrievedObligations, SubmissionRef, TaxResponse }
+import uk.gov.hmrc.gform.sharedmodel.{ FrontEndSubmissionVariables, NotChecked, ObligationDetail, PdfContent, RetrievedObligations, SubmissionRef, TaxResponse }
 import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormId, FormStatus }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponentId, FormTemplateId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.JsonNodes.{ arrayNode, numberNode, objectNode, parseJson, textNode }
@@ -38,8 +37,8 @@ trait DestinationsProcessorModelAlgebra[M[_]] {
   def create(
     form: Form,
     frontEndSubmissionVariables: FrontEndSubmissionVariables,
-    pdfData: PdfHtml,
-    instructionPdfHtml: Option[PdfHtml],
+    pdfData: PdfContent,
+    instructionPdfHtml: Option[PdfContent],
     structuredFormData: StructuredFormValue.ObjectStructure
   )(implicit hc: HeaderCarrier): M[HandlebarsTemplateProcessorModel]
 }
@@ -47,8 +46,8 @@ trait DestinationsProcessorModelAlgebra[M[_]] {
 object DestinationsProcessorModelAlgebra {
   def createModel(
     frontEndSubmissionVariables: FrontEndSubmissionVariables,
-    pdfData: PdfHtml,
-    instructionPdfData: Option[PdfHtml],
+    pdfData: PdfContent,
+    instructionPdfData: Option[PdfContent],
     structuredFormData: StructuredFormValue.ObjectStructure,
     form: Form,
     files: Option[List[UploadedFile]]
@@ -59,7 +58,7 @@ object DestinationsProcessorModelAlgebra {
       createFrontEndSubmissionVariables(frontEndSubmissionVariables) +
       createFormStatus(form.status) +
       createPdfHtml(pdfData) +
-      createInstructionPdfHtml(instructionPdfData) +
+      createInstructionPdfContent(instructionPdfData) +
       createSubmissionReference(SubmissionRef(form.envelopeId).value) +
       createUploadedFiles(files) +
       createCaseworker(form.thirdPartyData.reviewData.flatMap(_.get("caseworker")))
@@ -155,12 +154,12 @@ object DestinationsProcessorModelAlgebra {
   def createFormStatus(status: FormStatus): HandlebarsTemplateProcessorModel =
     HandlebarsTemplateProcessorModel(Map("formStatus" -> textNode(status.toString)))
 
-  private def createPdfHtml(html: PdfHtml): HandlebarsTemplateProcessorModel =
-    HandlebarsTemplateProcessorModel("summaryHtml" -> textNode(html.html))
+  private def createPdfHtml(pdfContent: PdfContent): HandlebarsTemplateProcessorModel =
+    HandlebarsTemplateProcessorModel("summaryHtml" -> textNode(pdfContent.content))
 
-  private def createInstructionPdfHtml(html: Option[PdfHtml]): HandlebarsTemplateProcessorModel =
-    html.fold(HandlebarsTemplateProcessorModel.empty) { html =>
-      HandlebarsTemplateProcessorModel("instructionHtml" -> textNode(html.html))
+  private def createInstructionPdfContent(html: Option[PdfContent]): HandlebarsTemplateProcessorModel =
+    html.fold(HandlebarsTemplateProcessorModel.empty) { content =>
+      HandlebarsTemplateProcessorModel("instructionHtml" -> textNode(content.content))
     }
 
   private def createSubmissionReference(submissionReference: String): HandlebarsTemplateProcessorModel =

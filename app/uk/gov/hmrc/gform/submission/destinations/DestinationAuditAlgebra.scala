@@ -20,7 +20,7 @@ import org.bson.conversions.Bson
 import org.mongodb.scala.model.Filters.{ and, equal, in, notEqual }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, HandlebarsTemplateProcessorModel }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
-import uk.gov.hmrc.gform.sharedmodel.{ PdfHtml, SubmissionRef }
+import uk.gov.hmrc.gform.sharedmodel.{ PdfContent, SubmissionRef }
 import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormId }
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -30,7 +30,7 @@ trait DestinationAuditAlgebra[M[_]] {
     handlebarsDestinationResponseStatusCode: Option[Int],
     handlebarsDestinationResponseErrorBody: Option[String],
     formId: FormId,
-    summaryHtml: PdfHtml,
+    summaryHtml: PdfContent,
     submissionReference: SubmissionRef,
     template: FormTemplate,
     model: HandlebarsTemplateProcessorModel
