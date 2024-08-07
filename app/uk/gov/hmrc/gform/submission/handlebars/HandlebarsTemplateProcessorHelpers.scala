@@ -593,6 +593,8 @@ class HandlebarsTemplateProcessorHelpers(
 
   def stripCommas(s: Any): CharSequence = log("stripCommas", s)(ifNotNullAsString(s)(_.replaceAll(",", "")))
 
+  def stripSpaces(s: Any): CharSequence = log("stripSpaces", s)(ifNotNullAsString(s)(_.replaceAll("\\s", "")))
+
   def not(s: Any): CharSequence = log("not", s) {
     ifNotNullAsString(s) { v =>
       (!asBoolean(v)).toString
