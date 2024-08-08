@@ -33,6 +33,7 @@ import uk.gov.hmrc.gform.formtemplate.FormTemplateValidatorHelper._
 import uk.gov.hmrc.gform.models.constraints.ReferenceInfo.{ DataRetrieveCountExpr, DataRetrieveCtxExpr, DateFunctionExpr, FormCtxExpr, PeriodExpr, PeriodExtExpr, SizeExpr }
 import shapeless.syntax.typeable._
 import uk.gov.hmrc.gform.config.AppConfig
+import uk.gov.hmrc.gform.sharedmodel.DataRetrieve.Attribute
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.PageLink
 
 import scala.Function.const
@@ -1008,9 +1009,10 @@ object FormTemplateValidator {
       case fc @ IsAddress(_) => fc.id
     }
     expr match {
-      case AuthCtx(AuthInfo.ItmpAddress)              => Valid
-      case FormCtx(fcId) if addressIds.contains(fcId) => Valid
-      case _                                          => Invalid("address value expression should contain either address component id or itmpAddress")
+      case AuthCtx(AuthInfo.ItmpAddress)                            => Valid
+      case DataRetrieveCtx(_, Attribute("registeredOfficeAddress")) => Valid
+      case FormCtx(fcId) if addressIds.contains(fcId)               => Valid
+      case _                                                        => Invalid("address value expression should contain either address component id or itmpAddress")
     }
   }
 
