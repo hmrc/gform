@@ -37,7 +37,7 @@ import uk.gov.hmrc.gform.form.FormAlgebra
 import uk.gov.hmrc.gform.formtemplate.FormTemplateService
 import uk.gov.hmrc.gform.objectstore.ObjectStoreAlgebra
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
-import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId, Form, FormIdData, UserData }
+import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId, Form, FormField, FormIdData, UserData }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AllowedFileTypes, FileUpload, FormComponentId, IsFileUpload }
 
 import java.net.URL
@@ -58,11 +58,14 @@ class UpscanController(
   private def setTransferred(
     form: Form,
     formComponentId: FormComponentId,
-    fileId: FileId
-  ): Form =
-    form.copy(
-      componentIdToFileId = form.componentIdToFileId + (formComponentId, fileId)
-    )
+    fileId: FileId,
+    fileName: String
+  ): Form = form.copy(
+    formData = form.formData.copy(
+      fields = form.formData.fields :+ FormField(formComponentId, fileName)
+    ),
+    componentIdToFileId = form.componentIdToFileId + (formComponentId, fileId)
+  )
 
   private def toUserData(form: Form): UserData = UserData(
     form.formData,
@@ -165,7 +168,7 @@ class UpscanController(
                                     ContentType(upscanCallbackSuccess.uploadDetails.fileMimeType),
                                     fileName
                                   )
-                             formUpd = setTransferred(form, formComponentId, fileId)
+                             formUpd = setTransferred(form, formComponentId, fileId, fileName)
                              _ <- formService.updateUserData(formIdData, toUserData(formUpd))
                              _ <- upscanService.confirm(upscanCallbackSuccess)
                            } yield NoContent
