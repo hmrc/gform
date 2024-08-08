@@ -430,6 +430,22 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
     process("{{stripCommas (either null \"12,345\")}}") shouldBe "12345"
   }
 
+  "stripSpaces" must "return null if the argument is null" in {
+    process("{{stripSpaces null}}") shouldBe "null"
+  }
+
+  it must "remove all spaces from strings" in {
+    process("{{stripSpaces 'a b c d e f g h i'}}") shouldBe "abcdefghi"
+  }
+
+  it must "remove all space from a nino" in {
+    process("{{stripSpaces 'AB 12 34 56 C'}}") shouldBe "AB123456C"
+  }
+
+  it must "compose" in {
+    process("{{stripSpaces (either null \" 1 2 3 4 5 \")}}") shouldBe "12345"
+  }
+
   "not" must "return null if the argument is null" in {
     process("{{not null}}") shouldBe "null"
   }
