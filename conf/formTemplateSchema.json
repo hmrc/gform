@@ -171,6 +171,10 @@
     "dataRetrieve": {
       "type": "array"
     },
+    "displayAccountHeader": {
+      "description": "Defines whether the PTA Menu is displayed in the header",
+      "type": "boolean"
+    },
     "referrerConfig": {
       "type": "object",
       "properties": {
