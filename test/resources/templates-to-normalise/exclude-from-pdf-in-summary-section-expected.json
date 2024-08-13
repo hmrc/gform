@@ -105,5 +105,6 @@
   "_id": "exclude-from-pdf-in-summary-section",
   "displayHMRCLogo": false,
   "parentFormSubmissionRefs": [],
-  "accessiblePdf":false
+  "accessiblePdf":false,
+  "displayAccountHeader":false
 }

@@ -89,5 +89,6 @@
   "originalId": "choice-in-declaration-section",
   "displayHMRCLogo": false,
   "parentFormSubmissionRefs": [],
-  "accessiblePdf":false
+  "accessiblePdf":false,
+  "displayAccountHeader":false
 }

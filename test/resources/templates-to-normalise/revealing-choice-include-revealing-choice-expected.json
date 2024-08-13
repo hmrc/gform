@@ -107,5 +107,6 @@
   "originalId": "revealing-choice-include-revealing-choice",
   "displayHMRCLogo": false,
   "parentFormSubmissionRefs": [],
-  "accessiblePdf":false
+  "accessiblePdf":false,
+  "displayAccountHeader":false
 }

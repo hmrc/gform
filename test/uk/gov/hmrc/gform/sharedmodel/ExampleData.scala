@@ -543,7 +543,7 @@ trait ExampleFormTemplate {
     None,
     None,
     false,
-    None
+    false
   )
 }
 
