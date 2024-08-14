@@ -996,29 +996,38 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     res.toOption.value should be(TextExpression(CsvOverseasCountryCheck(FormComponentId("selectedCountry"), "InEU")))
   }
 
-  it should "parse company registration number - name" in {
-    val res = ValueParser.validate("${dataRetrieve.companyRegistrationNumber.name}")
+  it should "parse company house profile - name" in {
+    val res = ValueParser.validate("${dataRetrieve.company.name}")
     res.toOption.value should be(
       TextExpression(
-        DataRetrieveCtx(DataRetrieveId("companyRegistrationNumber"), DataRetrieve.Attribute("name"))
+        DataRetrieveCtx(DataRetrieveId("company"), DataRetrieve.Attribute("name"))
       )
     )
   }
 
-  it should "parse company registration number - status" in {
-    val res = ValueParser.validate("${dataRetrieve.companyRegistrationNumber.status}")
+  it should "parse company house profile - status" in {
+    val res = ValueParser.validate("${dataRetrieve.company.status}")
     res.toOption.value should be(
       TextExpression(
-        DataRetrieveCtx(DataRetrieveId("companyRegistrationNumber"), DataRetrieve.Attribute("status"))
+        DataRetrieveCtx(DataRetrieveId("company"), DataRetrieve.Attribute("status"))
       )
     )
   }
 
-  it should "parse company registration number - registeredAddress" in {
-    val res = ValueParser.validate("${dataRetrieve.companyRegistrationNumber.registeredAddress}")
+  it should "parse company house profile - registeredAddress" in {
+    val res = ValueParser.validate("${dataRetrieve.company.registeredAddress}")
     res.toOption.value should be(
       TextExpression(
-        DataRetrieveCtx(DataRetrieveId("companyRegistrationNumber"), DataRetrieve.Attribute("registeredAddress"))
+        DataRetrieveCtx(DataRetrieveId("company"), DataRetrieve.Attribute("registeredAddress"))
+      )
+    )
+  }
+
+  it should "parse company house officers - activeCount" in {
+    val res = ValueParser.validate("${dataRetrieve.directors.activeCount}")
+    res.toOption.value should be(
+      TextExpression(
+        DataRetrieveCtx(DataRetrieveId("directors"), DataRetrieve.Attribute("activeCount"))
       )
     )
   }
