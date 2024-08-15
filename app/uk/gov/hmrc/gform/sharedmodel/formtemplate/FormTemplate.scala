@@ -57,7 +57,8 @@ case class FormTemplate(
   displayWidth: Option[LayoutDisplayWidth],
   emailCodeParameters: Option[NonEmptyList[EmailCodeParameter]],
   dataRetrieve: Option[NonEmptyList[DataRetrieve]],
-  accessiblePdf: Boolean
+  accessiblePdf: Boolean,
+  displayAccountHeader: Boolean
 ) {
 
   def formComponents[A](predicate: PartialFunction[FormComponent, A]): List[A] =

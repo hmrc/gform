@@ -99,5 +99,6 @@
   "originalId": "revealing-choice-with-yesno-choice",
   "displayHMRCLogo": false,
   "parentFormSubmissionRefs": [],
-  "accessiblePdf":false
+  "accessiblePdf":false,
+  "displayAccountHeader":false
 }

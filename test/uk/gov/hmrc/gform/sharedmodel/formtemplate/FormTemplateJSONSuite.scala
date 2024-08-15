@@ -130,6 +130,7 @@ class FormTemplateJSONSuite extends FunSuite with JsResultMatcher with Matchers 
              |  "_id": "foo",
              |  "displayHMRCLogo": false,
              |  "accessiblePdf":false,
+             |  "displayAccountHeader":false,
              |  "parentFormSubmissionRefs": []
              |}""".stripMargin
         )
@@ -269,6 +270,7 @@ class FormTemplateJSONSuite extends FunSuite with JsResultMatcher with Matchers 
              |  "_id": "foo",
              |  "displayHMRCLogo": false,
              |  "accessiblePdf":false,
+             |  "displayAccountHeader":false,
              |  "parentFormSubmissionRefs": []
              |}""".stripMargin
         )
