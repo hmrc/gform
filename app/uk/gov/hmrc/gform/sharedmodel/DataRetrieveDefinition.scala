@@ -222,9 +222,9 @@ object DataRetrieveDefinitions {
     )
   )
 
-  val companyRegistrationNumber =
+  val companyHouseProfile =
     DataRetrieveDefinition(
-      DataRetrieve.Type("companyRegistrationNumber"),
+      DataRetrieve.Type("companyHouseProfile"),
       Attr.FromObject(
         List(
           AttributeInstruction(
@@ -282,6 +282,24 @@ object DataRetrieveDefinitions {
       List(
         Parameter("companyNumber")
       )
+    )
+
+  val companyHouseActiveOfficers =
+    DataRetrieveDefinition(
+      DataRetrieve.Type("companyHouseActiveOfficers"),
+      Attr.FromObject(
+        List(
+          AttributeInstruction(
+            DataRetrieve.Attribute("activeCount"),
+            ConstructAttribute.AsIs(Fetch(List("active_count")))
+          )
+        )
+      ),
+      List(
+        Parameter("companyNumber"),
+        Parameter("registerType")
+      ),
+      Map(DataRetrieve.Attribute("activeCount") -> DataRetrieve.AttrType.Integer)
     )
 
   val ninoInsights = DataRetrieveDefinition(
@@ -434,7 +452,8 @@ object DataRetrieveDefinitions {
       businessBankAccountExistence,
       personalBankAccountExistenceWithName,
       personalBankAccountExistence,
-      companyRegistrationNumber,
+      companyHouseProfile,
+      companyHouseActiveOfficers,
       ninoInsights,
       bankAccountInsights,
       employments,

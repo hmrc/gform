@@ -202,11 +202,11 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
       .validateOpt[DataRetrieve] shouldBe JsError("'type' attribute missing")
   }
 
-  it should "parse json as CompanyRegistrationNumber" in {
+  it should "parse json as CompanyHouseProfile" in {
     Json
       .parse("""
                |{
-               |  "type": "companyRegistrationNumber",
+               |  "type": "companyHouseProfile",
                |  "id": "companyRegistration",
                |  "parameters": {
                |    "companyNumber": "${companyNumber}"
@@ -214,7 +214,7 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
                |}
                |""".stripMargin)
       .as[DataRetrieve] shouldBe DataRetrieve(
-      DataRetrieve.Type("companyRegistrationNumber"),
+      DataRetrieve.Type("companyHouseProfile"),
       DataRetrieveId("companyRegistration"),
       Attr.FromObject(
         List(
@@ -275,6 +275,44 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
         DataRetrieve.ParamExpr(
           DataRetrieve.Parameter("companyNumber", List(), DataRetrieve.ParamType.String),
           FormCtx(FormComponentId("companyNumber"))
+        )
+      ),
+      None
+    )
+  }
+
+  it should "parse json as CompanyHouseActiveOfficers" in {
+    Json
+      .parse("""
+               |{
+               |  "type": "companyHouseActiveOfficers",
+               |  "id": "directors",
+               |  "parameters": {
+               |    "companyNumber": "${companyNumber}",
+               |    "registerType": "'directors'"
+               |  }
+               |}
+               |""".stripMargin)
+      .as[DataRetrieve] shouldBe DataRetrieve(
+      DataRetrieve.Type("companyHouseActiveOfficers"),
+      DataRetrieveId("directors"),
+      Attr.FromObject(
+        List(
+          AttributeInstruction(
+            DataRetrieve.Attribute("activeCount"),
+            ConstructAttribute.AsIs(Fetch(List("active_count")))
+          )
+        )
+      ),
+      Map(DataRetrieve.Attribute("activeCount") -> DataRetrieve.AttrType.Integer),
+      List(
+        DataRetrieve.ParamExpr(
+          DataRetrieve.Parameter("companyNumber", List(), DataRetrieve.ParamType.String),
+          FormCtx(FormComponentId("companyNumber"))
+        ),
+        DataRetrieve.ParamExpr(
+          DataRetrieve.Parameter("registerType", List(), DataRetrieve.ParamType.String),
+          Constant("directors")
         )
       ),
       None
