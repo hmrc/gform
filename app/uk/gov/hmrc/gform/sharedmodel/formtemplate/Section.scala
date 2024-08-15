@@ -191,7 +191,8 @@ final case class EnrolmentOutcomes(
   notMatchedPage: EnrolmentOutcome,
   alreadyLinkedPage: EnrolmentOutcome,
   technicalFailurePage: EnrolmentOutcome,
-  successPage: EnrolmentOutcome
+  successPage: EnrolmentOutcome,
+  insufficientCredentialsPage: EnrolmentOutcome
 )
 
 object EnrolmentOutcomes {
