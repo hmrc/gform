@@ -527,6 +527,10 @@ class FormTemplatesControllerRequestHandlerTest extends AnyWordSpec with Matcher
        |      "successPage": {
        |        "title": "title",
        |        "content": "content"
+       |      },
+       |      "insufficientCredentialsPage": {
+       |        "title": "title",
+       |        "content": "content"
        |      }
        |    }
        |  },
@@ -609,6 +613,10 @@ class FormTemplatesControllerRequestHandlerTest extends AnyWordSpec with Matcher
        |      "successPage": {
        |        "title": "title",
        |        "content": "content"
+       |      },
+       |      "insufficientCredentialsPage": {
+       |        "title": "title",
+       |        "content": "content"
        |      }
        |    }
        |  },
@@ -678,6 +686,10 @@ class FormTemplatesControllerRequestHandlerTest extends AnyWordSpec with Matcher
        |      "successPage": {
        |        "title": "title",
        |        "content": "content"
+       |      },
+       |      "insufficientCredentialsPage": {
+       |        "title": "title",
+       |        "content": "content"
        |      }
        |    }
        |  },
@@ -740,6 +752,10 @@ class FormTemplatesControllerRequestHandlerTest extends AnyWordSpec with Matcher
        |        "content": "content"
        |      },
        |      "successPage": {
+       |        "title": "title",
+       |        "content": "content"
+       |      },
+       |      "insufficientCredentialsPage": {
        |        "title": "title",
        |        "content": "content"
        |      }
@@ -809,6 +825,10 @@ class FormTemplatesControllerRequestHandlerTest extends AnyWordSpec with Matcher
        |        "content": "content"
        |      },
        |      "successPage": {
+       |        "title": "title",
+       |        "content": "content"
+       |      },
+       |      "insufficientCredentialsPage": {
        |        "title": "title",
        |        "content": "content"
        |      }
@@ -1021,6 +1041,10 @@ class FormTemplatesControllerRequestHandlerTest extends AnyWordSpec with Matcher
        |      "successPage": {
        |        "title": "title",
        |        "content": "content"
+       |      },
+       |      "insufficientCredentialsPage": {
+       |        "title": "title",
+       |        "content": "content"
        |      }
        |    }
        |  },
@@ -1199,6 +1223,10 @@ class FormTemplatesControllerRequestHandlerTest extends AnyWordSpec with Matcher
        |        "content": "content"
        |      },
        |      "successPage": {
+       |        "title": "title",
+       |        "content": "content"
+       |      },
+       |      "insufficientCredentialsPage": {
        |        "title": "title",
        |        "content": "content"
        |      }

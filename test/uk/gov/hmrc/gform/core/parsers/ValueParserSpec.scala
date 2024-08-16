@@ -481,7 +481,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
       EnrolmentAuth(
         ServiceId("TEST"),
         DoCheck(Always, RejectAccess, RegimeIdCheck(RegimeId("TEST"))),
-        EnrolmentOutcomes(enrolmentOutcome, enrolmentOutcome, enrolmentOutcome, enrolmentOutcome)
+        EnrolmentOutcomes(enrolmentOutcome, enrolmentOutcome, enrolmentOutcome, enrolmentOutcome, enrolmentOutcome)
       )
     ),
     Some(LocalisedEmailTemplateId("test-email-template-id-en", Some("test-email-template-id-cy"))),
