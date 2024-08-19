@@ -1024,11 +1024,29 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     )
   }
 
-  it should "parse company house officers - activeCount" in {
-    val res = ValueParser.validate("${dataRetrieve.directors.activeCount}")
+  it should "parse company house officers - activeDirectors" in {
+    val res = ValueParser.validate("${dataRetrieve.directors.activeDirectors}")
     res.toOption.value should be(
       TextExpression(
-        DataRetrieveCtx(DataRetrieveId("directors"), DataRetrieve.Attribute("activeCount"))
+        DataRetrieveCtx(DataRetrieveId("directors"), DataRetrieve.Attribute("activeDirectors"))
+      )
+    )
+  }
+
+  it should "parse company house officers - activeSecretaries" in {
+    val res = ValueParser.validate("${dataRetrieve.directors.activeSecretaries}")
+    res.toOption.value should be(
+      TextExpression(
+        DataRetrieveCtx(DataRetrieveId("directors"), DataRetrieve.Attribute("activeSecretaries"))
+      )
+    )
+  }
+
+  it should "parse company house officers - activeLlpMembers" in {
+    val res = ValueParser.validate("${dataRetrieve.directors.activeLlpMembers}")
+    res.toOption.value should be(
+      TextExpression(
+        DataRetrieveCtx(DataRetrieveId("directors"), DataRetrieve.Attribute("activeLlpMembers"))
       )
     )
   }

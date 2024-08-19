@@ -290,16 +290,27 @@ object DataRetrieveDefinitions {
       Attr.FromObject(
         List(
           AttributeInstruction(
-            DataRetrieve.Attribute("activeCount"),
-            ConstructAttribute.AsIs(Fetch(List("active_count")))
+            DataRetrieve.Attribute("activeDirectors"),
+            ConstructAttribute.AsIs(Fetch(List("active_directors")))
+          ),
+          AttributeInstruction(
+            DataRetrieve.Attribute("activeSecretaries"),
+            ConstructAttribute.AsIs(Fetch(List("active_secretaries")))
+          ),
+          AttributeInstruction(
+            DataRetrieve.Attribute("activeLlpMembers"),
+            ConstructAttribute.AsIs(Fetch(List("active_llp_members")))
           )
         )
       ),
       List(
-        Parameter("companyNumber"),
-        Parameter("registerType")
+        Parameter("companyNumber")
       ),
-      Map(DataRetrieve.Attribute("activeCount") -> DataRetrieve.AttrType.Integer)
+      Map(
+        DataRetrieve.Attribute("activeDirectors")   -> DataRetrieve.AttrType.Integer,
+        DataRetrieve.Attribute("activeSecretaries") -> DataRetrieve.AttrType.Integer,
+        DataRetrieve.Attribute("activeLlpMembers")  -> DataRetrieve.AttrType.Integer
+      )
     )
 
   val ninoInsights = DataRetrieveDefinition(

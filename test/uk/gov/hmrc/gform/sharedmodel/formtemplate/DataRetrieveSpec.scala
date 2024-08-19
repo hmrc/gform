@@ -288,8 +288,7 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
                |  "type": "companyHouseActiveOfficers",
                |  "id": "directors",
                |  "parameters": {
-               |    "companyNumber": "${companyNumber}",
-               |    "registerType": "'directors'"
+               |    "companyNumber": "${companyNumber}"
                |  }
                |}
                |""".stripMargin)
@@ -299,20 +298,28 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
       Attr.FromObject(
         List(
           AttributeInstruction(
-            DataRetrieve.Attribute("activeCount"),
-            ConstructAttribute.AsIs(Fetch(List("active_count")))
+            DataRetrieve.Attribute("activeDirectors"),
+            ConstructAttribute.AsIs(Fetch(List("active_directors")))
+          ),
+          AttributeInstruction(
+            DataRetrieve.Attribute("activeSecretaries"),
+            ConstructAttribute.AsIs(Fetch(List("active_secretaries")))
+          ),
+          AttributeInstruction(
+            DataRetrieve.Attribute("activeLlpMembers"),
+            ConstructAttribute.AsIs(Fetch(List("active_llp_members")))
           )
         )
       ),
-      Map(DataRetrieve.Attribute("activeCount") -> DataRetrieve.AttrType.Integer),
+      Map(
+        DataRetrieve.Attribute("activeDirectors")   -> DataRetrieve.AttrType.Integer,
+        DataRetrieve.Attribute("activeSecretaries") -> DataRetrieve.AttrType.Integer,
+        DataRetrieve.Attribute("activeLlpMembers")  -> DataRetrieve.AttrType.Integer
+      ),
       List(
         DataRetrieve.ParamExpr(
           DataRetrieve.Parameter("companyNumber", List(), DataRetrieve.ParamType.String),
           FormCtx(FormComponentId("companyNumber"))
-        ),
-        DataRetrieve.ParamExpr(
-          DataRetrieve.Parameter("registerType", List(), DataRetrieve.ParamType.String),
-          Constant("directors")
         )
       ),
       None
