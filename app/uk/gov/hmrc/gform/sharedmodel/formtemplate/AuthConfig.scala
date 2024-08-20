@@ -143,9 +143,9 @@ case class EmailAuthConfig(
 case object HmrcAny extends AuthConfig
 case class HmrcVerified(
   ivFailure: LocalisedString,
-  notAllowedIn: LocalisedString,
   agentAccess: AgentAccess,
-  minimumCL: String
+  minimumCL: String,
+  allowOrganisations: Boolean
 ) extends AuthConfig
 case object HmrcSimpleModule extends AuthConfig
 case class HmrcEnrolmentModule(enrolmentAuth: EnrolmentAuth) extends AuthConfig
@@ -230,7 +230,6 @@ object AuthConfig {
         maybeEnrolmentSection          <- (json \ "enrolmentSection").validateOpt[EnrolmentSection]
         maybeEnrolmentCheck            <- (json \ "enrolmentCheck").validateOpt[EnrolmentCheckVerb]
         maybeIvFailure                 <- (json \ "ivFailure").validateOpt[LocalisedString]
-        maybeNotAllowedIn              <- (json \ "notAllowedIn").validateOpt[LocalisedString]
         maybeMinimumCL                 <- (json \ "minimumCL").validateOpt[String]
         maybeEmailCodeTemplate         <- (json \ "emailCodeTemplate").validateOpt[LocalisedEmailTemplateId]
         maybeEmailUseInfo              <- (json \ "emailUseInfo").validateOpt[LocalisedString]
@@ -239,19 +238,20 @@ object AuthConfig {
         maybeEmailService              <- (json \ "emailService").validateOpt[String]
         maybeCompositeConfigs          <- (json \ "configs").validateOpt[NonEmptyList[AuthConfig]]
         maybeEnrolmentOutcomes         <- (json \ "enrolmentOutcomes").validateOpt[EnrolmentOutcomes]
+        maybeAllowOrganisations        <- (json \ "allowOrganisations").validateOpt[Boolean]
 
         authConfig <- authModule match {
                         case AuthModule.AnonymousAccess => JsSuccess(Anonymous)
                         case AuthModule.AWSALBAccess    => JsSuccess(AWSALBAuth)
                         case AuthModule.HmrcAny         => JsSuccess(HmrcAny)
                         case AuthModule.HmrcVerified =>
-                          (maybeIvFailure, maybeNotAllowedIn, maybeAgentAccess, maybeMinimumCL) match {
-                            case (Some(ivFailure), Some(notAllowedIn), Some(maybeAgentAccess), Some(maybeMinimumCL)) =>
-                              JsSuccess(HmrcVerified(ivFailure, notAllowedIn, maybeAgentAccess, maybeMinimumCL))
-                            case (otherIvFailure, otherNotAllowedIn, otherAgentAccess, otherMinimumCL) =>
+                          (maybeIvFailure, maybeAgentAccess, maybeMinimumCL) match {
+                            case (Some(ivFailure), Some(maybeAgentAccess), Some(maybeMinimumCL)) =>
+                              val allowOrganisations = maybeAllowOrganisations.getOrElse(false)
+                              JsSuccess(HmrcVerified(ivFailure, maybeAgentAccess, maybeMinimumCL, allowOrganisations))
+                            case (otherIvFailure, otherAgentAccess, otherMinimumCL) =>
                               JsError(
                                 s"Missing ${otherIvFailure.map(_ => "").getOrElse("ivFailure ")}" +
-                                  s"${otherNotAllowedIn.map(_ => "").getOrElse("notAllowedIn ")}" +
                                   s"${otherAgentAccess.map(_ => "").getOrElse("agentAccess ")}" +
                                   s"${otherMinimumCL.map(_ => "").getOrElse("minimumCL ")}field"
                               )

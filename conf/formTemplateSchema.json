@@ -232,11 +232,11 @@
         "ivFailure": {
           "$ref": "#/$defs/stringOrEnCyObject"
         },
-        "notAllowedIn": {
-          "$ref": "#/$defs/stringOrEnCyObject"
-        },
         "minimumCL": {
           "$ref": "#/$defs/stringOrEnCyObject"
+        },
+        "allowOrganisations": {
+          "type": "boolean"
         }
       }
     },
