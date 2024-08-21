@@ -71,11 +71,18 @@ trait AuthConfigGen {
   } yield EnrolmentOutcome(title, content)
 
   def enrolmentOutcomesGen = for {
-    notMatchedPage       <- enrolmentOutcomeGen
-    alreadyLinkedPage    <- enrolmentOutcomeGen
-    technicalFailurePage <- enrolmentOutcomeGen
-    successPage          <- enrolmentOutcomeGen
-  } yield EnrolmentOutcomes(notMatchedPage, alreadyLinkedPage, technicalFailurePage, successPage)
+    notMatchedPage              <- enrolmentOutcomeGen
+    alreadyLinkedPage           <- enrolmentOutcomeGen
+    technicalFailurePage        <- enrolmentOutcomeGen
+    successPage                 <- enrolmentOutcomeGen
+    insufficientCredentialsPage <- enrolmentOutcomeGen
+  } yield EnrolmentOutcomes(
+    notMatchedPage,
+    alreadyLinkedPage,
+    technicalFailurePage,
+    successPage,
+    insufficientCredentialsPage
+  )
 
   def enrolmentAuthGen: Gen[EnrolmentAuth] =
     for {

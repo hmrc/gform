@@ -29,7 +29,8 @@ import uk.gov.hmrc.gform.sharedmodel.notifier.NotifierTemplateId
 class AuthConfigSpec extends Spec with ScalaCheckDrivenPropertyChecks {
 
   val enrolmentOutcome = EnrolmentOutcome(toSmartString("title"), toSmartString("content"))
-  val enrolmentOutcomes = EnrolmentOutcomes(enrolmentOutcome, enrolmentOutcome, enrolmentOutcome, enrolmentOutcome)
+  val enrolmentOutcomes =
+    EnrolmentOutcomes(enrolmentOutcome, enrolmentOutcome, enrolmentOutcome, enrolmentOutcome, enrolmentOutcome)
 
   "Default Read and Write" should "round trip derived JSON" in {
     forAll(AuthConfigGen.authConfigGen) { c =>
@@ -77,6 +78,10 @@ class AuthConfigSpec extends Spec with ScalaCheckDrivenPropertyChecks {
       |    "successPage": {
       |      "title": "title",
       |      "content": "content"
+      |    },
+      |    "insufficientCredentialsPage": {
+      |      "title": "title",
+      |      "content": "content"
       |    }
       |  }
       |}""")
@@ -113,6 +118,10 @@ class AuthConfigSpec extends Spec with ScalaCheckDrivenPropertyChecks {
      |      "content": "content"
      |    },
      |    "successPage": {
+     |      "title": "title",
+     |      "content": "content"
+     |    },
+     |    "insufficientCredentialsPage": {
      |      "title": "title",
      |      "content": "content"
      |    }
@@ -158,6 +167,10 @@ class AuthConfigSpec extends Spec with ScalaCheckDrivenPropertyChecks {
       |      "content": "content"
       |    },
       |    "successPage": {
+      |      "title": "title",
+      |      "content": "content"
+      |    },
+      |    "insufficientCredentialsPage": {
       |      "title": "title",
       |      "content": "content"
       |    }
@@ -227,6 +240,10 @@ class AuthConfigSpec extends Spec with ScalaCheckDrivenPropertyChecks {
     |      "content": "content"
     |    },
     |    "successPage": {
+    |      "title": "title",
+    |      "content": "content"
+    |    },
+    |    "insufficientCredentialsPage": {
     |      "title": "title",
     |      "content": "content"
     |    }
