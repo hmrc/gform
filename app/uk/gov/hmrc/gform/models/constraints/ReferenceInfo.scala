@@ -25,6 +25,7 @@ sealed trait ReferenceInfo {
 object ReferenceInfo {
   final case class SumExpr(path: TemplatePath, sum: Sum) extends ReferenceInfo
   final case class CountExpr(path: TemplatePath, count: Count) extends ReferenceInfo
+  final case class IndexExpr(path: TemplatePath, index: Index) extends ReferenceInfo
   final case class FormCtxExpr(path: TemplatePath, formCtx: FormCtx) extends ReferenceInfo
   final case class AddressExpr(path: TemplatePath, addressLens: AddressLens) extends ReferenceInfo
   final case class PeriodExpr(path: TemplatePath, period: Period) extends ReferenceInfo

@@ -47,6 +47,10 @@ class FunctionsChecker(formTemplate: FormTemplate, allExpressions: List[ExprWith
       Invalid(
         s"${path.path}: $formComponentId cannot be use with .count function. Only AddToList id can be used with .count"
       )
+    case ReferenceInfo.IndexExpr(path, Index(formComponentId)) if !allowedCountIds(formComponentId) =>
+      Invalid(
+        s"${path.path}: $formComponentId cannot be use with .index function. Only AddToList id can be used with .index"
+      )
     case _ => Valid
   }
 

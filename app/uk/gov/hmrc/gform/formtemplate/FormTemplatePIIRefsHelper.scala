@@ -111,6 +111,7 @@ object FormTemplatePIIRefsHelper {
       case Else(field1, field2)                               => extractRefs(field1) ++ extractRefs(field2)
       case Sum(field1)                                        => extractRefs(field1)
       case Count(FormComponentId(value))                      => List(value)
+      case Index(FormComponentId(value))                      => List(value)
       case FormCtx(FormComponentId(value))                    => List(value)
       case AddressLens(FormComponentId(value), _)             => List(value)
       case Period(dateCtx1, dateCtx2)                         => extractRefs(dateCtx1) ++ extractRefs(dateCtx2)
