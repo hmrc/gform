@@ -229,6 +229,12 @@ object FormTemplateValidator {
             .map(_.id)
             .contains(formComponentId) =>
         Invalid(s"${path.path}: $formComponentId is not AddToList Id")
+      case ReferenceInfo.IndexExpr(path, Index(formComponentId))
+          if !SectionHelper
+            .addToListAddAnotherQuestionIds(formTemplate.formKind.allSections)
+            .map(_.id)
+            .contains(formComponentId) =>
+        Invalid(s"${path.path}: $formComponentId is not AddToList addAnotherQuestionId")
       case ReferenceInfo.BulletedListExpr(path, BulletedList(formComponentId))
           if !SectionHelper
             .addToListFormComponents(formTemplate.formKind.allSections)
@@ -1110,6 +1116,7 @@ object FormTemplateValidator {
       case Else(field1, field2)         => checkFields(field1, field2)
       case Sum(value)                   => validate(value, sections)
       case Count(value)                 => validate(FormCtx(value), sections)
+      case Index(value)                 => validate(FormCtx(value), sections)
       case FormCtx(value) =>
         fieldNamesIds
           .contains(value)

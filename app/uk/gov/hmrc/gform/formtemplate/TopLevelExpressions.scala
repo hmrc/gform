@@ -166,6 +166,7 @@ object TopLevelExpressions {
         case AuthCtx(_)                    => e
         case Constant(_)                   => e
         case Count(_)                      => e
+        case Index(_)                      => e
         case FormTemplateCtx(_)            => e
         case LangCtx                       => e
         case LinkCtx(_)                    => e

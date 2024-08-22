@@ -84,6 +84,7 @@ final case class IfElse(cond: BooleanExpr, field1: Expr, field2: Expr) extends E
 final case class Else(field1: Expr, field2: Expr) extends Expr
 final case class Sum(field1: Expr) extends Expr
 final case class Count(formComponentId: FormComponentId) extends Expr
+final case class Index(formComponentId: FormComponentId) extends Expr
 final case class FormCtx(formComponentId: FormComponentId) extends Expr
 final case class AddressLens(formComponentId: FormComponentId, detail: AddressDetail) extends Expr
 final case class Period(dateCtx1: Expr, dateCtx2: Expr) extends Expr

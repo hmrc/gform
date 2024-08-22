@@ -283,6 +283,9 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
     | FormComponentId.unanchoredIdValidation <~ ".count" ^^ { value =>
       Count(FormComponentId(value))
     }
+    | FormComponentId.unanchoredIdValidation <~ ".index" ^^ { value =>
+      Index(FormComponentId(value))
+    }
     | FormComponentId.unanchoredIdValidation ~ "." ~ sizeRefTypeParser <~ ".size" ^^ { case value ~ _ ~ index =>
       Size(FormComponentId(value), index)
     }

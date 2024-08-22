@@ -46,6 +46,12 @@ object SectionHelper {
       case _                    => Nil
     }
 
+  def addToListAddAnotherQuestionIds(sections: List[Section]): List[FormComponent] =
+    sections.flatMap {
+      case s: Section.AddToList => List(s.addAnotherQuestion)
+      case _                    => Nil
+    }
+
   def allSectionsFormComponents(sections: List[Section]): List[FormComponent] =
     pages(sections).flatMap(_.allFormComponents) ++
       addToListFormComponents(sections) ++
