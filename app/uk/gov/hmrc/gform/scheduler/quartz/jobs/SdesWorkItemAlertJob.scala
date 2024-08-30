@@ -47,7 +47,13 @@ class SdesWorkItemAlertJob(
   schedule()
 
   applicationLifecycle.addStopHook { () =>
-    Future.successful(scheduler.cancelJob(jobName))
-    Future.successful(scheduler.shutdown(waitForJobsToComplete = false))
+    if (scheduler.runningJobs.contains(jobName)) {
+      Future {
+        scheduler.cancelJob(jobName)
+        scheduler.shutdown(waitForJobsToComplete = false)
+      }
+    } else {
+      Future.successful(())
+    }
   }
 }
