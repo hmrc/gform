@@ -43,6 +43,7 @@ trait FormTemplateSample {
                   |    ],
                   |    "emailTemplateId": $emailTemplateId,
                   |    "userResearchUrl": "https://test.service.gov.uk",
+                  |    "serviceStartPageUrl": "https://startpage.service.gov.uk",
                   |    "accessibilityUrl": "$id",
                   |    "sections": [
                   |        {
