@@ -72,6 +72,8 @@ trait FormTemplateGen {
 
   def accessibilityUrlGen: Gen[AccessibilityUrl] = PrimitiveGen.urlGen.map(AccessibilityUrl(_))
 
+  def serviceStartPageUrlGen: Gen[ServiceStartPageUrl] = PrimitiveGen.urlGen.map(ServiceStartPageUrl(_))
+
   def emailCodeParameterGen: Gen[EmailCodeParameter] =
     for {
       emailTemplateVariable <- Gen.alphaNumStr
@@ -105,6 +107,7 @@ trait FormTemplateGen {
       userResearchUrl          <- Gen.option(userResearchUrlGen)
       accessibilityUrl         <- Gen.option(accessibilityUrlGen)
       emailCodeParameters      <- emailCodeParameterListGen
+      serviceStartPageUrl      <- Gen.option(serviceStartPageUrlGen)
 
     } yield FormTemplate(
       id,
@@ -139,7 +142,8 @@ trait FormTemplateGen {
       emailCodeParameters,
       None,
       false,
-      false
+      false,
+      serviceStartPageUrl
     )
 }
 

@@ -33,7 +33,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.Section.NonRepeatingPage
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DestinationId, DestinationIncludeIf, TemplateType }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DestinationList
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AccessibilityUrl, AcknowledgementSection, Anonymous, AuthCtx, AuthInfo, ContinueOrDeletePage, DeclarationSection, Default, FormAccessCodeForAgents, FormTemplate, FormTemplateRaw, LinkCtx, Text, TextWithRestrictions, UserResearchUrl, Value }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AccessibilityUrl, AcknowledgementSection, Anonymous, AuthCtx, AuthInfo, ContinueOrDeletePage, DeclarationSection, Default, FormAccessCodeForAgents, FormTemplate, FormTemplateRaw, LinkCtx, Text, TextWithRestrictions, UserResearchUrl, Value, ServiceStartPageUrl }
 import uk.gov.hmrc.gform.sharedmodel.{ AvailableLanguages, LangADT, LocalisedString, SmartString }
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -228,6 +228,7 @@ class FormTemplatesIT extends ITSpec with FormTemplateSample with BeforeAndAfter
     formTemplate.destinations shouldBe a[DestinationList]
     formTemplate.emailTemplateId shouldBe localisedEmailTemplateId
     formTemplate.userResearchUrl shouldBe Some(UserResearchUrl("https://test.service.gov.uk"))
+    formTemplate.serviceStartPageUrl shouldBe Some(ServiceStartPageUrl("https://startpage.service.gov.uk"))
     formTemplate.accessibilityUrl shouldBe Some(AccessibilityUrl(formTemplateId))
     val destinationList = formTemplate.destinations.asInstanceOf[DestinationList]
     destinationList.destinations shouldBe NonEmptyList.one(

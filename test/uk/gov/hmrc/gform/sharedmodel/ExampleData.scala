@@ -510,6 +510,8 @@ trait ExampleFormTemplate {
 
   def accessibilityUrl = AccessibilityUrl(formTemplateId.value)
 
+  def serviceStartPageUrl = ServiceStartPageUrl("https://startpage.service.gov.uk")
+
   def formTemplate = FormTemplate(
     formTemplateId,
     formTemplateId,
@@ -543,7 +545,8 @@ trait ExampleFormTemplate {
     None,
     None,
     false,
-    false
+    false,
+    Some(serviceStartPageUrl)
   )
 }
 
