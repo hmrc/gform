@@ -58,7 +58,10 @@ class BooleanExprValidator(
       .getOrElse(Invalid(s"id '${id.value}' named in $wrapperType expression does not exist in the form"))
 
   private def validateExprs(left: Expr, right: Expr): List[ValidationResult] =
-    List(left, right)
+    validateExprs(List(left, right))
+
+  private def validateExprs(xs: List[Expr]): List[ValidationResult] =
+    xs
       .flatMap(extractFcIds)
       .map(validateIdIdx)
 
@@ -97,6 +100,7 @@ class BooleanExprValidator(
     case IsFalse | IsTrue | FormPhase(_) | IsLogin(_) => List(Valid)
     case Contains(collection, value)                  => validateExprs(collection, value)
     case In(value, _)                                 => validateValueField(value)
+    case HasAnswer(formCtx, addToListRef)             => validateExprs(formCtx :: addToListRef.allExpressions.toList)
     case DateBefore(left, right)                      => validateDateExprs(left, right)
     case DateAfter(left, right)                       => validateDateExprs(left, right)
     case MatchRegex(value, _)                         => validateValueField(value)

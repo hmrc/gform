@@ -85,6 +85,7 @@ object BooleanExprSubstituter extends Substituter[BooleanExprSubstitutions, Form
         case IsFalse                          => IsFalse
         case Contains(multiValueField, value) => Contains(multiValueField, value(substitutions))
         case In(value, dataSource)            => In(value(substitutions), dataSource)
+        case h @ HasAnswer(_, _)              => h
         case d @ DuplicateExists(_)           => d
         case m @ MatchRegex(expr, regex)      => m
         case d @ DateBefore(l, r)             => d
