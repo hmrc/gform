@@ -530,6 +530,14 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
     | contextField ~ "in" ~ dataSourceParse ^^ { case expr ~ _ ~ dataSource =>
       In(expr, dataSource)
     }
+    | FormComponentId.unanchoredIdValidation ~ "in" ~ FormComponentId.unanchoredIdValidation ^^ {
+      case expr ~ _ ~ addToListRef =>
+        HasAnswer(FormCtx(FormComponentId(expr)), AddToListRef.Basic(FormCtx(FormComponentId(addToListRef))))
+    }
+    | FormComponentId.unanchoredIdValidation ~ "notIn" ~ FormComponentId.unanchoredIdValidation ^^ {
+      case expr ~ _ ~ addToListRef =>
+        Not(HasAnswer(FormCtx(FormComponentId(expr)), AddToListRef.Basic(FormCtx(FormComponentId(addToListRef)))))
+    }
     | dateExpr ~ "before" ~ dateExpr ^^ { case expr1 ~ _ ~ expr2 =>
       DateBefore(expr1, expr2)
     }
