@@ -181,7 +181,7 @@ trait Rewriter {
       for {
         page         <- pages
         confirmation <- page.confirmation.toList
-        redirect     <- confirmation.redirects.toList
+        redirect     <- confirmation.redirects.toList.flatMap(_.toList)
       } yield redirect.`if`
 
     val ifElses: List[IfElse] =
@@ -494,7 +494,7 @@ trait Rewriter {
         redirects.map(r => r.copy(`if` = replaceIncludeIf(Some(r.`if`)).getOrElse(r.`if`)))
 
       def replaceConfirmation(confirmation: Option[Confirmation]): Option[Confirmation] =
-        confirmation.map(c => c.copy(redirects = replaceConfirmationRedirects(c.redirects)))
+        confirmation.map(c => c.copy(redirects = c.redirects.map(replaceConfirmationRedirects)))
 
       def updateSection(section: Section): Section =
         section match {

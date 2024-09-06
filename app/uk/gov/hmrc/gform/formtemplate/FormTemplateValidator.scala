@@ -1617,6 +1617,7 @@ final case class ConfirmationPageValidation(
   def addPageId(pageId: PageId) = this.copy(pageIds = pageIds + pageId)
   def validateConfirmation(confirmation: Confirmation) = {
     val confirmationPageIdValidations: List[ValidationResult] = confirmation.redirects.toList
+      .flatMap(_.toList)
       .map(_.pageId)
       .map(pageId =>
         if (pageIds.contains(pageId))

@@ -23,7 +23,7 @@ trait ConfirmationGen {
   def confirmationGen: Gen[Confirmation] =
     for {
       question  <- FormComponentGen.formComponentGen(1)
-      redirects <- PrimitiveGen.oneOrMoreGen(ConfirmationRedirectGen.redirectGen)
+      redirects <- Gen.option(PrimitiveGen.oneOrMoreGen(ConfirmationRedirectGen.redirectGen))
     } yield Confirmation(question, redirects)
 }
 
