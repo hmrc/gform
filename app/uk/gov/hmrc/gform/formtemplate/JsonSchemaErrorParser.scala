@@ -128,9 +128,9 @@ object JsonSchemaErrorParser {
 
   private def getReadableErrorFromRegex(regexString: String): String =
     regexString match {
-      case "S"           => "String with no spaces"
-      case "a-zA-Z0-9-"  => "letters, numbers and hyphens"
-      case _             => regexString
+      case "S"          => "String with no spaces"
+      case "a-zA-Z0-9-" => "letters, numbers and hyphens"
+      case _            => regexString
     }
 
   private def parseAdditionalPropertiesError(
