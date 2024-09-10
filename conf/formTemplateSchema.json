@@ -869,7 +869,14 @@
           "$ref": "#/$defs/stringOrEnCyObject"
         },
         "infoType": {
-          "type": "string"
+          "type": "string",
+          "enum": [
+            "standard",
+            "noformat",
+            "long",
+            "important",
+            "banner"
+           ]
         },
         "excludeFromPdf": {
           "type": "boolean"
