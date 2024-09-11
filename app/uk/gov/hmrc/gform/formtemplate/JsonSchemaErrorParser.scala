@@ -119,19 +119,12 @@ object JsonSchemaErrorParser {
               requiredValues.substring(lengthOfTrim, requiredValues.length - lengthOfTrim).replace("|", ", ")
 
             val errorMessage: String =
-              s"Property $property expected value ${if (notMatchingPattern) "not " else ""}[${getReadableErrorFromRegex(parsedRequiredValues)}]"
+              s"Property $property expected value ${if (notMatchingPattern) "not " else ""}[$parsedRequiredValues]"
 
             constructCustomErrorMessage(errorLocation, errorMessage)
         }
     }
   }
-
-  private def getReadableErrorFromRegex(regexString: String): String =
-    regexString match {
-      case "S"          => "String with no spaces"
-      case "a-zA-Z0-9-" => "letters, numbers and hyphens"
-      case _            => regexString
-    }
 
   private def parseAdditionalPropertiesError(
     errors: NonEmptyList[ValidationError],
