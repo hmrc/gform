@@ -74,17 +74,14 @@ class JsonParseTestFormat extends Spec with TableDrivenPropertyChecks {
     val multilineCombinations = Table(
       // format: off
       ("multiline", "expected"),
-      ("yes",  TextArea(ShortText.default, Value,dataThreshold = None)),
-      ("Yes",  TextArea(ShortText.default, Value,dataThreshold = None)),
-      ("true", TextArea(ShortText.default, Value,dataThreshold = None)),
-      ("True", TextArea(ShortText.default, Value,dataThreshold = None))
+      (true, TextArea(ShortText.default, Value,dataThreshold = None))
       // format: on
     )
 
     forAll(multilineCombinations) { (multiline, expected) =>
       val jsResult =
         implicitly[Reads[FormComponent]]
-          .reads(Json.parse(startOfJson + s""", "format" : "shortText", "multiline" : "$multiline" }"""))
+          .reads(Json.parse(startOfJson + s""", "format" : "shortText", "multiline" : $multiline }"""))
 
       jsResult shouldBe a[JsSuccess[_]]
       jsResult.map(fv => fv.`type` shouldBe expected)
@@ -103,8 +100,7 @@ class JsonParseTestFormat extends Spec with TableDrivenPropertyChecks {
       val jsResult =
         implicitly[Reads[FormComponent]]
           .reads(Json.parse(startOfJson + s""", "format" : "shortText", "multiline" : "$multiline" }"""))
-      jsResult shouldBe a[JsSuccess[_]]
-      jsResult.map(fv => fv.`type` shouldBe expected)
+      jsResult should be(jsError)
     }
   }
 
@@ -151,7 +147,7 @@ class JsonParseTestFormat extends Spec with TableDrivenPropertyChecks {
         implicitly[Reads[FormComponent]]
           .reads(
             Json.parse(
-              startOfJson + s""", "format": "shortText", "multiline" : "true" """ + s""", "displayWidth" : "$displayWidth" }"""
+              startOfJson + s""", "format": "shortText", "multiline" : true """ + s""", "displayWidth" : "$displayWidth" }"""
             )
           )
       jsResult shouldBe a[JsSuccess[_]]
@@ -192,7 +188,7 @@ class JsonParseTestFormat extends Spec with TableDrivenPropertyChecks {
 
     val jsResult =
       implicitly[Reads[FormComponent]]
-        .reads(Json.parse(startOfJson + s""", "format" : "shortText", "multiline" : "yes", "rows" : 101 }"""))
+        .reads(Json.parse(startOfJson + s""", "format" : "shortText", "multiline" : true, "rows" : 101 }"""))
 
     jsResult shouldBe a[JsSuccess[_]]
     jsResult.map(fv => fv.`type` shouldBe TextArea(ShortText.default, Value, rows = 101, dataThreshold = None))
@@ -202,7 +198,7 @@ class JsonParseTestFormat extends Spec with TableDrivenPropertyChecks {
 
     val jsResult =
       implicitly[Reads[FormComponent]]
-        .reads(Json.parse(startOfJson + s""", "format" : "shortText", "multiline" : "yes"}"""))
+        .reads(Json.parse(startOfJson + s""", "format" : "shortText", "multiline" : true }"""))
 
     jsResult shouldBe a[JsSuccess[_]]
     jsResult.map(fv => fv.`type` shouldBe TextArea(ShortText.default, Value, dataThreshold = None))
@@ -212,7 +208,7 @@ class JsonParseTestFormat extends Spec with TableDrivenPropertyChecks {
 
     val jsResult =
       implicitly[Reads[FormComponent]]
-        .reads(Json.parse(startOfJson + """, "format": "shortText", "multiline" : "yes", "rows" : -2}"""))
+        .reads(Json.parse(startOfJson + """, "format": "shortText", "multiline" : true, "rows" : -2}"""))
 
     jsResult should be(jsError)
   }
@@ -221,7 +217,7 @@ class JsonParseTestFormat extends Spec with TableDrivenPropertyChecks {
 
     val jsResult =
       implicitly[Reads[FormComponent]]
-        .reads(Json.parse(startOfJson + """, "format": "shortText", "multiline" : "yes", "rows" : 0}"""))
+        .reads(Json.parse(startOfJson + """, "format": "shortText", "multiline" : true, "rows" : 0}"""))
 
     jsResult should be(jsError)
   }
@@ -231,7 +227,7 @@ class JsonParseTestFormat extends Spec with TableDrivenPropertyChecks {
     val jsResult =
       implicitly[Reads[FormComponent]]
         .reads(
-          Json.parse(startOfJson + """, "format": "shortText", "multiline" : "yes", "rows" : "INVALID NO OF ROWS"}""")
+          Json.parse(startOfJson + """, "format": "shortText", "multiline" : true, "rows" : "INVALID NO OF ROWS"}""")
         )
 
     jsResult should be(jsError)

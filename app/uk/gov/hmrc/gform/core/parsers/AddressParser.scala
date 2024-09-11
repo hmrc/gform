@@ -17,29 +17,26 @@
 package uk.gov.hmrc.gform.core.parsers
 
 import uk.gov.hmrc.gform.core.Opt
-import uk.gov.hmrc.gform.exceptions.UnexpectedState
-import uk.gov.hmrc.gform.formtemplate.FormComponentMakerService.{ IsFalseish, IsTrueish }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.Address
 
 object AddressParser {
 
   def mandatoryField(
-    string: Option[String],
+    bool: Option[Boolean],
     obj: Address.Configurable.Mandatory
   ): Opt[Option[Address.Configurable.Mandatory]] =
-    field(string, obj, Some(_), _ => None)
+    field(bool, obj, Some(_), _ => None)
 
   private def field[A](
-    string: Option[String],
+    bool: Option[Boolean],
     obj: A,
     onTrue: A => Option[A],
     onFalse: A => Option[A]
   ): Opt[Option[A]] =
-    string
+    bool
       .map {
-        case IsTrueish()  => Right(onTrue(obj))
-        case IsFalseish() => Right(onFalse(obj))
-        case unknown      => Left(UnexpectedState(s"Unknown value: $unknown, expected true or false"))
+        case true  => Right(onTrue(obj))
+        case false => Right(onFalse(obj))
       }
       .getOrElse(Right(None))
 

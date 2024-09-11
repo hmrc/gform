@@ -30,7 +30,7 @@ object FormComponentMakerService {
   def createObject(
     maybeFormatExpr: Option[FormatExpr],
     maybeValueExpr: Option[ValueExpr],
-    multiLine: Option[String],
+    multiLine: Option[Boolean],
     dataThreshold: Option[Int],
     maybeDisplayWidth: Option[String],
     toUpperCase: UpperCaseBoolean,
@@ -77,7 +77,7 @@ object FormComponentMakerService {
     formatExpr: FormatExpr,
     maybeValueExpr: Option[ValueExpr],
     displayWidth: Option[String],
-    multiLine: Option[String],
+    multiLine: Option[Boolean],
     dataThreshold: Option[Int],
     rows: Int,
     displayCharCount: Boolean,
@@ -95,7 +95,7 @@ object FormComponentMakerService {
   def createError(
     maybeFormatExpr: Option[FormatExpr],
     maybeValueExpr: Option[ValueExpr],
-    multiLine: Option[String],
+    multiLine: Option[Boolean],
     json: JsValue,
     dataThreshold: Option[Int]
   ): UnexpectedState = {
@@ -129,7 +129,7 @@ object FormComponentMakerService {
   }
 
   final object IsNotMultiline {
-    def unapply(multiline: Option[String]): Boolean = !IsMultiline.unapply(multiline)
+    def unapply(multiline: Option[Boolean]): Boolean = !IsMultiline.unapply(multiline)
   }
 
   final object HasDisplayWidth {
@@ -145,19 +145,11 @@ object FormComponentMakerService {
       }
   }
 
-  final object ToUpperCase {
-    def unapply(isUpperCase: Option[String]): Option[UpperCaseBoolean] =
-      isUpperCase match {
-        case Some(IsTrueish()) => Some(IsUpperCase)
-        case _                 => Some(IsNotUpperCase)
-      }
-  }
-
   final object IsMultiline {
-    def unapply(multiline: Option[String]): Boolean =
+    def unapply(multiline: Option[Boolean]): Boolean =
       multiline match {
-        case Some(IsTrueish()) => true
-        case _                 => false
+        case Some(true) => true
+        case _          => false
       }
   }
 
@@ -178,15 +170,15 @@ object FormComponentMakerService {
   }
 
   final object IsDisplayCharCountFalse {
-    def unapply(displayCharCount: Option[String]): Boolean =
+    def unapply(displayCharCount: Option[Boolean]): Boolean =
       displayCharCount match {
-        case Some(IsFalseish()) => true
-        case _                  => false
+        case Some(false) => true
+        case _           => false
       }
   }
 
   final object IsDisplayCharCountTrue {
-    def unapply(displayCharCount: Option[String]): Boolean =
+    def unapply(displayCharCount: Option[Boolean]): Boolean =
       !IsDisplayCharCountFalse.unapply(displayCharCount)
   }
 }

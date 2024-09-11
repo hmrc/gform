@@ -25,7 +25,6 @@ import julienrf.json.derived
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 import uk.gov.hmrc.gform.core.parsers.ValueParser
-import uk.gov.hmrc.gform.formtemplate.FormComponentMakerService.{ IsFalseish, IsTrueish }
 import uk.gov.hmrc.gform.formtemplate.TableHeaderCellMaker
 import uk.gov.hmrc.gform.sharedmodel.{ LocalisedString, SmartString, ValueClassFormat }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.DisplayWidth.DisplayWidth
@@ -49,9 +48,9 @@ case object IsNotUpperCase extends UpperCaseBoolean
 
 object UpperCaseBoolean {
   private val templateReads: Reads[UpperCaseBoolean] = Reads {
-    case JsString(IsTrueish())  => JsSuccess(IsUpperCase)
-    case JsString(IsFalseish()) => JsSuccess(IsNotUpperCase)
-    case invalid                => JsError("toUpperCase needs to be 'true' or 'false', got " + invalid)
+    case JsTrue  => JsSuccess(IsUpperCase)
+    case JsFalse => JsSuccess(IsNotUpperCase)
+    case invalid => JsError("toUpperCase needs to be 'true' or 'false', got " + invalid)
   }
   implicit val format: OFormat[UpperCaseBoolean] = OFormatWithTemplateReadFallback(templateReads)
 }

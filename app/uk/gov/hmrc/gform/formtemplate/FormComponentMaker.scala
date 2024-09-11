@@ -61,9 +61,9 @@ class FormComponentMaker(json: JsValue) {
     case _: JsUndefined => Right(EmailVerification.noVerification)
   }
 
-  lazy val optNotPII: Opt[Boolean] = (json \ "notPII") match {
-    case JsDefined(JsString(IsTrueish())) => Right(true)
-    case _                                => Right(false)
+  lazy val optNotPII: Opt[Boolean] = json \ "notPII" match {
+    case JsDefined(JsTrue) => Right(true)
+    case _                 => Right(false)
   }
 
   lazy val optExtraLetterSpacing: Opt[Option[Boolean]] = (json \ "extraLetterSpacing") match {
@@ -105,22 +105,27 @@ class FormComponentMaker(json: JsValue) {
   lazy val optValidIf: Opt[Option[ValidIf]] = toOpt((json \ "validIf").validateOpt[ValidIf], "/validIf")
   lazy val optValidators: Opt[List[FormComponentValidator]] =
     toOpt((json \ "validators").validateOpt[List[FormComponentValidator]], "/validators").map(_.toList.flatten)
-  lazy val mandatory: Option[String] = (json \ "mandatory").asOpt[String]
-  lazy val mandatoryLine2: Option[String] = (json \ "line2Mandatory").asOpt[String]
-  lazy val mandatoryCity: Option[String] = (json \ "cityMandatory").asOpt[String]
-  lazy val mandatoryPostcode: Option[String] = (json \ "postcodeMandatory").asOpt[String]
-  lazy val multiline: Option[String] = (json \ "multiline").asOpt[String]
+  lazy val optMandatory: Opt[Option[Boolean]] = toOpt((json \ "mandatory").validateOpt[Boolean], "/mandatory")
+  lazy val optMandatoryLine2: Opt[Option[Boolean]] =
+    toOpt((json \ "line2Mandatory").validateOpt[Boolean], "/line2Mandatory")
+  lazy val optMandatoryCity: Opt[Option[Boolean]] =
+    toOpt((json \ "cityMandatory").validateOpt[Boolean], "/cityMandatory")
+  lazy val optMandatoryPostcode: Opt[Option[Boolean]] =
+    toOpt((json \ "postcodeMandatory").validateOpt[Boolean], "/postcodeMandatory")
+  lazy val optMultiline: Opt[Option[Boolean]] = toOpt((json \ "multiline").validateOpt[Boolean], "/multiline")
   lazy val dataThreshold: Option[Int] = (json \ "dataThreshold").asOpt[Int]
   lazy val optRows: Opt[Option[Int]] = parse("rows", BasicParsers.validateNonZeroPositiveNumber)
-  lazy val displayCharCount: Option[String] = (json \ "displayCharCount").asOpt[String]
+  lazy val optDisplayCharCount: Opt[Option[Boolean]] =
+    toOpt((json \ "displayCharCount").validateOpt[Boolean], "/displayCharCount")
   lazy val displayWidth: Option[String] = (json \ "displayWidth").asOpt[String]
   lazy val toUpperCase: UpperCaseBoolean = (json \ "toUpperCase").asOpt[UpperCaseBoolean].getOrElse(IsNotUpperCase)
   lazy val prefix: Option[SmartString] = (json \ "prefix").asOpt[SmartString]
   lazy val suffix: Option[SmartString] = (json \ "suffix").asOpt[SmartString]
   lazy val roundingMode: RoundingMode = (json \ "round").asOpt[RoundingMode].getOrElse(RoundingMode.defaultRoundingMode)
-  lazy val multivalue: Option[String] = (json \ "multivalue").asOpt[String]
+  lazy val optMultivalue: Opt[Option[Boolean]] = toOpt((json \ "multivalue").validateOpt[Boolean], "/multivalue")
   lazy val total: Option[String] = (json \ "total").asOpt[String]
-  lazy val international: Option[String] = (json \ "international").asOpt[String]
+  lazy val optInternational: Opt[Option[Boolean]] =
+    toOpt((json \ "international").validateOpt[Boolean], "/international")
   lazy val optInfoText: Opt[SmartString] = toOpt((json \ "infoText").validate[SmartString], "/infoText")
   lazy val infoType: Option[String] = (json \ "infoType").asOpt[String]
   lazy val shortName: Option[SmartString] = (json \ "shortName").asOpt[SmartString]
@@ -185,9 +190,13 @@ class FormComponentMaker(json: JsValue) {
   lazy val optLabelSize: Opt[Option[LabelSize]] =
     parse("labelSize", LabelSizeParser.validate)
 
-  lazy val optCountryLookup: Option[Boolean] = (json \ "countryLookup").asOpt[String].map(_.toBoolean)
-  lazy val optCountryDisplayed: Option[Boolean] = (json \ "countryDisplayed").asOpt[String].map(_.toBoolean)
-  lazy val optCountyDisplayed: Option[Boolean] = (json \ "countyDisplayed").asOpt[String].map(_.toBoolean)
+  lazy val optCountryLookup: Opt[Option[Boolean]] =
+    toOpt((json \ "countryLookup").validateOpt[Boolean], "/countryLookup")
+  lazy val optCountryDisplayed: Opt[Option[Boolean]] =
+    toOpt((json \ "countryDisplayed").validateOpt[Boolean], "/countryDisplayed")
+  lazy val optCountyDisplayed: Opt[Option[Boolean]] =
+    toOpt((json \ "countyDisplayed").validateOpt[Boolean], "/countyDisplayed")
+
   private def getValueRow(json: JsValue): Opt[MiniSummaryRow] =
     for {
       key          <- toOpt((json \ "key").validateOpt[SmartString], "/key")
@@ -358,19 +367,19 @@ class FormComponentMaker(json: JsValue) {
       extraLetterSpacing = extraLetterSpacing
     )
 
-  private lazy val optMES: Opt[MES] = (submitMode, mandatory, optMaybeValueExpr) match {
+  private lazy val optMES: Opt[MES] = (submitMode, optMandatory, optMaybeValueExpr) match {
     // format: off
-    case IsThisAnInfoField()                                                     => MES(mandatory = true,  editable = false, submissible = false, derived = false).asRight
-    case (Some(IsStandard()) | None, Some(IsTrueish())  | None,  _)              => MES(mandatory = true,  editable = true,  submissible = true,  derived = false).asRight
-    case (Some(IsReadOnly()),        Some(IsTrueish())  | None,  _)              => MES(mandatory = true,  editable = false, submissible = true,  derived = false).asRight
-    case (Some(IsInfo()),            Some(IsTrueish())  | None,  _)              => MES(mandatory = true,  editable = false, submissible = false, derived = false).asRight
-    case (Some(IsStandard()) | None, Some(IsFalseish()),         _)              => MES(mandatory = false, editable = true,  submissible = true,  derived = false).asRight
-    case (Some(IsInfo()),            Some(IsFalseish()),         _)              => MES(mandatory = false, editable = false, submissible = false, derived = false).asRight
-    case (Some(IsDerived()),         Some(IsTrueish())  | None,  Right(Some(_))) => MES(mandatory = true,  editable = false, submissible = true,  derived = true).asRight
-    case (Some(IsDerived()),         Some(IsFalseish()),         Right(Some(_))) => MES(mandatory = false, editable = false, submissible = true,  derived = true).asRight
-    case (Some(IsNonSubmissible()),  Some(IsFalseish()) | None,  _)              => MES(mandatory = false, editable = true,  submissible = false, derived = false).asRight
-    case (Some(IsNonSubmissible()),  Some(IsTrueish())  | None,  _)              => MES(mandatory = true,  editable = true,  submissible = false, derived = false).asRight
-    case (Some(IsSummaryInfoOnly()), Some(IsTrueish())  | Some(IsFalseish()) | None, Right(Some(_))) =>
+    case IsThisAnInfoField()                                                            => MES(mandatory = true,  editable = false, submissible = false, derived = false).asRight
+    case (Some(IsStandard()) | None, Right(Some(true))  | Right(None),  _)              => MES(mandatory = true,  editable = true,  submissible = true,  derived = false).asRight
+    case (Some(IsReadOnly()),        Right(Some(true))  | Right(None),  _)              => MES(mandatory = true,  editable = false, submissible = true,  derived = false).asRight
+    case (Some(IsInfo()),            Right(Some(true))  | Right(None),  _)              => MES(mandatory = true,  editable = false, submissible = false, derived = false).asRight
+    case (Some(IsStandard()) | None, Right(Some(false)),         _)                     => MES(mandatory = false, editable = true,  submissible = true,  derived = false).asRight
+    case (Some(IsInfo()),            Right(Some(false)),         _)                     => MES(mandatory = false, editable = false, submissible = false, derived = false).asRight
+    case (Some(IsDerived()),         Right(Some(true))  | Right(None),  Right(Some(_))) => MES(mandatory = true,  editable = false, submissible = true,  derived = true).asRight
+    case (Some(IsDerived()),         Right(Some(false)),         Right(Some(_)))        => MES(mandatory = false, editable = false, submissible = true,  derived = true).asRight
+    case (Some(IsNonSubmissible()),  Right(Some(false)) | Right(None),  _)              => MES(mandatory = false, editable = true,  submissible = false, derived = false).asRight
+    case (Some(IsNonSubmissible()),  Right(Some(true))  | Right(None),  _)              => MES(mandatory = true,  editable = true,  submissible = false, derived = false).asRight
+    case (Some(IsSummaryInfoOnly()), Right(Some(true))  | Right(Some(false)) | Right(None), Right(Some(_))) =>
       MES(mandatory = true,  editable = false, submissible = false, derived = false, onlyShowOnSummary = true).asRight
     case otherwise =>
       UnexpectedState(
@@ -404,6 +413,8 @@ class FormComponentMaker(json: JsValue) {
       maybeFormatExpr   <- optMaybeFormatExpr(roundingMode)(selectionCriteria)(emailVerification)
       maybeValueExpr    <- optMaybeValueExpr
       rows              <- optRows
+      multiline         <- optMultiline
+      displayCharCount  <- optDisplayCharCount
       result <- createObject(
                   maybeFormatExpr,
                   maybeValueExpr,
@@ -420,9 +431,9 @@ class FormComponentMaker(json: JsValue) {
     } yield result
   }
 
-  private val internationalOpt: Opt[Boolean] = international match {
-    case IsInternational(InternationalYes) => true.asRight
-    case IsInternational(InternationalNo)  => false.asRight
+  private val internationalOpt: Opt[Boolean] = optInternational match {
+    case Right(IsInternational(InternationalYes)) => true.asRight
+    case Right(IsInternational(InternationalNo))  => false.asRight
     case invalidInternational =>
       UnexpectedState(s"""|Unsupported type of value for address field
                           |Id: $id
@@ -446,13 +457,15 @@ class FormComponentMaker(json: JsValue) {
 
     import Address.Configurable._
     for {
-      city          <- AddressParser.mandatoryField(mandatoryCity, Mandatory.City)
-      international <- internationalOpt
-      _             <- mandatoryCityForNonInternationnal(city, international)
-      value         <- addressValueOpt
+      mandatoryCity   <- optMandatoryCity
+      city            <- AddressParser.mandatoryField(mandatoryCity, Mandatory.City)
+      international   <- internationalOpt
+      _               <- mandatoryCityForNonInternationnal(city, international)
+      value           <- addressValueOpt
+      countyDisplayed <- optCountyDisplayed
     } yield {
       val mandatoryFields: List[Mandatory] = List(city).flatten
-      Address(international, mandatoryFields, optCountyDisplayed.getOrElse(false), value)
+      Address(international, mandatoryFields, countyDisplayed.getOrElse(false), value)
     }
   }
 
@@ -557,6 +570,7 @@ class FormComponentMaker(json: JsValue) {
       maybeFormatExpr   <- optMaybeFormatExpr(roundingMode)(selectionCriteria)(emailVerification)
       maybeValueExpr    <- optMaybeValueExpr
       choices           <- choicesOpt
+      multivalue        <- optMultivalue
       oChoice: Opt[Choice] = (maybeFormatExpr, choices, multivalue, maybeValueExpr) match {
                                // format: off
         case (IsOrientation(VerticalOrientation),   Some(x :: xs), IsMultivalue(MultivalueYes), Selections(selections)) => Choice(Checkbox, NonEmptyList(x, xs),          Vertical,   selections, optionHints, optionHelpText, dividerPositon, dividerText, noneChoice, noneChoiceError).asRight
@@ -620,11 +634,11 @@ class FormComponentMaker(json: JsValue) {
                   RevealingChoiceElement(choice, fields, hint, selected)
                 }
 
-            (revealingChoiceElements, multivalue) match {
-              case (x :: xs, IsMultivalue(MultivalueYes)) => RevealingChoice(NonEmptyList(x, xs), true).asRight
-              case (x :: xs, IsMultivalue(MultivalueNo))  => RevealingChoice(NonEmptyList(x, xs), false).asRight
+            (revealingChoiceElements, optMultivalue) match {
+              case (x :: xs, Right(IsMultivalue(MultivalueYes))) => RevealingChoice(NonEmptyList(x, xs), true).asRight
+              case (x :: xs, Right(IsMultivalue(MultivalueNo)))  => RevealingChoice(NonEmptyList(x, xs), false).asRight
               case (_ :: _, _) =>
-                mkError(s"'$multivalue' is not a valid value for the revealing choice multivalue property")
+                mkError(s"'$optMultivalue' is not a valid value for the revealing choice multivalue property")
               case _ => mkError("At least one choice needs to be specified")
             }
           }
@@ -716,6 +730,11 @@ class FormComponentMaker(json: JsValue) {
 
     import OverseasAddress.Configurable._
     for {
+      mandatoryLine2    <- optMandatoryLine2
+      mandatoryCity     <- optMandatoryCity
+      mandatoryPostcode <- optMandatoryPostcode
+      countryLookup     <- optCountryLookup
+      countryDisplayed  <- optCountryDisplayed
       line2             <- OverseasAddressParser.mandatoryField(mandatoryLine2, Mandatory.Line2)
       city              <- OverseasAddressParser.optionalField(mandatoryCity, Optional.City)
       postcode          <- OverseasAddressParser.mandatoryField(mandatoryPostcode, Mandatory.Postcode)
@@ -728,9 +747,9 @@ class FormComponentMaker(json: JsValue) {
       OverseasAddress(
         mandatoryFields,
         optionalFields,
-        optCountryLookup.getOrElse(true),
+        countryLookup.getOrElse(true),
         value,
-        optCountryDisplayed.getOrElse(true),
+        countryDisplayed.getOrElse(true),
         selectionCriteria
       )
     }
@@ -767,11 +786,11 @@ class FormComponentMaker(json: JsValue) {
   private final case object MultivalueNo extends Multivalue
 
   private final object IsMultivalue {
-    def unapply(multivalue: Option[String]): Option[Multivalue] =
+    def unapply(multivalue: Option[Boolean]): Option[Multivalue] =
       multivalue match {
-        case Some(IsFalseish()) | None => Some(MultivalueNo)
-        case Some(IsTrueish())         => Some(MultivalueYes)
-        case _                         => None
+        case Some(false) | None => Some(MultivalueNo)
+        case Some(true)         => Some(MultivalueYes)
+        case _                  => None
       }
   }
 
@@ -781,11 +800,11 @@ class FormComponentMaker(json: JsValue) {
   private final case object InternationalNo extends International
 
   private final object IsInternational {
-    def unapply(international: Option[String]): Option[International] =
+    def unapply(international: Option[Boolean]): Option[International] =
       international match {
-        case Some(IsFalseish()) | None => Some(InternationalNo)
-        case Some(IsTrueish())         => Some(InternationalYes)
-        case _                         => None
+        case Some(false) | None => Some(InternationalNo)
+        case Some(true)         => Some(InternationalYes)
+        case _                  => None
       }
   }
 
@@ -829,7 +848,7 @@ class FormComponentMaker(json: JsValue) {
   }
 
   private final object IsThisAnInfoField {
-    def unapply(ignoredArgs: (Option[String], Option[String], Opt[Option[ValueExpr]])): Boolean =
+    def unapply(ignoredArgs: (Option[String], Opt[Option[Boolean]], Opt[Option[ValueExpr]])): Boolean =
       `type`.contains(InfoRaw)
   }
 

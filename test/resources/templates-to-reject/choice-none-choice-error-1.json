@@ -15,7 +15,7 @@
           "id": "hasDifferentName",
           "type": "choice",
           "label": "Does your company trade under a different name?",
-          "multivalue": "true",
+          "multivalue": true,
           "choices": [
             {
               "value": "foo",

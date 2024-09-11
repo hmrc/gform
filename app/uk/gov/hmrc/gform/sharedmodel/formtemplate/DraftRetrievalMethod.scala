@@ -17,26 +17,19 @@
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
 import play.api.libs.json._
-import uk.gov.hmrc.gform.formtemplate.FormComponentMakerService.{ IsFalseish, IsTrueish }
 
 sealed trait DraftRetrievalMethod
 
 case class OnePerUser(continueOrDeletePage: ContinueOrDeletePage) extends DraftRetrievalMethod
 case class FormAccessCodeForAgents(continueOrDeletePage: ContinueOrDeletePage) extends DraftRetrievalMethod
-case object BySubmissionReference extends DraftRetrievalMethod
 case object NotPermitted extends DraftRetrievalMethod
 
 object DraftRetrievalMethod {
-  private case class Helper(value: String, showContinueOrDeletePage: String) {
+  private case class Helper(value: String, showContinueOrDeletePage: Boolean) {
     def toDraftRetrievalMethod: JsResult[DraftRetrievalMethod] = (value, showContinueOrDeletePage) match {
       case ("onePerUser", ContinueOrDeletePage(conOrDel))              => JsSuccess(OnePerUser(conOrDel))
       case ("formAccessCodeForAgents", ContinueOrDeletePage(conOrDel)) => JsSuccess(FormAccessCodeForAgents(conOrDel))
-      case ("submissionReference", IsTrueish())                        => JsSuccess(BySubmissionReference)
-      case ("submissionReference", IsFalseish()) =>
-        JsError(
-          "Failure, showContinueOrDeletePage is invalid in combination with 'draftRetrievalMethod: submissionReference'"
-        )
-      case ("notPermitted", _) => JsSuccess(NotPermitted)
+      case ("notPermitted", _)                                         => JsSuccess(NotPermitted)
       case (err, _) =>
         JsError(
           s"only three values are allowed for draftRetrievalMethod: either onePerUser, submissionReference or formAccessCodeForAgents; $err is not valid"

@@ -28,8 +28,8 @@
           "id":"declaration",
           "label":"",
           "choices":["I confirm that I have read and understood the declaration"],
-          "multivalue":"yes",
-          "mandatory":"yes",
+          "multivalue": true,
+          "mandatory": true,
           "errorMessage":"You must confirm that you have read and understand the declaration"
         },
         {
@@ -76,8 +76,8 @@
             "Tax type 597 - Super gas",
             "Tax type 598 - Empty gas"
           ],
-          "multivalue": "yes",
-          "mandatory": "true",
+          "multivalue": true,
+          "mandatory": true,
           "value": "1,2,3"
         },
         {
@@ -90,8 +90,8 @@
             "297 - SuperBNatural gas",
             "298 - Full throttle gas"
           ],
-          "multivalue": "yes",
-          "mandatory": "true",
+          "multivalue": true,
+          "mandatory": true,
           "value": "0,1,2"
         },
         {
@@ -165,7 +165,7 @@
           "label": "Your International Address | Eich enw cyntaf",
           "mandatory": "true",
           "type": "address",
-          "international": "yes"
+          "international": true
         },
         {
           "id": "homeAddress",
