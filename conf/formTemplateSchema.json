@@ -758,8 +758,7 @@
                     "type": "string"
                   },
                   "value": {
-                    "type": "string",
-                    "pattern": "^\\S+$"
+                    "type": "string"
                   },
                   "hint": {
                     "$ref": "#/$defs/stringOrEnCyObject"

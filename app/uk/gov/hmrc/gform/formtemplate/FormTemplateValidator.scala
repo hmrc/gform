@@ -661,12 +661,18 @@ object FormTemplateValidator {
       values.size =!= values.distinct.size
     }
 
-    def noComma(choice: Choice): Boolean = {
+    def noComma(choice: Choice): Boolean =
+      checkNoStringInValue(choice, ",")
+
+    def noSpaces(choice: Choice): Boolean =
+      checkNoStringInValue(choice, " ")
+
+    def checkNoStringInValue(choice: Choice, string: String): Boolean = {
       val values = choice.options.collect {
         case OptionData.ValueBased(_, _, _, _, OptionDataValue.StringBased(value)) =>
           value
       }
-      values.size =!= 0 && values.exists(_.contains(","))
+      values.size =!= 0 && values.exists(_.contains(string))
     }
 
     List(
@@ -684,6 +690,11 @@ object FormTemplateValidator {
         sectionsList,
         noComma,
         "Choice component options 'value' cannot contain ',' (comma)"
+      ),
+      validateChoice(
+        sectionsList,
+        noSpaces,
+        "Choice component options 'value' cannot contain ' ' (blank spaces)"
       )
     ).combineAll
   }

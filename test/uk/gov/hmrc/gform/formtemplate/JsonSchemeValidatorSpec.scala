@@ -2056,41 +2056,6 @@ class JsonSchemeValidatorSpec extends FunSuite {
   }
 
   test(
-    "validateJson rejects the form gracefully when a choices property has one object with an invalid value property"
-  ) {
-    val testProperties =
-      json"""
-        {
-          "id": "testId",
-          "label": "test label",
-          "type": "choice",
-          "choices": [
-            {
-              "en": "test en 1",
-              "value": "Invalid value"
-            },
-            {
-              "en": "test en 2",
-              "value": "validValue"
-            }
-          ]
-        }
-      """
-
-    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
-
-    val result = validateJson(jsonTemplate)
-
-    val expectedResult = List(
-      "Error at ID <testId: choices/0/value>: Property value expected value [String with no spaces]",
-      "Error at ID <testId: choices/0>: Property choices expected type Array of either Strings or JSONObjects with required keys [en] and optional keys [cy, dynamic, value, hint, includeIf]",
-      "Error at ID <testId: choices/1>: Property choices expected type Array of either Strings or JSONObjects with required keys [en] and optional keys [cy, dynamic, value, hint, includeIf]"
-    )
-
-    runInvalidJsonTest(result, expectedResult)
-  }
-
-  test(
     "validateJson rejects the form gracefully when a header property is used when the type property is not present"
   ) {
     val testProperties =
