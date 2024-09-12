@@ -23,14 +23,12 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import cats.syntax.either._
 import uk.gov.hmrc.gform.sharedmodel.SmartString
 
-import scala.annotation.nowarn
-
 object FormComponentMakerService {
 
   def createObject(
     maybeFormatExpr: Option[FormatExpr],
     maybeValueExpr: Option[ValueExpr],
-    multiLine: Option[Boolean],
+    multiLine: Boolean,
     dataThreshold: Option[Int],
     maybeDisplayWidth: Option[String],
     toUpperCase: UpperCaseBoolean,
@@ -41,9 +39,9 @@ object FormComponentMakerService {
     json: JsValue
   ): Either[UnexpectedState, ComponentType] =
     (maybeFormatExpr, maybeValueExpr, multiLine, dataThreshold) match {
-      case (Some(formatExpr), _, IsNotMultiline(), None) =>
+      case (Some(formatExpr), _, false, None) =>
         createTextObject(formatExpr, maybeValueExpr, maybeDisplayWidth, toUpperCase, maybePrefix, maybeSuffix, json)
-      case (Some(formatExpr), _, IsMultiline(), _) =>
+      case (Some(formatExpr), _, true, _) =>
         createTextAreaObject(
           formatExpr,
           maybeValueExpr,
@@ -70,14 +68,14 @@ object FormComponentMakerService {
       Text(f, expr, DisplayWidth.DEFAULT, toUpperCase, maybePrefix, maybeSuffix).asRight
     case (TextFormat(f), HasTextExpression(expr), HasDisplayWidth(dw)) =>
       Text(f, expr, dw, toUpperCase, maybePrefix, maybeSuffix).asRight
-    case _ => createError(Some(formatExpr), maybeValueExpr, None, json, None).asLeft
+    case _ => createError(Some(formatExpr), maybeValueExpr, false, json, None).asLeft
   }
 
   def createTextAreaObject(
     formatExpr: FormatExpr,
     maybeValueExpr: Option[ValueExpr],
     displayWidth: Option[String],
-    multiLine: Option[Boolean],
+    multiLine: Boolean,
     dataThreshold: Option[Int],
     rows: Int,
     displayCharCount: Boolean,
@@ -91,26 +89,25 @@ object FormComponentMakerService {
       case _ => createError(Some(formatExpr), maybeValueExpr, multiLine, json, dataThreshold).asLeft
     }
 
-  @nowarn
   def createError(
     maybeFormatExpr: Option[FormatExpr],
     maybeValueExpr: Option[ValueExpr],
-    multiLine: Option[Boolean],
+    multiLine: Boolean,
     json: JsValue,
     dataThreshold: Option[Int]
   ): UnexpectedState = {
 
     val formComponentMaker = new FormComponentMaker(json)
     (maybeFormatExpr, maybeValueExpr, multiLine, dataThreshold) match {
-      case (maybeInvalidFormat, maybeValue, IsNotMultiline(), None) =>
+      case (maybeInvalidFormat, maybeValue, false, None) =>
         UnexpectedState(s"""|Missing or invalid format for text field
                             |Id: ${formComponentMaker.id}
                             |Format: $maybeInvalidFormat
                             |Value: $maybeValue
                             |""".stripMargin)
-      case (_, _, IsNotMultiline(), Some(_)) =>
+      case (_, _, false, Some(_)) =>
         UnexpectedState(s"'dataThreshold' only applies to multline text area for id: ${formComponentMaker.id}")
-      case (maybeInvalidFormat, maybeValue, IsMultiline(), _) =>
+      case (maybeInvalidFormat, maybeValue, true, _) =>
         UnexpectedState(s"""|Missing or invalid format for multiline text field
                             |Id: ${formComponentMaker.id}
                             |Format: $maybeInvalidFormat
@@ -128,10 +125,6 @@ object FormComponentMakerService {
       }
   }
 
-  final object IsNotMultiline {
-    def unapply(multiline: Option[Boolean]): Boolean = !IsMultiline.unapply(multiline)
-  }
-
   final object HasDisplayWidth {
     def unapply(displayWidth: Option[String]): Option[DisplayWidth] =
       displayWidth match {
@@ -143,42 +136,5 @@ object FormComponentMakerService {
         case Some("xxl") => Some(DisplayWidth.XXL)
         case _           => Some(DisplayWidth.DEFAULT)
       }
-  }
-
-  final object IsMultiline {
-    def unapply(multiline: Option[Boolean]): Boolean =
-      multiline match {
-        case Some(true) => true
-        case _          => false
-      }
-  }
-
-  object IsTrueish {
-    def unapply(maybeBoolean: String): Boolean =
-      maybeBoolean.toLowerCase match {
-        case "true" | "yes" => true
-        case _              => false
-      }
-  }
-
-  object IsFalseish {
-    def unapply(maybeBoolean: String): Boolean =
-      maybeBoolean.toLowerCase match {
-        case "false" | "no" => true
-        case _              => false
-      }
-  }
-
-  final object IsDisplayCharCountFalse {
-    def unapply(displayCharCount: Option[Boolean]): Boolean =
-      displayCharCount match {
-        case Some(false) => true
-        case _           => false
-      }
-  }
-
-  final object IsDisplayCharCountTrue {
-    def unapply(displayCharCount: Option[Boolean]): Boolean =
-      !IsDisplayCharCountFalse.unapply(displayCharCount)
   }
 }

@@ -418,14 +418,14 @@ class FormComponentMaker(json: JsValue) {
       result <- createObject(
                   maybeFormatExpr,
                   maybeValueExpr,
-                  multiline,
+                  multiline.getOrElse(false),
                   dataThreshold,
                   displayWidth,
                   toUpperCase,
                   prefix,
                   suffix,
                   rows.getOrElse(TextArea.defaultRows),
-                  IsDisplayCharCountTrue.unapply(displayCharCount),
+                  displayCharCount.getOrElse(true),
                   json
                 )
     } yield result
