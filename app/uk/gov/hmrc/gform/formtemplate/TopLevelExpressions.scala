@@ -118,6 +118,7 @@ object TopLevelExpressions {
             case DateCtx(value) => value
             case _              => d
           }
+        case d @ DataRetrieveDateCtx(_, _)     => d
         case DateExprWithOffset(dExpr, offset) => DateExprWithOffset(loopDateExpr(dExpr), offset)
 
         case DateIfElse(cond, field1, field2) => DateIfElse(cond, loopDateExpr(field1), loopDateExpr(field2))
