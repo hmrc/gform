@@ -191,6 +191,8 @@ object TopLevelExpressions {
         case CountryOfItmpAddress          => e
         case ChoicesRevealedField(_)       => e
         case ChoiceLabel(_)                => e
+        case ChoicesSelected(_)            => e
+        case ChoicesAvailable(_)           => e
       }
     expressions.get(expressionId).fold(expressions) { expr =>
       expressions + (expressionId -> loop(expr))
