@@ -26,10 +26,5 @@ object ContinueOrDeletePage {
   case object Show extends ContinueOrDeletePage
 
   implicit val format: OFormat[ContinueOrDeletePage] = derived.oformat()
-
-  def unapply(str: Boolean): Option[ContinueOrDeletePage] = if (str) {
-    Some(Show)
-  } else {
-    Some(Skip)
-  }
+  def fromBoolean(str: Boolean): ContinueOrDeletePage = if (str) Show else Skip
 }

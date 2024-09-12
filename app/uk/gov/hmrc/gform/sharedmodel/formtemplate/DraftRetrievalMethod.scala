@@ -29,10 +29,11 @@ case object NotPermitted extends DraftRetrievalMethod
 object DraftRetrievalMethod {
   private case class Helper(value: String, showContinueOrDeletePage: Boolean) {
     def toDraftRetrievalMethod: JsResult[DraftRetrievalMethod] = (value, showContinueOrDeletePage) match {
-      case ("onePerUser", ContinueOrDeletePage(conOrDel))              => JsSuccess(OnePerUser(conOrDel))
-      case ("formAccessCodeForAgents", ContinueOrDeletePage(conOrDel)) => JsSuccess(FormAccessCodeForAgents(conOrDel))
-      case ("notPermitted", _)                                         => JsSuccess(NotPermitted)
-      case ("submissionReference", true)                               => JsSuccess(BySubmissionReference)
+      case ("onePerUser", conOrDel) => JsSuccess(OnePerUser(ContinueOrDeletePage.fromBoolean(conOrDel)))
+      case ("formAccessCodeForAgents", conOrDel) =>
+        JsSuccess(FormAccessCodeForAgents(ContinueOrDeletePage.fromBoolean(conOrDel)))
+      case ("notPermitted", _)           => JsSuccess(NotPermitted)
+      case ("submissionReference", true) => JsSuccess(BySubmissionReference)
       case ("submissionReference", false) =>
         JsError(
           "Failure, showContinueOrDeletePage is invalid in combination with 'draftRetrievalMethod: submissionReference'"
