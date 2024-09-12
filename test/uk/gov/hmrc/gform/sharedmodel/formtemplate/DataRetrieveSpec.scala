@@ -267,10 +267,16 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
                 (DataRetrieve.Attribute("country"), Fetch(List("registered_office_address", "country")))
               )
             )
+          ),
+          AttributeInstruction(
+            DataRetrieve.Attribute("dateOfCreation"),
+            ConstructAttribute.AsIs(Fetch(List("date_of_creation")))
           )
         )
       ),
-      Map(),
+      Map(
+        DataRetrieve.Attribute("dateOfCreation") -> DataRetrieve.AttrType.Date
+      ),
       List(
         DataRetrieve.ParamExpr(
           DataRetrieve.Parameter("companyNumber", List(), DataRetrieve.ParamType.String),
