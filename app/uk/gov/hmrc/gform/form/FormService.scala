@@ -30,7 +30,7 @@ import uk.gov.hmrc.gform.logging.Loggers
 import uk.gov.hmrc.gform.objectstore.ObjectStoreAlgebra
 import uk.gov.hmrc.gform.save4later.FormPersistenceAlgebra
 import uk.gov.hmrc.gform.sharedmodel.form.{ FormStatus, _ }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormAccessCodeForAgents, FormComponentId, FormTemplate, FormTemplateId }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ BySubmissionReference, FormAccessCodeForAgents, FormComponentId, FormTemplate, FormTemplateId }
 import uk.gov.hmrc.gform.sharedmodel.{ AccessCode, SubmissionRef, UserId }
 import uk.gov.hmrc.gform.time.TimeProvider
 import uk.gov.hmrc.http.HeaderCarrier
@@ -86,6 +86,10 @@ class FormService[F[_]: Monad](
   ): FormIdData = {
     val formTemplateId = formTemplate._id
     (formTemplate.draftRetrievalMethod, affinityGroup) match {
+
+      case (BySubmissionReference, _) =>
+        val submissionRef = SubmissionRef(envelopeId)
+        FormIdData.WithAccessCode(userId, formTemplateId, AccessCode(submissionRef.value))
 
       case (FormAccessCodeForAgents(_), Some(AffinityGroup.Agent)) =>
         val ac = AccessCode.random

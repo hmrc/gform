@@ -38,6 +38,7 @@ trait FormTemplateGen {
           .oneOf(
             OnePerUser(continueOrDeletePage),
             FormAccessCodeForAgents(continueOrDeletePage),
+            BySubmissionReference,
             NotPermitted
           )
     } yield draftRetrievalMethod

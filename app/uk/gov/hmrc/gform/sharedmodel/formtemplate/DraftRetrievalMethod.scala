@@ -22,6 +22,8 @@ sealed trait DraftRetrievalMethod
 
 case class OnePerUser(continueOrDeletePage: ContinueOrDeletePage) extends DraftRetrievalMethod
 case class FormAccessCodeForAgents(continueOrDeletePage: ContinueOrDeletePage) extends DraftRetrievalMethod
+case object BySubmissionReference extends DraftRetrievalMethod
+
 case object NotPermitted extends DraftRetrievalMethod
 
 object DraftRetrievalMethod {
@@ -30,6 +32,11 @@ object DraftRetrievalMethod {
       case ("onePerUser", ContinueOrDeletePage(conOrDel))              => JsSuccess(OnePerUser(conOrDel))
       case ("formAccessCodeForAgents", ContinueOrDeletePage(conOrDel)) => JsSuccess(FormAccessCodeForAgents(conOrDel))
       case ("notPermitted", _)                                         => JsSuccess(NotPermitted)
+      case ("submissionReference", true)                               => JsSuccess(BySubmissionReference)
+      case ("submissionReference", false) =>
+        JsError(
+          "Failure, showContinueOrDeletePage is invalid in combination with 'draftRetrievalMethod: submissionReference'"
+        )
       case (err, _) =>
         JsError(
           s"only three values are allowed for draftRetrievalMethod: either onePerUser, submissionReference or formAccessCodeForAgents; $err is not valid"
