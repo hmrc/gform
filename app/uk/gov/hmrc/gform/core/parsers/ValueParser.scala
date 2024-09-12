@@ -326,6 +326,12 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
     | "choice(" ~ FormComponentId.unanchoredIdValidation ~ ")" ^^ { case _ ~ value ~ _ =>
       ChoiceLabel(FormComponentId(value))
     }
+    | "choicesSelected(" ~ FormComponentId.unanchoredIdValidation ~ ")" ^^ { case _ ~ value ~ _ =>
+      ChoicesSelected(FormComponentId(value))
+    }
+    | "choicesAvailable(" ~ FormComponentId.unanchoredIdValidation ~ ")" ^^ { case _ ~ value ~ _ =>
+      ChoicesAvailable(FormComponentId(value))
+    }
     | FormComponentId.unanchoredIdValidation ~ "[" ~ nonZeroPositiveInteger ~ "]" ^^ {
       case formComponentId ~ _ ~ index ~ _ =>
         IndexOf(

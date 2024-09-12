@@ -69,6 +69,8 @@ object ExprSubstituter extends Substituter[ExprSubstitutions, FormTemplate] {
         case CountryOfItmpAddress            => t
         case ChoicesRevealedField(_)         => t
         case ChoiceLabel(_)                  => t
+        case ChoicesSelected(_)              => t
+        case ChoicesAvailable(_)             => t
       }
     }
 
