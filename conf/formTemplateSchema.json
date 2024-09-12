@@ -971,6 +971,10 @@
         "countryLookup": {
           "type": "string"
         },
+        "priority": {
+          "type": "string",
+          "pattern": "^(UK|Standard)$"
+        },
         "round": {
           "type": "string",
           "pattern": "^(Up|Down|HalfUp|HalfDown)$"

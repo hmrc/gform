@@ -28,7 +28,7 @@ import cats.syntax.traverse._
 import play.api.libs.json._
 import shapeless.syntax.typeable._
 import uk.gov.hmrc.gform.core.Opt
-import uk.gov.hmrc.gform.core.parsers.{ AddressParser, BasicParsers, FormatParser, LabelSizeParser, OverseasAddressParser, PresentationHintParser, SummaryListParser, ValueParser }
+import uk.gov.hmrc.gform.core.parsers.{ AddressParser, BasicParsers, FormatParser, LabelSizeParser, OverseasAddressParser, PresentationHintParser, PriorityTypeParser, SummaryListParser, ValueParser }
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.formtemplate.FormComponentMakerService._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.JsonUtils._
@@ -188,6 +188,8 @@ class FormComponentMaker(json: JsValue) {
   lazy val optCountryLookup: Option[Boolean] = (json \ "countryLookup").asOpt[String].map(_.toBoolean)
   lazy val optCountryDisplayed: Option[Boolean] = (json \ "countryDisplayed").asOpt[String].map(_.toBoolean)
   lazy val optCountyDisplayed: Option[Boolean] = (json \ "countyDisplayed").asOpt[String].map(_.toBoolean)
+  lazy val optPriority: Opt[Option[Priority]] =
+    parse("priority", PriorityTypeParser.validate)
   private def getValueRow(json: JsValue): Opt[MiniSummaryRow] =
     for {
       key          <- toOpt((json \ "key").validateOpt[SmartString], "/key")
@@ -284,6 +286,7 @@ class FormComponentMaker(json: JsValue) {
       labelSize          <- optLabelSize
       notPII             <- optNotPII
       extraLetterSpacing <- optExtraLetterSpacing
+      priority           <- optPriority
     } yield mkFieldValue(
       label,
       helpText,
@@ -296,7 +299,8 @@ class FormComponentMaker(json: JsValue) {
       validIf,
       labelSize,
       notPII,
-      extraLetterSpacing
+      extraLetterSpacing,
+      priority
     )
 
   private def toOpt[A](result: JsResult[A], pathPrefix: String): Opt[A] =
@@ -324,7 +328,8 @@ class FormComponentMaker(json: JsValue) {
     validIf: Option[ValidIf],
     labelSize: Option[LabelSize],
     notPII: Boolean,
-    extraLetterSpacing: Option[Boolean]
+    extraLetterSpacing: Option[Boolean],
+    priority: Option[Priority]
   ): FormComponent =
     FormComponent(
       id = id,
@@ -355,7 +360,8 @@ class FormComponentMaker(json: JsValue) {
       errorShortNameStart = errorShortNameStart,
       errorExample = errorExample,
       notPII = notPII,
-      extraLetterSpacing = extraLetterSpacing
+      extraLetterSpacing = extraLetterSpacing,
+      priority = priority
     )
 
   private lazy val optMES: Opt[MES] = (submitMode, mandatory, optMaybeValueExpr) match {

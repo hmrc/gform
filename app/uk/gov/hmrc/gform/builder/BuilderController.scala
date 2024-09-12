@@ -600,6 +600,7 @@ object BuilderSupport {
         Property("line2Mandatory", PropertyBehaviour.PurgeWhenEmpty),
         Property("postcodeMandatory", PropertyBehaviour.PurgeWhenEmpty),
         Property("countryLookup", PropertyBehaviour.PurgeWhenEmpty),
+        Property("priority", PropertyBehaviour.PurgeWhenEmpty),
         Property("countryDisplayed", PropertyBehaviour.PurgeWhenEmpty)
       )
 
