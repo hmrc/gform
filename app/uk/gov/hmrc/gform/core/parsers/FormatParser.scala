@@ -198,7 +198,7 @@ trait FormatParser extends ValueParser {
 
   case class WholeFractional(w: Int, f: Int)
 
-  lazy val quotedString: Parser[String] = "'" ~> "[^']+".r <~ "'"
+  lazy val quotedString: Parser[String] = "'" ~> "[^']*".r <~ "'"
 
   lazy val localisedString: Parser[LocalisedString] = english ~ "," ~ welsh ^^ { case en ~ _ ~ cy =>
     LocalisedString(en ++ cy)
