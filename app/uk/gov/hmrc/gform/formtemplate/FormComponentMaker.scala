@@ -336,7 +336,7 @@ class FormComponentMaker(json: JsValue) {
           List.empty[Expr]
         )
       ),
-      isPageHeading = label.isEmpty && ct.cast[InformationMessage].isEmpty,
+      isPageHeading = label.isEmpty && ct.cast[InformationMessage].isEmpty && ct.cast[PostcodeLookup].isEmpty,
       helpText = helpText,
       shortName = shortName,
       includeIf = includeIf,

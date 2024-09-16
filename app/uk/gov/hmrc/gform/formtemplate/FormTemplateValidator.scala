@@ -825,11 +825,22 @@ object FormTemplateValidator {
       } else Valid
     }
 
+    val labelNotEmpty: ValidationResult = sectionsList.flatMap { page =>
+      page.allFormComponents.collect { case fc @ IsPostcodeLookup(_) =>
+        if (fc.label.allNonEmpty) Valid
+        else
+          Invalid(
+            s"A label is required for postcodeLookup '${fc.id.value}' to use on summarySection."
+          )
+      }
+    }.combineAll
+
     Monoid.combineAll(
       List(
         singlePostcodeLookupOnly,
         noPostcodeLookupInReveliangChoiceOrGroup,
-        noOtherComponentsAllowed
+        noOtherComponentsAllowed,
+        labelNotEmpty
       )
     )
 
