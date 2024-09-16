@@ -119,6 +119,25 @@ trait FormTemplateSupport {
       None
     )
 
+  def mkFormComponent(id: String, ct: ComponentType, label: SmartString) =
+    FormComponent(
+      FormComponentId(id),
+      ct,
+      label,
+      false,
+      None,
+      None,
+      None,
+      None,
+      true,
+      true,
+      true,
+      false,
+      false,
+      None,
+      None
+    )
+
   def mkFormComponent(id: String, instruction: Option[Instruction] = None) =
     FormComponent(
       FormComponentId(id),

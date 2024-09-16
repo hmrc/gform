@@ -24,7 +24,7 @@ import uk.gov.hmrc.gform.Helpers.{ toLocalisedString, toSmartString }
 import uk.gov.hmrc.gform.core.parsers.ValueParser
 import uk.gov.hmrc.gform.core.{ Invalid, Valid }
 import uk.gov.hmrc.gform.sharedmodel.{ LangADT, LocalisedString, SmartString }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AnyDate, Constant, CsvCountryCheck, Date, DateCtx, DateFormCtxVar, ExprWithPath, FormComponentId, FormComponentValidator, FormCtx, HideZeroDecimals, IfElse, InformationMessage, Instruction, IsTrue, LeafExpr, LinkCtx, Offset, PageId, StandardInfo, TemplatePath, ValidIf }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AnyDate, Constant, CsvCountryCheck, Date, DateCtx, DateFormCtxVar, ExprWithPath, FormComponentId, FormComponentValidator, FormCtx, HideZeroDecimals, IfElse, InformationMessage, Instruction, IsTrue, LeafExpr, LinkCtx, Offset, PageId, PostcodeLookup, StandardInfo, TemplatePath, ValidIf }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.PageLink
 
 class FormTemplateValidatorSpec
@@ -693,6 +693,21 @@ class FormTemplateValidatorSpec
           .validate(HideZeroDecimals(FormCtx(FormComponentId("someNonExistingId"))), sections)
         result shouldBe Invalid("Form field 'someNonExistingId' is not defined in form template.")
       }
+    }
+  }
+
+  "validate postcode lookup" should {
+    "return a label is required for postcodeLookup to use on summarySection error when a label is empty" in {
+      val pages = List(
+        mkSectionNonRepeatingPage(
+          name = "section1",
+          formComponents = List(mkFormComponent("postcodeLookup1", PostcodeLookup(None, None, None), toSmartString("")))
+        ).page
+      )
+
+      val result = FormTemplateValidator.validatePostcodeLookup(pages)
+
+      result shouldBe Invalid("A label is required for postcodeLookup 'postcodeLookup1' to use on summarySection.")
     }
   }
 }
