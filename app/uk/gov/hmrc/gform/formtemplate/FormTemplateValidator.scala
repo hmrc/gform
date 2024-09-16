@@ -757,7 +757,9 @@ object FormTemplateValidator {
 
     def isEmptyCy(ss: SmartString): Boolean =
       ss.internals
-        .forall(internalSmartString => internalSmartString.rawValue(LangADT.Cy).trim === "")
+        .forall(internalSmartString =>
+          internalSmartString.rawValue(LangADT.En).trim =!= "" && internalSmartString.rawValue(LangADT.Cy).trim === ""
+        )
 
     val validationResults = sectionsList.flatMap { page =>
       (page.allFormComponents ++ page.fields).collect {
