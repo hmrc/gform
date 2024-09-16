@@ -70,7 +70,7 @@ class FormTemplateJSONSuite extends FunSuite with JsResultMatcher with Matchers 
         .parse(
           """|{
              |  "draftRetrievalMethod": {
-             |    "showContinueOrDeletePage": "true",
+             |    "showContinueOrDeletePage": true,
              |    "value": "formAccessCodeForAgents"
              |  },
              |  "formCategory": "default",
@@ -198,7 +198,7 @@ class FormTemplateJSONSuite extends FunSuite with JsResultMatcher with Matchers 
         .parse(
           """|{
              |  "draftRetrievalMethod": {
-             |    "showContinueOrDeletePage": "true",
+             |    "showContinueOrDeletePage": true,
              |    "value": "formAccessCodeForAgents"
              |  },
              |  "formCategory": "default",

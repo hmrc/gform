@@ -16,7 +16,7 @@
           "type": "choice",
           "label": "Does your company trade under a different name?",
           "choices": ["Yes", "No"],
-          "multivalue": "true"
+          "multivalue": true
         }
       ]
     },

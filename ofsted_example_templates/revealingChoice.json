@@ -78,7 +78,7 @@
               {
                 "id": "Telephone",
                 "label": "Telephone Number",
-                "mandatory": "true",
+                "mandatory": true,
                 "format": "telephoneNumber"
               }
             ],
@@ -86,7 +86,7 @@
               {
                 "id": "taxAmount1",
                 "label": "Enter Tax Amount1",
-                "mandatory": "true",
+                "mandatory": true,
                 "format":"number(6,2)",
                 "validators": [
                   {
@@ -108,7 +108,7 @@
               {
                 "id": "taxAmount2",
                 "label": "Enter Tax Amount 2",
-                "mandatory": "true",
+                "mandatory": true,
                 "format":"number(6,2)",
                 "validators": [
                   {
@@ -143,7 +143,7 @@
                 "label": "Do you approve?",
                 "helpText": "Well? Do you?",
                 "format": "yesno",
-                "mandatory": "yes"
+                "mandatory": true
               }
             ]
           ]
@@ -157,7 +157,7 @@
         {
           "id": "textBox4",
           "label": "A field dependent on Tax Amount 2",
-          "mandatory": "false",
+          "mandatory": false,
           "format":"number(6,2)"
         }
       ]

@@ -147,7 +147,7 @@ object FormTemplatesControllerRequestHandler {
 
     val drmShowContinueOrDeletePage =
       (__ \ "draftRetrievalMethod" \ "showContinueOrDeletePage").json
-        .copyFrom((__ \ "showContinueOrDeletePage").json.pick orElse Reads.pure(JsString("true")))
+        .copyFrom((__ \ "showContinueOrDeletePage").json.pick orElse Reads.pure(JsTrue))
 
     val ensureDisplayHMRCLogo =
       (__ \ "displayHMRCLogo").json

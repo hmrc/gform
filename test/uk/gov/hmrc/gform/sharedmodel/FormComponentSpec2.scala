@@ -37,7 +37,7 @@ class FormComponentSpec2 extends Spec {
          |       "label": "Other gas"
          |     }
          |  ],
-         |  "multivalue":"no",
+         |  "multivalue":false,
          |  "format":"vertical",
          |  "presentationHint" : "summariseGroupAsGrid"
          |
@@ -98,7 +98,7 @@ class FormComponentSpec2 extends Spec {
          |      }
          |    }
          |  ],
-         |  "multivalue":"no",
+         |  "multivalue":false,
          |  "format":"vertical",
          |  "presentationHint" : "summariseGroupAsGrid"
          |

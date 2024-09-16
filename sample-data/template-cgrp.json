@@ -31,7 +31,7 @@
               "type": "text",
               "id": "tid",
               "label": "tlabel",
-              "mandatory": "false"
+              "mandatory": false
             }
           ],
           "presentationHint": "summariseGroupAsGrid"
@@ -46,7 +46,7 @@
               "type": "text",
               "id": "tid2",
               "label": "tlabel2",
-              "mandatory": "false"
+              "mandatory": false
             }
           ]
         },
@@ -59,8 +59,8 @@
               "type": "choice",
               "id": "cid",
               "label": "clabel",
-              "multivalue": "yes",
-              "mandatory": "false",
+              "multivalue": true,
+              "mandatory": false,
               "choices": ["A", "B"]
             }
           ]
@@ -68,7 +68,7 @@
         {
           "id": "amountA",
           "label": "Amount A | Rhif A",
-          "mandatory": "false"
+          "mandatory": false
         }
       ]
     },
