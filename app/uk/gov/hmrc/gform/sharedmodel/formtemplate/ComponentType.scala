@@ -31,7 +31,27 @@ import uk.gov.hmrc.gform.sharedmodel.{ LocalisedString, SmartString, ValueClassF
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.DisplayWidth.DisplayWidth
 import uk.gov.hmrc.gform.sharedmodel.structuredform.{ FieldName, RoboticsXml, StructuredFormDataFieldNamePurpose }
 
-sealed trait ComponentType
+sealed trait ComponentType {
+  def showType: String = this match {
+    case _: Text               => "text"
+    case _: TextArea           => "textArea"
+    case _: Date               => "date"
+    case _: CalendarDate.type  => "calendarDate"
+    case _: TaxPeriodDate.type => "taxPeriodDate"
+    case _: PostcodeLookup     => "postcodeLookup"
+    case _: Time               => "time"
+    case _: Address            => "address"
+    case _: OverseasAddress    => "overseasAddress"
+    case _: Choice             => "choice"
+    case _: RevealingChoice    => "revealingChoice"
+    case _: HmrcTaxPeriod      => "hmrcTaxPeriod"
+    case _: Group              => "group"
+    case _: InformationMessage => "informationMessage"
+    case _: FileUpload         => "fileUpload"
+    case _: MiniSummaryList    => "miniSummaryList"
+    case _: TableComp          => "table"
+  }
+}
 
 case class Text(
   constraint: TextConstraint,
