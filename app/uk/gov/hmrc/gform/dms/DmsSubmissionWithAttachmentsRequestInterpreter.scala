@@ -18,11 +18,9 @@ package uk.gov.hmrc.gform.dms
 
 import java.nio.file.Files.readAllBytes
 import java.nio.file.Paths
-
 import play.api.libs.Files.TemporaryFile
-import play.api.libs.json.{ JsBoolean, JsString, Json }
+import play.api.libs.json.{ JsFalse, JsString, JsTrue, Json }
 import play.api.mvc.{ MultipartFormData, Request }
-import uk.gov.hmrc.gform.formtemplate.FormComponentMakerService.{ IsFalseish, IsTrueish }
 
 object DmsSubmissionWithAttachmentsRequestInterpreter {
   def apply(
@@ -32,9 +30,9 @@ object DmsSubmissionWithAttachmentsRequestInterpreter {
     val maybeHtml: Option[Seq[String]] = request.body.dataParts.get("html")
     val maybeMetadata: Option[DmsMetadata] = Json
       .toJson(request.body.dataParts.view.filterKeys(_ != "html").mapValues(_.mkString("")).toMap.map {
-        case ("backscan", IsTrueish())  => "backscan" -> JsBoolean(true)
-        case ("backscan", IsFalseish()) => "backscan" -> JsBoolean(false)
-        case (key, value)               => key        -> JsString(value)
+        case ("backscan", "true")  => "backscan" -> JsTrue
+        case ("backscan", "false") => "backscan" -> JsFalse
+        case (key, value)          => key        -> JsString(value)
       })
       .validate[DmsMetadata]
       .asOpt

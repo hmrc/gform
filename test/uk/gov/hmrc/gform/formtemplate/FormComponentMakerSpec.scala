@@ -141,7 +141,7 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
                                                                  |   "type": "text",
                                                                  |   "label": "Field 1",
                                                                  |   "format": "text",
-                                                                 |   "multiline": "yes"
+                                                                 |   "multiline": true
                                                                  |}
                                                                  |""".stripMargin))
     val result = formComponentMaker.textOpt
@@ -155,7 +155,7 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
                                                                  |   "type": "text",
                                                                  |   "label": "Field 1",
                                                                  |   "format": "text",
-                                                                 |   "multiline": "yes",
+                                                                 |   "multiline": true,
                                                                  |   "rows": 7
                                                                  |}
                                                                  |""".stripMargin))
@@ -170,59 +170,8 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
                                                                  |   "type": "text",
                                                                  |   "label": "Field 1",
                                                                  |   "format": "text",
-                                                                 |   "multiline": "yes",
-                                                                 |   "displayCharCount": "false"
-                                                                 |}
-                                                                 |""".stripMargin))
-    val result = formComponentMaker.textOpt
-    result shouldBe Right(
-      TextArea(TextWithRestrictions(0, 1000), Value, displayCharCount = false, dataThreshold = None)
-    )
-  }
-
-  it should "parse multiline text component with displayCharCount no" in {
-    val formComponentMaker = new FormComponentMaker(Json.parse("""
-                                                                 |{
-                                                                 |   "id": "id1",
-                                                                 |   "type": "text",
-                                                                 |   "label": "Field 1",
-                                                                 |   "format": "text",
-                                                                 |   "multiline": "yes",
-                                                                 |   "displayCharCount": "no"
-                                                                 |}
-                                                                 |""".stripMargin))
-    val result = formComponentMaker.textOpt
-    result shouldBe Right(
-      TextArea(TextWithRestrictions(0, 1000), Value, displayCharCount = false, dataThreshold = None)
-    )
-  }
-
-  it should "parse multiline text component with displayCharCount nO" in {
-    val formComponentMaker = new FormComponentMaker(Json.parse("""
-                                                                 |{
-                                                                 |   "id": "id1",
-                                                                 |   "type": "text",
-                                                                 |   "label": "Field 1",
-                                                                 |   "format": "text",
-                                                                 |   "multiline": "yes",
-                                                                 |   "displayCharCount": "false"
-                                                                 |}
-                                                                 |""".stripMargin))
-    val result = formComponentMaker.textOpt
-    result shouldBe Right(
-      TextArea(TextWithRestrictions(0, 1000), Value, displayCharCount = false, dataThreshold = None)
-    )
-  }
-
-  it should "parse multiline text component with displayCharCount fAlSe" in {
-    val formComponentMaker = new FormComponentMaker(Json.parse("""
-                                                                 |{
-                                                                 |   "id": "id1",
-                                                                 |   "type": "text",
-                                                                 |   "label": "Field 1",
-                                                                 |   "format": "text",
-                                                                 |   "multiline": "yes",
-                                                                 |   "displayCharCount": "fAlSe"
+                                                                 |   "multiline": true,
+                                                                 |   "displayCharCount": false
                                                                  |}
                                                                  |""".stripMargin))
     val result = formComponentMaker.textOpt
@@ -238,38 +187,8 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
                                                                  |   "type": "text",
                                                                  |   "label": "Field 1",
                                                                  |   "format": "text",
-                                                                 |   "multiline": "yes",
-                                                                 |   "displayCharCount": "true"
-                                                                 |}
-                                                                 |""".stripMargin))
-    val result = formComponentMaker.textOpt
-    result shouldBe Right(TextArea(TextWithRestrictions(0, 1000), Value, dataThreshold = None))
-  }
-
-  it should "parse multiline text component with displayCharCount tRUe" in {
-    val formComponentMaker = new FormComponentMaker(Json.parse("""
-                                                                 |{
-                                                                 |   "id": "id1",
-                                                                 |   "type": "text",
-                                                                 |   "label": "Field 1",
-                                                                 |   "format": "text",
-                                                                 |   "multiline": "yes",
-                                                                 |   "displayCharCount": "tRUe"
-                                                                 |}
-                                                                 |""".stripMargin))
-    val result = formComponentMaker.textOpt
-    result shouldBe Right(TextArea(TextWithRestrictions(0, 1000), Value, dataThreshold = None))
-  }
-
-  it should "parse multiline text component with displayCharCount noTrurOrFalse" in {
-    val formComponentMaker = new FormComponentMaker(Json.parse("""
-                                                                 |{
-                                                                 |   "id": "id1",
-                                                                 |   "type": "text",
-                                                                 |   "label": "Field 1",
-                                                                 |   "format": "text",
-                                                                 |   "multiline": "yes",
-                                                                 |   "displayCharCount": "noTrurOrFalse"
+                                                                 |   "multiline": true,
+                                                                 |   "displayCharCount": true
                                                                  |}
                                                                  |""".stripMargin))
     val result = formComponentMaker.textOpt
@@ -283,7 +202,7 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
                                                                  |   "type": "text",
                                                                  |   "label": "Field 1",
                                                                  |   "format": "text",
-                                                                 |   "multiline": "yes"
+                                                                 |   "multiline": true
                                                                  |}
                                                                  |""".stripMargin))
     val result = formComponentMaker.textOpt
@@ -297,7 +216,7 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
                                                                  |   "type": "text",
                                                                  |   "label": "Field 1",
                                                                  |   "format": "invalid",
-                                                                 |   "multiline": "yes"
+                                                                 |   "multiline": true
                                                                  |}
                                                                  |""".stripMargin))
     val result = formComponentMaker.textOpt
@@ -682,9 +601,9 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
                                                                  |  "type": "overseasAddress",
                                                                  |  "id": "colombiaAddress",
                                                                  |  "label": "",
-                                                                 |  "line2Mandatory": "true",
-                                                                 |  "cityMandatory": "false",
-                                                                 |  "postcodeMandatory": "true",
+                                                                 |  "line2Mandatory": true,
+                                                                 |  "cityMandatory": false,
+                                                                 |  "postcodeMandatory": true,
                                                                  |  "value": "${userAddress}"
                                                                  |}
                                                                  |""".stripMargin))
@@ -705,9 +624,9 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
                                                                  |  "type": "overseasAddress",
                                                                  |  "id": "colombiaAddress",
                                                                  |  "label": "",
-                                                                 |  "line2Mandatory": "true",
-                                                                 |  "cityMandatory": "false",
-                                                                 |  "postcodeMandatory": "true",
+                                                                 |  "line2Mandatory": true,
+                                                                 |  "cityMandatory": false,
+                                                                 |  "postcodeMandatory": true,
                                                                  |  "value": "${auth.itmpAddress}"
                                                                  |}
                                                                  |""".stripMargin))

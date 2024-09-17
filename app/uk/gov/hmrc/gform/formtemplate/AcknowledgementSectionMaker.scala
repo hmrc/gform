@@ -16,10 +16,9 @@
 
 package uk.gov.hmrc.gform.formtemplate
 
-import play.api.libs.json.{ JsDefined, JsString, JsUndefined, JsValue }
+import play.api.libs.json.{ JsDefined, JsFalse, JsTrue, JsUndefined, JsValue }
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
-import uk.gov.hmrc.gform.formtemplate.FormComponentMakerService.{ IsFalseish, IsTrueish }
 import uk.gov.hmrc.gform.sharedmodel.SmartString
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AcknowledgementSection, FormComponent, PdfCtx }
 
@@ -32,11 +31,11 @@ class AcknowledgementSectionMaker(json: JsValue) {
   val panelTitle: Option[SmartString] = (json \ "panelTitle").asOpt[SmartString]
   val displayFeedbackLink: Boolean = (json \ "displayFeedbackLink").as[Boolean]
 
-  val showReference: Opt[Boolean] = (json \ "showReference") match {
-    case JsDefined(JsString(IsTrueish()))  => Right(true)
-    case JsDefined(JsString(IsFalseish())) => Right(false)
-    case JsUndefined()                     => Right(true)
-    case otherwise                         => Left(UnexpectedState(s"Expected 'true'/'yes' or 'false'/'no' for showReference. Got: $otherwise"))
+  val showReference: Opt[Boolean] = json \ "showReference" match {
+    case JsDefined(JsTrue)  => Right(true)
+    case JsDefined(JsFalse) => Right(false)
+    case JsUndefined()      => Right(true)
+    case otherwise          => Left(UnexpectedState(s"Expected 'true' or 'false' for showReference. Got: $otherwise"))
   }
 
   val acknowledgementSectionPdf: Option[PdfCtx] = (json \ "pdf").asOpt[PdfCtx]

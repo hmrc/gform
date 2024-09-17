@@ -26,7 +26,7 @@
         "type": "choice",
         "label": "",
         "shortName": "Signed",
-        "multivalue": "true",
+        "multivalue": true,
         "errorMessage": "You must check the box to sign the declaration",
         "choices": [
           "I agree, and declare that all the details entered are correct and complete to the best of my knowledge and belief."

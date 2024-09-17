@@ -34,7 +34,7 @@
               "type": "choice",
               "id": "dutyType",
               "label": "Select the tax type for the duty you need to pay from the below",
-              "mandatory": "true",
+              "mandatory": true,
               "choices": [
                 {
                   "en": "Tax type 591 - Natural gas",

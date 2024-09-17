@@ -17,7 +17,7 @@
           "label": "Does your company trade under a different name?",
           "choices": ["A", "B"],
           "optionHelpText": ["", ""],
-          "multivalue": "true"
+          "multivalue": true
         }
       ]
     },
