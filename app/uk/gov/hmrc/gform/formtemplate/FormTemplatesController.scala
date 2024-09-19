@@ -31,6 +31,7 @@ import uk.gov.hmrc.gform.core.FOpt
 import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.gform.notificationbanner.NotificationService
 import uk.gov.hmrc.gform.sharedmodel.LatestFormTemplateNotFoundException
+import uk.gov.hmrc.gform.testonly.{ Snapshot, SnapshotMongoCache }
 
 class FormTemplatesController(
   controllerComponents: ControllerComponents,
@@ -38,11 +39,14 @@ class FormTemplatesController(
   formRedirectService: FormRedirectService,
   shutterService: ShutterService,
   notificationService: NotificationService,
-  handler: RequestHandlerAlg[FOpt]
+  handler: RequestHandlerAlg[FOpt],
+  snapshotMongoCache: SnapshotMongoCache,
+  isProd: Boolean
 )(implicit
   ex: ExecutionContext
 ) extends BaseController(controllerComponents) {
   private val logger = LoggerFactory.getLogger(getClass)
+  private val formTemplateIdSchemaError = "Error at <#/_id>: Property _id expected value [a-zA-Z0-9-]]"
 
   def upsert() = Action.async(parse.tolerantText) { implicit request =>
     val templateString: String = request.body
@@ -57,7 +61,18 @@ class FormTemplatesController(
             .parse(templateString)
             .as[JsObject] // This parsing should succeed since schema validation detected no errors
         val formTemplateRaw = FormTemplateRaw(jsValue)
-        doUpsert(formTemplateRaw)
+        for {
+          maybeSnapshot <- maybeSnapshot(formTemplateRaw.lowerCaseId._id)
+          res <- if (isProd && formTemplateRaw._id.value.contains("_")) {
+                   Future.failed(
+                     new IllegalArgumentException(formTemplateIdSchemaError)
+                   )
+                 } else doUpsert(formTemplateRaw)
+          _ <- maybeSnapshot match {
+                 case Some(snapshot) => upsertSnapshot(snapshot, formTemplateRaw.lowerCaseId)
+                 case _              => ().pure[Future]
+               }
+        } yield res
     }
   }
 
@@ -71,6 +86,27 @@ class FormTemplatesController(
 
   private def doUpsert(formTemplateRaw: FormTemplateRaw) =
     handler.handleRequest(formTemplateRaw).fold(_.asBadRequest, _ => Results.NoContent)
+
+  private def maybeSnapshot(formTemplateRawId: FormTemplateRawId): Future[Option[Snapshot]] =
+    if (!isProd && formTemplateRawId.value.contains("_")) {
+      for {
+        maybeSnapshot <- snapshotMongoCache.findBySnapshotTemplateId(FormTemplateId(formTemplateRawId.value))
+        res <- maybeSnapshot match {
+                 case Some(snapshot) => Some(snapshot).pure[Future]
+                 case _ =>
+                   if (formTemplateRawId.value.contains("_")) {
+                     Future.failed(
+                       new IllegalArgumentException(formTemplateIdSchemaError)
+                     )
+                   } else None.pure[Future]
+               }
+      } yield res
+    } else None.pure[Future]
+
+  private def upsertSnapshot(snapshot: Snapshot, formTemplateRaw: FormTemplateRaw) =
+    snapshotMongoCache
+      .upsert(snapshot.copy(originalTemplate = formTemplateRaw))
+      .as(logger.info(s"snapshotMongoCache.upsert(${formTemplateRaw._id.value})"))
 
   def getTitlesWithPII(formTemplateRawId: FormTemplateRawId, filters: Option[String], includeJson: Boolean) =
     Action.async { _ =>
