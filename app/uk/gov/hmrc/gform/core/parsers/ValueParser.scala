@@ -385,9 +385,7 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
     str
   }
 
-  lazy val alphaNumericWithSpacesCommasAndUnderscores: Parser[String] = """[a-zA-Z\s\d_,]*""".r ^^ { str =>
-    str
-  }
+  lazy val anything: Parser[String] = """.*""".r ^^ { str => str }
 
   lazy val alphaNumericWithSpace: Parser[String] = """[a-zA-Z\d ]*""".r ^^ { str =>
     str
@@ -610,7 +608,7 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
       OptionDataValue.FormCtxBased(formCtx)
     } | alphabeticOnly ~ expr ^^ { case prefix ~ expr =>
       OptionDataValue.ExprBased(prefix, expr)
-    } | alphaNumericWithSpacesCommasAndUnderscores ^^ (str => OptionDataValue.StringBased(str))
+    } | anything ^^ (str => OptionDataValue.StringBased(str))
 }
 
 object ValueParser extends ValueParser with PackratParsingHelper {

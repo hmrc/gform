@@ -223,11 +223,21 @@ object OptionData {
   ) extends OptionData
 
   private val templateReads: Reads[OptionData] = {
-    val indexBasedReads: Reads[OptionData] = Json.reads[IndexBased].widen[OptionData]
-    val valueBasedReads: Reads[OptionData] = Json.reads[ValueBased].widen[OptionData]
-
-    valueBasedReads | indexBasedReads
+    val hasValueResult = Reads(json => optionDataContainsValue(json))
+    hasValueResult.flatMap { hasValue =>
+      if (hasValue == true) {
+        Json.reads[ValueBased].widen[OptionData]
+      } else {
+        Json.reads[IndexBased].widen[OptionData]
+      }
+    }
   }
+
+  private def optionDataContainsValue(json: JsValue): JsResult[Boolean] =
+    json.validate[String]((JsPath \ "value").read[String]) match {
+      case JsSuccess(_, _) => JsSuccess(true)
+      case _               => JsSuccess(false)
+    }
 
   implicit val format: OFormat[OptionData] = OFormatWithTemplateReadFallback(templateReads)
 
