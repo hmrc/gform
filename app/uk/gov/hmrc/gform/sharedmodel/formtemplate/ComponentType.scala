@@ -25,13 +25,32 @@ import julienrf.json.derived
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 import uk.gov.hmrc.gform.core.parsers.ValueParser
-import uk.gov.hmrc.gform.formtemplate.FormComponentMakerService.{ IsFalseish, IsTrueish }
 import uk.gov.hmrc.gform.formtemplate.TableHeaderCellMaker
 import uk.gov.hmrc.gform.sharedmodel.{ LocalisedString, SmartString, ValueClassFormat }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.DisplayWidth.DisplayWidth
 import uk.gov.hmrc.gform.sharedmodel.structuredform.{ FieldName, RoboticsXml, StructuredFormDataFieldNamePurpose }
 
-sealed trait ComponentType
+sealed trait ComponentType {
+  def showType: String = this match {
+    case _: Text               => "text"
+    case _: TextArea           => "textArea"
+    case _: Date               => "date"
+    case _: CalendarDate.type  => "calendarDate"
+    case _: TaxPeriodDate.type => "taxPeriodDate"
+    case _: PostcodeLookup     => "postcodeLookup"
+    case _: Time               => "time"
+    case _: Address            => "address"
+    case _: OverseasAddress    => "overseasAddress"
+    case _: Choice             => "choice"
+    case _: RevealingChoice    => "revealingChoice"
+    case _: HmrcTaxPeriod      => "hmrcTaxPeriod"
+    case _: Group              => "group"
+    case _: InformationMessage => "informationMessage"
+    case _: FileUpload         => "fileUpload"
+    case _: MiniSummaryList    => "miniSummaryList"
+    case _: TableComp          => "table"
+  }
+}
 
 case class Text(
   constraint: TextConstraint,
@@ -49,9 +68,9 @@ case object IsNotUpperCase extends UpperCaseBoolean
 
 object UpperCaseBoolean {
   private val templateReads: Reads[UpperCaseBoolean] = Reads {
-    case JsString(IsTrueish())  => JsSuccess(IsUpperCase)
-    case JsString(IsFalseish()) => JsSuccess(IsNotUpperCase)
-    case invalid                => JsError("toUpperCase needs to be 'true' or 'false', got " + invalid)
+    case JsTrue  => JsSuccess(IsUpperCase)
+    case JsFalse => JsSuccess(IsNotUpperCase)
+    case invalid => JsError("toUpperCase needs to be 'true' or 'false', got " + invalid)
   }
   implicit val format: OFormat[UpperCaseBoolean] = OFormatWithTemplateReadFallback(templateReads)
 }

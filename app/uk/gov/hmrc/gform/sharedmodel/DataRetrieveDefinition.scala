@@ -276,11 +276,18 @@ object DataRetrieveDefinitions {
                 DataRetrieve.Attribute("country")        -> Fetch(List("registered_office_address", "country"))
               )
             )
+          ),
+          AttributeInstruction(
+            DataRetrieve.Attribute("dateOfCreation"),
+            ConstructAttribute.AsIs(Fetch(List("date_of_creation")))
           )
         )
       ),
       List(
         Parameter("companyNumber")
+      ),
+      Map(
+        DataRetrieve.Attribute("dateOfCreation") -> DataRetrieve.AttrType.Date
       )
     )
 

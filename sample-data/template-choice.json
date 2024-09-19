@@ -75,7 +75,7 @@
           "type": "choice",
           "label": "Multivalue choice",
           "id": "choice-multi",
-          "multivalue": "yes",
+          "multivalue": true,
           "choices": [
             "Choice 1",
             "Choice 2"
@@ -112,7 +112,7 @@
             "Choice 1",
             "Choice 2"
           ],
-          "multivalue": "yes",
+          "multivalue": true,
           "optionHelpText": [
             "Some helptext for choice 1",
             "Some helptext for choice 2"

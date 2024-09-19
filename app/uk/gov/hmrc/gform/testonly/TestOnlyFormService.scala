@@ -69,7 +69,7 @@ class TestOnlyFormService(
     }
 
   private def updateShowContinueOrDeletePage(raw: FormTemplateRaw): FormTemplateRaw = {
-    val updatedValue = raw.value ++ Json.obj("showContinueOrDeletePage" -> "false")
+    val updatedValue = raw.value ++ Json.obj("showContinueOrDeletePage" -> false)
     FormTemplateRaw(updatedValue)
   }
 

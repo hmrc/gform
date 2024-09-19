@@ -255,6 +255,12 @@ object FormTemplateValidator {
         Invalid(s"${path.path}: $formComponentId is not a Revealing Choice in ATL")
       case ReferenceInfo.ChoiceLabelExpr(path, ChoiceLabel(formComponentId)) if !allChoiceIds(formComponentId) =>
         Invalid(s"${path.path}: $formComponentId is not a Choice in the form")
+      case ReferenceInfo.ChoicesSelectedExpr(path, ChoicesSelected(formComponentId))
+          if !allChoiceIds(formComponentId) =>
+        Invalid(s"${path.path}: $formComponentId is not a Choice in the form")
+      case ReferenceInfo.ChoicesAvailableExpr(path, ChoicesAvailable(formComponentId))
+          if !allChoiceIds(formComponentId) =>
+        Invalid(s"${path.path}: $formComponentId is not a Choice in the form")
       case _ => Valid
     }
 
@@ -749,8 +755,16 @@ object FormTemplateValidator {
           internalSmartString.rawValue(LangADT.En).trim === "" || internalSmartString.rawValue(LangADT.Cy).trim === ""
         )
 
+    def isEmptyCy(ss: SmartString): Boolean =
+      ss.internals
+        .forall(internalSmartString =>
+          internalSmartString.rawValue(LangADT.En).trim =!= "" && internalSmartString.rawValue(LangADT.Cy).trim === ""
+        )
+
     val validationResults = sectionsList.flatMap { page =>
       (page.allFormComponents ++ page.fields).collect {
+        case fc if isEmptyLabel(fc.label) && isEmptyCy(page.title) =>
+          Invalid(s"section/page with ${fc.`type`.showType} component ${fc.id.value} cannot have an empty cy title")
         case fc @ IsAddress(_) if isEmptyLabel(fc.label) =>
           Invalid(s"address component ${fc.id} should have a non-blank label")
         case fc @ IsOverseasAddress(_) if isEmptyLabel(fc.label) =>
@@ -819,11 +833,22 @@ object FormTemplateValidator {
       } else Valid
     }
 
+    val labelNotEmpty: ValidationResult = sectionsList.flatMap { page =>
+      page.allFormComponents.collect { case fc @ IsPostcodeLookup(_) =>
+        if (fc.label.allNonEmpty) Valid
+        else
+          Invalid(
+            s"A label is required for postcodeLookup '${fc.id.value}' to use on summarySection."
+          )
+      }
+    }.combineAll
+
     Monoid.combineAll(
       List(
         singlePostcodeLookupOnly,
         noPostcodeLookupInReveliangChoiceOrGroup,
-        noOtherComponentsAllowed
+        noOtherComponentsAllowed,
+        labelNotEmpty
       )
     )
 
@@ -1166,6 +1191,8 @@ object FormTemplateValidator {
       case CountryOfItmpAddress         => Valid
       case ChoicesRevealedField(_)      => Valid
       case ChoiceLabel(_)               => Valid
+      case ChoicesSelected(_)           => Valid
+      case ChoicesAvailable(_)          => Valid
     }
   }
 

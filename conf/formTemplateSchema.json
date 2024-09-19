@@ -77,8 +77,7 @@
       "pattern": "^(formAccessCodeForAgents|notPermitted|onePerUser)$"
     },
     "showContinueOrDeletePage": {
-      "type": "string",
-      "pattern": "^(false)$"
+      "type": "boolean"
     },
     "save4LaterInfoText": {
       "$ref": "#/$defs/stringOrEnCyObject"
@@ -461,7 +460,7 @@
           "type": "string"
         },
         "continueIf": {
-          "type": "string"
+          "type": "boolean"
         },
         "continueLabel": {
           "$ref": "#/$defs/stringOrEnCyObject"
@@ -718,12 +717,10 @@
           "type": "string"
         },
         "notPII": {
-          "type": "string",
-          "pattern": "^(true)$"
+          "type": "boolean"
         },
         "toUpperCase": {
-          "type": "string",
-          "pattern": "^(true)$"
+          "type": "boolean"
         },
         "choices": {
           "type": "array",
@@ -776,8 +773,7 @@
           ]
         },
         "mandatory": {
-          "type": "string",
-          "pattern": "^(false|true|no|yes)$"
+          "type": "boolean"
         },
         "errorMessage": {
           "$ref": "#/$defs/stringOrEnCyObject"
@@ -804,10 +800,10 @@
           "type": "string"
         },
         "multiline": {
-          "type": "string"
+          "type": "boolean"
         },
         "multivalue": {
-          "type": "string"
+          "type": "boolean"
         },
         "suffix": {
           "type": "string"
@@ -819,7 +815,7 @@
           "type": "string"
         },
         "displayCharCount": {
-          "type": "string"
+          "type": "boolean"
         },
         "revealingFields": {
           "type": "array",
@@ -836,22 +832,22 @@
           "type": "string"
         },
         "countryDisplayed": {
-          "type": "string"
+          "type": "boolean"
         },
         "countyDisplayed": {
-          "type": "string"
+          "type": "boolean"
         },
         "cityMandatory": {
-          "type": "string"
+          "type": "boolean"
         },
         "line2Mandatory": {
-          "type": "string"
+          "type": "boolean"
         },
         "line3Mandatory": {
-          "type": "string"
+          "type": "boolean"
         },
         "postcodeMandatory": {
-          "type": "string"
+          "type": "boolean"
         },
         "rows": {
           "type": [
@@ -869,7 +865,14 @@
           "$ref": "#/$defs/stringOrEnCyObject"
         },
         "infoType": {
-          "type": "string"
+          "type": "string",
+          "enum": [
+            "standard",
+            "noformat",
+            "long",
+            "important",
+            "banner"
+           ]
         },
         "excludeFromPdf": {
           "type": "boolean"
@@ -959,10 +962,10 @@
           "$ref": "#/$defs/stringOrEnCyObject"
         },
         "international": {
-          "type": "string"
+          "type": "boolean"
         },
         "countryLookup": {
-          "type": "string"
+          "type": "boolean"
         },
         "round": {
           "type": "string",
@@ -1101,7 +1104,7 @@
               "pattern": "^(text)$"
             },
             "multiline": {
-              "pattern": "^(true)$"
+              "enum": [ true ]
             }
           }
         },
@@ -1115,7 +1118,7 @@
               "pattern": "^(text)$"
             },
             "multiline": {
-              "pattern": "^(true)$"
+              "enum": [ true ]
             }
           }
         },

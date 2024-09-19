@@ -42,8 +42,7 @@ class FormComponentSpec extends Spec {
     val fieldValue = toFieldValue("""|{
          |  "id": "regNum",
          |  "label": "Registration number",
-         |  "readonly": "true",
-         |  "mandatory": "true",
+         |  "mandatory": true,
          |  "format": "shortText"
          |}""")
 
@@ -71,8 +70,7 @@ class FormComponentSpec extends Spec {
          |  "type": "text",
          |  "id": "regNum",
          |  "label": "Registration number",
-         |  "readonly": "true",
-         |  "mandatory": "true",
+         |  "mandatory": true,
          |  "format": "shortText"
          |}""")
 
@@ -100,8 +98,7 @@ class FormComponentSpec extends Spec {
          |  "type": "text",
          |  "id": "regNum",
          |  "label": "Registration number",
-         |  "readonly": "true",
-         |  "mandatory": "true",
+         |  "mandatory": true,
          |  "total": "false",
          |  "format": "shortText"
          |}""")
@@ -130,8 +127,7 @@ class FormComponentSpec extends Spec {
          |  "type": "text",
          |  "id": "regNum",
          |  "label": "Registration number",
-         |  "readonly": "true",
-         |  "mandatory": "true",
+         |  "mandatory": true,
          |  "total": "true",
          |  "format": "shortText"
          |}""")
@@ -160,8 +156,7 @@ class FormComponentSpec extends Spec {
          |  "type": "text",
          |  "id": "regNum",
          |  "label": "Registration number",
-         |  "readonly": "true",
-         |  "mandatory": "true",
+         |  "mandatory": true,
          |  "value": "'Ahah'",
          |  "total": "false",
          |  "format": "shortText"
@@ -191,8 +186,7 @@ class FormComponentSpec extends Spec {
          |  "type": "text",
          |  "id": "regNum",
          |  "label": "Registration number",
-         |  "readonly": "true",
-         |  "mandatory": "true",
+         |  "mandatory": true,
          |  "value": "'Ahah'",
          |  "total": "true",
          |  "format": "shortText"
@@ -221,7 +215,7 @@ class FormComponentSpec extends Spec {
     val fieldValue = toFieldValue("""|{
          |  "id": "regNum",
          |  "label": "Registration number",
-         |  "mandatory": "true",
+         |  "mandatory": true,
          |  "format": "shortText"
          |}""")
 
@@ -248,7 +242,7 @@ class FormComponentSpec extends Spec {
     val fieldValue = toFieldValue("""|{
          |  "id": "regNum",
          |  "label": "Registration number",
-         |  "mandatory": "false",
+         |  "mandatory": false,
          |  "format": "shortText"
          |}""")
 
@@ -478,7 +472,7 @@ class FormComponentSpec extends Spec {
     val fieldValue = toFieldValue("""|{
          |  "id": "regNum",
          |  "label": "Registration number",
-         |  "mandatory": "false",
+         |  "mandatory": false,
          |  "submitMode": "info",
          |  "format": "shortText"
          |
@@ -536,7 +530,7 @@ class FormComponentSpec extends Spec {
          | "type": "date",
          | "label": "Enter a date in April 2017",
          |  "helpText": "For example, 10 4 2017",
-         |  "mandatory": "true",
+         |  "mandatory": true,
          |  "format": "after 2017-03-31,before 2017-05-01",
          |  "value": "2017-04-10",
          |  "submitMode": "summaryinfoonly"
@@ -577,7 +571,7 @@ class FormComponentSpec extends Spec {
          | "type": "date",
          | "label": "Enter a date in April 2017",
          |  "helpText": "For example, 10 4 2017",
-         |  "mandatory": "true",
+         |  "mandatory": true,
          |  "format": "after 2017-03-31,before 2017-05-01",
          |  "submitMode": "summaryinfoonly"
          |}""")
@@ -591,7 +585,7 @@ class FormComponentSpec extends Spec {
            | "type": "date",
            | "label": "Enter a date in April 2017",
            |  "helpText": "For example, 10 4 2017",
-           |  "mandatory": "true",
+           |  "mandatory": true,
            |  "format": "after 2017-03-31,before 2017-05-01",
            |  "value": "I am a invalid value LalaLa",
            |  "submitMode": "summaryinfoonly"
@@ -662,60 +656,6 @@ class FormComponentSpec extends Spec {
     )
   }
 
-  it should "parse as Address with 'international' true when specified yes" in {
-    val fieldValue = toFieldValue("""|{
-         |  "type": "address",
-         |  "id": "homeAddress",
-         |  "label": "Home",
-         |  "international" : "Yes"
-         |}""")
-
-    fieldValue should beJsSuccess(
-      FormComponent(
-        FormComponentId("homeAddress"),
-        Address(international = true, List.empty[Address.Configurable.Mandatory], false, None),
-        toSmartString("Home"),
-        false,
-        None,
-        None,
-        None,
-        None,
-        mandatory = true,
-        editable = true,
-        submissible = true,
-        derived = false,
-        errorMessage = None
-      )
-    )
-  }
-
-  it should "parse as Address with 'international' false when specified no" in {
-    val fieldValue = toFieldValue("""|{
-         |  "type": "address",
-         |  "id": "homeAddress",
-         |  "label": "Home",
-         |  "international" : "No"
-         |}""")
-
-    fieldValue should beJsSuccess(
-      FormComponent(
-        FormComponentId("homeAddress"),
-        Address(international = false, List.empty[Address.Configurable.Mandatory], false, None),
-        toSmartString("Home"),
-        false,
-        None,
-        None,
-        None,
-        None,
-        mandatory = true,
-        editable = true,
-        submissible = true,
-        derived = false,
-        errorMessage = None
-      )
-    )
-  }
-
   it should "parse 'choice' type as Radio with Vertical orientation if no multivalue & no format is provided" in {
     val fieldValue = toFieldValue("""|{
          |  "type": "choice",
@@ -762,7 +702,7 @@ class FormComponentSpec extends Spec {
     )
   }
 
-  it should "parse 'choice' type as Radio with Vertical orientation if 'multivalue=no' is provided" in {
+  it should "parse 'choice' type as Radio with Vertical orientation if 'multivalue=false' is provided" in {
     val fieldValue = toFieldValue("""|{
          |  "type": "choice",
          |  "id":"dutyType",
@@ -775,7 +715,7 @@ class FormComponentSpec extends Spec {
          |       "label": "Other gas"
          |     }
          |  ],
-         |  "multivalue":"no"
+         |  "multivalue":false
          |}""")
 
     fieldValue should beJsSuccess(
@@ -809,7 +749,7 @@ class FormComponentSpec extends Spec {
     )
   }
 
-  it should "parse 'choice' type as Radio with Vertical orientation if 'multivalue=no & format=vertical' is provided" in {
+  it should "parse 'choice' type as Radio with Vertical orientation if 'multivalue=false & format=vertical' is provided" in {
     val fieldValue = toFieldValue("""|{
          |  "type": "choice",
          |  "id":"dutyType",
@@ -822,7 +762,7 @@ class FormComponentSpec extends Spec {
          |       "label": "Other gas"
          |     }
          |  ],
-         |  "multivalue":"no",
+         |  "multivalue":false,
          |  "format":"vertical"
          |}""")
 
@@ -857,7 +797,7 @@ class FormComponentSpec extends Spec {
     )
   }
 
-  it should "parse 'choice' type as Radio with Horizontal orientation if 'multivalue=no & format=horizontal' is provided" in {
+  it should "parse 'choice' type as Radio with Horizontal orientation if 'multivalue=false & format=horizontal' is provided" in {
     val fieldValue = toFieldValue("""|{
          |  "type": "choice",
          |  "id":"dutyType",
@@ -870,7 +810,7 @@ class FormComponentSpec extends Spec {
          |       "label": "Other gas"
          |     }
          |  ],
-         |  "multivalue":"no",
+         |  "multivalue":false,
          |  "format":"horizontal"
          |}""")
 
@@ -905,7 +845,7 @@ class FormComponentSpec extends Spec {
     )
   }
 
-  it should "parse 'choice' type as Checkbox with Vertical orientation if 'multivalue=yes' is provided" in {
+  it should "parse 'choice' type as Checkbox with Vertical orientation if 'multivalue=true' is provided" in {
     val fieldValue = toFieldValue("""|{
          |  "type": "choice",
          |  "id":"dutyType",
@@ -918,7 +858,7 @@ class FormComponentSpec extends Spec {
          |       "label": "Other gas"
          |     }
          |  ],
-         |  "multivalue":"yes"
+         |  "multivalue":true
          |}""")
 
     fieldValue should beJsSuccess(
@@ -952,7 +892,7 @@ class FormComponentSpec extends Spec {
     )
   }
 
-  it should "parse 'choice' type as Checkbox with Vertical orientation if 'multivalue=yes & format=vertical' is provided" in {
+  it should "parse 'choice' type as Checkbox with Vertical orientation if 'multivalue=true & format=vertical' is provided" in {
     val fieldValue = toFieldValue("""|{
          |  "type": "choice",
          |  "id":"dutyType",
@@ -965,7 +905,7 @@ class FormComponentSpec extends Spec {
          |       "label": "Other gas"
          |     }
          |  ],
-         |  "multivalue":"yes",
+         |  "multivalue":true,
          |  "format":"vertical"
          |}""")
 
@@ -1000,7 +940,7 @@ class FormComponentSpec extends Spec {
     )
   }
 
-  it should "parse 'choice' type as Checkbox with Horizontal orientation if 'multivalue=yes & format=horizontal' is provided" in {
+  it should "parse 'choice' type as Checkbox with Horizontal orientation if 'multivalue=true & format=horizontal' is provided" in {
     val fieldValue = toFieldValue("""|{
          |  "type": "choice",
          |  "id":"dutyType",
@@ -1013,7 +953,7 @@ class FormComponentSpec extends Spec {
          |       "label": "Other gas"
          |     }
          |  ],
-         |  "multivalue":"yes",
+         |  "multivalue":true,
          |  "format":"horizontal"
          |}""")
 
@@ -1127,13 +1067,13 @@ class FormComponentSpec extends Spec {
     )
   }
 
-  it should "parse 'choice' type as YesNo if 'format=yesno & multivalue=no' is provided" in {
+  it should "parse 'choice' type as YesNo if 'format=yesno & multivalue=false' is provided" in {
     val fieldValue = toFieldValue("""|{
          |  "type": "choice",
          |  "id":"taxType",
          |  "label":"Gas tax type?",
          |  "format":"yesno",
-         |  "multivalue":"no"
+         |  "multivalue":false
          |}""")
 
     fieldValue should beJsSuccess(
@@ -1213,13 +1153,13 @@ class FormComponentSpec extends Spec {
     )
   }
 
-  it should "parse 'choice' type as YesNo even though 'multivalue=yes' is provided" in {
+  it should "parse 'choice' type as YesNo even though 'multivalue=true' is provided" in {
     val fieldValue = toFieldValue("""|{
          |  "type": "choice",
          |  "id":"taxType",
          |  "label":"Gas tax type?",
          |  "format":"yesno",
-         |  "multivalue":"yes"
+         |  "multivalue":true
          |}""")
 
     fieldValue should beJsSuccess(
@@ -1269,25 +1209,6 @@ class FormComponentSpec extends Spec {
          |  "type": "choice",
          |  "id":"dutyType",
          |  "label":"Select the tax type"
-         |}""")
-
-    fieldValue should be(jsError)
-  }
-
-  it should "fail to parse 'choice' type if 'multivalue' is not 'yes' or 'no'" in {
-    val fieldValue = toFieldValue("""|{
-         |  "type": "choice",
-         |  "id":"dutyType",
-         |  "label":"Select the tax type",
-         |  "choices": [
-         |     {
-         |       "label": "Natural gas"
-         |     },
-         |     {
-         |       "label": "Other gas"
-         |     }
-         |  ],
-         |  "multivalue":"wrong-value"
          |}""")
 
     fieldValue should be(jsError)
@@ -1621,8 +1542,7 @@ class FormComponentSpec extends Spec {
                                       |  "type" : "text",
                                       |  "label": "Registration number",
                                       |  "shortName" : "$shortName",
-                                      |  "readonly": "true",
-                                      |  "mandatory": "true",
+                                      |  "mandatory": true,
                                       |  "format": "shortText"
                                       |}""".stripMargin)
 
@@ -1732,7 +1652,7 @@ class FormComponentSpec extends Spec {
           "type": "date",
           "label": "Enter a date in April 2017",
           "helpText": "For example, 10 4 2017",
-          "mandatory": "true",
+          "mandatory": true,
           "format": "after 2017-04-02 -2,before 2017-05-02 -1",
           "value": "2017-04-10"
         }
@@ -1748,7 +1668,7 @@ class FormComponentSpec extends Spec {
           "type": "date",
           "label": "Enter a date in April 2017",
           "helpText": "For example, 10 4 2017",
-          "mandatory": "true",
+          "mandatory": true,
           "format": "after 2017-03-31,before 2017-05-01",
           "value": "2017-04-10"
         }
@@ -1764,7 +1684,7 @@ class FormComponentSpec extends Spec {
           "type": "date",
           "label": "Enter a date in the next 7 days starting today",
           "helpText": "For example, 10 4 2017",
-          "mandatory": "true",
+          "mandatory": true,
           "format": "after today -1,before today +7"
         }
         """)

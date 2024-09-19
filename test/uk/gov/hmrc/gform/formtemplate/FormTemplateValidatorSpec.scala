@@ -24,7 +24,7 @@ import uk.gov.hmrc.gform.Helpers.{ toLocalisedString, toSmartString }
 import uk.gov.hmrc.gform.core.parsers.ValueParser
 import uk.gov.hmrc.gform.core.{ Invalid, Valid }
 import uk.gov.hmrc.gform.sharedmodel.{ LangADT, LocalisedString, SmartString }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AnyDate, Choice, Constant, CsvCountryCheck, Date, DateCtx, DateFormCtxVar, ExprWithPath, FormComponent, FormComponentId, FormComponentValidator, FormCtx, HideZeroDecimals, Horizontal, IfElse, InformationMessage, Instruction, IsTrue, LeafExpr, LinkCtx, Offset, OptionData, OptionDataValue, PageId, Radio, StandardInfo, SummariseGroupAsGrid, TemplatePath, ValidIf }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AnyDate, Choice, Constant, CsvCountryCheck, Date, DateCtx, DateFormCtxVar, ExprWithPath, FormComponent, FormComponentId, FormComponentValidator, FormCtx, HideZeroDecimals, Horizontal, IfElse, InformationMessage, Instruction, IsTrue, LeafExpr, LinkCtx, Offset, OptionData, OptionDataValue, PageId, PostcodeLookup, Radio, StandardInfo, SummariseGroupAsGrid, TemplatePath, ValidIf }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.PageLink
 
 class FormTemplateValidatorSpec
@@ -695,6 +695,21 @@ class FormTemplateValidatorSpec
       }
     }
   }
+      
+  "validate postcode lookup" should {
+    "return a label is required for postcodeLookup to use on summarySection error when a label is empty" in {
+      val pages = List(
+        mkSectionNonRepeatingPage(
+          name = "section1",
+          formComponents = List(mkFormComponent("postcodeLookup1", PostcodeLookup(None, None, None), toSmartString("")))
+        ).page
+      )
+
+      val result = FormTemplateValidator.validatePostcodeLookup(pages)
+
+      result shouldBe Invalid("A label is required for postcodeLookup 'postcodeLookup1' to use on summarySection.")
+    }
+  }
 
   "validate choice options" when {
     "String base value includes spaces" should {
@@ -775,4 +790,3 @@ class FormTemplateValidatorSpec
       None,
       Some(List(SummariseGroupAsGrid))
     )
-}

@@ -271,7 +271,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
             "id": "testId",
             "label": "test label",
             "type": "info",
-            "multivalue": "true"
+            "multivalue": true
           }
         """
 
@@ -451,8 +451,8 @@ class JsonSchemeValidatorSpec extends FunSuite {
             "id": "testId",
             "label": "test label",
             "type": "info",
-            "multiline": "true",
-            "displayCharCount": "false"
+            "multiline": true,
+            "displayCharCount": false
           }
         """
 
@@ -476,8 +476,8 @@ class JsonSchemeValidatorSpec extends FunSuite {
             "id": "testId",
             "label": "test label",
             "type": "text",
-            "multiline": "false",
-            "displayCharCount": "false"
+            "multiline": false,
+            "displayCharCount": false
           }
         """
 
@@ -501,7 +501,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
             "id": "testId",
             "label": "test label",
             "type": "text",
-            "displayCharCount": "false"
+            "displayCharCount": false
           }
         """
 
@@ -525,8 +525,8 @@ class JsonSchemeValidatorSpec extends FunSuite {
             "id": "testId",
             "label": "test label",
             "type": "choice",
-            "multiline": "false",
-            "displayCharCount": "false"
+            "multiline": false,
+            "displayCharCount": false
           }
         """
 
@@ -550,7 +550,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
             "id": "testId",
             "label": "test label",
             "type": "info",
-            "multiline": "true",
+            "multiline": true,
             "dataThreshold": 75
           }
         """
@@ -575,7 +575,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
             "id": "testId",
             "label": "test label",
             "type": "text",
-            "multiline": "false",
+            "multiline": false,
             "dataThreshold": 75
           }
         """
@@ -624,7 +624,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
             "id": "testId",
             "label": "test label",
             "type": "choice",
-            "multiline": "false",
+            "multiline": false,
             "dataThreshold": 75
           }
         """
@@ -679,7 +679,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
               "Test choice 1",
               "Test choice 2"
             ],
-            "multivalue": "true",
+            "multivalue": true,
             "hints": [
               "Test hint 1",
               "Test hint 2"
@@ -782,7 +782,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
             "id": "testId",
             "label": "test label",
             "type": "text",
-            "cityMandatory": "true"
+            "cityMandatory": true
           }
         """
 
@@ -806,7 +806,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
             "id": "testId",
             "label": "test label",
             "type": "info",
-            "countyDisplayed": "true"
+            "countyDisplayed": true
           }
         """
 
@@ -830,7 +830,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
             "id": "testId",
             "label": "test label",
             "type": "date",
-            "international": "true"
+            "international": true
           }
         """
 
@@ -854,7 +854,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
             "id": "testId",
             "label": "test label",
             "type": "group",
-            "countryDisplayed": "false"
+            "countryDisplayed": false
           }
         """
 
@@ -878,7 +878,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
             "id": "testId",
             "label": "test label",
             "type": "group",
-            "countryLookup": "false"
+            "countryLookup": false
           }
         """
 
@@ -902,7 +902,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
             "id": "testId",
             "label": "test label",
             "type": "group",
-            "line2Mandatory": "true"
+            "line2Mandatory": true
           }
         """
 
@@ -926,7 +926,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
             "id": "testId",
             "label": "test label",
             "type": "group",
-            "line3Mandatory": "true"
+            "line3Mandatory": true
           }
         """
 
@@ -950,7 +950,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
             "id": "testId",
             "label": "test label",
             "type": "date",
-            "postcodeMandatory": "false"
+            "postcodeMandatory": false
           }
         """
 
@@ -1249,7 +1249,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
               "id": "TestID1",
               "label": "Test label 1",
               "type": "text",
-              "displayCharCount": "false"
+              "displayCharCount": false
             }
             """
 
@@ -1259,7 +1259,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
               "id": "TestID2",
               "label": "Test label 2",
               "type": "info",
-              "multiline": "true",
+              "multiline": true,
               "dataThreshold": 1
             }
             """
@@ -1313,7 +1313,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
               "Test choice 1",
               "Test choice 2"
             ],
-            "multivalue": "true",
+            "multivalue": true,
             "hints": [
               "Test hint 1",
               "Test hint 2"
@@ -1364,7 +1364,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
             "id": "testId",
             "label": "test label",
             "dataThreshold": 75,
-            "displayCharCount": "false"
+            "displayCharCount": false
           }
         """
 
@@ -1404,10 +1404,11 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
+      "Error at ID <testId>: Property dataThreshold can only be used with type: [text], multiline: [true]",
+      "Error at ID <testId>: Property displayCharCount can only be used with type: [text], multiline: [true]",
       "Error at ID <testId>: Property type expected type [String], found [JSONArray]",
       "Error at ID <testId>: Property dataThreshold expected type [Integer], found [String]",
-      "Error at ID <testId>: Property multiline expected type [String], found [Integer]",
-      "Error at ID <testId>: Property displayCharCount expected type [String], found [JSONObject]"
+      "Error at ID <testId>: Property displayCharCount expected type [Boolean], found [JSONObject]"
     )
 
     runInvalidJsonTest(result, expectedResult)
@@ -5197,7 +5198,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
               "Test choice 1",
               "Test choice 2"
             ],
-            "multivalue": "true",
+            "multivalue": true,
             "hints": [
               "Test hint 1",
               "Test hint 2"
@@ -5244,7 +5245,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
               "Test choice 1",
               "Test choice 2"
             ],
-            "multivalue": "true",
+            "multivalue": true,
             "hints": [
               "Test hint 1",
               "Test hint 2"
@@ -5330,8 +5331,8 @@ class JsonSchemeValidatorSpec extends FunSuite {
             "id": "testId",
             "label": "test label",
             "type": "text",
-            "multiline": "true",
-            "displayCharCount": "false",
+            "multiline": true,
+            "displayCharCount": false,
             "dataThreshold": 75
           }
         """
@@ -5354,9 +5355,9 @@ class JsonSchemeValidatorSpec extends FunSuite {
             "id": "testId",
             "label": "test label",
             "type": "address",
-            "cityMandatory": "true",
-            "countyDisplayed": "false",
-            "international": "false"
+            "cityMandatory": true,
+            "countyDisplayed": false,
+            "international": false
           }
         """
 
@@ -5378,12 +5379,12 @@ class JsonSchemeValidatorSpec extends FunSuite {
             "id": "testId",
             "label": "test label",
             "type": "overseasAddress",
-            "cityMandatory": "false",
-            "countryDisplayed": "false",
-            "countryLookup": "true",
-            "line2Mandatory": "true",
-            "line3Mandatory": "false",
-            "postcodeMandatory": "true"
+            "cityMandatory": false,
+            "countryDisplayed": false,
+            "countryLookup": true,
+            "line2Mandatory": true,
+            "line3Mandatory": false,
+            "postcodeMandatory": true
           }
         """
 

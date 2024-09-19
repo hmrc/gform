@@ -18,7 +18,6 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
 import julienrf.json.derived
 import play.api.libs.json.OFormat
-import uk.gov.hmrc.gform.formtemplate.FormComponentMakerService.{ IsFalseish, IsTrueish }
 
 sealed trait ContinueOrDeletePage
 
@@ -27,10 +26,5 @@ object ContinueOrDeletePage {
   case object Show extends ContinueOrDeletePage
 
   implicit val format: OFormat[ContinueOrDeletePage] = derived.oformat()
-
-  def unapply(str: String): Option[ContinueOrDeletePage] = str match {
-    case IsFalseish() => Some(Skip)
-    case IsTrueish()  => Some(Show)
-    case _            => None
-  }
+  def fromBoolean(str: Boolean): ContinueOrDeletePage = if (str) Show else Skip
 }

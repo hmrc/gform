@@ -69,6 +69,8 @@ object ExprSubstituter extends Substituter[ExprSubstitutions, FormTemplate] {
         case CountryOfItmpAddress            => t
         case ChoicesRevealedField(_)         => t
         case ChoiceLabel(_)                  => t
+        case ChoicesSelected(_)              => t
+        case ChoicesAvailable(_)             => t
       }
     }
 
@@ -96,7 +98,8 @@ object ExprSubstituter extends Substituter[ExprSubstitutions, FormTemplate] {
             case Some(IfElse(c, DateCtx(f1), DateCtx(f2))) => DateIfElse(c, aux(f1), aux(f2))
             case here                                      => d
           }
-        case d @ DateValueExpr(_) => d
+        case d @ DataRetrieveDateCtx(_, _) => d
+        case d @ DateValueExpr(_)          => d
         case DateExprWithOffset(dExpr, offset) =>
           aux(dExpr) match {
             case DateExprWithOffset(expr, innerOffset) => DateExprWithOffset(expr, innerOffset + offset)
