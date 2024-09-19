@@ -695,7 +695,7 @@ class FormTemplateValidatorSpec
       }
     }
   }
-      
+
   "validate postcode lookup" should {
     "return a label is required for postcodeLookup to use on summarySection error when a label is empty" in {
       val pages = List(
@@ -790,3 +790,4 @@ class FormTemplateValidatorSpec
       None,
       Some(List(SummariseGroupAsGrid))
     )
+}
