@@ -93,6 +93,12 @@ object Substituter {
     ev: Substituter[A, BooleanExpr]
   ): Substituter[A, RemoveItemIf] = (substitutions, t) => t.copy(booleanExpr = t.booleanExpr(substitutions))
 
+  implicit def confirmationSubstituter[A](implicit
+    ev: Substituter[A, Expr],
+    ev2: Substituter[A, BooleanExpr]
+  ): Substituter[A, Confirmation] = (substitutions, t) =>
+    t.copy(question = t.question(substitutions), redirects = t.redirects(substitutions))
+
   implicit def optionDataSubstituter[A](implicit
     ev: Substituter[A, Expr],
     ev2: Substituter[A, BooleanExpr]
@@ -310,7 +316,8 @@ object Substituter {
       continueLabel = t.continueLabel(substitutions),
       instruction = t.instruction(substitutions),
       redirects = t.redirects(substitutions),
-      removeItemIf = t.removeItemIf(substitutions)
+      removeItemIf = t.removeItemIf(substitutions),
+      confirmation = t.confirmation(substitutions)
     )
 
   implicit def sectionSubstituter[A](implicit
