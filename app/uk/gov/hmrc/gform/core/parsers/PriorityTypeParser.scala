@@ -24,7 +24,7 @@ import scala.util.parsing.combinator._
 object PriorityTypeParser extends RegexParsers with ParsingHelper {
 
   val priority: Parser[Priority] =
-    "standard" ^^^ Standard |
+    "Standard" ^^^ Standard |
       "UK" ^^^ Uk
 
   def validate(expression: String): Opt[Priority] = validateWithParser(expression, priority)
