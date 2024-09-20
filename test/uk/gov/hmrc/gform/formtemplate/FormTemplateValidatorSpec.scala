@@ -719,7 +719,7 @@ class FormTemplateValidatorSpec
         val result = FormTemplateValidator
           .validateChoiceOptions(SectionHelper.pages(sections))
         result shouldBe Invalid(
-          "Choice component options non-expr 'value' cannot contain ' ' (blank spaces), ',' (commas), '!', '@' or '%': dutyType."
+          "Choice component options non-expr 'value' must only contain letters, numbers and underscores: dutyType."
         )
       }
     }
@@ -731,7 +731,7 @@ class FormTemplateValidatorSpec
         val result = FormTemplateValidator
           .validateChoiceOptions(SectionHelper.pages(sections))
         result shouldBe Invalid(
-          "Choice component options non-expr 'value' cannot contain ' ' (blank spaces), ',' (commas), '!', '@' or '%': dutyType."
+          "Choice component options non-expr 'value' must only contain letters, numbers and underscores: dutyType."
         )
       }
     }
@@ -739,7 +739,7 @@ class FormTemplateValidatorSpec
     "String base value incudes no spaces" should {
       "return valid" in {
         val sections =
-          List(mkSectionNonRepeatingPage(formComponents = List(getChoiceComponentWithStringBasedValues("foo"))))
+          List(mkSectionNonRepeatingPage(formComponents = List(getChoiceComponentWithStringBasedValues("foo_bar1"))))
         val result = FormTemplateValidator
           .validateChoiceOptions(SectionHelper.pages(sections))
         result shouldBe Valid

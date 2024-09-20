@@ -244,7 +244,7 @@ object OptionData {
   private val templateReads: Reads[OptionData] = {
     val hasValueResult = Reads(json => optionDataContainsValue(json))
     hasValueResult.flatMap { hasValue =>
-      if (hasValue == true) {
+      if (hasValue) {
         Json.reads[ValueBased].widen[OptionData]
       } else {
         Json.reads[IndexBased].widen[OptionData]

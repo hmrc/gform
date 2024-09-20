@@ -672,7 +672,7 @@ object FormTemplateValidator {
         case OptionData.ValueBased(_, _, _, _, OptionDataValue.StringBased(value)) =>
           value
       }
-      values.size =!= 0 && Set(" ", ",", "!", "@", "%").exists(values.mkString.contains)
+      values.size =!= 0 && !"""\w+""".r.pattern.matcher(values.mkString).matches
     }
 
     List(
@@ -689,7 +689,7 @@ object FormTemplateValidator {
       validateChoice(
         sectionsList,
         checkNoBannedStringInValue,
-        "Choice component options non-expr 'value' cannot contain ' ' (blank spaces), ',' (commas), '!', '@' or '%'"
+        "Choice component options non-expr 'value' must only contain letters, numbers and underscores"
       )
     ).combineAll
   }
