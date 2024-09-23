@@ -675,6 +675,14 @@ object FormTemplateValidator {
       values.size =!= 0 && !"""\w+""".r.pattern.matcher(values.mkString).matches
     }
 
+    def checkNotOnlySpacesOrBlank(choice: Choice): Boolean = {
+      val values = choice.options.collect {
+        case OptionData.ValueBased(_, _, _, _, OptionDataValue.StringBased(value)) =>
+          value
+      }
+      values.exists(_.trim.isEmpty)
+    }
+
     List(
       validateChoice(
         sectionsList,
@@ -690,6 +698,11 @@ object FormTemplateValidator {
         sectionsList,
         checkNoBannedStringInValue,
         "Choice component options non-expr 'value' must only contain letters, numbers and underscores"
+      ),
+      validateChoice(
+        sectionsList,
+        checkNotOnlySpacesOrBlank,
+        "Choice component options cannot be empty or include only spaces"
       )
     ).combineAll
   }

@@ -736,6 +736,30 @@ class FormTemplateValidatorSpec
       }
     }
 
+    "String base value incudes empty string" should {
+      "return invalid" in {
+        val sections =
+          List(mkSectionNonRepeatingPage(formComponents = List(getChoiceComponentWithStringBasedValues(""))))
+        val result = FormTemplateValidator
+          .validateChoiceOptions(SectionHelper.pages(sections))
+        result shouldBe Invalid(
+          "Choice component options cannot be empty or include only spaces: dutyType."
+        )
+      }
+    }
+
+    "String base value incudes spaces only" should {
+      "return invalid" in {
+        val sections =
+          List(mkSectionNonRepeatingPage(formComponents = List(getChoiceComponentWithStringBasedValues(" "))))
+        val result = FormTemplateValidator
+          .validateChoiceOptions(SectionHelper.pages(sections))
+        result shouldBe Invalid(
+          "Choice component options non-expr 'value' must only contain letters, numbers and underscores: dutyType."
+        )
+      }
+    }
+
     "String base value incudes no spaces" should {
       "return valid" in {
         val sections =
