@@ -668,20 +668,17 @@ object FormTemplateValidator {
     }
 
     def checkNoBannedStringInValue(choice: Choice): Boolean = {
-      val values = choice.options.collect {
-        case OptionData.ValueBased(_, _, _, _, OptionDataValue.StringBased(value)) =>
-          value
-      }
+      val values = getStringBasedOptionDataValues(choice)
       values.size =!= 0 && !"""\w+""".r.pattern.matcher(values.mkString).matches
     }
 
-    def checkNotOnlySpacesOrBlank(choice: Choice): Boolean = {
-      val values = choice.options.collect {
-        case OptionData.ValueBased(_, _, _, _, OptionDataValue.StringBased(value)) =>
-          value
+    def checkNotOnlySpacesOrBlank(choice: Choice): Boolean =
+      getStringBasedOptionDataValues(choice).exists(_.trim.isEmpty)
+
+    def getStringBasedOptionDataValues(choice: Choice): List[String] =
+      choice.options.collect { case OptionData.ValueBased(_, _, _, _, OptionDataValue.StringBased(value)) =>
+        value
       }
-      values.exists(_.trim.isEmpty)
-    }
 
     List(
       validateChoice(
