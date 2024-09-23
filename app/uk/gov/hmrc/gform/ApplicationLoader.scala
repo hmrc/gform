@@ -135,6 +135,72 @@ class ApplicationModule(context: Context)
   )
   private val historyModule = new HistoryModule(configModule, mongoModule)
 
+  private def createMongoCacheRepository(
+    collectionName: String,
+    expiryDays: Int,
+    createdExpiryDays: Int,
+    submittedExpiryHours: Int
+  ) = new MongoCacheRepository[String](
+    mongoModule.mongoComponent,
+    collectionName,
+    true,
+    expiryDays.days,
+    new CurrentTimestampSupport(),
+    SimpleCacheId
+  ) {
+    override def ensureIndexes(): Future[Seq[String]] = {
+      val formExpiry = expiryDays.days.toMillis
+      val createdFormExpiry = createdExpiryDays.days.toMillis
+      val submittedExpiry = submittedExpiryHours.hours.toMillis
+      val indexes = Seq(
+        IndexModel(
+          ascending("modifiedDetails.createdAt"),
+          IndexOptions()
+            .background(false)
+            .name("createdAtIndex")
+            .expireAfter(createdFormExpiry, TimeUnit.MILLISECONDS)
+        ),
+        IndexModel(
+          ascending("modifiedDetails.lastUpdated"),
+          IndexOptions()
+            .background(false)
+            .name("lastUpdatedIndex")
+            .expireAfter(formExpiry, TimeUnit.MILLISECONDS)
+        ),
+        IndexModel(
+          ascending("submitDetails.createdAt"),
+          IndexOptions()
+            .background(false)
+            .name("submittedIndex")
+            .expireAfter(submittedExpiry, TimeUnit.MILLISECONDS)
+        ),
+        IndexModel(
+          ascending("data.form.formTemplateId"),
+          IndexOptions()
+            .background(false)
+            .name("formTemplateIdIdx")
+        ),
+        IndexModel(
+          ascending("data.snapshot.snapshotTemplateId"),
+          IndexOptions()
+            .background(false)
+            .name("snapshotTemplateIdIdx")
+        )
+      )
+      MongoUtils.ensureIndexes(this.collection, indexes, true)
+    }
+  }
+
+  private val snapshotsMongoCache = createMongoCacheRepository(
+    "snapshots",
+    configModule.snapshotExpiryDays,
+    configModule.snapshotCreatedExpiryDays,
+    configModule.snapshotSubmittedExpiryHours
+  )
+  private val snapshotMongoCache = new SnapshotMongoCache(
+    snapshotsMongoCache
+  )
+
   val formTemplateModule =
     new FormTemplateModule(
       controllerComponents,
@@ -144,7 +210,8 @@ class ApplicationModule(context: Context)
       handlebarsTemplateService,
       handlebarsSchemaService,
       historyModule,
-      configModule
+      configModule,
+      snapshotMongoCache
     )
 
   private val handlebarsPayloadModule =
@@ -201,56 +268,6 @@ class ApplicationModule(context: Context)
     timeModule.timeProvider
   )
 
-  private def createMongoCacheRepository(
-    collectionName: String,
-    expiryDays: Int,
-    createdExpiryDays: Int,
-    submittedExpiryHours: Int
-  ) = new MongoCacheRepository[String](
-    mongoModule.mongoComponent,
-    collectionName,
-    true,
-    expiryDays.days,
-    new CurrentTimestampSupport(),
-    SimpleCacheId
-  ) {
-    override def ensureIndexes(): Future[Seq[String]] = {
-      val formExpiry = expiryDays.days.toMillis
-      val createdFormExpiry = createdExpiryDays.days.toMillis
-      val submittedExpiry = submittedExpiryHours.hours.toMillis
-      val indexes = Seq(
-        IndexModel(
-          ascending("modifiedDetails.createdAt"),
-          IndexOptions()
-            .background(false)
-            .name("createdAtIndex")
-            .expireAfter(createdFormExpiry, TimeUnit.MILLISECONDS)
-        ),
-        IndexModel(
-          ascending("modifiedDetails.lastUpdated"),
-          IndexOptions()
-            .background(false)
-            .name("lastUpdatedIndex")
-            .expireAfter(formExpiry, TimeUnit.MILLISECONDS)
-        ),
-        IndexModel(
-          ascending("submitDetails.createdAt"),
-          IndexOptions()
-            .background(false)
-            .name("submittedIndex")
-            .expireAfter(submittedExpiry, TimeUnit.MILLISECONDS)
-        ),
-        IndexModel(
-          ascending("data.form.formTemplateId"),
-          IndexOptions()
-            .background(false)
-            .name("formTemplateIdIdx")
-        )
-      )
-      MongoUtils.ensureIndexes(this.collection, indexes, true)
-    }
-  }
-
   private val formService: FormService[Future] = createFormService(formMongoCache)
   private def createFormService(cache: FormMongoCache): FormService[Future] =
     new FormService(
@@ -303,15 +320,6 @@ class ApplicationModule(context: Context)
   private val obligationModule = new ObligationModule(wSHttpModule, configModule)
   private val employmentsModule = new EmploymentsModule(wSHttpModule, configModule)
 
-  private val snapshotsMongoCache = createMongoCacheRepository(
-    "snapshots",
-    configModule.snapshotExpiryDays,
-    configModule.snapshotCreatedExpiryDays,
-    configModule.snapshotSubmittedExpiryHours
-  )
-  private val snapshotMongoCache = new SnapshotMongoCache(
-    snapshotsMongoCache
-  )
   private val testOnlyFormService = new TestOnlyFormService(
     snapshotMongoCache,
     formMongoCache,
