@@ -23,7 +23,6 @@ import shapeless.syntax.typeable._
 import uk.gov.hmrc.gform.formtemplate.FormComponentMaker
 import uk.gov.hmrc.gform.sharedmodel.{ LabelHelper, SmartString }
 
-//TODO: Update (remove priority)
 case class FormComponent(
   id: FormComponentId,
   `type`: ComponentType,
@@ -47,8 +46,7 @@ case class FormComponent(
   errorShortNameStart: Option[SmartString] = None,
   errorExample: Option[SmartString] = None,
   notPII: Boolean = false,
-  extraLetterSpacing: Option[Boolean] = None,
-  priority: Option[Priority] = None
+  extraLetterSpacing: Option[Boolean] = None
 ) {
   private def updateField(i: Int, fc: FormComponent): FormComponent =
     fc.copy(
@@ -157,8 +155,8 @@ object IsMiniSummaryList {
 object IsCountryLookup {
   def unapply(fc: FormComponent): Option[Text] =
     fc.`type` match {
-      case t @ Text(Lookup(Register.Country, _), _, _, _, _, _) => Some(t)
-      case _                                                    => None
+      case t @ Text(Lookup(Register.Country, _), _, _, _, _, _, _) => Some(t)
+      case _                                                       => None
     }
 }
 

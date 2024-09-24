@@ -121,6 +121,7 @@ class FormComponentMaker(json: JsValue) {
   lazy val toUpperCase: UpperCaseBoolean = (json \ "toUpperCase").asOpt[UpperCaseBoolean].getOrElse(IsNotUpperCase)
   lazy val prefix: Option[SmartString] = (json \ "prefix").asOpt[SmartString]
   lazy val suffix: Option[SmartString] = (json \ "suffix").asOpt[SmartString]
+  lazy val priority: Option[Priority] = parse("priority", PriorityTypeParser.validate).getOrElse(None)
   lazy val roundingMode: RoundingMode = (json \ "round").asOpt[RoundingMode].getOrElse(RoundingMode.defaultRoundingMode)
   lazy val optMultivalue: Opt[Option[Boolean]] = toOpt((json \ "multivalue").validateOpt[Boolean], "/multivalue")
   lazy val total: Option[String] = (json \ "total").asOpt[String]
@@ -196,8 +197,6 @@ class FormComponentMaker(json: JsValue) {
     toOpt((json \ "countryDisplayed").validateOpt[Boolean], "/countryDisplayed")
   lazy val optCountyDisplayed: Opt[Option[Boolean]] =
     toOpt((json \ "countyDisplayed").validateOpt[Boolean], "/countyDisplayed")
-  lazy val optPriority: Opt[Option[Priority]] =
-    parse("priority", PriorityTypeParser.validate)
 
   private def getValueRow(json: JsValue): Opt[MiniSummaryRow] =
     for {
@@ -281,7 +280,6 @@ class FormComponentMaker(json: JsValue) {
     } yield TableComp(header, rows, summaryValue, caption, captionClasses, classes, firstCellIsHeader)
   }
 
-  //TODO: Update (remove priority)
   def optFieldValue(): Opt[FormComponent] =
     for {
       label              <- optLabel
@@ -296,7 +294,6 @@ class FormComponentMaker(json: JsValue) {
       labelSize          <- optLabelSize
       notPII             <- optNotPII
       extraLetterSpacing <- optExtraLetterSpacing
-      priority           <- optPriority
     } yield mkFieldValue(
       label,
       helpText,
@@ -309,8 +306,7 @@ class FormComponentMaker(json: JsValue) {
       validIf,
       labelSize,
       notPII,
-      extraLetterSpacing,
-      priority
+      extraLetterSpacing
     )
 
   private def toOpt[A](result: JsResult[A], pathPrefix: String): Opt[A] =
@@ -338,8 +334,7 @@ class FormComponentMaker(json: JsValue) {
     validIf: Option[ValidIf],
     labelSize: Option[LabelSize],
     notPII: Boolean,
-    extraLetterSpacing: Option[Boolean],
-    priority: Option[Priority]
+    extraLetterSpacing: Option[Boolean]
   ): FormComponent =
     FormComponent(
       id = id,
@@ -370,8 +365,7 @@ class FormComponentMaker(json: JsValue) {
       errorShortNameStart = errorShortNameStart,
       errorExample = errorExample,
       notPII = notPII,
-      extraLetterSpacing = extraLetterSpacing,
-      priority = priority
+      extraLetterSpacing = extraLetterSpacing
     )
 
   private lazy val optMES: Opt[MES] = (submitMode, optMandatory, optMaybeValueExpr) match {
@@ -413,7 +407,6 @@ class FormComponentMaker(json: JsValue) {
     case Some(TableCompRaw)       => tableCompOpt
   }
 
-  //TODO: Update (in createObject)
   lazy val textOpt: Opt[ComponentType] = {
     for {
       emailVerification <- optEmailVerification
@@ -432,6 +425,7 @@ class FormComponentMaker(json: JsValue) {
                   toUpperCase,
                   prefix,
                   suffix,
+                  priority,
                   rows.getOrElse(TextArea.defaultRows),
                   displayCharCount.getOrElse(true),
                   json
