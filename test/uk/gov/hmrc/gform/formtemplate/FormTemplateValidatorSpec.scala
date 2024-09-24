@@ -24,7 +24,7 @@ import uk.gov.hmrc.gform.Helpers.{ toLocalisedString, toSmartString }
 import uk.gov.hmrc.gform.core.parsers.ValueParser
 import uk.gov.hmrc.gform.core.{ Invalid, Valid }
 import uk.gov.hmrc.gform.sharedmodel.{ LangADT, LocalisedString, SmartString }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AnyDate, Constant, CsvCountryCheck, Date, DateCtx, DateFormCtxVar, ExprWithPath, FormComponentId, FormComponentValidator, FormCtx, HideZeroDecimals, IfElse, InformationMessage, Instruction, IsTrue, LeafExpr, LinkCtx, Offset, PageId, PostcodeLookup, StandardInfo, TemplatePath, ValidIf }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AnyDate, Choice, Constant, CsvCountryCheck, Date, DateCtx, DateFormCtxVar, ExprWithPath, FormComponent, FormComponentId, FormComponentValidator, FormCtx, HideZeroDecimals, Horizontal, IfElse, InformationMessage, Instruction, IsTrue, LeafExpr, LinkCtx, Offset, OptionData, OptionDataValue, PageId, PostcodeLookup, Radio, StandardInfo, SummariseGroupAsGrid, TemplatePath, ValidIf }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.PageLink
 
 class FormTemplateValidatorSpec
@@ -710,4 +710,108 @@ class FormTemplateValidatorSpec
       result shouldBe Invalid("A label is required for postcodeLookup 'postcodeLookup1' to use on summarySection.")
     }
   }
+
+  "validate choice options" when {
+    "String base value includes spaces" should {
+      "return invalid" in {
+        val sections =
+          List(mkSectionNonRepeatingPage(formComponents = List(getChoiceComponentWithStringBasedValues("f o o"))))
+        val result = FormTemplateValidator
+          .validateChoiceOptions(SectionHelper.pages(sections))
+        result shouldBe Invalid(
+          "Choice component options non-expr 'value' must only contain letters, numbers and underscores: dutyType."
+        )
+      }
+    }
+
+    "String base value incudes commas" should {
+      "return invalid" in {
+        val sections =
+          List(mkSectionNonRepeatingPage(formComponents = List(getChoiceComponentWithStringBasedValues("f,o,o"))))
+        val result = FormTemplateValidator
+          .validateChoiceOptions(SectionHelper.pages(sections))
+        result shouldBe Invalid(
+          "Choice component options non-expr 'value' must only contain letters, numbers and underscores: dutyType."
+        )
+      }
+    }
+
+    "String base value incudes empty string" should {
+      "return invalid" in {
+        val sections =
+          List(mkSectionNonRepeatingPage(formComponents = List(getChoiceComponentWithStringBasedValues(""))))
+        val result = FormTemplateValidator
+          .validateChoiceOptions(SectionHelper.pages(sections))
+        result shouldBe Invalid(
+          "Choice component options cannot be empty or include only spaces: dutyType."
+        )
+      }
+    }
+
+    "String base value incudes spaces only" should {
+      "return invalid" in {
+        val sections =
+          List(mkSectionNonRepeatingPage(formComponents = List(getChoiceComponentWithStringBasedValues(" "))))
+        val result = FormTemplateValidator
+          .validateChoiceOptions(SectionHelper.pages(sections))
+        result shouldBe Invalid(
+          "Choice component options non-expr 'value' must only contain letters, numbers and underscores: dutyType."
+        )
+      }
+    }
+
+    "String base value incudes no spaces" should {
+      "return valid" in {
+        val sections =
+          List(mkSectionNonRepeatingPage(formComponents = List(getChoiceComponentWithStringBasedValues("foo_bar1"))))
+        val result = FormTemplateValidator
+          .validateChoiceOptions(SectionHelper.pages(sections))
+        result shouldBe Valid
+      }
+    }
+
+    "String base values are not unique" should {
+      "return invalid" in {
+        val sections =
+          List(mkSectionNonRepeatingPage(formComponents = List(getChoiceComponentWithStringBasedValues("bar"))))
+        val result = FormTemplateValidator
+          .validateChoiceOptions(SectionHelper.pages(sections))
+        result shouldBe Invalid("Choice component options 'value's needs to be unique: dutyType.")
+      }
+    }
+  }
+
+  private def getChoiceComponentWithStringBasedValues(stringValue: String): FormComponent =
+    FormComponent(
+      FormComponentId("dutyType"),
+      Choice(
+        Radio,
+        NonEmptyList.of(
+          OptionData
+            .ValueBased(toSmartString("Yes", "Iawn"), None, None, None, OptionDataValue.StringBased(stringValue)),
+          OptionData.ValueBased(toSmartString("No", "Na"), None, None, None, OptionDataValue.StringBased("bar"))
+        ),
+        Horizontal,
+        List.empty[Int],
+        None,
+        None,
+        None,
+        LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
+        None,
+        None
+      ),
+      toSmartString("Select the tax type"),
+      false,
+      None,
+      None,
+      None,
+      validIf = None,
+      mandatory = true,
+      editable = true,
+      submissible = true,
+      derived = false,
+      onlyShowOnSummary = false,
+      None,
+      Some(List(SummariseGroupAsGrid))
+    )
 }
