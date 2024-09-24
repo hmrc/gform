@@ -127,7 +127,7 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
           IsNotUpperCase,
           Some(toSmartString("prefixTest")),
           Some(toSmartString("suffixTest")),
-          None,
+          Some(Uk),
           Json.obj()
         ),
         Text(
@@ -135,7 +135,8 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
           expr,
           xsDisplayWidth,
           prefix = Some(toSmartString("prefixTest")),
-          suffix = Some(toSmartString("suffixTest"))
+          suffix = Some(toSmartString("suffixTest")),
+          priority = Some(Uk)
         ).asRight
       )
     )
