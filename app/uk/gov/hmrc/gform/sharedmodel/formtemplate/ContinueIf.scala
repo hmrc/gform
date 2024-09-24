@@ -25,9 +25,9 @@ case object Stop extends ContinueIf
 object ContinueIf {
 
   private val templateReads: Reads[ContinueIf] = Reads {
-    case JsString("true")  => JsSuccess(Continue)
-    case JsString("false") => JsSuccess(Stop)
-    case otherwise         => JsError(s"Invalid continueIf value. Expected 'true' or 'false', got $otherwise")
+    case JsTrue    => JsSuccess(Continue)
+    case JsFalse   => JsSuccess(Stop)
+    case otherwise => JsError(s"Invalid continueIf value. Expected 'true' or 'false', got $otherwise")
   }
 
   implicit val format: OFormat[ContinueIf] = OFormatWithTemplateReadFallback(templateReads)

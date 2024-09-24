@@ -19,7 +19,7 @@ package uk.gov.hmrc.gform.formtemplate
 import cats.data.NonEmptyList
 import cats.syntax.eq._
 import io.circe.DecodingFailure.Reason.WrongTypeExpectation
-import io.circe.{ DecodingFailure, Json }
+import io.circe.{ Decoder, DecodingFailure, HCursor, Json }
 import io.circe.schema.ValidationError
 import uk.gov.hmrc.gform.exceptions.SchemaValidationException
 
@@ -151,8 +151,8 @@ object JsonSchemaErrorParser {
 
   private def parseConditionalValidationErrorMessage(schema: Json, json: Json, error: ValidationError): String =
     error.keyword match {
-      case "pattern" =>
-        parsePatternConditionalValidationError(schema, json, error)
+      case "pattern" | "enum" =>
+        parsePatternEnumConditionalValidationError(schema, json, error)
 
       case "required" =>
         parseRequiredConditionalValidationError(schema, json, error)
@@ -160,7 +160,7 @@ object JsonSchemaErrorParser {
       case _ => error.getMessage
     }
 
-  private def parsePatternConditionalValidationError(schema: Json, json: Json, error: ValidationError): String = {
+  private def parsePatternEnumConditionalValidationError(schema: Json, json: Json, error: ValidationError): String = {
     val errorLocation: String = tryConvertErrorLocationToId(json, error.location, propertyNameInLocation = true)
 
     val maybeRequirements: Either[DecodingFailure, Json] =
@@ -279,6 +279,37 @@ object JsonSchemaErrorParser {
 
     }
 
+  trait JsonPropertyValue
+
+  case class JsonString(value: String) extends JsonPropertyValue
+  case class JsonBoolean(values: List[Boolean]) extends JsonPropertyValue
+
+  object JsonPropertyValue {
+
+    implicit val stringValueDecoder: Decoder[JsonString] = new Decoder[JsonString] {
+      final def apply(c: HCursor): Decoder.Result[JsonString] =
+        for {
+          value <- c.as[String]
+        } yield JsonString(value)
+    }
+
+    implicit val booleanValueDecoder: Decoder[JsonBoolean] = new Decoder[JsonBoolean] {
+      final def apply(c: HCursor): Decoder.Result[JsonBoolean] =
+        for {
+          values <- c.as[List[Boolean]]
+        } yield JsonBoolean(values)
+    }
+
+    implicit val propertyValueDecoder: Decoder[JsonPropertyValue] = new Decoder[JsonPropertyValue] {
+      final def apply(c: HCursor): Decoder.Result[JsonPropertyValue] =
+        c.as[String]
+          .map(JsonString.apply)
+          .orElse(
+            c.as[List[Boolean]].map(JsonBoolean.apply)
+          )
+    }
+  }
+
   private def getErrorMessageFromConditionalRequirements(
     maybeRequirements: Either[DecodingFailure, Json],
     error: ValidationError,
@@ -288,11 +319,11 @@ object JsonSchemaErrorParser {
     maybeRequirements match {
       case Left(_) => error.getMessage
       case Right(requirements: Json) =>
-        requirements.as[Map[String, Map[String, String]]] match {
+        requirements.as[Map[String, Map[String, JsonPropertyValue]]] match {
           case Left(_) => error.getMessage
           case Right(propertyAndPattern) =>
             val errorMessage: String =
-              s"Property $property can only be used with ${requiredPropertyValuesFromPattern(propertyAndPattern)}"
+              s"Property $property can only be used with ${requiredPropertyValuesFromPatternEnum(propertyAndPattern)}"
             constructCustomErrorMessage(errorLocation, errorMessage)
         }
     }
@@ -344,20 +375,24 @@ object JsonSchemaErrorParser {
       component.findAllByKey("properties").headOption match {
         case None => None
         case Some(requiredProperties) =>
-          requiredProperties.as[Map[String, Map[String, String]]] match {
+          requiredProperties.as[Map[String, Map[String, JsonPropertyValue]]] match {
             case Left(_) => None
             case Right(requiredPropertiesMap) =>
-              Some(requiredPropertyValuesFromPattern(requiredPropertiesMap))
+              Some(requiredPropertyValuesFromPatternEnum(requiredPropertiesMap))
           }
       }
     }
 
-  private def requiredPropertyValuesFromPattern(requiredPropertyAndPattern: Map[String, Map[String, String]]): String =
+  private def requiredPropertyValuesFromPatternEnum(
+    requiredPropertyAndPattern: Map[String, Map[String, JsonPropertyValue]]
+  ): String =
     requiredPropertyAndPattern.view
       .mapValues { requiredPattern =>
         requiredPattern.values
-          .map { requiredValues =>
-            requiredValues.substring(2, requiredValues.length - 2).replace("|", ", ")
+          .map {
+            case JsonString(value)   => value.substring(2, value.length - 2).replace("|", ", ")
+            case JsonBoolean(values) => values.map(_.toString).mkString(", ")
+            case other               => throw new IllegalArgumentException(s"Unsupported type: $other")
           }
           .mkString(", ")
       }

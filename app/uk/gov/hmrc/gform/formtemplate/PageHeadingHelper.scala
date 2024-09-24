@@ -17,7 +17,7 @@
 package uk.gov.hmrc.gform.formtemplate
 
 import uk.gov.hmrc.gform.sharedmodel.SmartString
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponent, FormKind, FormTemplate, IsGroup, IsInformationMessage, Page, Section }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponent, FormKind, FormTemplate, IsGroup, IsInformationMessage, IsPostcodeLookup, Page, Section }
 
 object PageHeadingHelper {
   def fillBlankPageHeadings(formTemplate: FormTemplate): FormTemplate = {
@@ -71,6 +71,14 @@ object PageHeadingHelper {
           formComponent match {
             case IsGroup(g)              => onlyShowOnSummaryHead ::: rest
             case IsInformationMessage(_) => onlyShowOnSummaryHead ::: rest
+            case IsPostcodeLookup(_) =>
+              if (
+                formComponent.editable &&
+                wasMarkedAsEmpty(formComponent.label) &&
+                tailIsNonEditable
+              )
+                onlyShowOnSummaryHead ::: formComponent.copy(label = title) :: tail
+              else onlyShowOnSummaryHead ::: rest
             case fc =>
               if (
                 formComponent.editable &&

@@ -145,7 +145,7 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
           TextFormat(textConstraint),
           Some(TextExpression(expr)),
           None,
-          Some("yes"),
+          true,
           None,
           defaultRows,
           defaultDisplayCharCount,
@@ -158,7 +158,7 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
           TextFormat(textConstraint),
           Some(TextExpression(expr)),
           Some("xs"),
-          Some("true"),
+          true,
           Some(10),
           defaultRows,
           defaultDisplayCharCount,
@@ -171,7 +171,7 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
           TextFormat(textConstraint),
           Some(TextExpression(expr)),
           Some("xs"),
-          Some("true"),
+          true,
           None,
           10,
           defaultDisplayCharCount,
@@ -184,7 +184,7 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
           TextFormat(textConstraint),
           Some(TextExpression(expr)),
           None,
-          Some("yes"),
+          true,
           None,
           defaultRows,
           false,
@@ -197,7 +197,7 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
           TextFormat(textConstraint),
           Some(TextExpression(expr)),
           None,
-          Some("yes"),
+          true,
           None,
           defaultRows,
           true,
@@ -210,12 +210,11 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
   }
 
   "createObject" should "return error when format is empty for text type" in {
-    val isMultiline = Some("no") // denotes text type
     val result =
       createObject(
         None,
         None,
-        isMultiline,
+        false,
         None,
         None,
         IsNotUpperCase,
@@ -233,12 +232,11 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
   }
 
   it should "return error when format is empty for multiline text type" in {
-    val isMultiline = Some("yes") // denotes multiline text type
     val result =
       createObject(
         None,
         None,
-        isMultiline,
+        true,
         None,
         None,
         IsNotUpperCase,
@@ -256,12 +254,11 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
   }
 
   it should "return error when format is empty for multiline text type having no of rows" in {
-    val isMultiline = Some("yes") // denotes multiline text type
     val result =
       createObject(
         None,
         None,
-        isMultiline,
+        true,
         None,
         None,
         IsNotUpperCase,
@@ -282,7 +279,7 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
     val result = createObject(
       Some(OrientationFormat("xxx")),
       None,
-      None,
+      false,
       None,
       None,
       IsNotUpperCase,
@@ -303,7 +300,7 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
     val result = createObject(
       Some(OrientationFormat("xxx")),
       None,
-      Some("yes"),
+      true,
       None,
       None,
       IsNotUpperCase,
@@ -324,7 +321,7 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
     val result = createObject(
       Some(OrientationFormat("xxx")),
       None,
-      Some("yes"),
+      true,
       None,
       None,
       IsNotUpperCase,

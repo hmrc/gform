@@ -41,7 +41,7 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
                                              |  "_id": "foobar",
                                              |  "originalId" : "FooBar",
                                              |  "draftRetrievalMethod": {
-                                             |    "showContinueOrDeletePage": "true",
+                                             |    "showContinueOrDeletePage": true,
                                              |    "value": "formAccessCodeForAgents"
                                              |  },
                                              |  "formCategory": "default",
@@ -82,7 +82,7 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
                                          |  "_id": "FooBar",
                                          |  "formCategory": "letter",
                                          |  "draftRetrievalMethod": "formAccessCodeForAgents",
-                                         |  "showContinueOrDeletePage": "false",
+                                         |  "showContinueOrDeletePage": false,
                                          |  "parentFormSubmissionRefs": [
                                          |    "123",
                                          |    "456"
@@ -132,7 +132,7 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
                                              |  "_id": "foobar",
                                              |  "originalId": "FooBar",
                                              |  "draftRetrievalMethod": {
-                                             |    "showContinueOrDeletePage": "false",
+                                             |    "showContinueOrDeletePage": false,
                                              |    "value": "formAccessCodeForAgents"
                                              |  },
                                              |  "formCategory": "letter",
@@ -219,7 +219,7 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
                              |  ],
                              |  "formCategory": "letter",
                              |  "draftRetrievalMethod": "formAccessCodeForAgents",
-                             |  "showContinueOrDeletePage": "false",
+                             |  "showContinueOrDeletePage": false,
                              |  "parentFormSubmissionRefs": [
                              |    "123",
                              |    "456"
@@ -269,7 +269,7 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
                                  |  "_id": "foobar",
                                  |  "originalId": "FooBar",
                                  |  "draftRetrievalMethod": {
-                                 |    "showContinueOrDeletePage": "false",
+                                 |    "showContinueOrDeletePage": false,
                                  |    "value": "formAccessCodeForAgents"
                                  |  },
                                  |  "formCategory": "letter",
@@ -366,7 +366,7 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
                                                                |  ],
                                                                |  "formCategory": "letter",
                                                                |  "draftRetrievalMethod": "notPermitted",
-                                                               |  "showContinueOrDeletePage": "false",
+                                                               |  "showContinueOrDeletePage": false,
                                                                |  "parentFormSubmissionRefs": [
                                                                |    "123",
                                                                |    "456"
@@ -416,7 +416,7 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
                                                                    |  "_id": "foobar",
                                                                    |  "originalId": "FooBar",
                                                                    |  "draftRetrievalMethod": {
-                                                                   |    "showContinueOrDeletePage": "false",
+                                                                   |    "showContinueOrDeletePage": false,
                                                                    |    "value": "notPermitted"
                                                                    |  },
                                                                    |  "formCategory": "letter",
@@ -561,7 +561,7 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
                              |  "_id": "FooBar",
                              |  "formCategory": "letter",
                              |  "draftRetrievalMethod": "formAccessCodeForAgents",
-                             |  "showContinueOrDeletePage": "false",
+                             |  "showContinueOrDeletePage": false,
                              |  "parentFormSubmissionRefs": [
                              |    "123",
                              |    "456"

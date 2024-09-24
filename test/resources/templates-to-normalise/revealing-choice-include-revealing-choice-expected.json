@@ -1,6 +1,6 @@
 {
   "draftRetrievalMethod": {
-    "showContinueOrDeletePage": "true",
+    "showContinueOrDeletePage": true,
     "value": "formAccessCodeForAgents"
   },
   "formCategory": "default",

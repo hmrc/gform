@@ -16,7 +16,7 @@
           "type": "revealingChoice",
           "label": "Cake type",
           "choices": ["Chocolate", "Lemon"],
-          "multivalue": "false",
+          "multivalue": false,
           "revealingFields": [
             [
               {

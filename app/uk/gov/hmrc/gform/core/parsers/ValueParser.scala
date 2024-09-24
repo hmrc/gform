@@ -117,9 +117,15 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
       HmrcTaxPeriodCtx(FormCtx(FormComponentId(value)), hmrcTaxPeriodInfo)
     } | dateExprTODAY
 
+  lazy val dataRetrieveDateExpr: Parser[DateExpr] =
+    "dataRetrieve" ~ "." ~ DataRetrieveId.unanchoredIdValidation ~ "." ~ DataRetrieve.Attribute.unanchoredIdValidation ^^ {
+      case _ ~ _ ~ dataRetrieveId ~ _ ~ dataRetrieveAttribute =>
+        DataRetrieveDateCtx(DataRetrieveId(dataRetrieveId), DataRetrieve.Attribute(dataRetrieveAttribute))
+    } | hmrcTaxPeriodExpr
+
   lazy val dateExprTODAYOffset: Parser[DateExpr] = dateExprTODAY ~ offsetYMD ^^ { case dateExprToday ~ offsetYMD =>
     DateExprWithOffset(dateExprToday, offsetYMD)
-  } | hmrcTaxPeriodExpr
+  } | dataRetrieveDateExpr
 
   lazy val formCtxFieldDateWithOffset: Parser[DateExprWithOffset] = formCtxFieldDate ~ offsetYMD ^^ {
     case dateExprCtx ~ offsetYMD =>
@@ -205,6 +211,21 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
     | FormComponentId.unanchoredIdValidation ~ "." ~ addressDetail ^^ { case value ~ _ ~ addressDetail =>
       AddressLens(FormComponentId(value), addressDetail)
     }
+    | "dataRetrieve" ~ "." ~ DataRetrieveId.unanchoredIdValidation ~ "." ~ DataRetrieve.Attribute.unanchoredIdValidation ~ "[" ~ nonZeroPositiveInteger ~ "]" ^^ {
+      case _ ~ _ ~ dataRetrieveId ~ _ ~ dataRetrieveAttribute ~ _ ~ index ~ _ =>
+        IndexOfDataRetrieveCtx(
+          DataRetrieveCtx(DataRetrieveId(dataRetrieveId), DataRetrieve.Attribute(dataRetrieveAttribute)),
+          index - 1
+        )
+    }
+    | "dataRetrieve" ~ "." ~ DataRetrieveId.unanchoredIdValidation ~ "." ~ DataRetrieve.Attribute.unanchoredIdValidation ^^ {
+      case _ ~ _ ~ dataRetrieveId ~ _ ~ dataRetrieveAttribute =>
+        DataRetrieveCtx(DataRetrieveId(dataRetrieveId), DataRetrieve.Attribute(dataRetrieveAttribute))
+    }
+    | "count(" ~ "dataRetrieve" ~ "." ~ DataRetrieveId.unanchoredIdValidation ~ ")" ^^ {
+      case _ ~ _ ~ _ ~ dataRetrieveId ~ _ =>
+        DataRetrieveCount(DataRetrieveId(dataRetrieveId))
+    }
     | dateExprWithoutFormCtxFieldDate.map(DateCtx.apply) | "form" ~ "." ~ FormComponentId.unanchoredIdValidation ^^ {
       case _ ~ _ ~ fieldName =>
         FormCtx(FormComponentId(fieldName))
@@ -220,21 +241,6 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
     }
     | "link" ~ "." ~ internalLinkParser ^^ { case _ ~ _ ~ internalLink =>
       LinkCtx(internalLink)
-    }
-    | "dataRetrieve" ~ "." ~ DataRetrieveId.unanchoredIdValidation ~ "." ~ DataRetrieve.Attribute.unanchoredIdValidation ~ "[" ~ nonZeroPositiveInteger ~ "]" ^^ {
-      case _ ~ _ ~ dataRetrieveId ~ _ ~ dataRetrieveAttribute ~ _ ~ index ~ _ =>
-        IndexOfDataRetrieveCtx(
-          DataRetrieveCtx(DataRetrieveId(dataRetrieveId), DataRetrieve.Attribute(dataRetrieveAttribute)),
-          index - 1
-        )
-    }
-    | "dataRetrieve" ~ "." ~ DataRetrieveId.unanchoredIdValidation ~ "." ~ DataRetrieve.Attribute.unanchoredIdValidation ^^ {
-      case _ ~ _ ~ dataRetrieveId ~ _ ~ dataRetrieveAttribute =>
-        DataRetrieveCtx(DataRetrieveId(dataRetrieveId), DataRetrieve.Attribute(dataRetrieveAttribute))
-    }
-    | "count(" ~ "dataRetrieve" ~ "." ~ DataRetrieveId.unanchoredIdValidation ~ ")" ^^ {
-      case _ ~ _ ~ _ ~ dataRetrieveId ~ _ =>
-        DataRetrieveCount(DataRetrieveId(dataRetrieveId))
     }
     | FormComponentId.unanchoredIdValidation ~ ".column." ~ alphabeticOnly ~ ".count('" ~ alphaNumericWithSpace ~ "')" ^^ {
       case value ~ _ ~ column ~ _ ~ count ~ _ =>
@@ -326,6 +332,12 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
     | "choice(" ~ FormComponentId.unanchoredIdValidation ~ ")" ^^ { case _ ~ value ~ _ =>
       ChoiceLabel(FormComponentId(value))
     }
+    | "choicesSelected(" ~ FormComponentId.unanchoredIdValidation ~ ")" ^^ { case _ ~ value ~ _ =>
+      ChoicesSelected(FormComponentId(value))
+    }
+    | "choicesAvailable(" ~ FormComponentId.unanchoredIdValidation ~ ")" ^^ { case _ ~ value ~ _ =>
+      ChoicesAvailable(FormComponentId(value))
+    }
     | FormComponentId.unanchoredIdValidation ~ "[" ~ nonZeroPositiveInteger ~ "]" ^^ {
       case formComponentId ~ _ ~ index ~ _ =>
         IndexOf(
@@ -384,6 +396,8 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
   lazy val alphabeticWithHyphen: Parser[String] = """[a-zA-Z][-_\w]*""".r ^^ { str =>
     str
   }
+
+  lazy val anything: Parser[String] = """.*""".r ^^ { str => str }
 
   lazy val alphaNumericWithSpace: Parser[String] = """[a-zA-Z\d ]*""".r ^^ { str =>
     str
@@ -606,7 +620,7 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
       OptionDataValue.FormCtxBased(formCtx)
     } | alphabeticOnly ~ expr ^^ { case prefix ~ expr =>
       OptionDataValue.ExprBased(prefix, expr)
-    } | formatParserAlphabeticOnly ^^ (str => OptionDataValue.StringBased(str))
+    } | anything ^^ (str => OptionDataValue.StringBased(str))
 }
 
 object ValueParser extends ValueParser with PackratParsingHelper {

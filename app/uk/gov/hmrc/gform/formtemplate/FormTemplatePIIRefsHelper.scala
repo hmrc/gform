@@ -143,6 +143,8 @@ object FormTemplatePIIRefsHelper {
       case CountryOfItmpAddress                               => Nil
       case ChoicesRevealedField(FormComponentId(value))       => List(value)
       case ChoiceLabel(FormComponentId(value))                => List(value)
+      case ChoicesSelected(FormComponentId(value))            => List(value)
+      case ChoicesAvailable(FormComponentId(value))           => List(value)
     }
 
   implicit class JsLookupResultOps(result: JsLookupResult) {

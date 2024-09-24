@@ -118,6 +118,7 @@ object TopLevelExpressions {
             case DateCtx(value) => value
             case _              => d
           }
+        case d @ DataRetrieveDateCtx(_, _)     => d
         case DateExprWithOffset(dExpr, offset) => DateExprWithOffset(loopDateExpr(dExpr), offset)
 
         case DateIfElse(cond, field1, field2) => DateIfElse(cond, loopDateExpr(field1), loopDateExpr(field2))
@@ -191,6 +192,8 @@ object TopLevelExpressions {
         case CountryOfItmpAddress          => e
         case ChoicesRevealedField(_)       => e
         case ChoiceLabel(_)                => e
+        case ChoicesSelected(_)            => e
+        case ChoicesAvailable(_)           => e
       }
     expressions.get(expressionId).fold(expressions) { expr =>
       expressions + (expressionId -> loop(expr))

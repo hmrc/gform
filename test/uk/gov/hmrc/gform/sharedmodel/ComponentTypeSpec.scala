@@ -32,10 +32,10 @@ class ComponentTypeSpec extends FunSuite {
                          |  "type": "overseasAddress",
                          |  "id": "colombiaAddress",
                          |  "label": "",
-                         |  "line2Mandatory": "true",
-                         |  "cityMandatory": "false",
-                         |  "postcodeMandatory": "true",
-                         |  "countryDisplayed": "false"
+                         |  "line2Mandatory": true,
+                         |  "cityMandatory": false,
+                         |  "postcodeMandatory": true,
+                         |  "countryDisplayed": false
                          |}""")
 
     val expected = OverseasAddress(
@@ -56,9 +56,9 @@ class ComponentTypeSpec extends FunSuite {
                          |  "type": "overseasAddress",
                          |  "id": "colombiaAddress",
                          |  "label": "",
-                         |  "line2Mandatory": "false",
-                         |  "cityMandatory": "true",
-                         |  "postcodeMandatory": "false"
+                         |  "line2Mandatory": false,
+                         |  "cityMandatory": true,
+                         |  "postcodeMandatory": false
                          |}""")
 
     val expected = OverseasAddress(Nil, Nil, true, None, true)
@@ -87,7 +87,7 @@ class ComponentTypeSpec extends FunSuite {
                          |  "type": "overseasAddress",
                          |  "id": "colombiaAddress",
                          |  "label": "",
-                         |  "countryLookup": "false"
+                         |  "countryLookup": false
                          |}""")
 
     val expected = OverseasAddress(Nil, Nil, false, None, true)
@@ -102,8 +102,8 @@ class ComponentTypeSpec extends FunSuite {
            |  "type": "overseasAddress",
            |  "id": "colombiaAddress",
            |  "label": "",
-           |  "countryLookup": "false",
-           |  "countryDisplayed": "false"
+           |  "countryLookup": false,
+           |  "countryDisplayed": false
            |}""")
 
     val expected = OverseasAddress(Nil, Nil, false, None, false)
@@ -118,10 +118,10 @@ class ComponentTypeSpec extends FunSuite {
                          |  "type": "overseasAddress",
                          |  "id": "colombiaAddress",
                          |  "label": "",
-                         |  "line2Mandatory": "true",
-                         |  "cityMandatory": "false",
-                         |  "postcodeMandatory": "true",
-                         |  "countryDisplayed": "false",
+                         |  "line2Mandatory": true,
+                         |  "cityMandatory": false,
+                         |  "postcodeMandatory": true,
+                         |  "countryDisplayed": false,
                          |  "selectionCriteria": [
                          |    {
                          |      "column": "Region",

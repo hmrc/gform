@@ -1,6 +1,6 @@
 {
   "draftRetrievalMethod": {
-    "showContinueOrDeletePage": "true",
+    "showContinueOrDeletePage": true,
     "value": "formAccessCodeForAgents"
   },
   "formCategory": "default",
@@ -27,7 +27,7 @@
           "type": "choice",
           "label": "",
           "shortName": "Signed",
-          "multivalue": "true",
+          "multivalue": true,
           "errorMessage": "You must check the box to sign the declaration",
           "choices": [
             {
