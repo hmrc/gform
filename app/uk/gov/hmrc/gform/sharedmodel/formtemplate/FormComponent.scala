@@ -23,6 +23,7 @@ import shapeless.syntax.typeable._
 import uk.gov.hmrc.gform.formtemplate.FormComponentMaker
 import uk.gov.hmrc.gform.sharedmodel.{ LabelHelper, SmartString }
 
+//TODO: Update (remove priority)
 case class FormComponent(
   id: FormComponentId,
   `type`: ComponentType,

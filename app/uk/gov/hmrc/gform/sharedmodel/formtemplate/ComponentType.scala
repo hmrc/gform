@@ -33,6 +33,7 @@ import uk.gov.hmrc.gform.sharedmodel.structuredform.{ FieldName, RoboticsXml, St
 
 sealed trait ComponentType
 
+//TODO: Update
 case class Text(
   constraint: TextConstraint,
   value: Expr,

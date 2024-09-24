@@ -272,6 +272,7 @@ class FormComponentMaker(json: JsValue) {
     } yield TableComp(header, rows, summaryValue, caption, captionClasses, classes, firstCellIsHeader)
   }
 
+  //TODO: Update (remove priority)
   def optFieldValue(): Opt[FormComponent] =
     for {
       label              <- optLabel
@@ -403,6 +404,7 @@ class FormComponentMaker(json: JsValue) {
     case Some(TableCompRaw)       => tableCompOpt
   }
 
+  //TODO: Update (in createObject)
   lazy val textOpt: Opt[ComponentType] = {
     for {
       emailVerification <- optEmailVerification
