@@ -199,11 +199,6 @@ class FormComponentMaker(json: JsValue) {
   lazy val optPriority: Opt[Option[Priority]] =
     parse("priority", PriorityTypeParser.validate)
 
-  lazy val optCountryLookup: Option[Boolean] = (json \ "countryLookup").asOpt[String].map(_.toBoolean)
-  lazy val optCountryDisplayed: Option[Boolean] = (json \ "countryDisplayed").asOpt[String].map(_.toBoolean)
-  lazy val optCountyDisplayed: Option[Boolean] = (json \ "countyDisplayed").asOpt[String].map(_.toBoolean)
-  lazy val optPriority: Opt[Option[Priority]] =
-    parse("priority", PriorityTypeParser.validate)
   private def getValueRow(json: JsValue): Opt[MiniSummaryRow] =
     for {
       key          <- toOpt((json \ "key").validateOpt[SmartString], "/key")
