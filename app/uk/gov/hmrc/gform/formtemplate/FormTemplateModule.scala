@@ -33,7 +33,6 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateRaw
 import uk.gov.hmrc.gform.shutter.ShutterModule
-import uk.gov.hmrc.gform.testonly.SnapshotMongoCache
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
@@ -46,8 +45,7 @@ class FormTemplateModule(
   handlebarsTemplateService: HandlebarsTemplateAlgebra[Future],
   handlebarsSchemaService: HandlebarsSchemaAlgebra[Future],
   historyModule: HistoryModule,
-  configModule: ConfigModule,
-  snapshotMongoCache: SnapshotMongoCache
+  configModule: ConfigModule
 )(implicit
   ex: ExecutionContext
 ) {
@@ -112,9 +110,7 @@ class FormTemplateModule(
       formRedirectService,
       shutterModule.shutterService,
       notificationBannerModule.notificationService,
-      handler,
-      snapshotMongoCache,
-      configModule.isProd
+      handler
     )
 
   val fOptFormTemplateAlgebra: FormTemplateAlgebra[FOpt] = new FormTemplateAlgebra[FOpt] {
