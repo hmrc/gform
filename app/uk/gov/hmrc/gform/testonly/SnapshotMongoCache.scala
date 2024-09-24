@@ -24,7 +24,6 @@ import org.mongodb.scala.model.Sorts.descending
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import play.api.libs.json._
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 
 class SnapshotMongoCache(
   mongoCacheRepository: MongoCacheRepository[String]
@@ -38,18 +37,6 @@ class SnapshotMongoCache(
 
   def find(snapshotId: SnapshotId): Future[Option[Snapshot]] = mongoCacheRepository
     .get[Snapshot](snapshotId.value)(snapshotDataKey)
-
-  def findBySnapshotTemplateId(snapshotTemplateId: FormTemplateId): Future[Option[Snapshot]] =
-    mongoCacheRepository.collection
-      .find(Filters.eq("data.snapshot.snapshotTemplateId", snapshotTemplateId.value))
-      .headOption()
-      .map(
-        _.flatMap(cache =>
-          (cache.data \ snapshotDataKey.unwrap)
-            .validateOpt[Snapshot]
-            .fold(e => throw JsResultException(e), identity)
-        )
-      )
 
   def findWithFilter(snapshotFilter: SnapshotFilter): Future[List[Snapshot]] = {
 
