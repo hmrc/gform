@@ -23,7 +23,7 @@ object DataStoreFileGenerator {
   def apply(
     userSession: UserSession,
     metaData: DataStoreMetaData,
-    gformJson: String,
+    gformJson: JsObject,
     includeSessionInfo: Boolean
   ): String = {
 
@@ -61,6 +61,6 @@ object DataStoreFileGenerator {
       Json.obj("metaData" -> metaDataJson)
     }
 
-    dataStoreJson.toString() + gformJson
+    (dataStoreJson ++ gformJson.as[JsObject]).toString()
   }
 }
