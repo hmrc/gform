@@ -67,6 +67,8 @@ class FormTemplateService(
       case other              => throw new RuntimeException(s"Expected JsObject type, got $other")
     }
 
+  def getAll(): Future[List[FormTemplateRaw]] = formTemplateRawRepo.findAll()
+
   def delete(formTemplateId: FormTemplateId): FOpt[DeleteResults] =
     for {
       formRedirectDeleteResult    <- formRedirectRepo.deleteByFieldName("redirect", formTemplateId.value)
