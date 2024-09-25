@@ -16,12 +16,14 @@
 
 package uk.gov.hmrc.gform.submission.destinations
 
+import cats.implicits.catsSyntaxEq
 import org.apache.pekko.util.ByteString
-import play.api.libs.json.Json
+import play.api.libs.json.{ JsObject, Json }
 
+import scala.util.Try
 import uk.gov.hmrc.gform.core.FOpt
 import uk.gov.hmrc.gform.sdes.SdesRouting
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ HandlebarsTemplateProcessorModel, TemplateType }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DestinationId, HandlebarsTemplateProcessorModel, TemplateType }
 import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination
 import uk.gov.hmrc.gform.sharedmodel.{ DataStoreMetaData, LangADT, UserSession }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.DataStore
@@ -39,6 +41,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import scala.concurrent.ExecutionContext
+import scala.util.matching.Regex
 
 class DataStoreSubmitter(
   objectStoreAlgebra: ObjectStoreAlgebra[FOpt],
@@ -62,11 +65,11 @@ class DataStoreSubmitter(
     val submission = submissionInfo.submission
 
     val focussedTree = FocussedHandlebarsModelTree(modelTree, modelTree.value.model)
-    val handleBarPayload = dataStore.payload
-      .map(payload => RealHandlebarsTemplateProcessor(payload, accumulatedModel, focussedTree, TemplateType.JSON))
-      .getOrElse("")
+    val maybeHandlebarBasedPayload = dataStore.payload.map(payload =>
+      RealHandlebarsTemplateProcessor(payload, accumulatedModel, focussedTree, TemplateType.JSON)
+    )
 
-    val formDataBasedPayload = compact(
+    val rawFormDataBasedPayload = compact(
       JsonMethods.render(
         org.json4s.Xml.toJson(
           RoboticsXMLGenerator.buildDataStoreXML(
@@ -77,11 +80,16 @@ class DataStoreSubmitter(
       )
     )
 
-    val payloads: String = (dataStore.formDataPayload, dataStore.handlebarPayload) match {
-      case (true, true)   => formDataBasedPayload + handleBarPayload
+    val formDataBasedPayload: JsObject = convertToJson(rawFormDataBasedPayload, dataStore.id, "robotics")
+    val handleBarPayload: JsObject = maybeHandlebarBasedPayload.fold(Json.obj()) { handlebarBasedPayload =>
+      convertToJson(handlebarBasedPayload, dataStore.id, "handlebar")
+    }
+
+    val payloads: JsObject = (dataStore.formDataPayload, dataStore.handlebarPayload) match {
+      case (true, true)   => formDataBasedPayload ++ handleBarPayload
       case (true, false)  => formDataBasedPayload
       case (false, true)  => handleBarPayload
-      case (false, false) => ""
+      case (false, false) => Json.obj()
     }
 
     val dataStoreMetaData = DataStoreMetaData(
@@ -121,6 +129,36 @@ class DataStoreSubmitter(
           Left(s"JSON schema does not exist for the destination '${dataStore.id.id}'")
       }
     } else Right(())
+
+  def convertToJson(string: String, destinationId: DestinationId, payloadDiscriminator: String): JsObject =
+    Try {
+      Json.parse(string)
+    }.fold(
+      error => {
+        val stringRegex: Regex = """"[^:"]*":\s*".*"""".r
+
+        val errorWithoutPii: String = stringRegex.replaceAllIn(
+          error.getMessage,
+          regexMatch => {
+            val matchedString: String = regexMatch.matched
+            val (field, value) = matchedString.splitAt(matchedString.indexOf(":"))
+            val numberOfSpaces = value.splitAt(value.indexOf(":") + 1)._2.takeWhile(_ === ' ').length
+            val valueLength: Int = value.length - 3 - numberOfSpaces // Minus 3 for the colon and quotation marks
+            field + s""":${" " * numberOfSpaces}"$valueLength""""
+          }
+        )
+
+        throw new Exception(
+          s"Data store destination '${destinationId.id}' error, failed to parse $payloadDiscriminator payload into a json:\n$errorWithoutPii"
+        )
+      },
+      jsValue =>
+        jsValue.asOpt[JsObject].getOrElse {
+          throw new Exception(
+            s"Data store destination '${destinationId.id}' error. Cannot convert $payloadDiscriminator payload into a JsObject. This is not a JsObject: '$jsValue'"
+          )
+        }
+    )
 
   override def submitPayload(
     submissionInfo: DestinationSubmissionInfo,
