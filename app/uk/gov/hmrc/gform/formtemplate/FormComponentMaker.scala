@@ -121,7 +121,7 @@ class FormComponentMaker(json: JsValue) {
   lazy val toUpperCase: UpperCaseBoolean = (json \ "toUpperCase").asOpt[UpperCaseBoolean].getOrElse(IsNotUpperCase)
   lazy val prefix: Option[SmartString] = (json \ "prefix").asOpt[SmartString]
   lazy val suffix: Option[SmartString] = (json \ "suffix").asOpt[SmartString]
-  lazy val priority: Option[Priority] = parse("priority", PriorityTypeParser.validate).getOrElse(None)
+  lazy val optPriority: Opt[Option[Priority]] = parse("priority", PriorityTypeParser.validate)
   lazy val roundingMode: RoundingMode = (json \ "round").asOpt[RoundingMode].getOrElse(RoundingMode.defaultRoundingMode)
   lazy val optMultivalue: Opt[Option[Boolean]] = toOpt((json \ "multivalue").validateOpt[Boolean], "/multivalue")
   lazy val total: Option[String] = (json \ "total").asOpt[String]
@@ -416,6 +416,7 @@ class FormComponentMaker(json: JsValue) {
       rows              <- optRows
       multiline         <- optMultiline
       displayCharCount  <- optDisplayCharCount
+      priority          <- optPriority
       result <- createObject(
                   maybeFormatExpr,
                   maybeValueExpr,
