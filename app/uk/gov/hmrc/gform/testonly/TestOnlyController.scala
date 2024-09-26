@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.gform.testonly
 
-import cats.syntax.eq._
+import cats.implicits._
 import com.fasterxml.jackson.databind.JsonNode
 import com.typesafe.config.{ ConfigFactory, ConfigRenderOptions }
 
@@ -33,7 +33,7 @@ import scala.util.Try
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.des.DesAlgebra
 import uk.gov.hmrc.gform.form.FormAlgebra
-import uk.gov.hmrc.gform.formtemplate.FormTemplateAlgebra
+import uk.gov.hmrc.gform.formtemplate.{ FormTemplateAlgebra, RequestHandlerAlg }
 import uk.gov.hmrc.gform.repo.Repo
 import uk.gov.hmrc.gform.sharedmodel._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.TemplateType
@@ -45,6 +45,7 @@ import uk.gov.hmrc.gform.submission.destinations.{ DataStoreSubmitter, Destinati
 import uk.gov.hmrc.gform.submission.{ DmsMetaData, Submission, SubmissionId }
 import uk.gov.hmrc.gform.submission.handlebars.{ FocussedHandlebarsModelTree, HandlebarsModelTree, RealHandlebarsTemplateProcessor }
 import uk.gov.hmrc.gform.BuildInfo
+import uk.gov.hmrc.gform.core.FOpt
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -59,7 +60,8 @@ class TestOnlyController(
   destinationsModelProcessorAlgebra: DestinationsProcessorModelAlgebra[Future],
   dataStoreSubmitter: DataStoreSubmitter,
   des: DesAlgebra[Future],
-  testOnlyFormService: TestOnlyFormService
+  testOnlyFormService: TestOnlyFormService,
+  handler: RequestHandlerAlg[FOpt]
 )(implicit ex: ExecutionContext)
     extends BaseController(controllerComponents) {
   private val logger = LoggerFactory.getLogger(getClass)
@@ -368,6 +370,23 @@ class TestOnlyController(
         _ => throw new Exception(s"Unable to delete the generated files for the envelope '${envelopeId.value}'"),
         _ => NoContent
       )
+  }
+
+  def reloadTemplates(): Action[AnyContent] = Action.async { _ =>
+    for {
+      formTemplateRaws <- testOnlyFormService.getAllFormTemplates()
+      _ <- formTemplateRaws.traverse { formTemplateRaw =>
+             handler
+               .handleRequest(formTemplateRaw)
+               .fold(
+                 err => throw new Exception(s"Unable to reload the form templates. Error, $err"),
+                 _ => {
+                   logger.info(s"reloading the form template. handler.handleRequest(${formTemplateRaw._id.value})")
+                   NoContent
+                 }
+               )
+           }
+    } yield NoContent
   }
 }
 

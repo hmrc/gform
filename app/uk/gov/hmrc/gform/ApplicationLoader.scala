@@ -328,7 +328,7 @@ class ApplicationModule(context: Context)
       playComponents,
       formService,
       testOnlyFormService,
-      formTemplateModule.formTemplateService,
+      formTemplateModule,
       destinationModule,
       controllerComponents,
       objectStoreModule,

@@ -23,7 +23,7 @@ import scala.concurrent.Future
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.des.DesConnector
 import uk.gov.hmrc.gform.form.FormService
-import uk.gov.hmrc.gform.formtemplate.{ FormTemplateAlgebra, FormTemplateService }
+import uk.gov.hmrc.gform.formtemplate.{ FormTemplateAlgebra, FormTemplateModule }
 import uk.gov.hmrc.gform.mongo.MongoModule
 import uk.gov.hmrc.gform.objectstore.ObjectStoreModule
 import uk.gov.hmrc.gform.playcomponents.PlayComponents
@@ -41,7 +41,7 @@ class TestOnlyModule(
   playComponents: PlayComponents,
   formService: FormService[Future],
   testOnlyFormService: TestOnlyFormService,
-  formTemplateService: FormTemplateService,
+  formTemplateModule: FormTemplateModule,
   destinationModule: DestinationModule,
   controllerComponents: ControllerComponents,
   objectStoreModule: ObjectStoreModule,
@@ -62,9 +62,10 @@ class TestOnlyModule(
   )
 
   val formTemplateAlgebra: FormTemplateAlgebra[Future] = new FormTemplateAlgebra[Future] {
-    override def get(id: FormTemplateId): Future[FormTemplate] = formTemplateService.get(id)
+    override def get(id: FormTemplateId): Future[FormTemplate] = formTemplateModule.formTemplateService.get(id)
 
-    override def find(id: FormTemplateId): Future[Option[FormTemplate]] = formTemplateService.find(id)
+    override def find(id: FormTemplateId): Future[Option[FormTemplate]] =
+      formTemplateModule.formTemplateService.find(id)
   }
 
   val testOnlyController: TestOnlyController =
@@ -77,7 +78,8 @@ class TestOnlyModule(
       destinationModule.futureDestinationsProcessorModelService,
       submissionModule.dataStoreSubmitter,
       desConnector,
-      testOnlyFormService
+      testOnlyFormService,
+      formTemplateModule.handler
     )
   val proxyActions = new Proxy(playComponents.wsClient, controllerComponents)
   val fUInterceptor: FUInterceptorController =

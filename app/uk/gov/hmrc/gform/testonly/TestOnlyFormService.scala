@@ -19,10 +19,9 @@ package uk.gov.hmrc.gform.testonly
 import play.api.mvc.Results
 import play.api.libs.json._
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateRawId
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplateRaw, FormTemplateRawId }
 import uk.gov.hmrc.gform.formtemplate.{ FormTemplateService, RequestHandlerAlg }
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId, FormId }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateRaw
 import uk.gov.hmrc.gform.save4later.FormMongoCache
 import uk.gov.hmrc.gform.core.FOpt
 import uk.gov.hmrc.gform.BuildInfo
@@ -185,4 +184,5 @@ class TestOnlyFormService(
            .map(_ => ())
   } yield ()
 
+  def getAllFormTemplates(): Future[List[FormTemplateRaw]] = formTemplateService.getAll()
 }
