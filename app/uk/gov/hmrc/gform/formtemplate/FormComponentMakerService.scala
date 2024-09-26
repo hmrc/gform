@@ -34,13 +34,23 @@ object FormComponentMakerService {
     toUpperCase: UpperCaseBoolean,
     maybePrefix: Option[SmartString],
     maybeSuffix: Option[SmartString],
+    maybePriority: Option[Priority],
     rows: Int,
     displayCharCount: Boolean,
     json: JsValue
   ): Either[UnexpectedState, ComponentType] =
     (maybeFormatExpr, maybeValueExpr, multiLine, dataThreshold) match {
       case (Some(formatExpr), _, false, None) =>
-        createTextObject(formatExpr, maybeValueExpr, maybeDisplayWidth, toUpperCase, maybePrefix, maybeSuffix, json)
+        createTextObject(
+          formatExpr,
+          maybeValueExpr,
+          maybeDisplayWidth,
+          toUpperCase,
+          maybePrefix,
+          maybeSuffix,
+          maybePriority,
+          json
+        )
       case (Some(formatExpr), _, true, _) =>
         createTextAreaObject(
           formatExpr,
@@ -62,12 +72,13 @@ object FormComponentMakerService {
     toUpperCase: UpperCaseBoolean,
     maybePrefix: Option[SmartString],
     maybeSuffix: Option[SmartString],
+    maybePriority: Option[Priority],
     json: JsValue
   ) = (formatExpr, maybeValueExpr, maybeDisplayWidth) match {
     case (TextFormat(f), HasTextExpression(expr), None) =>
-      Text(f, expr, DisplayWidth.DEFAULT, toUpperCase, maybePrefix, maybeSuffix).asRight
+      Text(f, expr, DisplayWidth.DEFAULT, toUpperCase, maybePrefix, maybeSuffix, maybePriority).asRight
     case (TextFormat(f), HasTextExpression(expr), HasDisplayWidth(dw)) =>
-      Text(f, expr, dw, toUpperCase, maybePrefix, maybeSuffix).asRight
+      Text(f, expr, dw, toUpperCase, maybePrefix, maybeSuffix, maybePriority).asRight
     case _ => createError(Some(formatExpr), maybeValueExpr, false, json, None).asLeft
   }
 

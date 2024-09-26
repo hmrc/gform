@@ -62,6 +62,7 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
           IsNotUpperCase,
           None,
           None,
+          None,
           Json.obj()
         ),
         Text(textConstraint, expr).asRight
@@ -72,6 +73,7 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
           Some(TextExpression(expr)),
           None,
           IsUpperCase,
+          None,
           None,
           None,
           Json.obj()
@@ -86,6 +88,7 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
           IsNotUpperCase,
           None,
           None,
+          None,
           Json.obj()
         ),
         Text(textConstraint, expr, xsDisplayWidth).asRight
@@ -96,6 +99,7 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
           Some(TextExpression(expr)),
           Some("xs"),
           IsUpperCase,
+          None,
           None,
           None,
           Json.obj()
@@ -110,6 +114,7 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
           IsNotUpperCase,
           Some(toSmartString("prefixTest")),
           None,
+          None,
           Json.obj()
         ),
         Text(textConstraint, expr, xsDisplayWidth, prefix = Some(toSmartString("prefixTest"))).asRight
@@ -122,6 +127,7 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
           IsNotUpperCase,
           Some(toSmartString("prefixTest")),
           Some(toSmartString("suffixTest")),
+          Some(Uk),
           Json.obj()
         ),
         Text(
@@ -129,7 +135,8 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
           expr,
           xsDisplayWidth,
           prefix = Some(toSmartString("prefixTest")),
-          suffix = Some(toSmartString("suffixTest"))
+          suffix = Some(toSmartString("suffixTest")),
+          priority = Some(Uk)
         ).asRight
       )
     )
@@ -220,6 +227,7 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
         IsNotUpperCase,
         None,
         None,
+        None,
         defaultRows,
         defaultDisplayCharCount,
         JsObject(Seq("id" -> JsString("text1")))
@@ -240,6 +248,7 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
         None,
         None,
         IsNotUpperCase,
+        None,
         None,
         None,
         defaultRows,
@@ -264,6 +273,7 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
         IsNotUpperCase,
         None,
         None,
+        None,
         10,
         defaultDisplayCharCount,
         JsObject(Seq("id" -> JsString("text1")))
@@ -283,6 +293,7 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
       None,
       None,
       IsNotUpperCase,
+      None,
       None,
       None,
       defaultRows,
@@ -306,6 +317,7 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
       IsNotUpperCase,
       None,
       None,
+      None,
       defaultRows,
       defaultDisplayCharCount,
       JsObject(Seq("id" -> JsString("text1")))
@@ -325,6 +337,7 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
       None,
       None,
       IsNotUpperCase,
+      None,
       None,
       None,
       10,

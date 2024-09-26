@@ -58,7 +58,8 @@ case class Text(
   displayWidth: DisplayWidth = DisplayWidth.DEFAULT,
   toUpperCase: UpperCaseBoolean = IsNotUpperCase,
   prefix: Option[SmartString] = None,
-  suffix: Option[SmartString] = None
+  suffix: Option[SmartString] = None,
+  priority: Option[Priority] = None
 ) extends ComponentType
 
 sealed trait UpperCaseBoolean
@@ -560,7 +561,7 @@ object ComponentType {
 
   implicit val leafExprs: LeafExpr[ComponentType] = (path: TemplatePath, t: ComponentType) =>
     t match {
-      case Text(constraint, expr, _, _, prefix, suffix) =>
+      case Text(constraint, expr, _, _, prefix, suffix, _) =>
         ExprWithPath(path + "value", expr) ::
           LeafExpr(path + "prefix", prefix) ++
           LeafExpr(path + "suffix", suffix) ++

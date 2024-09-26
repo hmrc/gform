@@ -16,18 +16,14 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
-sealed trait ExprCardinality
-case class SingleExpr(expr: Expr) extends ExprCardinality
-case class MultipleExpr(fields: List[FormComponent]) extends ExprCardinality
+import julienrf.json.derived
+import play.api.libs.json.OFormat
 
-object HasExpr {
-  def unapply(fc: FormComponent): Option[ExprCardinality] = unapply(fc.`type`)
+sealed trait Priority
 
-  def unapply(ct: ComponentType): Option[ExprCardinality] =
-    ct match {
-      case Text(_, expr, _, _, _, _, _)  => Some(SingleExpr(expr))
-      case TextArea(_, expr, _, _, _, _) => Some(SingleExpr(expr))
-      case Group(fields, _, _, _, _)     => Some(MultipleExpr(fields))
-      case _                             => None
-    }
+case object Standard extends Priority
+case object Uk extends Priority
+
+object Priority {
+  implicit val format: OFormat[Priority] = derived.oformat()
 }
