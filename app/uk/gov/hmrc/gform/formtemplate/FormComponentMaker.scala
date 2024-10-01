@@ -119,6 +119,8 @@ class FormComponentMaker(json: JsValue) {
     toOpt((json \ "displayCharCount").validateOpt[Boolean], "/displayCharCount")
   lazy val displayWidth: Option[String] = (json \ "displayWidth").asOpt[String]
   lazy val toUpperCase: UpperCaseBoolean = (json \ "toUpperCase").asOpt[UpperCaseBoolean].getOrElse(IsNotUpperCase)
+  lazy val displayInSummary: DisplayInSummary =
+    (json \ "displayInSummary").asOpt[DisplayInSummary].getOrElse(IsNotDisplayInSummary)
   lazy val prefix: Option[SmartString] = (json \ "prefix").asOpt[SmartString]
   lazy val suffix: Option[SmartString] = (json \ "suffix").asOpt[SmartString]
   lazy val optPriority: Opt[Option[Priority]] = parse("priority", PriorityTypeParser.validate)
@@ -240,7 +242,7 @@ class FormComponentMaker(json: JsValue) {
     } yield rs
   }
 
-  lazy val summaryListOpt: Opt[MiniSummaryList] = rows(json, "rows").map(rs => MiniSummaryList(rs))
+  lazy val summaryListOpt: Opt[MiniSummaryList] = rows(json, "rows").map(rs => MiniSummaryList(rs, displayInSummary))
 
   lazy val tableCompOpt: Opt[TableComp] = {
     def getValueRow(json: JsValue): Opt[TableValue] =

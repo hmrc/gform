@@ -1040,7 +1040,7 @@ object FormTemplateValidator {
     case OverseasAddress(_, _, _, Some(expr), _, _) => validateOverseasAddressValue(expr, formTemplate)
     case OverseasAddress(_, _, _, _, _, _)          => Valid
     case PostcodeLookup(_, _, _)                    => Valid
-    case MiniSummaryList(ls)                        => validateMiniSummaryList(ls, formTemplate)
+    case MiniSummaryList(ls, _)                     => validateMiniSummaryList(ls, formTemplate)
     case t: TableComp                               => TableCompValidator.validateTableComp(t)
   }
 

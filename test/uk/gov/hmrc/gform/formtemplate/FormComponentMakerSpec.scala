@@ -355,7 +355,8 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
               Some(IncludeIf(Equals(Constant("1"), Constant("1")))),
               None
             )
-          )
+          ),
+          IsNotDisplayInSummary
         ),
         SmartString(LocalisedString(Map(LangADT.En -> "summaryListLabel")), List()),
         false,
