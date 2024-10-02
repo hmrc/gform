@@ -433,7 +433,7 @@ object Substituter {
       fields = t.fields(substitutions),
       pdf = t.pdf(substitutions),
       instructionPdf = t.instructionPdf(substitutions),
-      panelTitle = t.panelTitle(substitutions)
+      noPIITitle = t.noPIITitle(substitutions)
     )
 
   implicit def desIncludeIfValueSubstituter[A](implicit

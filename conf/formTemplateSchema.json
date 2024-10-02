@@ -338,9 +338,6 @@
         "title": {
           "$ref": "#/$defs/stringOrEnCyObject"
         },
-        "panelTitle": {
-          "$ref": "#/$defs/stringOrEnCyObject"
-        },
         "showReference": {
           "type": "boolean"
         },
@@ -394,10 +391,15 @@
           "items": {
             "$ref": "#/$defs/fields"
           }
+        },
+        "notPII": {
+          "type": "boolean"
+        },
+        "noPIITitle": {
+          "$ref": "#/$defs/stringOrEnCyObject"
         }
       },
       "required": [
-        "title",
         "fields"
       ],
       "additionalProperties": false
