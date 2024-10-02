@@ -31,14 +31,14 @@ object AcknowledgementValidator {
       }
     )
 
-    def pIITitle(title: SmartString) = {
+    def hasPIIReference(title: SmartString) = {
       val exprs: List[Expr] = title.internals.flatMap(_.interpolations)
       exprRefs.exists(exprs.contains)
     }
 
     destinations match {
       case destinationList: DestinationList
-          if destinationList.acknowledgementSection.title.exists(pIITitle) &&
+          if destinationList.acknowledgementSection.title.exists(hasPIIReference) &&
             destinationList.acknowledgementSection.noPIITitle.isEmpty && !destinationList.acknowledgementSection.notPII =>
         Invalid(
           s"The acknowledgement section does not have the property 'notPII': true and there is no noPIITitle defined"
