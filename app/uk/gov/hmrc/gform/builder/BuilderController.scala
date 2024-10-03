@@ -309,8 +309,7 @@ object BuilderSupport {
     val history = List(DownField("acknowledgementSection"))
 
     val propertyList = List(
-      Property("title"),
-      Property("panelTitle", PropertyBehaviour.PurgeWhenEmpty),
+      Property("title", PropertyBehaviour.PurgeWhenEmpty),
       Property("showReference"),
       Property("note", PropertyBehaviour.PurgeWhenEmpty),
       Property("doneNote", PropertyBehaviour.PurgeWhenEmpty)

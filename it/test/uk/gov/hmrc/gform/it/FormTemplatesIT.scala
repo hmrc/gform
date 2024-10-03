@@ -250,7 +250,7 @@ class FormTemplatesIT extends ITSpec with FormTemplateSample with BeforeAndAfter
       )
     )
     destinationList.acknowledgementSection shouldBe AcknowledgementSection(
-      toSmartString("Acknowledgement Page"),
+      Some(toSmartString("Acknowledgement Page")),
       None,
       None,
       List.empty,
@@ -258,6 +258,7 @@ class FormTemplatesIT extends ITSpec with FormTemplateSample with BeforeAndAfter
       None,
       None,
       true,
+      false,
       None
     )
     destinationList.declarationSection shouldBe Some(

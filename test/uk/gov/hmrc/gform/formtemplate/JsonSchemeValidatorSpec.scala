@@ -4287,15 +4287,11 @@ class JsonSchemeValidatorSpec extends FunSuite {
   }
 
   test(
-    "validateJson rejects the form gracefully when an acknowledgementSection does not contain the required property [title]"
+    "validateJson rejects the form gracefully when an acknowledgementSection does not contain the required property [fields] when title is empty"
   ) {
     val testProperties =
       json"""
       {
-        "panelTitle": {
-          "en": "English panel title",
-          "cy": "Welsh panel title"
-        },
         "showReference": true,
         "instructionPdf": {
           "header": {
@@ -4318,8 +4314,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
           },
           "tabularFormat": true,
           "includeSignatureBox": true
-        },
-        "fields": []
+        }
       }"""
 
     val jsonTemplate = constructTestAcknowledgementSectionJsonTemplate(testProperties)
@@ -4327,7 +4322,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
-      "Error at <#/acknowledgementSection>: acknowledgementSection requires properties [title, fields] to be present"
+      "Error at <#/acknowledgementSection>: acknowledgementSection requires properties [fields] to be present"
     )
 
     runInvalidJsonTest(result, expectedResult)
@@ -4342,10 +4337,6 @@ class JsonSchemeValidatorSpec extends FunSuite {
         "title": {
           "en": "English title",
           "cy": "Welsh title"
-        },
-        "panelTitle": {
-          "en": "English panel title",
-          "cy": "Welsh panel title"
         },
         "showReference": true,
         "instructionPdf": {
@@ -4377,7 +4368,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
-      "Error at <#/acknowledgementSection>: acknowledgementSection requires properties [title, fields] to be present"
+      "Error at <#/acknowledgementSection>: acknowledgementSection requires properties [fields] to be present"
     )
 
     runInvalidJsonTest(result, expectedResult)
@@ -4392,10 +4383,6 @@ class JsonSchemeValidatorSpec extends FunSuite {
         "title": {
           "en": "English title",
           "cy": "Welsh title"
-        },
-        "panelTitle": {
-          "en": "English panel title",
-          "cy": "Welsh panel title"
         },
         "showReference": true,
         "instructionPdf": {
@@ -4523,115 +4510,6 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val expectedResult = List(
       "Error at <#/acknowledgementSection/title>: Property title expected type String or JSONObject with structure {en: String} or {en: String, cy: String}. Missing key(s) [en] are required. Invalid key(s) [value] are not permitted"
-    )
-
-    runInvalidJsonTest(result, expectedResult)
-  }
-
-  test(
-    "validateJson rejects the form gracefully when an acknowledgementSection contains the property [panelTitle] of an incorrect type"
-  ) {
-    val testProperties =
-      json"""
-      {
-        "title": {
-          "en": "English title",
-          "cy": "Welsh title"
-        },
-        "panelTitle": false,
-        "fields": []
-      }"""
-
-    val jsonTemplate = constructTestAcknowledgementSectionJsonTemplate(testProperties)
-
-    val result = validateJson(jsonTemplate)
-
-    val expectedResult = List(
-      "Error at <#/acknowledgementSection/panelTitle>: Property panelTitle expected type String or JSONObject with structure {en: String} or {en: String, cy: String}"
-    )
-
-    runInvalidJsonTest(result, expectedResult)
-  }
-
-  test(
-    "validateJson rejects the form gracefully when an acknowledgementSection contains the property [panelTitle] as an object without the key [en]"
-  ) {
-    val testProperties =
-      json"""
-      {
-        "title": {
-          "en": "English title",
-          "cy": "Welsh title"
-        },
-        "panelTitle": {
-          "cy": "Welsh panel title"
-        },
-        "fields": []
-      }"""
-
-    val jsonTemplate = constructTestAcknowledgementSectionJsonTemplate(testProperties)
-
-    val result = validateJson(jsonTemplate)
-
-    val expectedResult = List(
-      "Error at <#/acknowledgementSection/panelTitle>: Property panelTitle expected type String or JSONObject with structure {en: String} or {en: String, cy: String}. Missing key(s) [en] are required"
-    )
-
-    runInvalidJsonTest(result, expectedResult)
-  }
-
-  test(
-    "validateJson rejects the form gracefully when an acknowledgementSection contains the property [panelTitle] as an object with a key other than [en, cy]"
-  ) {
-    val testProperties =
-      json"""
-      {
-        "title": {
-          "en": "English title",
-          "cy": "Welsh title"
-        },
-        "panelTitle": {
-          "en": "English panel title",
-          "cy": "Welsh panel title",
-          "value": "This is not allowed"
-        },
-        "fields": []
-      }"""
-
-    val jsonTemplate = constructTestAcknowledgementSectionJsonTemplate(testProperties)
-
-    val result = validateJson(jsonTemplate)
-
-    val expectedResult = List(
-      "Error at <#/acknowledgementSection/panelTitle>: Property panelTitle expected type String or JSONObject with structure {en: String} or {en: String, cy: String}. Invalid key(s) [value] are not permitted"
-    )
-
-    runInvalidJsonTest(result, expectedResult)
-  }
-
-  test(
-    "validateJson rejects the form gracefully when an acknowledgementSection contains the property [panelTitle] as an object without the key [en] with a key other than [en, cy]"
-  ) {
-    val testProperties =
-      json"""
-      {
-        "title": {
-          "en": "English title",
-          "cy": "Welsh title"
-        },
-        "panelTitle": {
-          "cy": "Welsh panel title",
-          "value": "This is not allowed"
-        },
-        "fields": []
-      }"""
-
-    val jsonTemplate = constructTestAcknowledgementSectionJsonTemplate(testProperties)
-
-    val result = validateJson(jsonTemplate)
-
-    val expectedResult = List(
-      "Error at <#/acknowledgementSection/panelTitle>: Property panelTitle expected type String or JSONObject with structure {en: String} or {en: String, cy: String}. Missing key(s) [en] are required. Invalid key(s) [value] are not permitted"
     )
 
     runInvalidJsonTest(result, expectedResult)
@@ -6097,7 +5975,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
   }
 
   test(
-    "validateJson accepts the form when an acknowledgementSection includes valid [title, panelTitle, showReference, instructionPdf, pdf, fields]"
+    "validateJson accepts the form when an acknowledgementSection includes valid [title, showReference, instructionPdf, pdf, fields]"
   ) {
     val testProperties =
       json"""
@@ -6105,10 +5983,6 @@ class JsonSchemeValidatorSpec extends FunSuite {
         "title": {
           "en": "English title",
           "cy": "Welsh title"
-        },
-        "panelTitle": {
-          "en": "English panel title",
-          "cy": "Welsh panel title"
         },
         "showReference": true,
         "instructionPdf": {

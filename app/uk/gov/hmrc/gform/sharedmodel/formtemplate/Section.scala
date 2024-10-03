@@ -130,7 +130,7 @@ object DeclarationSection {
 }
 
 case class AcknowledgementSection(
-  title: SmartString,
+  title: Option[SmartString],
   description: Option[SmartString],
   shortName: Option[SmartString],
   fields: List[FormComponent],
@@ -138,7 +138,8 @@ case class AcknowledgementSection(
   pdf: Option[PdfCtx],
   instructionPdf: Option[PdfCtx],
   displayFeedbackLink: Boolean,
-  panelTitle: Option[SmartString]
+  notPII: Boolean,
+  noPIITitle: Option[SmartString]
 )
 
 object AcknowledgementSection {
@@ -158,8 +159,7 @@ object AcknowledgementSection {
       LeafExpr(path + "fields", t.fields) ++
       LeafExpr(path + "pdf", t.pdf) ++
       LeafExpr(path + "instructionPdf", t.instructionPdf) ++
-      LeafExpr(path + "panelTitle", t.panelTitle)
-
+      LeafExpr(path + "noPIITitle", t.noPIITitle)
 }
 
 case class EnrolmentSection(

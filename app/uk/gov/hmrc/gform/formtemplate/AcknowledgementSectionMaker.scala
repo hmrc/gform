@@ -16,19 +16,20 @@
 
 package uk.gov.hmrc.gform.formtemplate
 
-import play.api.libs.json.{ JsDefined, JsFalse, JsTrue, JsUndefined, JsValue }
+import cats.implicits._
+import play.api.libs.json.{ JsDefined, JsError, JsFalse, JsResult, JsSuccess, JsTrue, JsUndefined, JsValue }
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.sharedmodel.SmartString
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AcknowledgementSection, FormComponent, PdfCtx }
 
 class AcknowledgementSectionMaker(json: JsValue) {
-  val title: SmartString = (json \ "title").as[SmartString]
-  val noPIITitle: Option[SmartString] = (json \ "noPIITitle").asOpt[SmartString]
+  val optTitle: Opt[Option[SmartString]] = toOpt((json \ "title").validateOpt[SmartString], "/title")
+  val optNoPIITitle: Opt[Option[SmartString]] = toOpt((json \ "noPIITitle").validateOpt[SmartString], "/noPIITitle")
+  val optNotPII: Opt[Option[Boolean]] = toOpt((json \ "notPII").validateOpt[Boolean], "/notPII")
   val description: Option[SmartString] = (json \ "description").asOpt[SmartString]
   val shortName: Option[SmartString] = (json \ "shortName").asOpt[SmartString]
   val fields: List[FormComponent] = (json \ "fields").as[List[FormComponent]]
-  val panelTitle: Option[SmartString] = (json \ "panelTitle").asOpt[SmartString]
   val displayFeedbackLink: Boolean = (json \ "displayFeedbackLink").as[Boolean]
 
   val showReference: Opt[Boolean] = json \ "showReference" match {
@@ -42,9 +43,25 @@ class AcknowledgementSectionMaker(json: JsValue) {
   val acknowledgementSectionInstructionPdf: Option[PdfCtx] =
     (json \ "instructionPdf").asOpt[PdfCtx]
 
+  private def toOpt[A](result: JsResult[A], pathPrefix: String): Opt[A] =
+    result match {
+      case JsSuccess(a, _) => a.asRight
+      case JsError(errors) =>
+        UnexpectedState(
+          errors
+            .map { case (path, validationErrors) =>
+              s"Path: $pathPrefix${path.toString}, Errors: ${validationErrors.map(_.messages.mkString(",")).mkString(",")}"
+            }
+            .mkString(",")
+        ).asLeft
+    }
+
   def optAcknowledgementSection(): Opt[AcknowledgementSection] =
     for {
-      sr <- showReference
+      sr         <- showReference
+      title      <- optTitle
+      noPIITitle <- optNoPIITitle
+      notPII     <- optNotPII
     } yield AcknowledgementSection(
       title,
       description,
@@ -54,7 +71,8 @@ class AcknowledgementSectionMaker(json: JsValue) {
       acknowledgementSectionPdf,
       acknowledgementSectionInstructionPdf,
       displayFeedbackLink,
-      panelTitle
+      notPII.getOrElse(false),
+      noPIITitle
     )
 
 }
