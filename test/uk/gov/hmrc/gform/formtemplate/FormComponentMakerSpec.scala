@@ -24,6 +24,7 @@ import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.DisplayInSummary.No
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.OverseasAddress.Configurable._
 
 class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemplateSupport {
@@ -356,7 +357,7 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
               None
             )
           ),
-          IsNotDisplayInSummary
+          No
         ),
         SmartString(LocalisedString(Map(LangADT.En -> "summaryListLabel")), List()),
         false,
