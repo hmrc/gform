@@ -35,7 +35,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.JsonUtils._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.{ LangADT, LocalisedString, SmartString }
 import SmartString._
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.DisplayInSummary.No
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.DisplayInSummary
 
 case class MES(
   mandatory: Boolean,
@@ -121,7 +121,7 @@ class FormComponentMaker(json: JsValue) {
   lazy val displayWidth: Option[String] = (json \ "displayWidth").asOpt[String]
   lazy val toUpperCase: UpperCaseBoolean = (json \ "toUpperCase").asOpt[UpperCaseBoolean].getOrElse(IsNotUpperCase)
   lazy val displayInSummary: DisplayInSummary =
-    (json \ "displayInSummary").asOpt[DisplayInSummary].getOrElse(No)
+    (json \ "displayInSummary").asOpt[DisplayInSummary].getOrElse(DisplayInSummary.No)
   lazy val prefix: Option[SmartString] = (json \ "prefix").asOpt[SmartString]
   lazy val suffix: Option[SmartString] = (json \ "suffix").asOpt[SmartString]
   lazy val optPriority: Opt[Option[Priority]] = parse("priority", PriorityTypeParser.validate)
