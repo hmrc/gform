@@ -372,7 +372,7 @@ class TestOnlyController(
       )
   }
 
-  def reloadTemplates(): Action[AnyContent] = Action.async { _ =>
+  def reloadTemplates(): Future[Unit] =
     for {
       formTemplateRaws <- testOnlyFormService.getAllFormTemplates()
       _ <- formTemplateRaws.traverse { formTemplateRaw =>
@@ -382,12 +382,11 @@ class TestOnlyController(
                  err => throw new Exception(s"Unable to reload the form templates. Error, $err"),
                  _ => {
                    logger.info(s"reloading the form template. handler.handleRequest(${formTemplateRaw._id.value})")
-                   NoContent
+                   ()
                  }
                )
            }
-    } yield NoContent
-  }
+    } yield ()
 }
 
 final case class RenderableDestination(

@@ -84,7 +84,7 @@ import uk.gov.hmrc.mongo.cache.MongoCacheRepository
 import uk.gov.hmrc.play.bootstrap.config.AppName
 
 import java.util.concurrent.TimeUnit
-import scala.concurrent.Future
+import scala.concurrent.{ Future, Promise }
 import scala.concurrent.duration._
 
 class ApplicationLoader extends play.api.ApplicationLoader {
@@ -412,6 +412,18 @@ class ApplicationModule(context: Context)
     actorSystem,
     materializer
   )
+
+  actorSystem.scheduler.scheduleOnce(
+    scala.concurrent.duration.Duration(5, "seconds")
+  ) {
+    if (!configModule.isProd) {
+      val promise = Promise[Unit]()
+      testOnlyModule.testOnlyController.reloadTemplates().onComplete {
+        case scala.util.Success(_)  => promise.success(())
+        case scala.util.Failure(ex) => promise.failure(ex)
+      }
+    }
+  }
 
   logger.info(
     s"Microservice $appName started in mode ${environment.mode} at port ${application.configuration.getOptional[String]("http.port")}"
