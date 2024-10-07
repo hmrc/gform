@@ -273,6 +273,7 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
                                        |{
                                        |          "id": "bankDetailsConfirmedInfo",
                                        |          "type": "miniSummaryList",
+                                       |          "keyDisplayWidth": "m",
                                        |          "label": "summaryListLabel",
                                        |          "rows": [
                                        |            {
@@ -355,7 +356,8 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
               Some(IncludeIf(Equals(Constant("1"), Constant("1")))),
               None
             )
-          )
+          ),
+          Some(KeyDisplayWidth.M)
         ),
         SmartString(LocalisedString(Map(LangADT.En -> "summaryListLabel")), List()),
         false,
