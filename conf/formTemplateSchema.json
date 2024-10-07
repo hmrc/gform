@@ -277,6 +277,10 @@
           "type": "string",
           "pattern": "^(m|l|xl)$"
         },
+        "keyDisplayWidth": {
+          "type": "string",
+          "pattern": "^([sml])$"
+        },
         "continueLabel": {
           "$ref": "#/$defs/stringOrEnCyObject"
         },
@@ -443,6 +447,10 @@
           "type": "string",
           "pattern": "^(m|l|xl)$"
         },
+        "keyDisplayWidth": {
+          "type": "string",
+          "pattern": "^([sml])$"
+        },
         "title": {
           "$ref": "#/$defs/stringOrEnCyObject"
         },
@@ -569,6 +577,10 @@
                   "displayWidth": {
                     "type": "string",
                     "pattern": "^(m|l|xl)$"
+                  },
+                  "keyDisplayWidth": {
+                    "type": "string",
+                    "pattern": "^([sml])$"
                   },
                   "includeIf": {
                     "type": "string"
@@ -790,6 +802,9 @@
           "$ref": "#/$defs/stringOrEnCyObject"
         },
         "displayWidth": {
+          "type": "string"
+        },
+        "keyDisplayWidth": {
           "type": "string"
         },
         "validators": {
