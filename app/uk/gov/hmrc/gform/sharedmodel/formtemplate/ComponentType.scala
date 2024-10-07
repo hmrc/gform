@@ -318,7 +318,8 @@ case class Choice(
   dividerPosition: Option[DividerPosition],
   dividerText: LocalisedString,
   noneChoice: Option[NoneChoice],
-  noneChoiceError: Option[LocalisedString]
+  noneChoiceError: Option[LocalisedString],
+  hideChoicesSelected: Boolean
 ) extends ComponentType
 
 sealed trait ChoiceType
@@ -575,7 +576,7 @@ object ComponentType {
       case Address(_, _, _, _)                        => Nil
       case OverseasAddress(_, _, _, Some(expr), _, _) => List(ExprWithPath(path, expr))
       case OverseasAddress(_, _, _, _, _, _)          => Nil
-      case Choice(_, options, _, _, hints, optionHelpText, _, _, _, _) =>
+      case Choice(_, options, _, _, hints, optionHelpText, _, _, _, _, _) =>
         LeafExpr(path + "choices", options) ++
           LeafExpr(path + "hints", hints) ++
           LeafExpr(path + "optionHelpText", optionHelpText)

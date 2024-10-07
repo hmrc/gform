@@ -297,9 +297,9 @@ trait Rewriter {
         fcLookup
           .get(formComponentId)
           .fold[Either[UnexpectedState, BooleanExpr]](missingFormComponentId(formComponentId)) {
-            case Choice(_, options, _, _, _, _, _, _, _, _) if isDynamic(options) =>
+            case Choice(_, options, _, _, _, _, _, _, _, _, _) if isDynamic(options) =>
               invalidDynamicUsage(formComponentId, exprString)
-            case Choice(_, options, _, _, _, _, _, _, _, _) =>
+            case Choice(_, options, _, _, _, _, _, _, _, _, _) =>
               val possibleValues = options.collect {
                 case OptionData.ValueBased(_, _, _, _, OptionDataValue.StringBased(value)) =>
                   value
@@ -329,16 +329,16 @@ trait Rewriter {
         fcLookup
           .get(formComponentId)
           .fold[Either[UnexpectedState, BooleanExpr]](missingFormComponentId(formComponentId)) {
-            case Choice(_, options, _, _, _, _, _, _, _, _) if isDynamic(options) =>
+            case Choice(_, options, _, _, _, _, _, _, _, _, _) if isDynamic(options) =>
               invalidDynamicUsage(formComponentId, exprString)
-            case Choice(Radio | YesNo, options, _, _, _, _, _, _, _, _) =>
+            case Choice(Radio | YesNo, options, _, _, _, _, _, _, _, _, _) =>
               val possibleValues = options.collect {
                 case OptionData.ValueBased(_, _, _, _, OptionDataValue.StringBased(value)) =>
                   value
               }.toSet
               validate(c, possibleValues, options.size, formComponentId, exprString, "Choice").map(_ => rewriter)
-            case Choice(Checkbox, _, _, _, _, _, _, _, _, _) => invalidUsage("choice")
-            case RevealingChoice(_, true)                    => invalidUsage("revealing choice")
+            case Choice(Checkbox, _, _, _, _, _, _, _, _, _, _) => invalidUsage("choice")
+            case RevealingChoice(_, true)                       => invalidUsage("revealing choice")
             case RevealingChoice(options, false) =>
               val possibleValues = options
                 .map(_.choice)

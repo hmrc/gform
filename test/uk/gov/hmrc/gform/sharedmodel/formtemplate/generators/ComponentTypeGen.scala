@@ -90,7 +90,8 @@ trait ComponentTypeGen {
       None,
       LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
       None,
-      None
+      None,
+      false
     )
 
   def revealingChoiceElementGen: Gen[RevealingChoiceElement] =

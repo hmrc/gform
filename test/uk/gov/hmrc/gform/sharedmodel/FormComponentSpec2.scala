@@ -58,7 +58,8 @@ class FormComponentSpec2 extends Spec {
           None,
           LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
           None,
-          None
+          None,
+          false
         ),
         toSmartString("Select the tax type"),
         false,
@@ -120,7 +121,8 @@ class FormComponentSpec2 extends Spec {
           None,
           LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
           None,
-          None
+          None,
+          false
         ),
         toSmartString("Select the tax type"),
         false,
@@ -135,6 +137,60 @@ class FormComponentSpec2 extends Spec {
         onlyShowOnSummary = false,
         None,
         Some(List(SummariseGroupAsGrid))
+      )
+    )
+  }
+
+  it should "parse 'choice' with hideChoicesSelected" in {
+    val fieldValue = toFieldValue("""|{
+         |  "type": "choice",
+         |  "id": "dutyType",
+         |  "label": "Select the tax type",
+         |  "choices": [
+         |    {
+         |      "value": "foo",
+         |      "label": "Yes"
+         |    },
+         |    {
+         |      "value": "bar",
+         |      "label": "No"
+         |    }
+         |  ],
+         |  "hideChoicesSelected": true
+         |}""")
+
+    fieldValue should beJsSuccess(
+      FormComponent(
+        FormComponentId("dutyType"),
+        Choice(
+          Radio,
+          NonEmptyList.of(
+            OptionData.ValueBased(toSmartString("Yes"), None, None, None, OptionDataValue.StringBased("foo")),
+            OptionData.ValueBased(toSmartString("No"), None, None, None, OptionDataValue.StringBased("bar"))
+          ),
+          Vertical,
+          List.empty[Int],
+          None,
+          None,
+          None,
+          LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
+          None,
+          None,
+          true
+        ),
+        toSmartString("Select the tax type"),
+        false,
+        None,
+        None,
+        None,
+        validIf = None,
+        mandatory = true,
+        editable = true,
+        submissible = true,
+        derived = false,
+        onlyShowOnSummary = false,
+        None,
+        None
       )
     )
   }

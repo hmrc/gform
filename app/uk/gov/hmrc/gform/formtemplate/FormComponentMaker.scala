@@ -124,6 +124,8 @@ class FormComponentMaker(json: JsValue) {
   lazy val optPriority: Opt[Option[Priority]] = parse("priority", PriorityTypeParser.validate)
   lazy val roundingMode: RoundingMode = (json \ "round").asOpt[RoundingMode].getOrElse(RoundingMode.defaultRoundingMode)
   lazy val optMultivalue: Opt[Option[Boolean]] = toOpt((json \ "multivalue").validateOpt[Boolean], "/multivalue")
+  lazy val optHideChoicesSelected: Opt[Option[Boolean]] =
+    toOpt((json \ "hideChoicesSelected").validateOpt[Boolean], "/hideChoicesSelected")
   lazy val total: Option[String] = (json \ "total").asOpt[String]
   lazy val optInternational: Opt[Option[Boolean]] =
     toOpt((json \ "international").validateOpt[Boolean], "/international")
@@ -568,20 +570,22 @@ class FormComponentMaker(json: JsValue) {
         .map(OptionData.IndexBased(_, None, None, None))
 
     for {
-      emailVerification <- optEmailVerification
-      selectionCriteria <- optSelectionCriteria
-      maybeFormatExpr   <- optMaybeFormatExpr(roundingMode)(selectionCriteria)(emailVerification)
-      maybeValueExpr    <- optMaybeValueExpr
-      choices           <- choicesOpt
-      multivalue        <- optMultivalue
+      emailVerification        <- optEmailVerification
+      selectionCriteria        <- optSelectionCriteria
+      maybeFormatExpr          <- optMaybeFormatExpr(roundingMode)(selectionCriteria)(emailVerification)
+      maybeValueExpr           <- optMaybeValueExpr
+      choices                  <- choicesOpt
+      multivalue               <- optMultivalue
+      maybeHideChoicesSelected <- optHideChoicesSelected
+      hideChoicesSelected = maybeHideChoicesSelected.getOrElse(false)
       oChoice: Opt[Choice] = (maybeFormatExpr, choices, multivalue, maybeValueExpr) match {
                                // format: off
-        case (IsOrientation(VerticalOrientation),   Some(x :: xs), IsMultivalue(MultivalueYes), Selections(selections)) => Choice(Checkbox, NonEmptyList(x, xs),          Vertical,   selections, optionHints, optionHelpText, dividerPositon, dividerText, noneChoice, noneChoiceError).asRight
-        case (IsOrientation(VerticalOrientation),   Some(x :: xs), IsMultivalue(MultivalueNo),  Selections(selections)) => Choice(Radio,    NonEmptyList(x, xs),          Vertical,   selections, optionHints, optionHelpText, dividerPositon, dividerText, noneChoice, noneChoiceError).asRight
-        case (IsOrientation(HorizontalOrientation), Some(x :: xs), IsMultivalue(MultivalueYes), Selections(selections)) => Choice(Checkbox, NonEmptyList(x, xs),          Horizontal, selections, optionHints, optionHelpText, dividerPositon, dividerText, noneChoice, noneChoiceError).asRight
-        case (IsOrientation(HorizontalOrientation), Some(x :: xs), IsMultivalue(MultivalueNo),  Selections(selections)) => Choice(Radio,    NonEmptyList(x, xs),          Horizontal, selections, optionHints, optionHelpText, dividerPositon, dividerText, noneChoice, noneChoiceError).asRight
-        case (IsOrientation(YesNoOrientation),      None,          IsMultivalue(MultivalueNo),  Selections(selections)) => Choice(YesNo,    yesNo, Horizontal, selections, optionHints, optionHelpText, dividerPositon, dividerText, noneChoice, noneChoiceError).asRight
-        case (IsOrientation(YesNoOrientation),      _,             _,                           Selections(selections)) => Choice(YesNo,    yesNo, Horizontal, selections, optionHints, optionHelpText, dividerPositon, dividerText, noneChoice, noneChoiceError).asRight
+        case (IsOrientation(VerticalOrientation),   Some(x :: xs), IsMultivalue(MultivalueYes), Selections(selections)) => Choice(Checkbox, NonEmptyList(x, xs),          Vertical,   selections, optionHints, optionHelpText, dividerPositon, dividerText, noneChoice, noneChoiceError, hideChoicesSelected).asRight
+        case (IsOrientation(VerticalOrientation),   Some(x :: xs), IsMultivalue(MultivalueNo),  Selections(selections)) => Choice(Radio,    NonEmptyList(x, xs),          Vertical,   selections, optionHints, optionHelpText, dividerPositon, dividerText, noneChoice, noneChoiceError, hideChoicesSelected).asRight
+        case (IsOrientation(HorizontalOrientation), Some(x :: xs), IsMultivalue(MultivalueYes), Selections(selections)) => Choice(Checkbox, NonEmptyList(x, xs),          Horizontal, selections, optionHints, optionHelpText, dividerPositon, dividerText, noneChoice, noneChoiceError, hideChoicesSelected).asRight
+        case (IsOrientation(HorizontalOrientation), Some(x :: xs), IsMultivalue(MultivalueNo),  Selections(selections)) => Choice(Radio,    NonEmptyList(x, xs),          Horizontal, selections, optionHints, optionHelpText, dividerPositon, dividerText, noneChoice, noneChoiceError, hideChoicesSelected).asRight
+        case (IsOrientation(YesNoOrientation),      None,          IsMultivalue(MultivalueNo),  Selections(selections)) => Choice(YesNo,    yesNo, Horizontal, selections, optionHints, optionHelpText, dividerPositon, dividerText, noneChoice, noneChoiceError, hideChoicesSelected).asRight
+        case (IsOrientation(YesNoOrientation),      _,             _,                           Selections(selections)) => Choice(YesNo,    yesNo, Horizontal, selections, optionHints, optionHelpText, dividerPositon, dividerText, noneChoice, noneChoiceError, hideChoicesSelected).asRight
         // format: on
                                case (invalidFormat, invalidChoices, invalidMultivalue, invalidValue) =>
                                  UnexpectedState(
