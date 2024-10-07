@@ -798,7 +798,8 @@ class FormTemplateValidatorSpec
         None,
         LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
         None,
-        None
+        None,
+        false
       ),
       toSmartString("Select the tax type"),
       false,

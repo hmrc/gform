@@ -65,6 +65,6 @@ trait MongoDBSupport extends MongoComponentSupport {
       new CurrentTimestampSupport(),
       SimpleCacheId
     ) {
-      override def ensureIndexes: Future[Seq[String]] = Future.successful(Seq())
+      override def ensureIndexes(): Future[Seq[String]] = Future.successful(Seq())
     }
 }
