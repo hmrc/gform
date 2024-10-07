@@ -822,6 +822,9 @@
         "multivalue": {
           "type": "boolean"
         },
+        "hideChoicesSelected": {
+          "type": "boolean"
+        },
         "suffix": {
           "type": "string"
         },
@@ -889,7 +892,7 @@
             "long",
             "important",
             "banner"
-           ]
+          ]
         },
         "excludeFromPdf": {
           "type": "boolean"
@@ -1125,7 +1128,9 @@
               "pattern": "^(text)$"
             },
             "multiline": {
-              "enum": [ true ]
+              "enum": [
+                true
+              ]
             }
           }
         },
@@ -1139,7 +1144,9 @@
               "pattern": "^(text)$"
             },
             "multiline": {
-              "enum": [ true ]
+              "enum": [
+                true
+              ]
             }
           }
         },

@@ -39,7 +39,8 @@ class RewriterSpec extends FunSuite with FormTemplateSupport with RewriterSuppor
       None,
       LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
       None,
-      None
+      None,
+      false
     )
 
     val fcChoice = mkFormComponent("a", choice, false)
@@ -103,7 +104,8 @@ class RewriterSpec extends FunSuite with FormTemplateSupport with RewriterSuppor
         None,
         LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
         None,
-        None
+        None,
+        false
       )
 
       val fcChoice = mkFormComponent("a", choice, false)

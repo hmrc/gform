@@ -569,6 +569,9 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
       case _ ~ expr ~ exprs ~ _ =>
         Not(DuplicateExists((expr +: exprs).map(field => FormCtx(FormComponentId(field)))))
     }
+    | "noMoreChoices(" ~ FormComponentId.unanchoredIdValidation ~ ")" ^^ { case _ ~ value ~ _ =>
+      Equals(ChoicesSelected(FormComponentId(value)), ChoicesAvailable(FormComponentId(value)))
+    }
     | "auth" ~ "." ~ loginInfo ^^ { case _ ~ _ ~ loginInfo =>
       IsLogin(loginInfo)
     }

@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.gform.config
 
+import cats.implicits._
 import com.typesafe.config.{ Config => TypeSafeConfig }
 import play.api.Configuration
 import play.api.mvc.ControllerComponents
@@ -45,6 +46,8 @@ class ConfigModule(
 
   val desConfig: DesConnectorConfig =
     ConfigSource.default.at("microservice.services.etmp-hod").loadOrThrow[DesConnectorConfig]
+
+  val isProd: Boolean = typesafeConfig.getString("play.http.router") =!= "testOnlyDoNotUseInAppConf.Routes"
 
   val sdesConfig: SdesConfig = ConfigSource.default.at("microservice.services.sdes").loadOrThrow[SdesConfig]
 
