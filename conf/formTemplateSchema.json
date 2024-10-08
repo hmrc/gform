@@ -732,6 +732,9 @@
         "toUpperCase": {
           "type": "boolean"
         },
+        "displayInSummary": {
+          "type": "boolean"
+        },
         "choices": {
           "type": "array",
           "oneOf": [

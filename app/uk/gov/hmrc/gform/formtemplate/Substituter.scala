@@ -262,7 +262,8 @@ object Substituter {
           confirmAddressLabel = p.confirmAddressLabel(substitutions),
           enterAddressLabel = p.enterAddressLabel(substitutions)
         )
-      case MiniSummaryList(rows, keyDisplayWidth) => MiniSummaryList(rows(substitutions), keyDisplayWidth)
+      case MiniSummaryList(rows, displayInSummary, keyDisplayWidth) =>
+        MiniSummaryList(rows(substitutions), displayInSummary, keyDisplayWidth)
       case t: TableComp =>
         t.copy(
           header = t.header(substitutions),
