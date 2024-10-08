@@ -486,9 +486,23 @@ object MiniSummaryRow {
   implicit val format: Format[MiniSummaryRow] = derived.oformat()
 }
 
-case class MiniSummaryList(rows: List[MiniSummaryRow]) extends ComponentType
+case class MiniSummaryList(rows: List[MiniSummaryRow], displayInSummary: DisplayInSummary) extends ComponentType
 object MiniSummaryList {
   implicit val format: Format[MiniSummaryList] = derived.oformat()
+}
+
+sealed trait DisplayInSummary
+
+object DisplayInSummary {
+  case object Yes extends DisplayInSummary
+  case object No extends DisplayInSummary
+
+  private val templateReads: Reads[DisplayInSummary] = Reads {
+    case JsTrue  => JsSuccess(Yes)
+    case JsFalse => JsSuccess(No)
+    case invalid => JsError("displayInSummary needs to be 'true' or 'false', got " + invalid)
+  }
+  implicit val format: OFormat[DisplayInSummary] = OFormatWithTemplateReadFallback(templateReads)
 }
 
 case class TableValue(value: SmartString, cssClass: Option[String], colspan: Option[Int], rowspan: Option[Int])
@@ -589,7 +603,7 @@ object ComponentType {
       case InformationMessage(_, infoText) => LeafExpr(path + "infoText", infoText)
       case FileUpload(_, _)                => Nil
       case Time(_, _)                      => Nil
-      case MiniSummaryList(rows)           => LeafExpr(path + "rows", rows)
+      case MiniSummaryList(rows, _)        => LeafExpr(path + "rows", rows)
       case t: TableComp =>
         LeafExpr(path + "header", t.header) ++ LeafExpr(path + "rows", t.rows) ++ LeafExpr(
           path + "summaryValue",

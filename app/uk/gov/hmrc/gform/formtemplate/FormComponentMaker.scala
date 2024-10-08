@@ -35,6 +35,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.JsonUtils._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.{ LangADT, LocalisedString, SmartString }
 import SmartString._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.DisplayInSummary
 
 case class MES(
   mandatory: Boolean,
@@ -119,6 +120,8 @@ class FormComponentMaker(json: JsValue) {
     toOpt((json \ "displayCharCount").validateOpt[Boolean], "/displayCharCount")
   lazy val displayWidth: Option[String] = (json \ "displayWidth").asOpt[String]
   lazy val toUpperCase: UpperCaseBoolean = (json \ "toUpperCase").asOpt[UpperCaseBoolean].getOrElse(IsNotUpperCase)
+  lazy val displayInSummary: DisplayInSummary =
+    (json \ "displayInSummary").asOpt[DisplayInSummary].getOrElse(DisplayInSummary.No)
   lazy val prefix: Option[SmartString] = (json \ "prefix").asOpt[SmartString]
   lazy val suffix: Option[SmartString] = (json \ "suffix").asOpt[SmartString]
   lazy val optPriority: Opt[Option[Priority]] = parse("priority", PriorityTypeParser.validate)
@@ -242,7 +245,7 @@ class FormComponentMaker(json: JsValue) {
     } yield rs
   }
 
-  lazy val summaryListOpt: Opt[MiniSummaryList] = rows(json, "rows").map(rs => MiniSummaryList(rs))
+  lazy val summaryListOpt: Opt[MiniSummaryList] = rows(json, "rows").map(rs => MiniSummaryList(rs, displayInSummary))
 
   lazy val tableCompOpt: Opt[TableComp] = {
     def getValueRow(json: JsValue): Opt[TableValue] =
