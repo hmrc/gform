@@ -21,6 +21,8 @@ import com.openhtmltopdf.pdfboxout.PdfRendererBuilder
 import java.io.ByteArrayOutputStream
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.util.Using
+import org.jsoup.Jsoup
+import org.jsoup.helper.W3CDom
 
 trait PdfGeneratorAlgebra[F[_]] {
   def generatePDFBytesLocal(html: String)(implicit ec: ExecutionContext): F[Array[Byte]]
@@ -30,9 +32,10 @@ class PdfGeneratorService extends PdfGeneratorAlgebra[Future] {
 
   def generatePDFBytesLocal(html: String)(implicit ec: ExecutionContext): Future[Array[Byte]] = Future {
     Using.resource(new ByteArrayOutputStream()) { byteArrayOutputStream =>
+      val w3cDom = new W3CDom().fromJsoup(Jsoup.parse(html))
       val builder = new PdfRendererBuilder()
       builder.useFastMode()
-      builder.withHtmlContent(html, null)
+      builder.withW3cDocument(w3cDom, null) //https://github.com/danfickle/openhtmltopdf/issues/341
       builder.toStream(byteArrayOutputStream)
       builder.run()
       byteArrayOutputStream.toByteArray
