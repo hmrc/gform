@@ -92,6 +92,9 @@ class TestOnlyFormService(
         } yield SnapshotOverview(snapshot, withData = true)
       }
 
+  def getFormTemplateRaw(formTemplateId: FormTemplateRawId): Future[FormTemplateRaw] =
+    formTemplateService.get(formTemplateId)
+
   def restoreSnapshotTemplate(snapshotId: SnapshotId): Future[Unit] =
     snapshotMongoCache.find(snapshotId).flatMap {
       case Some(snapshot) =>
