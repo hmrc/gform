@@ -43,7 +43,8 @@ object Dependencies {
     "org.json4s"                   %% "json4s-xml"                        % json4sVersion,
     "com.fasterxml.jackson.module" %% "jackson-module-scala"              % "2.12.2",
     "io.github.samueleresca"       %% "pekko-quartz-scheduler"            % "1.2.0-pekko-1.0.x",
-    "org.apache.xmlgraphics"       % "fop"                                % "2.9"
+    "org.apache.xmlgraphics"        % "fop"                               % "2.9",
+    "org.jsoup"                     % "jsoup"                             % "1.18.1"
   )
 
   def test(scope: String = "test") = Seq(
