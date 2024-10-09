@@ -18,28 +18,27 @@ package uk.gov.hmrc.gform.formtemplate
 
 import uk.gov.hmrc.gform.core.{ Invalid, Valid, ValidationResult }
 import uk.gov.hmrc.gform.sharedmodel.SmartString
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Expr, ExprWithPath, FormCtx }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Expr, ExprWithPath, FormCtx, FormTemplate }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DestinationList
 import uk.gov.hmrc.gform.models.constraints.ReferenceInfo.FormCtxExpr
 
 object AcknowledgementValidator {
-  def validateNoPIITitle(destinations: Destinations, allExpressions: List[ExprWithPath]): ValidationResult = {
-    val exprRefs: List[Expr] = allExpressions.flatMap(x =>
-      x.referenceInfos.collect { case FormCtxExpr(_, FormCtx(_)) =>
-        x.expr
+  def validateNoPIITitle(formTemplate: FormTemplate, allExpressions: List[ExprWithPath]): ValidationResult = {
+    val exprRefs = allExpressions.flatMap(x =>
+      x.referenceInfos.collect {
+        case FormCtxExpr(_, FormCtx(fcId)) if !FormTemplateValidator.noPIIFcIds(formTemplate).contains(fcId) =>
+          x.expr
       }
     )
-
     def hasPIIReference(title: SmartString) = {
       val exprs: List[Expr] = title.internals.flatMap(_.interpolations)
       exprRefs.exists(exprs.contains)
     }
 
-    destinations match {
+    formTemplate.destinations match {
       case destinationList: DestinationList
           if destinationList.acknowledgementSection.title.exists(hasPIIReference) &&
-            destinationList.acknowledgementSection.noPIITitle.isEmpty && !destinationList.acknowledgementSection.notPII =>
+            destinationList.acknowledgementSection.noPIITitle.isEmpty =>
         Invalid(
           s"The acknowledgement section does not have the property 'notPII': true and there is no noPIITitle defined"
         )

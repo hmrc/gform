@@ -116,7 +116,7 @@ trait Verifier {
                .validateHandlebarSchemaCheck(formTemplate._id, formTemplate.destinations, handlebarsSchemaIds)
                .toEither
            )
-      _ <- fromOptA(AcknowledgementValidator.validateNoPIITitle(formTemplate.destinations, allExpressions).toEither)
+      _ <- fromOptA(AcknowledgementValidator.validateNoPIITitle(formTemplate, allExpressions).toEither)
     } yield ()
 
   }

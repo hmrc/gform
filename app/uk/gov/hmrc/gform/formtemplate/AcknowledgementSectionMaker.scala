@@ -26,7 +26,6 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AcknowledgementSection, Form
 class AcknowledgementSectionMaker(json: JsValue) {
   val optTitle: Opt[Option[SmartString]] = toOpt((json \ "title").validateOpt[SmartString], "/title")
   val optNoPIITitle: Opt[Option[SmartString]] = toOpt((json \ "noPIITitle").validateOpt[SmartString], "/noPIITitle")
-  val optNotPII: Opt[Option[Boolean]] = toOpt((json \ "notPII").validateOpt[Boolean], "/notPII")
   val description: Option[SmartString] = (json \ "description").asOpt[SmartString]
   val shortName: Option[SmartString] = (json \ "shortName").asOpt[SmartString]
   val fields: List[FormComponent] = (json \ "fields").as[List[FormComponent]]
@@ -61,7 +60,6 @@ class AcknowledgementSectionMaker(json: JsValue) {
       sr         <- showReference
       title      <- optTitle
       noPIITitle <- optNoPIITitle
-      notPII     <- optNotPII
     } yield AcknowledgementSection(
       title,
       description,
@@ -71,7 +69,6 @@ class AcknowledgementSectionMaker(json: JsValue) {
       acknowledgementSectionPdf,
       acknowledgementSectionInstructionPdf,
       displayFeedbackLink,
-      notPII.getOrElse(false),
       noPIITitle
     )
 
