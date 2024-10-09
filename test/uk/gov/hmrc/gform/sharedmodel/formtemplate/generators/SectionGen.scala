@@ -56,7 +56,6 @@ trait SectionGen {
       pdf                 <- Gen.option(pdfContextGen)
       instructionPdf      <- Gen.option(pdfContextGen)
       displayFeedbackLink <- PrimitiveGen.booleanGen
-      notPII              <- PrimitiveGen.booleanGen
       nonPIITitle         <- Gen.option(smartStringGen)
     } yield AcknowledgementSection(
       title,
@@ -67,7 +66,6 @@ trait SectionGen {
       pdf,
       instructionPdf,
       displayFeedbackLink,
-      notPII,
       nonPIITitle
     )
 
