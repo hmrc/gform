@@ -140,7 +140,9 @@ trait FormatParser extends ValueParser {
       "intentBigPurchase" ^^^ Register.IntentBigPurchase |
       "intent" ^^^ Register.Intent |
       "sicCode" ^^^ Register.SicCode |
-      "sdltReliefType" ^^^ Register.SdltReliefType
+      "sdltReliefType" ^^^ Register.SdltReliefType |
+      "localAuthority" ^^^ Register.LocalAuthority |
+      "vfrsTradeSector" ^^^ Register.VfrsTradeSector
   }
 
   lazy val contactFormat: EmailVerification => Parser[TextFormat] = emailVerification => {
