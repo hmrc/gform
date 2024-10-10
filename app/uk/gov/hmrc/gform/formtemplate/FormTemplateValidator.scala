@@ -371,7 +371,7 @@ object FormTemplateValidator {
       .getOrElse(Valid)
   }
 
-  private def noPIIFcIds(formTemplate: FormTemplate): List[FormComponentId] =
+  private[formtemplate] def noPIIFcIds(formTemplate: FormTemplate): List[FormComponentId] =
     (formTemplate.destinations.allFormComponents ++
       SectionHelper.allSectionsFormComponents(formTemplate.formKind.allSections))
       .filter(_.notPII)

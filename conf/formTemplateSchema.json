@@ -396,9 +396,6 @@
             "$ref": "#/$defs/fields"
           }
         },
-        "notPII": {
-          "type": "boolean"
-        },
         "noPIITitle": {
           "$ref": "#/$defs/stringOrEnCyObject"
         }

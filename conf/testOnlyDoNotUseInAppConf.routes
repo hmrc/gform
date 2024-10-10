@@ -13,6 +13,9 @@
 ->            /                                                                  prod.Routes
 ->            /gform/builder                                                     builder.Routes
 
+#Expressions
+GET         /gform/test-only/expressions/:formTemplateId                         uk.gov.hmrc.gform.testonly.TestOnlyController.getExpressions(formTemplateId: FormTemplateRawId)
+
 #NewAuthConnector
 POST        /gform/test-only/de-enrol/userId/:userId                             uk.gov.hmrc.gform.testonly.TestOnlyController.deEnrolUser(userId: String)
 POST        /gform/test-only/upload                                              uk.gov.hmrc.gform.testonly.TestOnlyController.upload()
@@ -49,3 +52,5 @@ GET           /gform/test-only/snapshot-data/:snapshotId                        
 DELETE        /gform/test-only/snapshot/:snapshotId                                   uk.gov.hmrc.gform.testonly.TestOnlyController.deleteSnapshot(snapshotId: SnapshotId)
 
 DELETE        /gform/test-only/generated-files/:envelopeId                            uk.gov.hmrc.gform.testonly.TestOnlyController.deleteGeneratedFiles(envelopeId: EnvelopeId)
+
+POST          /gform/test-only/reload-templates                                       uk.gov.hmrc.gform.testonly.TestOnlyController.reloadTemplates()

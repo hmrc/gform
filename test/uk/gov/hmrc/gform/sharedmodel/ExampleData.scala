@@ -120,7 +120,6 @@ trait ExampleAuthConfig extends DestinationGen {
         )
       ),
       true,
-      true,
       None
     )
 
@@ -479,7 +478,6 @@ trait ExampleFormTemplate {
       true,
       None,
       None,
-      true,
       true,
       None
     )
