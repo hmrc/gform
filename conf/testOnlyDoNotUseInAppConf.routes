@@ -49,3 +49,5 @@ GET           /gform/test-only/snapshot-data/:snapshotId                        
 DELETE        /gform/test-only/snapshot/:snapshotId                                   uk.gov.hmrc.gform.testonly.TestOnlyController.deleteSnapshot(snapshotId: SnapshotId)
 
 DELETE        /gform/test-only/generated-files/:envelopeId                            uk.gov.hmrc.gform.testonly.TestOnlyController.deleteGeneratedFiles(envelopeId: EnvelopeId)
+
+POST          /gform/test-only/reload-templates                                       uk.gov.hmrc.gform.testonly.TestOnlyController.reloadTemplates()
