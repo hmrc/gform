@@ -19,37 +19,36 @@ package uk.gov.hmrc.gform.testonly
 import cats.implicits._
 import com.fasterxml.jackson.databind.JsonNode
 import com.typesafe.config.{ ConfigFactory, ConfigRenderOptions }
-
-import java.time.{ LocalDateTime, ZoneId }
-import org.apache.pekko.util.ByteString
 import org.apache.commons.text.StringEscapeUtils
+import org.apache.pekko.util.ByteString
 import org.slf4j.LoggerFactory
 import play.api.http.HttpEntity
 import play.api.libs.json._
 import play.api.mvc._
-
-import scala.concurrent.{ ExecutionContext, Future }
-import scala.util.Try
+import uk.gov.hmrc.gform.BuildInfo
 import uk.gov.hmrc.gform.controllers.BaseController
+import uk.gov.hmrc.gform.core.FOpt
 import uk.gov.hmrc.gform.des.DesAlgebra
 import uk.gov.hmrc.gform.form.FormAlgebra
-import uk.gov.hmrc.gform.formtemplate.{ FormTemplateAlgebra, RequestHandlerAlg }
+import uk.gov.hmrc.gform.formtemplate.ExprSubstituter
+import uk.gov.hmrc.gform.formtemplate.{ BooleanExprId, ExpressionId, Substituter }
+import uk.gov.hmrc.gform.formtemplate.{ BooleanExprSubstitutions, ExprSubstitutions, FormTemplateAlgebra, RequestHandlerAlg }
 import uk.gov.hmrc.gform.repo.Repo
 import uk.gov.hmrc.gform.sharedmodel._
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.TemplateType
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplate, FormTemplateId }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationId, Destinations, HandlebarsTemplateProcessorModel }
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FormId }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
 import uk.gov.hmrc.gform.submission.destinations.{ DataStoreSubmitter, DestinationSubmissionInfo, DestinationsProcessorModelAlgebra }
-import uk.gov.hmrc.gform.submission.{ DmsMetaData, Submission, SubmissionId }
 import uk.gov.hmrc.gform.submission.handlebars.{ FocussedHandlebarsModelTree, HandlebarsModelTree, RealHandlebarsTemplateProcessor }
-import uk.gov.hmrc.gform.BuildInfo
-import uk.gov.hmrc.gform.core.FOpt
-import uk.gov.hmrc.mongo.MongoComponent
+import uk.gov.hmrc.gform.submission.{ DmsMetaData, Submission, SubmissionId }
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.mongo.MongoComponent
 
+import java.time.{ LocalDateTime, ZoneId }
 import scala.annotation.tailrec
+import scala.concurrent.{ ExecutionContext, Future }
+import scala.util.Try
 
 class TestOnlyController(
   controllerComponents: ControllerComponents,
@@ -67,6 +66,53 @@ class TestOnlyController(
   private val logger = LoggerFactory.getLogger(getClass)
 
   private val formTemplatesRepo = new Repo[FormTemplate]("formTemplate", mongoComponent, _._id.value)
+
+  private def substituteExpr(exprSubstitutions: ExprSubstitutions): Map[ExpressionId, Expr] =
+    exprSubstitutions.expressions.map { case (id, expr) =>
+      id -> ExprSubstituter.substituteExpr(exprSubstitutions, expr)
+    }
+
+  private def substituteBooleanExpr(
+    booleanExprSubstitutions: BooleanExprSubstitutions,
+    exprSubstitutions: ExprSubstitutions
+  ): Map[BooleanExprId, BooleanExpr] = {
+    import uk.gov.hmrc.gform.formtemplate.BooleanExprSubstituter._
+
+    val substituter = implicitly[Substituter[BooleanExprSubstitutions, BooleanExpr]]
+    import uk.gov.hmrc.gform.formtemplate.Substituter.SubstituterSyntax
+    import uk.gov.hmrc.gform.formtemplate.ExprSubstituter.booleanExprSubstituter
+
+    val booleanExprs = booleanExprSubstitutions.expressions.map { case (id, beExpr) =>
+      id -> beExpr(exprSubstitutions)
+    }
+
+    booleanExprs.map { case (id, expr) =>
+      id -> substituter.substitute(booleanExprSubstitutions, expr)
+    }
+  }
+
+  def getExpressions(formTemplateId: FormTemplateRawId): Action[AnyContent] =
+    Action.async { _ =>
+      testOnlyFormService
+        .getFormTemplateRaw(formTemplateId)
+        .map { rawTemplate =>
+          val exprs = for {
+            expressionsContext        <- ExprSubstitutions.from(rawTemplate)
+            booleanExpressionsContext <- BooleanExprSubstitutions.from(rawTemplate)
+          } yield {
+            val expressions = substituteExpr(expressionsContext)
+            ExpressionsLookup(
+              expressions,
+              substituteBooleanExpr(booleanExpressionsContext, ExprSubstitutions(expressions))
+            )
+          }
+
+          exprs match {
+            case Right(el) => Ok(Json.toJson(el))
+            case Left(e)   => BadRequest(e.error)
+          }
+        }
+    }
 
   def getFromDes(url: String): Action[AnyContent] =
     Action.async { request =>

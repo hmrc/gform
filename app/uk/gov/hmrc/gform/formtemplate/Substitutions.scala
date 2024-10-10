@@ -19,12 +19,11 @@ package uk.gov.hmrc.gform.formtemplate
 import cats.Eq
 import cats.implicits._
 import julienrf.json.derived
-import play.api.libs.json.{ JsDefined, JsError, JsObject, JsString, JsSuccess, JsUndefined, JsValue, OFormat, Reads }
-import uk.gov.hmrc.gform.core.parsers.BooleanExprParser
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ ADTFormat, BooleanExpr, ExplicitExprType, Expr, FormTemplateRaw, RoundingMode, TextConstraint, TextExpression, Typed, ValueExpr }
+import play.api.libs.json._
 import uk.gov.hmrc.gform.core.Opt
-import uk.gov.hmrc.gform.core.parsers.ValueParser
+import uk.gov.hmrc.gform.core.parsers.{ BooleanExprParser, ValueParser }
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
+import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
 sealed trait Substitutions[K, V] {
 
@@ -105,6 +104,10 @@ object ExpressionId {
   implicit val equal: Eq[ExpressionId] = Eq.fromUniversalEquals
 }
 case class BooleanExprId(id: String) extends AnyVal
+object BooleanExprId {
+  implicit val format: OFormat[BooleanExprId] = derived.oformat()
+  implicit val equal: Eq[BooleanExprId] = Eq.fromUniversalEquals
+}
 
 class SpecimenExprSubstitutions extends ExprSubstitutions(Map.empty[ExpressionId, Expr])
 case class ExprSubstitutions(expressions: Map[ExpressionId, Expr]) {
@@ -116,6 +119,8 @@ object ExprSubstitutions extends Substitutions[ExpressionId, Expr] {
   val empty = ExprSubstitutions(Map.empty[ExpressionId, Expr])
 
   override val fieldName = "expressions"
+
+  implicit val format: OFormat[ExprSubstitutions] = derived.oformat()
 
   def toExpression(exprStr: String): Opt[Expr] = {
     val parsed: Opt[ValueExpr] = ValueParser.validate("${" + exprStr + "}")
@@ -141,11 +146,6 @@ object ExprSubstitutions extends Substitutions[ExpressionId, Expr] {
     }
 }
 
-object BooleanExprId {
-  implicit val format: OFormat[BooleanExprId] = derived.oformat()
-  implicit val equal: Eq[BooleanExprId] = Eq.fromUniversalEquals
-}
-
 case class BooleanExprSubstitutions(expressions: Map[BooleanExprId, BooleanExpr]) {
   def resolveSelfReferences: Either[UnexpectedState, BooleanExprSubstitutions] = BooleanExpr.resolveReferences(this)
 }
@@ -154,6 +154,8 @@ object BooleanExprSubstitutions extends Substitutions[BooleanExprId, BooleanExpr
   override val fieldName = "booleanExpressions"
 
   val empty = BooleanExprSubstitutions(Map.empty[BooleanExprId, BooleanExpr])
+
+  implicit val format: OFormat[BooleanExprSubstitutions] = derived.oformat()
 
   def toBooleanExpression(booleanExpr: String): Opt[BooleanExpr] = BooleanExprParser.validate("${" + booleanExpr + "}")
 

@@ -13,6 +13,9 @@
 ->            /                                                                  prod.Routes
 ->            /gform/builder                                                     builder.Routes
 
+#Expressions
+GET         /gform/test-only/expressions/:formTemplateId                         uk.gov.hmrc.gform.testonly.TestOnlyController.getExpressions(formTemplateId: FormTemplateRawId)
+
 #NewAuthConnector
 POST        /gform/test-only/de-enrol/userId/:userId                             uk.gov.hmrc.gform.testonly.TestOnlyController.deEnrolUser(userId: String)
 POST        /gform/test-only/upload                                              uk.gov.hmrc.gform.testonly.TestOnlyController.upload()
