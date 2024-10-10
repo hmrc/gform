@@ -124,6 +124,7 @@ object BuilderSupport {
       Property("presentationHint", PropertyBehaviour.PurgeWhenEmpty),
       Property("removeItemIf", PropertyBehaviour.PurgeWhenEmpty),
       Property("displayWidth", PropertyBehaviour.PurgeWhenEmpty),
+      Property("keyDisplayWidth", PropertyBehaviour.PurgeWhenEmpty),
       Property("header", PropertyBehaviour.PurgeWhenEmpty),
       Property("footer", PropertyBehaviour.PurgeWhenEmpty)
     )
@@ -326,7 +327,8 @@ object BuilderSupport {
       Property("header"),
       Property("footer"),
       Property("continueLabel", PropertyBehaviour.PurgeWhenEmpty),
-      Property("displayWidth", PropertyBehaviour.PurgeWhenEmpty)
+      Property("displayWidth", PropertyBehaviour.PurgeWhenEmpty),
+      Property("keyDisplayWidth", PropertyBehaviour.PurgeWhenEmpty)
     )
 
     updateJsonByPropertyList(propertyList, json, summarySection, history)
@@ -583,6 +585,7 @@ object BuilderSupport {
         Property("errorExample", PropertyBehaviour.PurgeWhenEmpty),
         Property("errorMessage", PropertyBehaviour.PurgeWhenEmpty),
         Property("displayWidth", PropertyBehaviour.PurgeWhenEmpty),
+        Property("keyDisplayWidth", PropertyBehaviour.PurgeWhenEmpty),
         Property("labelSize", PropertyBehaviour.PurgeWhenEmpty),
         Property("mandatory", PropertyBehaviour.PurgeWhenEmpty),
         Property("multiline", PropertyBehaviour.PurgeWhenEmpty),

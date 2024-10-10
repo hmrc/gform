@@ -112,7 +112,8 @@ trait SectionGen {
       presentationHint,
       removeItemIf,
       fields,
-      displayWidth
+      displayWidth,
+      None
     )
 
   def pageGen: Gen[Page] =
