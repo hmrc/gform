@@ -31,7 +31,7 @@ import uk.gov.hmrc.gform.core.FOpt
 import uk.gov.hmrc.gform.des.DesAlgebra
 import uk.gov.hmrc.gform.form.FormAlgebra
 import uk.gov.hmrc.gform.formtemplate.ExprSubstituter
-import uk.gov.hmrc.gform.formtemplate.{ BooleanExprId, ExpressionId, Substituter }
+import uk.gov.hmrc.gform.formtemplate.{ BooleanExprId, Substituter }
 import uk.gov.hmrc.gform.formtemplate.{ BooleanExprSubstitutions, ExprSubstitutions, FormTemplateAlgebra, RequestHandlerAlg }
 import uk.gov.hmrc.gform.repo.Repo
 import uk.gov.hmrc.gform.sharedmodel._
@@ -67,10 +67,22 @@ class TestOnlyController(
 
   private val formTemplatesRepo = new Repo[FormTemplate]("formTemplate", mongoComponent, _._id.value)
 
-  private def substituteExpr(exprSubstitutions: ExprSubstitutions): Map[ExpressionId, Expr] =
-    exprSubstitutions.expressions.map { case (id, expr) =>
+  private def substituteExpr(exprSubstitutions: ExprSubstitutions): ExprSubstitutions =
+    ExprSubstitutions(exprSubstitutions.expressions.map { case (id, expr) =>
       id -> ExprSubstituter.substituteExpr(exprSubstitutions, expr)
-    }
+    })
+
+  private def substituteBooleanExprsInExprs(
+    booleanExprSubstitutions: BooleanExprSubstitutions,
+    exprSubstitutions: ExprSubstitutions
+  ): ExprSubstitutions = {
+    import uk.gov.hmrc.gform.formtemplate.BooleanExprSubstituter._
+    val substituter = implicitly[Substituter[BooleanExprSubstitutions, Expr]]
+
+    ExprSubstitutions(exprSubstitutions.expressions.map { case (id, expr) =>
+      id -> substituter.substitute(booleanExprSubstitutions, expr)
+    })
+  }
 
   private def substituteBooleanExpr(
     booleanExprSubstitutions: BooleanExprSubstitutions,
@@ -100,10 +112,13 @@ class TestOnlyController(
             expressionsContext        <- ExprSubstitutions.from(rawTemplate)
             booleanExpressionsContext <- BooleanExprSubstitutions.from(rawTemplate)
           } yield {
-            val expressions = substituteExpr(expressionsContext)
+            val expressions0: ExprSubstitutions = substituteExpr(expressionsContext)
+            val expressions: ExprSubstitutions =
+              substituteBooleanExprsInExprs(booleanExpressionsContext, expressions0)
+
             ExpressionsLookup(
-              expressions,
-              substituteBooleanExpr(booleanExpressionsContext, ExprSubstitutions(expressions))
+              expressions.expressions,
+              substituteBooleanExpr(booleanExpressionsContext, expressions)
             )
           }
 
