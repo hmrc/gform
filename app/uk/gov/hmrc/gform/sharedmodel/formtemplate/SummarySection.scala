@@ -28,6 +28,7 @@ case class SummarySection(
   continueLabel: Option[SmartString],
   fields: Option[NonEmptyList[FormComponent]],
   displayWidth: LayoutDisplayWidth.LayoutDisplayWidth = LayoutDisplayWidth.M,
+  keyDisplayWidth: KeyDisplayWidth.KeyDisplayWidth = KeyDisplayWidth.S,
   includeIf: Option[IncludeIf],
   pdf: Option[PdfCtx],
   excludeFromPdf: Option[List[FormComponentId]]

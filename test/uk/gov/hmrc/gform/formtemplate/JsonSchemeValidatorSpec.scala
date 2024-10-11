@@ -2678,6 +2678,72 @@ class JsonSchemeValidatorSpec extends FunSuite {
   }
 
   test(
+    "validateJson rejects the form gracefully when a main CYA summarySection has the keyDisplayWidth property of an incorrect type"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "title": {
+            "en": "en title",
+            "cy": "cy title"
+          },
+          "header": {
+            "en": "en header",
+            "cy": "cy header"
+          },
+          "footer": {
+            "en": "en footer",
+            "cy": "cy footer"
+          },
+          "keyDisplayWidth": 1
+        }
+      """
+
+    val jsonTemplate = constructTestSummarySectionJsonTemplate(testProperties)
+
+    val result = validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/summarySection/keyDisplayWidth>: Property keyDisplayWidth expected type [String], found [Integer]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a main CYA summarySection has the keyDisplayWidth property of a not permitted value"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "title": {
+            "en": "en title",
+            "cy": "cy title"
+          },
+          "header": {
+            "en": "en header",
+            "cy": "cy header"
+          },
+          "footer": {
+            "en": "en footer",
+            "cy": "cy footer"
+          },
+          "keyDisplayWidth": "w"
+        }
+      """
+
+    val jsonTemplate = constructTestSummarySectionJsonTemplate(testProperties)
+
+    val result = validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/summarySection/keyDisplayWidth>: Property keyDisplayWidth expected value [s, m, l]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
     "validateJson rejects the form gracefully when a main CYA summarySection has the continueLabel property of an incorrect type"
   ) {
     val testProperties =
@@ -3134,6 +3200,72 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val expectedResult = List(
       "Error at <#/sections/0/tasks/0/summarySection/displayWidth>: Property displayWidth expected value [m, l, xl]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a task list summarySection has the keyDisplayWidth property of an incorrect type"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "title": {
+            "en": "en title",
+            "cy": "cy title"
+          },
+          "header": {
+            "en": "en header",
+            "cy": "cy header"
+          },
+          "footer": {
+            "en": "en footer",
+            "cy": "cy footer"
+          },
+          "keyDisplayWidth": 1
+        }
+      """
+
+    val jsonTemplate = constructTestTaskListSummarySectionJsonTemplate(testProperties)
+
+    val result = validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/sections/0/tasks/0/summarySection/keyDisplayWidth>: Property keyDisplayWidth expected type [String], found [Integer]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
+    "validateJson rejects the form gracefully when a task list summarySection has the keyDisplayWidth property of a not permitted value"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "title": {
+            "en": "en title",
+            "cy": "cy title"
+          },
+          "header": {
+            "en": "en header",
+            "cy": "cy header"
+          },
+          "footer": {
+            "en": "en footer",
+            "cy": "cy footer"
+          },
+          "keyDisplayWidth": "q"
+        }
+      """
+
+    val jsonTemplate = constructTestTaskListSummarySectionJsonTemplate(testProperties)
+
+    val result = validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/sections/0/tasks/0/summarySection/keyDisplayWidth>: Property keyDisplayWidth expected value [s, m, l]"
     )
 
     runInvalidJsonTest(result, expectedResult)
@@ -5664,6 +5796,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
             "cy": "cy footer"
           },
           "displayWidth": "xl",
+          "keyDisplayWidth": "m",
           "continueLabel": "correct continueLabel string",
           "pdf": {},
           "note": "note",
@@ -5699,6 +5832,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
             "cy": "cy footer"
           },
           "displayWidth": "xl",
+          "keyDisplayWidth": "m",
           "continueLabel": "correct continueLabel string",
           "includeIf": "include if",
           "fields": []

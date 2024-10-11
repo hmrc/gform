@@ -277,6 +277,10 @@
           "type": "string",
           "pattern": "^(m|l|xl)$"
         },
+        "keyDisplayWidth": {
+          "type": "string",
+          "pattern": "^(s|m|l)$"
+        },
         "continueLabel": {
           "$ref": "#/$defs/stringOrEnCyObject"
         },
@@ -567,6 +571,10 @@
                     "type": "string",
                     "pattern": "^(m|l|xl)$"
                   },
+                  "keyDisplayWidth": {
+                    "type": "string",
+                    "pattern": "^(s|m|l)$"
+                  },
                   "includeIf": {
                     "type": "string"
                   },
@@ -791,6 +799,10 @@
         },
         "displayWidth": {
           "type": "string"
+        },
+        "keyDisplayWidth": {
+          "type": "string",
+          "pattern": "^(s|m|l)$"
         },
         "validators": {
           "type": "array"

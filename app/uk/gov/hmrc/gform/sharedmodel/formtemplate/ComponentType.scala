@@ -16,9 +16,6 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
-import java.time.LocalTime
-import java.time.format.DateTimeFormatter
-
 import cats.Eq
 import cats.data.NonEmptyList
 import julienrf.json.derived
@@ -26,9 +23,13 @@ import play.api.libs.functional.syntax._
 import play.api.libs.json._
 import uk.gov.hmrc.gform.core.parsers.ValueParser
 import uk.gov.hmrc.gform.formtemplate.TableHeaderCellMaker
-import uk.gov.hmrc.gform.sharedmodel.{ LocalisedString, SmartString, ValueClassFormat }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.DisplayWidth.DisplayWidth
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.KeyDisplayWidth.KeyDisplayWidth
 import uk.gov.hmrc.gform.sharedmodel.structuredform.{ FieldName, RoboticsXml, StructuredFormDataFieldNamePurpose }
+import uk.gov.hmrc.gform.sharedmodel.{ LocalisedString, SmartString, ValueClassFormat }
+
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 
 sealed trait ComponentType {
   def showType: String = this match {
@@ -181,6 +182,17 @@ object DisplayWidth extends Enumeration {
 
   implicit val displayWidthReads: Reads[DisplayWidth] = Reads.enumNameReads(DisplayWidth)
   implicit val displayWidthWrites: Writes[DisplayWidth] = Writes.enumNameWrites
+}
+
+object KeyDisplayWidth extends Enumeration {
+  type KeyDisplayWidth = Value
+  val S, M, L = Value
+
+  implicit val keyDisplayWidthReads: Reads[KeyDisplayWidth] = Reads.enumNameReads(KeyDisplayWidth).preprocess {
+    case JsString(s) => JsString(s.toUpperCase)
+    case o           => o
+  }
+  implicit val keyDisplayWidthWrites: Writes[KeyDisplayWidth] = Writes.enumNameWrites
 }
 
 object LayoutDisplayWidth extends Enumeration {
@@ -486,7 +498,12 @@ object MiniSummaryRow {
   implicit val format: Format[MiniSummaryRow] = derived.oformat()
 }
 
-case class MiniSummaryList(rows: List[MiniSummaryRow], displayInSummary: DisplayInSummary) extends ComponentType
+case class MiniSummaryList(
+  rows: List[MiniSummaryRow],
+  displayInSummary: DisplayInSummary,
+  keyDisplayWidth: Option[KeyDisplayWidth]
+) extends ComponentType
+
 object MiniSummaryList {
   implicit val format: Format[MiniSummaryList] = derived.oformat()
 }
@@ -603,7 +620,7 @@ object ComponentType {
       case InformationMessage(_, infoText) => LeafExpr(path + "infoText", infoText)
       case FileUpload(_, _)                => Nil
       case Time(_, _)                      => Nil
-      case MiniSummaryList(rows, _)        => LeafExpr(path + "rows", rows)
+      case MiniSummaryList(rows, _, _)     => LeafExpr(path + "rows", rows)
       case t: TableComp =>
         LeafExpr(path + "header", t.header) ++ LeafExpr(path + "rows", t.rows) ++ LeafExpr(
           path + "summaryValue",

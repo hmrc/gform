@@ -501,6 +501,7 @@ trait ExampleFormTemplate {
     Some(toSmartString("ContinueLabel")),
     None,
     LayoutDisplayWidth.M,
+    KeyDisplayWidth.S,
     None,
     None,
     None
