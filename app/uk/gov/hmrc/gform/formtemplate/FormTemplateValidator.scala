@@ -784,9 +784,14 @@ object FormTemplateValidator {
           internalSmartString.rawValue(LangADT.En).trim =!= "" && internalSmartString.rawValue(LangADT.Cy).trim === ""
         )
 
+    def ignoredComponent(fc: FormComponent) = fc match {
+      case IsInformationMessage(_) | IsMiniSummaryList(_) | IsTableComp(_) => true
+      case _                                                               => false
+    }
+
     val validationResults = sectionsList.flatMap { page =>
       (page.allFormComponents ++ page.fields).collect {
-        case fc if isEmptyLabel(fc.label) && isEmptyCy(page.title) =>
+        case fc if !ignoredComponent(fc) && isEmptyLabel(fc.label) && isEmptyCy(page.title) =>
           Invalid(s"section/page with ${fc.`type`.showType} component ${fc.id.value} cannot have an empty cy title")
         case fc @ IsAddress(_) if isEmptyLabel(fc.label) =>
           Invalid(s"address component ${fc.id} should have a non-blank label")
