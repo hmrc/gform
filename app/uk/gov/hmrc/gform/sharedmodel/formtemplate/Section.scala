@@ -138,7 +138,8 @@ case class AcknowledgementSection(
   pdf: Option[PdfCtx],
   instructionPdf: Option[PdfCtx],
   displayFeedbackLink: Boolean,
-  noPIITitle: Option[SmartString]
+  noPIITitle: Option[SmartString],
+  showBanner: Boolean
 )
 
 object AcknowledgementSection {

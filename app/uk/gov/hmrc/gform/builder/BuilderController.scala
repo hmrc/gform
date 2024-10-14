@@ -312,6 +312,7 @@ object BuilderSupport {
     val propertyList = List(
       Property("title", PropertyBehaviour.PurgeWhenEmpty),
       Property("showReference"),
+      Property("showBanner"),
       Property("note", PropertyBehaviour.PurgeWhenEmpty),
       Property("doneNote", PropertyBehaviour.PurgeWhenEmpty)
     )
