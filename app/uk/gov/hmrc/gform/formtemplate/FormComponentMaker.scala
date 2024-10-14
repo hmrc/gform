@@ -128,6 +128,8 @@ class FormComponentMaker(json: JsValue) {
   lazy val optPriority: Opt[Option[Priority]] = parse("priority", PriorityTypeParser.validate)
   lazy val roundingMode: RoundingMode = (json \ "round").asOpt[RoundingMode].getOrElse(RoundingMode.defaultRoundingMode)
   lazy val optMultivalue: Opt[Option[Boolean]] = toOpt((json \ "multivalue").validateOpt[Boolean], "/multivalue")
+  lazy val optDisplayInSummary: Opt[Option[Boolean]] =
+    toOpt((json \ "displayInSummary").validateOpt[Boolean], "/displayInSummary")
   lazy val optHideChoicesSelected: Opt[Option[Boolean]] =
     toOpt((json \ "hideChoicesSelected").validateOpt[Boolean], "/hideChoicesSelected")
   lazy val total: Option[String] = (json \ "total").asOpt[String]
@@ -305,6 +307,7 @@ class FormComponentMaker(json: JsValue) {
       labelSize          <- optLabelSize
       notPII             <- optNotPII
       extraLetterSpacing <- optExtraLetterSpacing
+      displayInSummary   <- optDisplayInSummary
     } yield mkFieldValue(
       label,
       helpText,
@@ -317,7 +320,8 @@ class FormComponentMaker(json: JsValue) {
       validIf,
       labelSize,
       notPII,
-      extraLetterSpacing
+      extraLetterSpacing,
+      displayInSummary
     )
 
   private def toOpt[A](result: JsResult[A], pathPrefix: String): Opt[A] =
@@ -345,7 +349,8 @@ class FormComponentMaker(json: JsValue) {
     validIf: Option[ValidIf],
     labelSize: Option[LabelSize],
     notPII: Boolean,
-    extraLetterSpacing: Option[Boolean]
+    extraLetterSpacing: Option[Boolean],
+    displayInSummary: Option[Boolean]
   ): FormComponent =
     FormComponent(
       id = id,
@@ -376,7 +381,8 @@ class FormComponentMaker(json: JsValue) {
       errorShortNameStart = errorShortNameStart,
       errorExample = errorExample,
       notPII = notPII,
-      extraLetterSpacing = extraLetterSpacing
+      extraLetterSpacing = extraLetterSpacing,
+      displayInSummary = displayInSummary
     )
 
   private lazy val optMES: Opt[MES] = (submitMode, optMandatory, optMaybeValueExpr) match {
