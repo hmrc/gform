@@ -2417,6 +2417,30 @@ class JsonSchemeValidatorSpec extends FunSuite {
   }
 
   test(
+    "validateJson rejects the form gracefully when the displayInSummary property is an invalid type"
+  ) {
+    val testProperties =
+      json"""
+        {
+          "id": "testId",
+          "label": "test label",
+          "type": "text",
+          "displayInSummary": "true"
+        }
+      """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at ID <testId>: Property displayInSummary expected type [Boolean], found [String]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
     "validateJson rejects the form gracefully when a main CYA summarySection does not have any of the required properties [title, header, footer]"
   ) {
     val testProperties =

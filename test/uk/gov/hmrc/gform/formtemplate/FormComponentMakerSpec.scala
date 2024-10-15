@@ -688,4 +688,19 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
     )
   }
 
+  it should "parse text component with displayInSummary" in {
+    val formComponentMaker = new FormComponentMaker(Json.parse("""
+                                                                 |{
+                                                                 |   "id": "id1",
+                                                                 |   "type": "text",
+                                                                 |   "label": "Field 1",
+                                                                 |   "format": "text",
+                                                                 |   "displayInSummary": false
+                                                                 |}
+                                                                 |""".stripMargin))
+    formComponentMaker.optFieldValue().map(_.displayInSummary) shouldBe Right(
+      Some(false)
+    )
+  }
+
 }
