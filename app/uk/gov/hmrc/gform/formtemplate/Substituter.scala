@@ -107,16 +107,11 @@ object Substituter {
       case o: OptionData.IndexBased => o.copy(label = o.label(substitutions), includeIf = o.includeIf(substitutions))
       case o @ OptionData.ValueBased(_, _, _, _, OptionDataValue.StringBased(_)) =>
         o.copy(label = o.label(substitutions), includeIf = o.includeIf(substitutions))
-      case o @ OptionData.ValueBased(_, _, _, _, OptionDataValue.ExprBased(prefix, expr)) =>
+      case o @ OptionData.ValueBased(_, _, _, _, OptionDataValue.ExprBased(expr)) =>
         o.copy(
           label = o.label(substitutions),
           includeIf = o.includeIf(substitutions),
-          value = OptionDataValue.ExprBased(prefix, expr(substitutions))
-        )
-      case o @ OptionData.ValueBased(_, _, _, _, OptionDataValue.FormCtxBased(_)) =>
-        o.copy(
-          label = o.label(substitutions),
-          includeIf = o.includeIf(substitutions)
+          value = OptionDataValue.ExprBased(expr(substitutions))
         )
     }
 
