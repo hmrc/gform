@@ -23,8 +23,7 @@ import uk.gov.hmrc.gform.core.parsers.ValueParser
 sealed trait OptionDataValue extends Product with Serializable
 object OptionDataValue {
   case class StringBased(value: String) extends OptionDataValue
-  case class ExprBased(prefix: String, expr: Expr) extends OptionDataValue
-  case class FormCtxBased(formCtx: FormCtx) extends OptionDataValue
+  case class ExprBased(expr: Expr) extends OptionDataValue
 
   private def readsForTemplateJson: Reads[OptionDataValue] = Reads {
     case JsString(exprAsStr) =>
@@ -44,8 +43,7 @@ object OptionDataValue {
 
   implicit val leafExprs: LeafExpr[OptionDataValue] = (path: TemplatePath, t: OptionDataValue) =>
     t match {
-      case StringBased(_)        => Nil
-      case ExprBased(_, expr)    => List(ExprWithPath(path, expr))
-      case FormCtxBased(formCtx) => List(ExprWithPath(path, formCtx))
+      case StringBased(_)  => Nil
+      case ExprBased(expr) => List(ExprWithPath(path, expr))
     }
 }

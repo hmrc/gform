@@ -1625,8 +1625,10 @@ object FormTemplateValidator {
       SectionHelper.addToListFormComponents(formTemplate.formKind.allSections).map(_.id)
 
     def choiceFormCtxIds(choice: Choice): List[FormComponentId] = choice.options.collect {
-      case OptionData.ValueBased(_, _, _, _, OptionDataValue.FormCtxBased(formCtx)) =>
-        formCtx.formComponentId
+      case OptionData
+            .ValueBased(_, _, _, Some(Dynamic.ATLBased(fcId)), OptionDataValue.ExprBased(FormCtx(formComponentId)))
+          if fcId === formComponentId =>
+        formComponentId
     }
 
     allFormComponents(sectionsList)

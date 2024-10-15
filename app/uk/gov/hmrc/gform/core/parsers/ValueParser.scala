@@ -619,10 +619,8 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
       }
 
   lazy val optionDataValue: Parser[OptionDataValue] =
-    expressionParser_expr ^^ { formCtx =>
-      OptionDataValue.FormCtxBased(formCtx)
-    } | alphabeticOnly ~ expr ^^ { case prefix ~ expr =>
-      OptionDataValue.ExprBased(prefix, expr)
+    expr ^^ { expr =>
+      OptionDataValue.ExprBased(expr)
     } | anything ^^ (str => OptionDataValue.StringBased(str))
 }
 
