@@ -345,6 +345,9 @@
         "showReference": {
           "type": "boolean"
         },
+        "showBanner": {
+          "type": "boolean"
+        },
         "note": {
           "type": [
             "string",

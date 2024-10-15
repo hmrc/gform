@@ -120,7 +120,8 @@ trait ExampleAuthConfig extends DestinationGen {
         )
       ),
       true,
-      None
+      None,
+      true
     )
 
   val decFormComponent = List(buildFormComponent("fieldInDeclarationSections", Value))
@@ -479,7 +480,8 @@ trait ExampleFormTemplate {
       None,
       None,
       true,
-      None
+      None,
+      true
     )
 
   def declarationSection =

@@ -36,6 +36,13 @@ class AcknowledgementSectionMaker(json: JsValue) {
     case JsDefined(JsFalse) => Right(false)
     case JsUndefined()      => Right(true)
     case otherwise          => Left(UnexpectedState(s"Expected 'true' or 'false' for showReference. Got: $otherwise"))
+
+  }
+  val showBanner: Opt[Boolean] = json \ "showBanner" match {
+    case JsDefined(JsTrue)  => Right(true)
+    case JsDefined(JsFalse) => Right(false)
+    case JsUndefined()      => Right(true)
+    case otherwise          => Left(UnexpectedState(s"Expected 'true' or 'false' for showBanner. Got: $otherwise"))
   }
 
   val acknowledgementSectionPdf: Option[PdfCtx] = (json \ "pdf").asOpt[PdfCtx]
@@ -60,6 +67,7 @@ class AcknowledgementSectionMaker(json: JsValue) {
       sr         <- showReference
       title      <- optTitle
       noPIITitle <- optNoPIITitle
+      sb         <- showBanner
     } yield AcknowledgementSection(
       title,
       description,
@@ -69,7 +77,8 @@ class AcknowledgementSectionMaker(json: JsValue) {
       acknowledgementSectionPdf,
       acknowledgementSectionInstructionPdf,
       displayFeedbackLink,
-      noPIITitle
+      noPIITitle,
+      sb
     )
 
 }
