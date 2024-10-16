@@ -2832,4 +2832,246 @@ class BuilderControllerSuite extends FunSuite {
 
     assertEquals(result.spaces2, nonLocalisedOptionsExpectedJson.spaces2)
   }
+
+  val formWithTaskListSectionNoDeclarationJson = json
+  """
+    |{
+    |  "_id" : "task-list-form",
+    |  "summarySection" : {
+    |    "title" : {
+    |      "en" : "Check your answers",
+    |      "cy" : "Gwiriwch eich atebion"
+    |    },
+    |    "header" : {
+    |      "en" : "Make sure the information you have given is correct.",
+    |      "cy" : "Gwnewch yn siŵr bod yr wybodaeth a roddwyd gennych yn gywir."
+    |    },
+    |    "footer" : {
+    |      "en" : "##Now send your form\n\nYou need to submit your form on the next screen.\n\nBefore you do this you can [print or save a PDF copy of your answers (opens in a new window or tab)](${link.printSummaryPdf}).",
+    |      "cy" : "##Nawr anfonwch eich ffurflen\n\nMae angen i chi gyflwyno’ch ffurflen ar y sgrin nesaf.\n\nCyn i chi wneud hyn gallwch [argraffu neu gadw copi PDF o’ch atebion (yn agor ffenestr neu dab newydd)](${link.printSummaryPdf})."
+    |    }
+    |  },
+    |  "formName" : "Name of the service",
+    |  "description" : "",
+    |  "version" : 1,
+    |  "emailTemplateId" : "eeitt_submission_confirmation",
+    |  "authConfig" : {
+    |    "authModule" : "anonymous"
+    |  },
+    |  "sections" : [
+    |    {
+    |      "title" : "About the business",
+    |      "tasks" : [
+    |        {
+    |          "title" : "Applicant details",
+    |          "sections" : [
+    |            {
+    |              "title" : "What is your name?",
+    |              "shortName" : "Applicant details",
+    |              "fields" : [
+    |                {
+    |                  "id" : "userName",
+    |                  "type" : "text",
+    |                  "label" : "What is your name?",
+    |                  "shortName" : "Name",
+    |                  "format" : "text"
+    |                }
+    |              ]
+    |            }
+    |          ],
+    |          "summarySection" : {
+    |            "title" : "Check your answers",
+    |            "includeIf" : "${1=1}",
+    |            "header" : "Make sure the information you have given is correct",
+    |            "footer" : ""
+    |          }
+    |        }
+    |      ]
+    |    }
+    |  ],
+    |  "submitSection" : {
+    |    "label" : "Check and send to HMRC",
+    |    "taskLabel" : "Check answers and submit form"
+    |  },
+    |  "declarationSection" : {
+    |    "title" : "Declaration",
+    |    "includeIf" : "${1=1}",
+    |    "fields" : [
+    |      {
+    |        "id" : "decChoice2",
+    |        "type" : "choice",
+    |        "label" : "",
+    |        "shortName" : "Signed",
+    |        "multivalue" : true,
+    |        "errorMessage" : "You must check the box to sign the declaration",
+    |        "choices" : [
+    |          "I declare that I meet the exclusion criteria, and that all details entered are correct and complete to the best of my knowledge and belief."
+    |        ]
+    |      }
+    |    ]
+    |  },
+    |  "acknowledgementSection" : {
+    |    "title" : "Acknowledgement Page",
+    |    "fields" : [
+    |      {
+    |        "id" : "nextSteps",
+    |        "type" : "info",
+    |        "label" : "",
+    |        "infoText" : "We have sent you a confirmation email.\n\n[Print or save a PDF copy of your form](${link.printAcknowledgementPdf})\n## What happens next",
+    |        "infoType" : "noformat"
+    |      }
+    |    ]
+    |  },
+    |  "destinations" : [
+    |    {
+    |      "id" : "transitionToSubmitted",
+    |      "type" : "stateTransition",
+    |      "requiredState" : "Submitted"
+    |    }
+    |  ]
+    |}
+        """.stripMargin
+
+  val formWithTaskListSectionWithDeclarationJson = json
+  """
+    {
+    |  "_id" : "task-list-form",
+    |  "summarySection" : {
+    |    "title" : {
+    |      "en" : "Check your answers",
+    |      "cy" : "Gwiriwch eich atebion"
+    |    },
+    |    "header" : {
+    |      "en" : "Make sure the information you have given is correct.",
+    |      "cy" : "Gwnewch yn siŵr bod yr wybodaeth a roddwyd gennych yn gywir."
+    |    },
+    |    "footer" : {
+    |      "en" : "##Now send your form\n\nYou need to submit your form on the next screen.\n\nBefore you do this you can [print or save a PDF copy of your answers (opens in a new window or tab)](${link.printSummaryPdf}).",
+    |      "cy" : "##Nawr anfonwch eich ffurflen\n\nMae angen i chi gyflwyno’ch ffurflen ar y sgrin nesaf.\n\nCyn i chi wneud hyn gallwch [argraffu neu gadw copi PDF o’ch atebion (yn agor ffenestr neu dab newydd)](${link.printSummaryPdf})."
+    |    }
+    |  },
+    |  "formName" : "Name of the service",
+    |  "description" : "",
+    |  "version" : 1,
+    |  "emailTemplateId" : "eeitt_submission_confirmation",
+    |  "authConfig" : {
+    |    "authModule" : "anonymous"
+    |  },
+    |  "sections" : [
+    |    {
+    |      "title" : "About the business",
+    |      "tasks" : [
+    |        {
+    |          "declarationSection" : {
+    |            "title" : "Declaration",
+    |            "fields" : [
+    |            ]
+    |          },
+    |          "title" : "Applicant details",
+    |          "sections" : [
+    |            {
+    |              "title" : "What is your name?",
+    |              "shortName" : "Applicant details",
+    |              "fields" : [
+    |                {
+    |                  "id" : "userName",
+    |                  "type" : "text",
+    |                  "label" : "What is your name?",
+    |                  "shortName" : "Name",
+    |                  "format" : "text"
+    |                }
+    |              ]
+    |            }
+    |          ],
+    |          "summarySection" : {
+    |            "title" : "Check your answers",
+    |            "includeIf" : "${1=1}",
+    |            "header" : "Make sure the information you have given is correct",
+    |            "footer" : ""
+    |          }
+    |        }
+    |      ]
+    |    }
+    |  ],
+    |  "submitSection" : {
+    |    "label" : "Check and send to HMRC",
+    |    "taskLabel" : "Check answers and submit form"
+    |  },
+    |  "declarationSection" : {
+    |    "title" : "Declaration",
+    |    "includeIf" : "${1=1}",
+    |    "fields" : [
+    |      {
+    |        "id" : "decChoice2",
+    |        "type" : "choice",
+    |        "label" : "",
+    |        "shortName" : "Signed",
+    |        "multivalue" : true,
+    |        "errorMessage" : "You must check the box to sign the declaration",
+    |        "choices" : [
+    |          "I declare that I meet the exclusion criteria, and that all details entered are correct and complete to the best of my knowledge and belief."
+    |        ]
+    |      }
+    |    ]
+    |  },
+    |  "acknowledgementSection" : {
+    |    "title" : "Acknowledgement Page",
+    |    "fields" : [
+    |      {
+    |        "id" : "nextSteps",
+    |        "type" : "info",
+    |        "label" : "",
+    |        "infoText" : "We have sent you a confirmation email.\n\n[Print or save a PDF copy of your form](${link.printAcknowledgementPdf})\n## What happens next",
+    |        "infoType" : "noformat"
+    |      }
+    |    ]
+    |  },
+    |  "destinations" : [
+    |    {
+    |      "id" : "transitionToSubmitted",
+    |      "type" : "stateTransition",
+    |      "requiredState" : "Submitted"
+    |    }
+    |  ]
+    |}
+        """.stripMargin
+
+  val taskSectionPath = new SectionPath(".sections[0].tasks[0]")
+
+  test("modifyTaskDeclarationSection - add task declaration section") {
+    val taskListSectionDeclarationJson = json
+    """
+      |{
+      |  "title" : "Declaration",
+      |  "fields" : [
+      |  ]
+      |}
+      """.stripMargin
+    assertEquals(
+      BuilderSupport.modifyTaskDeclarationSection(
+        formWithTaskListSectionNoDeclarationJson,
+        taskListSectionDeclarationJson,
+        taskSectionPath
+      ),
+      formWithTaskListSectionWithDeclarationJson
+    )
+  }
+
+  test("modifyTaskDeclarationSection - remove task declaration section") {
+    val taskListSectionDeclarationJson = json
+    """
+      |{
+      |  "title" : "",
+      |  "fields" : ""
+      |}
+      """.stripMargin
+    assertEquals(
+      BuilderSupport.modifyTaskDeclarationSection(
+        formWithTaskListSectionWithDeclarationJson,
+        taskListSectionDeclarationJson,
+        taskSectionPath
+      ),
+      formWithTaskListSectionNoDeclarationJson
+    )
+  }
 }
