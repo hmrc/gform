@@ -24,15 +24,17 @@ object FocusType {
   case object TaskSection extends FocusType
   case object Task extends FocusType
   case object TaskSummarySection extends FocusType
+  case object TaskDeclarationSection extends FocusType
   case object SubmitSection extends FocusType
 
   private def parse(s: String): Option[FocusType] =
     s match {
-      case "taskSection"        => Some(TaskSection)
-      case "task"               => Some(Task)
-      case "taskSummarySection" => Some(TaskSummarySection)
-      case "submitSection"      => Some(SubmitSection)
-      case _                    => None
+      case "taskSection"            => Some(TaskSection)
+      case "task"                   => Some(Task)
+      case "taskSummarySection"     => Some(TaskSummarySection)
+      case "taskDeclarationSection" => Some(TaskDeclarationSection)
+      case "submitSection"          => Some(SubmitSection)
+      case _                        => None
     }
 
   implicit val focusTypeDecoder: Decoder[FocusType] = implicitly[Decoder[String]].emap { str =>
