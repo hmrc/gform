@@ -216,6 +216,41 @@ object BuilderSupport {
     }
   }
 
+  def modifyTaskDeclarationSection(json: Json, taskDeclarationSectionData: Json, sectionPath: SectionPath): Json = {
+    val propertyList = List(
+      Property("title"),
+      Property("fields")
+    )
+    val isTitleEmpty: Boolean =
+      taskDeclarationSectionData.hcursor.downField("title").as[String].toOption.fold(false)(_.trim.isEmpty())
+
+    val history = sectionPath.asHistory
+
+    if (isTitleEmpty) {
+      json.hcursor
+        .replay(history)
+        .downField("declarationSection")
+        .delete
+        .root
+        .focus
+        .getOrElse(json)
+    } else {
+      val declarationSectionHistory = DownField("declarationSection") :: history
+      val noTaskDeclarationSection = json.hcursor.replay(declarationSectionHistory).failed
+      if (noTaskDeclarationSection) {
+        val declarationSection =
+          Json.obj("title" := "", "fields" := Json.arr()).deepMerge(taskDeclarationSectionData)
+        json.hcursor
+          .replay(history)
+          .withFocus(json => json.deepMerge(Json.obj("declarationSection" := declarationSection)))
+          .top
+          .getOrElse(json)
+      } else {
+        updateJsonByPropertyList(propertyList, json, taskDeclarationSectionData, declarationSectionHistory)
+      }
+    }
+  }
+
   def modifyTask(json: Json, taskSectionData: Json, sectionPath: SectionPath): Json = {
     val propertyList = List(
       Property("title"),
@@ -1172,6 +1207,8 @@ class BuilderController(
                     BuilderSupport.modifyTaskSection(json, focusedUpdate.payload, focusedUpdate.path)
                   case FocusType.TaskSummarySection =>
                     BuilderSupport.modifyTaskSummarySection(json, focusedUpdate.payload, focusedUpdate.path)
+                  case FocusType.TaskDeclarationSection =>
+                    BuilderSupport.modifyTaskDeclarationSection(json, focusedUpdate.payload, focusedUpdate.path)
                   case FocusType.SubmitSection =>
                     BuilderSupport.modifySubmitSection(json, focusedUpdate.payload)
                 }
