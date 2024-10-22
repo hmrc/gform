@@ -826,10 +826,10 @@
           "type": "boolean"
         },
         "suffix": {
-          "type": "string"
+          "$ref": "#/$defs/stringOrEnCyObject"
         },
         "prefix": {
-          "type": "string"
+          "$ref": "#/$defs/stringOrEnCyObject"
         },
         "offset": {
           "type": "string"
