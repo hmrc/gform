@@ -26,7 +26,31 @@ import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import scala.annotation.tailrec
 import scala.util.matching.Regex
 
-sealed trait BooleanExpr
+sealed trait BooleanExpr {
+  def topLevelRefs: List[TopLevelRef] = this match {
+    case Equals(left: Expr, right: Expr)                         => Nil
+    case GreaterThan(left: Expr, right: Expr)                    => Nil
+    case GreaterThanOrEquals(left: Expr, right: Expr)            => Nil
+    case LessThan(left: Expr, right: Expr)                       => Nil
+    case LessThanOrEquals(left: Expr, right: Expr)               => Nil
+    case Not(e: BooleanExpr)                                     => e.topLevelRefs
+    case Or(left: BooleanExpr, right: BooleanExpr)               => left.topLevelRefs ++ right.topLevelRefs
+    case And(left: BooleanExpr, right: BooleanExpr)              => left.topLevelRefs ++ right.topLevelRefs
+    case IsTrue                                                  => Nil
+    case IsFalse                                                 => Nil
+    case Contains(multiValueField: FormCtx, value: Expr)         => Nil
+    case DuplicateExists(fieldList: List[FormCtx])               => Nil
+    case In(value: Expr, dataSource: DataSource)                 => Nil
+    case HasAnswer(formCtx: FormCtx, addToListRef: AddToListRef) => Nil
+    case MatchRegex(expr: Expr, regex: Regex)                    => Nil
+    case DateBefore(left: DateExpr, right: DateExpr)             => Nil
+    case DateAfter(left: DateExpr, right: DateExpr)              => Nil
+    case First(formCtx: FormCtx)                                 => Nil
+    case IsLogin(value: LoginInfo)                               => Nil
+    case FormPhase(value: FormPhaseValue)                        => Nil
+    case t @ TopLevelRef(booleanExprId: BooleanExprId)           => t :: Nil
+  }
+}
 final case class Equals(left: Expr, right: Expr) extends BooleanExpr
 final case class GreaterThan(left: Expr, right: Expr) extends BooleanExpr
 final case class GreaterThanOrEquals(left: Expr, right: Expr) extends BooleanExpr

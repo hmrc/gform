@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.gform.formtemplate
 
+import cats.data.NonEmptyList
 import cats.implicits._
 import play.api.libs.json._
 import play.api.libs.json.Reads._
@@ -27,7 +28,7 @@ import uk.gov.hmrc.gform.config.FileInfoConfig
 import uk.gov.hmrc.gform.core.{ FOpt, Opt, fromOptA }
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.history.FormTemplateHistory
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Default, Expr, ExpressionOutput, FormCategory, FormComponentId, FormTemplate, FormTemplateRaw, SummarySection }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Default, Expr, ExpressionOutput, FormCategory, FormComponentId, FormTemplate, FormTemplateRaw, SummarySection, TopLevelRef }
 
 trait RequestHandlerAlg[F[_]] {
   def handleRequest(templateRaw: FormTemplateRaw): F[Unit]
@@ -54,6 +55,7 @@ class FormTemplatesControllerRequestHandler[F[_]](
       val formTemplateWithSubstitutions = for {
         expressionsContext        <- expressionsContextOpt
         booleanExpressionsContext <- booleanExpressionsContextOpt
+        _                         <- rejectUnusedBooleanExpr(booleanExpressionsContext)
         formTemplate              <- formTemplateOpt
         expressionsOutput         <- substituteExpressionsOutput(formTemplate.expressionsOutput, expressionsContext)
       } yield {
@@ -66,6 +68,26 @@ class FormTemplatesControllerRequestHandler[F[_]](
       }
 
       processAndPersistTemplate(formTemplateWithSubstitutions, templateRaw.lowerCaseId)
+    }
+  }
+
+  private def rejectUnusedBooleanExpr(
+    booleanExpressionsContext: BooleanExprSubstitutions
+  ): Opt[List[Unit]] = {
+    val lookup = booleanExpressionsContext.expressions.keys.toSet
+
+    booleanExpressionsContext.expressions.toList.traverse { case (expressionId, booleanExpr) =>
+      val topLevelRefs = booleanExpr.topLevelRefs
+      val maybeUnknowTopLevelRefs: Option[NonEmptyList[TopLevelRef]] =
+        NonEmptyList.fromList(topLevelRefs.filter(topLevelExpr => !lookup(topLevelExpr.booleanExprId)))
+
+      maybeUnknowTopLevelRefs.fold[Opt[Unit]](Right(())) { unknowTopLevelRefsNel =>
+        Left(
+          UnexpectedState(
+            s"Unknown reference: '${unknowTopLevelRefsNel.head.booleanExprId.id}' encountered in boolean expression: '${expressionId.id}'"
+          )
+        )
+      }
     }
   }
 
