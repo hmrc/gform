@@ -698,7 +698,7 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
       Map(
         DataRetrieve.Attribute("regime")    -> DataRetrieve.AttrType.String,
         DataRetrieve.Attribute("code")      -> DataRetrieve.AttrType.String,
-        DataRetrieve.Attribute("rate")      -> DataRetrieve.AttrType.String,
+        DataRetrieve.Attribute("rate")      -> DataRetrieve.AttrType.BigDecimal,
         DataRetrieve.Attribute("startDate") -> DataRetrieve.AttrType.Date,
         DataRetrieve.Attribute("endDate")   -> DataRetrieve.AttrType.Date
       ),
