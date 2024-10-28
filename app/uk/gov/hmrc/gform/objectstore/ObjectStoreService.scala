@@ -217,7 +217,7 @@ class ObjectStoreService(
 
     def uploadPfdF: Future[Unit] = {
       val (fileId, fileNameSuffix) = {
-        if (hmrcDms.includeInstructionPdf)
+        if (hmrcDms.instructionPdfFields.isDefined)
           (customerSummaryPdf, "customerSummary")
         else (pdf, "iform")
       }

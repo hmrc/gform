@@ -49,6 +49,7 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
                                              |    "en"
                                              |  ],
                                              |  "destinations": {
+                                             |    "destinationKind": "printSection",
                                              |    "title": "Next Steps",
                                              |    "summaryPdf": "TestSummaryPdf"
                                              |  },
@@ -165,19 +166,20 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
                                              |      ]
                                              |    },
                                              |    "declarationSection": {
-                                             |     "title": "Declaration",
+                                             |      "title": "Declaration",
                                              |      "shortName": "Declaration",
                                              |      "fields": [
-                                             |          {
-                                             |              "id": "helloD",
-                                             |              "type": "text",
-                                             |              "label": {
-                                             |                  "en": "Hello World",
-                                             |                  "cy": "Welsh Hello World"
-                                             |              }
+                                             |        {
+                                             |          "id": "helloD",
+                                             |          "type": "text",
+                                             |          "label": {
+                                             |            "en": "Hello World",
+                                             |            "cy": "Welsh Hello World"
                                              |          }
+                                             |        }
                                              |      ]
-                                             |   }
+                                             |    },
+                                             |    "destinationKind": "destinations"
                                              |  },
                                              |  "displayHMRCLogo": false,
                                              |  "accessiblePdf":false,
@@ -319,7 +321,8 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
                                  |          }
                                  |        }
                                  |      ]
-                                 |    }
+                                 |    },
+                                 |    "destinationKind": "destinations"
                                  |  },
                                  |  "displayHMRCLogo": false,
                                  |  "accessiblePdf":false,
@@ -466,7 +469,8 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
                                                                    |          }
                                                                    |        }
                                                                    |      ]
-                                                                   |    }
+                                                                   |    },
+                                                                   |    "destinationKind": "destinations"
                                                                    |  },
                                                                    |  "displayHMRCLogo": false,
                                                                    |  "accessiblePdf":false,

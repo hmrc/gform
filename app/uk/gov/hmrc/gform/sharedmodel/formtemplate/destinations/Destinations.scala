@@ -49,10 +49,13 @@ object Destinations {
   implicit val destinationPrintFormat: OFormat[DestinationPrint] = Json.format[DestinationPrint]
 
   implicit val format: OFormat[Destinations] =
-    OFormatWithTemplateReadFallback(
-      safeCast[DestinationList, Destinations](destinationListFormat) orElse
-        safeCast[DestinationPrint, Destinations](destinationPrintFormat)
-    )
+    OFormatWithTemplateReadFallback {
+      ADTFormat.adtRead[Destinations](
+        "destinationKind",
+        "destinations" -> destinationListFormat,
+        "printSection" -> destinationPrintFormat
+      )
+    }
 
   implicit val leafExprs: LeafExpr[Destinations] = (path: TemplatePath, t: Destinations) =>
     t match {

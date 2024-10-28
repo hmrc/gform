@@ -30,7 +30,8 @@
       "title": "Acknowledgement",
       "fields": [],
       "displayFeedbackLink": true
-    }
+    },
+    "destinationKind": "destinations"
   },
   "description": "",
   "allowedFileTypes": [
@@ -107,6 +108,6 @@
   "originalId": "revealing-choice-include-revealing-choice",
   "displayHMRCLogo": false,
   "parentFormSubmissionRefs": [],
-  "accessiblePdf":false,
-  "displayAccountHeader":false
+  "accessiblePdf": false,
+  "displayAccountHeader": false
 }

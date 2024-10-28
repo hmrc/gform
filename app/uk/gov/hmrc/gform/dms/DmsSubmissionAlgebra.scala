@@ -109,7 +109,7 @@ object DmsSubmissionService {
       Some(DataOutputFormat.XML),
       true,
       metadata.backscan,
-      false,
+      None,
       None,
       None,
       TemplateType.XML
