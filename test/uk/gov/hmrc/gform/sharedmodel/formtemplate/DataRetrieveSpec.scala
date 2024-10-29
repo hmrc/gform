@@ -318,9 +318,9 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
         )
       ),
       Map(
-        DataRetrieve.Attribute("activeDirectors")   -> DataRetrieve.AttrType.Integer,
-        DataRetrieve.Attribute("activeSecretaries") -> DataRetrieve.AttrType.Integer,
-        DataRetrieve.Attribute("activeLlpMembers")  -> DataRetrieve.AttrType.Integer
+        DataRetrieve.Attribute("activeDirectors")   -> DataRetrieve.AttrType.Number,
+        DataRetrieve.Attribute("activeSecretaries") -> DataRetrieve.AttrType.Number,
+        DataRetrieve.Attribute("activeLlpMembers")  -> DataRetrieve.AttrType.Number
       ),
       List(
         DataRetrieve.ParamExpr(
@@ -352,7 +352,7 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
           AttributeInstruction(DataRetrieve.Attribute("reason"), ConstructAttribute.AsIs(Fetch(List("reason"))))
         )
       ),
-      Map(DataRetrieve.Attribute("riskScore") -> DataRetrieve.AttrType.Integer),
+      Map(DataRetrieve.Attribute("riskScore") -> DataRetrieve.AttrType.Number),
       List(
         DataRetrieve.ParamExpr(
           DataRetrieve.Parameter("nino", List(), DataRetrieve.ParamType.String),
@@ -384,7 +384,7 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
           AttributeInstruction(DataRetrieve.Attribute("reason"), ConstructAttribute.AsIs(Fetch(List("reason"))))
         )
       ),
-      Map(DataRetrieve.Attribute("riskScore") -> DataRetrieve.AttrType.Integer),
+      Map(DataRetrieve.Attribute("riskScore") -> DataRetrieve.AttrType.Number),
       List(
         DataRetrieve
           .ParamExpr(
@@ -422,7 +422,7 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
           AttributeInstruction(DataRetrieve.Attribute("reason"), ConstructAttribute.AsIs(Fetch(List("reason"))))
         )
       ),
-      Map(DataRetrieve.Attribute("riskScore") -> DataRetrieve.AttrType.Integer),
+      Map(DataRetrieve.Attribute("riskScore") -> DataRetrieve.AttrType.Number),
       List(
         DataRetrieve
           .ParamExpr(
@@ -698,7 +698,7 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
       Map(
         DataRetrieve.Attribute("regime")    -> DataRetrieve.AttrType.String,
         DataRetrieve.Attribute("code")      -> DataRetrieve.AttrType.String,
-        DataRetrieve.Attribute("rate")      -> DataRetrieve.AttrType.BigDecimal,
+        DataRetrieve.Attribute("rate")      -> DataRetrieve.AttrType.Number,
         DataRetrieve.Attribute("startDate") -> DataRetrieve.AttrType.Date,
         DataRetrieve.Attribute("endDate")   -> DataRetrieve.AttrType.Date
       ),
