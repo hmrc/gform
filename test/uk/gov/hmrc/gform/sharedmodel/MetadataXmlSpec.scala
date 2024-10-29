@@ -21,7 +21,7 @@ import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.objectstore.{ MetadataXml, ReconciliationId }
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FormId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DataOutputFormat, DestinationId, DestinationIncludeIf, TemplateType }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DataOutputFormat, DestinationId, DestinationIncludeIf, InstructionPdfFields, TemplateType }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
 import uk.gov.hmrc.gform.submission._
 
@@ -54,7 +54,7 @@ class MetadataXmlSpec extends Spec {
       Some(DataOutputFormat.XML),
       true,
       Some(true),
-      true,
+      Some(InstructionPdfFields.Ordered),
       None,
       None,
       TemplateType.XML

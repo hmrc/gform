@@ -23,7 +23,8 @@
       "title": "Your registration has been submitted Genesis",
       "fields": [],
       "displayFeedbackLink": true
-    }
+    },
+    "destinationKind": "destinations"
   },
   "description": "",
   "allowedFileTypes": [
@@ -105,6 +106,6 @@
   "_id": "exclude-from-pdf-in-summary-section",
   "displayHMRCLogo": false,
   "parentFormSubmissionRefs": [],
-  "accessiblePdf":false,
-  "displayAccountHeader":false
+  "accessiblePdf": false,
+  "displayAccountHeader": false
 }

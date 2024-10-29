@@ -39,16 +39,16 @@ trait DestinationGen {
 
   def hmrcDmsGen: Gen[Destination.HmrcDms] =
     for {
-      id                    <- destinationIdGen
-      dmsFormId             <- dmsFormIdGen
-      customerId            <- customerIdGen
-      classificationType    <- classificationTypeGen
-      businessArea          <- businessAreaGen
-      includeIf             <- includeIfGen()
-      failOnError           <- PrimitiveGen.booleanGen
-      formdataXml           <- PrimitiveGen.booleanGen
-      backscan              <- Gen.option(PrimitiveGen.booleanGen)
-      includeInstructionPdf <- PrimitiveGen.booleanGen
+      id                   <- destinationIdGen
+      dmsFormId            <- dmsFormIdGen
+      customerId           <- customerIdGen
+      classificationType   <- classificationTypeGen
+      businessArea         <- businessAreaGen
+      includeIf            <- includeIfGen()
+      failOnError          <- PrimitiveGen.booleanGen
+      formdataXml          <- PrimitiveGen.booleanGen
+      backscan             <- Gen.option(PrimitiveGen.booleanGen)
+      instructionPdfFields <- Gen.option(InstructionPdfFieldsGen.instructionPdfFieldsGen)
     } yield Destination
       .HmrcDms(
         id,
@@ -61,7 +61,7 @@ trait DestinationGen {
         Some(DataOutputFormat.XML),
         formdataXml,
         backscan,
-        includeInstructionPdf,
+        instructionPdfFields,
         None,
         None,
         TemplateType.XML

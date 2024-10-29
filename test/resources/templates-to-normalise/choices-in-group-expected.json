@@ -36,7 +36,8 @@
         }
       ],
       "displayFeedbackLink": true
-    }
+    },
+    "destinationKind": "destinations"
   },
   "description": "Group component with three fields ",
   "allowedFileTypes": [
@@ -117,6 +118,6 @@
   "_id": "choices-in-group",
   "displayHMRCLogo": false,
   "parentFormSubmissionRefs": [],
-  "accessiblePdf":false,
-  "displayAccountHeader":false
+  "accessiblePdf": false,
+  "displayAccountHeader": false
 }

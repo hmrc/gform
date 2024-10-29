@@ -27,7 +27,8 @@
       "title": "Your registration has been submitted Genesis",
       "fields": [],
       "displayFeedbackLink": true
-    }
+    },
+    "destinationKind": "destinations"
   },
   "description": "",
   "allowedFileTypes": [
@@ -76,6 +77,6 @@
   "originalId": "file-upload-with-object-store",
   "displayHMRCLogo": false,
   "parentFormSubmissionRefs": [],
-  "accessiblePdf":false,
-  "displayAccountHeader":false
+  "accessiblePdf": false,
+  "displayAccountHeader": false
 }

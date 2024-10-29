@@ -153,7 +153,7 @@ object FormTemplatesControllerRequestHandler {
   private def list[A <: JsValue](reads: Reads[A]): Reads[JsArray] =
     Reads.list(reads).map(JsArray.apply)
 
-  def normaliseJSON(jsonValue: JsValue): JsResult[JsObject] = {
+  def normaliseJSON(jsonValue: JsValue): JsResult[JsValue] = {
 
     val allowedFileTypes =
       (__ \ "allowedFileTypes").json
@@ -445,6 +445,12 @@ object FormTemplatesControllerRequestHandler {
           dsJson.transform(fieldsReads).getOrElse(dsJson)
         }) orElse Reads.pure(Json.obj())
 
+    val addDestinationKind: Reads[JsValue] = Reads { json =>
+      val kind = if ((json \ "destinations" \ "destinations").isEmpty) "printSection" else "destinations"
+      val ensureDestinationKind = (__ \ "destinations").json.update((__ \ "destinationKind").json.put(JsString(kind)))
+      json.transform(ensureDestinationKind) orElse JsSuccess(json)
+    }
+
     val pruneAcknowledgementSection = (__ \ "acknowledgementSection").json.prune
 
     val pruneDeclarationSection = (__ \ "declarationSection").json.prune
@@ -494,7 +500,7 @@ object FormTemplatesControllerRequestHandler {
       }
 
     sectionValidations andKeep dmsFormIdValidations andKeep jsonValue.transform(
-      pruneShowContinueOrDeletePage andThen
+      (pruneShowContinueOrDeletePage andThen
         pruneAcknowledgementSection andThen
         prunePrintSection andThen
         transformChoices andThen
@@ -519,7 +525,7 @@ object FormTemplatesControllerRequestHandler {
         transformAndMoveAcknowledgementSection and
         moveDestinations and
         determineFormKind and
-        moveDeclarationSection reduce
+        moveDeclarationSection reduce) andThen addDestinationKind
     )
   }
 }

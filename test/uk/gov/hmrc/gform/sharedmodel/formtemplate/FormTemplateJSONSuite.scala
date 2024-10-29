@@ -17,7 +17,7 @@
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
 import munit.FunSuite
-import play.api.libs.json.{ JsObject, Json }
+import play.api.libs.json.{ JsValue, Json }
 import org.scalatest.matchers.should.Matchers
 import uk.gov.hmrc.gform.JsResultMatcher
 import uk.gov.hmrc.gform.formtemplate.FormTemplatesControllerRequestHandler
@@ -93,7 +93,8 @@ class FormTemplateJSONSuite extends FunSuite with JsResultMatcher with Matchers 
              |      "title": "Confirmation page ",
              |      "fields": [],
              |      "displayFeedbackLink": true
-             |    }
+             |    },
+             |    "destinationKind": "destinations"
              |  },
              |  "description": "",
              |  "allowedFileTypes": [
@@ -134,7 +135,7 @@ class FormTemplateJSONSuite extends FunSuite with JsResultMatcher with Matchers 
              |  "parentFormSubmissionRefs": []
              |}""".stripMargin
         )
-        .as[JsObject]
+        .as[JsValue]
 
     val result = FormTemplatesControllerRequestHandler.normaliseJSON(formKindClassicInput)
     result should beJsSuccess(expectedAnnotatedClassic)
@@ -221,7 +222,8 @@ class FormTemplateJSONSuite extends FunSuite with JsResultMatcher with Matchers 
              |      "title": "Confirmation page ",
              |      "fields": [],
              |      "displayFeedbackLink": true
-             |    }
+             |    },
+             |    "destinationKind": "destinations"
              |  },
              |  "description": "",
              |  "allowedFileTypes": [
@@ -274,7 +276,7 @@ class FormTemplateJSONSuite extends FunSuite with JsResultMatcher with Matchers 
              |  "parentFormSubmissionRefs": []
              |}""".stripMargin
         )
-        .as[JsObject]
+        .as[JsValue]
 
     val result = FormTemplatesControllerRequestHandler.normaliseJSON(formKindTaskListInput)
     result should beJsSuccess(expectedAnnotatedTaskList)

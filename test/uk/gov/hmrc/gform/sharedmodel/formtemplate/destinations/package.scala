@@ -58,7 +58,7 @@ package object destinations {
           |  ${optionalField("dataOutputFormat", Option("xml"))}
           |  ${optionalField("closedStatus", Option(backscan), None)}
           |  ${optionalField("formdataXml", Option(formdataXml), false)}
-          |  ${optionalField("includeInstructionPdf", Option(includeInstructionPdf), false)}
+          |  ${optionalField("instructionPdfFields", Option(instructionPdfFields), None)}
           |  "businessArea": "$businessArea"
           |}""".stripMargin
 
@@ -75,7 +75,7 @@ package object destinations {
           |  ${optionalField("dataOutputFormat", Option("xml"))}
           |  ${optionalField("closedStatus", Option(backscan), None)}
           |  ${optionalField("formdataXml", Option(formdataXml), false)}
-          |  ${optionalField("includeInstructionPdf", Option(includeInstructionPdf), false)}
+          |  ${optionalField("instructionPdfFields", Option(instructionPdfFields), None)}
           |  "businessArea": "$businessArea"
           |}""".stripMargin
 

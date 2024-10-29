@@ -24,7 +24,8 @@
       "title": "Acknowledgement Page",
       "fields": [],
       "displayFeedbackLink": true
-    }
+    },
+    "destinationKind": "destinations"
   },
   "description": "",
   "allowedFileTypes": [
@@ -99,6 +100,6 @@
   "originalId": "revealing-choice-with-yesno-choice",
   "displayHMRCLogo": false,
   "parentFormSubmissionRefs": [],
-  "accessiblePdf":false,
-  "displayAccountHeader":false
+  "accessiblePdf": false,
+  "displayAccountHeader": false
 }

@@ -24,6 +24,7 @@ import uk.gov.hmrc.gform.config.FileInfoConfig
 import uk.gov.hmrc.gform.core._
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.formtemplate._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.InstructionPdfFields
 import uk.gov.hmrc.gform.sharedmodel.{ AvailableLanguages, DataRetrieve, DataRetrieveId }
 import uk.gov.hmrc.gform.sharedmodel.email.LocalisedEmailTemplateId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.{ NewForm, NewFormForTemplate, NewSession, PageLink, SignOut }
@@ -457,7 +458,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
             Some(DataOutputFormat.XML),
             true,
             Some(true),
-            true,
+            Some(InstructionPdfFields.Ordered),
             None,
             None,
             TemplateType.XML
