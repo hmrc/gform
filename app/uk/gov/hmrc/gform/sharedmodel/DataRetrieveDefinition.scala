@@ -314,9 +314,9 @@ object DataRetrieveDefinitions {
         Parameter("companyNumber")
       ),
       Map(
-        DataRetrieve.Attribute("activeDirectors")   -> DataRetrieve.AttrType.Integer,
-        DataRetrieve.Attribute("activeSecretaries") -> DataRetrieve.AttrType.Integer,
-        DataRetrieve.Attribute("activeLlpMembers")  -> DataRetrieve.AttrType.Integer
+        DataRetrieve.Attribute("activeDirectors")   -> DataRetrieve.AttrType.Number,
+        DataRetrieve.Attribute("activeSecretaries") -> DataRetrieve.AttrType.Number,
+        DataRetrieve.Attribute("activeLlpMembers")  -> DataRetrieve.AttrType.Number
       )
     )
 
@@ -334,7 +334,47 @@ object DataRetrieveDefinitions {
     List(
       Parameter("nino")
     ),
-    Map(DataRetrieve.Attribute("riskScore") -> DataRetrieve.AttrType.Integer)
+    Map(DataRetrieve.Attribute("riskScore") -> DataRetrieve.AttrType.Number)
+  )
+
+  val hmrcTaxRates = DataRetrieveDefinition(
+    DataRetrieve.Type("hmrcTaxRates"),
+    Attr.FromObject(
+      List(
+        AttributeInstruction(
+          DataRetrieve.Attribute("regime"),
+          ConstructAttribute.AsIs(Fetch(List("regime")))
+        ),
+        AttributeInstruction(
+          DataRetrieve.Attribute("code"),
+          ConstructAttribute.AsIs(Fetch(List("code")))
+        ),
+        AttributeInstruction(
+          DataRetrieve.Attribute("rate"),
+          ConstructAttribute.AsIs(Fetch(List("rate")))
+        ),
+        AttributeInstruction(
+          DataRetrieve.Attribute("startDate"),
+          ConstructAttribute.AsIs(Fetch(List("startDate")))
+        ),
+        AttributeInstruction(
+          DataRetrieve.Attribute("endDate"),
+          ConstructAttribute.AsIs(Fetch(List("endDate")))
+        )
+      )
+    ),
+    List(
+      Parameter("regime"),
+      Parameter("code"),
+      Parameter("date")
+    ),
+    Map(
+      DataRetrieve.Attribute("regime")    -> DataRetrieve.AttrType.String,
+      DataRetrieve.Attribute("code")      -> DataRetrieve.AttrType.String,
+      DataRetrieve.Attribute("rate")      -> DataRetrieve.AttrType.Number,
+      DataRetrieve.Attribute("startDate") -> DataRetrieve.AttrType.Date,
+      DataRetrieve.Attribute("endDate")   -> DataRetrieve.AttrType.Date
+    )
   )
 
   val bankAccountInsights = DataRetrieveDefinition(
@@ -352,7 +392,7 @@ object DataRetrieveDefinitions {
       Parameter("sortCode"),
       Parameter("accountNumber")
     ),
-    Map(DataRetrieve.Attribute("riskScore") -> DataRetrieve.AttrType.Integer)
+    Map(DataRetrieve.Attribute("riskScore") -> DataRetrieve.AttrType.Number)
   )
 
   val employments = DataRetrieveDefinition(
@@ -383,7 +423,7 @@ object DataRetrieveDefinitions {
       Parameter("nino"),
       Parameter("taxYear", List.empty[String], DataRetrieve.ParamType.Integer)
     ),
-    Map(DataRetrieve.Attribute("sequenceNumber") -> DataRetrieve.AttrType.Integer)
+    Map(DataRetrieve.Attribute("sequenceNumber") -> DataRetrieve.AttrType.Number)
   )
 
   val hmrcRosmRegistrationCheck = DataRetrieveDefinition(
@@ -476,7 +516,8 @@ object DataRetrieveDefinitions {
       bankAccountInsights,
       employments,
       hmrcRosmRegistrationCheck,
-      agentDetails
+      agentDetails,
+      hmrcTaxRates
     )
   )
 

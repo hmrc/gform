@@ -19,7 +19,7 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import play.api.libs.json.{ JsError, JsPath, Json, JsonValidationError }
-import uk.gov.hmrc.gform.sharedmodel.{ Attr, AttributeInstruction, ConstructAttribute, DataRetrieve, DataRetrieveId, Fetch }
+import uk.gov.hmrc.gform.sharedmodel._
 
 class DataRetrieveSpec extends AnyFlatSpec with Matchers {
 
@@ -318,9 +318,9 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
         )
       ),
       Map(
-        DataRetrieve.Attribute("activeDirectors")   -> DataRetrieve.AttrType.Integer,
-        DataRetrieve.Attribute("activeSecretaries") -> DataRetrieve.AttrType.Integer,
-        DataRetrieve.Attribute("activeLlpMembers")  -> DataRetrieve.AttrType.Integer
+        DataRetrieve.Attribute("activeDirectors")   -> DataRetrieve.AttrType.Number,
+        DataRetrieve.Attribute("activeSecretaries") -> DataRetrieve.AttrType.Number,
+        DataRetrieve.Attribute("activeLlpMembers")  -> DataRetrieve.AttrType.Number
       ),
       List(
         DataRetrieve.ParamExpr(
@@ -352,7 +352,7 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
           AttributeInstruction(DataRetrieve.Attribute("reason"), ConstructAttribute.AsIs(Fetch(List("reason"))))
         )
       ),
-      Map(DataRetrieve.Attribute("riskScore") -> DataRetrieve.AttrType.Integer),
+      Map(DataRetrieve.Attribute("riskScore") -> DataRetrieve.AttrType.Number),
       List(
         DataRetrieve.ParamExpr(
           DataRetrieve.Parameter("nino", List(), DataRetrieve.ParamType.String),
@@ -384,7 +384,7 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
           AttributeInstruction(DataRetrieve.Attribute("reason"), ConstructAttribute.AsIs(Fetch(List("reason"))))
         )
       ),
-      Map(DataRetrieve.Attribute("riskScore") -> DataRetrieve.AttrType.Integer),
+      Map(DataRetrieve.Attribute("riskScore") -> DataRetrieve.AttrType.Number),
       List(
         DataRetrieve
           .ParamExpr(
@@ -422,7 +422,7 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
           AttributeInstruction(DataRetrieve.Attribute("reason"), ConstructAttribute.AsIs(Fetch(List("reason"))))
         )
       ),
-      Map(DataRetrieve.Attribute("riskScore") -> DataRetrieve.AttrType.Integer),
+      Map(DataRetrieve.Attribute("riskScore") -> DataRetrieve.AttrType.Number),
       List(
         DataRetrieve
           .ParamExpr(
@@ -653,5 +653,88 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
                |}
                |""".stripMargin)
       .validateOpt[DataRetrieve] shouldBe JsError("'firstName' attribute missing")
+  }
+
+  it should "parse json as hmrcTaxRates with" in {
+    Json
+      .parse("""
+               |{
+               |  "type": "hmrcTaxRates",
+               |  "id": "apdRate",
+               |  "parameters": {
+               |    "regime": "${'APD'}",
+               |    "code": "${'BANDB-RDCD'}",
+               |    "date": "${userDate}"
+               |  }
+               |}
+               |""".stripMargin)
+      .as[DataRetrieve] shouldBe DataRetrieve(
+      DataRetrieve.Type("hmrcTaxRates"),
+      DataRetrieveId("apdRate"),
+      Attr.FromObject(
+        List(
+          AttributeInstruction(
+            DataRetrieve.Attribute("regime"),
+            ConstructAttribute.AsIs(Fetch(List("regime")))
+          ),
+          AttributeInstruction(
+            DataRetrieve.Attribute("code"),
+            ConstructAttribute.AsIs(Fetch(List("code")))
+          ),
+          AttributeInstruction(
+            DataRetrieve.Attribute("rate"),
+            ConstructAttribute.AsIs(Fetch(List("rate")))
+          ),
+          AttributeInstruction(
+            DataRetrieve.Attribute("startDate"),
+            ConstructAttribute.AsIs(Fetch(List("startDate")))
+          ),
+          AttributeInstruction(
+            DataRetrieve.Attribute("endDate"),
+            ConstructAttribute.AsIs(Fetch(List("endDate")))
+          )
+        )
+      ),
+      Map(
+        DataRetrieve.Attribute("regime")    -> DataRetrieve.AttrType.String,
+        DataRetrieve.Attribute("code")      -> DataRetrieve.AttrType.String,
+        DataRetrieve.Attribute("rate")      -> DataRetrieve.AttrType.Number,
+        DataRetrieve.Attribute("startDate") -> DataRetrieve.AttrType.Date,
+        DataRetrieve.Attribute("endDate")   -> DataRetrieve.AttrType.Date
+      ),
+      List(
+        DataRetrieve
+          .ParamExpr(
+            DataRetrieve.Parameter("regime", List(), DataRetrieve.ParamType.String),
+            Constant("APD")
+          ),
+        DataRetrieve
+          .ParamExpr(
+            DataRetrieve.Parameter("code", List(), DataRetrieve.ParamType.String),
+            Constant("BANDB-RDCD")
+          ),
+        DataRetrieve
+          .ParamExpr(
+            DataRetrieve.Parameter("date", List(), DataRetrieve.ParamType.String),
+            FormCtx(FormComponentId("userDate"))
+          )
+      ),
+      None
+    )
+  }
+
+  it should "return error when code is missing from hmrcTaxRates with" in {
+    Json
+      .parse("""
+               |{
+               |  "type": "hmrcTaxRates",
+               |  "id": "apdRate",
+               |  "parameters": {
+               |    "regime": "${'APD'}",
+               |    "date": "${userDate}"
+               |  }
+               |}
+               |""".stripMargin)
+      .validateOpt[DataRetrieve] shouldBe JsError("'code' attribute missing")
   }
 }
