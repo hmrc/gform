@@ -224,13 +224,16 @@ trait Rewriter {
 
     def validate(
       c: String,
+      exprBasedExists: Boolean,
       possibleValues: Set[String],
       optionsSize: Int,
       formComponentId: FormComponentId,
       exprString: String,
       componentDescription: String
     ): Either[UnexpectedState, Unit] =
-      if (possibleValues.isEmpty) {
+      if (exprBasedExists) {
+        Right(()) // If there are expr based values we cannot verify anything
+      } else if (possibleValues.isEmpty) {
         Try(c.toInt) match {
           case Success(index) =>
             val maxIndex = optionsSize - 1
@@ -304,7 +307,21 @@ trait Rewriter {
                 case OptionData.ValueBased(_, _, _, _, OptionDataValue.StringBased(value)) =>
                   value
               }.toSet
-              validate(c, possibleValues, options.size, formComponentId, exprString, "Choice").map(_ => be)
+
+              val exprBasedExists = options.collectFirst {
+                case OptionData.ValueBased(_, _, _, _, OptionDataValue.ExprBased(_)) =>
+              }.isDefined
+
+              validate(
+                c,
+                exprBasedExists,
+                possibleValues,
+                options.size,
+                formComponentId,
+                exprString,
+                "Choice"
+              ).map(_ => be)
+
             case RevealingChoice(options, _) =>
               val possibleValues = options
                 .map(_.choice)
@@ -312,7 +329,24 @@ trait Rewriter {
                   value
                 }
                 .toSet
-              validate(c, possibleValues, options.size, formComponentId, exprString, "Revealing choice").map(_ => be)
+
+              val exprBasedExists = options
+                .map(_.choice)
+                .collectFirst { case OptionData.ValueBased(_, _, _, _, OptionDataValue.ExprBased(expr)) =>
+                  expr
+                }
+                .isDefined
+
+              validate(
+                c,
+                exprBasedExists,
+                possibleValues,
+                options.size,
+                formComponentId,
+                exprString,
+                "Revealing choice"
+              ).map(_ => be)
+
             case otherwise => Right(be)
           }
       case be @ EqualsWithConstant(ctx @ FormCtx(formComponentId), Constant(c), swapped) =>
@@ -336,7 +370,20 @@ trait Rewriter {
                 case OptionData.ValueBased(_, _, _, _, OptionDataValue.StringBased(value)) =>
                   value
               }.toSet
-              validate(c, possibleValues, options.size, formComponentId, exprString, "Choice").map(_ => rewriter)
+              val exprBasedExists = options.collectFirst {
+                case OptionData.ValueBased(_, _, _, _, OptionDataValue.ExprBased(_)) =>
+              }.isDefined
+
+              validate(
+                c,
+                exprBasedExists,
+                possibleValues,
+                options.size,
+                formComponentId,
+                exprString,
+                "Choice"
+              ).map(_ => rewriter)
+
             case Choice(Checkbox, _, _, _, _, _, _, _, _, _, _) => invalidUsage("choice")
             case RevealingChoice(_, true)                       => invalidUsage("revealing choice")
             case RevealingChoice(options, false) =>
@@ -346,8 +393,23 @@ trait Rewriter {
                   value
                 }
                 .toSet
-              validate(c, possibleValues, options.size, formComponentId, exprString, "Revealing choice")
-                .map(_ => rewriter)
+              val exprBasedExists = options
+                .map(_.choice)
+                .collectFirst { case OptionData.ValueBased(_, _, _, _, OptionDataValue.ExprBased(expr)) =>
+                  expr
+                }
+                .isDefined
+
+              validate(
+                c,
+                exprBasedExists,
+                possibleValues,
+                options.size,
+                formComponentId,
+                exprString,
+                "Revealing choice"
+              ).map(_ => rewriter)
+
             case otherwise => Right(be)
           }
       case TopLevelRef(id) => invalidTopLevelBooleanExpr(id)
