@@ -366,7 +366,7 @@ object DataRetrieveDefinitions {
     List(
       Parameter("regime"),
       Parameter("code"),
-      Parameter("date")
+      Parameter("date", List.empty[String], DataRetrieve.ParamType.Date)
     ),
     Map(
       DataRetrieve.Attribute("regime")    -> DataRetrieve.AttrType.String,

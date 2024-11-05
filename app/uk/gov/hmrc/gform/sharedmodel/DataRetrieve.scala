@@ -110,6 +110,7 @@ object DataRetrieve {
   object ParamType {
     case object String extends ParamType
     case object Integer extends ParamType
+    case object Date extends ParamType
 
     implicit val format: OFormat[ParamType] = derived.oformat()
   }

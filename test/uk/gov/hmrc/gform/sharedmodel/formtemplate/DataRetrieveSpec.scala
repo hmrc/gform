@@ -715,7 +715,7 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
           ),
         DataRetrieve
           .ParamExpr(
-            DataRetrieve.Parameter("date", List(), DataRetrieve.ParamType.String),
+            DataRetrieve.Parameter("date", List(), DataRetrieve.ParamType.Date),
             FormCtx(FormComponentId("userDate"))
           )
       ),
