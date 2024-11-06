@@ -25,17 +25,18 @@ object BooleanExprSubstituter extends Substituter[BooleanExprSubstitutions, Form
   implicit val exprSubstituter: Substituter[BooleanExprSubstitutions, Expr] =
     new Substituter[BooleanExprSubstitutions, Expr] {
       def substitute(substitutions: BooleanExprSubstitutions, t: Expr): Expr = t match {
-        case Else(l, r)            => Else(substitute(substitutions, l), substitute(substitutions, r))
-        case Add(l, r)             => Add(substitute(substitutions, l), substitute(substitutions, r))
-        case Multiply(l, r)        => Multiply(substitute(substitutions, l), substitute(substitutions, r))
-        case Subtraction(l, r)     => Subtraction(substitute(substitutions, l), substitute(substitutions, r))
-        case Divide(l, r)          => Divide(substitute(substitutions, l), substitute(substitutions, r))
-        case HideZeroDecimals(l)   => HideZeroDecimals(substitute(substitutions, l))
-        case Period(l, r)          => Period(substitute(substitutions, l), substitute(substitutions, r))
-        case Sum(l)                => Sum(substitute(substitutions, l))
-        case PeriodExt(p, pe)      => PeriodExt(substitute(substitutions, p), pe)
-        case d @ DateCtx(dateExpr) => d
-        case d @ DateFunction(_)   => d
+        case Else(l, r)                      => Else(substitute(substitutions, l), substitute(substitutions, r))
+        case Add(l, r)                       => Add(substitute(substitutions, l), substitute(substitutions, r))
+        case Multiply(l, r)                  => Multiply(substitute(substitutions, l), substitute(substitutions, r))
+        case Subtraction(l, r)               => Subtraction(substitute(substitutions, l), substitute(substitutions, r))
+        case Divide(l, r)                    => Divide(substitute(substitutions, l), substitute(substitutions, r))
+        case HideZeroDecimals(l)             => HideZeroDecimals(substitute(substitutions, l))
+        case Period(l, r)                    => Period(substitute(substitutions, l), substitute(substitutions, r))
+        case Sum(l)                          => Sum(substitute(substitutions, l))
+        case PeriodExt(p, pe)                => PeriodExt(substitute(substitutions, p), pe)
+        case d @ DateCtx(dateExpr)           => d
+        case d @ DateFunction(_)             => d
+        case d @ DateConstructFunction(_, _) => d
         case i @ IfElse(cond, l, r) =>
           IfElse(cond(substitutions), substitute(substitutions, l), substitute(substitutions, r))
         case f @ FormCtx(formComponentId)  => f

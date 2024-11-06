@@ -1179,7 +1179,8 @@ object FormTemplateValidator {
         invalidFCIds.isEmpty.validationResult(
           s"Form field(s) '${invalidFCIds.mkString(",")}' not defined in form template."
         )
-      case DateFunction(value) => Valid
+      case DateFunction(value)                   => Valid
+      case DateConstructFunction(dayMonth, year) => validate(year, sections)
       case Period(dateCtx1, dateCtx2) =>
         checkFields(dateCtx1, dateCtx2)
       case PeriodExt(periodFun, _)           => validate(periodFun, sections)

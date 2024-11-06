@@ -58,6 +58,10 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
   lazy val exprFormCtx: Parser[Expr] = (quotedLocalisedConstant
     | _expr1)
 
+  lazy val dateExprDayMonthParser: Parser[DateExpr] = exactDayParser ~ exactMonthParser ^^ { case day ~ month =>
+    DateValueExpr(ExactDateExprValue(1900, month, day))
+  }
+
   lazy val dateExprExactParser: Parser[DateExpr] = exactDayParser ~ exactMonthParser ~ exactYearParser ^^ {
     case day ~ month ~ year => DateValueExpr(ExactDateExprValue(year, month, day))
   }
@@ -65,6 +69,10 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
   lazy val dateExprExactQuoted: Parser[DateExpr] = "'" ~> dateExprExactParser <~ "'" ^^ { dateExpr =>
     dateExpr
   } | dateExprExactParser
+
+  lazy val dateExprDayMonthQuoted: Parser[DateExpr] = "'" ~> dateExprDayMonthParser <~ "'" ^^ { partialDateExpr =>
+    partialDateExpr
+  } | dateExprDayMonthParser
 
   lazy val signedInt: Parser[Int] = plusOrMinus ~ positiveInteger ^^ { case plusOrMinus ~ i =>
     i * (plusOrMinus match {
@@ -260,6 +268,9 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
     }
     | "year(" ~ dateExpr ~ ")" ^^ { case _ ~ dateExpr ~ _ =>
       DateFunction(DateProjection.Year(dateExpr))
+    }
+    | "yearToDate(" ~ dateExprDayMonthQuoted ~ "," ~ _expr1 ~ ")" ^^ { case _ ~ dayMonth ~ _ ~ value ~ _ =>
+      DateConstructFunction(dayMonth, value)
     }
     | (periodFun ~ "." ~ "sum|totalMonths|years|months|days".r ^^ {
       case _ ~ (dateExpr1: DateExpr) ~ _ ~ (dateExpr2: DateExpr) ~ _ ~ _ ~ prop =>
