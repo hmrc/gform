@@ -27,13 +27,13 @@ object DesAgentDetailsResponse {
   implicit val format: OFormat[DesAgentDetailsResponse] = Json.format[DesAgentDetailsResponse]
 }
 
-case class AgentContactDetails(phoneNumber: String)
+case class AgentContactDetails(phoneNumber: Option[String])
 
 object AgentContactDetails {
   implicit val format: OFormat[AgentContactDetails] = Json.format[AgentContactDetails]
 }
 
-case class AgencyDetails(agencyName: String, agencyAddress: Address, agencyEmail: String)
+case class AgencyDetails(agencyName: Option[String], agencyAddress: Option[Address], agencyEmail: Option[String])
 
 object AgencyDetails {
   implicit val format: OFormat[AgencyDetails] = Json.format[AgencyDetails]
