@@ -30,7 +30,7 @@ import uk.gov.hmrc.gform.sharedmodel.{ AvailableLanguages, DataRetrieve, DataRet
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.graph.DependencyGraph._
 import uk.gov.hmrc.gform.formtemplate.FormTemplateValidatorHelper._
-import uk.gov.hmrc.gform.models.constraints.ReferenceInfo.{ DataRetrieveCountExpr, DataRetrieveCtxExpr, DateFunctionExpr, FormCtxExpr, PeriodExpr, PeriodExtExpr, SizeExpr }
+import uk.gov.hmrc.gform.models.constraints.ReferenceInfo.{ DataRetrieveCountExpr, DataRetrieveCtxExpr, DateConstructFunctionExpr, DateFunctionExpr, FormCtxExpr, PeriodExpr, PeriodExtExpr, SizeExpr }
 import shapeless.syntax.typeable._
 import uk.gov.hmrc.gform.config.AppConfig
 import uk.gov.hmrc.gform.sharedmodel.DataRetrieve.Attribute
@@ -435,6 +435,19 @@ object FormTemplateValidator {
         }
     }
     Monoid.combineAll(validations.flatten)
+  }
+
+  def validateDateConstructFunctions(
+    allExpressions: List[ExprWithPath]
+  ): ValidationResult = {
+    val validations = allExpressions.flatMap(_.referenceInfos).collect { case DateConstructFunctionExpr(path, func) =>
+      func.dayMonth match {
+        case DateValueExpr(ExactDateExprValue(_, m, d)) if (m === 2) && (d > 28) =>
+          Invalid(s"${path.path}: yearToDate can not be used with February 29th")
+        case _ => Valid
+      }
+    }
+    Monoid.combineAll(validations)
   }
 
   def validatePeriodFunReferenceConstraints(

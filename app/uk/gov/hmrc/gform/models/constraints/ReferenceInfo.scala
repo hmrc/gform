@@ -30,6 +30,7 @@ object ReferenceInfo {
   final case class AddressExpr(path: TemplatePath, addressLens: AddressLens) extends ReferenceInfo
   final case class PeriodExpr(path: TemplatePath, period: Period) extends ReferenceInfo
   final case class DateFunctionExpr(path: TemplatePath, dateProjection: DateProjection) extends ReferenceInfo
+  final case class DateConstructFunctionExpr(path: TemplatePath, func: DateConstructFunction) extends ReferenceInfo
   final case class PeriodExtExpr(path: TemplatePath, periodExt: PeriodExt) extends ReferenceInfo
   final case class LinkCtxExpr(path: TemplatePath, linkCtx: LinkCtx) extends ReferenceInfo
   final case class DataRetrieveCtxExpr(path: TemplatePath, dataRetrieveCtx: DataRetrieveCtx) extends ReferenceInfo
