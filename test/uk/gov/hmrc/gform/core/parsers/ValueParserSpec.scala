@@ -24,14 +24,13 @@ import uk.gov.hmrc.gform.config.FileInfoConfig
 import uk.gov.hmrc.gform.core._
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.formtemplate._
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.InstructionPdfFields
-import uk.gov.hmrc.gform.sharedmodel.{ AvailableLanguages, DataRetrieve, DataRetrieveId }
 import uk.gov.hmrc.gform.sharedmodel.email.LocalisedEmailTemplateId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.{ NewForm, NewFormForTemplate, NewSession, PageLink, SignOut }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.UserField.Enrolment
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DataOutputFormat, DestinationId, DestinationIncludeIf, Destinations, TemplateType }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations._
+import uk.gov.hmrc.gform.sharedmodel.{ AvailableLanguages, DataRetrieve, DataRetrieveId }
 
 import scala.language.implicitConversions
 
@@ -751,6 +750,32 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
           DateProjection.Month(
             DateExprWithOffset(DateFormCtxVar(FormCtx("dateField")), OffsetYMD(List(OffsetUnit.Day(1))))
           )
+        )
+      )
+    )
+  }
+
+  it should "parse yearToDate('0102', TODAY) function" in {
+    val res = ValueParser.validate("${yearToDate('0102', TODAY)}")
+
+    res.toOption.value should be(
+      TextExpression(
+        DateConstructFunction(
+          DateValueExpr(ExactDateExprValue(1900, 2, 1)),
+          DateCtx(DateValueExpr(TodayDateExprValue))
+        )
+      )
+    )
+  }
+
+  it should "parse yearToDate('0102', formField) function" in {
+    val res = ValueParser.validate("${yearToDate('0102', exprId)}")
+
+    res.toOption.value should be(
+      TextExpression(
+        DateConstructFunction(
+          DateValueExpr(ExactDateExprValue(1900, 2, 1)),
+          FormCtx(FormComponentId("exprId"))
         )
       )
     )

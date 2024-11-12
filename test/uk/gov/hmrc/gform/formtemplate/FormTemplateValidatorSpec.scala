@@ -23,9 +23,9 @@ import org.scalatest.wordspec.AnyWordSpecLike
 import uk.gov.hmrc.gform.Helpers.{ toLocalisedString, toSmartString }
 import uk.gov.hmrc.gform.core.parsers.ValueParser
 import uk.gov.hmrc.gform.core.{ Invalid, Valid }
-import uk.gov.hmrc.gform.sharedmodel.{ LangADT, LocalisedString, SmartString }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AnyDate, Choice, Constant, CsvCountryCheck, Date, DateCtx, DateFormCtxVar, ExprWithPath, FormComponent, FormComponentId, FormComponentValidator, FormCtx, HideZeroDecimals, Horizontal, IfElse, InformationMessage, Instruction, IsTrue, LeafExpr, LinkCtx, Offset, OptionData, OptionDataValue, PageId, PostcodeLookup, Radio, StandardInfo, SummariseGroupAsGrid, TemplatePath, ValidIf }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.PageLink
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AnyDate, Choice, Constant, CsvCountryCheck, Date, DateCtx, DateFormCtxVar, ExprWithPath, FormComponent, FormComponentId, FormComponentValidator, FormCtx, HideZeroDecimals, Horizontal, IfElse, InformationMessage, Instruction, IsTrue, LeafExpr, LinkCtx, Offset, OptionData, OptionDataValue, PageId, PostcodeLookup, Radio, StandardInfo, SummariseGroupAsGrid, TemplatePath, ValidIf }
+import uk.gov.hmrc.gform.sharedmodel.{ LangADT, LocalisedString, SmartString }
 
 class FormTemplateValidatorSpec
     extends AnyWordSpecLike with Matchers with FormTemplateSupport with TableDrivenPropertyChecks {
@@ -777,6 +777,55 @@ class FormTemplateValidatorSpec
         val result = FormTemplateValidator
           .validateChoiceOptions(SectionHelper.pages(sections))
         result shouldBe Invalid("Choice component options 'value's needs to be unique: dutyType.")
+      }
+    }
+  }
+
+  "date construct function" should {
+    "validate against using 29th February" in {
+      val table = Table(
+        ("expression", "expectedResult"),
+        ("${yearToDate('0102', endDate)}", Valid),
+        (
+          "${yearToDate('2902', startDate)}",
+          Invalid(
+            "sections.fields.[id=infoField].infoText: yearToDate can not be used with February 29th"
+          )
+        )
+      )
+
+      forAll(table) { (expression, expectedResult) =>
+        val formTemplate = mkFormTemplate(
+          List(
+            mkSectionNonRepeatingPage(
+              name = "section1",
+              formComponents = List(
+                mkFormComponent("startDate", Date(AnyDate, Offset(0), None), true),
+                mkFormComponent("endDate", Date(AnyDate, Offset(0), None), true)
+              )
+            ),
+            mkSectionNonRepeatingPage(
+              name = "section2",
+              formComponents = List(
+                mkFormComponent(
+                  "infoField",
+                  InformationMessage(
+                    StandardInfo,
+                    SmartString(
+                      LocalisedString(Map(LangADT.En -> "{0}")),
+                      ValueParser.validateWithParser(expression, ValueParser.expr).toOption.toSeq.toList
+                    )
+                  ),
+                  true
+                )
+              )
+            )
+          )
+        )
+        val allExpressions: List[ExprWithPath] = LeafExpr(TemplatePath.root, formTemplate)
+
+        val result = FormTemplateValidator.validateDateConstructFunctions(allExpressions)
+        result shouldBe expectedResult
       }
     }
   }
