@@ -20,7 +20,7 @@ import play.api.Environment
 
 class PdfGeneratorModule(environment: Environment) {
 
-  val pdfGeneratorService = new PdfGeneratorService()
+  val pdfGeneratorService = new PdfGeneratorService(environment)
 
   val fopService = new FopService(environment)
 }
