@@ -23,18 +23,22 @@ import scala.concurrent.{ ExecutionContext, Future }
 import scala.util.Using
 import org.jsoup.Jsoup
 import org.jsoup.helper.W3CDom
+import play.api.Environment
 
 trait PdfGeneratorAlgebra[F[_]] {
   def generatePDFBytesLocal(html: String)(implicit ec: ExecutionContext): F[Array[Byte]]
 }
 
-class PdfGeneratorService extends PdfGeneratorAlgebra[Future] {
+class PdfGeneratorService(environment: Environment) extends PdfGeneratorAlgebra[Future] {
 
   def generatePDFBytesLocal(html: String)(implicit ec: ExecutionContext): Future[Array[Byte]] = Future {
     Using.resource(new ByteArrayOutputStream()) { byteArrayOutputStream =>
       val w3cDom = new W3CDom().fromJsoup(Jsoup.parse(html))
       val builder = new PdfRendererBuilder()
       builder.useFastMode()
+      builder.usePdfUaAccessbility(true)
+      builder.usePdfAConformance(PdfRendererBuilder.PdfAConformance.PDFA_3_U)
+      builder.useFont(() => environment.classLoader.getResourceAsStream("pdf/fonts/arial.ttf"), "Arial")
       builder.withW3cDocument(w3cDom, null) //https://github.com/danfickle/openhtmltopdf/issues/341
       builder.toStream(byteArrayOutputStream)
       builder.run()
