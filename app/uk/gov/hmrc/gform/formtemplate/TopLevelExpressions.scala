@@ -123,6 +123,7 @@ object TopLevelExpressions {
 
         case DateIfElse(cond, field1, field2) => DateIfElse(cond, loopDateExpr(field1), loopDateExpr(field2))
         case DateOrElse(dExpr1, dExpr2)       => DateOrElse(loopDateExpr(dExpr1), loopDateExpr(dExpr2))
+        case DateConstructExpr(dm, year)      => DateConstructExpr(dm, loop(year))
       }
 
     def loopBooleanExpr(t: BooleanExpr): BooleanExpr = t match {
@@ -160,9 +161,8 @@ object TopLevelExpressions {
         case Period(l, r)                  => Period(loop(l), loop(r))
         case Sum(l)                        => Sum(loop(l))
         case PeriodExt(p, pe)              => PeriodExt(loop(p), pe)
-        case d @ DateCtx(dateExpr)         => d
+        case DateCtx(dateExpr)             => DateCtx(loopDateExpr(dateExpr))
         case d @ DateFunction(_)           => d
-        case DateConstructFunction(d, y)   => DateConstructFunction(d, loop(y))
         case i @ IfElse(cond, l, r)        => IfElse(loopBooleanExpr(cond), loop(l), loop(r))
         case f @ FormCtx(formComponentId)  => expressions.getOrElse(ExpressionId(formComponentId.value), f)
         case AddressLens(_, _)             => e

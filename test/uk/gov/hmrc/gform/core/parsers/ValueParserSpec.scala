@@ -760,9 +760,11 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
 
     res.toOption.value should be(
       TextExpression(
-        DateConstructFunction(
-          DateValueExpr(ExactDateExprValue(1900, 2, 1)),
-          DateCtx(DateValueExpr(TodayDateExprValue))
+        DateCtx(
+          DateConstructExpr(
+            DateValueExpr(ExactDateExprValue(1900, 2, 1)),
+            DateCtx(DateValueExpr(TodayDateExprValue))
+          )
         )
       )
     )
@@ -773,9 +775,11 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
 
     res.toOption.value should be(
       TextExpression(
-        DateConstructFunction(
-          DateValueExpr(ExactDateExprValue(1900, 2, 1)),
-          FormCtx(FormComponentId("exprId"))
+        DateCtx(
+          DateConstructExpr(
+            DateValueExpr(ExactDateExprValue(1900, 2, 1)),
+            FormCtx(FormComponentId("exprId"))
+          )
         )
       )
     )

@@ -131,9 +131,19 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
         DataRetrieveDateCtx(DataRetrieveId(dataRetrieveId), DataRetrieve.Attribute(dataRetrieveAttribute))
     } | hmrcTaxPeriodExpr
 
+  lazy val dateConstructExpr: Parser[DateExpr] =
+    "yearToDate(" ~ dateExprDayMonthQuoted ~ "," ~ _expr1 ~ ")" ^^ { case _ ~ dayMonth ~ _ ~ yearExpr ~ _ =>
+      DateConstructExpr(dayMonth, yearExpr)
+    } | dataRetrieveDateExpr
+
+  lazy val dateConstructWithOffset: Parser[DateExpr] = dateConstructExpr ~ offsetYMD ^^ {
+    case dateConstructExpr ~ offsetYMD =>
+      DateExprWithOffset(dateConstructExpr, offsetYMD)
+  } | dateConstructExpr
+
   lazy val dateExprTODAYOffset: Parser[DateExpr] = dateExprTODAY ~ offsetYMD ^^ { case dateExprToday ~ offsetYMD =>
     DateExprWithOffset(dateExprToday, offsetYMD)
-  } | dataRetrieveDateExpr
+  } | dateConstructWithOffset
 
   lazy val formCtxFieldDateWithOffset: Parser[DateExprWithOffset] = formCtxFieldDate ~ offsetYMD ^^ {
     case dateExprCtx ~ offsetYMD =>
@@ -268,9 +278,6 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
     }
     | "year(" ~ dateExpr ~ ")" ^^ { case _ ~ dateExpr ~ _ =>
       DateFunction(DateProjection.Year(dateExpr))
-    }
-    | "yearToDate(" ~ dateExprDayMonthQuoted ~ "," ~ _expr1 ~ ")" ^^ { case _ ~ dayMonth ~ _ ~ value ~ _ =>
-      DateConstructFunction(dayMonth, value)
     }
     | (periodFun ~ "." ~ "sum|totalMonths|years|months|days".r ^^ {
       case _ ~ (dateExpr1: DateExpr) ~ _ ~ (dateExpr2: DateExpr) ~ _ ~ _ ~ prop =>

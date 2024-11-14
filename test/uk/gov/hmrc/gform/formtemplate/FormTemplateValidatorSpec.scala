@@ -824,7 +824,7 @@ class FormTemplateValidatorSpec
         )
         val allExpressions: List[ExprWithPath] = LeafExpr(TemplatePath.root, formTemplate)
 
-        val result = FormTemplateValidator.validateDateConstructFunctions(allExpressions)
+        val result = FormTemplateValidator.validateDateConstructExpressions(allExpressions)
         result shouldBe expectedResult
       }
     }

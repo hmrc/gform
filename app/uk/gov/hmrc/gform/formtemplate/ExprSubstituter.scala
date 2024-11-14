@@ -25,18 +25,17 @@ object ExprSubstituter extends Substituter[ExprSubstitutions, FormTemplate] {
   implicit val exprSubstituter: Substituter[ExprSubstitutions, Expr] =
     new Substituter[ExprSubstitutions, Expr] {
       def substitute(substitutions: ExprSubstitutions, t: Expr): Expr = t match {
-        case Else(l, r)                       => Else(substitute(substitutions, l), substitute(substitutions, r))
-        case Add(l, r)                        => Add(substitute(substitutions, l), substitute(substitutions, r))
-        case Multiply(l, r)                   => Multiply(substitute(substitutions, l), substitute(substitutions, r))
-        case Subtraction(l, r)                => Subtraction(substitute(substitutions, l), substitute(substitutions, r))
-        case Divide(l, r)                     => Divide(substitute(substitutions, l), substitute(substitutions, r))
-        case HideZeroDecimals(l)              => HideZeroDecimals(substitute(substitutions, l))
-        case Period(l, r)                     => Period(substitute(substitutions, l), substitute(substitutions, r))
-        case Sum(l)                           => Sum(substitute(substitutions, l))
-        case PeriodExt(p, pe)                 => PeriodExt(substitute(substitutions, p), pe)
-        case DateCtx(dateExpr)                => DateCtx(dateExpr(substitutions))
-        case DateFunction(dateFunc)           => DateFunction(dateFunc(substitutions))
-        case DateConstructFunction(dm, value) => DateConstructFunction(dm, substitute(substitutions, value))
+        case Else(l, r)             => Else(substitute(substitutions, l), substitute(substitutions, r))
+        case Add(l, r)              => Add(substitute(substitutions, l), substitute(substitutions, r))
+        case Multiply(l, r)         => Multiply(substitute(substitutions, l), substitute(substitutions, r))
+        case Subtraction(l, r)      => Subtraction(substitute(substitutions, l), substitute(substitutions, r))
+        case Divide(l, r)           => Divide(substitute(substitutions, l), substitute(substitutions, r))
+        case HideZeroDecimals(l)    => HideZeroDecimals(substitute(substitutions, l))
+        case Period(l, r)           => Period(substitute(substitutions, l), substitute(substitutions, r))
+        case Sum(l)                 => Sum(substitute(substitutions, l))
+        case PeriodExt(p, pe)       => PeriodExt(substitute(substitutions, p), pe)
+        case DateCtx(dateExpr)      => DateCtx(dateExpr(substitutions))
+        case DateFunction(dateFunc) => DateFunction(dateFunc(substitutions))
         case i @ IfElse(cond, l, r) =>
           IfElse(cond(substitutions), substitute(substitutions, l), substitute(substitutions, r))
         case f @ FormCtx(formComponentId) =>
@@ -108,6 +107,7 @@ object ExprSubstituter extends Substituter[ExprSubstitutions, FormTemplate] {
           }
         case DateIfElse(cond, field1, field2) => DateIfElse(cond, aux(field1), aux(field2))
         case DateOrElse(field1, field2)       => DateOrElse(aux(field1), aux(field2))
+        case DateConstructExpr(dm, year)      => DateConstructExpr(dm, year(substitutions))
       }
     aux(t)
   }
