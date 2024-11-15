@@ -19,8 +19,8 @@ package uk.gov.hmrc.gform.sharedmodel.des
 import play.api.libs.json.{ Json, OFormat }
 
 case class DesAgentDetailsResponse(
-  contactDetails: AgentContactDetails,
-  agencyDetails: AgencyDetails
+  contactDetails: Option[AgentContactDetails],
+  agencyDetails: Option[AgencyDetails]
 )
 
 object DesAgentDetailsResponse {
