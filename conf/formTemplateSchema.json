@@ -171,7 +171,7 @@
       "type": "array"
     },
     "dataRetrieve": {
-      "type": "array"
+      "$ref": "#/$defs/dataRetrieveArray"
     },
     "displayAccountHeader": {
       "description": "Defines whether the PTA Menu is displayed in the header",
@@ -485,7 +485,7 @@
           "type": "string"
         },
         "dataRetrieve": {
-          "type": "array"
+          "$ref": "#/$defs/dataRetrieveArray"
         },
         "summaryName": {
           "$ref": "#/$defs/stringOrEnCyObject"
@@ -1360,6 +1360,285 @@
           }
         }
       ]
+    },
+    "dataRetrieveArray": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "oneOf": [
+          {
+            "patternProperties": {
+              "^(_)": {
+                "type": "string"
+              }
+            },
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "hmrcRosmRegistrationCheck"
+                ]
+              },
+              "id": {
+                "type": "string"
+              },
+              "if": {
+                "type": "string"
+              },
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "regime": {
+                    "type": "string"
+                  },
+                  "utr": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "regime",
+                  "utr"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "type",
+              "id",
+              "parameters"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "patternProperties": {
+              "^(_)": {
+                "type": "string"
+              }
+            },
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "agentDetails"
+                ]
+              },
+              "id": {
+                "type": "string"
+              },
+              "if": {
+                "type": "string"
+              },
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "agentReferenceNumber": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "agentReferenceNumber"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "type",
+              "id",
+              "parameters"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "patternProperties": {
+              "^(_)": {
+                "type": "string"
+              }
+            },
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "ninoInsights",
+                  "employments"
+                ]
+              },
+              "id": {
+                "type": "string"
+              },
+              "if": {
+                "type": "string"
+              },
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "nino": {
+                    "type": "string"
+                  },
+                  "taxYear": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "nino"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "type",
+              "id",
+              "parameters"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "patternProperties": {
+              "^(_)": {
+                "type": "string"
+              }
+            },
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "validateBankDetails",
+                  "personalBankAccountExistence",
+                  "personalBankAccountExistenceWithName",
+                  "businessBankAccountExistence",
+                  "bankAccountInsights"
+                ]
+              },
+              "id": {
+                "type": "string"
+              },
+              "if": {
+                "type": "string"
+              },
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "sortCode": {
+                    "type": "string"
+                  },
+                  "accountNumber": {
+                    "type": "string"
+                  },
+                  "companyName": {
+                    "type": "string"
+                  },
+                  "firstName": {
+                    "type": "string"
+                  },
+                  "lastName": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "sortCode",
+                  "accountNumber"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "type",
+              "id",
+              "parameters"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "patternProperties": {
+              "^(_)": {
+                "type": "string"
+              }
+            },
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "companyHouseProfile",
+                  "companyHouseActiveOfficers"
+                ]
+              },
+              "id": {
+                "type": "string"
+              },
+              "if": {
+                "type": "string"
+              },
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "companyNumber": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "companyNumber"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "type",
+              "id",
+              "parameters"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "patternProperties": {
+              "^(_)": {
+                "type": "string"
+              }
+            },
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "hmrcTaxRates"
+                ]
+              },
+              "id": {
+                "type": "string"
+              },
+              "if": {
+                "type": "string"
+              },
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "regime": {
+                    "type": "string"
+                  },
+                  "code": {
+                    "type": "string"
+                  },
+                  "date": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "regime",
+                  "code",
+                  "date"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "type",
+              "id",
+              "parameters"
+            ],
+            "additionalProperties": false
+          }
+        ]
+      }
     }
   }
 }
