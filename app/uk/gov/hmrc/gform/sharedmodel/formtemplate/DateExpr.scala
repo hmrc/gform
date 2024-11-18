@@ -31,6 +31,7 @@ sealed trait DateExpr {
     case DataRetrieveDateCtx(_, _)     => DateCtx(this) :: Nil
     case DateIfElse(_, field1, field2) => field1.leafExprs ++ field2.leafExprs
     case DateOrElse(field1, field2)    => field1.leafExprs ++ field2.leafExprs
+    case DateConstructExpr(dm, year)   => dm.leafExprs :+ year
   }
 
   def referenceInfos: List[ReferenceInfo] = this match {
@@ -41,6 +42,7 @@ sealed trait DateExpr {
     case DataRetrieveDateCtx(_, _)     => Nil
     case DateIfElse(_, field1, field2) => field1.referenceInfos ++ field2.referenceInfos
     case DateOrElse(field1, field2)    => field1.referenceInfos ++ field2.referenceInfos
+    case DateConstructExpr(dm, year)   => dm.referenceInfos ++ ExprWithPath(TemplatePath.leaf, year).referenceInfos
   }
 
   def maybeFormCtx: List[FormCtx] = this match {
@@ -51,6 +53,7 @@ sealed trait DateExpr {
     case DataRetrieveDateCtx(_, _)     => Nil
     case DateIfElse(_, field1, field2) => field1.maybeFormCtx ++ field2.maybeFormCtx
     case DateOrElse(field1, field2)    => field1.maybeFormCtx ++ field2.maybeFormCtx
+    case DateConstructExpr(_, _)       => Nil
   }
 }
 
@@ -89,6 +92,7 @@ case class HmrcTaxPeriodCtx(formCtx: FormCtx, hmrcTaxPeriodInfo: HmrcTaxPeriodIn
 case class DataRetrieveDateCtx(id: DataRetrieveId, attribute: DataRetrieve.Attribute) extends DateExpr
 case class DateIfElse(ifElse: BooleanExpr, field1: DateExpr, field2: DateExpr) extends DateExpr
 case class DateOrElse(field1: DateExpr, field2: DateExpr) extends DateExpr
+case class DateConstructExpr(dayMonth: DateExpr, year: Expr) extends DateExpr
 
 object DateExpr {
   implicit val format: OFormat[DateExpr] = derived.oformat()
@@ -101,6 +105,7 @@ object DateExpr {
     case DataRetrieveDateCtx(_, _)     => Nil
     case DateIfElse(_, field1, field2) => allFormCtxExprs(field1) ++ allFormCtxExprs(field2)
     case DateOrElse(field1, field2)    => allFormCtxExprs(field1) ++ allFormCtxExprs(field2)
+    case DateConstructExpr(_, _)       => Nil
   }
 }
 

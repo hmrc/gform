@@ -107,6 +107,7 @@ object ExprSubstituter extends Substituter[ExprSubstitutions, FormTemplate] {
           }
         case DateIfElse(cond, field1, field2) => DateIfElse(cond, aux(field1), aux(field2))
         case DateOrElse(field1, field2)       => DateOrElse(aux(field1), aux(field2))
+        case DateConstructExpr(dm, year)      => DateConstructExpr(dm, year(substitutions))
       }
     aux(t)
   }

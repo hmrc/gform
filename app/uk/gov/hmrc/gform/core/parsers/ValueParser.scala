@@ -58,6 +58,10 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
   lazy val exprFormCtx: Parser[Expr] = (quotedLocalisedConstant
     | _expr1)
 
+  lazy val dateExprDayMonthParser: Parser[DateExpr] = exactDayParser ~ exactMonthParser ^^ { case day ~ month =>
+    DateValueExpr(ExactDateExprValue(1900, month, day))
+  }
+
   lazy val dateExprExactParser: Parser[DateExpr] = exactDayParser ~ exactMonthParser ~ exactYearParser ^^ {
     case day ~ month ~ year => DateValueExpr(ExactDateExprValue(year, month, day))
   }
@@ -65,6 +69,10 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
   lazy val dateExprExactQuoted: Parser[DateExpr] = "'" ~> dateExprExactParser <~ "'" ^^ { dateExpr =>
     dateExpr
   } | dateExprExactParser
+
+  lazy val dateExprDayMonthQuoted: Parser[DateExpr] = "'" ~> dateExprDayMonthParser <~ "'" ^^ { partialDateExpr =>
+    partialDateExpr
+  } | dateExprDayMonthParser
 
   lazy val signedInt: Parser[Int] = plusOrMinus ~ positiveInteger ^^ { case plusOrMinus ~ i =>
     i * (plusOrMinus match {
@@ -123,9 +131,19 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
         DataRetrieveDateCtx(DataRetrieveId(dataRetrieveId), DataRetrieve.Attribute(dataRetrieveAttribute))
     } | hmrcTaxPeriodExpr
 
+  lazy val dateConstructExpr: Parser[DateExpr] =
+    "yearToDate(" ~ dateExprDayMonthQuoted ~ "," ~ _expr1 ~ ")" ^^ { case _ ~ dayMonth ~ _ ~ yearExpr ~ _ =>
+      DateConstructExpr(dayMonth, yearExpr)
+    } | dataRetrieveDateExpr
+
+  lazy val dateConstructWithOffset: Parser[DateExpr] = dateConstructExpr ~ offsetYMD ^^ {
+    case dateConstructExpr ~ offsetYMD =>
+      DateExprWithOffset(dateConstructExpr, offsetYMD)
+  } | dateConstructExpr
+
   lazy val dateExprTODAYOffset: Parser[DateExpr] = dateExprTODAY ~ offsetYMD ^^ { case dateExprToday ~ offsetYMD =>
     DateExprWithOffset(dateExprToday, offsetYMD)
-  } | dataRetrieveDateExpr
+  } | dateConstructWithOffset
 
   lazy val formCtxFieldDateWithOffset: Parser[DateExprWithOffset] = formCtxFieldDate ~ offsetYMD ^^ {
     case dateExprCtx ~ offsetYMD =>

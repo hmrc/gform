@@ -16,26 +16,25 @@
 
 package uk.gov.hmrc.gform.formtemplate
 
-import cats.data.NonEmptyList
-
-import java.time.LocalDate
 import cats.Monoid
+import cats.data.NonEmptyList
 import cats.implicits._
 import scalax.collection.Graph
 import scalax.collection.GraphEdge._
-import uk.gov.hmrc.gform.core.{ Invalid, Valid, ValidationResult }
-import uk.gov.hmrc.gform.core.ValidationResult.{ BooleanToValidationResultSyntax, validationResultMonoid }
-import uk.gov.hmrc.gform.models.constraints.{ AddressLensChecker, FunctionsChecker, MutualReferenceChecker, ReferenceInfo }
-import uk.gov.hmrc.gform.sharedmodel.{ AvailableLanguages, DataRetrieve, DataRetrieveId, LangADT, SmartString }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate._
-import uk.gov.hmrc.gform.sharedmodel.graph.DependencyGraph._
-import uk.gov.hmrc.gform.formtemplate.FormTemplateValidatorHelper._
-import uk.gov.hmrc.gform.models.constraints.ReferenceInfo.{ DataRetrieveCountExpr, DataRetrieveCtxExpr, DateFunctionExpr, FormCtxExpr, PeriodExpr, PeriodExtExpr, SizeExpr }
 import shapeless.syntax.typeable._
 import uk.gov.hmrc.gform.config.AppConfig
+import uk.gov.hmrc.gform.core.ValidationResult.{ BooleanToValidationResultSyntax, validationResultMonoid }
+import uk.gov.hmrc.gform.core.{ Invalid, Valid, ValidationResult }
+import uk.gov.hmrc.gform.formtemplate.FormTemplateValidatorHelper._
+import uk.gov.hmrc.gform.models.constraints.ReferenceInfo._
+import uk.gov.hmrc.gform.models.constraints.{ AddressLensChecker, FunctionsChecker, MutualReferenceChecker, ReferenceInfo }
 import uk.gov.hmrc.gform.sharedmodel.DataRetrieve.Attribute
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.PageLink
+import uk.gov.hmrc.gform.sharedmodel.formtemplate._
+import uk.gov.hmrc.gform.sharedmodel.graph.DependencyGraph._
+import uk.gov.hmrc.gform.sharedmodel._
 
+import java.time.LocalDate
 import scala.Function.const
 import scala.annotation.nowarn
 import scala.util.{ Failure, Success, Try }
@@ -435,6 +434,20 @@ object FormTemplateValidator {
         }
     }
     Monoid.combineAll(validations.flatten)
+  }
+
+  def validateDateConstructExpressions(
+    allExpressions: List[ExprWithPath]
+  ): ValidationResult = {
+    val validations = allExpressions.collect { case ExprWithPath(path, DateCtx(DateConstructExpr(dExpr, _))) =>
+      dExpr match {
+        case DateValueExpr(ExactDateExprValue(_, m, d)) if (m === 2) && (d > 28) =>
+          Invalid(s"${path.path}: yearToDate can not be used with February 29th")
+        case _ => Valid
+      }
+    }
+
+    Monoid.combineAll(validations)
   }
 
   def validatePeriodFunReferenceConstraints(
