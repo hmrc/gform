@@ -16,8 +16,10 @@
 
 package uk.gov.hmrc.gform.sharedmodel
 
+import cats.Eq
 import julienrf.json.derived
 import play.api.libs.json._
+
 import scala.util.matching.Regex
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
@@ -103,6 +105,7 @@ object DataRetrieve {
     case object Date extends AttrType
 
     implicit val format: OFormat[AttrType] = derived.oformat()
+    implicit val equal: Eq[AttrType] = Eq.fromUniversalEquals
   }
 
   sealed trait ParamType extends Product with Serializable

@@ -218,7 +218,7 @@ object FormTemplateValidator {
         invalid(path, formComponentId)
       case ReferenceInfo.LinkCtxExpr(path, LinkCtx(PageLink(pageId))) if !allPageIds.contains(pageId) =>
         Invalid(s"${path.path}: Page id '${pageId.id}' doesn't exist in the form")
-      case ReferenceInfo.CsvCountryCheckExpr(path, CsvCountryCheck(formComponentId, _)) if !allFcIds(formComponentId) =>
+      case ReferenceInfo.LookupColumnExpr(path, LookupColumn(formComponentId, _)) if !allFcIds(formComponentId) =>
         invalid(path, formComponentId)
       case ReferenceInfo.IndexOfExpr(path, IndexOf(formComponentId, _)) if !allFcIds(formComponentId) =>
         invalid(path, formComponentId)
@@ -1106,47 +1106,6 @@ object FormTemplateValidator {
     })
   }
 
-  def validateForwardReference(sections: List[Section]): ValidationResult = {
-    val indexLookup: Map[FormComponentId, Int] = indexedFieldIds(sections).toMap
-    val addToListIds: List[FormComponentId] = SectionHelper.addToListIds(sections).map(_.id)
-    val verifyValidIf = new BooleanExprValidator(indexLookup, BooleanExprWrapperType.ValidIf, addToListIds)(_)
-    val verifyIncludeIf = new BooleanExprValidator(indexLookup, BooleanExprWrapperType.IncludeIf, addToListIds)(_)
-    val verifyRemoveItemIf = new BooleanExprValidator(indexLookup, BooleanExprWrapperType.RemoveItemIf, addToListIds)(_)
-    Monoid[ValidationResult]
-      .combineAll(
-        SectionHelper
-          .pages(sections)
-          .zipWithIndex
-          .flatMap { case (page: Page, idx) =>
-            val allValidIfs: List[BooleanExpr] = page.allFormComponents.flatMap(_.allValidIfs).map(_.booleanExpr)
-            val verifiedValidIf = allValidIfs.flatMap(verifyValidIf(idx).apply)
-
-            val allComponentIncludeIfs: List[BooleanExpr] =
-              page.allFormComponents.flatMap(_.includeIf).map(_.booleanExpr)
-            val verifiedComponentIncludeIfs = allComponentIncludeIfs.flatMap(verifyIncludeIf(idx).apply)
-
-            val verifiedIncludeIf = page.includeIf
-              .map(_.booleanExpr)
-              .map(verifyIncludeIf(idx).apply)
-              .getOrElse(List(Valid))
-
-            val verifiedRemoveItemIf = page.removeItemIf
-              .map(_.booleanExpr)
-              .map(verifyRemoveItemIf(idx).apply)
-              .getOrElse(List(Valid))
-
-            val verifiedDataRetrieveIncludeIf =
-              for {
-                dataRetrieve <- page.dataRetrieves()
-                iff          <- dataRetrieve.`if`.toList
-                result       <- verifyIncludeIf(idx).apply(iff.booleanExpr)
-              } yield result
-
-            verifiedValidIf ++ verifiedIncludeIf ++ verifiedComponentIncludeIfs ++ verifiedDataRetrieveIncludeIf ++ verifiedRemoveItemIf
-          }
-      )
-  }
-
   def validate(expr: Expr, sections: List[Section]): ValidationResult = {
     val fieldNamesIds: List[FormComponentId] = fieldIds(sections)
 
@@ -1198,7 +1157,7 @@ object FormTemplateValidator {
       case PeriodExt(periodFun, _)           => validate(periodFun, sections)
       case DataRetrieveCtx(_, _)             => Valid
       case DataRetrieveCount(_)              => Valid
-      case CsvCountryCheck(value, _)         => validate(FormCtx(value), sections)
+      case LookupColumn(value, _)            => validate(FormCtx(value), sections)
       case CsvOverseasCountryCheck(value, _) => validate(FormCtx(value), sections)
       case CsvCountryCountCheck(value, _, _) =>
         SectionHelper

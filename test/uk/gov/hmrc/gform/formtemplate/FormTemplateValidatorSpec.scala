@@ -23,9 +23,9 @@ import org.scalatest.wordspec.AnyWordSpecLike
 import uk.gov.hmrc.gform.Helpers.{ toLocalisedString, toSmartString }
 import uk.gov.hmrc.gform.core.parsers.ValueParser
 import uk.gov.hmrc.gform.core.{ Invalid, Valid }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.PageLink
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AnyDate, Choice, Constant, CsvCountryCheck, Date, DateCtx, DateFormCtxVar, ExprWithPath, FormComponent, FormComponentId, FormComponentValidator, FormCtx, HideZeroDecimals, Horizontal, IfElse, InformationMessage, Instruction, IsTrue, LeafExpr, LinkCtx, Offset, OptionData, OptionDataValue, PageId, PostcodeLookup, Radio, StandardInfo, SummariseGroupAsGrid, TemplatePath, ValidIf }
 import uk.gov.hmrc.gform.sharedmodel.{ LangADT, LocalisedString, SmartString }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AnyDate, Choice, Constant, Date, DateCtx, DateFormCtxVar, ExprWithPath, FormComponent, FormComponentId, FormComponentValidator, FormCtx, HideZeroDecimals, Horizontal, IfElse, InformationMessage, Instruction, IsTrue, LeafExpr, LinkCtx, LookupColumn, Offset, OptionData, OptionDataValue, PageId, PostcodeLookup, Radio, StandardInfo, SummariseGroupAsGrid, TemplatePath, ValidIf }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.PageLink
 
 class FormTemplateValidatorSpec
     extends AnyWordSpecLike with Matchers with FormTemplateSupport with TableDrivenPropertyChecks {
@@ -504,12 +504,12 @@ class FormTemplateValidatorSpec
     }
   }
 
-  "validate - for CsvCountryCheck" when {
+  "validate - for lookup column check" when {
     "expression refers to existing Form field" should {
       "return Valid" in {
         val sections = List(mkSectionNonRepeatingPage(formComponents = List(mkFormComponent(id = "someExistingId"))))
         val result =
-          FormTemplateValidator.validate(CsvCountryCheck(FormComponentId("someExistingId"), "column"), sections)
+          FormTemplateValidator.validate(LookupColumn(FormComponentId("someExistingId"), "column"), sections)
         result shouldBe Valid
       }
     }
@@ -518,7 +518,7 @@ class FormTemplateValidatorSpec
       "return Invalid" in {
         val sections = List(mkSectionNonRepeatingPage(formComponents = List(mkFormComponent(id = "someExistingId"))))
         val result =
-          FormTemplateValidator.validate(CsvCountryCheck(FormComponentId("someNonExistingId"), "column"), sections)
+          FormTemplateValidator.validate(LookupColumn(FormComponentId("someNonExistingId"), "column"), sections)
         result shouldBe Invalid("Form field 'someNonExistingId' is not defined in form template.")
       }
     }

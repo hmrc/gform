@@ -20,6 +20,7 @@ import cats.implicits._
 import play.api.libs.json.{ JsObject, JsValue }
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.core.parsers.ValueParser
+import uk.gov.hmrc.gform.sharedmodel.DataRetrieve.AttrType
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.IncludeIf
 
 final case class DataRetrieveDefinitions(
@@ -523,6 +524,13 @@ object DataRetrieveDefinitions {
 
   private def findDefinition(tpe: DataRetrieve.Type): Option[DataRetrieveDefinition] =
     staticDefinitions.definitions.find(_.tpe == tpe)
+
+  def dataRetrieveDateAttrs(): List[String] =
+    staticDefinitions.definitions.flatMap {
+      _.attrTypeMapping.collect { case (attr, AttrType.Date) =>
+        attr.name
+      }
+    }
 
   def read(json: JsValue): Opt[DataRetrieve] =
     for {
