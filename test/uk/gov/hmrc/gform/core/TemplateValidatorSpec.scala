@@ -24,6 +24,7 @@ import uk.gov.hmrc.gform.Helpers._
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.formtemplate.FormTemplateValidator
 import uk.gov.hmrc.gform.sharedmodel.{ LangADT, LocalisedString }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.DataSource.SeissEligible
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DestinationList
@@ -531,6 +532,182 @@ class TemplateValidatorSpec extends Spec {
 
   }
 
+  "FormTemplateValidator.validateForwardReference" should "detect valid references in an In expression" in {
+
+    val formComponentsA = List(mkFormComponent("fieldA", Value))
+    val formComponentsB = List(mkFormComponent("fieldB", Value))
+    val baseSectionA = mkSection("sectionA", formComponentsA)
+    val baseSectionB = mkSection("sectionB", formComponentsB)
+
+    val table =
+      Table(
+        ("expr", "expected"),
+        (In(FormCtx(FormComponentId("fieldA")), SeissEligible), Valid),
+        (In(AuthCtx(AuthInfo.SaUtr), SeissEligible), Valid),
+        (In(ParamCtx(QueryParam("test")), SeissEligible), Valid)
+      )
+    forAll(table) { case (booleanExpr, expected) =>
+      val sectionB = baseSectionB.copy(page = baseSectionB.page.copy(includeIf = Some(IncludeIf(booleanExpr))))
+      val res = FormTemplateValidator.validateForwardReference(baseSectionA :: sectionB :: Nil)
+      res shouldBe expected
+    }
+  }
+
+  it should "detect valid removeItemIf references in an In expression" in {
+
+    val formComponentsA = List(mkFormComponent("fieldA", Value))
+    val formComponentsB = List(mkFormComponent("fieldB", Value))
+    val baseSectionA = mkSection("sectionA", formComponentsA)
+    val baseSectionB = mkSection("sectionB", formComponentsB)
+
+    val table =
+      Table(
+        ("expr", "expected"),
+        (In(FormCtx(FormComponentId("fieldA")), SeissEligible), Valid),
+        (In(AuthCtx(AuthInfo.SaUtr), SeissEligible), Valid),
+        (In(ParamCtx(QueryParam("test")), SeissEligible), Valid)
+      )
+    forAll(table) { case (booleanExpr, expected) =>
+      val sectionB = baseSectionB.copy(page = baseSectionB.page.copy(removeItemIf = Some(RemoveItemIf(booleanExpr))))
+      val res = FormTemplateValidator.validateForwardReference(baseSectionA :: sectionB :: Nil)
+      res shouldBe expected
+    }
+  }
+
+  it should "detect invalid references/forward references in an IncludeIf Boolean Expression" in {
+
+    val formComponentsA = List(mkFormComponent("fieldA", Value))
+    val formComponentsB = List(mkFormComponent("fieldB", Value))
+    val baseSectionA = mkSection("sectionA", formComponentsA)
+    val baseSectionB = mkSection("sectionB", formComponentsB)
+    val constant = Constant("c")
+    val forwardRef = FormCtx(FormComponentId("fieldB"))
+    val invalidRef = FormCtx(FormComponentId("a"))
+    val forwardReferenceError = Invalid("id 'fieldB' named in includeIf is forward reference, which is not permitted")
+    val invalidReferenceError = Invalid("id 'a' named in includeIf expression does not exist in the form")
+    val table =
+      Table(
+        // format: off
+        ("booleanExpr",                             "expected"),
+        (Equals              (forwardRef, constant), forwardReferenceError),
+        (GreaterThan         (forwardRef, constant), forwardReferenceError),
+        (GreaterThanOrEquals (forwardRef, constant), forwardReferenceError),
+        (LessThan            (forwardRef, constant), forwardReferenceError),
+        (LessThanOrEquals    (forwardRef, constant), forwardReferenceError),
+        (Not(Equals(forwardRef, constant)),          forwardReferenceError),
+        (And(Equals(forwardRef, constant), IsTrue),  forwardReferenceError),
+        (Or (Equals(forwardRef, constant), IsTrue),  forwardReferenceError),
+        (Equals              (invalidRef, constant), invalidReferenceError),
+        (GreaterThan         (invalidRef, constant), invalidReferenceError),
+        (GreaterThanOrEquals (invalidRef, constant), invalidReferenceError),
+        (LessThan            (invalidRef, constant), invalidReferenceError),
+        (LessThanOrEquals    (invalidRef, constant), invalidReferenceError),
+        (Not(Equals(invalidRef, constant)),          invalidReferenceError),
+        (And(Equals(invalidRef, constant), IsTrue),  invalidReferenceError),
+        (Or (Equals(invalidRef, constant), IsTrue),  invalidReferenceError),
+        (IsTrue,  Valid),
+        (IsFalse, Valid),
+        (In (invalidRef, SeissEligible),  invalidReferenceError)
+        // format: on
+      )
+    forAll(table) { case (booleanExpr, expected) =>
+      val sectionA = baseSectionA.copy(page = baseSectionA.page.copy(includeIf = Some(IncludeIf(booleanExpr))))
+      val res = FormTemplateValidator.validateForwardReference(sectionA :: baseSectionB :: Nil)
+      res shouldBe expected
+    }
+  }
+
+  it should "detect invalid references/forward references in an RemoveItemIf Boolean Expression" in {
+
+    val formComponentsA = List(mkFormComponent("fieldA", Value))
+    val formComponentsB = List(mkFormComponent("fieldB", Value))
+    val baseSectionA = mkSection("sectionA", formComponentsA)
+    val baseSectionB = mkSection("sectionB", formComponentsB)
+    val constant = Constant("c")
+    val forwardRef = FormCtx(FormComponentId("fieldB"))
+    val invalidRef = FormCtx(FormComponentId("a"))
+    val forwardReferenceError =
+      Invalid("id 'fieldB' named in removeItemIf is forward reference, which is not permitted")
+    val invalidReferenceError = Invalid("id 'a' named in removeItemIf expression does not exist in the form")
+    val table =
+      Table(
+        // format: off
+        ("booleanExpr",                             "expected"),
+        (Equals              (forwardRef, constant), forwardReferenceError),
+        (GreaterThan         (forwardRef, constant), forwardReferenceError),
+        (GreaterThanOrEquals (forwardRef, constant), forwardReferenceError),
+        (LessThan            (forwardRef, constant), forwardReferenceError),
+        (LessThanOrEquals    (forwardRef, constant), forwardReferenceError),
+        (Not(Equals(forwardRef, constant)),          forwardReferenceError),
+        (And(Equals(forwardRef, constant), IsTrue),  forwardReferenceError),
+        (Or (Equals(forwardRef, constant), IsTrue),  forwardReferenceError),
+        (Equals              (invalidRef, constant), invalidReferenceError),
+        (GreaterThan         (invalidRef, constant), invalidReferenceError),
+        (GreaterThanOrEquals (invalidRef, constant), invalidReferenceError),
+        (LessThan            (invalidRef, constant), invalidReferenceError),
+        (LessThanOrEquals    (invalidRef, constant), invalidReferenceError),
+        (Not(Equals(invalidRef, constant)),          invalidReferenceError),
+        (And(Equals(invalidRef, constant), IsTrue),  invalidReferenceError),
+        (Or (Equals(invalidRef, constant), IsTrue),  invalidReferenceError),
+        (IsTrue,  Valid),
+        (IsFalse, Valid),
+        (In (invalidRef, SeissEligible),  invalidReferenceError)
+        // format: on
+      )
+    forAll(table) { case (booleanExpr, expected) =>
+      val sectionA = baseSectionA.copy(page = baseSectionA.page.copy(removeItemIf = Some(RemoveItemIf(booleanExpr))))
+      val res = FormTemplateValidator.validateForwardReference(sectionA :: baseSectionB :: Nil)
+      res shouldBe expected
+    }
+  }
+
+  it should "detect invalid references/forward references in a ValidIf Boolean expression" in {
+    val constant = Constant("")
+    val forwardRef = FormCtx(FormComponentId("fieldB"))
+    val formComponentsB = List(mkFormComponent("fieldB", Value))
+    val baseSectionB = mkSection("sectionB", formComponentsB)
+    val invalidRef = FormCtx(FormComponentId("a"))
+    val forwardReferenceError = Invalid("id 'fieldB' named in validIf is forward reference, which is not permitted")
+    val invalidReferenceError = Invalid("id 'a' named in validIf expression does not exist in the form")
+
+    val validIfInValidIf =
+      (booleanExpr: BooleanExpr) => mkFormComponent("fieldA", Value).copy(validIf = Some(ValidIf(booleanExpr)))
+    val validIfInValidator = (booleanExpr: BooleanExpr) =>
+      mkFormComponent("fieldA", Value).copy(
+        validators = FormComponentValidator(ValidIf(booleanExpr), toSmartString("")) :: Nil
+      )
+    val table =
+      Table(
+        ("booleanExpr", "mkComponent", "expected"),
+        (Equals(forwardRef, constant), validIfInValidIf, forwardReferenceError),
+        (Equals(invalidRef, constant), validIfInValidIf, invalidReferenceError),
+        (Equals(forwardRef, constant), validIfInValidator, forwardReferenceError),
+        (Equals(invalidRef, constant), validIfInValidator, invalidReferenceError)
+      )
+    forAll(table) { case (booleanExpr, mkComponent, expected) =>
+      val formComponentA = mkComponent(booleanExpr)
+      val sectionA = mkSection("sectionA", formComponentA :: Nil)
+      val res = FormTemplateValidator.validateForwardReference(sectionA :: baseSectionB :: Nil)
+      res shouldBe expected
+    }
+  }
+
+  it should "allow reference within the same page inside of validIf" in {
+
+    val constant = Constant("")
+    val samePageRef = FormCtx(FormComponentId("fieldB"))
+
+    val formComponents = List(
+      mkFormComponent("fieldB", Value),
+      mkFormComponent("fieldA", Value).copy(validIf = Some(ValidIf(Equals(samePageRef, constant))))
+    )
+
+    val section = mkSection("section", formComponents)
+
+    val res = FormTemplateValidator.validateForwardReference(section :: Nil)
+    res shouldBe Valid
+  }
+
   it should "allow reference to addAnotherQuestion of AddToList section" in {
 
     val yesNoLocalisedStrings =
@@ -563,6 +740,56 @@ class TemplateValidatorSpec extends Spec {
 
     val res = FormTemplateValidator.validate(List(referenceToAddAnotherQuestion.`type`), formTemplateUpd)
     res shouldBe Valid
+  }
+
+  it should "validate forward references in AddToList fields within duplicateExists boolean expressions" in {
+
+    val yesNoLocalisedStrings =
+      NonEmptyList.of(toSmartString("Yes"), toSmartString("No")).map(OptionData.IndexBased(_, None, None, None))
+
+    val fieldA = FormCtx(FormComponentId("fieldA"))
+    val fieldB = FormCtx(FormComponentId("fieldB"))
+    val fieldC = FormCtx(FormComponentId("fieldC"))
+
+    val validIfTests = Map(
+      DuplicateExists(List(fieldA, fieldC)) -> Invalid(
+        "id 'fieldC' named in validIf is forward reference, which is not permitted"
+      ),
+      DuplicateExists(List(fieldA, fieldB)) -> Valid
+    )
+    val addToListPage1 = mkSection("addToListPage", List(mkFormComponent("fieldA", Value))).page
+    val addToListPage3 = mkSection("addToListPage", List(mkFormComponent("fieldC", Value))).page
+    val addAnotherQuestion =
+      mkFormComponent(
+        "addAnother",
+        Choice(
+          YesNo,
+          yesNoLocalisedStrings,
+          Horizontal,
+          Nil,
+          None,
+          None,
+          None,
+          LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
+          None,
+          None,
+          false
+        )
+      )
+    val outsideAddToList = mkFormComponent("fieldD", Value)
+
+    for ((duplicateExists, validationResult) <- validIfTests) {
+      val addToListPage2 =
+        mkSection("addToListPage", List(mkFormComponent("fieldB", Value, Some(ValidIf(duplicateExists))))).page
+
+      val sectionA = mkSection("NonRepeated", List(outsideAddToList))
+      val sectionB =
+        mkAddToList("AddToList", NonEmptyList.of(addToListPage1, addToListPage2, addToListPage3), addAnotherQuestion)
+
+      val res = FormTemplateValidator.validateForwardReference(List(sectionA, sectionB))
+      res shouldBe validationResult
+    }
+
   }
 
   private def mkDate(

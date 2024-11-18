@@ -1106,6 +1106,40 @@ object FormTemplateValidator {
     })
   }
 
+  def validateForwardReference(sections: List[Section]): ValidationResult = {
+    val indexLookup: Map[FormComponentId, Int] = indexedFieldIds(sections).toMap
+    val addToListIds: List[FormComponentId] = SectionHelper.addToListIds(sections).map(_.id)
+    val verifyValidIf = new BooleanExprValidator(indexLookup, BooleanExprWrapperType.ValidIf, addToListIds)(_)
+    val verifyIncludeIf = new BooleanExprValidator(indexLookup, BooleanExprWrapperType.IncludeIf, addToListIds)(_)
+    val verifyRemoveItemIf = new BooleanExprValidator(indexLookup, BooleanExprWrapperType.RemoveItemIf, addToListIds)(_)
+    Monoid[ValidationResult]
+      .combineAll(
+        SectionHelper
+          .pages(sections)
+          .zipWithIndex
+          .flatMap { case (page: Page, idx) =>
+            val allValidIfs: List[BooleanExpr] = page.allFormComponents.flatMap(_.allValidIfs).map(_.booleanExpr)
+            val verifiedValidIf = allValidIfs.flatMap(verifyValidIf(idx).apply)
+
+            val allComponentIncludeIfs: List[BooleanExpr] =
+              page.allFormComponents.flatMap(_.includeIf).map(_.booleanExpr)
+            val verifiedComponentIncludeIfs = allComponentIncludeIfs.flatMap(verifyIncludeIf(idx).apply)
+
+            val verifiedIncludeIf = page.includeIf
+              .map(_.booleanExpr)
+              .map(verifyIncludeIf(idx).apply)
+              .getOrElse(List(Valid))
+
+            val verifiedRemoveItemIf = page.removeItemIf
+              .map(_.booleanExpr)
+              .map(verifyRemoveItemIf(idx).apply)
+              .getOrElse(List(Valid))
+
+            verifiedValidIf ++ verifiedIncludeIf ++ verifiedComponentIncludeIfs ++ verifiedRemoveItemIf
+          }
+      )
+  }
+
   def validate(expr: Expr, sections: List[Section]): ValidationResult = {
     val fieldNamesIds: List[FormComponentId] = fieldIds(sections)
 
