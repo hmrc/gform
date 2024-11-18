@@ -253,8 +253,6 @@ object FormTemplateValidator {
               case _                    => false
             } =>
         Invalid(s"${path.path}: $formComponentId is not a Revealing Choice in ATL")
-      case ReferenceInfo.ChoiceLabelExpr(path, ChoiceLabel(formComponentId)) if !allChoiceIds(formComponentId) =>
-        Invalid(s"${path.path}: $formComponentId is not a Choice in the form")
       case ReferenceInfo.ChoicesSelectedExpr(path, ChoicesSelected(formComponentId))
           if !allChoiceIds(formComponentId) =>
         Invalid(s"${path.path}: $formComponentId is not a Choice in the form")
@@ -1203,7 +1201,7 @@ object FormTemplateValidator {
       case Concat(exprs)                => Monoid.combineAll(exprs.map(e => validate(e, sections)))
       case CountryOfItmpAddress         => Valid
       case ChoicesRevealedField(_)      => Valid
-      case ChoiceLabel(_)               => Valid
+      case ChoiceLabel(exprs)           => Monoid.combineAll(exprs.map(e => validate(e, sections)))
       case ChoicesSelected(_)           => Valid
       case ChoicesAvailable(_)          => Valid
     }

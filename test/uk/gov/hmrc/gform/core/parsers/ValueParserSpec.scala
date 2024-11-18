@@ -29,7 +29,7 @@ import uk.gov.hmrc.gform.sharedmodel.{ AvailableLanguages, DataRetrieve, DataRet
 import uk.gov.hmrc.gform.sharedmodel.email.LocalisedEmailTemplateId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.{ NewForm, NewFormForTemplate, NewSession, PageLink, SignOut }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.UserField.Enrolment
-import uk.gov.hmrc.gform.sharedmodel.formtemplate._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ TextExpression, _ }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DataOutputFormat, DestinationId, DestinationIncludeIf, Destinations, TemplateType }
 
@@ -1214,7 +1214,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
   it should "parse choice function" in {
     val res = ValueParser.validate("${choice(fieldId)}")
     res.toOption.value should be(
-      TextExpression(ChoiceLabel(FormComponentId("fieldId")))
+      TextExpression(ChoiceLabel(List(FormCtx(FormComponentId("fieldId")))))
     )
   }
 

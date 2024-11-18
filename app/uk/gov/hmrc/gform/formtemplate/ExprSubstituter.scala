@@ -68,7 +68,7 @@ object ExprSubstituter extends Substituter[ExprSubstitutions, FormTemplate] {
         case Concat(exprs)                   => Concat(exprs.map(e => substitute(substitutions, e)))
         case CountryOfItmpAddress            => t
         case ChoicesRevealedField(_)         => t
-        case ChoiceLabel(_)                  => t
+        case ChoiceLabel(exprs)              => ChoiceLabel(exprs.map(e => substitute(substitutions, e)))
         case ChoicesSelected(_)              => t
         case ChoicesAvailable(_)             => t
       }

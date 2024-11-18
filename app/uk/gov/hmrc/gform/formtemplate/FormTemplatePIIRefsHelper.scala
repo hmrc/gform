@@ -142,7 +142,7 @@ object FormTemplatePIIRefsHelper {
       case Concat(exprs)                                      => exprs.flatMap(extractRefs)
       case CountryOfItmpAddress                               => Nil
       case ChoicesRevealedField(FormComponentId(value))       => List(value)
-      case ChoiceLabel(FormComponentId(value))                => List(value)
+      case ChoiceLabel(exprs)                                 => exprs.flatMap(extractRefs)
       case ChoicesSelected(FormComponentId(value))            => List(value)
       case ChoicesAvailable(FormComponentId(value))           => List(value)
     }

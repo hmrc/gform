@@ -329,8 +329,8 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
     | "concat(" ~ _expr1 ~ (("," ~> _expr1) *) ~ ")" ^^ { case _ ~ expr ~ exprs ~ _ =>
       Concat(expr +: exprs)
     }
-    | "choice(" ~ FormComponentId.unanchoredIdValidation ~ ")" ^^ { case _ ~ value ~ _ =>
-      ChoiceLabel(FormComponentId(value))
+    | "choice(" ~ _expr1 ~ (("," ~> _expr1) *) ~ ")" ^^ { case _ ~ expr ~ exprs ~ _ =>
+      ChoiceLabel(expr +: exprs)
     }
     | "choicesSelected(" ~ FormComponentId.unanchoredIdValidation ~ ")" ^^ { case _ ~ value ~ _ =>
       ChoicesSelected(FormComponentId(value))

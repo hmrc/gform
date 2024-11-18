@@ -191,7 +191,7 @@ object TopLevelExpressions {
         case Concat(exprs)                 => Concat(exprs.map(loop))
         case CountryOfItmpAddress          => e
         case ChoicesRevealedField(_)       => e
-        case ChoiceLabel(_)                => e
+        case ChoiceLabel(exprs)            => ChoiceLabel(exprs.map(loop))
         case ChoicesSelected(_)            => e
         case ChoicesAvailable(_)           => e
       }

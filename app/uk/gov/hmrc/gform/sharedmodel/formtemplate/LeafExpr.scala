@@ -84,7 +84,7 @@ final case class ExprWithPath(path: TemplatePath, expr: Expr) {
     case Concat(exprs)                                 => toReferenceInfo(exprs: _*)
     case CountryOfItmpAddress                          => Nil
     case c @ ChoicesRevealedField(_)                   => ReferenceInfo.ChoicesRevealedFieldExpr(path, c) :: Nil
-    case c @ ChoiceLabel(_)                            => ReferenceInfo.ChoiceLabelExpr(path, c) :: Nil
+    case ChoiceLabel(exprs)                            => toReferenceInfo(exprs: _*)
     case c @ ChoicesSelected(_)                        => ReferenceInfo.ChoicesSelectedExpr(path, c) :: Nil
     case c @ ChoicesAvailable(_)                       => ReferenceInfo.ChoicesAvailableExpr(path, c) :: Nil
   }
