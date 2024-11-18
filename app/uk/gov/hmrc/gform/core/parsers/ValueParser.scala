@@ -21,7 +21,7 @@ import java.time.LocalDate
 import scala.util.parsing.combinator._
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.formtemplate.BooleanExprId
-import uk.gov.hmrc.gform.sharedmodel.{ DataRetrieve, DataRetrieveId }
+import uk.gov.hmrc.gform.sharedmodel.{ DataRetrieve, DataRetrieveDefinitions, DataRetrieveId }
 import uk.gov.hmrc.gform.sharedmodel.dblookup.CollectionName
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.PageLink
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.SelectionCriteriaValue.{ SelectionCriteriaExpr, SelectionCriteriaReference, SelectionCriteriaSimpleValue }
@@ -125,8 +125,11 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
       HmrcTaxPeriodCtx(FormCtx(FormComponentId(value)), hmrcTaxPeriodInfo)
     } | dateExprTODAY
 
+  val dataRetrieveDateNames: Parser[String] =
+    DataRetrieveDefinitions.dataRetrieveDateAttrs().map(literal).reduce(_ | _)
+
   lazy val dataRetrieveDateExpr: Parser[DateExpr] =
-    "dataRetrieve" ~ "." ~ DataRetrieveId.unanchoredIdValidation ~ "." ~ DataRetrieve.Attribute.unanchoredIdValidation ^^ {
+    "dataRetrieve" ~ "." ~ DataRetrieveId.unanchoredIdValidation ~ "." ~ dataRetrieveDateNames ^^ {
       case _ ~ _ ~ dataRetrieveId ~ _ ~ dataRetrieveAttribute =>
         DataRetrieveDateCtx(DataRetrieveId(dataRetrieveId), DataRetrieve.Attribute(dataRetrieveAttribute))
     } | hmrcTaxPeriodExpr
@@ -134,7 +137,7 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
   lazy val dateConstructExpr: Parser[DateExpr] =
     "yearToDate(" ~ dateExprDayMonthQuoted ~ "," ~ _expr1 ~ ")" ^^ { case _ ~ dayMonth ~ _ ~ yearExpr ~ _ =>
       DateConstructExpr(dayMonth, yearExpr)
-    } | dataRetrieveDateExpr
+    } | hmrcTaxPeriodExpr
 
   lazy val dateConstructWithOffset: Parser[DateExpr] = dateConstructExpr ~ offsetYMD ^^ {
     case dateConstructExpr ~ offsetYMD =>
@@ -143,18 +146,25 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
 
   lazy val dateExprTODAYOffset: Parser[DateExpr] = dateExprTODAY ~ offsetYMD ^^ { case dateExprToday ~ offsetYMD =>
     DateExprWithOffset(dateExprToday, offsetYMD)
-  } | dateConstructWithOffset
+  } | dateConstructWithOffset | dataRetrieveDateExpr
 
   lazy val formCtxFieldDateWithOffset: Parser[DateExprWithOffset] = formCtxFieldDate ~ offsetYMD ^^ {
     case dateExprCtx ~ offsetYMD =>
       DateExprWithOffset(dateExprCtx, offsetYMD)
   }
 
+  lazy val dataRetrieveDateOffset: Parser[DateExpr] = dataRetrieveDateExpr ~ offsetYMD ^^ {
+    case dateExprCtx ~ offsetYMD =>
+      DateExprWithOffset(dateExprCtx, offsetYMD)
+  }
+
+  lazy val dataRetrieveDate: Parser[DateExpr] = dataRetrieveDateOffset | dataRetrieveDateExpr
+
   lazy val dateExpr: Parser[DateExpr] =
-    dateExprTODAYOffset | formCtxFieldDateWithOffset | dateExprExactQuoted | formCtxFieldDate
+    dateExprTODAYOffset | dataRetrieveDateExpr | formCtxFieldDateWithOffset | dateExprExactQuoted | formCtxFieldDate
 
   lazy val dateExprWithoutFormCtxFieldDate: Parser[DateExpr] =
-    dateExprTODAYOffset | formCtxFieldDateWithOffset | dateExprExactQuoted
+    dateExprTODAYOffset | dataRetrieveDateExpr | formCtxFieldDateWithOffset | dateExprExactQuoted
 
   lazy val dataSourceParse: Parser[DataSource] = (
     "service" ~ "." ~ "seiss" ^^ { _ =>
@@ -236,7 +246,9 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
           index - 1
         )
     }
-    | "dataRetrieve" ~ "." ~ DataRetrieveId.unanchoredIdValidation ~ "." ~ DataRetrieve.Attribute.unanchoredIdValidation ^^ {
+    | dataRetrieveDate.map(
+      DateCtx.apply
+    ) | "dataRetrieve" ~ "." ~ DataRetrieveId.unanchoredIdValidation ~ "." ~ DataRetrieve.Attribute.unanchoredIdValidation ^^ {
       case _ ~ _ ~ dataRetrieveId ~ _ ~ dataRetrieveAttribute =>
         DataRetrieveCtx(DataRetrieveId(dataRetrieveId), DataRetrieve.Attribute(dataRetrieveAttribute))
     }
@@ -265,7 +277,7 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
         CsvCountryCountCheck(FormComponentId(value), column, count)
     }
     | FormComponentId.unanchoredIdValidation ~ ".column." ~ alphabeticOnly ^^ { case value ~ _ ~ column =>
-      CsvCountryCheck(FormComponentId(value), column)
+      LookupColumn(FormComponentId(value), column)
     }
     | periodValueParser ^^ { period =>
       PeriodValue(period)

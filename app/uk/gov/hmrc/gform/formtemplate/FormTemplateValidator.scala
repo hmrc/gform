@@ -218,7 +218,7 @@ object FormTemplateValidator {
         invalid(path, formComponentId)
       case ReferenceInfo.LinkCtxExpr(path, LinkCtx(PageLink(pageId))) if !allPageIds.contains(pageId) =>
         Invalid(s"${path.path}: Page id '${pageId.id}' doesn't exist in the form")
-      case ReferenceInfo.CsvCountryCheckExpr(path, CsvCountryCheck(formComponentId, _)) if !allFcIds(formComponentId) =>
+      case ReferenceInfo.LookupColumnExpr(path, LookupColumn(formComponentId, _)) if !allFcIds(formComponentId) =>
         invalid(path, formComponentId)
       case ReferenceInfo.IndexOfExpr(path, IndexOf(formComponentId, _)) if !allFcIds(formComponentId) =>
         invalid(path, formComponentId)
@@ -1135,14 +1135,7 @@ object FormTemplateValidator {
               .map(verifyRemoveItemIf(idx).apply)
               .getOrElse(List(Valid))
 
-            val verifiedDataRetrieveIncludeIf =
-              for {
-                dataRetrieve <- page.dataRetrieves()
-                iff          <- dataRetrieve.`if`.toList
-                result       <- verifyIncludeIf(idx).apply(iff.booleanExpr)
-              } yield result
-
-            verifiedValidIf ++ verifiedIncludeIf ++ verifiedComponentIncludeIfs ++ verifiedDataRetrieveIncludeIf ++ verifiedRemoveItemIf
+            verifiedValidIf ++ verifiedIncludeIf ++ verifiedComponentIncludeIfs ++ verifiedRemoveItemIf
           }
       )
   }
@@ -1198,7 +1191,7 @@ object FormTemplateValidator {
       case PeriodExt(periodFun, _)           => validate(periodFun, sections)
       case DataRetrieveCtx(_, _)             => Valid
       case DataRetrieveCount(_)              => Valid
-      case CsvCountryCheck(value, _)         => validate(FormCtx(value), sections)
+      case LookupColumn(value, _)            => validate(FormCtx(value), sections)
       case CsvOverseasCountryCheck(value, _) => validate(FormCtx(value), sections)
       case CsvCountryCountCheck(value, _, _) =>
         SectionHelper

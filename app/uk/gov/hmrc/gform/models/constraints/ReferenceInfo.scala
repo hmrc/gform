@@ -35,7 +35,7 @@ object ReferenceInfo {
   final case class DataRetrieveCtxExpr(path: TemplatePath, dataRetrieveCtx: DataRetrieveCtx) extends ReferenceInfo
   final case class DataRetrieveCountExpr(path: TemplatePath, dataRetrieveCount: DataRetrieveCount) extends ReferenceInfo
   final case class SizeExpr(path: TemplatePath, size: Size) extends ReferenceInfo
-  final case class CsvCountryCheckExpr(path: TemplatePath, csvCountryCheck: CsvCountryCheck) extends ReferenceInfo
+  final case class LookupColumnExpr(path: TemplatePath, lookupColumn: LookupColumn) extends ReferenceInfo
   final case class CsvOverseasCountryCheckExpr(path: TemplatePath, csvOverseasCountryCheck: CsvOverseasCountryCheck)
       extends ReferenceInfo
   final case class CsvCountryCountCheckExpr(path: TemplatePath, csvCountryCountCheck: CsvCountryCountCheck)
