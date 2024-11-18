@@ -29,8 +29,10 @@ import uk.gov.hmrc.gform.BuildInfo
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.core.FOpt
 import uk.gov.hmrc.gform.des.DesAlgebra
+import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.form.FormAlgebra
 import uk.gov.hmrc.gform.formtemplate.ExprSubstituter
+import uk.gov.hmrc.gform.formtemplate.TopLevelExpressions
 import uk.gov.hmrc.gform.formtemplate.{ BooleanExprId, Substituter }
 import uk.gov.hmrc.gform.formtemplate.{ BooleanExprSubstitutions, ExprSubstitutions, FormTemplateAlgebra, RequestHandlerAlg }
 import uk.gov.hmrc.gform.repo.Repo
@@ -115,9 +117,13 @@ class TestOnlyController(
             val expressions0: ExprSubstitutions = substituteExpr(expressionsContext)
             val expressions: ExprSubstitutions =
               substituteBooleanExprsInExprs(booleanExpressionsContext, expressions0)
-
+            val expressionsResolved: Either[UnexpectedState, ExprSubstitutions] =
+              TopLevelExpressions.resolveReferences(expressions)
             ExpressionsLookup(
-              expressions.expressions,
+              expressionsResolved match {
+                case Right(resolved) => resolved.expressions
+                case Left(_)         => expressions.expressions
+              },
               substituteBooleanExpr(booleanExpressionsContext, expressions)
             )
           }
