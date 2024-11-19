@@ -47,7 +47,6 @@ object ReferenceInfo {
   final case class StringOpsExpr(path: TemplatePath, stringOps: StringOps) extends ReferenceInfo
   final case class ChoicesRevealedFieldExpr(path: TemplatePath, choicesRevealedField: ChoicesRevealedField)
       extends ReferenceInfo
-  final case class ChoiceLabelExpr(path: TemplatePath, choiceLabel: ChoiceLabel) extends ReferenceInfo
   final case class ChoicesSelectedExpr(path: TemplatePath, choicesSelected: ChoicesSelected) extends ReferenceInfo
   final case class ChoicesAvailableExpr(path: TemplatePath, choicesAvailable: ChoicesAvailable) extends ReferenceInfo
 }

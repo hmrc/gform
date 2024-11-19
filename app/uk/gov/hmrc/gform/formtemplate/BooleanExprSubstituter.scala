@@ -66,7 +66,6 @@ object BooleanExprSubstituter extends Substituter[BooleanExprSubstitutions, Form
         case Concat(exprs)                 => Concat(exprs.map(substitute(substitutions, _)))
         case CountryOfItmpAddress          => t
         case ChoicesRevealedField(_)       => t
-        case ChoiceLabel(exprs)            => ChoiceLabel(exprs.map(substitute(substitutions, _)))
         case ChoicesSelected(_)            => t
         case ChoicesAvailable(_)           => t
       }

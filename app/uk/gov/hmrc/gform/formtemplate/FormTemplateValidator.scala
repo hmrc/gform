@@ -1201,7 +1201,6 @@ object FormTemplateValidator {
       case Concat(exprs)                => Monoid.combineAll(exprs.map(e => validate(e, sections)))
       case CountryOfItmpAddress         => Valid
       case ChoicesRevealedField(_)      => Valid
-      case ChoiceLabel(exprs)           => Monoid.combineAll(exprs.map(e => validate(e, sections)))
       case ChoicesSelected(_)           => Valid
       case ChoicesAvailable(_)          => Valid
     }
