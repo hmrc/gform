@@ -360,7 +360,7 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
       Concat(expr +: exprs)
     }
     | "choice(" ~ FormComponentId.unanchoredIdValidation ~ ")" ^^ { case _ ~ value ~ _ =>
-      ChoiceLabel(FormComponentId(value))
+      Concat(FormCtx(FormComponentId(value)) :: Nil)
     }
     | "choicesSelected(" ~ FormComponentId.unanchoredIdValidation ~ ")" ^^ { case _ ~ value ~ _ =>
       ChoicesSelected(FormComponentId(value))
