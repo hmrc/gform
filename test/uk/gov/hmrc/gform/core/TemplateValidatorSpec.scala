@@ -23,15 +23,15 @@ import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import uk.gov.hmrc.gform.Helpers._
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.formtemplate.FormTemplateValidator
-import uk.gov.hmrc.gform.sharedmodel.{ LangADT, LocalisedString }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.DataSource.SeissEligible
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DestinationList
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.FormComponentGen._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.PrimitiveGen._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.SectionGen._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators._
+import uk.gov.hmrc.gform.sharedmodel.{ LangADT, LocalisedString, SmartString }
 
 class TemplateValidatorSpec extends Spec {
   private def setAllFieldIds(page: Page, id: FormComponentId): Page =
@@ -126,9 +126,9 @@ class TemplateValidatorSpec extends Spec {
   }
   "validateEnrolmentIdentifier" should
     "validates ${user.enrolledIdentifier} with HmrcSimpleModule and HmrcAgentModule but invalid with Anonymous" in {
-      import FormTemplateValidator._
       import AuthConfigGen._
       import FormComponentGen._
+      import FormTemplateValidator._
       import ScalaCheckDrivenPropertyChecks._
 
       forAll(
@@ -708,6 +708,98 @@ class TemplateValidatorSpec extends Spec {
     res shouldBe Valid
   }
 
+  it should "detect and prevent references to same page from within SmartStrings" in {
+    val table = Table(
+      ("sections", "expected"),
+      (
+        List(
+          mkSectionNonRepeatingPageSmartName(
+            smartName = SmartString(
+              toLocalisedString("Section1 referencing ${startDate}"),
+              List(FormCtx(FormComponentId("startDate")))
+            ),
+            formComponents = List(
+              mkFormComponent("startDate", Date(AnyDate, Offset(0), None)),
+              mkFormComponent("endDate", Date(AnyDate, Offset(0), None))
+            )
+          )
+        ),
+        Invalid("Cannot reference a field (startDate) on the same page")
+      ),
+      (
+        List(
+          mkSectionNonRepeatingPageSmartName(
+            smartName = SmartString(
+              toLocalisedString("Section1"),
+              List()
+            ),
+            formComponents = List(
+              mkFormComponent("startDate", Date(AnyDate, Offset(0), None)),
+              mkFormComponentWithLabel(
+                "endDate",
+                Date(AnyDate, Offset(0), None),
+                label = SmartString(
+                  toLocalisedString("Label referencing ${startDate}"),
+                  List(FormCtx(FormComponentId("startDate")))
+                )
+              )
+            )
+          )
+        ),
+        Invalid("Cannot reference a field (startDate) on the same page")
+      ),
+      (
+        List(
+          mkSectionNonRepeatingPageSmartName(
+            smartName = SmartString(
+              toLocalisedString("Section1 "),
+              List()
+            ),
+            formComponents = List(
+              mkFormComponent("startDate", Date(AnyDate, Offset(0), None)),
+              mkFormComponentWithHelpText(
+                "endDate",
+                Date(AnyDate, Offset(0), None),
+                helpText = SmartString(
+                  toLocalisedString("Helptext referencing ${startDate}"),
+                  List(FormCtx(FormComponentId("startDate")))
+                )
+              )
+            )
+          )
+        ),
+        Invalid("Cannot reference a field (startDate) on the same page")
+      ),
+      (
+        List(
+          mkSectionNonRepeatingPageSmartName(
+            smartName = SmartString(
+              toLocalisedString("Section1 "),
+              List()
+            ),
+            formComponents = List(
+              mkFormComponent(
+                "infoMsg",
+                InformationMessage(
+                  StandardInfo,
+                  SmartString(
+                    toLocalisedString("Info message referencing ${startDate}"),
+                    List(FormCtx(FormComponentId("startDate")))
+                  )
+                )
+              ),
+              mkFormComponent("startDate", Date(AnyDate, Offset(0), None))
+            )
+          )
+        ),
+        Valid
+      )
+    )
+    forAll(table) { (sections, expected) =>
+      FormTemplateValidator.validateForwardReference(sections) shouldBe expected
+    }
+  }
+
   it should "allow reference to addAnotherQuestion of AddToList section" in {
 
     val yesNoLocalisedStrings =
@@ -893,6 +985,74 @@ class TemplateValidatorSpec extends Spec {
       false,
       None,
       None
+    )
+
+  private def mkFormComponentWithLabel(name: String, ct: ComponentType, label: SmartString) =
+    FormComponent(
+      FormComponentId(name),
+      ct,
+      label,
+      false,
+      None,
+      None,
+      None,
+      None,
+      true,
+      false,
+      true,
+      false,
+      false,
+      None,
+      None
+    )
+
+  private def mkFormComponentWithHelpText(id: String, ct: ComponentType, helpText: SmartString) =
+    FormComponent(
+      FormComponentId(id),
+      ct,
+      toSmartString(id),
+      false,
+      Some(helpText),
+      None,
+      None,
+      None,
+      true,
+      true,
+      true,
+      false,
+      false,
+      None,
+      None,
+      Nil,
+      None
+    )
+
+  private def mkSectionNonRepeatingPageSmartName(
+    smartName: SmartString,
+    formComponents: List[FormComponent],
+    instruction: Option[Instruction] = None,
+    pageId: Option[PageId] = None
+  ) =
+    Section.NonRepeatingPage(
+      Page(
+        smartName,
+        pageId,
+        None,
+        None,
+        None,
+        None,
+        None,
+        formComponents,
+        None,
+        None,
+        instruction,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None
+      )
     )
 
   private def mkFormTemplate(
