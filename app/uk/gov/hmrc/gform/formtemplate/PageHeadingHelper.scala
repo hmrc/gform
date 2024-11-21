@@ -69,8 +69,15 @@ object PageHeadingHelper {
             }
           )
           formComponent match {
-            case IsGroup(g)              => onlyShowOnSummaryHead ::: rest
-            case IsInformationMessage(_) => onlyShowOnSummaryHead ::: rest
+            case IsGroup(g) => onlyShowOnSummaryHead ::: rest
+            case IsInformationMessage(im) =>
+              if (
+                im.summaryValue.isDefined &&
+                wasMarkedAsEmpty(formComponent.label) &&
+                tailIsNonEditable
+              )
+                onlyShowOnSummaryHead ::: formComponent.copy(label = title) :: tail
+              else onlyShowOnSummaryHead ::: rest
             case IsPostcodeLookup(_) =>
               if (
                 formComponent.editable &&
