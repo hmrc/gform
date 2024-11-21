@@ -29,10 +29,10 @@ import uk.gov.hmrc.gform.formtemplate.FormTemplateValidatorHelper._
 import uk.gov.hmrc.gform.models.constraints.ReferenceInfo._
 import uk.gov.hmrc.gform.models.constraints.{ AddressLensChecker, FunctionsChecker, MutualReferenceChecker, ReferenceInfo }
 import uk.gov.hmrc.gform.sharedmodel.DataRetrieve.Attribute
+import uk.gov.hmrc.gform.sharedmodel._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.PageLink
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.graph.DependencyGraph._
-import uk.gov.hmrc.gform.sharedmodel._
 
 import java.time.LocalDate
 import scala.Function.const
@@ -1133,7 +1133,24 @@ object FormTemplateValidator {
               .map(verifyRemoveItemIf(idx).apply)
               .getOrElse(List(Valid))
 
-            verifiedValidIf ++ verifiedIncludeIf ++ verifiedComponentIncludeIfs ++ verifiedRemoveItemIf
+            val smartStringsToCheck: List[Option[SmartString]] = page.fields.flatMap { field =>
+              List(Some(field.label), field.helpText)
+            } :+ Some(page.title)
+
+            val samePageReferences = smartStringsToCheck
+              .filter(_.isDefined)
+              .flatMap(_.get.internals.flatMap(_.interpolations))
+              .collect { case FormCtx(fcId) =>
+                indexLookup.get(fcId) match {
+                  case Some(index) if index === idx =>
+                    Invalid(
+                      s"Cannot reference a field (${fcId.value}) on the same page"
+                    )
+                  case _ => Valid
+                }
+              }
+
+            verifiedValidIf ++ verifiedIncludeIf ++ verifiedComponentIncludeIfs ++ verifiedRemoveItemIf ++ samePageReferences
           }
       )
   }
