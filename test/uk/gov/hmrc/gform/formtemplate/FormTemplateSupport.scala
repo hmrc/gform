@@ -330,4 +330,33 @@ trait FormTemplateSupport {
       defaultPage,
       pageIdToDisplayAfterRemove = pageIdToDisplayAfterRemove
     )
+
+  def mkInfoMessageComponent(
+    id: String,
+    infoText: String,
+    summaryValue: Option[SmartString] = None,
+    label: SmartString = SmartString(LocalisedString(Map()), List())
+  ): FormComponent =
+    FormComponent(
+      FormComponentId(id),
+      InformationMessage(
+        NoFormat,
+        toSmartString(infoText),
+        summaryValue
+      ),
+      label,
+      false,
+      None,
+      None,
+      None,
+      None,
+      true,
+      false,
+      false,
+      false,
+      false,
+      None,
+      None
+    )
+
 }

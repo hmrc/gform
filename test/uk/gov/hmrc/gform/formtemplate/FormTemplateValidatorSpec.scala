@@ -23,9 +23,9 @@ import org.scalatest.wordspec.AnyWordSpecLike
 import uk.gov.hmrc.gform.Helpers.{ toLocalisedString, toSmartString }
 import uk.gov.hmrc.gform.core.parsers.ValueParser
 import uk.gov.hmrc.gform.core.{ Invalid, Valid }
-import uk.gov.hmrc.gform.sharedmodel.{ LangADT, LocalisedString, SmartString }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AnyDate, Choice, Constant, Date, DateCtx, DateFormCtxVar, ExprWithPath, FormComponent, FormComponentId, FormComponentValidator, FormCtx, HideZeroDecimals, Horizontal, IfElse, InformationMessage, Instruction, IsTrue, LeafExpr, LinkCtx, LookupColumn, Offset, OptionData, OptionDataValue, PageId, PostcodeLookup, Radio, StandardInfo, SummariseGroupAsGrid, TemplatePath, ValidIf }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.PageLink
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AnyDate, Choice, Constant, Date, DateCtx, DateFormCtxVar, ExprWithPath, FormComponent, FormComponentId, FormComponentValidator, FormCtx, HideZeroDecimals, Horizontal, IfElse, InformationMessage, Instruction, IsTrue, LeafExpr, LinkCtx, LookupColumn, Offset, OptionData, OptionDataValue, Page, PageId, PostcodeLookup, Radio, Section, StandardInfo, SummariseGroupAsGrid, TemplatePath, ValidIf }
+import uk.gov.hmrc.gform.sharedmodel.{ LangADT, LocalisedString, SmartString }
 
 class FormTemplateValidatorSpec
     extends AnyWordSpecLike with Matchers with FormTemplateSupport with TableDrivenPropertyChecks {
@@ -825,6 +825,90 @@ class FormTemplateValidatorSpec
         val allExpressions: List[ExprWithPath] = LeafExpr(TemplatePath.root, formTemplate)
 
         val result = FormTemplateValidator.validateDateConstructExpressions(allExpressions)
+        result shouldBe expectedResult
+      }
+    }
+  }
+
+  "validateLabel" should {
+    "validate that labels exist where required" in {
+      val emptySmartString: SmartString = SmartString(LocalisedString(Map()), List())
+      val table = Table(
+        ("formComponent", "expectedResult"),
+        (
+          mkInfoMessageComponent(
+            "id1",
+            "Some text",
+            Some(toSmartString("Summary text"))
+          ),
+          Invalid("info component id1 should have a non-blank label if summaryValue is specified")
+        ),
+        (
+          mkInfoMessageComponent(
+            "id1",
+            "Some text",
+            Some(toSmartString("Summary text")),
+            toSmartString("")
+          ),
+          Invalid("info component id1 should have a non-blank label if summaryValue is specified")
+        ),
+        (
+          mkInfoMessageComponent(
+            "id1",
+            "Some text"
+          ),
+          Valid
+        ),
+        (
+          mkInfoMessageComponent(
+            "id1",
+            "Some text",
+            Some(toSmartString("Summary text")),
+            toSmartString("Some label")
+          ),
+          Valid
+        ),
+        (
+          getChoiceComponentWithStringBasedValues("Test").copy(label = toSmartString("")),
+          Invalid("choice component dutyType should have a non-blank label")
+        ),
+        (
+          getChoiceComponentWithStringBasedValues("Test").copy(label = emptySmartString),
+          Invalid("choice component dutyType should have a non-blank label")
+        ),
+        (
+          getChoiceComponentWithStringBasedValues("Test"),
+          Valid
+        ),
+        (
+          mkFormComponent("startDate", Date(AnyDate, Offset(0), None), true),
+          Valid
+        ),
+        (
+          mkFormComponent("startDate", Date(AnyDate, Offset(0), None), true).copy(label = toSmartString("")),
+          Invalid("date component startDate should have a non-blank label")
+        ),
+        (
+          mkFormComponent("startDate", Date(AnyDate, Offset(0), None), true).copy(label = emptySmartString),
+          Invalid("date component startDate should have a non-blank label")
+        ),
+        (
+          mkFormComponent("text1").copy(label = emptySmartString),
+          Invalid("text component text1 should have a non-blank label, unless submitMode is summaryinfoonly")
+        ),
+        (
+          mkFormComponent("text1").copy(label = emptySmartString, onlyShowOnSummary = true),
+          Valid
+        ),
+        (
+          mkFormComponent("text1"),
+          Valid
+        )
+      )
+
+      forAll(table) { (formComponent, expectedResult) =>
+        val sections: List[Page] = SectionHelper.pages(List[Section](mkSectionNonRepeatingPage(formComponent)))
+        val result = FormTemplateValidator.validateLabel(sections)
         result shouldBe expectedResult
       }
     }
