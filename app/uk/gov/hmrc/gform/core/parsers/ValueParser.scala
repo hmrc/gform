@@ -233,9 +233,6 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
     | "form" ~ "." ~ "lang" ^^ { _ =>
       LangCtx
     }
-    | FormComponentId.unanchoredIdValidation ~ ".country.column." ~ alphabeticOnly ^^ { case value ~ _ ~ column =>
-      CsvOverseasCountryCheck(FormComponentId(value), column)
-    }
     | FormComponentId.unanchoredIdValidation ~ "." ~ addressDetail ^^ { case value ~ _ ~ addressDetail =>
       AddressLens(FormComponentId(value), addressDetail)
     }

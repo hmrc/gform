@@ -130,7 +130,6 @@ object FormTemplatePIIRefsHelper {
       case DataRetrieveCtx(_, _)                              => Nil
       case DataRetrieveCount(_)                               => Nil
       case LookupColumn(FormComponentId(value), _)            => List(value)
-      case CsvOverseasCountryCheck(FormComponentId(value), _) => List(value)
       case CsvCountryCountCheck(FormComponentId(value), _, _) => List(value)
       case Size(FormComponentId(value), _)                    => List(value)
       case Typed(expr, tpe)                                   => extractRefs(expr)

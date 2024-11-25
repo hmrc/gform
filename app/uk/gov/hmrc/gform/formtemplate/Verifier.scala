@@ -101,7 +101,6 @@ trait Verifier {
       _ <- fromOptA(FormTemplateValidator.validateLabel(pages).toEither)
       _ <- fromOptA(FormTemplateValidator.validateSubmitSection(formTemplate).toEither)
       _ <- fromOptA(FormTemplateValidator.validateCsvCountryCountCheck(formTemplate).toEither)
-      _ <- fromOptA(FormTemplateValidator.validateCsvOverseasCountryCheck(formTemplate, pages).toEither)
       _ <- fromOptA(FormTemplateValidator.validatePageRedirects(pages).toEither)
       _ <- fromOptA(FormTemplateValidator.validateTaskListDisplayWidth(formTemplate).toEither)
       _ <- fromOptA(FormTemplateValidator.validateTaskListDeclarationSection(formTemplate).toEither)

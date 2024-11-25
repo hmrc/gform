@@ -148,21 +148,6 @@ object FormTemplateValidator {
     Monoid.combineAll(results)
   }
 
-  def validateCsvOverseasCountryCheck(formTemplate: FormTemplate, pages: List[Page]): ValidationResult = {
-    val allOverseasAddresses: List[FormComponentId] = allFormComponents(pages).collect {
-      case fc @ IsOverseasAddress(_) => fc.id
-    }
-    val allExprs: List[ExprWithPath] = FormTemplate.leafExprs.exprs(TemplatePath.root, formTemplate)
-    val results: List[ValidationResult] = allExprs.collect {
-      case ExprWithPath(path, CsvOverseasCountryCheck(fcId, _)) =>
-        if (allOverseasAddresses.contains(fcId))
-          Valid
-        else
-          Invalid(s"$path: $fcId is not a overseas address component")
-    }
-    Monoid.combineAll(results)
-  }
-
   def validateInvalidReferences(
     formTemplate: FormTemplate,
     allExprs: List[ExprWithPath],
@@ -1203,11 +1188,10 @@ object FormTemplateValidator {
       case DateFunction(value) => Valid
       case Period(dateCtx1, dateCtx2) =>
         checkFields(dateCtx1, dateCtx2)
-      case PeriodExt(periodFun, _)           => validate(periodFun, sections)
-      case DataRetrieveCtx(_, _)             => Valid
-      case DataRetrieveCount(_)              => Valid
-      case LookupColumn(value, _)            => validate(FormCtx(value), sections)
-      case CsvOverseasCountryCheck(value, _) => validate(FormCtx(value), sections)
+      case PeriodExt(periodFun, _) => validate(periodFun, sections)
+      case DataRetrieveCtx(_, _)   => Valid
+      case DataRetrieveCount(_)    => Valid
+      case LookupColumn(value, _)  => validate(FormCtx(value), sections)
       case CsvCountryCountCheck(value, _, _) =>
         SectionHelper
           .addToListIds(sections)

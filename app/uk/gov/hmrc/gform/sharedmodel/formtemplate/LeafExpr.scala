@@ -72,7 +72,6 @@ final case class ExprWithPath(path: TemplatePath, expr: Expr) {
     case d @ DataRetrieveCtx(_, _)                     => ReferenceInfo.DataRetrieveCtxExpr(path, d) :: Nil
     case d @ DataRetrieveCount(_)                      => ReferenceInfo.DataRetrieveCountExpr(path, d) :: Nil
     case c @ LookupColumn(_, _)                        => ReferenceInfo.LookupColumnExpr(path, c) :: Nil
-    case c @ CsvOverseasCountryCheck(_, _)             => ReferenceInfo.CsvOverseasCountryCheckExpr(path, c) :: Nil
     case c @ CsvCountryCountCheck(_, _, _)             => ReferenceInfo.CsvCountryCountCheckExpr(path, c) :: Nil
     case s @ Size(_, _)                                => ReferenceInfo.SizeExpr(path, s) :: Nil
     case Typed(expr, tpe)                              => toReferenceInfo(expr)
