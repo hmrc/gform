@@ -180,7 +180,6 @@ object TopLevelExpressions {
         case DataRetrieveCtx(_, _)         => e
         case DataRetrieveCount(_)          => e
         case LookupColumn(_, _)            => e
-        case CsvOverseasCountryCheck(_, _) => e
         case CsvCountryCountCheck(_, _, _) => e
         case Size(_, _)                    => e
         case Typed(expr, tpe)              => Typed(loop(expr), tpe)
