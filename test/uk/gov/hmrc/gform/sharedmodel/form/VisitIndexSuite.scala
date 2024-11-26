@@ -18,7 +18,7 @@ package uk.gov.hmrc.gform.sharedmodel.form
 
 import munit.FunSuite
 import play.api.libs.json.{ JsError, JsResult, JsSuccess, Json, JsonValidationError }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Coordinates, TaskNumber, TaskSectionNumber }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Coordinates, SectionNumber, TaskNumber, TaskSectionNumber, TemplateSectionIndex }
 
 class VisitIndexSuite extends FunSuite {
 
@@ -26,13 +26,21 @@ class VisitIndexSuite extends FunSuite {
     val json =
       Json.parse(
         """|{
-           |  "visitsIndex": [1, 2, 3]
+           |  "visitsIndex": ["n1", "n2", "n3"]
            |}""".stripMargin
       )
 
     val value: JsResult[VisitIndex] = json.validate[VisitIndex]
 
-    val expected = JsSuccess(VisitIndex.Classic(Set(1, 2, 3)))
+    val expected = JsSuccess(
+      VisitIndex.Classic(
+        Set(
+          SectionNumber.Classic.NormalPage(TemplateSectionIndex(1)),
+          SectionNumber.Classic.NormalPage(TemplateSectionIndex(2)),
+          SectionNumber.Classic.NormalPage(TemplateSectionIndex(3))
+        )
+      )
+    )
 
     assertEquals(value, expected)
   }
@@ -65,8 +73,8 @@ class VisitIndexSuite extends FunSuite {
       Json.parse(
         """|{
            |  "visitsIndex": {
-           |    "1,0": [1, 2, 3],
-           |    "1,1": [3, 4, 5]
+           |    "1,0": ["n1", "n2", "n3"],
+           |    "1,1": ["n3", "n4", "n5"]
            |  }
            |}""".stripMargin
       )
@@ -76,8 +84,16 @@ class VisitIndexSuite extends FunSuite {
     val expected = JsSuccess(
       VisitIndex.TaskList(
         Map(
-          Coordinates(TaskSectionNumber(1), TaskNumber(0)) -> Set(1, 2, 3),
-          Coordinates(TaskSectionNumber(1), TaskNumber(1)) -> Set(3, 4, 5)
+          Coordinates(TaskSectionNumber(1), TaskNumber(0)) -> Set(
+            SectionNumber.Classic.NormalPage(TemplateSectionIndex(1)),
+            SectionNumber.Classic.NormalPage(TemplateSectionIndex(2)),
+            SectionNumber.Classic.NormalPage(TemplateSectionIndex(3))
+          ),
+          Coordinates(TaskSectionNumber(1), TaskNumber(1)) -> Set(
+            SectionNumber.Classic.NormalPage(TemplateSectionIndex(3)),
+            SectionNumber.Classic.NormalPage(TemplateSectionIndex(4)),
+            SectionNumber.Classic.NormalPage(TemplateSectionIndex(5))
+          )
         )
       )
     )
@@ -135,10 +151,16 @@ class VisitIndexSuite extends FunSuite {
   }
 
   test("VisitIndex.Classic to Json") {
-    val classic: VisitIndex = VisitIndex.Classic(Set(1, 2, 3))
+    val classic: VisitIndex = VisitIndex.Classic(
+      Set(
+        SectionNumber.Classic.NormalPage(TemplateSectionIndex(1)),
+        SectionNumber.Classic.NormalPage(TemplateSectionIndex(2)),
+        SectionNumber.Classic.NormalPage(TemplateSectionIndex(3))
+      )
+    )
     val json = Json.toJson(classic)
     val expected = Json.obj(
-      "visitsIndex" -> Json.arr(1, 2, 3)
+      "visitsIndex" -> Json.arr("n1", "n2", "n3")
     )
 
     assertEquals(json, expected)
@@ -147,15 +169,23 @@ class VisitIndexSuite extends FunSuite {
   test("VisitIndex.TaskList to Json") {
     val taskList: VisitIndex = VisitIndex.TaskList(
       Map(
-        Coordinates(TaskSectionNumber(1), TaskNumber(0)) -> Set(1, 2, 3),
-        Coordinates(TaskSectionNumber(1), TaskNumber(1)) -> Set(3, 4, 5)
+        Coordinates(TaskSectionNumber(1), TaskNumber(0)) -> Set(
+          SectionNumber.Classic.NormalPage(TemplateSectionIndex(1)),
+          SectionNumber.Classic.NormalPage(TemplateSectionIndex(2)),
+          SectionNumber.Classic.NormalPage(TemplateSectionIndex(3))
+        ),
+        Coordinates(TaskSectionNumber(1), TaskNumber(1)) -> Set(
+          SectionNumber.Classic.NormalPage(TemplateSectionIndex(3)),
+          SectionNumber.Classic.NormalPage(TemplateSectionIndex(4)),
+          SectionNumber.Classic.NormalPage(TemplateSectionIndex(5))
+        )
       )
     )
     val json = Json.toJson(taskList)
     val expected = Json.obj(
       "visitsIndex" -> Json.obj(
-        "1,0" -> Json.arr(1, 2, 3),
-        "1,1" -> Json.arr(3, 4, 5)
+        "1,0" -> Json.arr("n1", "n2", "n3"),
+        "1,1" -> Json.arr("n3", "n4", "n5")
       )
     )
 
