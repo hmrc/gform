@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,20 +14,12 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.sharedmodel.formtemplate.generators
+package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
-import org.scalacheck.Gen
-import uk.gov.hmrc.gform.sharedmodel.form.VisitIndex
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ SectionNumber, TemplateSectionIndex }
+import cats.Eq
 
-trait VisitIndexGen {
-  def visitIndexGen =
-    Gen
-      .oneOf(
-        SectionNumber.Classic.NormalPage(TemplateSectionIndex(0)),
-        SectionNumber.Classic.NormalPage(TemplateSectionIndex(1))
-      )
-      .map(sn => VisitIndex.Classic(Set(sn)))
+final case class TemplateSectionIndex(index: Int) extends AnyVal
+
+object TemplateSectionIndex {
+  implicit val equal: Eq[TemplateSectionIndex] = Eq.fromUniversalEquals
 }
-
-object VisitIndexGen extends VisitIndexGen

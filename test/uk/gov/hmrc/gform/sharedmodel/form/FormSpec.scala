@@ -43,7 +43,7 @@ class FormSpec extends AnyFlatSpec with Matchers with ScalaCheckDrivenPropertyCh
        |    "value" : "abc"
        |  } ],
        |  "Submitted" : { },
-       |  "visitsIndex" : [ 1, 2, 3 ],
+       |  "visitsIndex" : [ "n1", "n2", "n3" ],
        |  "thirdPartyData" : {
        |    "obligations" : {
        |      "RetrievedObligations" : {
@@ -112,7 +112,15 @@ class FormSpec extends AnyFlatSpec with Matchers with ScalaCheckDrivenPropertyCh
       )
     ),
     Submitted,
-    VisitIndex.Classic((Set(1, 2, 3))),
+    VisitIndex.Classic(
+      (
+        Set(
+          SectionNumber.Classic.NormalPage(TemplateSectionIndex(1)),
+          SectionNumber.Classic.NormalPage(TemplateSectionIndex(2)),
+          SectionNumber.Classic.NormalPage(TemplateSectionIndex(3))
+        )
+      )
+    ),
     ThirdPartyData(
       RetrievedObligations(
         NonEmptyList.one(
@@ -189,7 +197,15 @@ class FormSpec extends AnyFlatSpec with Matchers with ScalaCheckDrivenPropertyCh
       )
     ),
     InProgress,
-    VisitIndex.Classic((Set(1, 2, 3))),
+    VisitIndex.Classic(
+      (
+        Set(
+          SectionNumber.Classic.NormalPage(TemplateSectionIndex(1)),
+          SectionNumber.Classic.NormalPage(TemplateSectionIndex(2)),
+          SectionNumber.Classic.NormalPage(TemplateSectionIndex(3))
+        )
+      )
+    ),
     ThirdPartyData.empty,
     Some(EnvelopeExpiryDate(LocalDateTime.now.plusDays(1))),
     FormComponentIdToFileIdMapping.empty
@@ -211,7 +227,7 @@ class FormSpec extends AnyFlatSpec with Matchers with ScalaCheckDrivenPropertyCh
           Json.obj("id" -> "startDate-year", "value" -> "2008")
         ),
       "InProgress"  -> Json.obj(),
-      "visitsIndex" -> Json.arr(1, 2, 3),
+      "visitsIndex" -> Json.arr("n1", "n2", "n3"),
       "ldt"         -> form.envelopeExpiryDate.map(_.ldt).map(f _).get,
       "thirdPartyData" -> Json.obj(
         "obligations"       -> Json.obj("NotChecked" -> Json.obj()),
