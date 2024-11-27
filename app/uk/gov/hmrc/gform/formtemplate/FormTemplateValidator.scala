@@ -1336,6 +1336,33 @@ object FormTemplateValidator {
     Monoid[ValidationResult].combineAll(result)
   }
 
+  def validateAddToListAddAnotherQuestion(formTemplate: FormTemplate): ValidationResult = {
+
+    def checkChoiceOptions(addToList: Section.AddToList): List[ValidationResult] = {
+      implicit val l: LangADT = LangADT.En
+      val notValid: Invalid = Invalid(
+        s"AddToList '${addToList.title.defaultRawValue}' addAnotherQuestion must only contain choices of 'Yes' and 'No' in that order."
+      )
+
+      def isValid(t: Boolean): ValidationResult = if (t) Valid else notValid
+
+      val choice: Choice = addToList.addAnotherQuestion.`type`.cast[Choice].get
+      choice.options.zipWithIndex.map {
+        case (opt: OptionData.IndexBased, idx) if idx === 0 => isValid(opt.label.defaultRawValue === "Yes")
+        case (opt: OptionData.IndexBased, idx) if idx === 1 => isValid(opt.label.defaultRawValue === "No")
+        case _                                              => notValid
+      }.toList
+    }
+
+    val isATLChoiceOptionsValid: List[ValidationResult] =
+      formTemplate.formKind.allSections.flatMap {
+        case atl: Section.AddToList => checkChoiceOptions(atl)
+        case _                      => Nil
+      }
+
+    isATLChoiceOptionsValid.combineAll
+  }
+
   def validateAddToListDefaultPage(formTemplate: FormTemplate): ValidationResult = {
 
     def checkComponentTypes(page: Page): List[ValidationResult] = {
