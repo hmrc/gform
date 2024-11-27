@@ -790,6 +790,8 @@ object FormTemplateValidator {
           Invalid(s"text area component ${fc.id} should have a non-blank label, unless submitMode is summaryinfoonly")
         case fc @ IsFileUpload(_) if isEmptyLabel(fc.label) =>
           Invalid(s"fileUpload component ${fc.id} should have a non-blank label")
+        case fc @ IsInformationMessage(im) if isEmptyLabel(fc.label) && im.summaryValue.isDefined =>
+          Invalid(s"info component ${fc.id} should have a non-blank label if summaryValue is specified")
       }
     }
 
@@ -1034,7 +1036,7 @@ object FormTemplateValidator {
     case HmrcTaxPeriod(_, _, _)                     => Valid
     case Group(fvs, _, _, _, _)                     => validate(fvs.map(_.`type`), formTemplate)
     case FileUpload(_, _)                           => Valid
-    case InformationMessage(_, _)                   => Valid
+    case InformationMessage(_, _, _)                => Valid
     case Time(_, _)                                 => Valid
     case OverseasAddress(_, _, _, Some(expr), _, _) => validateOverseasAddressValue(expr, formTemplate)
     case OverseasAddress(_, _, _, _, _, _)          => Valid

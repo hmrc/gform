@@ -22,10 +22,9 @@ import play.api.libs.json.Json
 import uk.gov.hmrc.gform.Helpers.toSmartString
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
-import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel._
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.DisplayInSummary
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.OverseasAddress.Configurable._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ DisplayInSummary, _ }
 
 class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemplateSupport {
 
@@ -53,6 +52,46 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
     result shouldBe Left(UnexpectedState("""|Unable to parse expression some-invalid-format.
                                             |Errors:
                                             |end of input expected""".stripMargin))
+  }
+
+  "infoOpt" should "parse info component" in {
+    val formComponentMaker = new FormComponentMaker(Json.parse("""
+                                                                 |{
+                                                                 |   "id": "id1",
+                                                                 |   "type": "info",
+                                                                 |   "infoText": "Some text",
+                                                                 |   "infoType": "noformat"
+                                                                 |}
+                                                                 |""".stripMargin))
+    val result = formComponentMaker.optFieldValue()
+
+    result shouldBe Right(
+      mkInfoMessageComponent(
+        "id1",
+        "Some text"
+      )
+    )
+  }
+
+  it should "parse info component with summaryValue" in {
+    val formComponentMaker = new FormComponentMaker(Json.parse("""
+                                                                 |{
+                                                                 |   "id": "id1",
+                                                                 |   "type": "info",
+                                                                 |   "infoText": "Some text",
+                                                                 |   "summaryValue": "Summary text",
+                                                                 |   "infoType": "noformat"
+                                                                 |}
+                                                                 |""".stripMargin))
+    val result = formComponentMaker.optFieldValue()
+
+    result shouldBe Right(
+      mkInfoMessageComponent(
+        "id1",
+        "Some text",
+        Some(toSmartString("Summary text"))
+      )
+    )
   }
 
   "textOpt" should "parse text component" in {

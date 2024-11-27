@@ -723,9 +723,10 @@ class FormComponentMaker(json: JsValue) {
 
   private lazy val infoOpt: Opt[InformationMessage] =
     for {
-      infoText <- optInfoText
+      infoText          <- optInfoText
+      maybeSummaryValue <- toOpt((json \ "summaryValue").validateOpt[SmartString], "/summaryValue")
       informationMessage <- infoType match {
-                              case IsInfoType(iType) => InformationMessage(iType, infoText).asRight
+                              case IsInfoType(iType) => InformationMessage(iType, infoText, maybeSummaryValue).asRight
                               case _ =>
                                 UnexpectedState(
                                   s"$infoType is invalid value of infoType. infoType must be one of: standard, long, important, banner or noformat"

@@ -247,8 +247,8 @@ object Substituter {
           repeatAddAnotherText(substitutions)
         )
 
-      case InformationMessage(infoType, infoText) =>
-        InformationMessage(infoType, infoText(substitutions))
+      case InformationMessage(infoType, infoText, summaryValue) =>
+        InformationMessage(infoType, infoText(substitutions), summaryValue(substitutions))
       case f @ FileUpload(_, _) => f
       case t @ Time(_, _)       => t
       case p @ PostcodeLookup(_, _, _) =>

@@ -395,7 +395,8 @@ case class Group(
   repeatAddAnotherText: Option[SmartString] = None
 ) extends ComponentType
 
-case class InformationMessage(infoType: InfoType, infoText: SmartString) extends ComponentType
+case class InformationMessage(infoType: InfoType, infoText: SmartString, summaryValue: Option[SmartString] = None)
+    extends ComponentType
 
 case class FileUpload(
   fileSizeLimit: Option[Int],
@@ -597,10 +598,11 @@ object ComponentType {
         LeafExpr(path, fields) ++
           LeafExpr(path + "repeatLabel", repeatLabel) ++
           LeafExpr(path + "repeatAddAnotherText", addAnotherText)
-      case InformationMessage(_, infoText) => LeafExpr(path + "infoText", infoText)
-      case FileUpload(_, _)                => Nil
-      case Time(_, _)                      => Nil
-      case MiniSummaryList(rows, _, _)     => LeafExpr(path + "rows", rows)
+      case InformationMessage(_, infoText, summaryValue) =>
+        LeafExpr(path + "infoText", infoText) ++ LeafExpr(path + "summaryValue", summaryValue)
+      case FileUpload(_, _)            => Nil
+      case Time(_, _)                  => Nil
+      case MiniSummaryList(rows, _, _) => LeafExpr(path + "rows", rows)
       case t: TableComp =>
         LeafExpr(path + "header", t.header) ++ LeafExpr(path + "rows", t.rows) ++ LeafExpr(
           path + "summaryValue",
