@@ -366,19 +366,19 @@ object FormTemplatesControllerRequestHandler {
     }
 
     val regularAddAnotherQuestionReads: Reads[JsValue] = Reads { json =>
-      val updateSections: Reads[JsObject] =
+      val updateAddAnotherQuestion: Reads[JsObject] =
         (__ \ "addAnotherQuestion").json.update(choicesUpdater)
 
-      json.transform(updateSections) orElse JsSuccess(json)
+      json.transform(updateAddAnotherQuestion) orElse JsSuccess(json)
     }
 
-    val regularAddAnotherQuestionReadsTaskList =
+    val addAnotherQuestionReadsTaskList =
       (__ \ "tasks").json.update(list((__ \ "sections").json.update(list(regularAddAnotherQuestionReads))))
 
     val transformAddAnotherQuestion: Reads[JsValue] = Reads { json =>
       val updateSections: Reads[JsObject] =
         (__ \ "sections").json.update(
-          list(regularAddAnotherQuestionReadsTaskList) orElse list(regularAddAnotherQuestionReads)
+          list(addAnotherQuestionReadsTaskList) orElse list(regularAddAnotherQuestionReads)
         )
       json.transform(updateSections) orElse JsSuccess(json)
     }

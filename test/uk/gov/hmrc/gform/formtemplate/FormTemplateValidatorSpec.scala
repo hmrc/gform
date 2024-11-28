@@ -24,7 +24,7 @@ import uk.gov.hmrc.gform.Helpers.{ toLocalisedString, toSmartString }
 import uk.gov.hmrc.gform.core.parsers.ValueParser
 import uk.gov.hmrc.gform.core.{ Invalid, Valid }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.PageLink
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AnyDate, Choice, Constant, Date, DateCtx, DateFormCtxVar, ExprWithPath, FormComponent, FormComponentId, FormComponentValidator, FormCtx, HideZeroDecimals, Horizontal, IfElse, InformationMessage, Instruction, IsTrue, LeafExpr, LinkCtx, LookupColumn, Offset, OptionData, OptionDataValue, Page, PageId, PostcodeLookup, Radio, Section, StandardInfo, SummariseGroupAsGrid, TemplatePath, ValidIf }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AnyDate, Choice, Constant, Date, DateCtx, DateFormCtxVar, ExprWithPath, FormComponent, FormComponentId, FormComponentValidator, FormCtx, HideZeroDecimals, Horizontal, IfElse, InformationMessage, Instruction, IsTrue, LeafExpr, LinkCtx, LookupColumn, Offset, OptionData, OptionDataValue, Page, PageId, PostcodeLookup, Radio, Section, StandardInfo, SummariseGroupAsGrid, TemplatePath, ValidIf, Vertical }
 import uk.gov.hmrc.gform.sharedmodel.{ LangADT, LocalisedString, SmartString }
 
 class FormTemplateValidatorSpec
@@ -910,6 +910,166 @@ class FormTemplateValidatorSpec
         val sections: List[Page] = SectionHelper.pages(List[Section](mkSectionNonRepeatingPage(formComponent)))
         val result = FormTemplateValidator.validateLabel(sections)
         result shouldBe expectedResult
+      }
+    }
+  }
+
+  "validateAddToListAddAnotherQuestion" should {
+    "validate ATL add another question choices are valid" in {
+
+      val table = Table(
+        ("sections", "expected"),
+        (
+          List(
+            mkAddToList(
+              name = "page1",
+              pages = NonEmptyList.one(
+                mkSectionNonRepeatingPage(
+                  name = "page2",
+                  formComponents = List.empty,
+                  pageId = Some(PageId("page2"))
+                ).page
+              )
+            )
+          ),
+          Valid
+        ),
+        (
+          List(
+            mkAddToList(
+              name = "atlPage",
+              pages = NonEmptyList.one(
+                mkSectionNonRepeatingPage(
+                  name = "page2",
+                  formComponents = List.empty,
+                  pageId = Some(PageId("page2"))
+                ).page
+              ),
+              addAnotherQuestion = mkFormComponent(
+                "addAnother",
+                Choice(
+                  Radio,
+                  NonEmptyList
+                    .of(toSmartString("No"), toSmartString("Yes"))
+                    .map(OptionData.IndexBased(_, None, None, None)),
+                  Vertical,
+                  Nil,
+                  None,
+                  None,
+                  None,
+                  LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
+                  None,
+                  None,
+                  false
+                ),
+                false
+              )
+            )
+          ),
+          Invalid("AddToList 'atlPage' addAnotherQuestion must only contain choices of 'Yes' and 'No' in that order.")
+        ),
+        (
+          List(
+            mkAddToList(
+              name = "atlPage",
+              pages = NonEmptyList.one(
+                mkSectionNonRepeatingPage(
+                  name = "page2",
+                  formComponents = List.empty,
+                  pageId = Some(PageId("page2"))
+                ).page
+              ),
+              addAnotherQuestion = mkFormComponent(
+                "addAnother",
+                Choice(
+                  Radio,
+                  NonEmptyList
+                    .of(toSmartString("Yes please"), toSmartString("No thanks"))
+                    .map(OptionData.IndexBased(_, None, None, None)),
+                  Vertical,
+                  Nil,
+                  None,
+                  None,
+                  None,
+                  LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
+                  None,
+                  None,
+                  false
+                ),
+                false
+              )
+            )
+          ),
+          Invalid("AddToList 'atlPage' addAnotherQuestion must only contain choices of 'Yes' and 'No' in that order.")
+        ),
+        (
+          List(
+            mkAddToList(
+              name = "atlPage",
+              pages = NonEmptyList.one(
+                mkSectionNonRepeatingPage(
+                  name = "page2",
+                  formComponents = List.empty,
+                  pageId = Some(PageId("page2"))
+                ).page
+              ),
+              addAnotherQuestion = mkFormComponent(
+                "addAnother",
+                Choice(
+                  Radio,
+                  yesNoLocalisedStrings,
+                  Horizontal,
+                  Nil,
+                  None,
+                  None,
+                  None,
+                  LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
+                  None,
+                  None,
+                  false
+                ),
+                false
+              )
+            )
+          ),
+          Valid
+        ),
+        (
+          List(
+            mkAddToList(
+              name = "atlPage",
+              pages = NonEmptyList.one(
+                mkSectionNonRepeatingPage(
+                  name = "page2",
+                  formComponents = List.empty,
+                  pageId = Some(PageId("page2"))
+                ).page
+              ),
+              addAnotherQuestion = mkFormComponent(
+                "addAnother",
+                Choice(
+                  Radio,
+                  yesNoLocalisedStrings,
+                  Vertical,
+                  Nil,
+                  None,
+                  None,
+                  None,
+                  LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
+                  None,
+                  None,
+                  false
+                ),
+                false
+              )
+            )
+          ),
+          Valid
+        )
+      )
+      forAll(table) { (sections, expected) =>
+        val formTemplate = mkFormTemplate(sections)
+        FormTemplateValidator.validateAddToListAddAnotherQuestion(formTemplate) shouldBe expected
       }
     }
   }
