@@ -1340,17 +1340,17 @@ object FormTemplateValidator {
 
     def checkChoiceOptions(addToList: Section.AddToList): List[ValidationResult] = {
       implicit val l: LangADT = LangADT.En
-      val notValid: Invalid = Invalid(
+      val invalid: Invalid = Invalid(
         s"AddToList '${addToList.title.defaultRawValue}' addAnotherQuestion must only contain choices of 'Yes' and 'No' in that order."
       )
 
-      def isValid(t: Boolean): ValidationResult = if (t) Valid else notValid
+      def isValid(t: Boolean): ValidationResult = if (t) Valid else invalid
 
       val choice: Choice = addToList.addAnotherQuestion.`type`.cast[Choice].get
       choice.options.zipWithIndex.map {
         case (opt: OptionData.IndexBased, idx) if idx === 0 => isValid(opt.label.defaultRawValue === "Yes")
         case (opt: OptionData.IndexBased, idx) if idx === 1 => isValid(opt.label.defaultRawValue === "No")
-        case _                                              => notValid
+        case _                                              => invalid
       }.toList
     }
 
