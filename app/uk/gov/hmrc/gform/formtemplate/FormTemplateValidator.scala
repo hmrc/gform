@@ -1346,19 +1346,24 @@ object FormTemplateValidator {
 
       def isValid(t: Boolean): ValidationResult = if (t) Valid else invalid
 
-      val choice: Choice = addToList.addAnotherQuestion.`type`.cast[Choice].get
-      choice.options.zipWithIndex.map {
-        case (opt: OptionData.IndexBased, idx) if idx === 0 => isValid(opt.label.defaultRawValue === "Yes")
-        case (opt: OptionData.IndexBased, idx) if idx === 1 => isValid(opt.label.defaultRawValue === "No")
-        case _                                              => invalid
-      }.toList
+      addToList.addAnotherQuestion match {
+        case IsChoice(choice) =>
+          choice.options.zipWithIndex.map {
+            case (opt: OptionData.IndexBased, idx) if idx === 0 => isValid(opt.label.defaultRawValue === "Yes")
+            case (opt: OptionData.IndexBased, idx) if idx === 1 => isValid(opt.label.defaultRawValue === "No")
+            case _                                              => invalid
+          }.toList
+        case _ =>
+          List(
+            Invalid(s"AddToList '${addToList.title.defaultRawValue}' addAnotherQuestion must be a Choice component.")
+          )
+      }
     }
 
     val isATLChoiceOptionsValid: List[ValidationResult] =
-      formTemplate.formKind.allSections.flatMap {
-        case atl: Section.AddToList => checkChoiceOptions(atl)
-        case _                      => Nil
-      }
+      formTemplate.formKind.allSections.collect { case atl: Section.AddToList =>
+        checkChoiceOptions(atl)
+      }.flatten
 
     isATLChoiceOptionsValid.combineAll
   }

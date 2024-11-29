@@ -1015,6 +1015,29 @@ class FormTemplateValidatorSpec
               ),
               addAnotherQuestion = mkFormComponent(
                 "addAnother",
+                InformationMessage(
+                  StandardInfo,
+                  SmartString(toLocalisedString("foo"), List())
+                ),
+                false
+              )
+            )
+          ),
+          Invalid("AddToList 'atlPage' addAnotherQuestion must be a Choice component.")
+        ),
+        (
+          List(
+            mkAddToList(
+              name = "atlPage",
+              pages = NonEmptyList.one(
+                mkSectionNonRepeatingPage(
+                  name = "page2",
+                  formComponents = List.empty,
+                  pageId = Some(PageId("page2"))
+                ).page
+              ),
+              addAnotherQuestion = mkFormComponent(
+                "addAnother",
                 Choice(
                   Radio,
                   yesNoLocalisedStrings,
