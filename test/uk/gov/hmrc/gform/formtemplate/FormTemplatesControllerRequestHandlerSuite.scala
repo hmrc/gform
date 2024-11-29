@@ -399,6 +399,185 @@ class FormTemplatesControllerRequestHandlerSuite extends FunSuite with Matchers 
 
   }
 
+  test(
+    "normaliseJSON should transform field 'choices' of 'choice' components for addAnotherQuestion when inside TaskList"
+  ) {
+
+    val json = Json.parse(
+      """|{
+         |  "_id": "choices",
+         |  "acknowledgementSection": {
+         |    "shortName": "Acknowledgement Page",
+         |    "title": "Acknowledgement Page",
+         |    "fields": []
+         |  },
+         |  "sections": [
+         |    {
+         |      "title": "Task List",
+         |      "tasks": [
+         |        {
+         |          "title": "Task A details",
+         |          "sections": [
+         |            {
+         |              "title": "Page A",
+         |              "fields": [
+         |                {
+         |                  "id": "fieldX",
+         |                  "label": "Field X",
+         |                  "format": "text"
+         |                }
+         |              ]
+         |            },
+         |            {
+         |              "type": "addToList",
+         |              "title": "Add To List",
+         |              "shortName": "Add To List",
+         |              "summaryDescription": "${fieldA}",
+         |              "description": "${fieldA}",
+         |              "summaryName": "Add To List",
+         |              "pages": [
+         |                {
+         |                  "title": "Page $n",
+         |                  "shortName": "asdfa",
+         |                  "fields": [
+         |                    {
+         |                      "id": "fieldA",
+         |                      "type": "text",
+         |                      "label": "Field A",
+         |                      "format": "sterling"
+         |                    }
+         |                  ]
+         |                }
+         |              ],
+         |              "addAnotherQuestion": {
+         |                "id": "client",
+         |                "type": "choice",
+         |                "label": "label1",
+         |                "format": "vertical",
+         |                "choices": [
+         |                  {
+         |                    "en": "Yes",
+         |                    "cy": "Iawn"
+         |                  },
+         |                  {
+         |                    "en": "No",
+         |                    "cy": "Na"
+         |                  }
+         |                ]
+         |              }
+         |            }
+         |          ],
+         |          "summarySection": {
+         |            "title": "Check your answers",
+         |            "header": "Make sure the information you have given is correct",
+         |            "footer": ""
+         |          }
+         |        }
+         |      ]
+         |    }
+         |  ],
+         |  "submitSection": {
+         |    "label": "Check and send to HMRC",
+         |    "taskLabel": "Check answers and submit form"
+         |  },
+         |  "declarationSection": {
+         |    "title": "Declaration",
+         |    "fields": []
+         |  },
+         |  "destinations": [
+         |    {
+         |      "id": "transitionToSubmitted",
+         |      "type": "stateTransition",
+         |      "requiredState": "Submitted"
+         |    }
+         |  ]
+         |}""".stripMargin
+    )
+
+    val expected =
+      """
+        |[
+        |  {
+        |    "title": "Task List",
+        |    "tasks": [
+        |      {
+        |        "title": "Task A details",
+        |        "sections": [
+        |          {
+        |            "title": "Page A",
+        |            "fields": [
+        |              {
+        |                "id": "fieldX",
+        |                "label": "Field X",
+        |                "format": "text"
+        |              }
+        |            ]
+        |          },
+        |          {
+        |            "type": "addToList",
+        |            "title": "Add To List",
+        |            "shortName": "Add To List",
+        |            "summaryDescription": "${fieldA}",
+        |            "description": "${fieldA}",
+        |            "summaryName": "Add To List",
+        |            "pages": [
+        |              {
+        |                "title": "Page $n",
+        |                "shortName": "asdfa",
+        |                "fields": [
+        |                  {
+        |                    "id": "fieldA",
+        |                    "type": "text",
+        |                    "label": "Field A",
+        |                    "format": "sterling"
+        |                  }
+        |                ]
+        |              }
+        |            ],
+        |            "addAnotherQuestion": {
+        |              "id": "client",
+        |              "type": "choice",
+        |              "label": "label1",
+        |              "format": "vertical",
+        |              "choices": [
+        |                {
+        |                  "label": {
+        |                    "en": "Yes",
+        |                    "cy": "Iawn"
+        |                  }
+        |                },
+        |                {
+        |                  "label": {
+        |                    "en": "No",
+        |                    "cy": "Na"
+        |                  }
+        |                }
+        |              ]
+        |            }
+        |          }
+        |        ],
+        |        "summarySection": {
+        |          "title": "Check your answers",
+        |          "header": "Make sure the information you have given is correct",
+        |          "footer": ""
+        |        }
+        |      }
+        |    ]
+        |  }
+        |]""".stripMargin
+
+    FormTemplatesControllerRequestHandler.normaliseJSON(json) match {
+      case JsSuccess(normalised, _) =>
+        normalised \ "formKind" \ "sections" match {
+          case JsDefined(taskListWithAddAnotherQuestion) =>
+            taskListWithAddAnotherQuestion shouldBe Json.parse(expected)
+          case otherwise => fail(s"No sections field present in: $normalised")
+        }
+
+      case JsError(error) => fail("Unable to normalise json: " + error)
+    }
+  }
+
   private def assertFieldValue(fieldName: String, expectedValue: String, json: JsValue)(implicit loc: Location) =
     json \ fieldName match {
       case JsDefined(JsString(str)) => assertEquals(str, expectedValue)
