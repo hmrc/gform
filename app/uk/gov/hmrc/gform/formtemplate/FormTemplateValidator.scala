@@ -1450,16 +1450,29 @@ object FormTemplateValidator {
     )
   }
 
-  def validateDataRetrieveFormCtxReferences(pages: List[Page]): ValidationResult = {
-    val dataRetrieves: List[(Page, DataRetrieve)] = pages.flatMap(p => p.dataRetrieves().map(d => (p, d)))
-    dataRetrieves.map { case (page, dataRetrieve) =>
-      val pageFormComponentsIds = page.allFormComponents.map(_.id)
-      val formCtxExprs = dataRetrieve.params.collect { case DataRetrieve.ParamExpr(_, ctx: FormCtx) =>
-        ctx
+  def validateDataRetrieveFormCtxReferences(sections: List[Section]): ValidationResult = {
+    val pages: List[Page] = SectionHelper.pages(sections)
+    val fcPageIdxMap: Map[FormComponentId, Int] = indexedFieldIds(sections).toMap
+    val pagesWithIndex: List[(Page, Int)] = pages.zipWithIndex
+
+    val dataRetrievesWithPageIdx: List[(DataRetrieve, Int)] =
+      pagesWithIndex.flatMap(t => t._1.dataRetrieves().map(d => (d, t._2)))
+
+    dataRetrievesWithPageIdx.map { case (dataRetrieve, pageIdx) =>
+      val formContexts: List[FormComponentId] = dataRetrieve.params.collect {
+        case DataRetrieve.ParamExpr(_, FormCtx(fcId))         => List(fcId)
+        case DataRetrieve.ParamExpr(_, DateCtx(value))        => value.leafExprs.collect { case FormCtx(fcId) => fcId }
+        case DataRetrieve.ParamExpr(_, LookupColumn(fcId, _)) => List(fcId)
+      }.flatten
+
+      // TODO: Look for other data retrieve references separately
+
+      val forwardReferenceList: List[FormComponentId] = formContexts.filter { ctx =>
+        fcPageIdxMap.get(ctx).exists(_ > pageIdx)
       }
-      val nonExistentFCRefs = formCtxExprs.map(_.formComponentId).filterNot(pageFormComponentsIds.contains)
-      nonExistentFCRefs.isEmpty.validationResult(
-        s"Data retrieve with id '${dataRetrieve.id.value}' refers to form components that does not exist in the page [${nonExistentFCRefs.map(_.value).mkString(",")}]"
+
+      forwardReferenceList.isEmpty.validationResult(
+        s"Data retrieve with id '${dataRetrieve.id.value}' contains forward references to [${forwardReferenceList.map(_.value).mkString(",")}]"
       )
     }.combineAll
   }
