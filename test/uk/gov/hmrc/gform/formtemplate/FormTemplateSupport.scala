@@ -18,9 +18,8 @@ package uk.gov.hmrc.gform.formtemplate
 
 import cats.data.NonEmptyList
 import uk.gov.hmrc.gform.Helpers.toSmartString
-import uk.gov.hmrc.gform.sharedmodel.{ ExampleData, LangADT, LocalisedString }
+import uk.gov.hmrc.gform.sharedmodel.{ DataRetrieve, ExampleData, LangADT, LocalisedString, SmartString }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
-import uk.gov.hmrc.gform.sharedmodel.SmartString
 
 trait FormTemplateSupport {
 
@@ -58,8 +57,10 @@ trait FormTemplateSupport {
     name: String = "Some Page",
     formComponents: List[FormComponent],
     instruction: Option[Instruction] = None,
-    pageId: Option[PageId] = None
-  ) =
+    pageId: Option[PageId] = None,
+    dataRetrieve: Option[DataRetrieve] = None
+  ) = {
+    val dataRetrieves = dataRetrieve.map(dr => NonEmptyList.of(dr))
     Section.NonRepeatingPage(
       Page(
         toSmartString(name),
@@ -74,13 +75,14 @@ trait FormTemplateSupport {
         None,
         instruction,
         None,
-        None,
+        dataRetrieves,
         None,
         None,
         None,
         None
       )
     )
+  }
 
   def mkFormComponent(id: String, expr: Expr) =
     FormComponent(
