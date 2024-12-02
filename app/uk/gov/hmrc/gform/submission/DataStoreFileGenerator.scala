@@ -50,7 +50,7 @@ object DataStoreFileGenerator {
         "affinityGroup" -> JsString(userSession.affinityGroup.map(_.toString).getOrElse("")),
         "authEmail"     -> JsString(userSession.authEmail),
         "authPhone"     -> JsString(userSession.authPhone),
-        "enrolments"    -> JsArray(userSession.enrolments)
+        "enrolments"    -> JsArray(filterEnrolments(metaData.regime, userSession.enrolments))
       )
 
       Json.obj(
@@ -63,4 +63,13 @@ object DataStoreFileGenerator {
 
     (dataStoreJson ++ gformJson.as[JsObject]).toString()
   }
+
+  def filterEnrolments(regime: String, enrolments: List[JsValue]): List[JsValue] =
+    if (regime == "CT") {
+      enrolments.filterNot { value =>
+        Seq("HMRC-NI", "HMRC-PT").contains((value \ "enrolment").as[String])
+      }
+    } else {
+      enrolments
+    }
 }
