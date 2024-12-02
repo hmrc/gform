@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.gform.submission
 
+import cats.implicits.catsSyntaxEq
 import play.api.libs.json._
 import uk.gov.hmrc.gform.sharedmodel.{ DataStoreMetaData, UserSession }
 
@@ -65,7 +66,7 @@ object DataStoreFileGenerator {
   }
 
   def filterEnrolments(regime: String, enrolments: List[JsValue]): List[JsValue] =
-    if (regime == "CT") {
+    if (regime === "CT") {
       enrolments.filterNot { value =>
         Seq("HMRC-NI", "HMRC-PT").contains((value \ "enrolment").as[String])
       }
