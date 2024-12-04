@@ -1043,6 +1043,7 @@ object FormTemplateValidator {
     case PostcodeLookup(_, _, _)                    => Valid
     case MiniSummaryList(ls, _, _)                  => validateMiniSummaryList(ls, formTemplate)
     case t: TableComp                               => TableCompValidator.validateTableComp(t)
+    case Button(_, _, _, _)                         => Valid
   }
 
   def validateAddressValue(expr: Expr, formTemplate: FormTemplate): ValidationResult = {

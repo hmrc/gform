@@ -265,6 +265,7 @@ object Substituter {
           rows = t.rows(substitutions),
           summaryValue = t.summaryValue(substitutions)
         )
+      case b: Button => b
     }
 
   implicit def formComponentValidatorSubstituter[A](implicit

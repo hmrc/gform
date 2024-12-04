@@ -558,6 +558,17 @@ object TableComp {
   implicit val format: Format[TableComp] = derived.oformat()
 }
 
+case class Button(
+  reference: Expr,
+  amountInPence: Expr,
+  isStartButton: Boolean,
+  classes: Option[String]
+) extends ComponentType
+
+object Button {
+  implicit val format: Format[Button] = derived.oformat()
+}
+
 object ComponentType {
 
   implicit def readsNonEmptyList[T: Reads]: Reads[NonEmptyList[T]] = Reads[NonEmptyList[T]] { json =>
@@ -608,6 +619,8 @@ object ComponentType {
           path + "summaryValue",
           t.summaryValue
         )
+      case Button(reference, amountInPence, _, _) =>
+        List(ExprWithPath(path, reference)) ++ List(ExprWithPath(path, amountInPence))
     }
 
 }
