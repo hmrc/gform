@@ -37,8 +37,11 @@ object VisitIndex {
   implicit val format: OFormat[VisitIndex] = OFormat(
     (jsValue: JsValue) =>
       (jsValue \ key).toOption match {
-        case None             => JsError(s"Missing '$key' field. Failed to decode VisitIndex from: $jsValue")
-        case Some(a: JsArray) => JsSuccess(Classic(a.value.map(_.as[Int]).toSet))
+        case None => JsError(s"Missing '$key' field. Failed to decode VisitIndex from: $jsValue")
+        case Some(a: JsArray) =>
+          JsSuccess(
+            Try(Classic(a.value.map(_.as[Int]).toSet)).toOption.getOrElse(VisitIndex.Classic(Set.empty[Int]))
+          )
         case Some(o: JsObject) =>
           val res: Try[List[(Coordinates, Set[Int])]] =
             o.value.toList.traverse { case (k, v) =>
