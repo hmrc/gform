@@ -25,7 +25,7 @@ import uk.gov.hmrc.gform.save4later.EncryptedFormFormat
 import uk.gov.hmrc.gform.sharedmodel.UserId
 import uk.gov.hmrc.gform.sharedmodel.form.FormIdData.Plain
 import uk.gov.hmrc.gform.sharedmodel.form._
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponentId, FormTemplateId }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponentId, FormTemplateId, SectionNumber, TemplateSectionIndex }
 import uk.gov.hmrc.mongo.cache.DataKey
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -77,7 +77,11 @@ class FormIT extends ITSpec with FormTemplateSample with FormDataSample with Que
     response.status shouldBe StatusCodes.NoContent.intValue
 
     And("The new form should updated in forms collection")
-    assertForm(startInstant, Seq(FormField(FormComponentId("textField1"), "textField1Value")), Set(0))
+    assertForm(
+      startInstant,
+      Seq(FormField(FormComponentId("textField1"), "textField1Value")),
+      Set(SectionNumber.Classic.NormalPage(TemplateSectionIndex(0)))
+    )
 
     assertFormMetadata(startInstant)
   }
@@ -85,7 +89,7 @@ class FormIT extends ITSpec with FormTemplateSample with FormDataSample with Que
   private def assertForm(
     startInstant: Instant,
     formFields: Seq[FormField] = Seq.empty,
-    visitIndex: Set[Int] = Set.empty
+    visitIndex: Set[SectionNumber.Classic] = Set.empty
   ): Unit = {
     implicit val formatFormEncrypted: Format[Form] = EncryptedFormFormat.formatEncrypted(jsonCrypto)
     val formDataKey: DataKey[Form] = DataKey("form")

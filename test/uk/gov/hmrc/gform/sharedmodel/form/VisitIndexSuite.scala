@@ -145,7 +145,7 @@ class VisitIndexSuite extends FunSuite {
 
     val value: JsResult[VisitIndex] = json.validate[VisitIndex]
 
-    val expected = JsSuccess(VisitIndex.TaskList(Map.empty))
+    val expected = JsSuccess(VisitIndex.TaskList(Map(Coordinates(TaskSectionNumber(0), TaskNumber(0)) -> Set())))
 
     assertEquals(value, expected)
   }

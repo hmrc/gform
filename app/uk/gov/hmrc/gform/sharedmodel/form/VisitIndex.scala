@@ -52,10 +52,10 @@ object VisitIndex {
                 key -> visits
               }
             }
-          res.fold(
-            error => JsSuccess(TaskList(Map.empty)),
-            xs => JsSuccess(TaskList(xs.toMap))
-          )
+            .fold(
+              error => JsSuccess(TaskList(Map.empty)),
+              xs => JsSuccess(TaskList(xs.toMap))
+            )
         case Some(unexpected) => JsError("Unknown type. Failed to decode VisitIndex from json: " + unexpected)
       },
     (visitIndex: VisitIndex) =>
