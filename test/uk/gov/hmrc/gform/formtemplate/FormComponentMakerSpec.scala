@@ -742,4 +742,26 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
     )
   }
 
+  it should "parse button" in {
+    val buttonJson = Json.parse("""
+                                  |{
+                                  |          "id": "paymentJourney",
+                                  |          "type": "button",
+                                  |          "label": "Pay",
+                                  |          "reference": "${reference}",
+                                  |          "amountInPence": "${amount * 100}"
+                                  |}
+                                  |""".stripMargin)
+    val formComponentMaker = new FormComponentMaker(buttonJson)
+    val result = formComponentMaker.optFieldValue().map(_.`type`)
+
+    val expected = Button(
+      FormCtx(FormComponentId("reference")),
+      Multiply(FormCtx(FormComponentId("amount")), Constant("100")),
+      false,
+      None
+    )
+    result shouldBe Right(expected)
+  }
+
 }
