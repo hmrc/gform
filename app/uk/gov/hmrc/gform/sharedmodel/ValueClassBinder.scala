@@ -20,14 +20,13 @@ import cats.implicits._
 import play.api.libs.json.{ JsError, JsString, JsSuccess, Reads }
 import java.net.URLEncoder
 import play.api.mvc.{ JavascriptLiteral, PathBindable, QueryStringBindable }
-import scala.util.Try
 import uk.gov.hmrc.crypto.Crypted
 import uk.gov.hmrc.gform.builder.SectionPath
 import uk.gov.hmrc.gform.history.HistoryId
 import uk.gov.hmrc.gform.sharedmodel.dblookup.{ CollectionName, DbLookupId }
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId, FormId, FormStatus }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationId
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Coordinates, FormTemplateId, FormTemplateRawId, SectionNumber }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Coordinates, FormTemplateId, FormTemplateRawId }
 import uk.gov.hmrc.gform.sharedmodel.notifier.NotifierEmailAddress
 import uk.gov.hmrc.gform.sharedmodel.sdes._
 import uk.gov.hmrc.mongo.workitem.ProcessingStatus
@@ -83,12 +82,6 @@ object ValueClassBinder {
     case unknown       => JsError(s"Failed to read Crypted. Expected JsString, but found $unknown")
   }
   implicit val cryptedBinder: QueryStringBindable[Crypted] = valueClassQueryBinder(_.value)
-
-  implicit val sectionNumberBinder: PathBindable[SectionNumber] = new PathBindable[SectionNumber] {
-    override def bind(key: String, value: String): Either[String, SectionNumber] =
-      Try(SectionNumber(value.toInt)).map(_.asRight).getOrElse(s"No valid value in path $key: $value".asLeft)
-    override def unbind(key: String, sectionNumber: SectionNumber): String = sectionNumber.value.toString
-  }
 
   implicit val formStatusBinder: PathBindable[FormStatus] = new PathBindable[FormStatus] {
     override def bind(key: String, value: String): Either[String, FormStatus] =

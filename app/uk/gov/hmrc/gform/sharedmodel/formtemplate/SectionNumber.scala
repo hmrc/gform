@@ -16,20 +16,95 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
-import play.api.libs.json._
+import play.api.libs.json.{ Format, JsError, JsString, JsSuccess, Reads, Writes }
 
-case class SectionNumber(value: Int) extends Ordered[SectionNumber] {
-  override def compare(that: SectionNumber): Int = value.compare(that.value)
+sealed trait SectionNumber extends Product with Serializable {
+
+  def value: String = this match {
+    case SectionNumber.Classic.NormalPage(TemplateSectionIndex(sectionIndex)) => "n" + sectionIndex.toString
+    case SectionNumber.Classic.AddToListPage.DefaultPage(TemplateSectionIndex(sectionIndex)) =>
+      "ad" + sectionIndex.toString
+    case SectionNumber.Classic.AddToListPage.Page(TemplateSectionIndex(sectionIndex), iterationNumber, pageNumber) =>
+      "ap" + sectionIndex.toString + "." + iterationNumber.toString + "." + pageNumber.toString
+    case SectionNumber.Classic.AddToListPage.CyaPage(TemplateSectionIndex(sectionIndex), iterationNumber) =>
+      "ac" + sectionIndex.toString + "." + iterationNumber.toString
+    case SectionNumber.Classic.AddToListPage.RepeaterPage(TemplateSectionIndex(sectionIndex), iterationNumber) =>
+      "ar" + sectionIndex.toString + "." + iterationNumber.toString
+    case SectionNumber.Classic.RepeatedPage(TemplateSectionIndex(sectionIndex), pageNumber) =>
+      "r" + sectionIndex.toString + "." + pageNumber.toString
+    case SectionNumber.TaskList(Coordinates(taskSectionNumber, taskNumber), sectionNumber) =>
+      List(taskSectionNumber.value.toString, taskNumber.value.toString, sectionNumber.value).mkString(",")
+  }
+
 }
 
 object SectionNumber {
-  implicit val format: Format[SectionNumber] = Format[SectionNumber](
-    Reads[SectionNumber] {
-      case JsNumber(n: BigDecimal) => JsSuccess(SectionNumber(n.toInt))
-      case unknown                 => JsError(s"JsNumber value expected, got: $unknown")
+
+  sealed trait Classic extends SectionNumber with Product with Serializable {
+    def sectionIndex: TemplateSectionIndex
+  }
+  object Classic {
+    case class NormalPage(sectionIndex: TemplateSectionIndex) extends Classic
+    case class RepeatedPage(sectionIndex: TemplateSectionIndex, pageNumber: Int) extends Classic
+    sealed trait AddToListPage extends Classic
+
+    object AddToListPage {
+      case class DefaultPage(sectionIndex: TemplateSectionIndex) extends AddToListPage
+      case class Page(sectionIndex: TemplateSectionIndex, iterationNumber: Int, pageNumber: Int) extends AddToListPage
+      case class CyaPage(sectionIndex: TemplateSectionIndex, iterationNumber: Int) extends AddToListPage
+      case class RepeaterPage(sectionIndex: TemplateSectionIndex, iterationNumber: Int) extends AddToListPage
+    }
+  }
+
+  final case class TaskList(
+    coordinates: Coordinates,
+    sectionNumber: Classic
+  ) extends SectionNumber
+
+  implicit val format: Format[SectionNumber.Classic] = Format[SectionNumber.Classic](
+    Reads[SectionNumber.Classic] {
+      case JsString(value) =>
+        parseClassic(value) match {
+          case Some(sectionNumber) => JsSuccess(sectionNumber)
+          case None                => JsError(s"Invalid section number: $value")
+        }
+      case unknown => JsError(s"JsString value expected, got: $unknown")
     },
-    Writes[SectionNumber](a => JsNumber(a.value))
+    Writes[SectionNumber.Classic](a => JsString(a.value))
   )
 
-  val firstSection = SectionNumber(0)
+  // format: off
+  private val NormalPageRegex            = "^n(\\d+)$".r
+  private val AddToListDefaultPageRegex  = "^ad(\\d+)$".r
+  private val AddToListPageRegex         = "^ap(\\d+)\\.(\\d+)\\.(\\d+)$".r
+  private val AddToListCyaPageRegex      = "^ac(\\d+)\\.(\\d+)$".r
+  private val AddToListRepeaterPageRegex = "^ar(\\d+)\\.(\\d+)$".r
+  private val RepeatedPageRegex          = "^r(\\d+)\\.(\\d+)$".r
+  // format: on
+
+  def parseClassic(string: String): Option[SectionNumber.Classic] =
+    string match {
+      case NormalPageRegex(sectionIndex) =>
+        Some(SectionNumber.Classic.NormalPage(TemplateSectionIndex(sectionIndex.toInt)))
+      case AddToListDefaultPageRegex(sectionIndex) =>
+        Some(SectionNumber.Classic.AddToListPage.DefaultPage(TemplateSectionIndex(sectionIndex.toInt)))
+      case AddToListPageRegex(sectionIndex, iterationNumber, pageNumber) =>
+        Some(
+          SectionNumber.Classic.AddToListPage
+            .Page(TemplateSectionIndex(sectionIndex.toInt), iterationNumber.toInt, pageNumber.toInt)
+        )
+      case AddToListCyaPageRegex(sectionIndex, iterationNumber) =>
+        Some(
+          SectionNumber.Classic.AddToListPage
+            .CyaPage(TemplateSectionIndex(sectionIndex.toInt), iterationNumber.toInt)
+        )
+      case AddToListRepeaterPageRegex(sectionIndex, iterationNumber) =>
+        Some(
+          SectionNumber.Classic.AddToListPage
+            .RepeaterPage(TemplateSectionIndex(sectionIndex.toInt), iterationNumber.toInt)
+        )
+      case RepeatedPageRegex(sectionIndex, pageNumber) =>
+        Some(SectionNumber.Classic.RepeatedPage(TemplateSectionIndex(sectionIndex.toInt), pageNumber.toInt))
+      case _ => None
+    }
 }
