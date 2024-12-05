@@ -1027,6 +1027,9 @@
           "items": {
             "$ref": "#/$defs/fields"
           }
+        },
+        "verifiedBy": {
+          "type": "object"
         }
       },
       "dependencies": {
