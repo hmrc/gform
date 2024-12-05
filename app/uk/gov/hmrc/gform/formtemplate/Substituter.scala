@@ -17,7 +17,8 @@
 package uk.gov.hmrc.gform.formtemplate
 
 import cats.data.NonEmptyList
-import uk.gov.hmrc.gform.sharedmodel.SmartString
+import uk.gov.hmrc.gform.sharedmodel.DataRetrieve.ParamExpr
+import uk.gov.hmrc.gform.sharedmodel.{ DataRetrieve, SmartString }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations._
 
@@ -316,8 +317,21 @@ object Substituter {
       continueLabel = t.continueLabel(substitutions),
       instruction = t.instruction(substitutions),
       redirects = t.redirects(substitutions),
+      dataRetrieve = t.dataRetrieve(substitutions),
       removeItemIf = t.removeItemIf(substitutions),
       confirmation = t.confirmation(substitutions)
+    )
+
+  implicit def dataRetrieveSubstituter[A](implicit
+    ev: Substituter[A, Expr]
+  ): Substituter[A, DataRetrieve] = (substitutions, dataRetrieve) =>
+    dataRetrieve.copy(
+      params = dataRetrieve.params.map(paramExpr =>
+        ParamExpr(
+          paramExpr.parameter,
+          paramExpr.expr(substitutions)
+        )
+      )
     )
 
   implicit def sectionSubstituter[A](implicit
@@ -541,6 +555,7 @@ object Substituter {
       formKind = t.formKind(substitutions),
       summarySection = t.summarySection(substitutions),
       emailParameters = t.emailParameters(substitutions),
+      dataRetrieve = t.dataRetrieve(substitutions),
       exitPages = t.exitPages(substitutions)
     )
 
