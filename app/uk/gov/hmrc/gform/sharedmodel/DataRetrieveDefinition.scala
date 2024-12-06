@@ -422,7 +422,7 @@ object DataRetrieveDefinitions {
     ),
     List(
       Parameter("nino"),
-      Parameter("taxYear", List.empty[String], DataRetrieve.ParamType.Integer)
+      Parameter("taxYear", List.empty[String], DataRetrieve.ParamType.String)
     ),
     Map(DataRetrieve.Attribute("sequenceNumber") -> DataRetrieve.AttrType.Number)
   )
