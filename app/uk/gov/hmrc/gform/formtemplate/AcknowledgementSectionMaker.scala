@@ -20,8 +20,9 @@ import cats.implicits._
 import play.api.libs.json.{ JsDefined, JsError, JsFalse, JsResult, JsSuccess, JsTrue, JsUndefined, JsValue }
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
+import uk.gov.hmrc.gform.sharedmodel.LangADT.En
 import uk.gov.hmrc.gform.sharedmodel.SmartString
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AcknowledgementSection, FormComponent, PdfCtx }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AcknowledgementSection, FormComponent, IsInformationMessage, PdfCtx }
 
 class AcknowledgementSectionMaker(json: JsValue) {
   val optTitle: Opt[Option[SmartString]] = toOpt((json \ "title").validateOpt[SmartString], "/title")
@@ -72,7 +73,7 @@ class AcknowledgementSectionMaker(json: JsValue) {
       title,
       description,
       shortName,
-      fields,
+      modifyFields(fields),
       sr,
       acknowledgementSectionPdf,
       acknowledgementSectionInstructionPdf,
@@ -81,4 +82,25 @@ class AcknowledgementSectionMaker(json: JsValue) {
       sb
     )
 
+  private def modifyFields(fields: List[FormComponent]): List[FormComponent] =
+    fields.map {
+      case fc @ IsInformationMessage(i) =>
+        val infoTextEn = i.infoText.defaultRawValue(En)
+        fc.copy(`type` = i.copy(infoText = i.infoText.replace(infoTextEn, replaceHashes(infoTextEn))))
+      case other => other
+    }
+
+  private def replaceHashes(input: String): String =
+    input
+      .split("\n")
+      .map { line =>
+        val trimmedLine = line.trim
+        val pattern = "(####|###|##|#)".r
+        val index = pattern.findFirstIn(trimmedLine).map(trimmedLine.indexOf).getOrElse(-1)
+
+        if (index === 0) {
+          s"@$trimmedLine"
+        } else line
+      }
+      .mkString("\n")
 }
