@@ -92,6 +92,7 @@ trait Verifier {
       _ <- fromOptA(FormTemplateValidator.validateAddToListDefaultPage(formTemplate).toEither)
       _ <- fromOptA(FormTemplateValidator.validateAddToListInfoFields(formTemplate).toEither)
       _ <- fromOptA(FormTemplateValidator.validateAddToListAddAnotherQuestion(formTemplate).toEither)
+      _ <- fromOptA(FormTemplateValidator.validateAddToListRepeatConfig(formTemplate, pages).toEither)
       _ <- fromOptA(FormTemplateValidator.validateDataRetrieve(formTemplate, pages).toEither)
       _ <- fromOptA(FormTemplateValidator.validateDataRetrieveForwardReferences(sections).toEither)
       _ <- fromOptA(FormTemplateValidator.validateDataRetrieveCtx(formTemplate, pages, allExpressions).toEither)

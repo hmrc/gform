@@ -309,7 +309,9 @@ trait FormTemplateSupport {
     pages: NonEmptyList[Page],
     defaultPage: Option[Page] = None,
     addAnotherQuestion: FormComponent = addAnotherQuestion,
-    pageIdToDisplayAfterRemove: Option[PageId] = None
+    pageIdToDisplayAfterRemove: Option[PageId] = None,
+    repeatsUntil: Option[IncludeIf] = None,
+    repeatsWhile: Option[IncludeIf] = None
   ) =
     Section.AddToList(
       toSmartString(name),
@@ -321,8 +323,8 @@ trait FormTemplateSupport {
       toSmartString(name),
       None,
       pages,
-      None,
-      None,
+      repeatsUntil,
+      repeatsWhile,
       None,
       addAnotherQuestion,
       None,
