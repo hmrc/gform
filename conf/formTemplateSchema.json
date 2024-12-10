@@ -1030,6 +1030,9 @@
         },
         "verifiedBy": {
           "type": "object"
+        },
+        "pageIdsToDisplayOnChange": {
+          "type": "array"
         }
       },
       "dependencies": {
