@@ -1010,11 +1010,26 @@
         "extraLetterSpacing": {
           "type": "boolean"
         },
+        "reference": {
+          "type": "string"
+        },
+        "amountInPence": {
+          "type": "string"
+        },
+        "isStartButton": {
+          "type": "boolean"
+        },
+        "classes": {
+          "type": "string"
+        },
         "fields": {
           "type": "array",
           "items": {
             "$ref": "#/$defs/fields"
           }
+        },
+        "verifiedBy": {
+          "type": "object"
         }
       },
       "dependencies": {

@@ -20,12 +20,13 @@ import cats.data.NonEmptyList
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.TableDrivenPropertyChecks
 import org.scalatest.wordspec.AnyWordSpecLike
+import play.api.libs.json.{ JsError, JsSuccess, Json }
 import uk.gov.hmrc.gform.Helpers.{ toLocalisedString, toSmartString }
 import uk.gov.hmrc.gform.core.parsers.ValueParser
-import uk.gov.hmrc.gform.core.{ Invalid, Valid }
+import uk.gov.hmrc.gform.core.{ Invalid, Opt, Valid, ValidationResult }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.PageLink
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AnyDate, Choice, ChoicesAvailable, ChoicesSelected, Constant, DataRetrieveCtx, Date, DateCtx, DateFormCtxVar, Dynamic, Equals, ExprWithPath, FormComponent, FormComponentId, FormComponentValidator, FormCtx, HideZeroDecimals, Horizontal, IfElse, IncludeIf, IndexOfDataRetrieveCtx, InformationMessage, Instruction, IsTrue, LeafExpr, LinkCtx, LookupColumn, Not, Offset, OptionData, OptionDataValue, Page, PageId, PostcodeLookup, Radio, Section, StandardInfo, SummariseGroupAsGrid, TemplatePath, ValidIf, Vertical }
-import uk.gov.hmrc.gform.sharedmodel.{ DataRetrieve, DataRetrieveId, LangADT, LocalisedString, SmartString }
+import uk.gov.hmrc.gform.sharedmodel._
 
 class FormTemplateValidatorSpec
     extends AnyWordSpecLike with Matchers with FormTemplateSupport with TableDrivenPropertyChecks {
@@ -1188,6 +1189,98 @@ class FormTemplateValidatorSpec
       }
     }
   }
+
+  "validateDataRetrieveForwardReferences" should {
+    "validate that dataRetrieves do not forward reference other form components or dataRetrieves" in {
+      val dr: Option[DataRetrieve] = mkHmrcTaxRatesDataRetrieve("forwardDataRetrieve")
+      val fc: FormComponent = mkFormComponent("forwardFormComponent", Date(AnyDate, Offset(0), None), true)
+      val fl: FormComponent = mkFormComponent("forwardLookup")
+      val page2: Section.NonRepeatingPage = mkSectionNonRepeatingPage(
+        name = "Page 2",
+        formComponents = List(fc, fl),
+        instruction = None,
+        pageId = None,
+        dataRetrieve = dr
+      )
+
+      val table = Table(
+        ("formComponent", "dataRetrieve", "expectedResult"),
+        (
+          mkFormComponent("date", Date(AnyDate, Offset(0), None), true),
+          mkHmrcTaxRatesDataRetrieve("dr", None, Some("${date}")),
+          Valid
+        ),
+        (
+          mkFormComponent("date", Date(AnyDate, Offset(0), None), true),
+          mkHmrcTaxRatesDataRetrieve("dr", None, Some("${forwardFormComponent}")),
+          Invalid("Data retrieve with id 'dr' contains forward references to [forwardFormComponent]")
+        ),
+        (
+          mkFormComponent("date", Date(AnyDate, Offset(0), None), true),
+          mkHmrcTaxRatesDataRetrieve("dr", None, Some("${dataRetrieve.forwardDataRetrieve.startDate - 1d}")),
+          Invalid("Data retrieve with id 'dr' contains forward references to [forwardDataRetrieve]")
+        ),
+        (
+          mkFormComponent("someLookup"),
+          mkHmrcTaxRatesDataRetrieve("dr", Some("${someLookup.column.Code}"), None),
+          Valid
+        ),
+        (
+          mkFormComponent("someLookup", Date(AnyDate, Offset(0), None), true),
+          mkHmrcTaxRatesDataRetrieve("dr", Some("${forwardLookup.column.Code}"), None),
+          Invalid("Data retrieve with id 'dr' contains forward references to [forwardLookup]")
+        ),
+        (
+          mkFormComponent("someLookup", Date(AnyDate, Offset(0), None), true),
+          mkHmrcTaxRatesDataRetrieve(
+            "dr",
+            Some("${forwardLookup.column.Code}"),
+            Some("${dataRetrieve.forwardDataRetrieve.startDate - 1d}")
+          ),
+          Invalid("Data retrieve with id 'dr' contains forward references to [forwardLookup,forwardDataRetrieve]")
+        )
+      )
+
+      forAll(table) { (formComponent, dataRetrieve, expectedResult) =>
+        val page1 = mkSectionNonRepeatingPage(
+          name = "Page 1",
+          formComponents = List(formComponent),
+          instruction = None,
+          pageId = None,
+          dataRetrieve = dataRetrieve
+        )
+
+        val sections: List[Section] = List(page1, page2)
+        val result: ValidationResult = FormTemplateValidator.validateDataRetrieveForwardReferences(sections)
+        result shouldBe expectedResult
+      }
+    }
+  }
+
+  def mkHmrcTaxRatesDataRetrieve(
+    id: String,
+    codeOpt: Option[String] = None,
+    dateOpt: Option[String] = None
+  ): Option[DataRetrieve] = {
+    val code = codeOpt.getOrElse("'FRS20'")
+    val date = dateOpt.getOrElse("${TODAY}")
+    val dataRetrieve =
+      s"""
+         |{
+         |  "type": "hmrcTaxRates",
+         |  "id": "$id",
+         |  "parameters": {
+         |    "regime": "$${'VATFRS'}",
+         |    "code": "$code",
+         |    "date": "$date"
+         |  }
+         |}
+         |""".stripMargin
+
+    val dr: Opt[DataRetrieve] = DataRetrieveDefinitions.read(Json.parse(dataRetrieve))
+    dr.fold(e => JsError(e.error), r => JsSuccess(r)).asOpt
+  }
+
 
   private def getChoiceComponentWithStringBasedValues(stringValue: String): FormComponent =
     FormComponent(

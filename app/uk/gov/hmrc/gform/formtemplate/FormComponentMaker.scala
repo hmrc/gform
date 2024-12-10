@@ -158,6 +158,13 @@ class FormComponentMaker(json: JsValue) {
   lazy val optEnterAddressLabel: Opt[Option[SmartString]] =
     toOpt((json \ "enterAddressLabel").validateOpt[SmartString], "/enterAddressLabel")
 
+  lazy val reference: Opt[Option[ValueExpr]] = parse("reference", ValueParser.validate)
+  lazy val amountInPence: Opt[Option[ValueExpr]] = parse("amountInPence", ValueParser.validate)
+  lazy val isStartButton: Opt[Option[Boolean]] =
+    toOpt((json \ "isStartButton").validateOpt[Boolean], "/isStartButton")
+  lazy val classes: Opt[Option[String]] =
+    toOpt((json \ "classes").validateOpt[String], "/classes")
+
   lazy val optSelectionCriteria: Opt[Option[List[SelectionCriteria]]] =
     json \ "selectionCriteria" match {
       case JsDefined(JsArray(selectionCriterias)) =>
@@ -208,11 +215,10 @@ class FormComponentMaker(json: JsValue) {
 
   private def getValueRow(json: JsValue): Opt[MiniSummaryRow] =
     for {
-      key          <- toOpt((json \ "key").validateOpt[SmartString], "/key")
-      value        <- toOpt((json \ "value").validate[String], "/value").flatMap(SummaryListParser.validate)
-      includeIf    <- toOpt((json \ "includeIf").validateOpt[IncludeIf], "/includeIf")
-      pageId       <- toOpt((json \ "pageId").validateOpt[PageId], "/pageId")
-      removeItemIf <- toOpt((json \ "removeItemIf").validateOpt[RemoveItemIf], "/removeItemIf")
+      key       <- toOpt((json \ "key").validateOpt[SmartString], "/key")
+      value     <- toOpt((json \ "value").validate[String], "/value").flatMap(SummaryListParser.validate)
+      includeIf <- toOpt((json \ "includeIf").validateOpt[IncludeIf], "/includeIf")
+      pageId    <- toOpt((json \ "pageId").validateOpt[PageId], "/pageId")
     } yield MiniSummaryRow.ValueRow(key, value, includeIf, pageId)
 
   private def getSmartStringRow(json: JsValue): Opt[MiniSummaryRow] =
@@ -422,6 +428,7 @@ class FormComponentMaker(json: JsValue) {
     case Some(PostcodeLookupRaw)  => postcodeLookupOpt
     case Some(SummaryListRaw)     => summaryListOpt
     case Some(TableCompRaw)       => tableCompOpt
+    case Some(ButtonRaw)          => buttonOpt
   }
 
   lazy val textOpt: Opt[ComponentType] = {
@@ -497,6 +504,16 @@ class FormComponentMaker(json: JsValue) {
     confirmAddressLabel <- optConfirmAddressLabel
     enterAddressLabel   <- optEnterAddressLabel
   } yield PostcodeLookup(chooseAddressLabel, confirmAddressLabel, enterAddressLabel)
+
+  private lazy val buttonOpt: Opt[Button] = (reference, amountInPence, isStartButton, classes) match {
+    case (Right(Some(a: TextExpression)), Right(Some(b: TextExpression)), Right(isStartButton), Right(classes)) =>
+      Button(a.expr, b.expr, isStartButton.getOrElse(false), classes).asRight
+    case _ => UnexpectedState(s"""
+                                 |Wrong button definition:
+                                 |reference       : $reference
+                                 |amountInPence   : $amountInPence
+                                 |""".stripMargin).asLeft
+  }
 
   private lazy val dateOpt: Opt[Date] = {
 

@@ -1054,6 +1054,7 @@ object FormTemplateValidator {
     case PostcodeLookup(_, _, _)                    => Valid
     case MiniSummaryList(ls, _, _)                  => validateMiniSummaryList(ls, formTemplate)
     case t: TableComp                               => TableCompValidator.validateTableComp(t)
+    case Button(_, _, _, _)                         => Valid
   }
 
   def validateAddressValue(expr: Expr, formTemplate: FormTemplate): ValidationResult = {
@@ -1505,16 +1506,39 @@ object FormTemplateValidator {
     )
   }
 
-  def validateDataRetrieveFormCtxReferences(pages: List[Page]): ValidationResult = {
-    val dataRetrieves: List[(Page, DataRetrieve)] = pages.flatMap(p => p.dataRetrieves().map(d => (p, d)))
-    dataRetrieves.map { case (page, dataRetrieve) =>
-      val pageFormComponentsIds = page.allFormComponents.map(_.id)
-      val formCtxExprs = dataRetrieve.params.collect { case DataRetrieve.ParamExpr(_, ctx: FormCtx) =>
-        ctx
+  def validateDataRetrieveForwardReferences(sections: List[Section]): ValidationResult = {
+    val dataRetrievesWithPageId: List[(DataRetrieve, Int)] = SectionHelper
+      .pages(sections)
+      .zipWithIndex
+      .flatMap { case (page, idx) =>
+        page.dataRetrieves().map(d => (d, idx))
       }
-      val nonExistentFCRefs = formCtxExprs.map(_.formComponentId).filterNot(pageFormComponentsIds.contains)
-      nonExistentFCRefs.isEmpty.validationResult(
-        s"Data retrieve with id '${dataRetrieve.id.value}' refers to form components that does not exist in the page [${nonExistentFCRefs.map(_.value).mkString(",")}]"
+
+    val allReferencesWithPageId: Map[String, Int] = indexedFieldIds(sections).map { case (formComponentId, idx) =>
+      formComponentId.value -> idx
+    }.toMap ++ dataRetrievesWithPageId.map { case (dataRetrieve, idx) =>
+      dataRetrieve.id.value -> idx
+    }.toMap
+
+    dataRetrievesWithPageId.map { case (dataRetrieve, pageIdx) =>
+      val paramReferences: List[String] = dataRetrieve.params.collect {
+        case DataRetrieve.ParamExpr(_, FormCtx(fcId))            => List(fcId.value)
+        case DataRetrieve.ParamExpr(_, LookupColumn(fcId, _))    => List(fcId.value)
+        case DataRetrieve.ParamExpr(_, DataRetrieveCtx(drId, _)) => List(drId.value)
+        case DataRetrieve.ParamExpr(_, DataRetrieveCount(drId))  => List(drId.value)
+        case DataRetrieve.ParamExpr(_, DateCtx(value)) =>
+          value.leafExprs.collect {
+            case FormCtx(fcId)                         => fcId.value
+            case DateCtx(DataRetrieveDateCtx(drId, _)) => drId.value
+          }
+      }.flatten
+
+      val forwardReferences: List[String] = paramReferences.filter { referenceId =>
+        allReferencesWithPageId.get(referenceId).exists(_ > pageIdx)
+      }
+
+      forwardReferences.isEmpty.validationResult(
+        s"Data retrieve with id '${dataRetrieve.id.value}' contains forward references to [${forwardReferences.mkString(",")}]"
       )
     }.combineAll
   }
