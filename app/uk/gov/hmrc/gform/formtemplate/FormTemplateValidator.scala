@@ -682,7 +682,7 @@ object FormTemplateValidator {
 
     def checkHideChoicesSelectedNonDynamicOptions(choice: Choice): Boolean =
       if (choice.hideChoicesSelected) {
-        areOptionsDataRetrievedBased(choice.options)
+        areChoiceOptionsDataRetrievedBased(Option(choice))
       } else false
 
     def getStringBasedOptionDataValues(choice: Choice): List[String] =
@@ -1401,20 +1401,19 @@ object FormTemplateValidator {
     def checkBooleanExpr(bExpr: BooleanExpr, invalid: Invalid): List[ValidationResult] =
       bExpr match {
         case Not(Equals(ChoicesSelected(FormComponentId(value)), ChoicesAvailable(FormComponentId(_)))) =>
-          if (areOptionsDataRetrievedBased(getChoiceById(value).options)) List(invalid) else List(Valid)
+          if (areChoiceOptionsDataRetrievedBased(getChoiceById(value))) List(invalid) else List(Valid)
         case Equals(ChoicesSelected(FormComponentId(value)), ChoicesAvailable(FormComponentId(_))) =>
-          if (areOptionsDataRetrievedBased(getChoiceById(value).options)) List(invalid) else List(Valid)
+          if (areChoiceOptionsDataRetrievedBased(getChoiceById(value))) List(invalid) else List(Valid)
         case _ => List(Valid)
       }
 
-    def getChoiceById(id: String): Choice =
+    def getChoiceById(id: String): Option[Choice] =
       allFormComponents(pages)
         .map(fv => (fv.id, fv.`type`))
-        .collect {
-          case (fId, choice: Choice) if fId.value == id =>
+        .collectFirst {
+          case (fId, choice: Choice) if fId.value === id =>
             choice
         }
-        .head
 
     val isATLChoiceOptionsValid: List[ValidationResult] =
       formTemplate.formKind.allSections.collect { case atl: Section.AddToList =>
@@ -1761,11 +1760,13 @@ object FormTemplateValidator {
       .combineAll
   }
 
-  private def areOptionsDataRetrievedBased(options: NonEmptyList[OptionData]): Boolean =
-    options.exists {
-      case OptionData.IndexBased(_, _, _, d)    => d.fold(false)(d => isDataRetrieveBased(d))
-      case OptionData.ValueBased(_, _, _, d, _) => d.fold(false)(d => isDataRetrieveBased(d))
-    }
+  private def areChoiceOptionsDataRetrievedBased(choice: Option[Choice]): Boolean =
+    choice.fold(false)(c =>
+      c.options.exists {
+        case OptionData.IndexBased(_, _, _, d)    => d.fold(false)(d => isDataRetrieveBased(d))
+        case OptionData.ValueBased(_, _, _, d, _) => d.fold(false)(d => isDataRetrieveBased(d))
+      }
+    )
 
   private def isDataRetrieveBased(dynamic: Dynamic): Boolean =
     dynamic match {
