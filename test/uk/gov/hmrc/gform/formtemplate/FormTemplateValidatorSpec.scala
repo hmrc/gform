@@ -1281,7 +1281,6 @@ class FormTemplateValidatorSpec
     dr.fold(e => JsError(e.error), r => JsSuccess(r)).asOpt
   }
 
-
   private def getChoiceComponentWithStringBasedValues(stringValue: String): FormComponent =
     FormComponent(
       FormComponentId("dutyType"),
