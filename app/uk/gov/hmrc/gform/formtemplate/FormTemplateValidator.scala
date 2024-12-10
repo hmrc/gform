@@ -30,6 +30,7 @@ import uk.gov.hmrc.gform.models.constraints.ReferenceInfo._
 import uk.gov.hmrc.gform.models.constraints.{ AddressLensChecker, FunctionsChecker, MutualReferenceChecker, ReferenceInfo }
 import uk.gov.hmrc.gform.sharedmodel.DataRetrieve.Attribute
 import uk.gov.hmrc.gform.sharedmodel._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.Dynamic.DataRetrieveBased
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.PageLink
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.graph.DependencyGraph._
@@ -679,6 +680,11 @@ object FormTemplateValidator {
         }
       } else false
 
+    def checkHideChoicesSelectedNonDynamicOptions(choice: Choice): Boolean =
+      if (choice.hideChoicesSelected) {
+        areOptionsDataRetrievedBased(choice.options)
+      } else false
+
     def getStringBasedOptionDataValues(choice: Choice): List[String] =
       choice.options.collect { case OptionData.ValueBased(_, _, _, _, OptionDataValue.StringBased(value)) =>
         value
@@ -709,6 +715,11 @@ object FormTemplateValidator {
         sectionsList,
         checkHideChoicesSelected,
         "'hideChoicesSelected: true' can be used only on choices with values"
+      ),
+      validateChoice(
+        sectionsList,
+        checkHideChoicesSelectedNonDynamicOptions,
+        "'hideChoicesSelected: true' for ATL cannot be used with dynamic choice options from a data retrieve"
       )
     ).combineAll
   }
@@ -1368,6 +1379,50 @@ object FormTemplateValidator {
     isATLChoiceOptionsValid.combineAll
   }
 
+  def validateAddToListRepeatConfig(formTemplate: FormTemplate, pages: List[Page]): ValidationResult = {
+
+    def checkRepeatsUntil(addToList: Section.AddToList): List[ValidationResult] = {
+      implicit val l: LangADT = LangADT.En
+      val invalid: Invalid = Invalid(
+        s"AddToList '${addToList.title.defaultRawValue}' repeatsUntil cannot be determined by a choice component with dynamic options from a data retrieve."
+      )
+      addToList.repeatsUntil.fold(List.empty[ValidationResult])(incIf => checkBooleanExpr(incIf.booleanExpr, invalid))
+    }
+
+    def checkRepeatsWhile(addToList: Section.AddToList): List[ValidationResult] = {
+      implicit val l: LangADT = LangADT.En
+      val invalid: Invalid = Invalid(
+        s"AddToList '${addToList.title.defaultRawValue}' repeatsWhile cannot be determined by a choice component with dynamic options from a data retrieve."
+      )
+      addToList.repeatsWhile.fold(List.empty[ValidationResult])(incIf => checkBooleanExpr(incIf.booleanExpr, invalid))
+    }
+
+    def checkBooleanExpr(bExpr: BooleanExpr, invalid: Invalid): List[ValidationResult] =
+      bExpr match {
+        case Not(Equals(ChoicesSelected(FormComponentId(value)), ChoicesAvailable(FormComponentId(_)))) =>
+          if (areOptionsDataRetrievedBased(getChoiceById(value).options)) List(invalid) else List(Valid)
+        case Equals(ChoicesSelected(FormComponentId(value)), ChoicesAvailable(FormComponentId(_))) =>
+          if (areOptionsDataRetrievedBased(getChoiceById(value).options)) List(invalid) else List(Valid)
+        case _ => List(Valid)
+      }
+
+    def getChoiceById(id: String): Choice =
+      allFormComponents(pages)
+        .map(fv => (fv.id, fv.`type`))
+        .collect {
+          case (fId, choice: Choice) if fId.value == id =>
+            choice
+        }
+        .head
+
+    val isATLChoiceOptionsValid: List[ValidationResult] =
+      formTemplate.formKind.allSections.collect { case atl: Section.AddToList =>
+        checkRepeatsUntil(atl).appendedAll(checkRepeatsWhile(atl))
+      }.flatten
+
+    isATLChoiceOptionsValid.combineAll
+  }
+
   def validateAddToListDefaultPage(formTemplate: FormTemplate): ValidationResult = {
 
     def checkComponentTypes(page: Page): List[ValidationResult] = {
@@ -1681,6 +1736,18 @@ object FormTemplateValidator {
       }
       .combineAll
   }
+
+  private def areOptionsDataRetrievedBased(options: NonEmptyList[OptionData]): Boolean =
+    options.exists {
+      case OptionData.IndexBased(_, _, _, d)    => d.fold(false)(d => isDataRetrieveBased(d))
+      case OptionData.ValueBased(_, _, _, d, _) => d.fold(false)(d => isDataRetrieveBased(d))
+    }
+
+  private def isDataRetrieveBased(dynamic: Dynamic): Boolean =
+    dynamic match {
+      case DataRetrieveBased(_) => true
+      case _                    => false
+    }
 }
 
 object IsEmailVerifiedBy {
