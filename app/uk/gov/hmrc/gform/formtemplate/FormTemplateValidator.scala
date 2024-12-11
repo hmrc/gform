@@ -1505,6 +1505,33 @@ object FormTemplateValidator {
     )
   }
 
+  def validatePagesToRevisit(sections: List[Section]): ValidationResult = {
+    val allFields: List[(FormComponent, Int)] = indexedFields(sections)
+    val pagesWithId: Map[PageId, Int] = SectionHelper
+      .pages(sections)
+      .zipWithIndex
+      .collect {
+        case (page: Page, idx: Int) if page.id.isDefined => page.id.get -> idx
+      }
+      .toMap
+
+    allFields
+      .flatMap { case (fc: FormComponent, idx: Int) =>
+        fc.pageIdsToDisplayOnChange.map { pageList =>
+          pageList.map { pageId =>
+            (pagesWithId.contains(pageId), pagesWithId.get(pageId)) match {
+              case (false, _)               => Invalid(s"Page with ID '${pageId.id}' not found in form template")
+              case (_, Some(p)) if p < idx  => Invalid(s"Cannot revisit '${pageId.id}' as it's an earlier page in form")
+              case (_, Some(p)) if p == idx => Invalid(s"Cannot revisit '${pageId.id}' as self")
+              case (_, _)                   => Valid
+            }
+          }
+        }
+      }
+      .flatten
+      .combineAll
+  }
+
   def validateDataRetrieveForwardReferences(sections: List[Section]): ValidationResult = {
     val dataRetrievesWithPageId: List[(DataRetrieve, Int)] = SectionHelper
       .pages(sections)

@@ -122,6 +122,26 @@ trait FormTemplateSupport {
       None
     )
 
+  def mkFormComponent(id: String, ct: ComponentType, pagesToRevisit: List[PageId]) =
+    FormComponent(
+      FormComponentId(id),
+      ct,
+      toSmartString(id),
+      false,
+      None,
+      None,
+      None,
+      None,
+      true,
+      true,
+      true,
+      false,
+      false,
+      None,
+      None,
+      pageIdsToDisplayOnChange = Some(pagesToRevisit)
+    )
+
   def mkFormComponent(id: String, ct: ComponentType, label: SmartString) =
     FormComponent(
       FormComponentId(id),
