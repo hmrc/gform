@@ -107,6 +107,19 @@ object FormTemplateValidator {
     )
   }
 
+  def validateUniqueTaskIds(formTemplate: FormTemplate): ValidationResult = {
+    val ids: List[TaskId] =
+      formTemplate.formKind.fold(classic => List.empty[TaskId])(taskList =>
+        taskList.sections.toList.flatMap(_.tasks.toList.flatMap(_.id))
+      )
+    val duplicateIds = ids.groupBy(identity).collect {
+      case (_, ids) if ids.size > 1 => ids.head
+    }
+    duplicateIds.isEmpty.validationResult(
+      s"Some task ids are defined more than once: ${duplicateIds.toList.sortBy(_.id).map(_.id).mkString(",")}"
+    )
+  }
+
   def validateInstructions(pages: List[Page]): ValidationResult =
     if (!pages.flatMap(_.instruction).flatMap(_.name).forall(_.allNonEmpty)) {
       Invalid("One or more sections have instruction attribute with empty names")
@@ -177,6 +190,11 @@ object FormTemplateValidator {
       fc.id
     }.toSet
 
+    val allTaskIds: Set[TaskId] =
+      formTemplate.formKind.fold(classic => Set.empty[TaskId])(taskList =>
+        taskList.sections.toList.flatMap(_.tasks.toList.flatMap(_.id)).toSet
+      )
+
     val fcIdsWithExprs: Set[FormComponentId] = allFcIds ++ expressionIds.map(e => FormComponentId(e.id)).toSet
 
     def dateExprInvalidRefs(dateExpr: DateExpr*): Seq[FormComponentId] =
@@ -244,6 +262,8 @@ object FormTemplateValidator {
       case ReferenceInfo.ChoicesAvailableExpr(path, ChoicesAvailable(formComponentId))
           if !allChoiceIds(formComponentId) =>
         Invalid(s"${path.path}: $formComponentId is not a Choice in the form")
+      case ReferenceInfo.TaskStatusExpr(path, TaskStatus(taskId)) if !allTaskIds(taskId) =>
+        Invalid(s"${path.path}: ${taskId.id} is not a Task id in the form")
       case _ => Valid
     }
 
@@ -1224,6 +1244,7 @@ object FormTemplateValidator {
       case ChoicesRevealedField(_)      => Valid
       case ChoicesSelected(_)           => Valid
       case ChoicesAvailable(_)          => Valid
+      case TaskStatus(_)                => Valid
     }
   }
 

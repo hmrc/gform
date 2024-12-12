@@ -46,6 +46,7 @@ trait FormDataSample {
                                      |     "mapping": {}
                                      |   }
                                      | },
-                                     | "componentIdToFileId": {}
+                                     | "componentIdToFileId": {},
+                                     | "taskIdTaskStatus": {}
                                      |}""".stripMargin)
 }
