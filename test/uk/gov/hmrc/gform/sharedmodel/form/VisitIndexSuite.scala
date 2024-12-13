@@ -112,8 +112,7 @@ class VisitIndexSuite extends FunSuite {
 
     val value: JsResult[VisitIndex] = json.validate[VisitIndex]
 
-    val expected =
-      JsError(JsonValidationError("Failed to decode VisitIndex for TaskList from json: {\"visitsIndex\":{\"0\":[]}}"))
+    val expected = JsSuccess(VisitIndex.TaskList(Map.empty))
 
     assertEquals(value, expected)
   }
@@ -130,10 +129,7 @@ class VisitIndexSuite extends FunSuite {
 
     val value: JsResult[VisitIndex] = json.validate[VisitIndex]
 
-    val expected =
-      JsError(
-        JsonValidationError("Failed to decode VisitIndex for TaskList from json: {\"visitsIndex\":{\"0,0\":false}}")
-      )
+    val expected = JsSuccess(VisitIndex.TaskList(Map.empty))
 
     assertEquals(value, expected)
   }
