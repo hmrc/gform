@@ -81,6 +81,7 @@ import uk.gov.hmrc.mongo.CurrentTimestampSupport
 import uk.gov.hmrc.mongo.MongoUtils
 import uk.gov.hmrc.mongo.cache.CacheIdType.SimpleCacheId
 import uk.gov.hmrc.mongo.cache.MongoCacheRepository
+import uk.gov.hmrc.play.bootstrap.LoggerModule
 import uk.gov.hmrc.play.bootstrap.config.AppName
 
 import java.util.concurrent.TimeUnit
@@ -99,6 +100,8 @@ class ApplicationLoader extends play.api.ApplicationLoader {
 class ApplicationModule(context: Context)
     extends BuiltInComponentsFromContext(context) with AhcWSComponents with I18nComponents { self =>
 
+  private val loggerModule = new LoggerModule
+  loggerModule.bindings(environment, configuration)
   private val logger = LoggerFactory.getLogger(getClass)
 
   private val appName = AppName.fromConfiguration(configuration)
