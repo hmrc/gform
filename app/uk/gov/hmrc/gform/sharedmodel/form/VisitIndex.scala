@@ -20,14 +20,14 @@ import cats.implicits._
 import play.api.libs.json.Reads._
 import play.api.libs.json._
 import scala.util.Try
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Coordinates, FormKind, TaskNumber, TaskSectionNumber }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Coordinates, FormKind, SectionNumber, TaskNumber, TaskSectionNumber }
 
 sealed trait VisitIndex extends Product with Serializable
 
 object VisitIndex {
 
-  final case class Classic(visitsIndex: Set[Int]) extends VisitIndex
-  final case class TaskList(visitsIndex: Map[Coordinates, Set[Int]]) extends VisitIndex
+  final case class Classic(visitsIndex: Set[SectionNumber.Classic]) extends VisitIndex
+  final case class TaskList(visitsIndex: Map[Coordinates, Set[SectionNumber.Classic]]) extends VisitIndex
 
   val key: String = "visitsIndex"
 
@@ -39,30 +39,35 @@ object VisitIndex {
       (jsValue \ key).toOption match {
         case None => JsError(s"Missing '$key' field. Failed to decode VisitIndex from: $jsValue")
         case Some(a: JsArray) =>
-          JsSuccess(
-            Try(Classic(a.value.map(_.as[Int]).toSet)).toOption.getOrElse(VisitIndex.Classic(Set.empty[Int]))
-          )
+          a.validate[Set[SectionNumber.Classic]] match {
+            case JsSuccess(visits, _) => JsSuccess(Classic(visits))
+            case JsError(errors)      => JsSuccess(Classic(Set.empty[SectionNumber.Classic]))
+          }
         case Some(o: JsObject) =>
-          val res: Try[List[(Coordinates, Set[Int])]] =
-            o.value.toList.traverse { case (k, v) =>
-              Try(k.split(",").toList.map(_.toInt)).collect { case taskSectionNumber :: taskNumber :: Nil =>
-                (Coordinates(TaskSectionNumber(taskSectionNumber), TaskNumber(taskNumber))) -> v.as[Set[Int]]
+          o.value.toList
+            .traverse { case (k, v) =>
+              Try(k.split(",").toList).collect { case taskSectionNumber :: taskNumber :: Nil =>
+                val key = Coordinates(TaskSectionNumber(taskSectionNumber.toInt), TaskNumber(taskNumber.toInt))
+                val visits = v.validate[Set[SectionNumber.Classic]].getOrElse(Set.empty[SectionNumber.Classic])
+                key -> visits
               }
             }
-          res.fold(
-            error => JsSuccess(TaskList(Map.empty)),
-            xs => JsSuccess(TaskList(xs.toMap))
-          )
+            .fold(
+              error => JsSuccess(TaskList(Map.empty)),
+              xs => JsSuccess(TaskList(xs.toMap))
+            )
         case Some(unexpected) => JsError("Unknown type. Failed to decode VisitIndex from json: " + unexpected)
       },
     (visitIndex: VisitIndex) =>
       visitIndex match {
         case Classic(visitsIndex) => Json.obj(key -> Json.toJson(visitsIndex))
         case TaskList(visitsIndex) =>
-          val s: Map[String, JsValue] = visitsIndex.toList.map {
-            case (Coordinates(TaskSectionNumber(tsc), TaskNumber(tn)), indexes) =>
-              List(tsc, tn).mkString(",") -> Json.toJson(indexes)
-          }.toMap
+          val s: Map[String, JsValue] =
+            visitsIndex.toList.map { case (Coordinates(TaskSectionNumber(tsc), TaskNumber(tn)), indexes) =>
+              List(tsc, tn).mkString(",") -> {
+                Json.toJson(indexes)
+              }
+            }.toMap
           Json.obj(key -> Json.toJson(s))
       }
   )

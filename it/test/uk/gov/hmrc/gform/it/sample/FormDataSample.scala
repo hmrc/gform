@@ -32,7 +32,7 @@ trait FormDataSample {
                                      |   "InProgress": {}
                                      | },
                                      | "visitsIndex": {
-                                     |   "visitsIndex": [ 0 ]
+                                     |   "visitsIndex": [ "n0" ]
                                      | },
                                      | "thirdPartyData": {
                                      |   "obligations": {
