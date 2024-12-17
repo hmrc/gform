@@ -24,7 +24,7 @@ import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.sharedmodel._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.OverseasAddress.Configurable._
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ DisplayInSummary, _ }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ DisplayInSummary, TextWithRestrictions, _ }
 
 class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemplateSupport {
 
@@ -265,6 +265,63 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
                                             |Format: Some(OrientationFormat(invalid))
                                             |Value: None
                                             |""".stripMargin))
+  }
+
+  "optFieldValue" should "parse text component with pageIdsToDisplayOnChange" in {
+    val formComponentMaker = new FormComponentMaker(Json.parse("""
+                                                                 |{
+                                                                 |   "id": "id1",
+                                                                 |   "type": "text",
+                                                                 |   "label": "Field 1",
+                                                                 |   "format": "text",
+                                                                 |   "pageIdsToDisplayOnChange": [
+                                                                 |       "pageId1",
+                                                                 |       "pageId2"
+                                                                 |   ]
+                                                                 |}
+                                                                 |""".stripMargin))
+    val result = formComponentMaker.optFieldValue()
+    result shouldBe Right(
+      FormComponent(
+        FormComponentId("id1"),
+        Text(TextWithRestrictions(0, 1000), Value),
+        toSmartString("Field 1"),
+        false,
+        None,
+        None,
+        None,
+        None,
+        true,
+        true,
+        true,
+        false,
+        false,
+        None,
+        None,
+        pageIdsToDisplayOnChange = Some(List(PageId("pageId1"), PageId("pageId2")))
+      )
+    )
+  }
+
+  it should "fail to parse text component with invalid pageIdsToDisplayOnChange" in {
+    val formComponentMaker = new FormComponentMaker(Json.parse("""
+                                                                 |{
+                                                                 |   "id": "id1",
+                                                                 |   "type": "text",
+                                                                 |   "label": "Field 1",
+                                                                 |   "format": "text",
+                                                                 |   "pageIdsToDisplayOnChange": [
+                                                                 |       "not-a-valid-id",
+                                                                 |       "pageId2"
+                                                                 |   ]
+                                                                 |}
+                                                                 |""".stripMargin))
+    val result = formComponentMaker.optFieldValue()
+    result shouldBe Left(
+      UnexpectedState(
+        """{"obj":[{"msg":["Page Ids cannot contain any special characters other than an underscore. They also must not start with a number - 'not-a-valid-id'"],"args":[]}]}"""
+      )
+    )
   }
 
   it should "parse calendarDate component" in {
