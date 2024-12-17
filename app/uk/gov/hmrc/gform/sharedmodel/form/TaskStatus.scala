@@ -18,9 +18,18 @@ package uk.gov.hmrc.gform.sharedmodel.form
 
 import cats.Eq
 import play.api.libs.json.Format
+import uk.gov.hmrc.gform.sharedmodel.form.TaskStatus.{ CannotStartYet, Completed, InProgress, NotRequired, NotStarted }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.ADTFormat
 
-sealed trait TaskStatus extends Product with Serializable
+sealed trait TaskStatus extends Product with Serializable {
+  val asString = this match {
+    case NotStarted     => "Not started"
+    case InProgress     => "In progress"
+    case Completed      => "Completed"
+    case CannotStartYet => "Cannot start yet"
+    case NotRequired    => "Not required"
+  }
+}
 
 object TaskStatus {
   implicit val equal: Eq[TaskStatus] = Eq.fromUniversalEquals
@@ -29,6 +38,8 @@ object TaskStatus {
   case object Completed extends TaskStatus
   case object CannotStartYet extends TaskStatus
   case object NotRequired extends TaskStatus
+
+  val statuses = List(NotStarted, InProgress, Completed, CannotStartYet, NotRequired)
 
   implicit val format: Format[TaskStatus] = ADTFormat.formatEnumeration(
     "NotStarted"     -> NotStarted,

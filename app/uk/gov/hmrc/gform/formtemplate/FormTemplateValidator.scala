@@ -1401,6 +1401,46 @@ object FormTemplateValidator {
     isATLChoiceOptionsValid.combineAll
   }
 
+  def validateIncludeIfForTaskStatus(sections: List[Section]): ValidationResult = {
+    val allTaskStatus = uk.gov.hmrc.gform.sharedmodel.form.TaskStatus.statuses.map(_.asString)
+    def validateTaskStatus(booleanExpr: BooleanExpr, location: String): ValidationResult = {
+      def reason(value: String) =
+        s"'$value' is not valid for the 'taskStatus' expression in $location. It can be [${allTaskStatus.mkString(", ")}]."
+
+      booleanExpr match {
+        case Equals(TaskStatus(_), Constant(value)) if !allTaskStatus.contains(value) =>
+          Invalid(reason(value))
+        case Not(Equals(TaskStatus(_), Constant(value))) if !allTaskStatus.contains(value) =>
+          Invalid(reason(value))
+        case Or(left, right) =>
+          Monoid[ValidationResult]
+            .combineAll(List(validateTaskStatus(left, location), validateTaskStatus(right, location)))
+        case And(left, right) =>
+          Monoid[ValidationResult]
+            .combineAll(List(validateTaskStatus(left, location), validateTaskStatus(right, location)))
+        case _ => Valid
+      }
+    }
+
+    Monoid[ValidationResult]
+      .combineAll(
+        SectionHelper
+          .pages(sections)
+          .zipWithIndex
+          .flatMap { case (page: Page, idx) =>
+            val allIncludeIfWithLocation = page.allFormComponents.flatMap { fc =>
+              fc.includeIf match {
+                case Some(includeIf) => Some(includeIf.booleanExpr -> s"'${fc.id.value}' form component's includeIf")
+                case _               => None
+              }
+            } ++ page.includeIf.map(i => i.booleanExpr -> s"$idx. section's includeIf: $idx") ++ page.removeItemIf
+              .map(r => r.booleanExpr -> s"$idx. section's removeIf")
+
+            allIncludeIfWithLocation.map { case (booleanExpr, location) => validateTaskStatus(booleanExpr, location) }
+          }
+      )
+  }
+
   def validateAddToListRepeatConfig(formTemplate: FormTemplate, pages: List[Page]): ValidationResult = {
 
     def checkRepeatsUntil(addToList: Section.AddToList): List[ValidationResult] = {
