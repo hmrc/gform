@@ -37,7 +37,8 @@ class FormServiceSpec extends PlaySpec {
     VisitIndex.empty(FormKind.Classic(Nil)),
     ThirdPartyData.empty,
     Some(EnvelopeExpiryDate(LocalDateTime.now.plusDays(1))),
-    FormComponentIdToFileIdMapping.empty
+    FormComponentIdToFileIdMapping.empty,
+    TaskIdTaskStatusMapping.empty
   )
 
   val testFormSummary: Form = testFormInProgress.copy(status = Summary)

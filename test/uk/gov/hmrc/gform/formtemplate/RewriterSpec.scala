@@ -167,6 +167,7 @@ class RewriterSpec extends FunSuite with FormTemplateSupport with RewriterSuppor
   ): Future[Either[UnexpectedState, FormTemplate]] = {
     val taskTitle1 = SmartString(localised = LocalisedString(m = Map(LangADT.En -> "English task title 1")), Nil)
     val task1 = Task(
+      id = None,
       title = taskTitle1,
       sections = NonEmptyList(section1, List(section2)),
       caption = taskCaption,

@@ -38,7 +38,6 @@ object ReferenceInfo {
   final case class LookupColumnExpr(path: TemplatePath, lookupColumn: LookupColumn) extends ReferenceInfo
   final case class CsvCountryCountCheckExpr(path: TemplatePath, csvCountryCountCheck: CsvCountryCountCheck)
       extends ReferenceInfo
-  final case class MiniSummaryRowExpr(path: TemplatePath, miniSummaryRow: MiniSummaryRow) extends ReferenceInfo
   final case class IndexOfExpr(path: TemplatePath, indexOf: IndexOf) extends ReferenceInfo
   final case class NumberedListExpr(path: TemplatePath, numberedList: NumberedList) extends ReferenceInfo
   final case class BulletedListExpr(path: TemplatePath, numberedList: BulletedList) extends ReferenceInfo
@@ -47,4 +46,5 @@ object ReferenceInfo {
       extends ReferenceInfo
   final case class ChoicesSelectedExpr(path: TemplatePath, choicesSelected: ChoicesSelected) extends ReferenceInfo
   final case class ChoicesAvailableExpr(path: TemplatePath, choicesAvailable: ChoicesAvailable) extends ReferenceInfo
+  final case class TaskStatusExpr(path: TemplatePath, taskStatus: TaskStatus) extends ReferenceInfo
 }

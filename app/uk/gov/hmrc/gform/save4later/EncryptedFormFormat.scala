@@ -21,7 +21,7 @@ import play.api.libs.functional.syntax._
 import play.api.libs.json._
 import uk.gov.hmrc.crypto.{ Crypted, Decrypter, Encrypter, PlainText }
 import uk.gov.hmrc.gform.sharedmodel.UserId
-import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeExpiryDate, EnvelopeId, Form, FormComponentIdToFileIdMapping, FormData, FormId, FormStatus, ThirdPartyData, VisitIndex }
+import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeExpiryDate, EnvelopeId, Form, FormComponentIdToFileIdMapping, FormData, FormId, FormStatus, TaskIdTaskStatusMapping, ThirdPartyData, VisitIndex }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplateId, FormTemplateVersion }
 
 object EncryptedFormFormat {
@@ -29,6 +29,7 @@ object EncryptedFormFormat {
     private val componentIdToFileId = "componentIdToFileId"
     private val formData = "formData"
     private val thirdPartyData = "thirdPartyData"
+    private val taskIdTaskStatus = "taskIdTaskStatus"
 
     override def writes(form: Form): JsValue =
       FormId.format.writes(form._id) ++
@@ -41,7 +42,8 @@ object EncryptedFormFormat {
         VisitIndex.format.writes(form.visitsIndex) ++
         Json.obj(thirdPartyData -> jsonCrypto.encrypt(PlainText(Json.toJson(form.thirdPartyData).toString())).value) ++
         EnvelopeExpiryDate.optionFormat.writes(form.envelopeExpiryDate) ++
-        Json.obj(componentIdToFileId -> FormComponentIdToFileIdMapping.format.writes(form.componentIdToFileId))
+        Json.obj(componentIdToFileId -> FormComponentIdToFileIdMapping.format.writes(form.componentIdToFileId)) ++
+        Json.obj(taskIdTaskStatus -> TaskIdTaskStatusMapping.format.writes(form.taskIdTaskStatus))
 
     private val readFormData: Reads[FormData] =
       (__ \ formData)
@@ -64,7 +66,8 @@ object EncryptedFormFormat {
         Form.readVisitIndex and
         readThirdPartyData and
         EnvelopeExpiryDate.optionFormat and
-        Form.componentIdToFileIdWithFallback
+        Form.componentIdToFileIdWithFallback and
+        Form.taskIdTaskStatusWithFallback
     )(Form.apply _)
 
     override def reads(json: JsValue): JsResult[Form] = {

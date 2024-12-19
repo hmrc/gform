@@ -162,7 +162,8 @@ class TestOnlyFormService(
               envelopeId = snapshot.originalForm.envelopeId,
               thirdPartyData = snapshot.originalForm.thirdPartyData,
               status = snapshot.originalForm.status,
-              visitsIndex = snapshot.originalForm.visitsIndex
+              visitsIndex = snapshot.originalForm.visitsIndex,
+              taskIdTaskStatus = snapshot.originalForm.taskIdTaskStatus
             )
           )
         case None => throw new Exception(s"We could not find snapshot item with id: $request.snapshotId")

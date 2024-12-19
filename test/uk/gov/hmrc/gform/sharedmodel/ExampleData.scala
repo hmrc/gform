@@ -611,7 +611,8 @@ trait ExampleForm { dependsOn: ExampleFormField with ExampleFormTemplate =>
       VisitIndex.empty(FormKind.Classic(Nil)),
       ThirdPartyData.empty,
       envelopeExpiryDate,
-      FormComponentIdToFileIdMapping.empty
+      FormComponentIdToFileIdMapping.empty,
+      TaskIdTaskStatusMapping.empty
     )
 
 }

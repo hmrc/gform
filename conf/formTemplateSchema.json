@@ -546,6 +546,9 @@
               "title": {
                 "$ref": "#/$defs/stringOrEnCyObject"
               },
+              "id": {
+                "type": "string"
+              },
               "includeIf": {
                 "type": "string"
               },

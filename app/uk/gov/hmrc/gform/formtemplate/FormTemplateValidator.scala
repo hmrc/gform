@@ -107,6 +107,19 @@ object FormTemplateValidator {
     )
   }
 
+  def validateUniqueTaskIds(formTemplate: FormTemplate): ValidationResult = {
+    val ids: List[TaskId] =
+      formTemplate.formKind.fold(classic => List.empty[TaskId])(taskList =>
+        taskList.sections.toList.flatMap(_.tasks.toList.flatMap(_.id))
+      )
+    val duplicateIds = ids.groupBy(identity).collect {
+      case (_, ids) if ids.size > 1 => ids.head
+    }
+    duplicateIds.isEmpty.validationResult(
+      s"Some task ids are defined more than once: ${duplicateIds.toList.sortBy(_.id).map(_.id).mkString(",")}"
+    )
+  }
+
   def validateInstructions(pages: List[Page]): ValidationResult =
     if (!pages.flatMap(_.instruction).flatMap(_.name).forall(_.allNonEmpty)) {
       Invalid("One or more sections have instruction attribute with empty names")
@@ -177,6 +190,11 @@ object FormTemplateValidator {
       fc.id
     }.toSet
 
+    val allTaskIds: Set[TaskId] =
+      formTemplate.formKind.fold(classic => Set.empty[TaskId])(taskList =>
+        taskList.sections.toList.flatMap(_.tasks.toList.flatMap(_.id)).toSet
+      )
+
     val fcIdsWithExprs: Set[FormComponentId] = allFcIds ++ expressionIds.map(e => FormComponentId(e.id)).toSet
 
     def dateExprInvalidRefs(dateExpr: DateExpr*): Seq[FormComponentId] =
@@ -244,6 +262,8 @@ object FormTemplateValidator {
       case ReferenceInfo.ChoicesAvailableExpr(path, ChoicesAvailable(formComponentId))
           if !allChoiceIds(formComponentId) =>
         Invalid(s"${path.path}: $formComponentId is not a Choice in the form")
+      case ReferenceInfo.TaskStatusExpr(path, TaskStatus(taskId)) if !allTaskIds(taskId) =>
+        Invalid(s"${path.path}: ${taskId.id} is not a Task id in the form")
       case _ => Valid
     }
 
@@ -1224,6 +1244,7 @@ object FormTemplateValidator {
       case ChoicesRevealedField(_)      => Valid
       case ChoicesSelected(_)           => Valid
       case ChoicesAvailable(_)          => Valid
+      case TaskStatus(_)                => Valid
     }
   }
 
@@ -1378,6 +1399,46 @@ object FormTemplateValidator {
       }.flatten
 
     isATLChoiceOptionsValid.combineAll
+  }
+
+  def validateIncludeIfForTaskStatus(sections: List[Section]): ValidationResult = {
+    val allTaskStatus = uk.gov.hmrc.gform.sharedmodel.form.TaskStatus.statuses.map(_.asString)
+    def validateTaskStatus(booleanExpr: BooleanExpr, location: String): ValidationResult = {
+      def reason(value: String) =
+        s"'$value' is not valid for the 'taskStatus' expression in $location. It can be [${allTaskStatus.mkString(", ")}]."
+
+      booleanExpr match {
+        case Equals(TaskStatus(_), Constant(value)) if !allTaskStatus.contains(value) =>
+          Invalid(reason(value))
+        case Not(Equals(TaskStatus(_), Constant(value))) if !allTaskStatus.contains(value) =>
+          Invalid(reason(value))
+        case Or(left, right) =>
+          Monoid[ValidationResult]
+            .combineAll(List(validateTaskStatus(left, location), validateTaskStatus(right, location)))
+        case And(left, right) =>
+          Monoid[ValidationResult]
+            .combineAll(List(validateTaskStatus(left, location), validateTaskStatus(right, location)))
+        case _ => Valid
+      }
+    }
+
+    Monoid[ValidationResult]
+      .combineAll(
+        SectionHelper
+          .pages(sections)
+          .zipWithIndex
+          .flatMap { case (page: Page, idx) =>
+            val allIncludeIfWithLocation = page.allFormComponents.flatMap { fc =>
+              fc.includeIf match {
+                case Some(includeIf) => Some(includeIf.booleanExpr -> s"'${fc.id.value}' form component's includeIf")
+                case _               => None
+              }
+            } ++ page.includeIf.map(i => i.booleanExpr -> s"$idx. section's includeIf: $idx") ++ page.removeItemIf
+              .map(r => r.booleanExpr -> s"$idx. section's removeIf")
+
+            allIncludeIfWithLocation.map { case (booleanExpr, location) => validateTaskStatus(booleanExpr, location) }
+          }
+      )
   }
 
   def validateAddToListRepeatConfig(formTemplate: FormTemplate, pages: List[Page]): ValidationResult = {

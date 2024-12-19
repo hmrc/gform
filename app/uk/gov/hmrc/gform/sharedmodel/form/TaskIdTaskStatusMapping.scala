@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,18 +16,18 @@
 
 package uk.gov.hmrc.gform.sharedmodel.form
 
-import julienrf.json.derived
-import play.api.libs.json.OFormat
+import play.api.libs.json.Format
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ JsonUtils, TaskId }
 
-case class UserData(
-  formData: FormData,
-  formStatus: FormStatus,
-  visitsIndex: VisitIndex,
-  thirdPartyData: ThirdPartyData,
-  componentIdToFileId: FormComponentIdToFileIdMapping,
-  taskIdTaskStatus: TaskIdTaskStatusMapping
-)
+case class TaskIdTaskStatusMapping(mapping: Map[TaskId, TaskStatus])
 
-object UserData {
-  implicit val format: OFormat[UserData] = derived.oformat()
+object TaskIdTaskStatusMapping {
+  val empty = TaskIdTaskStatusMapping(Map.empty)
+  val formatMap: Format[Map[TaskId, TaskStatus]] =
+    JsonUtils.formatMap(TaskId.apply, _.id)
+
+  implicit val format: Format[TaskIdTaskStatusMapping] = Format(
+    formatMap.map(TaskIdTaskStatusMapping.apply),
+    formatMap.contramap(_.mapping)
+  )
 }

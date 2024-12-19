@@ -84,6 +84,7 @@ object TaskSection {
 }
 
 final case class Task(
+  id: Option[TaskId],
   title: SmartString,
   sections: NonEmptyList[Section],
   summarySection: Option[SummarySection],
