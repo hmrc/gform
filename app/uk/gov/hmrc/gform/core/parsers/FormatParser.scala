@@ -124,6 +124,7 @@ trait FormatParser extends ValueParser {
     "agentComplaintCategories" ^^^ Register.AgentComplaintCategories |
       "cashType" ^^^ Register.CashType |
       "country" ^^^ Register.Country |
+      "nationality" ^^^ Register.Nationality |
       "currency" ^^^ Register.Currency |
       "intercept" ^^^ Register.Intercept |
       "port" ^^^ Register.Port |

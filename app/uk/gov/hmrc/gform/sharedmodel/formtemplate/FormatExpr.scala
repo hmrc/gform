@@ -215,6 +215,7 @@ object Register {
   case object AgentComplaintCategories extends Register
   case object CashType extends Register
   case object Country extends Register
+  case object Nationality extends Register
   case object Currency extends Register
   case object Intent extends Register
   case object Intercept extends Register
