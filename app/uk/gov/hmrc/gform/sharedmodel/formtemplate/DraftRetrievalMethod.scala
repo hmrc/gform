@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
+import cats.Eq
 import play.api.libs.json._
 
 sealed trait DraftRetrievalMethod
@@ -23,15 +24,18 @@ sealed trait DraftRetrievalMethod
 case class OnePerUser(continueOrDeletePage: ContinueOrDeletePage) extends DraftRetrievalMethod
 case class FormAccessCodeForAgents(continueOrDeletePage: ContinueOrDeletePage) extends DraftRetrievalMethod
 case object BySubmissionReference extends DraftRetrievalMethod
+case class FormAccessCode(continueOrDeletePage: ContinueOrDeletePage) extends DraftRetrievalMethod
 
 case object NotPermitted extends DraftRetrievalMethod
 
 object DraftRetrievalMethod {
-  private case class Helper(value: String, showContinueOrDeletePage: Boolean) {
+  private[formtemplate] case class Helper(value: String, showContinueOrDeletePage: Boolean) {
     def toDraftRetrievalMethod: JsResult[DraftRetrievalMethod] = (value, showContinueOrDeletePage) match {
       case ("onePerUser", conOrDel) => JsSuccess(OnePerUser(ContinueOrDeletePage.fromBoolean(conOrDel)))
       case ("formAccessCodeForAgents", conOrDel) =>
         JsSuccess(FormAccessCodeForAgents(ContinueOrDeletePage.fromBoolean(conOrDel)))
+      case ("accessCode", conOrDel) =>
+        JsSuccess(FormAccessCode(ContinueOrDeletePage.fromBoolean(conOrDel)))
       case ("notPermitted", _)           => JsSuccess(NotPermitted)
       case ("submissionReference", true) => JsSuccess(BySubmissionReference)
       case ("submissionReference", false) =>
@@ -43,8 +47,24 @@ object DraftRetrievalMethod {
           s"only three values are allowed for draftRetrievalMethod: either onePerUser, submissionReference or formAccessCodeForAgents; $err is not valid"
         )
     }
+
+    def toDraftRetrieval: JsResult[DraftRetrievalMethod] = (value, showContinueOrDeletePage) match {
+      case ("onePerUser", conOrDel) => JsSuccess(OnePerUser(ContinueOrDeletePage.fromBoolean(conOrDel)))
+      case ("accessCode", conOrDel) =>
+        JsSuccess(FormAccessCode(ContinueOrDeletePage.fromBoolean(conOrDel)))
+      case ("notPermitted", _)           => JsSuccess(NotPermitted)
+      case ("submissionReference", true) => JsSuccess(BySubmissionReference)
+      case ("submissionReference", false) =>
+        JsError(
+          "Failure, showContinueOrDeletePage is invalid in combination with 'draftRetrieval: submissionReference'"
+        )
+      case (err, _) =>
+        JsError(
+          s"only three values are allowed for draftRetrieval: either onePerUser, submissionReference or accessCode; $err is not valid"
+        )
+    }
   }
-  private object Helper {
+  private[formtemplate] object Helper {
     val reads = Json.reads[Helper]
   }
 
@@ -53,4 +73,5 @@ object DraftRetrievalMethod {
   }
 
   implicit val format: OFormat[DraftRetrievalMethod] = OFormatWithTemplateReadFallback(templateReads)
+  implicit val equal: Eq[DraftRetrievalMethod] = Eq.fromUniversalEquals
 }

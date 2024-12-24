@@ -32,7 +32,7 @@ import uk.gov.hmrc.gform.sharedmodel.DataRetrieve.Attribute
 import uk.gov.hmrc.gform.sharedmodel._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.Dynamic.DataRetrieveBased
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.PageLink
-import uk.gov.hmrc.gform.sharedmodel.formtemplate._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ BySubmissionReference, _ }
 import uk.gov.hmrc.gform.sharedmodel.graph.DependencyGraph._
 
 import java.time.LocalDate
@@ -1400,6 +1400,22 @@ object FormTemplateValidator {
 
     isATLChoiceOptionsValid.combineAll
   }
+
+  def validateDraftRetrieval(formTemplate: FormTemplate): ValidationResult =
+    formTemplate.draftRetrieval
+      .flatMap { dr =>
+        dr.mapping
+          .get(AffinityGroup.Agent)
+          .collect { case BySubmissionReference =>
+            Invalid("The draft retrieve method 'submissionReference' is invalid for the user type 'agent'")
+          }
+          .orElse {
+            dr.mapping.get(AffinityGroup.Individual).collect { case FormAccessCode(_) =>
+              Invalid("The draft retrieve method 'accessCode' is invalid for the user type 'individual'")
+            }
+          }
+      }
+      .getOrElse(Valid)
 
   def validateIncludeIfForTaskStatus(sections: List[Section]): ValidationResult = {
     val allTaskStatus = uk.gov.hmrc.gform.sharedmodel.form.TaskStatus.statuses.map(_.asString)
