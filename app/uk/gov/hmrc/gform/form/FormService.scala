@@ -29,8 +29,8 @@ import uk.gov.hmrc.gform.formtemplate.FormTemplateAlgebra
 import uk.gov.hmrc.gform.logging.Loggers
 import uk.gov.hmrc.gform.objectstore.ObjectStoreAlgebra
 import uk.gov.hmrc.gform.save4later.FormPersistenceAlgebra
-import uk.gov.hmrc.gform.sharedmodel.form.{ FormStatus, _ }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ BySubmissionReference, FormAccessCodeForAgents, FormComponentId, FormTemplate, FormTemplateId }
+import uk.gov.hmrc.gform.sharedmodel.form._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ BySubmissionReference, DraftRetrievalMethod, FormAccessCode, FormAccessCodeForAgents, FormComponentId, FormTemplate, FormTemplateId }
 import uk.gov.hmrc.gform.sharedmodel.{ AccessCode, SubmissionRef, UserId }
 import uk.gov.hmrc.gform.time.TimeProvider
 import uk.gov.hmrc.http.HeaderCarrier
@@ -85,18 +85,24 @@ class FormService[F[_]: Monad](
     affinityGroup: Option[AffinityGroup]
   ): FormIdData = {
     val formTemplateId = formTemplate._id
-    (formTemplate.draftRetrievalMethod, affinityGroup) match {
 
-      case (BySubmissionReference, _) =>
-        val submissionRef = SubmissionRef(envelopeId)
-        FormIdData.WithAccessCode(userId, formTemplateId, AccessCode(submissionRef.value))
+    def checkDraftRetrievalMethod(draftRetrievalMethod: DraftRetrievalMethod) =
+      (draftRetrievalMethod, affinityGroup) match {
+        case (BySubmissionReference, _) =>
+          val submissionRef = SubmissionRef(envelopeId)
+          FormIdData.WithAccessCode(userId, formTemplateId, AccessCode(submissionRef.value))
 
-      case (FormAccessCodeForAgents(_), Some(AffinityGroup.Agent)) =>
-        val ac = AccessCode.random
-        FormIdData.WithAccessCode(userId, formTemplateId, ac)
+        case (FormAccessCodeForAgents(_), Some(AffinityGroup.Agent)) | (FormAccessCode(_), _) =>
+          val ac = AccessCode.random
+          FormIdData.WithAccessCode(userId, formTemplateId, ac)
 
-      case _ => FormIdData.Plain(userId, formTemplateId)
-    }
+        case _ => FormIdData.Plain(userId, formTemplateId)
+      }
+
+    formTemplate.draftRetrieval
+      .flatMap(dr => affinityGroup.flatMap(ag => dr.mapping.get(ag)))
+      .collect { case drm => checkDraftRetrievalMethod(drm) }
+      .getOrElse(checkDraftRetrievalMethod(formTemplate.draftRetrievalMethod))
   }
 
   def create(

@@ -443,6 +443,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     Some(ResearchBanner),
     Default,
     OnePerUser(ContinueOrDeletePage.Show),
+    None,
     Destinations
       .DestinationList(
         NonEmptyList.of(
