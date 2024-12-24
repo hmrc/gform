@@ -157,6 +157,7 @@ trait Verifier {
                 task.copy(
                   sections = task.sections.map(updateSection),
                   includeIf = None,
+                  startIf = None,
                   summarySection = task.summarySection.map(summary => summary.copy(includeIf = None)),
                   declarationSection = task.declarationSection.map(declaration => declaration.copy(includeIf = None))
                 )

@@ -549,6 +549,9 @@
               "id": {
                 "type": "string"
               },
+              "startIf": {
+                "type": "string"
+              },
               "includeIf": {
                 "type": "string"
               },
