@@ -111,6 +111,7 @@ object TopLevelExpressions {
             case DateCtx(value)                                             => value
             case IfElse(cond, Expr2DateExpr(dExpr1), Expr2DateExpr(dExpr2)) => DateIfElse(cond, dExpr1, dExpr2)
             case Else(Expr2DateExpr(dExpr1), Expr2DateExpr(dExpr2))         => DateOrElse(dExpr1, dExpr2)
+            case FormCtx(fcId)                                              => DateFormCtxVar(FormCtx(fcId))
             case _                                                          => d
           }
         case d @ HmrcTaxPeriodCtx(FormCtx(fcId), _) =>
