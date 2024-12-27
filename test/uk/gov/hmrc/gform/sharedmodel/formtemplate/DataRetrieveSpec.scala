@@ -271,6 +271,22 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
           AttributeInstruction(
             DataRetrieve.Attribute("dateOfCreation"),
             ConstructAttribute.AsIs(Fetch(List("date_of_creation")))
+          ),
+          AttributeInstruction(
+            DataRetrieve.Attribute("sicCode1"),
+            ConstructAttribute.ExtractAtIndex(Fetch(List("sic_codes")), 0)
+          ),
+          AttributeInstruction(
+            DataRetrieve.Attribute("sicCode2"),
+            ConstructAttribute.ExtractAtIndex(Fetch(List("sic_codes")), 1)
+          ),
+          AttributeInstruction(
+            DataRetrieve.Attribute("sicCode3"),
+            ConstructAttribute.ExtractAtIndex(Fetch(List("sic_codes")), 2)
+          ),
+          AttributeInstruction(
+            DataRetrieve.Attribute("sicCode4"),
+            ConstructAttribute.ExtractAtIndex(Fetch(List("sic_codes")), 3)
           )
         )
       ),
