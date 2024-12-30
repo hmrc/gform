@@ -40,6 +40,7 @@ object ConstructAttribute {
   // It only retrieves the data from the fetches
   // and defers the rendering to the service that will utilize the data.
   final case class Combine(value: List[(DataRetrieve.Attribute, Fetch)]) extends ConstructAttribute
+  final case class ExtractAtIndex(value: Fetch, index: Int) extends ConstructAttribute
 
   implicit val format: OFormat[ConstructAttribute] = derived.oformat()
 }
