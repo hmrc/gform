@@ -68,6 +68,7 @@ object BooleanExprSubstituter extends Substituter[BooleanExprSubstitutions, Form
         case ChoicesSelected(_)            => t
         case ChoicesAvailable(_)           => t
         case TaskStatus(_)                 => t
+        case LookupOps(_, _)               => t
       }
     }
 

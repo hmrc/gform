@@ -183,6 +183,7 @@ final case object LangCtx extends Expr
 final case class DataRetrieveCtx(id: DataRetrieveId, attribute: DataRetrieve.Attribute) extends Expr
 final case class DataRetrieveCount(id: DataRetrieveId) extends Expr
 final case class LookupColumn(formComponentId: FormComponentId, column: String) extends Expr
+final case class LookupOps(expr: Expr, lookupFnc: LookupFnc) extends Expr
 final case class CsvCountryCountCheck(formComponentId: FormComponentId, column: String, value: String) extends Expr
 final case class IndexOf(formComponentId: FormComponentId, index: Int) extends Expr
 final case class IndexOfDataRetrieveCtx(ctx: DataRetrieveCtx, index: Int) extends Expr
@@ -304,4 +305,11 @@ object StringFnc {
   case object RemoveSpaces extends StringFnc
   case class SubString(beginIndex: Int, endIndex: Int) extends StringFnc
   implicit val format: OFormat[StringFnc] = derived.oformat()
+}
+
+sealed trait LookupFnc
+object LookupFnc {
+  case object CountryName extends LookupFnc
+  case object SicDescription extends LookupFnc
+  implicit val format: OFormat[LookupFnc] = derived.oformat()
 }

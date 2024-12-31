@@ -264,6 +264,8 @@ object FormTemplateValidator {
         Invalid(s"${path.path}: $formComponentId is not a Choice in the form")
       case ReferenceInfo.TaskStatusExpr(path, TaskStatus(taskId)) if !allTaskIds(taskId) =>
         Invalid(s"${path.path}: ${taskId.id} is not a Task id in the form")
+      case ReferenceInfo.LookupOpsExpr(path, LookupOps(FormCtx(formComponentId), _)) if !allFcIds(formComponentId) =>
+        invalid(path, formComponentId)
       case _ => Valid
     }
 
@@ -1245,6 +1247,7 @@ object FormTemplateValidator {
       case ChoicesSelected(_)           => Valid
       case ChoicesAvailable(_)          => Valid
       case TaskStatus(_)                => Valid
+      case LookupOps(_, _)              => Valid
     }
   }
 
