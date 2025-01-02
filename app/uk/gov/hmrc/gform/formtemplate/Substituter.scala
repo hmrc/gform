@@ -323,9 +323,11 @@ object Substituter {
     )
 
   implicit def dataRetrieveSubstituter[A](implicit
-    ev: Substituter[A, Expr]
+    ev: Substituter[A, Expr],
+    ev2: Substituter[A, BooleanExpr]
   ): Substituter[A, DataRetrieve] = (substitutions, dataRetrieve) =>
     dataRetrieve.copy(
+      `if` = dataRetrieve.`if`.map(includeIf => includeIf(substitutions)),
       params = dataRetrieve.params.map(paramExpr =>
         ParamExpr(
           paramExpr.parameter,
