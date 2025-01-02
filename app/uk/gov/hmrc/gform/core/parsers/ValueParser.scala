@@ -24,6 +24,7 @@ import uk.gov.hmrc.gform.formtemplate.BooleanExprId
 import uk.gov.hmrc.gform.sharedmodel.{ DataRetrieve, DataRetrieveDefinitions, DataRetrieveId }
 import uk.gov.hmrc.gform.sharedmodel.dblookup.CollectionName
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.PageLink
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.LookupFnc.{ CountryName, SicDescription }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.SelectionCriteriaValue.{ SelectionCriteriaExpr, SelectionCriteriaReference, SelectionCriteriaSimpleValue }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.UserField.Enrolment
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
@@ -275,6 +276,12 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
     }
     | FormComponentId.unanchoredIdValidation ~ ".column." ~ alphabeticOnly ^^ { case value ~ _ ~ column =>
       LookupColumn(FormComponentId(value), column)
+    }
+    | "getCountry(" ~ _expr1 ~ ")" ^^ { case _ ~ expr ~ _ =>
+      LookupOps(expr, CountryName)
+    }
+    | "getSicDescription(" ~ _expr1 ~ ")" ^^ { case _ ~ expr ~ _ =>
+      LookupOps(expr, SicDescription)
     }
     | periodValueParser ^^ { period =>
       PeriodValue(period)

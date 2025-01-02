@@ -1267,4 +1267,16 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     )
   }
 
+  it should "parse the getCountry function" in {
+    val res = ValueParser.validate("${getCountry(age)}")
+
+    res.toOption.value should be(TextExpression(LookupOps(FormCtx("age"), LookupFnc.CountryName)))
+  }
+
+  it should "parse the getSicDescription function" in {
+    val res = ValueParser.validate("${getSicDescription(age)}")
+
+    res.toOption.value should be(TextExpression(LookupOps(FormCtx("age"), LookupFnc.SicDescription)))
+  }
+
 }
