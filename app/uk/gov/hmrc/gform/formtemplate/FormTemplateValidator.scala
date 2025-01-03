@@ -1420,7 +1420,7 @@ object FormTemplateValidator {
       }
       .getOrElse(Valid)
 
-  def validateIncludeIfForTaskStatus(sections: List[Section]): ValidationResult = {
+  def validateIncludeIfForTaskStatus(formTemplate: FormTemplate, sections: List[Section]): ValidationResult = {
     val allTaskStatus = uk.gov.hmrc.gform.sharedmodel.form.TaskStatus.statuses.map(_.asString)
     def validateTaskStatus(booleanExpr: BooleanExpr, location: String): ValidationResult = {
       def reason(value: String) =
@@ -1447,15 +1447,33 @@ object FormTemplateValidator {
           .pages(sections)
           .zipWithIndex
           .flatMap { case (page: Page, idx) =>
-            val allIncludeIfWithLocation = page.allFormComponents.flatMap { fc =>
+            val formComponentConditions = page.allFormComponents.flatMap { fc =>
               fc.includeIf match {
                 case Some(includeIf) => Some(includeIf.booleanExpr -> s"'${fc.id.value}' form component's includeIf")
                 case _               => None
               }
-            } ++ page.includeIf.map(i => i.booleanExpr -> s"$idx. section's includeIf: $idx") ++ page.removeItemIf
-              .map(r => r.booleanExpr -> s"$idx. section's removeIf")
+            }
 
-            allIncludeIfWithLocation.map { case (booleanExpr, location) => validateTaskStatus(booleanExpr, location) }
+            val sectionConditions = page.includeIf.map(i => i.booleanExpr -> s"${idx + 1}. section's includeIf") ++
+              page.removeItemIf.map(r => r.booleanExpr -> s"${idx + 1}. section's removeIf")
+
+            val dataRetrieveConditions = page.dataRetrieve.toList.flatMap(
+              _.toList.flatMap(
+                _.`if`
+                  .map(i => i.booleanExpr -> s"${idx + 1}. section's if")
+              )
+            )
+
+            val taskConditions = formTemplate.formKind.fold(_ => Seq.empty[(BooleanExpr, String)])(tasklist =>
+              tasklist.sections.toList.flatMap(_.tasks.toList.zipWithIndex.flatMap { case (task, id) =>
+                task.startIf.map(i => i.booleanExpr -> s"${id + 1}. task's startIf") ++ task.includeIf
+                  .map(i => i.booleanExpr -> s"${id + 1}. task's includeIf")
+              })
+            )
+            (formComponentConditions ++ sectionConditions ++ taskConditions ++ dataRetrieveConditions).map {
+              case (booleanExpr, location) =>
+                validateTaskStatus(booleanExpr, location)
+            }
           }
       )
   }
