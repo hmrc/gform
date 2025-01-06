@@ -112,7 +112,7 @@ trait Verifier {
       _ <- fromOptA(FormTemplateValidator.validateChoicesRevealedField(formTemplate).toEither)
       _ <- fromOptA(FormTemplateValidator.validateChoiceFormCtxOptionValues(pages, formTemplate).toEither)
       _ <- fromOptA(FormTemplateValidator.validateUniqueTaskIds(formTemplate).toEither)
-      _ <- fromOptA(FormTemplateValidator.validateIncludeIfForTaskStatus(sections).toEither)
+      _ <- fromOptA(FormTemplateValidator.validateIncludeIfForTaskStatus(formTemplate, sections).toEither)
       _ <- fromOptA(FormTemplateValidator.validateDraftRetrieval(formTemplate).toEither)
       _ <- fromOptA(DestinationsValidator.validateUniqueDestinationIds(formTemplate.destinations).toEither)
       _ <- fromOptA(DestinationsValidator.validateNoGroupInDeclaration(formTemplate.destinations).toEither)
