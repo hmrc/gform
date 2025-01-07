@@ -17,6 +17,7 @@
 package uk.gov.hmrc.gform.save4later
 
 import org.apache.pekko.http.scaladsl.model.StatusCodes
+import org.mongodb.scala.model.{ Filters, Updates }
 import play.api.libs.json.Format
 import uk.gov.hmrc.crypto.{ Decrypter, Encrypter }
 import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormId, FormIdData, Submitted }
@@ -24,9 +25,8 @@ import uk.gov.hmrc.gform.time.TimeProvider
 import uk.gov.hmrc.http.{ HeaderCarrier, UpstreamErrorResponse }
 import uk.gov.hmrc.mongo.cache.{ DataKey, MongoCacheRepository }
 
+import java.time.Instant
 import scala.concurrent.{ ExecutionContext, Future }
-
-import org.mongodb.scala.model.{ Filters, Updates }
 
 class FormMongoCache(
   mongoCacheRepository: MongoCacheRepository[String],
@@ -80,10 +80,14 @@ class FormMongoCache(
       .put(form._id.value)(formDataKey, form)
       .andThen {
         case _ if form.status == Submitted =>
+          val now: Instant = timeProvider.instant()
           mongoCacheRepository.collection
             .findOneAndUpdate(
               filter = Filters.equal("_id", form._id.value),
-              update = Updates.set("submitDetails.createdAt", timeProvider.instant())
+              update = Updates.combine(
+                Updates.set("submitDetails.createdAt", now),
+                Updates.set("data.form.submittedAt", now.toString)
+              )
             )
             .toFuture()
       }
