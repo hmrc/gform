@@ -57,7 +57,8 @@ trait FormGen {
       thirdPartyData,
       expiryDate,
       formComponentIdToFileIdMapping,
-      TaskIdTaskStatusMapping.empty
+      TaskIdTaskStatusMapping.empty,
+      None
     )
 }
 

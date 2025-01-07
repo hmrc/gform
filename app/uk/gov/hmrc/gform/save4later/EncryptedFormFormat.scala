@@ -21,7 +21,7 @@ import play.api.libs.functional.syntax._
 import play.api.libs.json._
 import uk.gov.hmrc.crypto.{ Crypted, Decrypter, Encrypter, PlainText }
 import uk.gov.hmrc.gform.sharedmodel.UserId
-import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeExpiryDate, EnvelopeId, Form, FormComponentIdToFileIdMapping, FormData, FormId, FormStatus, TaskIdTaskStatusMapping, ThirdPartyData, VisitIndex }
+import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeExpiryDate, EnvelopeId, Form, FormComponentIdToFileIdMapping, FormData, FormId, FormStatus, SubmittedDate, TaskIdTaskStatusMapping, ThirdPartyData, VisitIndex }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplateId, FormTemplateVersion }
 
 object EncryptedFormFormat {
@@ -43,7 +43,8 @@ object EncryptedFormFormat {
         Json.obj(thirdPartyData -> jsonCrypto.encrypt(PlainText(Json.toJson(form.thirdPartyData).toString())).value) ++
         EnvelopeExpiryDate.optionFormat.writes(form.envelopeExpiryDate) ++
         Json.obj(componentIdToFileId -> FormComponentIdToFileIdMapping.format.writes(form.componentIdToFileId)) ++
-        Json.obj(taskIdTaskStatus -> TaskIdTaskStatusMapping.format.writes(form.taskIdTaskStatus))
+        Json.obj(taskIdTaskStatus -> TaskIdTaskStatusMapping.format.writes(form.taskIdTaskStatus)) ++
+        SubmittedDate.optionFormat.writes(form.submitted)
 
     private val readFormData: Reads[FormData] =
       (__ \ formData)
@@ -67,7 +68,8 @@ object EncryptedFormFormat {
         readThirdPartyData and
         EnvelopeExpiryDate.optionFormat and
         Form.componentIdToFileIdWithFallback and
-        Form.taskIdTaskStatusWithFallback
+        Form.taskIdTaskStatusWithFallback and
+        SubmittedDate.optionFormat
     )(Form.apply _)
 
     override def reads(json: JsValue): JsResult[Form] = {
