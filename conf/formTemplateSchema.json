@@ -76,6 +76,9 @@
       "type": "string",
       "pattern": "^(formAccessCodeForAgents|notPermitted|onePerUser)$"
     },
+    "draftRetrieval": {
+      "$ref": "#/$defs/draftRetrievalObject"
+    },
     "showContinueOrDeletePage": {
       "type": "boolean"
     },
@@ -1651,6 +1654,54 @@
           }
         ]
       }
+    },
+    "draftRetrievalObject": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "agent": {
+              "type": "object",
+              "properties": {
+                "method": {
+                  "type": "string",
+                  "pattern": "^(accessCode|notPermitted|onePerUser|submissionReference)$"
+                },
+                "showContinueOrDeletePage": {
+                  "type": "boolean"
+                }
+              },
+              "additionalProperties": false,
+              "required": ["method"]
+            },
+            "individual": {
+              "type": "object",
+              "properties": {
+                "method": {
+                  "type": "string",
+                  "pattern": "^(accessCode|notPermitted|onePerUser|submissionReference)$"
+                },
+                "showContinueOrDeletePage": {
+                  "type": "boolean"
+                }
+              },
+              "additionalProperties": false,
+              "required": ["method"]
+            },
+            "organisation": {
+              "type": "object",
+              "properties": {
+                "method": {
+                  "type": "string",
+                  "pattern": "^(accessCode|notPermitted|onePerUser|submissionReference)$"
+                },
+                "showContinueOrDeletePage": {
+                  "type": "boolean"
+                }
+              },
+              "additionalProperties": false,
+              "required": ["method"]
+            }
+          }
     }
   }
 }

@@ -109,6 +109,7 @@ trait Verifier {
       _ <- fromOptA(FormTemplateValidator.validateFileUpload(formTemplate, appConfig).toEither)
       _ <- fromOptA(FormTemplateValidator.validateChoicesRevealedField(formTemplate).toEither)
       _ <- fromOptA(FormTemplateValidator.validateChoiceFormCtxOptionValues(pages, formTemplate).toEither)
+      _ <- fromOptA(FormTemplateValidator.validateDraftRetrieval(formTemplate).toEither)
       _ <- fromOptA(DestinationsValidator.validateUniqueDestinationIds(formTemplate.destinations).toEither)
       _ <- fromOptA(DestinationsValidator.validateNoGroupInDeclaration(formTemplate.destinations).toEither)
       _ <- fromOptA(DestinationsValidator.validateDestinationIncludeIfs(formTemplate.destinations).toEither)
