@@ -66,6 +66,9 @@
     "accessiblePdf": {
       "type": "boolean"
     },
+    "downloadPreviousSubmissionPdf": {
+      "type": "boolean"
+    },
     "languages": {
       "type": "array"
     },

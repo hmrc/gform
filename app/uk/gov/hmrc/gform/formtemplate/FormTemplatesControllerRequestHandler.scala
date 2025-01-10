@@ -179,6 +179,10 @@ object FormTemplatesControllerRequestHandler {
       (__ \ "accessiblePdf").json
         .copyFrom((__ \ "accessiblePdf").json.pick orElse Reads.pure(JsFalse))
 
+    val ensureDownloadPreviousSubmissionPdf =
+      (__ \ "downloadPreviousSubmissionPdf").json
+        .copyFrom((__ \ "downloadPreviousSubmissionPdf").json.pick orElse Reads.pure(JsTrue))
+
     val ensureDisplayAccountHeader =
       (__ \ "displayAccountHeader").json
         .copyFrom((__ \ "displayAccountHeader").json.pick orElse Reads.pure(JsFalse))
@@ -518,6 +522,7 @@ object FormTemplatesControllerRequestHandler {
         lowerCaseId and
         ensureDisplayHMRCLogo and
         ensureAccessiblePdf and
+        ensureDownloadPreviousSubmissionPdf and
         ensureDisplayAccountHeader and
         ensureFormCategory and
         ensureLanguages and
