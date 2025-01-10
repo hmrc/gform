@@ -390,6 +390,16 @@ object Substituter {
       tasks = t.tasks(substitutions)
     )
 
+  implicit def descriptionSubstituter[A](implicit
+    ev: Substituter[A, Expr],
+    ev2: Substituter[A, BooleanExpr]
+  ): Substituter[A, AtlDescription] = (substitutions, t) =>
+    t match {
+      case s: AtlDescription.SmartStringBased => s.copy(value = s.value(substitutions))
+      case k: AtlDescription.KeyValueBased =>
+        k.copy(key = k.key(substitutions), value = k.value(substitutions))
+    }
+
   implicit def formKindSubstituter[A](implicit
     ev: Substituter[A, Expr],
     ev2: Substituter[A, BooleanExpr]

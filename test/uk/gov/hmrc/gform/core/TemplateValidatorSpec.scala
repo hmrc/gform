@@ -933,7 +933,7 @@ class TemplateValidatorSpec extends Spec {
       toSmartString(name),
       None,
       Some(toSmartString(name)),
-      toSmartString(name),
+      AtlDescription.SmartStringBased(toSmartString(name)),
       toSmartString(name),
       toSmartString(name),
       toSmartString(name),

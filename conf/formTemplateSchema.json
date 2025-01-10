@@ -454,7 +454,14 @@
           "$ref": "#/$defs/stringOrEnCyObject"
         },
         "description": {
-          "$ref": "#/$defs/stringOrEnCyObject"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/stringOrEnCyObject"
+            },
+            {
+              "$ref": "#/$defs/atlDescriptionObject"
+            }
+          ]
         },
         "shortName": {
           "$ref": "#/$defs/stringOrEnCyObject"
@@ -1714,6 +1721,18 @@
               "required": ["method"]
             }
           }
+    },
+    "atlDescriptionObject": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+            "$ref": "#/$defs/stringOrEnCyObject"
+        },
+        "value": {
+            "$ref": "#/$defs/stringOrEnCyObject"
+        }
+      }
     }
   }
 }
