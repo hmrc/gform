@@ -44,7 +44,8 @@ object Dependencies {
     "com.fasterxml.jackson.module" %% "jackson-module-scala"              % "2.12.2",
     "io.github.samueleresca"       %% "pekko-quartz-scheduler"            % "1.2.0-pekko-1.0.x",
     "org.apache.xmlgraphics"        % "fop"                               % "2.9",
-    "org.jsoup"                     % "jsoup"                             % "1.18.1"
+    "org.jsoup"                     % "jsoup"                             % "1.18.1",
+    "org.apache.poi"                % "poi-ooxml"                         % "5.2.4"
   )
 
   def test(scope: String = "test") = Seq(

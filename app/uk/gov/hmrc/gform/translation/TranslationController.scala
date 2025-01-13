@@ -17,15 +17,20 @@
 package uk.gov.hmrc.gform.translation
 
 import cats.implicits._
-import java.io.{ BufferedOutputStream, ByteArrayInputStream, ByteArrayOutputStream }
+
+import java.io.{ BufferedOutputStream, BufferedReader, ByteArrayInputStream, ByteArrayOutputStream, InputStream, InputStreamReader }
 import play.api.libs.json.{ JsObject, Json }
 import org.apache.pekko.stream.scaladsl.StreamConverters
 import play.api.mvc.{ Action, AnyContent, ControllerComponents, Result }
+
 import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.formtemplate.{ FormTemplateService, FormTemplatesControllerRequestHandler }
 import uk.gov.hmrc.gform.history.HistoryService
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplateId, FormTemplateRaw, FormTemplateRawId }
+import org.apache.poi.xssf.usermodel._
+
+import scala.util.{ Failure, Success, Try }
 
 class TranslationController(
   formTemplateService: FormTemplateService,
@@ -39,6 +44,9 @@ class TranslationController(
     formTemplateService.save,
     historyService.save
   ).futureInterpreter
+
+  //Ignore missing fonts in headless environments (for XSLX generation)
+  System.setProperty("org.apache.poi.ss.ignoreMissingFontSystem", "true")
 
   private def fileByteData(json: String, generate: (String, BufferedOutputStream) => Unit): ByteArrayInputStream = {
 
@@ -57,6 +65,14 @@ class TranslationController(
   def generateBriefTranslatebleCsv(
     formTemplateId: FormTemplateId
   ): Action[AnyContent] = generateCsv(formTemplateId, TextExtractor.generateBriefTranslatableCvsFromString)
+
+  def generateTranslatebleXlsx(
+    formTemplateId: FormTemplateId
+  ): Action[AnyContent] = generateXlsx(formTemplateId, TextExtractor.generateTranslatableCvsFromString)
+
+  def generateBriefTranslatebleXlsx(
+    formTemplateId: FormTemplateId
+  ): Action[AnyContent] = generateXlsx(formTemplateId, TextExtractor.generateBriefTranslatableCvsFromString)
 
   def generateInternalCsv(
     formTemplateId: FormTemplateId
@@ -77,6 +93,50 @@ class TranslationController(
               CONTENT_DISPOSITION -> s"""attachment; filename="${formTemplateId.value}.csv""""
             )
         }
+    }
+
+  private def generateXlsx(
+    formTemplateId: FormTemplateId,
+    generate: (String, BufferedOutputStream) => Unit
+  ): Action[AnyContent] =
+    Action.async { _ =>
+      formTemplateService
+        .get(FormTemplateRawId(formTemplateId.value))
+        .map { json =>
+          val jsonAsString = Json.prettyPrint(json.value)
+          Ok.chunked(StreamConverters.fromInputStream(() => convertCsvToXlsx(fileByteData(jsonAsString, generate))))
+            .withHeaders(
+              CONTENT_TYPE        -> "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+              CONTENT_DISPOSITION -> s"""attachment; filename="${formTemplateId.value}.xlsx""""
+            )
+        }
+    }
+
+  def convertCsvToXlsx(inputStream: ByteArrayInputStream) =
+    Try(new BufferedReader(new InputStreamReader(inputStream))).map { br =>
+      val workBook: XSSFWorkbook = new XSSFWorkbook()
+      val sheet: XSSFSheet = workBook.createSheet("translations")
+      var currentLine: String = null
+      var rowNumber: Int = 0
+      while ({ currentLine = br.readLine(); currentLine != null }) {
+        val rowArray: Array[String] = currentLine.split(",")
+        rowNumber += 1
+        val currentRow: XSSFRow = sheet.createRow(rowNumber);
+        var i = 0
+        while (i < rowArray.length) {
+          currentRow.createCell(i).setCellValue(rowArray(i))
+          i += 1
+        }
+      }
+      val bos: ByteArrayOutputStream = new ByteArrayOutputStream()
+      workBook.write(bos)
+      val bArray: Array[Byte] = bos.toByteArray()
+      val is: InputStream = new ByteArrayInputStream(bArray)
+      workBook.close()
+      is
+    } match {
+      case Success(sucessIs) => sucessIs
+      case Failure(_)        => throw new Exception("Failed to convert CSV to XLSX")
     }
 
   def translateCsv(
