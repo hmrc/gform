@@ -511,6 +511,9 @@
         "repeatsWhile": {
           "type": "string"
         },
+        "repeaterContinueLabel": {
+          "$ref": "#/$defs/stringOrEnCyObject"
+        },
         "pageIdToDisplayAfterRemove": {
           "type": "string"
         },
