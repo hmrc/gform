@@ -511,6 +511,9 @@
         "repeatsWhile": {
           "type": "string"
         },
+        "repeaterContinueLabel": {
+          "type": "string"
+        },
         "pageIdToDisplayAfterRemove": {
           "type": "string"
         },
