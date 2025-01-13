@@ -512,7 +512,7 @@
           "type": "string"
         },
         "repeaterContinueLabel": {
-          "type": "string"
+          "$ref": "#/$defs/stringOrEnCyObject"
         },
         "pageIdToDisplayAfterRemove": {
           "type": "string"
