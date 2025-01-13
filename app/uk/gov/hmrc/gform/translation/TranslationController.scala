@@ -112,32 +112,42 @@ class TranslationController(
         }
     }
 
-  def convertCsvToXlsx(inputStream: ByteArrayInputStream) =
-    Try(new BufferedReader(new InputStreamReader(inputStream))).map { br =>
-      val workBook: XSSFWorkbook = new XSSFWorkbook()
-      val sheet: XSSFSheet = workBook.createSheet("translations")
-      var currentLine: String = null
-      var rowNumber: Int = 0
-      while ({ currentLine = br.readLine(); currentLine != null }) {
-        val rowArray: Array[String] = currentLine.split(",")
-        rowNumber += 1
-        val currentRow: XSSFRow = sheet.createRow(rowNumber);
-        var i = 0
-        while (i < rowArray.length) {
-          currentRow.createCell(i).setCellValue(rowArray(i))
-          i += 1
+  def convertCsvToXlsx(inputStream: ByteArrayInputStream): InputStream = {
+    val workbookTry = Try {
+      val workBook = new XSSFWorkbook()
+      val sheet = workBook.createSheet("translations")
+      sheet.setColumnWidth(0, 100 * 256)
+      sheet.setColumnWidth(1, 100 * 256)
+      val reader = new BufferedReader(new InputStreamReader(inputStream))
+      val style = workBook.createCellStyle()
+      style.setWrapText(true)
+
+      def processRow(line: String, rowNumber: Int): Unit = {
+        val rowArray = line.split(",")
+        val row = sheet.createRow(rowNumber)
+        rowArray.zipWithIndex.foreach { case (value, idx) =>
+          val cell = row.createCell(idx)
+          cell.setCellStyle(style)
+          cell.setCellValue(value)
         }
       }
-      val bos: ByteArrayOutputStream = new ByteArrayOutputStream()
-      workBook.write(bos)
-      val bArray: Array[Byte] = bos.toByteArray()
-      val is: InputStream = new ByteArrayInputStream(bArray)
+
+      reader.lines().toArray.toSeq.zipWithIndex.foreach { case (line, idx) =>
+        processRow(line.asInstanceOf[String], idx)
+      }
+
+      val byteArrayOutputStream = new ByteArrayOutputStream()
+      workBook.write(byteArrayOutputStream)
       workBook.close()
-      is
-    } match {
-      case Success(sucessIs) => sucessIs
-      case Failure(_)        => throw new Exception("Failed to convert CSV to XLSX")
+
+      new ByteArrayInputStream(byteArrayOutputStream.toByteArray)
     }
+
+    workbookTry match {
+      case Success(inputStream) => inputStream
+      case Failure(_)           => throw new Exception("Failed to convert CSV to XLSX")
+    }
+  }
 
   def translateCsv(
     formTemplateId: FormTemplateId
