@@ -71,7 +71,9 @@ trait RewriterSupport {
     title = SmartString(localised = LocalisedString(m = Map(LangADT.En -> "Default title")), Nil),
     caption = None,
     noPIITitle = None,
-    description = SmartString(localised = LocalisedString(m = Map(LangADT.En -> "Default description")), Nil),
+    description = AtlDescription.SmartStringBased(
+      SmartString(localised = LocalisedString(m = Map(LangADT.En -> "Default description")), Nil)
+    ),
     summaryDescription =
       SmartString(localised = LocalisedString(m = Map(LangADT.En -> "Default summary description")), Nil),
     shortName = SmartString(localised = LocalisedString(m = Map(LangADT.En -> "Default short name")), Nil),

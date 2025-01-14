@@ -53,7 +53,7 @@ object Section {
     title: SmartString,
     caption: Option[SmartString],
     noPIITitle: Option[SmartString],
-    description: SmartString,
+    description: AtlDescription,
     summaryDescription: SmartString,
     shortName: SmartString,
     summaryName: SmartString,
@@ -104,6 +104,31 @@ object Section {
           LeafExpr(path + "fields", a.fields) ++
           LeafExpr(path + "errorMessage", a.infoMessage)
     }
+}
+
+sealed trait AtlDescription extends Product with Serializable
+
+object AtlDescription {
+  case class SmartStringBased(value: SmartString) extends AtlDescription
+  case class KeyValueBased(key: SmartString, value: SmartString) extends AtlDescription
+
+  implicit val formatKeyValuePair: OFormat[KeyValueBased] = Json.format[KeyValueBased]
+  def reads: Reads[AtlDescription] = Reads { json =>
+    (json \ "key") match {
+      case JsDefined(JsArray(_)) => json.validate[KeyValueBased]
+      case _                     => json.validate[SmartString].flatMap(s => JsSuccess(SmartStringBased(s)))
+    }
+  }
+
+  implicit val format: OFormat[AtlDescription] = OFormatWithTemplateReadFallback(reads)
+
+  implicit val leafExprs: LeafExpr[AtlDescription] = (path: TemplatePath, t: AtlDescription) =>
+    t match {
+      case s: SmartStringBased => LeafExpr(path, s.value)
+      case KeyValueBased(key, value) =>
+        LeafExpr(path + "key", key) ++ LeafExpr(path + "value", value)
+    }
+
 }
 
 case class DeclarationSection(
