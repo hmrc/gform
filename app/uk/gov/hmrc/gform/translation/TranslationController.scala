@@ -123,7 +123,7 @@ class TranslationController(
       style.setWrapText(true)
 
       def processRow(line: String, rowNumber: Int): Unit = {
-        val rowArray = line.split(",")
+        val rowArray = line.split(",(?=(?:[^\\\"]*\\\"[^\\\"]*\\\")*[^\\\"]*$)", 2)
         val row = sheet.createRow(rowNumber)
         rowArray.zipWithIndex.foreach { case (value, idx) =>
           val cell = row.createCell(idx)
