@@ -119,5 +119,6 @@
   "displayHMRCLogo": false,
   "parentFormSubmissionRefs": [],
   "accessiblePdf": false,
+  "downloadPreviousSubmissionPdf": true,
   "displayAccountHeader": false
 }

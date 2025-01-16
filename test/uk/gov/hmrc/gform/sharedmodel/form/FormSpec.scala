@@ -94,7 +94,8 @@ class FormSpec extends AnyFlatSpec with Matchers with ScalaCheckDrivenPropertyCh
        |        "mapping": { }
        |    }
        |  },
-       |  "ldt" : "2064-12-01T00:00:40"
+       |  "ldt" : "2064-12-01T00:00:40",
+       |  "submittedAt" : "2025-01-14T16:20:16.526781Z"
        |}""".stripMargin
 
   val exampleForm = Form(
@@ -166,7 +167,7 @@ class FormSpec extends AnyFlatSpec with Matchers with ScalaCheckDrivenPropertyCh
     Some(EnvelopeExpiryDate(LocalDateTime.of(2064, 12, 1, 0, 0, 40))),
     FormComponentIdToFileIdMapping.empty,
     TaskIdTaskStatusMapping.empty,
-    None
+    Some(SubmittedDate(LocalDateTime.of(2025, 1, 14, 16, 20, 16, 526781000)))
   )
 
   "Format for Form" should "read json" in {

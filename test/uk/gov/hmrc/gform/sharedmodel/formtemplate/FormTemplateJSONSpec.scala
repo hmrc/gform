@@ -58,6 +58,7 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
                                              |  },
                                              |  "displayHMRCLogo": false,
                                              |  "accessiblePdf":false,
+                                             |  "downloadPreviousSubmissionPdf":true,
                                              |  "displayAccountHeader":false,
                                              |  "parentFormSubmissionRefs": [],
                                              |  "summarySection": $summarySection,
@@ -183,6 +184,7 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
                                              |  },
                                              |  "displayHMRCLogo": false,
                                              |  "accessiblePdf":false,
+                                             |  "downloadPreviousSubmissionPdf":true,
                                              |  "displayAccountHeader":false,
                                              |  "parentFormSubmissionRefs": [
                                              |    "123",
@@ -326,6 +328,7 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
                                  |  },
                                  |  "displayHMRCLogo": false,
                                  |  "accessiblePdf":false,
+                                 |  "downloadPreviousSubmissionPdf":true,
                                  |  "displayAccountHeader":false,
                                  |  "testText": "hello",
                                  |  "testJsonArr": [
@@ -474,6 +477,7 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
                                                                    |  },
                                                                    |  "displayHMRCLogo": false,
                                                                    |  "accessiblePdf":false,
+                                                                   |  "downloadPreviousSubmissionPdf":true,
                                                                    |  "displayAccountHeader":false,
                                                                    |  "testText": "hello",
                                                                    |  "testJsonArr": [
