@@ -25,7 +25,6 @@ import uk.gov.hmrc.gform.time.TimeProvider
 import uk.gov.hmrc.http.{ HeaderCarrier, UpstreamErrorResponse }
 import uk.gov.hmrc.mongo.cache.{ DataKey, MongoCacheRepository }
 
-import java.time.Instant
 import scala.concurrent.{ ExecutionContext, Future }
 
 class FormMongoCache(
@@ -80,14 +79,10 @@ class FormMongoCache(
       .put(form._id.value)(formDataKey, form)
       .andThen {
         case _ if form.status == Submitted =>
-          val now: Instant = timeProvider.instant()
           mongoCacheRepository.collection
             .findOneAndUpdate(
               filter = Filters.equal("_id", form._id.value),
-              update = Updates.combine(
-                Updates.set("submitDetails.createdAt", now),
-                Updates.set("data.form.submittedAt", now.toString)
-              )
+              update = Updates.set("submitDetails.createdAt", timeProvider.instant())
             )
             .toFuture()
       }

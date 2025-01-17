@@ -131,8 +131,7 @@ class FormService[F[_]: Monad](
                ThirdPartyData.empty.copy(queryParams = queryParams),
                Some(EnvelopeExpiryDate(expiryDate)),
                FormComponentIdToFileIdMapping.empty,
-               TaskIdTaskStatusMapping.empty,
-               None
+               TaskIdTaskStatusMapping.empty
              )
       _ <- formPersistence.upsert(form)
       _ <- formMetadataAlgebra.upsert(lowerCased)
