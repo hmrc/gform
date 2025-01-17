@@ -153,8 +153,16 @@ object SmartString {
     }
 
   implicit val leafExprs: LeafExpr[SmartString] = (path: TemplatePath, t: SmartString) =>
-    t.internals.flatMap(_.interpolations.map(ExprWithPath(path, _)))
-
+    t match {
+      case SmartStringBase(internal) =>
+        internal.interpolations.map(ExprWithPath(path, _))
+      case SmartStringCond(ifConditions, elseCondition) =>
+        val conditionExprs = ifConditions.flatMap { case (condition, smartString) =>
+          LeafExpr(path + "includeIf", condition) ++ smartString.interpolations.map(ExprWithPath(path, _))
+        }
+        val elseExprs = elseCondition.interpolations.map(ExprWithPath(path, _))
+        conditionExprs ++ elseExprs
+    }
 }
 
 object SmartStringTemplateReader {
