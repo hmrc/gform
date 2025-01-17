@@ -272,7 +272,10 @@ class FormSpec extends AnyFlatSpec with Matchers with ScalaCheckDrivenPropertyCh
 
   "FormComponentIdToFileIdMapping" should "be flat when serialized" in {
     val componentIdToFileId = FormComponentIdToFileIdMapping(
-      Map(FormComponentId("1_abc") -> FileId("invoice.pdf"), FormComponentId("2_abc") -> FileId("book.pdf"))
+      Map(
+        FileComponentId.Single(FormComponentId("1_abc")) -> FileId("invoice.pdf"),
+        FileComponentId.Single(FormComponentId("2_abc")) -> FileId("book.pdf")
+      )
     )
 
     verifyRoundTrip(componentIdToFileId)

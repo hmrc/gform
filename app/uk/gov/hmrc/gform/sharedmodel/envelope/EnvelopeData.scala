@@ -21,10 +21,9 @@ import play.api.libs.functional.syntax._
 import play.api.libs.json.Reads._
 import play.api.libs.json._
 import uk.gov.hmrc.gform.core.UniqueIdGenerator
+import uk.gov.hmrc.gform.objectstore.FileStatus
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
-
-import scala.annotation.nowarn
 
 case class EnvelopeData(
   _id: EnvelopeId,
@@ -79,45 +78,4 @@ object EnvelopeData {
   )
 
   implicit val format: OFormat[EnvelopeData] = OFormat[EnvelopeData](reads, writes)
-}
-
-sealed trait FileStatus {
-  val value: String
-}
-
-case object Quarantined extends FileStatus {
-  val value = "QUARANTINED"
-}
-
-case object Cleaned extends FileStatus {
-  val value = "CLEANED"
-}
-
-case object Available extends FileStatus {
-  val value = "AVAILABLE"
-}
-
-case object Infected extends FileStatus {
-  val value = "INFECTED"
-}
-
-object FileStatus {
-
-  def unapply(status: FileStatus): String = status.value
-
-  @nowarn
-  val reads: Reads[FileStatus] = for {
-    value <- JsPath.read[String].map {
-               case Quarantined.value => Quarantined
-               case Cleaned.value     => Cleaned
-               case Available.value   => Available
-               case Infected.value    => Infected
-             }
-  } yield value
-
-  val writes: Writes[FileStatus] = Writes { status: FileStatus =>
-    JsString(status.value)
-  }
-
-  implicit val format: Format[FileStatus] = Format(reads, writes)
 }

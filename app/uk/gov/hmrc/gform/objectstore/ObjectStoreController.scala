@@ -29,4 +29,8 @@ class ObjectStoreController(controllerComponents: ControllerComponents, objectSt
   def deleteFile(envelopeId: EnvelopeId, fileId: FileId) = Action.async { implicit request =>
     objectStoreAlgebra.deleteFile(envelopeId, fileId).asNoContent
   }
+
+  def deleteFiles(envelopeId: EnvelopeId) = Action.async(parse.json[Set[FileId]]) { implicit request =>
+    objectStoreAlgebra.deleteFiles(envelopeId, request.body).asNoContent
+  }
 }

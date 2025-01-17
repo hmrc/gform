@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.gform.objectstore
 
+import cats.syntax.functor._
 import org.apache.pekko.NotUsed
 import org.apache.pekko.actor.ActorSystem
 import org.apache.pekko.stream.scaladsl.Source
@@ -92,6 +93,17 @@ class ObjectStoreConnector(
     objectStoreClient.deleteObject(
       path = directory(envelopeId.value).file(fileName)
     )
+
+  def deleteFiles(envelopeId: EnvelopeId, fileNames: List[String])(implicit
+    hc: HeaderCarrier
+  ): Future[Unit] =
+    Future
+      .traverse(fileNames)(fileName =>
+        objectStoreClient.deleteObject(
+          path = directory(envelopeId.value).file(fileName)
+        )
+      )
+      .void
 
   def deleteFile(directory: Path.Directory, fileName: String)(implicit
     hc: HeaderCarrier

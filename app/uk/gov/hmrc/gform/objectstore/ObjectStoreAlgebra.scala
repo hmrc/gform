@@ -69,13 +69,15 @@ trait ObjectStoreAlgebra[F[_]] {
       getFileBytes(envelopeId, file.fileName)
         .map { bytes =>
           objectstore.UploadedFile(
-            File(FileId(file.fileId), Available, file.fileName, file.length),
+            File(FileId(file.fileId), FileStatus.Available, file.fileName, file.length),
             bytes
           )
         }
     }
 
   def deleteFile(envelopeId: EnvelopeId, fileIds: FileId)(implicit hc: HeaderCarrier): F[Unit]
+
+  def deleteFiles(envelopeId: EnvelopeId, fileIds: Set[FileId])(implicit hc: HeaderCarrier): F[Unit]
 
   def deleteFile(directory: Path.Directory, fileName: String)(implicit hc: HeaderCarrier): F[Unit]
 

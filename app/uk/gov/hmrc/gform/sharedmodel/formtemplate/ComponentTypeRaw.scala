@@ -39,6 +39,8 @@ case object HmrcTaxPeriodRaw extends ComponentTypeRaw
 
 case object FileUploadRaw extends ComponentTypeRaw
 
+case object MultiFileUploadRaw extends ComponentTypeRaw
+
 case object GroupRaw extends ComponentTypeRaw
 
 case object InfoRaw extends ComponentTypeRaw
@@ -68,6 +70,7 @@ object ComponentTypeRaw {
       "revealingChoice" -> RevealingChoiceRaw,
       "group"           -> GroupRaw,
       "file"            -> FileUploadRaw,
+      "multiFile"       -> MultiFileUploadRaw,
       "info"            -> InfoRaw,
       "hmrcTaxPeriod"   -> HmrcTaxPeriodRaw,
       "time"            -> TimeRaw,

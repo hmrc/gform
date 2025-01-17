@@ -19,16 +19,24 @@ package uk.gov.hmrc.gform.sharedmodel.form
 import play.api.libs.json.Format
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponentId, JsonUtils }
 
-case class FormComponentIdToFileIdMapping(mapping: Map[FormComponentId, FileId]) {
-  def +(formComponentId: FormComponentId, fileId: FileId): FormComponentIdToFileIdMapping =
-    FormComponentIdToFileIdMapping(mapping + (formComponentId -> fileId))
+case class FormComponentIdToFileIdMapping(
+  // FileComponentId - it does change when atl iteration is removed or when file from multi-file is removed, so FileComponentId will never contains a gap in their sequence
+  // FileId - it does never change, it is either created or deleted, so there can occurs a gap in their sequence (gap can exists
+  //          because we cannot rename file in object-store)
+  mapping: Map[FileComponentId, FileId]
+) {
+  def +(fileComponentId: FileComponentId, fileId: FileId): FormComponentIdToFileIdMapping =
+    FormComponentIdToFileIdMapping(mapping + (fileComponentId -> fileId))
+
+  def nextIndex(formComponentId: FormComponentId): Int =
+    1 + mapping.count { case (k, v) => k.value().endsWith(formComponentId.value) }
 }
 
 object FormComponentIdToFileIdMapping {
   val empty = FormComponentIdToFileIdMapping(Map.empty)
-  val formatMap: Format[Map[FormComponentId, FileId]] = {
+  val formatMap: Format[Map[FileComponentId, FileId]] = {
     implicit val fileIdFormat: Format[FileId] = JsonUtils.valueClassFormat[FileId, String](FileId.apply, _.value)
-    JsonUtils.formatMap(FormComponentId.apply, _.value)
+    JsonUtils.formatMap(FileComponentId.fromString(_), _.value())
   }
 
   implicit val format: Format[FormComponentIdToFileIdMapping] = Format(

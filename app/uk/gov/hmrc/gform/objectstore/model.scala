@@ -75,36 +75,20 @@ object RouteEnvelopeRequest {
 case class Envelope(files: List[File])
 
 object Envelope {
+  private val envelopeRawReads = Json.reads[EnvelopeRaw]
   implicit val reads: Reads[Envelope] = envelopeRawReads.map(er => Envelope(er.files.getOrElse(Nil)))
-  private lazy val envelopeRawReads = Json.reads[EnvelopeRaw]
 }
 
 case class EnvelopeRaw(files: Option[List[File]])
-case class File(fileId: FileId, status: Status, fileName: String, length: Long)
+case class File(
+  fileId: FileId,
+  status: FileStatus,
+  fileName: String,
+  length: Long
+)
 
 object File {
-
-  //TIP: look for FileStatus trait in https://github.com/hmrc/file-upload/blob/master/app/uk/gov/hmrc/fileupload/read/envelope/model.scala
-  implicit val format: Reads[File] = fileRawReads.map {
-    // format: OFF
-    case FileRaw(id, name, "QUARANTINED", _, length)        => File(FileId(id), Quarantined, name, length)
-    case FileRaw(id, name, "CLEANED", _, length)            => File(FileId(id), Cleaned, name, length)
-    case FileRaw(id, name, "AVAILABLE", _, length)          => File(FileId(id), Available, name, length)
-    case FileRaw(id, name, "INFECTED", _, length)           => File(FileId(id), Infected, name, length)
-    case FileRaw(id, name, ERROR, Some(reason), length)     => File(FileId(id), Error(reason), name, length)
-    case FileRaw(id, name, other, _, length)                => File(FileId(id), Other(other), name, length)
-    // format: ON
-  }
-  private lazy val fileRawReads: Reads[FileRaw] = Json.reads[FileRaw]
-  private lazy val ERROR = "UnKnownFileStatusERROR"
+  implicit val fileRawReads: Reads[File] = Json.reads[File]
 }
 
 case class FileRaw(id: String, name: String, status: String, reason: Option[String], length: Long)
-
-sealed trait Status
-case object Quarantined extends Status
-case object Infected extends Status
-case object Cleaned extends Status
-case object Available extends Status
-case class Other(value: String) extends Status
-case class Error(reason: String) extends Status

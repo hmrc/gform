@@ -807,6 +807,12 @@
         "mandatory": {
           "type": "boolean"
         },
+        "hint": {
+          "$ref": "#/$defs/stringOrEnCyObject"
+        },
+        "uploadAnotherLabel": {
+          "$ref": "#/$defs/stringOrEnCyObject"
+        },
         "errorMessage": {
           "$ref": "#/$defs/stringOrEnCyObject"
         },
@@ -1678,62 +1684,68 @@
       }
     },
     "draftRetrievalObject": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "agent": {
           "type": "object",
-          "additionalProperties": false,
           "properties": {
-            "agent": {
-              "type": "object",
-              "properties": {
-                "method": {
-                  "type": "string",
-                  "pattern": "^(accessCode|notPermitted|onePerUser|submissionReference)$"
-                },
-                "showContinueOrDeletePage": {
-                  "type": "boolean"
-                }
-              },
-              "additionalProperties": false,
-              "required": ["method"]
+            "method": {
+              "type": "string",
+              "pattern": "^(accessCode|notPermitted|onePerUser|submissionReference)$"
             },
-            "individual": {
-              "type": "object",
-              "properties": {
-                "method": {
-                  "type": "string",
-                  "pattern": "^(accessCode|notPermitted|onePerUser|submissionReference)$"
-                },
-                "showContinueOrDeletePage": {
-                  "type": "boolean"
-                }
-              },
-              "additionalProperties": false,
-              "required": ["method"]
-            },
-            "organisation": {
-              "type": "object",
-              "properties": {
-                "method": {
-                  "type": "string",
-                  "pattern": "^(accessCode|notPermitted|onePerUser|submissionReference)$"
-                },
-                "showContinueOrDeletePage": {
-                  "type": "boolean"
-                }
-              },
-              "additionalProperties": false,
-              "required": ["method"]
+            "showContinueOrDeletePage": {
+              "type": "boolean"
             }
-          }
+          },
+          "additionalProperties": false,
+          "required": [
+            "method"
+          ]
+        },
+        "individual": {
+          "type": "object",
+          "properties": {
+            "method": {
+              "type": "string",
+              "pattern": "^(accessCode|notPermitted|onePerUser|submissionReference)$"
+            },
+            "showContinueOrDeletePage": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "method"
+          ]
+        },
+        "organisation": {
+          "type": "object",
+          "properties": {
+            "method": {
+              "type": "string",
+              "pattern": "^(accessCode|notPermitted|onePerUser|submissionReference)$"
+            },
+            "showContinueOrDeletePage": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "method"
+          ]
+        }
+      }
     },
     "atlDescriptionObject": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
         "key": {
-            "$ref": "#/$defs/stringOrEnCyObject"
+          "$ref": "#/$defs/stringOrEnCyObject"
         },
         "value": {
-            "$ref": "#/$defs/stringOrEnCyObject"
+          "$ref": "#/$defs/stringOrEnCyObject"
         }
       }
     }

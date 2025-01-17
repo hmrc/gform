@@ -96,6 +96,9 @@ class ObjectStoreModule(
     override def deleteFile(envelopeId: EnvelopeId, fileId: FileId)(implicit hc: HeaderCarrier): FOpt[Unit] =
       fromFutureA(objectStoreService.deleteFile(envelopeId, fileId))
 
+    override def deleteFiles(envelopeId: EnvelopeId, fileIds: Set[FileId])(implicit hc: HeaderCarrier): FOpt[Unit] =
+      fromFutureA(objectStoreService.deleteFiles(envelopeId, fileIds))
+
     override def zipFiles(envelopeId: EnvelopeId, objectStorePaths: ObjectStorePaths)(implicit
       hc: HeaderCarrier
     ): FOpt[ObjectSummaryWithMd5] =
