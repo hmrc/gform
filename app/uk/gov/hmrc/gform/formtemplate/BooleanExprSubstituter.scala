@@ -61,14 +61,14 @@ object BooleanExprSubstituter extends Substituter[BooleanExprSubstitutions, Form
         case IndexOfDataRetrieveCtx(_, _)  => t
         case NumberedList(_)               => t
         case BulletedList(_)               => t
-        case StringOps(_, _)               => t
+        case StringOps(expr, fn)           => StringOps(substitute(substitutions, expr), fn)
         case Concat(exprs)                 => Concat(exprs.map(substitute(substitutions, _)))
         case CountryOfItmpAddress          => t
         case ChoicesRevealedField(_)       => t
         case ChoicesSelected(_)            => t
         case ChoicesAvailable(_)           => t
         case TaskStatus(_)                 => t
-        case LookupOps(_, _)               => t
+        case LookupOps(expr, fn)           => LookupOps(substitute(substitutions, expr), fn)
       }
     }
 
