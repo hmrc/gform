@@ -188,14 +188,14 @@ object TopLevelExpressions {
         case IndexOfDataRetrieveCtx(_, _)  => e
         case NumberedList(_)               => e
         case BulletedList(_)               => e
-        case StringOps(_, _)               => e
+        case StringOps(expr, fn)           => StringOps(loop(expr), fn)
         case Concat(exprs)                 => Concat(exprs.map(loop))
         case CountryOfItmpAddress          => e
         case ChoicesRevealedField(_)       => e
         case ChoicesSelected(_)            => e
         case ChoicesAvailable(_)           => e
         case TaskStatus(_)                 => e
-        case LookupOps(_, _)               => e
+        case LookupOps(expr, fn)           => LookupOps(loop(expr), fn)
       }
     expressions.get(expressionId).fold(expressions) { expr =>
       expressions + (expressionId -> loop(expr))

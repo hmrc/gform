@@ -70,7 +70,7 @@ object ExprSubstituter extends Substituter[ExprSubstitutions, FormTemplate] {
         case ChoicesSelected(_)              => t
         case ChoicesAvailable(_)             => t
         case TaskStatus(_)                   => t
-        case LookupOps(_, _)                 => t
+        case LookupOps(expr, fn)             => LookupOps(substitute(substitutions, expr), fn)
       }
     }
 
