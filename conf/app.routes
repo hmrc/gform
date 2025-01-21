@@ -94,6 +94,8 @@ DELETE        /envelopes/:envelopeId/files/:fileId                              
 
 GET           /translation/:formTemplateId                                                              uk.gov.hmrc.gform.translation.TranslationController.generateTranslatebleCsv(formTemplateId: FormTemplateId)
 GET           /translation/:formTemplateId/brief                                                        uk.gov.hmrc.gform.translation.TranslationController.generateBriefTranslatebleCsv(formTemplateId: FormTemplateId)
+GET           /translation-excel/:formTemplateId                                                        uk.gov.hmrc.gform.translation.TranslationController.generateTranslatebleXlsx(formTemplateId: FormTemplateId)
+GET           /translation-excel/:formTemplateId/brief                                                  uk.gov.hmrc.gform.translation.TranslationController.generateBriefTranslatebleXlsx(formTemplateId: FormTemplateId)
 GET           /translation/:formTemplateId/internal                                                     uk.gov.hmrc.gform.translation.TranslationController.generateInternalCsv(formTemplateId: FormTemplateId)
 GET           /translation/:formTemplateId/debug                                                        uk.gov.hmrc.gform.translation.TranslationController.translateCsvDebug(formTemplateId: FormTemplateId)
 POST          /translation/:formTemplateId                                                              uk.gov.hmrc.gform.translation.TranslationController.translateCsv(formTemplateId: FormTemplateId)
