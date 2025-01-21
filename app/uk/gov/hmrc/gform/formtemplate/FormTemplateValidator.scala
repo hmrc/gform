@@ -327,7 +327,8 @@ object FormTemplateValidator {
   ): ValidationResult = {
     val invalidResults: List[ValidationResult] = allExpressions.flatMap(_.referenceInfos) collect {
       case FormCtxExpr(path, FormCtx(fcId))
-          if path.subpaths.contains("errorMessage") && !noPIIFcIds(formTemplate).contains(fcId) =>
+          if path.subpaths.contains("errorMessage") && !noPIIFcIds(formTemplate).contains(fcId) &&
+            !path.subpaths.lastOption.exists(_ === "includeIf") =>
         Invalid(s"""${path.path} contains PII fcId: ${fcId.value}""")
     }
     Monoid.combineAll(invalidResults)
