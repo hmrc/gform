@@ -3,16 +3,7 @@
     <accessibility>true</accessibility>
     <renderers>
         <renderer mime="application/pdf">
-            <pdf-ua-mode>PDF/UA-1</pdf-ua-mode>
-            <version>1.4</version>
-            <fonts>
-                <font kerning="yes" embed-url="fonts/arial.ttf" encoding-mode="single-byte">
-                    <font-triplet name="arial" style="normal" weight="normal"/>
-                </font>
-                <font kerning="yes" embed-url="fonts/arial-bold.ttf" encoding-mode="single-byte">
-                    <font-triplet name="arial-bold" style="normal" weight="bold"/>
-                </font>
-            </fonts>
+           <version>1.4</version>
         </renderer>
     </renderers>
 </fop>
