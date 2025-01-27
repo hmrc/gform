@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory
 import uk.gov.hmrc.gform.envelope.EnvelopeAlgebra
 import uk.gov.hmrc.gform.objectstore.ObjectStoreService.FileIds._
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
-import uk.gov.hmrc.gform.sharedmodel.envelope.{ Available, EnvelopeData, EnvelopeFile }
+import uk.gov.hmrc.gform.sharedmodel.envelope.{ EnvelopeData, EnvelopeFile }
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
@@ -95,7 +95,7 @@ class ObjectStoreService(
             EnvelopeFile(
               fileId.value,
               fileName,
-              Available,
+              FileStatus.Available,
               contentType,
               res.contentLength,
               Map.empty[String, List[String]]
@@ -132,9 +132,32 @@ class ObjectStoreService(
                objectStoreConnector.deleteFile(envelopeId, fileName)
              case None => Future.failed(new RuntimeException(s"FileId ${fileId.value} not found in mongo"))
            }
-      newEnvelope = envelope.copy(files = envelope.files.filterNot(_.fileId == fileId.value))
+      newEnvelope = envelope.copy(files = envelope.files.filterNot(_.fileId === fileId.value))
       _ <- envelopeService.save(newEnvelope)
     } yield ()
+
+  override def deleteFiles(envelopeId: EnvelopeId, fileIds: Set[FileId])(implicit hc: HeaderCarrier): Future[Unit] = {
+    val fileIdsSet = fileIds.map(_.value)
+    for {
+      envelope <- getEnvelope(envelopeId)
+      files = envelope.files.filter(file => fileIdsSet(file.fileId))
+      _ <- if (files.size === fileIds.size) {
+             files.foreach { file =>
+               logger.info(
+                 s"deleting file: envelopeId - '${envelopeId.value}', fileId - '${file.fileId}', fileName - ${file.fileName}"
+               )
+             }
+             objectStoreConnector.deleteFiles(envelopeId, files.map(_.fileName))
+           } else {
+             val foundFileIds = files.map(_.fileId)
+             Future.failed(
+               new RuntimeException(s"Not all fileIds $fileIds found in mongo. Found fileIds: $foundFileIds")
+             )
+           }
+      newEnvelope = envelope.copy(files = envelope.files.filterNot(file => fileIdsSet(file.fileId)))
+      _ <- envelopeService.save(newEnvelope)
+    } yield ()
+  }
 
   def deleteFile(directory: Path.Directory, fileName: String)(implicit hc: HeaderCarrier): Future[Unit] =
     objectStoreConnector.deleteFile(directory, fileName)
@@ -194,7 +217,7 @@ class ObjectStoreService(
             EnvelopeFile(
               fileId.value,
               fileName,
-              Available,
+              FileStatus.Available,
               contentType,
               res.contentLength,
               Map.empty[String, List[String]]

@@ -24,7 +24,7 @@ import org.scalatest.matchers.should.Matchers
 import uk.gov.hmrc.gform.envelope.EnvelopeAlgebra
 import uk.gov.hmrc.gform.objectstore.{ ObjectStoreConnector, ObjectStoreService }
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
-import uk.gov.hmrc.gform.sharedmodel.envelope.{ Available, EnvelopeData, EnvelopeFile }
+import uk.gov.hmrc.gform.sharedmodel.envelope.{ EnvelopeData, EnvelopeFile }
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.objectstore.client.Path.File
@@ -49,7 +49,7 @@ class ObjectStoreServiceSpec extends AnyFlatSpec with Matchers with ScalaFutures
     expectedEnvelopeData.files :+ EnvelopeFile(
       fileId.value,
       fileName,
-      Available,
+      FileStatus.Available,
       ContentType.`application/pdf`,
       1L,
       Map.empty

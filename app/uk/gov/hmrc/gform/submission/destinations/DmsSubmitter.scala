@@ -23,7 +23,7 @@ import uk.gov.hmrc.gform.core.{ FOpt, fromFutureA, success }
 import uk.gov.hmrc.gform.envelope.EnvelopeAlgebra
 import uk.gov.hmrc.gform.form.FormAlgebra
 import uk.gov.hmrc.gform.formtemplate.FormTemplateAlgebra
-import uk.gov.hmrc.gform.objectstore.{ Available, Envelope, File, ObjectStoreAlgebra }
+import uk.gov.hmrc.gform.objectstore.{ Envelope, File, FileStatus, ObjectStoreAlgebra }
 import uk.gov.hmrc.gform.pdfgenerator.{ FopService, PdfGeneratorService }
 import uk.gov.hmrc.gform.sdes.dms.DmsWorkItemAlgebra
 import uk.gov.hmrc.gform.sharedmodel.LangADT
@@ -71,9 +71,10 @@ class DmsSubmitter(
       _ <-
         dmsWorkItemAlgebra
           .pushWorkItem(submission.envelopeId, form.formTemplateId, submission.submissionRef, objectSummary)
-      envelopeDetails <- success(
-                           Envelope(envelope.files.map(f => File(FileId(f.fileId), Available, f.fileName, f.length)))
-                         )
+      envelopeDetails <-
+        success(
+          Envelope(envelope.files.map(f => File(FileId(f.fileId), FileStatus.Available, f.fileName, f.length)))
+        )
       _ <- success(logFileSizeBreach(submission.envelopeId, envelopeDetails.files))
       _ <- formService.updateFormStatus(submissionInfo.formId, Submitted)
     } yield ()

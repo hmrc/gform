@@ -37,8 +37,8 @@ import uk.gov.hmrc.gform.form.FormAlgebra
 import uk.gov.hmrc.gform.formtemplate.FormTemplateService
 import uk.gov.hmrc.gform.objectstore.ObjectStoreAlgebra
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
-import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId, Form, FormField, FormIdData, UserData }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AllowedFileTypes, FileUpload, FormComponentId, IsFileUpload }
+import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileComponentId, FileId, Form, FormField, FormIdData, UserData }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AllowedFileTypes, FileUpload, FormComponentId, IsFileUpload, IsMultiFileUpload, MultiFileUpload }
 
 import java.net.URL
 
@@ -57,14 +57,14 @@ class UpscanController(
 
   private def setTransferred(
     form: Form,
-    formComponentId: FormComponentId,
+    fileComponentId: FileComponentId,
     fileId: FileId,
     fileName: String
   ): Form = form.copy(
     formData = form.formData.copy(
-      fields = form.formData.fields :+ FormField(formComponentId, fileName)
+      fields = form.formData.fields :+ FormField(FormComponentId(fileComponentId.value()), fileName)
     ),
-    componentIdToFileId = form.componentIdToFileId + (formComponentId, fileId)
+    componentIdToFileId = form.componentIdToFileId + (fileComponentId, fileId)
   )
 
   private def toUserData(form: Form): UserData = UserData(
@@ -113,16 +113,37 @@ class UpscanController(
             logger.info(
               s"Upscan callback successful, fcId: $formComponentId, reference: ${upscanCallbackSuccess.reference}, fileMimeType: ${upscanCallbackSuccess.uploadDetails.fileMimeType}, fileName: ${upscanCallbackSuccess.uploadDetails.fileName}, size: ${upscanCallbackSuccess.uploadDetails.size}"
             )
-            val maybeFileUpload: Option[FileUpload] = formTemplate.formComponents {
-              case fc @ IsFileUpload(fu) if fc.id === formComponentId.reduceToTemplateFieldId => fu
-            }.headOption
 
-            val allowedFileTypes: AllowedFileTypes =
-              maybeFileUpload.flatMap(_.allowedFileTypes).getOrElse(formTemplate.allowedFileTypes)
+            val isMultipleFileOption: Boolean = formTemplate
+              .formComponents {
+                case fc @ IsMultiFileUpload(fu) if fc.id === formComponentId.reduceToTemplateFieldId => true
+                case _                                                                               => false
+              }
+              .exists(_ === true)
 
-            val fileSizeLimit = maybeFileUpload
-              .flatMap(_.fileSizeLimit)
-              .getOrElse(formTemplate.fileSizeLimit.getOrElse(appConfig.formMaxAttachmentSizeMB))
+            val (maybeAllowedFileTypes, maybeFileSizeLimit) = if (isMultipleFileOption) {
+              val maybeMultiFileUpload: Option[MultiFileUpload] = formTemplate.formComponents {
+                case fc @ IsMultiFileUpload(fu) if fc.id === formComponentId.reduceToTemplateFieldId => fu
+              }.headOption
+
+              val maybeAllowedFileTypes = maybeMultiFileUpload.flatMap(_.allowedFileTypes)
+              val maybeFileSizeLimit = maybeMultiFileUpload.flatMap(_.fileSizeLimit)
+
+              (maybeAllowedFileTypes, maybeFileSizeLimit)
+            } else {
+              val maybeFileUpload: Option[FileUpload] = formTemplate.formComponents {
+                case fc @ IsFileUpload(fu) if fc.id === formComponentId.reduceToTemplateFieldId => fu
+              }.headOption
+
+              val maybeAllowedFileTypes = maybeFileUpload.flatMap(_.allowedFileTypes)
+              val maybeFileSizeLimit = maybeFileUpload.flatMap(_.fileSizeLimit)
+
+              (maybeAllowedFileTypes, maybeFileSizeLimit)
+            }
+
+            val allowedFileTypes = maybeAllowedFileTypes.getOrElse(formTemplate.allowedFileTypes)
+            val fileSizeLimit =
+              maybeFileSizeLimit.getOrElse(formTemplate.fileSizeLimit.getOrElse(appConfig.formMaxAttachmentSizeMB))
 
             val validated: Validated[UpscanValidationFailure, Unit] =
               validateFile(allowedFileTypes, fileSizeLimit, upscanCallbackSuccess.uploadDetails)
@@ -139,18 +160,12 @@ class UpscanController(
               case Valid(_) =>
                 for {
                   form <- formService.get(formIdData)
-                  mapping = form.componentIdToFileId.mapping
-                              .filter(_._1.reduceToTemplateFieldId === formComponentId.reduceToTemplateFieldId)
-                  inverseMapping = mapping.map { case (k, v) => (v, k) }
-                  fileId = inverseMapping
-                             .get(FileId(formComponentId.value))
-                             .flatMap(_ =>
-                               mapping.keys.toList
-                                 .diff(mapping.values.toList.map(fileId => FormComponentId(fileId.value)))
-                                 .headOption
-                                 .map(fc => FileId(fc.value))
-                             )
-                             .getOrElse(FileId(formComponentId.value))
+                  (fileComponentId, fileId) = if (isMultipleFileOption) {
+                                                findAvailableFileIdMulti(formComponentId, form)
+                                              } else {
+                                                findAvailableFileId(formComponentId, form)
+                                              }
+
                   fileName = fileId.value + "_" + upscanCallbackSuccess.uploadDetails.fileName
                   validatedFileName: Validated[UpscanValidationFailure, Unit] = validateFileName(fileName)
                   _ <- validatedFileName match {
@@ -169,7 +184,12 @@ class UpscanController(
                                     ContentType(upscanCallbackSuccess.uploadDetails.fileMimeType),
                                     fileName
                                   )
-                             formUpd = setTransferred(form, formComponentId, fileId, fileName)
+                             formUpd = setTransferred(
+                                         form,
+                                         fileComponentId,
+                                         fileId,
+                                         fileName
+                                       )
                              _ <- formService.updateUserData(formIdData, toUserData(formUpd))
                              _ <- upscanService.confirm(upscanCallbackSuccess)
                            } yield NoContent
@@ -198,6 +218,59 @@ class UpscanController(
       callbackResult.getOrElse(NoContent.pure[Future])
 
     }
+
+  private def findAvailableFileIdMulti(
+    formComponentId: FormComponentId, // Note that formComponentId at this point is the same for all uploaded files ie. it has no index information!
+    form: Form
+  ): (FileComponentId, FileId) = {
+    val nextIndex = form.componentIdToFileId.nextIndex(formComponentId)
+
+    val mapping = form.componentIdToFileId.mapping
+      .filter(
+        _._1
+          .underlyingFormComponentId()
+          .reduceToTemplateFieldId === formComponentId.reduceToTemplateFieldId
+      )
+
+    val l1: List[FileId] = mapping.keys.map(_.toFileId()).toList
+    val l2: List[FileId] = mapping.values.toList
+    val fileIdCandidate: Option[FileId] = l1.diff(l2).headOption
+    val fileId = fileIdCandidate
+      .getOrElse(
+        FileId("m" + nextIndex + "_" + formComponentId.value)
+      )
+
+    val fileComponentId = FileComponentId.Multi(
+      formComponentId,
+      nextIndex
+    )
+    (fileComponentId, fileId)
+  }
+
+  private def findAvailableFileId(formComponentId: FormComponentId, form: Form): (FileComponentId, FileId) = {
+    val mapping =
+      form.componentIdToFileId.mapping
+        .filter(
+          _._1
+            .underlyingFormComponentId()
+            .reduceToTemplateFieldId === formComponentId.reduceToTemplateFieldId
+        )
+
+    val inverseMapping = mapping.map { case (k, v) => (v, k) }
+
+    val fileId = inverseMapping
+      .get(FileId(formComponentId.value))
+      .flatMap { _ =>
+        val l1: List[FileId] = mapping.keys.map(_.toFileId()).toList
+        val l2: List[FileId] = mapping.values.toList
+        l1.diff(l2).headOption
+      }
+      .getOrElse(
+        FileId(formComponentId.value)
+      )
+    val fileComponentId = FileComponentId.Single(formComponentId)
+    (fileComponentId, fileId)
+  }
 
   private def validateFile(
     allowedFileTypes: AllowedFileTypes,
