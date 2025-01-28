@@ -22,7 +22,7 @@ import cats.implicits._
 import scala.util.{ Failure, Success, Try }
 import uk.gov.hmrc.gform.core.{ FOpt, fromOptA }
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
-import uk.gov.hmrc.gform.sharedmodel.SmartString
+import uk.gov.hmrc.gform.sharedmodel.{ DataRetrieve, SmartString }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationIncludeIf, Destinations }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationIncludeIf.IncludeIfValue
@@ -558,6 +558,23 @@ trait Rewriter {
       def replaceConfirmation(confirmation: Option[Confirmation]): Option[Confirmation] =
         confirmation.map(c => c.copy(redirects = c.redirects.map(replaceConfirmationRedirects)))
 
+      def replaceDataRetrieveIf(includeIf: Option[IncludeIf], dataRetrieves: Option[NonEmptyList[DataRetrieve]]) =
+        dataRetrieves.map { drs =>
+          drs.map { dr =>
+            val updatedIf = (dr.`if`, replaceIncludeIf(includeIf)) match {
+              case (Some(existingIf), Some(existingIncludeIf)) =>
+                Some(IncludeIf(And(existingIf.booleanExpr, existingIncludeIf.booleanExpr)))
+              case (None, Some(existingIncludeIf)) =>
+                Some(existingIncludeIf)
+              case (Some(existingIf), None) =>
+                Some(existingIf)
+              case (None, None) =>
+                None
+            }
+            dr.copy(`if` = updatedIf)
+          }
+        }
+
       def updateSection(section: Section): Section =
         section match {
           case s: Section.NonRepeatingPage =>
@@ -566,7 +583,8 @@ trait Rewriter {
                 includeIf = replaceIncludeIf(s.page.includeIf),
                 fields = replaceFields(s.page.fields),
                 redirects = replaceRedirects(s.page.redirects),
-                confirmation = replaceConfirmation(s.page.confirmation)
+                confirmation = replaceConfirmation(s.page.confirmation),
+                dataRetrieve = replaceDataRetrieveIf(s.page.includeIf, s.page.dataRetrieve)
               )
             )
           case s: Section.RepeatingPage =>
@@ -575,7 +593,8 @@ trait Rewriter {
                 includeIf = replaceIncludeIf(s.page.includeIf),
                 fields = replaceFields(s.page.fields),
                 redirects = replaceRedirects(s.page.redirects),
-                confirmation = replaceConfirmation(s.page.confirmation)
+                confirmation = replaceConfirmation(s.page.confirmation),
+                dataRetrieve = replaceDataRetrieveIf(s.page.includeIf, s.page.dataRetrieve)
               )
             )
           case s: Section.AddToList =>
@@ -589,7 +608,8 @@ trait Rewriter {
                   fields = replaceFields(page.fields),
                   redirects = replaceRedirects(page.redirects),
                   confirmation = replaceConfirmation(page.confirmation),
-                  caption = page.caption.orElse(s.caption)
+                  caption = page.caption.orElse(s.caption),
+                  dataRetrieve = replaceDataRetrieveIf(page.includeIf, page.dataRetrieve)
                 )
               ),
               fields = replaceFieldsNel(s.fields),
