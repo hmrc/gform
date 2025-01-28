@@ -394,6 +394,42 @@ object DataRetrieveDefinitions {
     )
   )
 
+  val delegatedAgentAuthVat = DataRetrieveDefinition(
+    DataRetrieve.Type("delegatedAgentAuthVat"),
+    Attr.FromObject(
+      List(
+        AttributeInstruction(
+          DataRetrieve.Attribute("authorised"),
+          ConstructAttribute.AsIs(Fetch(List("authorised")))
+        )
+      )
+    ),
+    List(
+      Parameter("vatRegistrationNumber")
+    ),
+    Map(
+      DataRetrieve.Attribute("authorised") -> DataRetrieve.AttrType.String
+    )
+  )
+
+  val delegatedAgentAuthPaye = DataRetrieveDefinition(
+    DataRetrieve.Type("delegatedAgentAuthPaye"),
+    Attr.FromObject(
+      List(
+        AttributeInstruction(
+          DataRetrieve.Attribute("authorised"),
+          ConstructAttribute.AsIs(Fetch(List("authorised")))
+        )
+      )
+    ),
+    List(
+      Parameter("payeReference")
+    ),
+    Map(
+      DataRetrieve.Attribute("authorised") -> DataRetrieve.AttrType.String
+    )
+  )
+
   val bankAccountInsights = DataRetrieveDefinition(
     DataRetrieve.Type("bankAccountInsights"),
     Attr.FromObject(
@@ -534,7 +570,9 @@ object DataRetrieveDefinitions {
       employments,
       hmrcRosmRegistrationCheck,
       agentDetails,
-      hmrcTaxRates
+      hmrcTaxRates,
+      delegatedAgentAuthVat,
+      delegatedAgentAuthPaye
     )
   )
 
