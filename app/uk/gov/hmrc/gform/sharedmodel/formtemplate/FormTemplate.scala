@@ -60,7 +60,8 @@ case class FormTemplate(
   dataRetrieve: Option[NonEmptyList[DataRetrieve]],
   accessiblePdf: Boolean,
   displayAccountHeader: Boolean,
-  serviceStartPageUrl: Option[ServiceStartPageUrl]
+  serviceStartPageUrl: Option[ServiceStartPageUrl],
+  downloadPreviousSubmissionPdf: Boolean
 ) {
 
   def formComponents[A](predicate: PartialFunction[FormComponent, A]): List[A] =
