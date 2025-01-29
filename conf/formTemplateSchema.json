@@ -1030,6 +1030,12 @@
           "items": {
             "$ref": "#/$defs/fields"
           }
+        },
+        "verifiedBy": {
+          "type": "object"
+        },
+        "pageIdsToDisplayOnChange": {
+          "type": "array"
         }
       },
       "dependencies": {

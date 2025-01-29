@@ -25,7 +25,7 @@ import uk.gov.hmrc.gform.Helpers.{ toLocalisedString, toSmartString }
 import uk.gov.hmrc.gform.core.parsers.ValueParser
 import uk.gov.hmrc.gform.core.{ Invalid, Opt, Valid, ValidationResult }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.PageLink
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AnyDate, Choice, Constant, Date, DateCtx, DateFormCtxVar, ExprWithPath, FormComponent, FormComponentId, FormComponentValidator, FormCtx, HideZeroDecimals, Horizontal, IfElse, InformationMessage, Instruction, IsTrue, LeafExpr, LinkCtx, LookupColumn, Offset, OptionData, OptionDataValue, Page, PageId, PostcodeLookup, Radio, Section, StandardInfo, SummariseGroupAsGrid, TemplatePath, ValidIf, Vertical }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AnyDate, Choice, ChoicesAvailable, ChoicesSelected, Constant, DataRetrieveCtx, Date, DateCtx, DateFormCtxVar, Dynamic, Equals, ExprWithPath, FormComponent, FormComponentId, FormComponentValidator, FormCtx, HideZeroDecimals, Horizontal, IfElse, IncludeIf, IndexOfDataRetrieveCtx, InformationMessage, Instruction, IsTrue, LeafExpr, LinkCtx, LookupColumn, Not, Offset, OptionData, OptionDataValue, Page, PageId, PostcodeLookup, Radio, Section, ShortText, StandardInfo, SummariseGroupAsGrid, TemplatePath, Text, ValidIf, Value, Vertical }
 import uk.gov.hmrc.gform.sharedmodel._
 
 class FormTemplateValidatorSpec
@@ -780,6 +780,18 @@ class FormTemplateValidatorSpec
         result shouldBe Invalid("Choice component options 'value's needs to be unique: dutyType.")
       }
     }
+
+    "Check hide choices selected is not for dynamic options based on a data retrieve" should {
+      "return invalid" in {
+        val sections =
+          List(mkSectionNonRepeatingPage(formComponents = List(mkChoiceWithDynamicDrOptions())))
+        val result = FormTemplateValidator
+          .validateChoiceOptions(SectionHelper.pages(sections))
+        result shouldBe Invalid(
+          "'hideChoicesSelected: true' for ATL cannot be used with dynamic choice options from a data retrieve: choiceDrOptions."
+        )
+      }
+    }
   }
 
   "date construct function" should {
@@ -910,6 +922,55 @@ class FormTemplateValidatorSpec
       forAll(table) { (formComponent, expectedResult) =>
         val sections: List[Page] = SectionHelper.pages(List[Section](mkSectionNonRepeatingPage(formComponent)))
         val result = FormTemplateValidator.validateLabel(sections)
+        result shouldBe expectedResult
+      }
+    }
+  }
+
+  "validatePagesToRevisit" should {
+    "validate that pageIdsToDisplayOnChange exist and are forward references" in {
+      val comp1 = mkFormComponent("comp1", Text(ShortText.default, Value), editable = true)
+      val page1 = mkSectionNonRepeatingPage("Page 1", List(comp1), pageId = Some(PageId("page1id")))
+
+      val comp3 = mkFormComponent("comp3", Text(ShortText.default, Value), editable = true)
+      val page3 = mkSectionNonRepeatingPage("Page 3", List(comp3), pageId = Some(PageId("page3id")))
+
+      val comp4 = mkFormComponent("comp4", Text(ShortText.default, Value), editable = true)
+      val page4 = mkSectionNonRepeatingPage("Page 4", List(comp4), pageId = Some(PageId("page4id")))
+
+      val table = Table(
+        ("page2Component", "expectedResult"),
+        (
+          mkFormComponent("comp2", Text(ShortText.default, Value), pagesToRevisit = List(PageId("pageNotFound"))),
+          Invalid("Page with ID 'pageNotFound' not found in form template")
+        ),
+        (
+          mkFormComponent("comp2", Text(ShortText.default, Value), pagesToRevisit = List(PageId("page1id"))),
+          Invalid("Cannot revisit 'page1id' as it's an earlier page in form")
+        ),
+        (
+          mkFormComponent("comp2", Text(ShortText.default, Value), pagesToRevisit = List(PageId("page2id"))),
+          Invalid("Cannot revisit 'page2id' as self")
+        ),
+        (
+          mkFormComponent("comp2", Text(ShortText.default, Value), pagesToRevisit = List(PageId("page3id"))),
+          Valid
+        ),
+        (
+          mkFormComponent(
+            "comp2",
+            Text(ShortText.default, Value),
+            pagesToRevisit = List(PageId("page3id"), PageId("page4id"))
+          ),
+          Valid
+        )
+      )
+
+      forAll(table) { (page2Component, expectedResult) =>
+        val page2: Section.NonRepeatingPage =
+          mkSectionNonRepeatingPage("Page 2", List(page2Component), pageId = Some(PageId("page2id")))
+        val sections: List[Section] = List(page1, page2, page3, page4)
+        val result: ValidationResult = FormTemplateValidator.validatePagesToRevisit(sections)
         result shouldBe expectedResult
       }
     }
@@ -1098,6 +1159,86 @@ class FormTemplateValidatorSpec
     }
   }
 
+  "validateAddToListRepeatConfig" should {
+    "validate that repeatsUntil and repeatsWhile are not based on a choice component with dyanamic options from a data retrieve" in {
+      val table = Table(
+        ("sections", "expected"),
+        (
+          List(
+            mkAddToList(
+              name = "page1",
+              pages = NonEmptyList.one(
+                mkSectionNonRepeatingPage(
+                  name = "page2",
+                  formComponents = List.empty,
+                  pageId = Some(PageId("page2"))
+                ).page
+              )
+            )
+          ),
+          Valid
+        ),
+        (
+          List(
+            mkAddToList(
+              name = "atlPage",
+              pages = NonEmptyList.one(
+                mkSectionNonRepeatingPage(
+                  name = "page2",
+                  formComponents = List(mkChoiceWithDynamicDrOptions()),
+                  pageId = Some(PageId("page2"))
+                ).page
+              ),
+              repeatsUntil = Option(
+                IncludeIf(
+                  Equals(
+                    ChoicesSelected(FormComponentId("choiceDrOptions")),
+                    ChoicesAvailable(FormComponentId("choiceDrOptions"))
+                  )
+                )
+              )
+            )
+          ),
+          Invalid(
+            "AddToList 'atlPage' repeatsUntil cannot be determined by a choice component with dynamic options from a data retrieve."
+          )
+        ),
+        (
+          List(
+            mkAddToList(
+              name = "atlPage",
+              pages = NonEmptyList.one(
+                mkSectionNonRepeatingPage(
+                  name = "page2",
+                  formComponents = List(mkChoiceWithDynamicDrOptions()),
+                  pageId = Some(PageId("page2"))
+                ).page
+              ),
+              repeatsWhile = Option(
+                IncludeIf(
+                  Not(
+                    Equals(
+                      ChoicesSelected(FormComponentId("choiceDrOptions")),
+                      ChoicesAvailable(FormComponentId("choiceDrOptions"))
+                    )
+                  )
+                )
+              )
+            )
+          ),
+          Invalid(
+            "AddToList 'atlPage' repeatsWhile cannot be determined by a choice component with dynamic options from a data retrieve."
+          )
+        )
+      )
+      forAll(table) { (sections, expected) =>
+        val pages: List[Page] = SectionHelper.pages(sections)
+        val formTemplate = mkFormTemplate(sections)
+        FormTemplateValidator.validateAddToListRepeatConfig(formTemplate, pages) shouldBe expected
+      }
+    }
+  }
+
   "validateDataRetrieveForwardReferences" should {
     "validate that dataRetrieves do not forward reference other form components or dataRetrieves" in {
       val dr: Option[DataRetrieve] = mkHmrcTaxRatesDataRetrieve("forwardDataRetrieve")
@@ -1222,5 +1363,54 @@ class FormTemplateValidatorSpec
       onlyShowOnSummary = false,
       None,
       Some(List(SummariseGroupAsGrid))
+    )
+
+  private def mkChoiceWithDynamicDrOptions() =
+    FormComponent(
+      FormComponentId("choiceDrOptions"),
+      Choice(
+        Radio,
+        mkChoiceOptionsDynamicDr(),
+        Vertical,
+        List.empty[Int],
+        None,
+        None,
+        None,
+        LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
+        None,
+        None,
+        true
+      ),
+      toSmartString("Nothing"),
+      false,
+      None,
+      None,
+      None,
+      validIf = None,
+      mandatory = true,
+      editable = true,
+      submissible = true,
+      derived = false,
+      onlyShowOnSummary = false,
+      None,
+      Some(List(SummariseGroupAsGrid))
+    )
+
+  private def mkChoiceOptionsDynamicDr() =
+    NonEmptyList.of(
+      OptionData.ValueBased(
+        label = toSmartString("label"),
+        hint = None,
+        includeIf = None,
+        value = OptionDataValue.StringBased("EMP"),
+        dynamic = Option(
+          Dynamic.DataRetrieveBased(
+            IndexOfDataRetrieveCtx(
+              DataRetrieveCtx(DataRetrieveId("dataRetrieveId"), DataRetrieve.Attribute("employerName")),
+              0
+            )
+          )
+        )
+      )
     )
 }

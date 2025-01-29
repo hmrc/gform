@@ -30,8 +30,9 @@ import uk.gov.hmrc.gform.models.constraints.ReferenceInfo._
 import uk.gov.hmrc.gform.models.constraints.{ AddressLensChecker, FunctionsChecker, MutualReferenceChecker, ReferenceInfo }
 import uk.gov.hmrc.gform.sharedmodel.DataRetrieve.Attribute
 import uk.gov.hmrc.gform.sharedmodel._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.Dynamic.DataRetrieveBased
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.PageLink
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ BySubmissionReference, _ }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.graph.DependencyGraph._
 
 import java.time.LocalDate
@@ -679,6 +680,11 @@ object FormTemplateValidator {
         }
       } else false
 
+    def checkHideChoicesSelectedNonDynamicOptions(choice: Choice): Boolean =
+      if (choice.hideChoicesSelected) {
+        areChoiceOptionsDataRetrievedBased(Option(choice))
+      } else false
+
     def getStringBasedOptionDataValues(choice: Choice): List[String] =
       choice.options.collect { case OptionData.ValueBased(_, _, _, _, OptionDataValue.StringBased(value)) =>
         value
@@ -709,6 +715,11 @@ object FormTemplateValidator {
         sectionsList,
         checkHideChoicesSelected,
         "'hideChoicesSelected: true' can be used only on choices with values"
+      ),
+      validateChoice(
+        sectionsList,
+        checkHideChoicesSelectedNonDynamicOptions,
+        "'hideChoicesSelected: true' for ATL cannot be used with dynamic choice options from a data retrieve"
       )
     ).combineAll
   }
@@ -1385,6 +1396,49 @@ object FormTemplateValidator {
       }
       .getOrElse(Valid)
 
+  def validateAddToListRepeatConfig(formTemplate: FormTemplate, pages: List[Page]): ValidationResult = {
+
+    def checkRepeatsUntil(addToList: Section.AddToList): List[ValidationResult] = {
+      implicit val l: LangADT = LangADT.En
+      val invalid: Invalid = Invalid(
+        s"AddToList '${addToList.title.defaultRawValue}' repeatsUntil cannot be determined by a choice component with dynamic options from a data retrieve."
+      )
+      addToList.repeatsUntil.fold(List.empty[ValidationResult])(incIf => checkBooleanExpr(incIf.booleanExpr, invalid))
+    }
+
+    def checkRepeatsWhile(addToList: Section.AddToList): List[ValidationResult] = {
+      implicit val l: LangADT = LangADT.En
+      val invalid: Invalid = Invalid(
+        s"AddToList '${addToList.title.defaultRawValue}' repeatsWhile cannot be determined by a choice component with dynamic options from a data retrieve."
+      )
+      addToList.repeatsWhile.fold(List.empty[ValidationResult])(incIf => checkBooleanExpr(incIf.booleanExpr, invalid))
+    }
+
+    def checkBooleanExpr(bExpr: BooleanExpr, invalid: Invalid): List[ValidationResult] =
+      bExpr match {
+        case Not(Equals(ChoicesSelected(FormComponentId(value)), ChoicesAvailable(FormComponentId(_)))) =>
+          if (areChoiceOptionsDataRetrievedBased(getChoiceById(value))) List(invalid) else List(Valid)
+        case Equals(ChoicesSelected(FormComponentId(value)), ChoicesAvailable(FormComponentId(_))) =>
+          if (areChoiceOptionsDataRetrievedBased(getChoiceById(value))) List(invalid) else List(Valid)
+        case _ => List(Valid)
+      }
+
+    def getChoiceById(id: String): Option[Choice] =
+      allFormComponents(pages)
+        .map(fv => (fv.id, fv.`type`))
+        .collectFirst {
+          case (fId, choice: Choice) if fId.value === id =>
+            choice
+        }
+
+    val isATLChoiceOptionsValid: List[ValidationResult] =
+      formTemplate.formKind.allSections.collect { case atl: Section.AddToList =>
+        checkRepeatsUntil(atl).appendedAll(checkRepeatsWhile(atl))
+      }.flatten
+
+    isATLChoiceOptionsValid.combineAll
+  }
+
   def validateAddToListDefaultPage(formTemplate: FormTemplate): ValidationResult = {
 
     def checkComponentTypes(page: Page): List[ValidationResult] = {
@@ -1465,6 +1519,33 @@ object FormTemplateValidator {
     duplicates.isEmpty.validationResult(
       s"Some data retrieve ids are defined more than once: ${duplicates.toList.sortBy(_.value).map(_.value)}"
     )
+  }
+
+  def validatePagesToRevisit(sections: List[Section]): ValidationResult = {
+    val allFields: List[(FormComponent, Int)] = indexedFields(sections)
+    val pagesWithId: Map[PageId, Int] = SectionHelper
+      .pages(sections)
+      .zipWithIndex
+      .collect {
+        case (page: Page, idx: Int) if page.id.isDefined => page.id.get -> idx
+      }
+      .toMap
+
+    allFields
+      .flatMap { case (fc: FormComponent, idx: Int) =>
+        fc.pageIdsToDisplayOnChange.map { pageList =>
+          pageList.map { pageId =>
+            (pagesWithId.contains(pageId), pagesWithId.get(pageId)) match {
+              case (false, _)               => Invalid(s"Page with ID '${pageId.id}' not found in form template")
+              case (_, Some(p)) if p < idx  => Invalid(s"Cannot revisit '${pageId.id}' as it's an earlier page in form")
+              case (_, Some(p)) if p == idx => Invalid(s"Cannot revisit '${pageId.id}' as self")
+              case (_, _)                   => Valid
+            }
+          }
+        }
+      }
+      .flatten
+      .combineAll
   }
 
   def validateDataRetrieveForwardReferences(sections: List[Section]): ValidationResult = {
@@ -1721,6 +1802,20 @@ object FormTemplateValidator {
       }
       .combineAll
   }
+
+  private def areChoiceOptionsDataRetrievedBased(choice: Option[Choice]): Boolean =
+    choice.fold(false)(c =>
+      c.options.exists {
+        case OptionData.IndexBased(_, _, _, d)    => d.fold(false)(d => isDataRetrieveBased(d))
+        case OptionData.ValueBased(_, _, _, d, _) => d.fold(false)(d => isDataRetrieveBased(d))
+      }
+    )
+
+  private def isDataRetrieveBased(dynamic: Dynamic): Boolean =
+    dynamic match {
+      case DataRetrieveBased(_) => true
+      case _                    => false
+    }
 }
 
 object IsEmailVerifiedBy {

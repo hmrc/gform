@@ -165,6 +165,30 @@ class FormComponentMaker(json: JsValue) {
   lazy val classes: Opt[Option[String]] =
     toOpt((json \ "classes").validateOpt[String], "/classes")
 
+  lazy val optPageIdsToDisplayOnChange: Opt[Option[List[PageId]]] =
+    json \ "pageIdsToDisplayOnChange" match {
+      case JsDefined(JsArray(pageIds)) =>
+        val r = pageIds.toList
+          .map { pageId =>
+            PageId.format.reads(pageId) match {
+              case JsSuccess(page, _) => Right(page)
+              case JsError(error)     => Left(UnexpectedState(JsError.toJson(error).toString()))
+            }
+          }
+          .partition(_.isLeft) match {
+          case (Nil, rights) => Right(for (Right(i) <- rights) yield i)
+          case (lefts, _)    => Left(for (Left(s) <- lefts) yield s)
+        }
+        r match {
+          case Right(r) => Right(Some(r))
+          case Left(e)  => Left(UnexpectedState(e.map(_.error).mkString(" ")))
+        }
+
+      case JsDefined(notAnArray) =>
+        Left(UnexpectedState(s"'pageIdsToDisplayOnChange' needs to be an array, got: $notAnArray"))
+      case _: JsUndefined => Right(None)
+    }
+
   lazy val optSelectionCriteria: Opt[Option[List[SelectionCriteria]]] =
     json \ "selectionCriteria" match {
       case JsDefined(JsArray(selectionCriterias)) =>
@@ -301,19 +325,20 @@ class FormComponentMaker(json: JsValue) {
 
   def optFieldValue(): Opt[FormComponent] =
     for {
-      label              <- optLabel
-      helpText           <- optHelpText
-      presHint           <- optMaybePresentationHintExpr
-      mes                <- optMES
-      ct                 <- componentTypeOpt
-      validators         <- optValidators
-      instruction        <- optInstruction
-      includeIf          <- optIncludeIf
-      validIf            <- optValidIf
-      labelSize          <- optLabelSize
-      notPII             <- optNotPII
-      extraLetterSpacing <- optExtraLetterSpacing
-      displayInSummary   <- optDisplayInSummary
+      label                    <- optLabel
+      helpText                 <- optHelpText
+      presHint                 <- optMaybePresentationHintExpr
+      mes                      <- optMES
+      ct                       <- componentTypeOpt
+      validators               <- optValidators
+      instruction              <- optInstruction
+      includeIf                <- optIncludeIf
+      validIf                  <- optValidIf
+      labelSize                <- optLabelSize
+      notPII                   <- optNotPII
+      extraLetterSpacing       <- optExtraLetterSpacing
+      displayInSummary         <- optDisplayInSummary
+      pageIdsToDisplayOnChange <- optPageIdsToDisplayOnChange
     } yield mkFieldValue(
       label,
       helpText,
@@ -327,7 +352,8 @@ class FormComponentMaker(json: JsValue) {
       labelSize,
       notPII,
       extraLetterSpacing,
-      displayInSummary
+      displayInSummary,
+      pageIdsToDisplayOnChange
     )
 
   private def toOpt[A](result: JsResult[A], pathPrefix: String): Opt[A] =
@@ -356,7 +382,8 @@ class FormComponentMaker(json: JsValue) {
     labelSize: Option[LabelSize],
     notPII: Boolean,
     extraLetterSpacing: Option[Boolean],
-    displayInSummary: Option[Boolean]
+    displayInSummary: Option[Boolean],
+    pageIdsToDisplayOnChange: Option[List[PageId]]
   ): FormComponent =
     FormComponent(
       id = id,
@@ -388,7 +415,8 @@ class FormComponentMaker(json: JsValue) {
       errorExample = errorExample,
       notPII = notPII,
       extraLetterSpacing = extraLetterSpacing,
-      displayInSummary = displayInSummary
+      displayInSummary = displayInSummary,
+      pageIdsToDisplayOnChange = pageIdsToDisplayOnChange
     )
 
   private lazy val optMES: Opt[MES] = (submitMode, optMandatory, optMaybeValueExpr) match {
