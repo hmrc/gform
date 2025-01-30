@@ -62,6 +62,7 @@ class DataStoreSubmitter(
     modelTree: HandlebarsModelTree
   ): String = {
     val dateSubmittedFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy").withZone(ZoneId.of("Europe/London"))
+    val dateSubmittedTime = DateTimeFormatter.ofPattern("HH:mm:ss.SSSSSS")
     val submission = submissionInfo.submission
 
     val focussedTree = FocussedHandlebarsModelTree(modelTree, modelTree.value.model)
@@ -99,7 +100,7 @@ class DataStoreSubmitter(
       dataStore.regime,
       taxpayerId.getOrElse(""),
       dateSubmittedFormatter.format(submission.submittedDate.toLocalDate),
-      submission.submittedDate.toLocalTime.toString,
+      dateSubmittedTime.format(submission.submittedDate.toLocalTime),
       submission.submissionRef.value,
       submission.envelopeId.value,
       l.langADTToString.toUpperCase
