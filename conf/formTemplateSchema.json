@@ -1682,6 +1682,84 @@
               "parameters"
             ],
             "additionalProperties": false
+          },
+          {
+            "patternProperties": {
+              "^(_)": {
+                "type": "string"
+              }
+            },
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "delegatedAgentAuthVat"
+                ]
+              },
+              "id": {
+                "type": "string"
+              },
+              "if": {
+                "type": "string"
+              },
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "vatRegistrationNumber": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "vatRegistrationNumber"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "type",
+              "id",
+              "parameters"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "patternProperties": {
+              "^(_)": {
+                "type": "string"
+              }
+            },
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "delegatedAgentAuthPaye"
+                ]
+              },
+              "id": {
+                "type": "string"
+              },
+              "if": {
+                "type": "string"
+              },
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "payeReference": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "payeReference"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "type",
+              "id",
+              "parameters"
+            ],
+            "additionalProperties": false
           }
         ]
       }
