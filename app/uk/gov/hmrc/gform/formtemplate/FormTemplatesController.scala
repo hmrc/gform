@@ -27,6 +27,7 @@ import uk.gov.hmrc.gform.formtemplate.FormTemplatePIIRefsHelper.PIIDetailsRespon
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplate, FormTemplateContext, FormTemplateId, FormTemplateRaw, FormTemplateRawId }
 import uk.gov.hmrc.gform.shutter.ShutterService
 import uk.gov.hmrc.gform.core.FOpt
+import uk.gov.hmrc.gform.translation.TextExtractor
 
 import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.gform.notificationbanner.NotificationService
@@ -42,23 +43,33 @@ class FormTemplatesController(
 )(implicit
   ex: ExecutionContext
 ) extends BaseController(controllerComponents) {
+
   private val logger = LoggerFactory.getLogger(getClass)
+
+  val inputStream = getClass.getClassLoader.getResourceAsStream("formTemplateSchema.json")
+  val schemaStream = scala.io.Source.fromInputStream(inputStream).mkString
 
   def upsert() = Action.async(parse.tolerantText) { implicit request =>
     val templateString: String = request.body
-    val inputStream = getClass.getClassLoader.getResourceAsStream("formTemplateSchema.json")
-    val schemaStream = scala.io.Source.fromInputStream(inputStream).mkString
+    val translatableRows: List[(String, String)] = TextExtractor.generateTranslatableRows(templateString)
 
-    JsonSchemaValidator.checkSchema(templateString, schemaStream, JsonSchemaErrorParser.parseErrorMessages) match {
-      case Left(error) => error.asBadRequest.pure[Future]
-      case Right(()) =>
-        val jsValue: JsObject =
-          Json
-            .parse(templateString)
-            .as[JsObject] // This parsing should succeed since schema validation detected no errors
-        val formTemplateRaw = FormTemplateRaw(jsValue)
-        doUpsert(formTemplateRaw)
+    val maybeInvalidHtmlError = HtmlValidator.validate(translatableRows)
+
+    maybeInvalidHtmlError match {
+      case Some(invalidHtmlError) => BadRequest(invalidHtmlError.asJson).pure[Future]
+      case None =>
+        JsonSchemaValidator.checkSchema(templateString, schemaStream, JsonSchemaErrorParser.parseErrorMessages) match {
+          case Left(error) => error.asBadRequest.pure[Future]
+          case Right(()) =>
+            val jsValue: JsObject =
+              Json
+                .parse(templateString)
+                .as[JsObject] // This parsing should succeed since schema validation detected no errors
+            val formTemplateRaw = FormTemplateRaw(jsValue)
+            doUpsert(formTemplateRaw)
+        }
     }
+
   }
 
   // No Schema validation
