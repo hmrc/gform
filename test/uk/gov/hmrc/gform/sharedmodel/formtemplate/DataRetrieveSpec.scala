@@ -753,4 +753,75 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
                |""".stripMargin)
       .validateOpt[DataRetrieve] shouldBe JsError("'code' attribute missing")
   }
+
+  it should "parse json as delegatedAgentAuthVat" in {
+    Json
+      .parse("""
+               |{
+               |  "type": "delegatedAgentAuthVat",
+               |  "id": "agentAuthorisedForVRN",
+               |  "parameters": {
+               |    "vatRegistrationNumber": "${vrn}"
+               |  }
+               |}
+               |""".stripMargin)
+      .as[DataRetrieve] shouldBe DataRetrieve(
+      DataRetrieve.Type("delegatedAgentAuthVat"),
+      DataRetrieveId("agentAuthorisedForVRN"),
+      Attr.FromObject(
+        List(
+          AttributeInstruction(
+            DataRetrieve.Attribute("authorised"),
+            ConstructAttribute.AsIs(Fetch(List("authorised")))
+          )
+        )
+      ),
+      Map(
+        DataRetrieve.Attribute("authorised") -> DataRetrieve.AttrType.String
+      ),
+      List(
+        DataRetrieve.ParamExpr(
+          DataRetrieve.Parameter("vatRegistrationNumber", List.empty[String], DataRetrieve.ParamType.String),
+          FormCtx(FormComponentId("vrn"))
+        )
+      ),
+      None
+    )
+  }
+
+  it should "parse json as delegatedAgentAuthPaye" in {
+    Json
+      .parse("""
+               |{
+               |  "type": "delegatedAgentAuthPaye",
+               |  "id": "agentAuthorisedForPAYE",
+               |  "parameters": {
+               |    "payeReference": "${payeRef}"
+               |  }
+               |}
+               |""".stripMargin)
+      .as[DataRetrieve] shouldBe DataRetrieve(
+      DataRetrieve.Type("delegatedAgentAuthPaye"),
+      DataRetrieveId("agentAuthorisedForPAYE"),
+      Attr.FromObject(
+        List(
+          AttributeInstruction(
+            DataRetrieve.Attribute("authorised"),
+            ConstructAttribute.AsIs(Fetch(List("authorised")))
+          )
+        )
+      ),
+      Map(
+        DataRetrieve.Attribute("authorised") -> DataRetrieve.AttrType.String
+      ),
+      List(
+        DataRetrieve.ParamExpr(
+          DataRetrieve.Parameter("payeReference", List.empty[String], DataRetrieve.ParamType.String),
+          FormCtx(FormComponentId("payeRef"))
+        )
+      ),
+      None
+    )
+  }
+
 }
