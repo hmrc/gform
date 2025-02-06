@@ -104,6 +104,7 @@ object DataRetrieve {
     case object String extends AttrType
     case object Number extends AttrType
     case object Date extends AttrType
+    case object Boolean extends AttrType
 
     implicit val format: OFormat[AttrType] = derived.oformat()
     implicit val equal: Eq[AttrType] = Eq.fromUniversalEquals

@@ -557,6 +557,39 @@ object DataRetrieveDefinitions {
     )
   )
 
+  val vatDetails = DataRetrieveDefinition(
+    DataRetrieve.Type("vatDetails"),
+    Attr.FromObject(
+      List(
+        AttributeInstruction(
+          DataRetrieve.Attribute("hasDesignatoryDetails"),
+          ConstructAttribute.AsIs(Fetch(List("hasDesignatoryDetails")))
+        ),
+        AttributeInstruction(
+          DataRetrieve.Attribute("hasAccountSummary"),
+          ConstructAttribute.AsIs(Fetch(List("hasAccountSummary")))
+        ),
+        AttributeInstruction(
+          DataRetrieve.Attribute("designatoryDetailsLink"),
+          ConstructAttribute.AsIs(Fetch(List("links", "designatoryDetails")))
+        ),
+        AttributeInstruction(
+          DataRetrieve.Attribute("accountSummaryLink"),
+          ConstructAttribute.AsIs(Fetch(List("links", "accountSummary")))
+        )
+      )
+    ),
+    List(
+      Parameter("vatRegistrationNumber")
+    ),
+    Map(
+      DataRetrieve.Attribute("hasDesignatoryDetails")  -> DataRetrieve.AttrType.Boolean,
+      DataRetrieve.Attribute("hasAccountSummary")      -> DataRetrieve.AttrType.Boolean,
+      DataRetrieve.Attribute("designatoryDetailsLink") -> DataRetrieve.AttrType.String,
+      DataRetrieve.Attribute("accountSummaryLink")     -> DataRetrieve.AttrType.String
+    )
+  )
+
   private val staticDefinitions = DataRetrieveDefinitions(
     List(
       validateBankDetails,
@@ -572,7 +605,8 @@ object DataRetrieveDefinitions {
       agentDetails,
       hmrcTaxRates,
       delegatedAgentAuthVat,
-      delegatedAgentAuthPaye
+      delegatedAgentAuthPaye,
+      vatDetails
     )
   )
 

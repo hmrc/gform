@@ -824,4 +824,54 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
     )
   }
 
+  it should "parse json as vatDetails" in {
+    Json
+      .parse("""
+               |{
+               |  "type": "vatDetails",
+               |  "id": "vatInfo",
+               |  "parameters": {
+               |    "vatRegistrationNumber": "${vatRegNumber}"
+               |  }
+               |}
+               |""".stripMargin)
+      .as[DataRetrieve] shouldBe DataRetrieve(
+      DataRetrieve.Type("vatDetails"),
+      DataRetrieveId("vatInfo"),
+      Attr.FromObject(
+        List(
+          AttributeInstruction(
+            DataRetrieve.Attribute("hasDesignatoryDetails"),
+            ConstructAttribute.AsIs(Fetch(List("hasDesignatoryDetails")))
+          ),
+          AttributeInstruction(
+            DataRetrieve.Attribute("hasAccountSummary"),
+            ConstructAttribute.AsIs(Fetch(List("hasAccountSummary")))
+          ),
+          AttributeInstruction(
+            DataRetrieve.Attribute("designatoryDetailsLink"),
+            ConstructAttribute.AsIs(Fetch(List("links", "designatoryDetails")))
+          ),
+          AttributeInstruction(
+            DataRetrieve.Attribute("accountSummaryLink"),
+            ConstructAttribute.AsIs(Fetch(List("links", "accountSummary")))
+          )
+        )
+      ),
+      Map(
+        DataRetrieve.Attribute("hasDesignatoryDetails")  -> DataRetrieve.AttrType.Boolean,
+        DataRetrieve.Attribute("hasAccountSummary")      -> DataRetrieve.AttrType.Boolean,
+        DataRetrieve.Attribute("designatoryDetailsLink") -> DataRetrieve.AttrType.String,
+        DataRetrieve.Attribute("accountSummaryLink")     -> DataRetrieve.AttrType.String
+      ),
+      List(
+        DataRetrieve.ParamExpr(
+          DataRetrieve.Parameter("vatRegistrationNumber", List.empty[String], DataRetrieve.ParamType.String),
+          FormCtx(FormComponentId("vatRegNumber"))
+        )
+      ),
+      None
+    )
+  }
+
 }
