@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.employments
+package uk.gov.hmrc.gform.sharedmodel.hip
 
-import play.api.libs.json.JsArray
-import uk.gov.hmrc.gform.hip.HipAlgebra
+import play.api.libs.json.{ JsArray, Json, OFormat }
 
-class EmploymentsService[F[_]](hipConnector: HipAlgebra[F]) {
-  def lookupEmployment(nino: String, taxYear: Int): F[JsArray] =
-    hipConnector.lookupEmployment(nino, taxYear)
+case class HipEmploymentSummary(individualsEmploymentDetails: JsArray)
+
+object HipEmploymentSummary {
+  implicit val format: OFormat[HipEmploymentSummary] = Json.format[HipEmploymentSummary]
 }
