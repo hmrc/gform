@@ -21,7 +21,7 @@ import uk.gov.hmrc.gform.Spec
 class FOptMonadErrorSpec extends Spec {
   "raiseError" should "work as expected" in {
     expectFutureFailure("hello") {
-      fOptMonadError.raiseError("hello")
+      fOptMonadError.raiseError(new Exception("hello"))
     }
   }
 
@@ -35,10 +35,10 @@ class FOptMonadErrorSpec extends Spec {
   }
 
   "handleErrorWith" should "handle the error" in {
-    expectFutureFailure("Hello, world") {
+    expectFutureFailure("Hello") {
       fOptMonadError
-        .handleErrorWith(fOptMonadError.raiseError[Unit]("Hello")) { x =>
-          fOptMonadError.raiseError(x + ", world")
+        .handleErrorWith(fOptMonadError.raiseError[Unit](new Exception("Hello"))) { x =>
+          fOptMonadError.raiseError(x)
         }
     }
   }

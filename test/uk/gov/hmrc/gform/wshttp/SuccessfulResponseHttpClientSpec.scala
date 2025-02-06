@@ -21,6 +21,7 @@ import cats.syntax.either._
 import org.scalacheck.Gen
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import uk.gov.hmrc.gform.{ Possible, possibleMonadError }
+import uk.gov.hmrc.http.HttpResponse
 
 class SuccessfulResponseHttpClientSpec extends HttpClientSpec with ScalaCheckDrivenPropertyChecks {
   "get" should "delegate to underlying.get and return any response with a successful status" in httpClient[Possible] {
@@ -42,8 +43,13 @@ class SuccessfulResponseHttpClientSpec extends HttpClientSpec with ScalaCheckDri
       whenever(!response.isSuccess) {
         underlying.expectGet(uri, hc, response)
 
-        buildClient(underlying.httpClient)
-          .get(uri)(hc) shouldBe SuccessfulResponseHttpClient.unsuccessfulMessage("GET", uri, response.status).asLeft
+        val result: Either[Throwable, HttpResponse] = buildClient(underlying.httpClient).get(uri)(hc)
+
+        result match {
+          case Left(error) =>
+            error.getMessage shouldBe SuccessfulResponseHttpClient.unsuccessfulMessage("GET", uri, response.status)
+          case Right(_) => fail("Expected response failure")
+        }
       }
     }
   }
@@ -69,10 +75,15 @@ class SuccessfulResponseHttpClientSpec extends HttpClientSpec with ScalaCheckDri
         whenever(!response.isSuccess) {
           underlying.expectPost(uri, postBody, hc, response)
 
-          buildClient(underlying.httpClient)
-            .post(uri, postBody)(hc) shouldBe SuccessfulResponseHttpClient
-            .unsuccessfulMessage("POST", uri, response.status)
-            .asLeft
+          val result: Either[Throwable, HttpResponse] = buildClient(underlying.httpClient)
+            .post(uri, postBody)(hc)
+
+          result match {
+            case Left(error) =>
+              error.getMessage shouldBe SuccessfulResponseHttpClient
+                .unsuccessfulMessage("POST", uri, response.status)
+            case Right(_) => fail("Expected response failure")
+          }
         }
     }
   }
@@ -98,14 +109,19 @@ class SuccessfulResponseHttpClientSpec extends HttpClientSpec with ScalaCheckDri
         whenever(!response.isSuccess) {
           underlying.expectPut(uri, putBody, hc, response)
 
-          buildClient(underlying.httpClient)
-            .put(uri, putBody)(hc) shouldBe SuccessfulResponseHttpClient
-            .unsuccessfulMessage("PUT", uri, response.status)
-            .asLeft
+          val result: Either[Throwable, HttpResponse] = buildClient(underlying.httpClient)
+            .put(uri, putBody)(hc)
+
+          result match {
+            case Left(error) =>
+              error.getMessage shouldBe SuccessfulResponseHttpClient
+                .unsuccessfulMessage("PUT", uri, response.status)
+            case Right(_) => fail("Expected response failure")
+          }
         }
     }
   }
 
-  private def buildClient[F[_]](underlying: HttpClient[F])(implicit me: MonadError[F, String]): HttpClient[F] =
+  private def buildClient[F[_]](underlying: HttpClient[F])(implicit me: MonadError[F, Throwable]): HttpClient[F] =
     underlying.successResponsesOnly
 }

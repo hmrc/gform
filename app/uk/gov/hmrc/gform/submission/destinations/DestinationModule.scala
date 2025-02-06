@@ -16,11 +16,11 @@
 
 package uk.gov.hmrc.gform.submission.destinations
 
+import org.slf4j.LoggerFactory
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.core._
 import uk.gov.hmrc.gform.form.FormModule
 import uk.gov.hmrc.gform.formmetadata.FormMetadataModule
-import uk.gov.hmrc.gform.logging.Loggers
 import uk.gov.hmrc.gform.mongo.MongoModule
 import uk.gov.hmrc.gform.objectstore.{ ObjectStoreAlgebra, ObjectStoreModule }
 import uk.gov.hmrc.gform.repo.{ Repo, RepoAlgebra }
@@ -39,9 +39,10 @@ class DestinationModule(
   metadataModule: FormMetadataModule,
   objectStoreModule: ObjectStoreModule
 )(implicit ex: ExecutionContext) {
+  private val logger = LoggerFactory.getLogger(getClass)
   val destinationAuditer: Option[RepoDestinationAuditer] =
     if (configModule.DestinationsServicesConfig.auditDestinations) {
-      Loggers.destinations.info("Destination auditing IS enabled")
+      logger.info("Destination auditing IS enabled")
       Some(
         new RepoDestinationAuditer(
           RepoAlgebra.fOpt(new Repo[DestinationAudit]("destinationAudit", mongoModule.mongoComponent, _.id.toString)),
@@ -50,7 +51,7 @@ class DestinationModule(
         )
       )
     } else {
-      Loggers.destinations.info("Destination auditing IS NOT enabled")
+      logger.info("Destination auditing IS NOT enabled")
       None
     }
 
@@ -58,12 +59,12 @@ class DestinationModule(
 
   private val objectStoreServiceIfPopulating: Option[ObjectStoreAlgebra[FOpt]] =
     if (configModule.DestinationsServicesConfig.populateHandlebarsModelWithDocuments) {
-      Loggers.destinations.info(
+      logger.info(
         "The objectStoreService IS configured for the submission service, so the Handlebars model WILL be populated with uploaded documents"
       )
       Some(objectStoreModule.foptObjectStoreService)
     } else {
-      Loggers.destinations.info(
+      logger.info(
         "The objectStoreService IS NOT configured for the submission service, so the Handlebars model WILL NOT be populated with uploaded documents"
       )
       None

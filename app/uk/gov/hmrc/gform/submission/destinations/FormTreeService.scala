@@ -30,7 +30,7 @@ import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
 import uk.gov.hmrc.gform.sharedmodel.form.FormIdData
 import uk.gov.hmrc.gform.submission.Tree
 
-class FormTreeService[M[_]](formMetadataAlgebra: FormMetadataAlgebra[M])(implicit M: MonadError[M, String])
+class FormTreeService[M[_]](formMetadataAlgebra: FormMetadataAlgebra[M])(implicit M: MonadError[M, Throwable])
     extends FormTreeAlgebra[M] {
   private val logger = LoggerFactory.getLogger(getClass)
 
@@ -83,7 +83,7 @@ class FormTreeService[M[_]](formMetadataAlgebra: FormMetadataAlgebra[M])(implici
 
   private def verifyNoLoops(submissionRef: SubmissionRef, processedSubmissionReferences: Set[SubmissionRef]): M[Unit] =
     if (processedSubmissionReferences.contains(submissionRef))
-      M.raiseError(FormTreeService.cycleErrorMessage(submissionRef))
+      M.raiseError(new Exception(FormTreeService.cycleErrorMessage(submissionRef)))
     else ().pure[M]
 }
 

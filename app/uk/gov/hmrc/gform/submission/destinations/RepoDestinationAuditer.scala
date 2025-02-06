@@ -24,10 +24,10 @@ import cats.syntax.flatMap._
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.{ ArrayNode, TextNode }
 import org.mongodb.scala.model.Filters
+import org.slf4j.LoggerFactory
 import uk.gov.hmrc.gform.core._
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.form.FormAlgebra
-import uk.gov.hmrc.gform.logging.Loggers
 import uk.gov.hmrc.gform.repo.RepoAlgebra
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationId, HandlebarsTemplateProcessorModel }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponentId, FormTemplate }
@@ -43,6 +43,8 @@ class RepoDestinationAuditer(
   formAlgebra: FormAlgebra[FOpt]
 )(implicit ec: ExecutionContext)
     extends DestinationAuditAlgebra[FOpt] with PdfSummaryAlgebra[FOpt] {
+
+  private val logger = LoggerFactory.getLogger(getClass)
   def apply(
     destination: Destination,
     handlebarsDestinationResponseStatusCode: Option[Int],
@@ -79,7 +81,7 @@ class RepoDestinationAuditer(
   }
 
   private def apply(audit: DestinationAudit): FOpt[Unit] =
-    success(Loggers.destinations.info(s"Destination audit: ${DestinationAudit.format.writes(audit)}")) >>
+    success(logger.info(s"Destination audit: ${DestinationAudit.format.writes(audit)}")) >>
       auditRepository.upsert(audit) >>
       success(())
 

@@ -54,12 +54,12 @@ package object core {
     }
   }
 
-  implicit def fOptMonadError(implicit ec: ExecutionContext): MonadError[FOpt, String] =
-    new MonadError[FOpt, String] with StackSafeMonad[FOpt] {
+  implicit def fOptMonadError(implicit ec: ExecutionContext): MonadError[FOpt, Throwable] =
+    new MonadError[FOpt, Throwable] with StackSafeMonad[FOpt] {
       override def flatMap[A, B](fa: FOpt[A])(f: A => FOpt[B]): FOpt[B] = fa.flatMap(f)
       override def pure[A](x: A): FOpt[A] = success(x)
-      override def raiseError[A](e: String): FOpt[A] = fromFutureA(Future.failed(new Exception(e)))
-      override def handleErrorWith[A](fa: FOpt[A])(f: String => FOpt[A]): FOpt[A] =
-        EitherT(fa.value.recoverWith { case t => f(t.getMessage).value })
+      override def raiseError[A](e: Throwable): FOpt[A] = fromFutureA(Future.failed(e))
+      override def handleErrorWith[A](fa: FOpt[A])(f: Throwable => FOpt[A]): FOpt[A] =
+        EitherT(fa.value.recoverWith { case t => f(t).value })
     }
 }

@@ -21,8 +21,8 @@ import cats.MonadError
 import cats.syntax.applicative._
 import cats.syntax.flatMap._
 import cats.syntax.functor._
+import org.slf4j.LoggerFactory
 import play.api.libs.json._
-import uk.gov.hmrc.gform.logging.Loggers
 import uk.gov.hmrc.gform.notifier.NotifierAlgebra
 import uk.gov.hmrc.gform.sdes.SdesConfig
 import uk.gov.hmrc.gform.sharedmodel.{ DestinationEvaluation, DestinationResult, EmailVerifierService, LangADT, UserSession }
@@ -44,8 +44,10 @@ class DestinationSubmitter[M[_]](
   dataStore: DataStoreSubmitterAlgebra[M],
   sdesConfig: SdesConfig,
   handlebarsTemplateProcessor: HandlebarsTemplateProcessor = RealHandlebarsTemplateProcessor
-)(implicit monadError: MonadError[M, String])
+)(implicit monadError: MonadError[M, Throwable])
     extends DestinationSubmitterAlgebra[M] {
+
+  private val logger = LoggerFactory.getLogger(getClass)
 
   def submitIfIncludeIf(
     destination: Destination,
@@ -118,12 +120,12 @@ class DestinationSubmitter[M[_]](
 
   private def logInfoInMonad(formId: FormId, destinationId: DestinationId, msg: String): M[Unit] =
     monadError.pure {
-      Loggers.destinations.info(genericLogMessage(formId, destinationId, msg))
+      logger.info(genericLogMessage(formId, destinationId, msg))
     }
 
   private def logErrorInMonad(formId: FormId, destinationId: DestinationId, msg: String): M[Unit] =
     monadError.pure {
-      Loggers.destinations.error(genericLogMessage(formId, destinationId, msg))
+      logger.error(genericLogMessage(formId, destinationId, msg))
     }
 
   private def submit(
@@ -189,7 +191,7 @@ class DestinationSubmitter[M[_]](
       submissionConsolidator.submit(d, submissionInfo, accumulatedModel, modelTree, formData)
     ) { msg =>
       if (d.failOnError)
-        raiseError(submissionInfo.formId, d.id, msg)
+        raiseDestinationError(submissionInfo.formId, d.id, msg)
       else {
         logInfoInMonad(submissionInfo.formId, d.id, "Failed execution but has 'failOnError' set to false. Ignoring.")
       }
@@ -205,7 +207,11 @@ class DestinationSubmitter[M[_]](
       case notify @ EmailVerifierService.Notify(_, _) =>
         submitToNotify(notify, d, submissionInfo, structuredFormData, l)
       case EmailVerifierService.DigitalContact(_, _) =>
-        raiseError(submissionInfo.formId, d.id, "DigitalContact destination support is not implemented")
+        raiseDestinationError(
+          submissionInfo.formId,
+          d.id,
+          new Exception("DigitalContact destination support is not implemented")
+        )
     }
 
   private def submitToNotify(
@@ -220,7 +226,7 @@ class DestinationSubmitter[M[_]](
         notifier.email
     ) { msg =>
       if (d.failOnError)
-        raiseError(submissionInfo.formId, d.id, msg)
+        raiseDestinationError(submissionInfo.formId, d.id, msg)
       else {
         logInfoInMonad(submissionInfo.formId, d.id, "Failed execution but has 'failOnError' set to false. Ignoring.")
       }
@@ -236,7 +242,7 @@ class DestinationSubmitter[M[_]](
     def modelTreeStrings(tree: HandlebarsModelTree, depth: Int): List[String] =
       (("|  " * depth) + modelTreeNodeString(tree.value)) :: tree.children.flatMap(modelTreeStrings(_, depth + 1))
 
-    Loggers.destinations.logger
+    logger
       .info(
         s"destination: ${d.id}, accumulatedModel: ${accumulatedModel.model}, modelTree:\n${modelTreeStrings(modelTree, 1)
           .mkString("\n")}"
@@ -253,7 +259,7 @@ class DestinationSubmitter[M[_]](
   )(implicit hc: HeaderCarrier): M[Unit] =
     monadError.handleErrorWith(dms(submissionInfo, accumulatedModel, modelTree, d, l)) { msg =>
       if (d.failOnError)
-        raiseError(submissionInfo.formId, d.id, msg)
+        raiseDestinationError(submissionInfo.formId, d.id, msg)
       else {
         logErrorInMonad(submissionInfo.formId, d.id, "Failed execution but has 'failOnError' set to false. Ignoring.")
       }
@@ -297,7 +303,7 @@ class DestinationSubmitter[M[_]](
           )
         ) { msg =>
           if (d.failOnError)
-            raiseError(submissionInfo.formId, d.id, msg)
+            raiseDestinationError(submissionInfo.formId, d.id, msg)
           else {
             logErrorInMonad(
               submissionInfo.formId,
@@ -339,10 +345,10 @@ class DestinationSubmitter[M[_]](
     modelTree: HandlebarsModelTree
   )(implicit hc: HeaderCarrier): M[HandlebarsDestinationResponse] =
     audit(destination, Some(response.status), Some(response.body), submissionInfo, modelTree) >>
-      raiseError(
+      raiseDestinationError(
         submissionInfo.formId,
         destination.id,
-        DestinationSubmitter.handlebarsHttpApiFailOnErrorMessage(response)
+        new Exception(DestinationSubmitter.handlebarsHttpApiFailOnErrorMessage(response))
       )
 
   private def createSuccessResponse(

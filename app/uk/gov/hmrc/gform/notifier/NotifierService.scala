@@ -24,7 +24,7 @@ import uk.gov.service.notify.NotificationClientApi
 import scala.jdk.CollectionConverters._
 import scala.util.{ Failure, Success, Try }
 
-class NotifierService[F[_]](client: NotificationClientApi)(implicit F: ApplicativeError[F, String])
+class NotifierService[F[_]](client: NotificationClientApi)(implicit F: ApplicativeError[F, Throwable])
     extends NotifierAlgebra[F] {
   private val logger = LoggerFactory.getLogger(getClass)
 
@@ -36,6 +36,6 @@ class NotifierService[F[_]](client: NotificationClientApi)(implicit F: Applicati
       case Success(_) => F.pure(())
       case Failure(t) =>
         logger.error(show"Failed to send a Notifier email with template ID ${details.templateId}", t)
-        F.raiseError(t.getMessage)
+        F.raiseError(t)
     }
 }

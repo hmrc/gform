@@ -61,14 +61,25 @@ class StateTransitionsServiceSpec extends Spec with DestinationGen with FormGen 
       formStatusGen
     ) { (destination, formId, returnedFormStatus) =>
       whenever(returnedFormStatus =!= destination.requiredState) {
-        createService
+        val res: Possible[Unit] = createService
           .expectUpdateFormStatus(formId, destination.requiredState, returnedFormStatus)
           .sut
-          .apply(destination, formId) shouldBe raiseError(
-          formId,
-          destination.id,
-          StateTransitionAlgebra.failedToAchieveStateTransition(destination, returnedFormStatus)
-        )
+          .apply(destination, formId)
+
+        res match {
+          case Right(_) => fail("Expected left")
+          case Left(error) =>
+            val res2: Possible[Unit] = raiseDestinationError(
+              formId,
+              destination.id,
+              new Exception(StateTransitionAlgebra.failedToAchieveStateTransition(destination, returnedFormStatus))
+            )
+
+            res2 match {
+              case Left(error2) => error.getMessage shouldBe error2.getMessage
+              case Right(_)     => fail("Expected left")
+            }
+        }
       }
     }
   }

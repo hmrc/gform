@@ -53,10 +53,10 @@ object HttpClient {
     def buildHeaderCarrier(headerCarrierBuilder: Endo[HeaderCarrier]): HeaderCarrierBuildingHttpClient[F] =
       new HeaderCarrierBuildingHttpClient(headerCarrierBuilder, underlying)
 
-    def successResponsesOnly(implicit monadError: MonadError[F, String]): SuccessfulResponseHttpClient[F] =
+    def successResponsesOnly(implicit monadError: MonadError[F, Throwable]): SuccessfulResponseHttpClient[F] =
       new SuccessfulResponseHttpClient(underlying)
 
-    def json(implicit monadError: MonadError[F, String]): HttpClient[F] = new HttpClient[F] {
+    def json(implicit monadError: MonadError[F, Throwable]): HttpClient[F] = new HttpClient[F] {
       private val contentType = "application/json"
 
       override def get(uri: String)(implicit hc: HeaderCarrier): F[HttpResponse] = underlying.get(uri)
@@ -68,7 +68,7 @@ object HttpClient {
         httpRequest(underlying.put(_, _)(addContentTypeHeader(hc, contentType)), uri, jsonString)(Some(Json.parse))
     }
 
-    def xml(implicit monadError: MonadError[F, String]): HttpClient[F] = new HttpClient[F] {
+    def xml(implicit monadError: MonadError[F, Throwable]): HttpClient[F] = new HttpClient[F] {
       private val contentType = "application/xml"
 
       override def get(uri: String)(implicit hc: HeaderCarrier): F[HttpResponse] =
@@ -87,12 +87,12 @@ object HttpClient {
 
   private def httpRequest[F[_]](method: (String, String) => F[HttpResponse], uri: String, payload: String)(
     parser: Option[String => JsValue]
-  )(implicit monadError: MonadError[F, String]): F[HttpResponse] =
+  )(implicit monadError: MonadError[F, Throwable]): F[HttpResponse] =
     try method(uri, parser.fold(payload)(fn => fn(payload).toString))
     catch {
       case ex: Exception =>
         logger.debug(s"Failed to send request to $uri with body: $payload", ex)
-        monadError.raiseError(s"Attempt send a request failed because the given body is not valid.")
+        monadError.raiseError(new Exception(s"Attempt send a request failed because the given body is not valid.", ex))
     }
 }
 
@@ -116,7 +116,7 @@ class HeaderCarrierBuildingHttpClient[F[_]](headerCarrierBuilder: Endo[HeaderCar
     underlying.put(uri, body)(headerCarrierBuilder(hc))
 }
 
-class SuccessfulResponseHttpClient[F[_]](underlying: HttpClient[F])(implicit monadError: MonadError[F, String])
+class SuccessfulResponseHttpClient[F[_]](underlying: HttpClient[F])(implicit monadError: MonadError[F, Throwable])
     extends HttpClient[F] {
   override def get(uri: String)(implicit hc: HeaderCarrier): F[HttpResponse] =
     handleStatus(underlying.get(uri), "GET", uri)
@@ -130,7 +130,7 @@ class SuccessfulResponseHttpClient[F[_]](underlying: HttpClient[F])(implicit mon
   private def handleStatus(response: F[HttpResponse], method: String, uri: String): F[HttpResponse] =
     response.flatMap { r =>
       if (r.isSuccess) r.pure[F]
-      else monadError.raiseError(SuccessfulResponseHttpClient.unsuccessfulMessage(method, uri, r.status))
+      else monadError.raiseError(new Exception(SuccessfulResponseHttpClient.unsuccessfulMessage(method, uri, r.status)))
     }
 }
 

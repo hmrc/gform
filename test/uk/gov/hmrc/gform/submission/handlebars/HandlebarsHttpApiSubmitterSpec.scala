@@ -194,7 +194,7 @@ class HandlebarsHttpApiSubmitterSpec extends Spec with ScalaCheckDrivenPropertyC
       .expects(where { (_, body, _) =>
         body === "bad input"
       })
-      .returning(Left("error response"))
+      .returning(Left(new Exception("error response")))
       .once()
 
     (httpClient
@@ -224,8 +224,12 @@ class HandlebarsHttpApiSubmitterSpec extends Spec with ScalaCheckDrivenPropertyC
       .returning("foo")
       .once()
 
-    submitter
-      .apply(destination, HandlebarsTemplateProcessorModel.empty, tree(processorModel)) shouldBe Left("error response")
+    val res = submitter.apply(destination, HandlebarsTemplateProcessorModel.empty, tree(processorModel))
+
+    res match {
+      case Left(error) => error.getMessage shouldBe "error response"
+      case Right(_)    => fail("Expected submission to be failure")
+    }
   }
 
   it should "make one POST request when there is a JsArray payload multiRequestPayload = false " in {
@@ -512,7 +516,7 @@ class HandlebarsHttpApiSubmitterSpec extends Spec with ScalaCheckDrivenPropertyC
     }
   }
 
-  private def submitterPartsGen[F[_]](implicit me: MonadError[F, String]): Gen[SubmitterParts[F]] = {
+  private def submitterPartsGen[F[_]](implicit me: MonadError[F, Throwable]): Gen[SubmitterParts[F]] = {
     val httpClient = mock[HttpClient[F]]
     val handlebarsTemplateProcessor = mock[HandlebarsTemplateProcessor]
 

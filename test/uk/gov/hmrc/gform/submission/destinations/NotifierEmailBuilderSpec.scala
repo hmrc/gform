@@ -34,11 +34,18 @@ class NotifierEmailBuilderSpec
   "apply" must "fail if the 'to' field does not exist in the model" in {
     forAll(emailGen.map(_.copy(personalisation = Map.empty))) { destination =>
       val templateId: NotifierTemplateId = NotifierTemplateId("abc")
-      NotifierEmailBuilder[Possible](
+      val p: Possible[NotifierEmail] = NotifierEmailBuilder[Possible](
         templateId,
         destination,
         StructuredFormValue.ObjectStructure(Nil)
-      ) shouldBe Left(NotifierEmailBuilder.missingField(destination.id, destination.to))
+      )
+
+      p match {
+        case Left(throwable) =>
+          throwable.getMessage shouldBe NotifierEmailBuilder.missingField(destination.id, destination.to)
+        case Right(_) => fail("Expected missingField error")
+      }
+
     }
   }
 
@@ -78,11 +85,17 @@ class NotifierEmailBuilderSpec
             List(Field(FieldName(destination.to.value), StructuredFormValue.TextNode(to)))
           )
 
-        NotifierEmailBuilder[Possible](
+        val p: Possible[NotifierEmail] = NotifierEmailBuilder[Possible](
           emailTemplateId,
           destination,
           structuredFormData
-        ) shouldBe Left(NotifierEmailBuilder.missingField(destination.id, FormComponentId(s"_$pf")))
+        )
+
+        p match {
+          case Left(throwable) =>
+            throwable.getMessage shouldBe NotifierEmailBuilder.missingField(destination.id, FormComponentId(s"_$pf"))
+          case Right(_) => fail("Expected missingField error")
+        }
       }
     }
   }
