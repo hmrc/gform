@@ -454,11 +454,11 @@ object DataRetrieveDefinitions {
       List(
         AttributeInstruction(
           DataRetrieve.Attribute("employerName"),
-          ConstructAttribute.AsIs(Fetch(List("employerName")))
+          ConstructAttribute.AsIs(Fetch(List("payeSchemeOperatorName")))
         ),
         AttributeInstruction(
           DataRetrieve.Attribute("sequenceNumber"),
-          ConstructAttribute.AsIs(Fetch(List("sequenceNumber")))
+          ConstructAttribute.AsIs(Fetch(List("payeSequenceNumber")))
         ),
         AttributeInstruction(
           DataRetrieve.Attribute("worksNumber"),
@@ -468,8 +468,14 @@ object DataRetrieveDefinitions {
           DataRetrieve.Attribute("taxDistrictNumber"),
           ConstructAttribute.AsIs(Fetch(List("taxDistrictNumber")))
         ),
-        AttributeInstruction(DataRetrieve.Attribute("payeNumber"), ConstructAttribute.AsIs(Fetch(List("payeNumber")))),
-        AttributeInstruction(DataRetrieve.Attribute("director"), ConstructAttribute.AsIs(Fetch(List("director"))))
+        AttributeInstruction(
+          DataRetrieve.Attribute("payeNumber"),
+          ConstructAttribute.AsIs(Fetch(List("payeNumber")))
+        ),
+        AttributeInstruction(
+          DataRetrieve.Attribute("director"),
+          ConstructAttribute.AsIs(Fetch(List("directorIdentifier")))
+        )
       )
     ),
     List(
