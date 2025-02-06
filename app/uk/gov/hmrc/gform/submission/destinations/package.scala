@@ -18,19 +18,20 @@ package uk.gov.hmrc.gform.submission
 
 import cats.MonadError
 import cats.syntax.flatMap._
-import uk.gov.hmrc.gform.logging.Loggers
+import org.slf4j.LoggerFactory
 import uk.gov.hmrc.gform.sharedmodel.form.FormId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationId
 
 package object destinations {
+  private val logger = LoggerFactory.getLogger(getClass)
   def genericLogMessage(formId: FormId, destinationId: DestinationId, msg: String): String =
     f"${formId.value}%-60s ${destinationId.id}%-30s $msg"
 
-  def raiseError[T, M[_]](formId: FormId, destinationId: DestinationId, msg: String)(implicit
-    monadError: MonadError[M, String]
+  def raiseDestinationError[T, M[_]](formId: FormId, destinationId: DestinationId, throwable: Throwable)(implicit
+    monadError: MonadError[M, Throwable]
   ): M[T] = {
-    val fullMsg = genericLogMessage(formId, destinationId, msg)
-    monadError.pure(Loggers.destinations.warn(fullMsg)) >>
-      monadError.raiseError[T](fullMsg)
+    val fullMsg = genericLogMessage(formId, destinationId, throwable.getMessage)
+    monadError.pure(logger.error(fullMsg, throwable)) >>
+      monadError.raiseError[T](new Exception(fullMsg, throwable))
   }
 }

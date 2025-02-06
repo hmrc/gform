@@ -46,7 +46,7 @@ class FormBundleSubmissionService[F[_]](
   formTreeAlgebra: FormTreeAlgebra[F],
   pdfSummaryAlgebra: PdfSummaryAlgebra[F],
   destinationAuditAlgebra: DestinationAuditAlgebra[F]
-)(implicit M: MonadError[F, String]) {
+)(implicit M: MonadError[F, Throwable]) {
   private val logger = LoggerFactory.getLogger(getClass)
 
   def forceUpdateFormStatus(formId: FormId, status: FormStatus)(implicit hc: HeaderCarrier): F[Unit] =
@@ -70,7 +70,7 @@ class FormBundleSubmissionService[F[_]](
     tree
       .filter(v => validFormIds(v.formIdData))
       .map(_.pure[F])
-      .getOrElse(M.raiseError("The status of the root form must be NeedsReview or beyond"))
+      .getOrElse(M.raiseError(new Exception("The status of the root form must be NeedsReview or beyond")))
 
   private def workOutValidFormIds(tree: Tree[BundledFormTreeNode])(implicit hc: HeaderCarrier): F[Set[FormIdData]] =
     for {

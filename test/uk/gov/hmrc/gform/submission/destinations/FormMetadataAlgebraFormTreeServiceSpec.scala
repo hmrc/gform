@@ -129,7 +129,7 @@ class FormMetadataAlgebraFormTreeServiceSpec extends Spec with FormMetadataGen w
           distinct(root, child, grandchild)(_.submissionRef) &&
             distinct(root, child, grandchild)(_.parentFormSubmissionRefs)
         ) {
-          createService()
+          val t: Throwable = createService()
             .expectMetaDataAlgebraGet(root.formIdData, root)
             .expectMetadataAlgebraFindByParentFormSubmissionRef(root.submissionRef.get, List(child))
             .expectMetadataAlgebraFindByParentFormSubmissionRef(child.submissionRef.get, List(grandchild))
@@ -137,7 +137,9 @@ class FormMetadataAlgebraFormTreeServiceSpec extends Spec with FormMetadataGen w
             .service
             .getFormTree(root.formIdData)
             .left
-            .value shouldBe FormTreeService.cycleErrorMessage(child.submissionRef.get)
+            .value
+
+          t.getMessage shouldBe FormTreeService.cycleErrorMessage(child.submissionRef.get)
         }
     }
   }

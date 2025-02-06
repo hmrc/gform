@@ -17,6 +17,7 @@
 package uk.gov.hmrc.gform.submission.handlebars
 
 import cats.MonadError
+import org.slf4j.LoggerFactory
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations._
 import uk.gov.hmrc.gform.submission.destinations._
 import uk.gov.hmrc.gform.wshttp.HttpClient
@@ -24,7 +25,6 @@ import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 import play.api.libs.json._
 import cats.syntax.all._
 import scala.util.Try
-import uk.gov.hmrc.gform.logging.Loggers
 
 trait HandlebarsHttpApiSubmitter[F[_]] {
   def apply(
@@ -37,9 +37,10 @@ trait HandlebarsHttpApiSubmitter[F[_]] {
 class RealHandlebarsHttpApiSubmitter[F[_]](
   httpClients: Map[ProfileName, HttpClient[F]],
   handlebarsTemplateProcessor: HandlebarsTemplateProcessor = RealHandlebarsTemplateProcessor
-)(implicit monadError: MonadError[F, String])
+)(implicit monadError: MonadError[F, Throwable])
     extends HandlebarsHttpApiSubmitter[F] {
 
+  private val logger = LoggerFactory.getLogger(getClass)
   def apply(
     destination: Destination.HandlebarsHttpApi,
     accumulatedModel: HandlebarsTemplateProcessorModel,
@@ -63,18 +64,20 @@ class RealHandlebarsHttpApiSubmitter[F[_]](
       val formId = modelTree.value.formId
       val input: List[String] = destination.payload.fold(List(""))(body => parseAndProcessAsList(body))
 
-      def logAndRaiseError(message: String): F[HttpResponse] =
-        logError(message) *> monadError.raiseError(message)
+      def logAndRaiseError(throwable: Throwable): F[HttpResponse] =
+        logError(throwable) *> monadError.raiseError(throwable)
 
       def logInfo(message: String): F[Unit] =
-        monadError.pure(Loggers.destinations.info(genericLogMessage(formId, destinationId, message)))
+        monadError.pure(logger.info(genericLogMessage(formId, destinationId, message)))
 
-      def logError(message: String): F[Unit] =
-        monadError.pure(Loggers.destinations.error(genericLogMessage(formId, destinationId, message)))
+      def logError(throwable: Throwable): F[Unit] =
+        monadError.pure(
+          logger.error(genericLogMessage(formId, destinationId, throwable.getMessage), throwable)
+        )
 
       def callUrlBodyPairs(uri: String, bodies: List[String], lastResult: Option[HttpResponse]): F[HttpResponse] =
         bodies match {
-          case Nil => lastResult.fold(logAndRaiseError("No input provided"))(monadError.pure)
+          case Nil => lastResult.fold(logAndRaiseError(new Exception("No input provided")))(monadError.pure)
           case body :: rest =>
             val resultOrError = for {
               result <- monadError.attempt(verb(uri, body))
@@ -136,17 +139,19 @@ object RealHandlebarsHttpApiSubmitter {
     profile: ProfileName,
     payloadType: TemplateType,
     httpClients: Map[ProfileName, HttpClient[F]]
-  )(implicit me: MonadError[F, String]): F[HttpClient[F]] =
+  )(implicit me: MonadError[F, Throwable]): F[HttpClient[F]] =
     httpClients
       .get(profile)
       .fold(
         me.raiseError[HttpClient[F]](
-          s"No HttpClient found for profile ${profile.name}. Have HttpClient for ${httpClients.keySet.map(_.name)}"
+          new Exception(
+            s"No HttpClient found for profile ${profile.name}. Have HttpClient for ${httpClients.keySet.map(_.name)}"
+          )
         )
       )((c: HttpClient[F]) => wrapHttpClient(c, payloadType).pure)
 
   private def wrapHttpClient[F[_]](http: HttpClient[F], templateType: TemplateType)(implicit
-    me: MonadError[F, String]
+    me: MonadError[F, Throwable]
   ): HttpClient[F] =
     templateType match {
       case TemplateType.JSON  => http.json

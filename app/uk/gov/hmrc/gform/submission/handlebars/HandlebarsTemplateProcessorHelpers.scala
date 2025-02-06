@@ -20,6 +20,7 @@ import java.text.DecimalFormat
 import cats.instances.string._
 import cats.syntax.option._
 import cats.syntax.eq._
+import org.slf4j.LoggerFactory
 import shapeless.syntax.typeable._
 import uk.gov.hmrc.gform.time.TimeProvider
 
@@ -28,7 +29,6 @@ import java.time.temporal.ChronoUnit
 import java.util.Base64
 import com.fasterxml.jackson.databind.node.{ ArrayNode, ObjectNode, TextNode }
 import com.github.jknack.handlebars.{ Handlebars, Options }
-import uk.gov.hmrc.gform.logging.Loggers
 import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
 import uk.gov.hmrc.gform.sharedmodel.form._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
@@ -50,6 +50,9 @@ class HandlebarsTemplateProcessorHelpers(
   processor: RecursiveHandlebarsTemplateProcessor,
   timeProvider: TimeProvider = new TimeProvider
 ) {
+
+  private val logger = LoggerFactory.getLogger(getClass)
+
   def yesNoToEtmpChoice(yesNoChoice: Any): CharSequence = log("yesNoChoice", yesNoChoice) {
     ifNotNullAsString(yesNoChoice) {
       case "1"  => condition("0")
@@ -681,7 +684,7 @@ class HandlebarsTemplateProcessorHelpers(
         )).left.map { m =>
           val msg =
             s"Attempt to importBySubmissionReference '$submissionReferenceString', destinationId '$destinationIdString' failed because $m This is the form tree: ${renderFormTree()}"
-          Loggers.destinations.warn(msg)
+          logger.warn(msg)
           new Handlebars.SafeString(msg)
         }.merge
       }
@@ -763,9 +766,9 @@ class HandlebarsTemplateProcessorHelpers(
   }
 
   private def log(functionName: String, params: Any*)(f: => CharSequence): CharSequence = {
-    Loggers.destinations.debug(s"$functionName(${logArgs(params: _*)}) called")
+    logger.debug(s"$functionName(${logArgs(params: _*)}) called")
     val result = f
-    Loggers.destinations.debug(s"$functionName(${logArgs(params: _*)}) result is: ${show(result)}")
+    logger.debug(s"$functionName(${logArgs(params: _*)}) result is: ${show(result)}")
     result
   }
 

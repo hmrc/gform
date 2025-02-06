@@ -21,8 +21,8 @@ import cats.MonadError
 import scala.annotation.tailrec
 
 package object gform {
-  type Possible[T] = Either[String, T]
-  implicit val possibleMonadError: MonadError[Possible, String] = new MonadError[Possible, String] {
+  type Possible[T] = Either[Throwable, T]
+  implicit val possibleMonadError: MonadError[Possible, Throwable] = new MonadError[Possible, Throwable] {
     override def flatMap[A, B](fa: Possible[A])(f: A => Possible[B]): Possible[B] = fa.flatMap(f)
 
     @tailrec
@@ -32,9 +32,9 @@ package object gform {
       case Right(Right(b)) => Right(b)
     }
 
-    override def raiseError[A](e: String): Possible[A] = Left(e)
+    override def raiseError[A](e: Throwable): Possible[A] = Left(e)
 
-    override def handleErrorWith[A](fa: Possible[A])(f: String => Possible[A]): Possible[A] = fa match {
+    override def handleErrorWith[A](fa: Possible[A])(f: Throwable => Possible[A]): Possible[A] = fa match {
       case Left(s)  => f(s)
       case Right(a) => Right(a)
     }
