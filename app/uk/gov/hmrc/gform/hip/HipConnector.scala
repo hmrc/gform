@@ -25,6 +25,7 @@ import play.api.http.HeaderNames.AUTHORIZATION
 import play.api.libs.json.JsArray
 import uk.gov.hmrc.gform.sharedmodel.hip.HipEmploymentSummary
 
+import java.util.Base64
 import scala.concurrent.{ ExecutionContext, Future }
 
 trait HipAlgebra[F[_]] {
@@ -48,7 +49,8 @@ class HipConnector(wSHttp: WSHttp, baseUrl: String, hipConfig: HipConnectorConfi
   )
 
   private val authHeaders: Seq[(String, String)] = Seq(
-    AUTHORIZATION -> s"Basic ${hipConfig.authorizationToken}"
+    AUTHORIZATION -> s"Basic ${Base64.getEncoder
+      .encodeToString(s"${hipConfig.clientId}:${hipConfig.clientSecret}".getBytes("UTF-8"))}"
   )
 
   def lookupEmployment(
@@ -61,6 +63,8 @@ class HipConnector(wSHttp: WSHttp, baseUrl: String, hipConfig: HipConnectorConfi
 
     val url =
       s"$baseUrl${hipConfig.basePath}/nps/nps-json-service/nps/v1/api/employment/employment-summary/$nino/taxYear/$taxYear"
+
+    logger.info(s"calling $url with authHeaders: ${authHeaders.toList}")
 
     wSHttp
       .GET[HipEmploymentSummary](url, headers = authHeaders)

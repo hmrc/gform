@@ -173,7 +173,8 @@ class ConfigModule(
 final case class DesConnectorConfig(basePath: String, authorizationToken: String, environment: String)
 final case class HipConnectorConfig(
   basePath: String,
-  authorizationToken: String,
+  clientId: String,
+  clientSecret: String,
   originatorId: String,
   correlationId: String
 )
