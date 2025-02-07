@@ -33,13 +33,18 @@ object StateTransitionAlgebra {
     s"Cannot achieve transition from $currentState to ${d.requiredState}"
 }
 
-class StateTransitionService[M[_]](formAlgebra: FormAlgebra[M])(implicit monadError: MonadError[M, String])
+class StateTransitionService[M[_]](formAlgebra: FormAlgebra[M])(implicit monadError: MonadError[M, Throwable])
     extends StateTransitionAlgebra[M] {
   override def apply(d: Destination.StateTransition, formId: FormId)(implicit hc: HeaderCarrier): M[Unit] =
     formAlgebra
       .updateFormStatus(formId, d.requiredState)
       .flatMap { stateAchieved =>
         if (stateAchieved === d.requiredState || !d.failOnError) monadError.pure(())
-        else raiseError(formId, d.id, StateTransitionAlgebra.failedToAchieveStateTransition(d, stateAchieved))
+        else
+          raiseDestinationError(
+            formId,
+            d.id,
+            new Exception(StateTransitionAlgebra.failedToAchieveStateTransition(d, stateAchieved))
+          )
       }
 }

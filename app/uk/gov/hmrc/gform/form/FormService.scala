@@ -22,11 +22,11 @@ import cats.syntax.eq._
 import cats.syntax.flatMap._
 import cats.syntax.functor._
 import cats.syntax.traverse._
+import org.slf4j.LoggerFactory
 import uk.gov.hmrc.gform.sharedmodel.AffinityGroup
 import uk.gov.hmrc.gform.formmetadata.{ FormMetadata, FormMetadataAlgebra }
 import uk.gov.hmrc.gform.formredirect.FormRedirectAlgebra
 import uk.gov.hmrc.gform.formtemplate.FormTemplateAlgebra
-import uk.gov.hmrc.gform.logging.Loggers
 import uk.gov.hmrc.gform.objectstore.ObjectStoreAlgebra
 import uk.gov.hmrc.gform.save4later.FormPersistenceAlgebra
 import uk.gov.hmrc.gform.sharedmodel.form._
@@ -234,13 +234,14 @@ class FormService[F[_]: Monad](
 }
 
 object LifeCycleStatus {
+  private val logger = LoggerFactory.getLogger(getClass)
   def newStatus(form: Form, status: FormStatus): FormStatus =
     apply(form.status, status) match {
       case Some(v) =>
-        Loggers.stateTransitions.info(formatLogMessage(form, status, "Legal"))
+        logger.info(formatLogMessage(form, status, "Legal"))
         v
       case None =>
-        Loggers.stateTransitions.warn(formatLogMessage(form, status, "Illegal"))
+        logger.warn(formatLogMessage(form, status, "Illegal"))
         form.status
     }
 

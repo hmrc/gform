@@ -37,7 +37,7 @@ object NotifierEmailBuilder {
     d: Destination.Email,
     structuredFormData: StructuredFormValue.ObjectStructure
   )(implicit
-    M: MonadError[M, String]
+    M: MonadError[M, Throwable]
   ): M[NotifierEmail] =
     for {
       to              <- extractTo(d, structuredFormData)
@@ -45,7 +45,7 @@ object NotifierEmailBuilder {
     } yield NotifierEmail(templateId, to, personalisation, NotifierEmailReference(""))
 
   private def extractTo[M[_]](d: Destination.Email, structuredFormData: StructuredFormValue.ObjectStructure)(implicit
-    M: MonadError[M, String]
+    M: MonadError[M, Throwable]
   ): M[NotifierEmailAddress] =
     extractText(d.id, structuredFormData, d.to)
       .map(NotifierEmailAddress(_))
@@ -53,7 +53,7 @@ object NotifierEmailBuilder {
   private def extractPersonalisation[M[_]](
     d: Destination.Email,
     structuredFormData: StructuredFormValue.ObjectStructure
-  )(implicit M: ApplicativeError[M, String]): M[Map[String, String]] =
+  )(implicit M: ApplicativeError[M, Throwable]): M[Map[String, String]] =
     d.personalisation.toList
       .traverse { case (k, v) =>
         extractText(d.id, structuredFormData, v).map(value => (k.value, value))
@@ -64,16 +64,18 @@ object NotifierEmailBuilder {
     destinationId: DestinationId,
     structuredFormData: StructuredFormValue.ObjectStructure,
     formComponentId: FormComponentId
-  )(implicit M: ApplicativeError[M, String]): M[String] =
+  )(implicit M: ApplicativeError[M, Throwable]): M[String] =
     structuredFormData.fields
       .find(_.name.name === formComponentId.value)
       .map(_.value)
       .map[M[String]] {
-        case StructuredFormValue.TextNode(value)    => value.pure[M]
-        case StructuredFormValue.ObjectStructure(_) => M.raiseError(unexpectedObject(destinationId, formComponentId))
-        case StructuredFormValue.ArrayNode(_)       => M.raiseError(unexpectedArray(destinationId, formComponentId))
+        case StructuredFormValue.TextNode(value) => value.pure[M]
+        case StructuredFormValue.ObjectStructure(_) =>
+          M.raiseError(new Exception(unexpectedObject(destinationId, formComponentId)))
+        case StructuredFormValue.ArrayNode(_) =>
+          M.raiseError(new Exception(unexpectedArray(destinationId, formComponentId)))
       }
-      .getOrElse(M.raiseError(missingField(destinationId, formComponentId)))
+      .getOrElse(M.raiseError(new Exception(missingField(destinationId, formComponentId))))
 
   def unexpectedObject(destinationId: DestinationId, formComponentId: FormComponentId): String =
     show"NotifierEmailBuilder: Expected $formComponentId to be a simple text value. Got an Object. Destination id = $destinationId."

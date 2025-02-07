@@ -193,7 +193,7 @@ class DestinationSubmitterSpec
       val model = HandlebarsTemplateProcessorModel()
 
       val theTree = tree(si.formId, model, si.submission.submissionRef, template, pdfData, None, structuredFormData)
-      createSubmitter
+      val result: Possible[Option[HandlebarsDestinationResponse]] = createSubmitter
         .expectHandlebarsSubmission(handlebarsHttpApi, HandlebarsTemplateProcessorModel.empty, theTree, httpResponse)
         .expectIncludeIfEvaluation(
           "true",
@@ -222,13 +222,18 @@ class DestinationSubmitterSpec
           LangADT.En,
           DestinationEvaluation.empty,
           UserSession.empty
-        ) shouldBe Left(
-        genericLogMessage(
-          si.formId,
-          handlebarsHttpApi.id,
-          DestinationSubmitter.handlebarsHttpApiFailOnErrorMessage(httpResponse)
         )
-      )
+
+      result match {
+        case Left(throwable) =>
+          val expectedMessage = genericLogMessage(
+            si.formId,
+            handlebarsHttpApi.id,
+            DestinationSubmitter.handlebarsHttpApiFailOnErrorMessage(httpResponse)
+          )
+          throwable.getMessage shouldBe expectedMessage
+        case Right(_) => fail("Expected handlebar error")
+      }
     }
   }
 
@@ -398,7 +403,7 @@ class DestinationSubmitterSpec
       val theTree =
         tree(si.formId, model, si.submission.submissionRef, template, pdfData, instructionPdfData, structuredFormData)
 
-      createSubmitter
+      val res: Possible[Option[HandlebarsDestinationResponse]] = createSubmitter
         .expectHmrcDmsSubmissionFailure(
           si,
           HandlebarsTemplateProcessorModel.empty,
@@ -424,9 +429,12 @@ class DestinationSubmitterSpec
           LangADT.En,
           DestinationEvaluation(List(DestinationResult(hmrcDms.id, None, Some(si.customerId), None))),
           UserSession.empty
-        ) shouldBe Left(
-        genericLogMessage(si.formId, hmrcDms.id, "an error")
-      )
+        )
+
+      res match {
+        case Left(error) => error.getMessage shouldBe genericLogMessage(si.formId, hmrcDms.id, "an error")
+        case Right(_)    => fail("Expected fail")
+      }
     }
   }
 
@@ -598,7 +606,7 @@ class DestinationSubmitterSpec
         None,
         structuredFormData
       )
-      createSubmitter
+      val res = createSubmitter
         .expectIncludeIfEvaluation(
           getHandlebarValue(submissionConsolidator.includeIf),
           HandlebarsTemplateProcessorModel.empty,
@@ -626,7 +634,13 @@ class DestinationSubmitterSpec
             List(DestinationResult(submissionConsolidator.id, None, Some(submissionInfo.customerId), None))
           ),
           UserSession.empty
-        ) shouldBe Left(genericLogMessage(submissionInfo.formId, submissionConsolidator.id, "some error"))
+        )
+
+      res match {
+        case Left(error) =>
+          error.getMessage shouldBe genericLogMessage(submissionInfo.formId, submissionConsolidator.id, "some error")
+        case Right(_) => fail("Expected fail")
+      }
     }
   }
 
@@ -637,7 +651,7 @@ class DestinationSubmitterSpec
     destinationAuditer: DestinationAuditAlgebra[F],
     handlebarsTemplateProcessor: HandlebarsTemplateProcessor,
     submissionConsolidatorService: SubmissionConsolidatorAlgebra[F]
-  )(implicit F: MonadError[F, String]) {
+  )(implicit F: MonadError[F, Throwable]) {
 
     def expectHmrcDmsSubmission(
       si: DestinationSubmissionInfo,
@@ -678,7 +692,7 @@ class DestinationSubmitterSpec
           )(_: HeaderCarrier)
         )
         .expects(destination, submissionInfo, accumulatedModel, model, Some(formData), hc)
-        .returning(F.raiseError(error))
+        .returning(F.raiseError(new Exception(error)))
       this
     }
 
@@ -721,7 +735,7 @@ class DestinationSubmitterSpec
           _: LangADT
         )(_: HeaderCarrier))
         .expects(si, accumulatedModel, model, hmrcDms, l, hc)
-        .returning(F.raiseError(error))
+        .returning(F.raiseError(new Exception(error)))
       this
     }
 
