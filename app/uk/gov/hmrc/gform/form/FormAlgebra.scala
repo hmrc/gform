@@ -51,4 +51,6 @@ trait FormAlgebra[F[_]] {
   def forceUpdateFormStatus(formIdData: FormIdData, newStatus: FormStatus)(implicit hc: HeaderCarrier): F[Unit]
 
   def forceUpdateFormStatus(formId: FormId, newStatus: FormStatus)(implicit hc: HeaderCarrier): F[Unit]
+
+  def getByEnvelopeId(formTemplateId: FormTemplateId, envelopeId: EnvelopeId)(implicit hc: HeaderCarrier): F[Form]
 }

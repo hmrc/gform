@@ -19,7 +19,8 @@ package uk.gov.hmrc.gform.save4later
 import org.apache.pekko.http.scaladsl.model.StatusCodes
 import play.api.libs.json.Format
 import uk.gov.hmrc.crypto.{ Decrypter, Encrypter }
-import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormId, FormIdData, Submitted }
+import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, Form, FormId, FormIdData, Submitted }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.gform.time.TimeProvider
 import uk.gov.hmrc.http.{ HeaderCarrier, UpstreamErrorResponse }
 import uk.gov.hmrc.mongo.cache.{ DataKey, MongoCacheRepository }
@@ -91,4 +92,25 @@ class FormMongoCache(
 
   override def delete(formId: FormId)(implicit hc: HeaderCarrier): Future[Unit] =
     mongoCacheRepository.deleteEntity(formId.value)
+
+  override def getByEnvelopeId(formTemplateId: FormTemplateId, envelopeId: EnvelopeId)(implicit
+    hc: HeaderCarrier
+  ): Future[Form] = {
+    val query = Filters.and(
+      Filters.equal("data.form.formTemplateId", formTemplateId.value),
+      Filters.equal("data.form.envelopeId", envelopeId.value)
+    )
+    for {
+      cacheItem <- mongoCacheRepository.collection.find(query).first().toFuture()
+      form <- mongoCacheRepository.get[Form](cacheItem.id)(formDataKey) map {
+                case None =>
+                  throw UpstreamErrorResponse(
+                    s"Not found 'form' for the given id - form template id: '${formTemplateId.value}' envelope id: '${envelopeId.value}'",
+                    StatusCodes.NotFound.intValue
+                  )
+                case Some(form) =>
+                  form
+              }
+    } yield form
+  }
 }

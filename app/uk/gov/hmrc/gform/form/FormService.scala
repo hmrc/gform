@@ -231,6 +231,10 @@ class FormService[F[_]: Monad](
   private def newStatus(form: Form, status: FormStatus) =
     LifeCycleStatus.newStatus(form, status)
 
+  override def getByEnvelopeId(formTemplateId: FormTemplateId, envelopeId: EnvelopeId)(implicit
+    hc: HeaderCarrier
+  ): F[Form] =
+    formPersistence.getByEnvelopeId(formTemplateId, envelopeId)
 }
 
 object LifeCycleStatus {

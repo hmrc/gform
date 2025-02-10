@@ -21,7 +21,7 @@ import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.core.{ FOpt, fromFutureA }
 import uk.gov.hmrc.gform.objectstore.ObjectStoreAlgebra
 import uk.gov.hmrc.gform.sharedmodel.UserId
-import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormId, FormIdData, FormOverview, FormStatus, QueryParams, UserData }
+import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, Form, FormId, FormIdData, FormOverview, FormStatus, QueryParams, UserData }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -89,6 +89,11 @@ class FormModule(
       hc: HeaderCarrier
     ): FOpt[Form] =
       fromFutureA(formService.createFormFromLegacy(formIdData, newFormIdData))
+
+    override def getByEnvelopeId(formTemplateId: FormTemplateId, envelopeId: EnvelopeId)(implicit
+      hc: HeaderCarrier
+    ): FOpt[Form] =
+      fromFutureA(formService.getByEnvelopeId(formTemplateId, envelopeId))
   }
 
 }

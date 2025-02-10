@@ -24,9 +24,8 @@ import play.api.mvc._
 import uk.gov.hmrc.gform.sharedmodel.AffinityGroup
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.objectstore.ObjectStoreAlgebra
-import uk.gov.hmrc.gform.sharedmodel.form.{ FormIdData, QueryParams }
+import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId, FormId, FormIdData, QueryParams, UserData }
 import uk.gov.hmrc.gform.sharedmodel.AccessCode
-import uk.gov.hmrc.gform.sharedmodel.form.{ FileId, FormId, UserData }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.UserId
 import uk.gov.hmrc.http.UpstreamErrorResponse
@@ -139,5 +138,10 @@ class FormController(
         .getAll(userId, formTemplateId)
         .map(Json.toJson(_))
         .map(Ok(_))
+    }
+
+  def getFormByEnvelope(formTemplateId: FormTemplateId, envelopeId: EnvelopeId): Action[AnyContent] =
+    formTemplateAction("getForm", formTemplateId) { implicit request =>
+      formService.getByEnvelopeId(formTemplateId, envelopeId).asOkJson
     }
 }
