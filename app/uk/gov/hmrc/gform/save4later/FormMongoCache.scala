@@ -97,7 +97,6 @@ class FormMongoCache(
     hc: HeaderCarrier
   ): Future[Form] = {
     val query = Filters.and(
-      Filters.equal("data.form.formTemplateId", formTemplateId.value),
       Filters.equal("data.form.envelopeId", envelopeId.value)
     )
     for {
