@@ -498,11 +498,11 @@ object TextExtractor {
     List("path", "en", "cy") :: rowsString
   }
 
-  private def prepareTranslatebleRows(rows: List[TranslatableRow]): List[List[String]] = {
-    val rowsString: List[List[String]] = rows.sortBy(_.en).map { row =>
-      List(row.en, row.cy)
+  private def prepareTranslatebleRows(rows: List[TranslatableRow]): List[(String, String)] = {
+    val rowsString: List[(String, String)] = rows.sortBy(_.en).map { row =>
+      (row.en, row.cy)
     }
-    List("en", "cy") :: rowsString
+    ("en", "cy") :: rowsString
   }
 
   private def writeCvsToOutputStream(rows: List[Row], bos: BufferedOutputStream): Unit = {
@@ -513,7 +513,7 @@ object TextExtractor {
 
   private def writeTranslatableCvsToOutputStream(rows: List[TranslatableRow], bos: BufferedOutputStream): Unit = {
     val writer = CSVWriter.open(bos)
-    writer.writeAll(prepareTranslatebleRows(rows))
+    writer.writeAll(prepareTranslatebleRows(rows).map { case (en, cy) => List(en, cy) })
     writer.close()
   }
 
@@ -589,6 +589,12 @@ object TextExtractor {
     val rows = Translator(json, gformPaths).untranslatedRowsForTranslation
     writeTranslatableCvsToOutputStream(rows, bos)
   }
+
+  def generateTranslatableRows(source: String): List[(String, String)] =
+    parse(source).toOption.fold(List.empty[(String, String)]) { json =>
+      val rows = Translator(json, gformPaths).rowsForTranslation
+      prepareTranslatebleRows(rows)
+    }
 
   def debug(source: String): String = {
     val json = parse(source).toOption.get
