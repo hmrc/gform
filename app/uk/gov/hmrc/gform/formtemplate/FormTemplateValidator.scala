@@ -190,6 +190,16 @@ object FormTemplateValidator {
       fc.id
     }.toSet
 
+    val allChoiceCheckboxIds: Set[FormComponentId] = formTemplate.formComponents {
+      case fc @ IsChoice(choice: Choice) if choice.`type` === Checkbox =>
+        fc.id
+    }.toSet
+
+    val allRevealingChoiceCheckboxIds: Set[FormComponentId] = formTemplate.formComponents {
+      case fc @ IsRevealingChoice(rChoice: RevealingChoice) if rChoice.multiValue === true =>
+        fc.id
+    }.toSet
+
     val allTaskIds: Set[TaskId] =
       formTemplate.formKind.fold(classic => Set.empty[TaskId])(taskList =>
         taskList.sections.toList.flatMap(_.tasks.toList.flatMap(_.id)).toSet
@@ -230,8 +240,10 @@ object FormTemplateValidator {
           if !SectionHelper
             .addToListFormComponents(formTemplate.formKind.allSections)
             .map(_.id)
-            .contains(formComponentId) =>
-        Invalid(s"${path.path}: $formComponentId is not AddToList Id")
+            .contains(formComponentId) && !allChoiceCheckboxIds.contains(formComponentId) =>
+        Invalid(
+          s"${path.path}: $formComponentId is not AddToList ID or a checkbox component (choice) ID"
+        )
       case ReferenceInfo.IndexExpr(path, Index(formComponentId))
           if !SectionHelper
             .addToListAddAnotherQuestionIds(formTemplate.formKind.allSections)
@@ -242,8 +254,11 @@ object FormTemplateValidator {
           if !SectionHelper
             .addToListFormComponents(formTemplate.formKind.allSections)
             .map(_.id)
-            .contains(formComponentId) =>
-        Invalid(s"${path.path}: $formComponentId is not AddToList Id")
+            .contains(formComponentId) && !allChoiceCheckboxIds
+            .contains(formComponentId) && !allRevealingChoiceCheckboxIds.contains(formComponentId) =>
+        Invalid(
+          s"${path.path}: $formComponentId is not AddToList ID or a checkbox component (choice or Revealing Choice) ID"
+        )
       case ReferenceInfo.StringOpsExpr(path, StringOps(FormCtx(formComponentId), _)) if !allFcIds(formComponentId) =>
         invalid(path, formComponentId)
       case ReferenceInfo.ChoicesRevealedFieldExpr(path, ChoicesRevealedField(formComponentId))

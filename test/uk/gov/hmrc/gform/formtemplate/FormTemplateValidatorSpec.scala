@@ -25,7 +25,7 @@ import uk.gov.hmrc.gform.Helpers.{ toLocalisedString, toSmartString }
 import uk.gov.hmrc.gform.core.parsers.ValueParser
 import uk.gov.hmrc.gform.core.{ Invalid, Opt, Valid, ValidationResult }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.PageLink
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AnyDate, Choice, ChoicesAvailable, ChoicesSelected, Constant, DataRetrieveCtx, Date, DateCtx, DateFormCtxVar, Dynamic, Equals, ExprWithPath, FormComponent, FormComponentId, FormComponentValidator, FormCtx, HideZeroDecimals, Horizontal, IfElse, IncludeIf, IndexOfDataRetrieveCtx, InformationMessage, Instruction, IsTrue, LeafExpr, LinkCtx, LookupColumn, Not, Offset, OptionData, OptionDataValue, Page, PageId, PostcodeLookup, Radio, Section, ShortText, StandardInfo, SummariseGroupAsGrid, TemplatePath, Text, ValidIf, Value, Vertical }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AnyDate, BulletedList, Checkbox, Choice, ChoicesAvailable, ChoicesSelected, Constant, DataRetrieveCtx, Date, DateCtx, DateFormCtxVar, Dynamic, Equals, ExprWithPath, FormComponent, FormComponentId, FormComponentValidator, FormCtx, HideZeroDecimals, Horizontal, IfElse, IncludeIf, IndexOfDataRetrieveCtx, InformationMessage, Instruction, IsTrue, LeafExpr, LinkCtx, LookupColumn, Not, NumberedList, Offset, OptionData, OptionDataValue, Page, PageId, PostcodeLookup, Radio, Section, ShortText, StandardInfo, SummariseGroupAsGrid, TemplatePath, Text, ValidIf, Value, Vertical }
 import uk.gov.hmrc.gform.sharedmodel._
 
 class FormTemplateValidatorSpec
@@ -491,6 +491,48 @@ class FormTemplateValidatorSpec
             )
           ),
           Valid
+        ),
+        (
+          List(
+            mkSectionNonRepeatingPage(
+              name = "page1",
+              formComponents = List(
+                getChoiceComponentWithStringBasedValues("foo", true),
+                mkFormComponent(
+                  "page2Comp1",
+                  InformationMessage(
+                    StandardInfo,
+                    SmartString(toLocalisedString("{0}"), List(BulletedList(FormComponentId("dutyType"))))
+                  ),
+                  false
+                )
+              ),
+              pageId = Some(PageId("page1"))
+            )
+          ),
+          Valid
+        ),
+        (
+          List(
+            mkSectionNonRepeatingPage(
+              name = "page1",
+              formComponents = List(
+                getChoiceComponentWithStringBasedValues("foo", false),
+                mkFormComponent(
+                  "info",
+                  InformationMessage(
+                    StandardInfo,
+                    SmartString(toLocalisedString("{0}"), List(NumberedList(FormComponentId("dutyType"))))
+                  ),
+                  false
+                )
+              ),
+              pageId = Some(PageId("page1"))
+            )
+          ),
+          Invalid(
+            "sections.fields.[id=info].infoText: dutyType is not AddToList ID or a checkbox component (choice) ID"
+          )
         )
       )
       forAll(table) { (sections, expected) =>
@@ -1330,17 +1372,17 @@ class FormTemplateValidatorSpec
     dr.fold(e => JsError(e.error), r => JsSuccess(r)).asOpt
   }
 
-  private def getChoiceComponentWithStringBasedValues(stringValue: String): FormComponent =
+  private def getChoiceComponentWithStringBasedValues(stringValue: String, isCheckbox: Boolean = false): FormComponent =
     FormComponent(
       FormComponentId("dutyType"),
       Choice(
-        Radio,
+        if (isCheckbox) Checkbox else Radio,
         NonEmptyList.of(
           OptionData
             .ValueBased(toSmartString("Yes", "Iawn"), None, None, None, OptionDataValue.StringBased(stringValue)),
           OptionData.ValueBased(toSmartString("No", "Na"), None, None, None, OptionDataValue.StringBased("bar"))
         ),
-        Horizontal,
+        if (isCheckbox) Vertical else Horizontal,
         List.empty[Int],
         None,
         None,
