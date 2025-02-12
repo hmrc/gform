@@ -633,6 +633,7 @@ object BuilderSupport {
         Property("noneChoiceError", PropertyBehaviour.PurgeWhenEmpty),
         Property("multivalue", PropertyBehaviour.PurgeWhenEmpty),
         Property("choices", PropertyBehaviour.Choices),
+        Property("revealingFields", PropertyBehaviour.PurgeWhenEmpty),
         Property("cityMandatory", PropertyBehaviour.PurgeWhenEmpty),
         Property("countyDisplayed", PropertyBehaviour.PurgeWhenEmpty),
         Property("line2Mandatory", PropertyBehaviour.PurgeWhenEmpty),
