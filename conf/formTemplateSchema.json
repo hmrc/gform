@@ -759,14 +759,13 @@
         },
         "choices": {
           "type": "array",
-          "oneOf": [
-            {
-              "items": {
+          "items": {
+            "anyOf": [
+              {
                 "type": "string"
-              }
-            },
-            {
-              "items": {
+              },
+              {
+                "type": "object",
                 "patternProperties": {
                   "^(_)": {
                     "type": [
@@ -778,7 +777,6 @@
                     ]
                   }
                 },
-                "type": "object",
                 "properties": {
                   "en": {
                     "type": "string"
@@ -804,8 +802,8 @@
                 ],
                 "additionalProperties": false
               }
-            }
-          ]
+            ]
+          }
         },
         "mandatory": {
           "type": "boolean"

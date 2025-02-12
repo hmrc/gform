@@ -304,7 +304,7 @@ object FormTemplateValidator {
 
     def checkEmpty(maybeSmartString: Option[SmartString]): Boolean =
       maybeSmartString.fold(false) { smartString =>
-        smartString.internals.forall(_.localised.m.values.exists(_.trim.isEmpty))
+        smartString.internals.forall(_.localised.value(LangADT.En).trim.isEmpty)
       }
 
     def checkPage(page: Page): ValidationResult =

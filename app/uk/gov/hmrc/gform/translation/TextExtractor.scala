@@ -19,12 +19,11 @@ package uk.gov.hmrc.gform.translation
 import cats.implicits._
 import com.github.tototoshi.csv.{ CSVReader, CSVWriter }
 import io.circe._
+import io.circe.syntax._
 import io.circe.CursorOp._
 import io.circe.parser._
 import java.io.{ BufferedOutputStream, BufferedReader, StringReader }
-import play.api.libs.json.JsString
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.Constant
-import uk.gov.hmrc.gform.sharedmodel.{ LangADT, SmartStringTemplateReader }
 
 case class Lang(en: String, cy: String)
 
@@ -43,15 +42,24 @@ object Lang {
   }
 }
 
-case class TranslatableRow(
+case class TranslatedRow(
   en: String,
   cy: String
+)
+
+case class EnTextToTranslate(
+  en: String
 )
 
 case class Row(
   path: String,
   en: String,
   cy: String
+)
+
+case class MissingRow(
+  path: String,
+  en: String
 )
 
 sealed trait ReductionInProgress extends Product with Serializable
@@ -119,7 +127,7 @@ object Translator {
   }
 
   def generateOpHistory(instructions: List[Instruction]): List[CursorOp] =
-    instructions.foldRight((List.empty[CursorOp])) { case (step, cursorOpHistory) =>
+    instructions.foldRight(List.empty[CursorOp]) { case (step, cursorOpHistory) =>
       step match {
         case Pure(op)   => op :: cursorOpHistory
         case unexpected => throw new Exception(s"Cannot convert $unexpected to CursorOp")
@@ -235,7 +243,7 @@ class Translator(json: Json, paths: List[List[Instruction]], val topLevelExprDat
             val attemptLang = aCursor.as[Lang]
             val attemptString = aCursor.as[String]
             lookup.get(path) match {
-              case None => throw new Exception(s"Path $path is not translated. Focus $json")
+              case None => json // Ignore missing translation
               case Some(row) =>
                 val tran = Json.obj(
                   "en" -> Json.fromString(row.en),
@@ -283,15 +291,17 @@ class Translator(json: Json, paths: List[List[Instruction]], val topLevelExprDat
 
   def fetchRows: List[Row] = smartStringsRows(smartStringCursors) ++ topLevelExprData.toRows
 
-  def rowsForTranslation: List[TranslatableRow] = fetchRows
-    .filterNot(row => TextExtractor.doesntNeedTranslation(row.en))
-    .map(row => TranslatableRow(row.en, row.cy))
+  def rowsForTranslation: List[TranslatedRow] = fetchRows
+    .filterNot(row => ExtractAndTranslate(row.en).translateTexts.isEmpty)
+    .map(row => TranslatedRow(row.en, row.cy))
     .distinct
+    .sortBy(_.en)
 
-  def untranslatedRowsForTranslation: List[TranslatableRow] = fetchRows
-    .filterNot(row => TextExtractor.doesntNeedTranslation(row.en) || row.cy.trim.nonEmpty)
-    .map(row => TranslatableRow(row.en, row.cy))
+  def untranslatedRowsForTranslation: List[EnTextToTranslate] = fetchRows
+    .filterNot(row => row.cy.trim.nonEmpty) // Do not send to translation what has a welsh in json
+    .flatMap(row => ExtractAndTranslate(row.en).translateTexts)
     .distinct
+    .sortBy(_.en)
 
   def translateJson(
     expressionRows: List[Row]
@@ -312,14 +322,6 @@ object TextExtractor {
 
   def unescapeNewLine(s: String) = s.replaceAll("\\\\n", "\n")
   def escapeNewLine(s: String) = s.replace("\n", "\\n")
-
-  def doesntNeedTranslation(s: String): Boolean =
-    s.trim.isEmpty || SmartStringTemplateReader.templateReads
-      .reads(JsString(s))
-      .fold(
-        _ => false,
-        _.rawValue(LangADT.En).trim === "{0}"
-      )
 
   import Instruction._
 
@@ -498,7 +500,7 @@ object TextExtractor {
     List("path", "en", "cy") :: rowsString
   }
 
-  private def prepareTranslatebleRows(rows: List[TranslatableRow]): List[(String, String)] = {
+  private def prepareTranslatebleRows(rows: List[TranslatedRow]): List[(String, String)] = {
     val rowsString: List[(String, String)] = rows.sortBy(_.en).map { row =>
       (row.en, row.cy)
     }
@@ -511,84 +513,109 @@ object TextExtractor {
     writer.close()
   }
 
-  private def writeTranslatableCvsToOutputStream(rows: List[TranslatableRow], bos: BufferedOutputStream): Unit = {
+  private def writeTranslatableCvsToOutputStream(rows: List[TranslatedRow], bos: BufferedOutputStream): Unit = {
     val writer = CSVWriter.open(bos)
     writer.writeAll(prepareTranslatebleRows(rows).map { case (en, cy) => List(en, cy) })
     writer.close()
   }
 
-  private def readRows(reader: CSVReader): List[TranslatableRow] = {
-    val rows = reader.all().map {
-      case en :: cy :: Nil =>
-        TranslatableRow(en.trim, cy.trim)
-      case rawRow => throw new Exception(s"Input csv contains more columns than expected: $rawRow")
-    }
-    rows.drop(1) // Remove headers
+  private def writeEnTextToTranslateCvsToOutputStream(
+    rows: List[EnTextToTranslate],
+    bos: BufferedOutputStream
+  ): Unit = {
+    val writer = CSVWriter.open(bos)
+    writer.writeAll(rows.sortBy(_.en).map(en => List(en.en)))
+    writer.close()
   }
 
-  private def readCvsFromString(csv: String): List[TranslatableRow] = {
+  private def readRows(reader: CSVReader): Spreadsheet = {
+    val rows = reader.all().map {
+      case en :: cy :: Nil =>
+        (EnFromSpreadsheet(en.trim), CyFromSpreadsheet(cy.trim))
+      case rawRow => throw new Exception(s"Input csv contains more columns than expected: $rawRow")
+    }
+    val spreadsheetRows = rows.drop(1) // Remove headers
+    Spreadsheet(spreadsheetRows.toMap)
+  }
+
+  def readCvsFromString(csv: String): Spreadsheet = {
     val sr: StringReader = new StringReader(csv)
     val br: BufferedReader = new BufferedReader(sr)
     val reader = CSVReader.open(br)
-    val translatableRows = readRows(reader)
+    val spreadsheet = readRows(reader)
     reader.close()
     br.close()
     sr.close()
-    translatableRows
+    spreadsheet
   }
 
   private def translateRows(
-    translatableRows: List[TranslatableRow],
+    spreadsheet: Spreadsheet,
     rows: List[Row],
     topLevelExprData: TopLevelExprData
-  ): List[Row] = {
-    val lookup = translatableRows.map(tr => tr.en -> tr.cy).toMap
-
+  ): (List[MissingRow], List[Row]) = {
     val isTopLevelExpression: Set[String] = topLevelExprData.paths
+    rows.foldLeft((List.empty[MissingRow], List.empty[Row])) { case ((missingRows, rows), row) =>
+      val extractAndTranslate: ExtractAndTranslate = ExtractAndTranslate(row.en)
 
-    rows.map { row =>
-      lookup.get(escapeNewLine(row.en)) match {
-        case None if TextExtractor.doesntNeedTranslation(row.en) => row.copy(cy = row.en)
-        case None if row.cy.nonEmpty                             => row
-        case None if isTopLevelExpression(row.path)              => row
-        case None                                                => throw new Exception(s"Cannot find translation for row ${row.path}, text: ${row.en}")
-        case Some(welshTranslation)                              => row.copy(en = row.en, cy = unescapeNewLine(welshTranslation))
+      if (extractAndTranslate.isTranslateable(spreadsheet)) {
+        val welshTranslation: String = extractAndTranslate.translate(spreadsheet)
+        (missingRows, row.copy(en = row.en, cy = unescapeNewLine(welshTranslation)) :: rows)
+      } else {
+        if (row.cy.nonEmpty || isTopLevelExpression(row.path)) {
+          (missingRows, rows)
+        } else {
+          (MissingRow(row.path, row.en) :: missingRows, row :: rows)
+        }
       }
     }
   }
 
-  def translateFile(csv: String, jsonString: String): String = {
-    val translatableRows: List[TranslatableRow] = readCvsFromString(csv)
+  def translateFile(spreadsheet: Spreadsheet, jsonString: String): (String, Json) = {
     val json: Json = parse(jsonString).toOption.get
 
     val translator = Translator(json, gformPaths)
 
-    val rows: List[Row] =
-      translator.fetchRows.map(row => row.copy(en = unescapeNewLine(row.en), cy = unescapeNewLine(row.cy)))
+    val rows: List[Row] = translator.fetchRows
 
-    val translatedRows: List[Row] = translateRows(translatableRows, rows, translator.topLevelExprData)
+    val (missingRows, translatedRows): (List[MissingRow], List[Row]) =
+      translateRows(spreadsheet, rows, translator.topLevelExprData)
 
-    val res = translator.translateJson(translatedRows)
-    res.spaces2.replaceAll(" :", ":")
+    val translatedCount = translatedRows.count(row => !row.en.isEmpty)
+    val untranslatedCount = missingRows.size
+
+    val stats = Json.obj(
+      "translatedCount" := translatedCount,
+      "untranslatedCount" := untranslatedCount,
+      "untranslatedRows" := missingRows.map { mr =>
+        Json.obj(
+          "path" := mr.path,
+          "en" := mr.en
+        )
+      }
+    )
+
+    val translatedJson = translator.translateJson(translatedRows)
+    (translatedJson.spaces2.replaceAll(" :", ":"), stats)
   }
 
-  def generateCvsFromString(source: String, bos: BufferedOutputStream): Unit = {
-    val json = parse(source).toOption.get
-    val rows = Translator(json, gformPaths).fetchRows
-    writeCvsToOutputStream(rows, bos)
-  }
+  def generateCvsFromString(source: String, bos: BufferedOutputStream): Unit =
+    parse(source).toOption.fold(()) { json =>
+      val rows = Translator(json, gformPaths).fetchRows
+      writeCvsToOutputStream(rows, bos)
+    }
 
-  def generateTranslatableCvsFromString(source: String, bos: BufferedOutputStream): Unit = {
-    val json = parse(source).toOption.get
-    val rows = Translator(json, gformPaths).rowsForTranslation
-    writeTranslatableCvsToOutputStream(rows, bos)
-  }
+  def generateTranslatableCvsFromString(source: String, bos: BufferedOutputStream): Unit =
+    parse(source).toOption.fold(()) { json =>
+      val rows = Translator(json, gformPaths).rowsForTranslation
+      writeTranslatableCvsToOutputStream(rows, bos)
+    }
 
-  def generateBriefTranslatableCvsFromString(source: String, bos: BufferedOutputStream): Unit = {
-    val json = parse(source).toOption.get
-    val rows = Translator(json, gformPaths).untranslatedRowsForTranslation
-    writeTranslatableCvsToOutputStream(rows, bos)
-  }
+  def generateBriefTranslatableCvsFromString(source: String, bos: BufferedOutputStream): Unit =
+    parse(source).toOption.fold(()) { json =>
+      val rows = Translator(json, gformPaths).untranslatedRowsForTranslation
+      writeEnTextToTranslateCvsToOutputStream(rows, bos)
+    }
 
   def generateTranslatableRows(source: String): List[(String, String)] =
     parse(source).toOption.fold(List.empty[(String, String)]) { json =>
@@ -596,9 +623,15 @@ object TextExtractor {
       prepareTranslatebleRows(rows)
     }
 
-  def debug(source: String): String = {
-    val json = parse(source).toOption.get
-    val translator = Translator(json, gformPaths)
-    translator.translateJsonDebug.spaces2
-  }
+  def generateBriefTranslatableRows(source: String): List[EnTextToTranslate] =
+    parse(source).toOption.fold(List.empty[EnTextToTranslate]) { json =>
+      Translator(json, gformPaths).untranslatedRowsForTranslation
+    }
+
+  def debug(source: String): String =
+    parse(source).toOption.fold("") { json =>
+      val translator = Translator(json, gformPaths)
+      translator.translateJsonDebug.spaces2
+    }
+
 }
