@@ -530,7 +530,7 @@ class FormTemplateValidatorSpec
               pageId = Some(PageId("page1"))
             )
           ),
-          Invalid("sections.fields.[id=info].infoText: dutyType is not AddToList Id or a checkbox component Id")
+          Invalid("sections.fields.[id=info].infoText: dutyType is not AddToList ID or a checkbox component (choice) ID")
         )
       )
       forAll(table) { (sections, expected) =>

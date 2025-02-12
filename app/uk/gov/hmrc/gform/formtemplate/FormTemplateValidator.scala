@@ -190,9 +190,12 @@ object FormTemplateValidator {
       fc.id
     }.toSet
 
-    val allCheckboxIds: Set[FormComponentId] = formTemplate.formComponents {
+    val allChoiceCheckboxIds: Set[FormComponentId] = formTemplate.formComponents {
       case fc @ IsChoice(choice: Choice) if choice.`type` === Checkbox =>
         fc.id
+    }.toSet
+
+    val allRevealingChoiceCheckboxIds: Set[FormComponentId] = formTemplate.formComponents {
       case fc @ IsRevealingChoice(rChoice: RevealingChoice) if rChoice.multiValue === true =>
         fc.id
     }.toSet
@@ -237,9 +240,9 @@ object FormTemplateValidator {
           if !SectionHelper
             .addToListFormComponents(formTemplate.formKind.allSections)
             .map(_.id)
-            .contains(formComponentId) && !allCheckboxIds.contains(formComponentId) =>
+            .contains(formComponentId) && !allChoiceCheckboxIds.contains(formComponentId) =>
         Invalid(
-          s"${path.path}: $formComponentId is not AddToList ID or a checkbox component (choice or Revealing Choice) ID"
+          s"${path.path}: $formComponentId is not AddToList ID or a checkbox component (choice) ID"
         )
       case ReferenceInfo.IndexExpr(path, Index(formComponentId))
           if !SectionHelper
@@ -251,7 +254,8 @@ object FormTemplateValidator {
           if !SectionHelper
             .addToListFormComponents(formTemplate.formKind.allSections)
             .map(_.id)
-            .contains(formComponentId) && !allCheckboxIds.contains(formComponentId) =>
+            .contains(formComponentId) && !allChoiceCheckboxIds
+            .contains(formComponentId) && !allRevealingChoiceCheckboxIds.contains(formComponentId) =>
         Invalid(
           s"${path.path}: $formComponentId is not AddToList ID or a checkbox component (choice or Revealing Choice) ID"
         )
