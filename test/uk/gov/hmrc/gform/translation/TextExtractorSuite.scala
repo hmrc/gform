@@ -932,8 +932,8 @@ class TextExtractorSuite extends FunSuite {
     )
 
     val expected = List(
-      TranslatableRow("${expression} ${expression}", ""),
-      TranslatableRow("there", "")
+      TranslatedRow("${expression} ${expression}", ""),
+      TranslatedRow("there", "")
     )
     val res = Translator(json, instructions).rowsForTranslation
     assertEquals(res, expected)
@@ -1112,7 +1112,8 @@ class TextExtractorSuite extends FunSuite {
          |Page is unavailable until next week,CY-Page is unavailable until next week
          |""".stripMargin
 
-    val res = TextExtractor.translateFile(csv, json.spaces2)
+    val translatableRows = TextExtractor.readCvsFromString(csv)
+    val (res, stats) = TextExtractor.translateFile(translatableRows, json.spaces2)
     assertEquals(parse(res).toOption.get, expected)
   }
 }

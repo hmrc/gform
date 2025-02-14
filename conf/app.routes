@@ -99,7 +99,9 @@ GET           /translation-excel/:formTemplateId                                
 GET           /translation-excel/:formTemplateId/brief                                                  uk.gov.hmrc.gform.translation.TranslationController.generateBriefTranslatebleXlsx(formTemplateId: FormTemplateId)
 GET           /translation/:formTemplateId/internal                                                     uk.gov.hmrc.gform.translation.TranslationController.generateInternalCsv(formTemplateId: FormTemplateId)
 GET           /translation/:formTemplateId/debug                                                        uk.gov.hmrc.gform.translation.TranslationController.translateCsvDebug(formTemplateId: FormTemplateId)
+GET           /translation/:formTemplateId/breakdown                                                    uk.gov.hmrc.gform.translation.TranslationController.textBreakdown(formTemplateId: FormTemplateId)
 POST          /translation/:formTemplateId                                                              uk.gov.hmrc.gform.translation.TranslationController.translateCsv(formTemplateId: FormTemplateId)
+POST          /translation-excel/:formTemplateId                                                        uk.gov.hmrc.gform.translation.TranslationController.translateXlsx(formTemplateId: FormTemplateId)
 
 GET           /notification-banner                                                                      uk.gov.hmrc.gform.notificationbanner.NotificationBannerController.findAllNotificationBanners()
 GET           /notification-banner/:formTemplateId                                                      uk.gov.hmrc.gform.notificationbanner.NotificationBannerController.find(formTemplateId: FormTemplateId)
