@@ -21,6 +21,8 @@ import cats.syntax.traverse._
 import cats.syntax.functor._
 import cats.syntax.show._
 import com.mongodb.client.result.UpdateResult
+import org.apache.pekko.stream.Materializer
+import org.apache.pekko.util.ByteString
 import org.mongodb.scala.bson.{ BsonArray, BsonDocument }
 import org.mongodb.scala.model.{ Accumulators, Aggregates, Field, Filters, Sorts }
 import org.mongodb.scala.model.Filters.{ equal, lt }
@@ -34,9 +36,10 @@ import uk.gov.hmrc.gform.repo.Repo
 import uk.gov.hmrc.gform.sdes.datastore.DataStoreWorkItemAlgebra
 import uk.gov.hmrc.gform.sdes.dms.DmsWorkItemAlgebra
 import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
+import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
-import uk.gov.hmrc.gform.sharedmodel.sdes.NotificationStatus.{ FileProcessed, FileReady, fromName }
+import uk.gov.hmrc.gform.sharedmodel.sdes.NotificationStatus.{ FileProcessed, FileReady, Replaced, fromName }
 import uk.gov.hmrc.gform.sharedmodel.sdes._
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 import uk.gov.hmrc.mongo.play.json.Codecs
@@ -86,6 +89,7 @@ trait SdesAlgebra[F[_]] {
 
   def update(notification: CallBackNotification)(implicit hc: HeaderCarrier): F[Unit]
 
+  def resend(correlationId: CorrelationId)(implicit hc: HeaderCarrier): F[Unit]
 }
 
 class SdesService(
@@ -98,7 +102,8 @@ class SdesService(
   sdesHistoryAlgebra: SdesHistoryAlgebra[Future],
   objectStoreAlgebra: ObjectStoreAlgebra[Future]
 )(implicit
-  ec: ExecutionContext
+  ec: ExecutionContext,
+  m: Materializer
 ) extends SdesAlgebra[Future] {
   private val logger = LoggerFactory.getLogger(getClass)
 
@@ -256,7 +261,7 @@ class SdesService(
       case SdesDestination.DataStore | SdesDestination.DataStoreLegacy | SdesDestination.HmrcIlluminate =>
         dataStoreWorkItemAlgebra.createNotifyRequest(objWithSummary, sdesSubmission._id.value, sdesRouting)
       case SdesDestination.Dms =>
-        dmsWorkItemAlgebra.createNotifyRequest(objWithSummary, sdesSubmission._id.value)
+        dmsWorkItemAlgebra.createNotifyRequest(objWithSummary, sdesSubmission._id)
     }
     val sdesHistory = SdesHistory.create(
       sdesSubmission.envelopeId,
@@ -331,32 +336,41 @@ class SdesService(
             logger.info(
               s"Received callback for envelopeId: ${envelopeId.value}, destination: ${submission.destination.getOrElse("dms")}"
             )
-            for {
-              _ <- saveSdesSubmission(submission.copy(lockedAt = Some(Instant.now()))) // lock the record
-              updatedSdesSubmission = submission.copy(
-                                        isProcessed = responseStatus === FileProcessed,
-                                        status = responseStatus,
-                                        confirmedAt = Some(Instant.now),
-                                        failureReason = responseFailureReason,
-                                        lockedAt = None
-                                      )
-              _ <- if (!submission.isProcessed) {
-                     for {
-                       _ <- saveSdesSubmission(updatedSdesSubmission)
-                       _ <- if (responseStatus === FileProcessed) { deleteFiles(submission, fileName) }
-                            else Future.unit
-                     } yield ()
-                   } else saveSdesSubmission(submission.copy(lockedAt = None))
-              sdesHistory = SdesHistory.create(
-                              envelopeId,
-                              CorrelationId(correlationID),
-                              responseStatus,
-                              fileName,
-                              responseFailureReason,
-                              None
-                            )
-              _ <- sdesHistoryAlgebra.save(sdesHistory)
-            } yield ()
+            if (submission.status === Replaced) {
+              logger.error(
+                s"Received callback for a replaced submission: correlation id: $correlationID, envelope id ${envelopeId.value}, destination: ${submission.destination
+                  .getOrElse("dms")}"
+              )
+              Future.failed(new IllegalStateException(s"Correlation ID [$correlationID] has already been replaced"))
+            } else {
+              for {
+                _ <- saveSdesSubmission(submission.copy(lockedAt = Some(Instant.now()))) // lock the record
+                updatedSdesSubmission = submission.copy(
+                                          isProcessed = responseStatus === FileProcessed,
+                                          status = responseStatus,
+                                          confirmedAt = Some(Instant.now),
+                                          failureReason = responseFailureReason,
+                                          lockedAt = None
+                                        )
+                _ <- if (!submission.isProcessed) {
+                       for {
+                         _ <- saveSdesSubmission(updatedSdesSubmission)
+                         _ <- if (responseStatus === FileProcessed) {
+                                deleteFiles(submission, fileName)
+                              } else Future.unit
+                       } yield ()
+                     } else saveSdesSubmission(submission.copy(lockedAt = None))
+                sdesHistory = SdesHistory.create(
+                                envelopeId,
+                                CorrelationId(correlationID),
+                                responseStatus,
+                                fileName,
+                                responseFailureReason,
+                                None
+                              )
+                _ <- sdesHistoryAlgebra.save(sdesHistory)
+              } yield ()
+            }
           }
         ).getOrElse(
           Future.failed(new RuntimeException(s"Correlation id [$correlationID] not found in mongo collection"))
@@ -376,6 +390,86 @@ class SdesService(
 
   private def isLocked(submission: SdesSubmission): Boolean =
     submission.lockedAt.exists(_.isAfter(Instant.now().minusMillis(sdesConfig.lockTTL)))
+
+  override def resend(correlationId: CorrelationId)(implicit hc: HeaderCarrier): Future[Unit] =
+    for {
+      sdesSubmission <- findSdesSubmission(correlationId)
+      result <- sdesSubmission match {
+                  case Some(submission) =>
+                    val sdesDestination = submission.sdesDestination
+                    val paths = sdesDestination.objectStorePaths(submission.envelopeId)
+                    for {
+                      objSummary <- sdesDestination match {
+                                      case SdesDestination.DataStore | SdesDestination.DataStoreLegacy |
+                                          SdesDestination.HmrcIlluminate =>
+                                        val fileName = s"${submission.envelopeId.value}.json"
+                                        for {
+                                          maybeObject <- objectStoreAlgebra.getFile(paths.permanent, fileName)
+                                          objSummary <- maybeObject match {
+                                                          case Some(obj) =>
+                                                            val byteStringFuture: Future[ByteString] =
+                                                              obj.content.runFold(ByteString.empty)(_ ++ _)
+
+                                                            byteStringFuture.flatMap { concatenatedByteString =>
+                                                              objectStoreAlgebra.uploadFileWithDir(
+                                                                paths.ephemeral,
+                                                                fileName,
+                                                                concatenatedByteString,
+                                                                ContentType.`application/json`
+                                                              )
+                                                            }
+                                                          case None =>
+                                                            Future.failed(
+                                                              new Exception(
+                                                                s"File ${submission.envelopeId.value}.json not found in the object store."
+                                                              )
+                                                            )
+                                                        }
+                                        } yield objSummary
+                                      case SdesDestination.Dms =>
+                                        objectStoreAlgebra.zipFiles(submission.envelopeId, paths)
+                                    }
+                      res <- createWorkItem(submission, objSummary)
+                    } yield res
+                  case None =>
+                    Future.failed(
+                      new RuntimeException(s"Correlation id [$correlationId] not found in mongo collection")
+                    )
+                }
+    } yield result
+
+  private def createWorkItem(sdesSubmission: SdesSubmission, objWithSummary: ObjectSummaryWithMd5): Future[Unit] = {
+    val sdesDestination = sdesSubmission.sdesDestination
+    val sdesRouting = sdesDestination.sdesRouting(sdesConfig)
+    for {
+      _ <- sdesDestination match {
+             case SdesDestination.DataStore | SdesDestination.DataStoreLegacy | SdesDestination.HmrcIlluminate =>
+               dataStoreWorkItemAlgebra.pushWorkItem(
+                 sdesSubmission.envelopeId,
+                 sdesSubmission.formTemplateId,
+                 sdesSubmission.submissionRef,
+                 objWithSummary,
+                 sdesRouting,
+                 sdesDestination
+               )
+             case SdesDestination.Dms =>
+               dmsWorkItemAlgebra.pushWorkItem(
+                 sdesSubmission.envelopeId,
+                 sdesSubmission.formTemplateId,
+                 sdesSubmission.submissionRef,
+                 objWithSummary
+               )
+           }
+      _ <-
+        saveSdesSubmission(
+          sdesSubmission.copy(
+            lastUpdated = Some(Instant.now),
+            isProcessed = true,
+            status = Replaced
+          )
+        )
+    } yield ()
+  }
 }
 
 final case class SdesSubmissionsStats(destination: String, count: Long)

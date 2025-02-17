@@ -138,7 +138,7 @@ class SdesModule(
       configModule.sdesConfig,
       sdesHistoryService,
       objectStoreModule.objectStoreService
-    )
+    )(ex, akkaModule.materializer)
 
   private val lockRepoSdesAlert: MongoLockRepository = new MongoLockRepository(
     mongoModule.mongoComponent,
@@ -255,6 +255,9 @@ class SdesModule(
 
     override def update(notification: CallBackNotification)(implicit hc: HeaderCarrier): FOpt[Unit] =
       fromFutureA(sdesService.update(notification))
+
+    override def resend(correlationId: CorrelationId)(implicit hc: HeaderCarrier): FOpt[Unit] =
+      fromFutureA(sdesService.resend(correlationId))
   }
 
   val foptDmsWorkItemService: DmsWorkItemAlgebra[FOpt] = new DmsWorkItemAlgebra[FOpt] {
@@ -267,7 +270,10 @@ class SdesModule(
       dmsWorkItemService.pushWorkItem(envelopeId, formTemplateId, submissionRef, objWithSummary)
     )
 
-    override def createNotifyRequest(objSummary: ObjectSummaryWithMd5, correlationId: String): SdesNotifyRequest =
+    override def createNotifyRequest(
+      objSummary: ObjectSummaryWithMd5,
+      correlationId: CorrelationId
+    ): SdesNotifyRequest =
       dmsWorkItemService.createNotifyRequest(objSummary, correlationId)
 
     override def search(
