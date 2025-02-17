@@ -46,7 +46,7 @@ trait DmsWorkItemAlgebra[F[_]] {
 
   def createNotifyRequest(
     objSummary: ObjectSummaryWithMd5,
-    correlationId: String
+    correlationId: CorrelationId
   ): SdesNotifyRequest
 
   def search(
@@ -78,11 +78,11 @@ class DmsWorkItemService(
     submissionRef: SubmissionRef,
     objWithSummary: ObjectSummaryWithMd5
   ): Future[Unit] = {
-    val correlationId = UUID.randomUUID().toString
+    val correlationId = CorrelationId(UUID.randomUUID().toString)
     val sdesNotifyRequest = createNotifyRequest(objWithSummary, correlationId)
     val sdesWorkItem =
       SdesWorkItem(
-        CorrelationId(correlationId),
+        correlationId,
         envelopeId,
         formTemplateId,
         submissionRef,
@@ -94,7 +94,7 @@ class DmsWorkItemService(
 
   def createNotifyRequest(
     objSummary: ObjectSummaryWithMd5,
-    correlationId: String
+    correlationId: CorrelationId
   ): SdesNotifyRequest =
     SdesNotifyRequest(
       dmsRouting.informationType,
@@ -106,7 +106,7 @@ class DmsWorkItemService(
         objSummary.contentLength,
         List()
       ),
-      FileAudit(correlationId)
+      FileAudit(correlationId.value)
     )
 
   override def search(
