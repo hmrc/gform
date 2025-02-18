@@ -52,6 +52,8 @@ object NotificationStatus {
   case object FileProcessedManualConfirmed
       extends NotificationStatus //The file has confirmed manually by an administrator
 
+  case object Replaced extends NotificationStatus // A new file transfer has been initiated
+
   implicit val catsEq: Eq[NotificationStatus] = Eq.fromUniversalEquals
 
   implicit val format: Format[NotificationStatus] =
@@ -60,7 +62,8 @@ object NotificationStatus {
       "FileReceived"                 -> FileReceived,
       "FileProcessingFailure"        -> FileProcessingFailure,
       "FileProcessed"                -> FileProcessed,
-      "FileProcessedManualConfirmed" -> FileProcessedManualConfirmed
+      "FileProcessedManualConfirmed" -> FileProcessedManualConfirmed,
+      "Replaced"                     -> Replaced
     )
 
   def fromName(notificationStatus: NotificationStatus): String = notificationStatus match {
@@ -69,5 +72,6 @@ object NotificationStatus {
     case FileProcessingFailure        => "FileProcessingFailure"
     case FileProcessed                => "FileProcessed"
     case FileProcessedManualConfirmed => "FileProcessedManualConfirmed"
+    case Replaced                     => "Replaced"
   }
 }

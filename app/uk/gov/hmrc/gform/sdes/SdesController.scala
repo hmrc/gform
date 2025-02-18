@@ -70,6 +70,12 @@ class SdesController(
       }
   }
 
+  def resend(correlationId: CorrelationId) = Action.async { implicit request =>
+    sdesAlgebra
+      .resend(correlationId)
+      .map(_ => Ok)
+  }
+
   def updateAsManualConfirmed(correlationId: CorrelationId) = Action.async { _ =>
     sdesAlgebra.updateAsManualConfirmed(correlationId).map { _ =>
       NoContent
