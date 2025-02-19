@@ -73,7 +73,8 @@ class SubmissionModule(
     formTemplateModule.fOptFormTemplateAlgebra,
     pdfGeneratorModule.pdfGeneratorService,
     pdfGeneratorModule.fopService,
-    envelopeModule.foptEnvelopeService
+    envelopeModule.foptEnvelopeService,
+    configModule.sdesConfig.welshDefaults
   )
 
   val dataStoreSubmitter = new DataStoreSubmitter(

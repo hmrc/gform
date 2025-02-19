@@ -24,8 +24,11 @@ final case class SdesConfig(
   dms: SdesRouting,
   hmrcIlluminate: SdesRouting,
   dataStore: SdesRouting,
-  lockTTL: Long
+  lockTTL: Long,
+  welshDefaults: WelshDefaults
 )
+
+final case class WelshDefaults(classificationType: String, businessArea: String)
 
 final case class SdesRouting(apiKey: String, informationType: String, recipientOrSender: String)
 

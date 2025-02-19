@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.gform.submission.destinations
 
-import java.time.Instant
 import cats.instances.future._
 import org.slf4j.LoggerFactory
 import uk.gov.hmrc.gform.core.{ FOpt, fromFutureA, success }
@@ -25,6 +24,7 @@ import uk.gov.hmrc.gform.form.FormAlgebra
 import uk.gov.hmrc.gform.formtemplate.FormTemplateAlgebra
 import uk.gov.hmrc.gform.objectstore.{ Envelope, File, FileStatus, ObjectStoreAlgebra }
 import uk.gov.hmrc.gform.pdfgenerator.{ FopService, PdfGeneratorService }
+import uk.gov.hmrc.gform.sdes.WelshDefaults
 import uk.gov.hmrc.gform.sdes.dms.DmsWorkItemAlgebra
 import uk.gov.hmrc.gform.sharedmodel.LangADT
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId, Submitted }
@@ -34,6 +34,7 @@ import uk.gov.hmrc.gform.submission.PdfAndXmlSummariesFactory
 import uk.gov.hmrc.gform.submission.handlebars.HandlebarsModelTree
 import uk.gov.hmrc.http.HeaderCarrier
 
+import java.time.Instant
 import scala.concurrent.ExecutionContext
 
 class DmsSubmitter(
@@ -43,7 +44,8 @@ class DmsSubmitter(
   formTemplateService: FormTemplateAlgebra[FOpt],
   pdfGeneratorService: PdfGeneratorService,
   fopService: FopService,
-  envelopeAlgebra: EnvelopeAlgebra[FOpt]
+  envelopeAlgebra: EnvelopeAlgebra[FOpt],
+  welshDefaults: WelshDefaults
 )(implicit ec: ExecutionContext)
     extends DmsSubmitterAlgebra[FOpt] {
   private val logger = LoggerFactory.getLogger(getClass)
@@ -60,14 +62,22 @@ class DmsSubmitter(
     for {
       form         <- formService.get(formId)
       formTemplate <- formTemplateService.get(form.formTemplateId)
+      updatedDms = l match {
+                     case LangADT.En => hmrcDms
+                     case LangADT.Cy =>
+                       hmrcDms.copy(
+                         classificationType = welshDefaults.classificationType,
+                         businessArea = welshDefaults.businessArea
+                       )
+                   }
       summaries <-
         fromFutureA(
           PdfAndXmlSummariesFactory
             .withPdf(pdfGeneratorService, fopService, modelTree.value.pdfData, modelTree.value.instructionPdfData)
-            .apply(form, formTemplate, accumulatedModel, modelTree, customerId, submission.submissionRef, hmrcDms, l)
+            .apply(form, formTemplate, accumulatedModel, modelTree, customerId, submission.submissionRef, updatedDms, l)
         )
       envelope      <- envelopeAlgebra.get(submission.envelopeId)
-      objectSummary <- objectStoreAlgebra.submitEnvelope(submission, summaries, hmrcDms, formTemplate._id)
+      objectSummary <- objectStoreAlgebra.submitEnvelope(submission, summaries, updatedDms, formTemplate._id)
       _ <-
         dmsWorkItemAlgebra
           .pushWorkItem(submission.envelopeId, form.formTemplateId, submission.submissionRef, objectSummary)
