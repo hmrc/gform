@@ -29,6 +29,7 @@ import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.formtemplate.{ FormTemplateService, FormTemplatesControllerRequestHandler }
 import uk.gov.hmrc.gform.history.HistoryService
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplateId, FormTemplateRaw, FormTemplateRawId }
+import org.apache.poi.ss.usermodel.{ Cell, CellType }
 import org.apache.poi.xssf.usermodel._
 
 import scala.util.{ Failure, Success, Try }
@@ -211,9 +212,12 @@ class TranslationController(
         .rowIterator()
         .asScala
         .drop(1)
+        .filter { row =>
+          row.getLastCellNum =!= -1 // Ignore empty rows. Google Sheets or Libre are adding empty rows past the last translation
+        }
         .map { row =>
-          val en = row.getCell(enIndex).getStringCellValue()
-          val cy = row.getCell(cyIndex).getStringCellValue()
+          val en = getCellValue(row.getCell(enIndex))
+          val cy = getCellValue(row.getCell(cyIndex))
           (EnFromSpreadsheet(en), CyFromSpreadsheet(cy))
         }
         .toMap
@@ -221,6 +225,17 @@ class TranslationController(
       val spreadsheet = Spreadsheet(spreadheetRows)
 
       runTranslation(formTemplateId, spreadsheet)
+    }
+
+  private def getCellValue(cell: Cell): String =
+    cell.getCellType() match {
+      case CellType._NONE   => ""
+      case CellType.BLANK   => ""
+      case CellType.BOOLEAN => cell.getBooleanCellValue().toString
+      case CellType.ERROR   => ""
+      case CellType.FORMULA => ""
+      case CellType.NUMERIC => cell.getNumericCellValue().toString
+      case CellType.STRING  => cell.getStringCellValue()
     }
 
   def translateCsv(
