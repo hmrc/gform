@@ -182,7 +182,8 @@ class UpscanController(
                                     envelopeId,
                                     fileId,
                                     ContentType(upscanCallbackSuccess.uploadDetails.fileMimeType),
-                                    fileName
+                                    fileName,
+                                    upscanCallbackSuccess.reference
                                   )
                              formUpd = setTransferred(
                                          form,
