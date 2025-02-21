@@ -162,7 +162,7 @@ class UpscanController(
                     "size"            -> upscanCallbackSuccess.uploadDetails.size,
                     "mimeType"        -> upscanCallbackSuccess.uploadDetails.fileMimeType,
                     "status"          -> "failed",
-                    "failureReason"   -> "rejected-gForm",
+                    "failureReason"   -> "rejected-gform",
                     "failureMessage"  -> getAuditFailureMessage(upscanValidationFailure)
                   )
                 )
@@ -241,7 +241,7 @@ class UpscanController(
               "formComponentId" -> formComponentId.value,
               "formId"          -> formIdData.toFormId.value,
               "status"          -> "failed",
-              "failureReason"   -> "rejected-Upscan",
+              "failureReason"   -> "rejected-upscan",
               "failureMessage"  -> message
             )
           )
