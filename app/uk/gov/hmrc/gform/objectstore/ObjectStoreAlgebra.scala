@@ -31,7 +31,6 @@ import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
 import uk.gov.hmrc.gform.submission.{ PdfAndXmlSummaries, Submission }
-import uk.gov.hmrc.gform.upscan.UpscanReference
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.objectstore.client
 import uk.gov.hmrc.objectstore.client.{ ObjectSummaryWithMd5, Path }
@@ -102,8 +101,7 @@ trait ObjectStoreAlgebra[F[_]] {
     envelopeId: EnvelopeId,
     fileId: FileId,
     contentType: ContentType,
-    fileName: String,
-    reference: UpscanReference
+    fileName: String
   )(implicit hc: HeaderCarrier): F[ObjectSummaryWithMd5]
 
   def submitEnvelope(

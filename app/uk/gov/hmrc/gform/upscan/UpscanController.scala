@@ -23,6 +23,7 @@ import cats.instances.long._
 import cats.syntax.eq._
 import cats.syntax.either._
 import cats.syntax.applicative._
+
 import java.nio.charset.StandardCharsets
 import org.slf4j.{ Logger, LoggerFactory }
 import org.typelevel.ci.CIString
@@ -31,6 +32,7 @@ import play.api.mvc.{ Action, AnyContent, ControllerComponents, Result }
 
 import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.crypto.{ Crypted, Decrypter, Encrypter, PlainText }
+import uk.gov.hmrc.gform.auditing.AuditService
 import uk.gov.hmrc.gform.config.{ AppConfig, FileInfoConfig }
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.form.FormAlgebra
@@ -49,7 +51,8 @@ class UpscanController(
   upscanService: UpscanService,
   formTemplateService: FormTemplateService,
   controllerComponents: ControllerComponents,
-  objectStoreAlgebra: ObjectStoreAlgebra[Future]
+  objectStoreAlgebra: ObjectStoreAlgebra[Future],
+  auditService: AuditService
 )(implicit ec: ExecutionContext)
     extends BaseController(controllerComponents) {
 
@@ -150,6 +153,19 @@ class UpscanController(
 
             validated match {
               case Invalid(upscanValidationFailure) =>
+                auditService.sendFileUploadEvent(
+                  Json.obj(
+                    "envelopeId"      -> envelopeId.value,
+                    "formTemplateId"  -> formIdData.formTemplateId.value,
+                    "formComponentId" -> formComponentId.value,
+                    "formId"          -> formIdData.toFormId.value,
+                    "size"            -> upscanCallbackSuccess.uploadDetails.size,
+                    "mimeType"        -> upscanCallbackSuccess.uploadDetails.fileMimeType,
+                    "status"          -> "failed",
+                    "failureReason"   -> "rejected-gForm",
+                    "failureMessage"  -> getAuditFailureMessage(upscanValidationFailure)
+                  )
+                )
                 for {
                   _ <- upscanService.reject(
                          upscanCallbackSuccess.reference,
@@ -158,6 +174,17 @@ class UpscanController(
                        )
                 } yield NoContent
               case Valid(_) =>
+                auditService.sendFileUploadEvent(
+                  Json.obj(
+                    "envelopeId"      -> envelopeId.value,
+                    "formTemplateId"  -> formIdData.formTemplateId.value,
+                    "formComponentId" -> formComponentId.value,
+                    "formId"          -> formIdData.toFormId.value,
+                    "size"            -> upscanCallbackSuccess.uploadDetails.size,
+                    "mimeType"        -> upscanCallbackSuccess.uploadDetails.fileMimeType,
+                    "status"          -> "ready"
+                  )
+                )
                 for {
                   form <- formService.get(formIdData)
                   (fileComponentId, fileId) = if (isMultipleFileOption) {
@@ -182,8 +209,7 @@ class UpscanController(
                                     envelopeId,
                                     fileId,
                                     ContentType(upscanCallbackSuccess.uploadDetails.fileMimeType),
-                                    fileName,
-                                    upscanCallbackSuccess.reference
+                                    fileName
                                   )
                              formUpd = setTransferred(
                                          form,
@@ -207,6 +233,19 @@ class UpscanController(
           logger.info(
             s"Upscan callback failed, fcId: $formComponentId. Reference $ref, status: $fileStatus, failureReason: $failureReason, message: $message"
           )
+
+          auditService.sendFileUploadEvent(
+            Json.obj(
+              "envelopeId"      -> envelopeId.value,
+              "formTemplateId"  -> formIdData.formTemplateId.value,
+              "formComponentId" -> formComponentId.value,
+              "formId"          -> formIdData.toFormId.value,
+              "status"          -> "failed",
+              "failureReason"   -> "rejected-Upscan",
+              "failureMessage"  -> message
+            )
+          )
+
           for {
             upscanConfirmation <- upscanService.reject(
                                     upscanCallbackFailure.reference,
@@ -296,6 +335,16 @@ class UpscanController(
       .andThen(_ => validateMatchingExtension)
       .map(_ => ())
   }
+
+  private def getAuditFailureMessage(upscanValidationFailure: UpscanValidationFailure): String =
+    upscanValidationFailure match {
+      case UpscanValidationFailure.EntityTooLarge  => "File too large"
+      case UpscanValidationFailure.EntityTooSmall  => "File too small"
+      case UpscanValidationFailure.FileNameTooLong => "File name too long"
+      case UpscanValidationFailure.InvalidFileExtension(expectedExtension) =>
+        s"Invalid file extension, expected: $expectedExtension"
+      case UpscanValidationFailure.InvalidFileType(errorDetail, _) => errorDetail
+    }
 
   private def validateFileName(fileName: String): Validated[UpscanValidationFailure, Unit] =
     Valid(fileName)

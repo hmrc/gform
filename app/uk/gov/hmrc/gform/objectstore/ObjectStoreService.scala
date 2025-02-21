@@ -34,7 +34,6 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcD
 import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination
 import uk.gov.hmrc.gform.submission.{ PdfAndXmlSummaries, Submission }
 import uk.gov.hmrc.gform.time.TimeProvider
-import uk.gov.hmrc.gform.upscan.UpscanReference
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.objectstore.client
 import uk.gov.hmrc.objectstore.client.{ ObjectSummaryWithMd5, Path }
@@ -195,8 +194,7 @@ class ObjectStoreService(
     envelopeId: EnvelopeId,
     fileId: FileId,
     contentType: ContentType,
-    fileName: String,
-    reference: UpscanReference
+    fileName: String
   )(implicit
     hc: HeaderCarrier
   ): Future[ObjectSummaryWithMd5] = {
@@ -222,7 +220,7 @@ class ObjectStoreService(
               FileStatus.Available,
               contentType,
               res.contentLength,
-              Map("reference" -> List(reference.value))
+              Map.empty[String, List[String]]
             )
         envelopeService.save(envelopeData.copy(files = newFiles))
       }

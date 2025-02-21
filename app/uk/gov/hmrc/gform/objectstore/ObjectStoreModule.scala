@@ -31,7 +31,6 @@ import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination
 import uk.gov.hmrc.gform.submission.{ PdfAndXmlSummaries, Submission }
-import uk.gov.hmrc.gform.upscan.UpscanReference
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.objectstore.client
 import uk.gov.hmrc.objectstore.client.config.ObjectStoreClientConfig
@@ -137,12 +136,11 @@ class ObjectStoreModule(
       envelopeId: EnvelopeId,
       fileId: FileId,
       contentType: ContentType,
-      fileName: String,
-      reference: UpscanReference
+      fileName: String
     )(implicit
       hc: HeaderCarrier
     ): FOpt[ObjectSummaryWithMd5] =
-      fromFutureA(objectStoreService.uploadFromUrl(from, envelopeId, fileId, contentType, fileName, reference))
+      fromFutureA(objectStoreService.uploadFromUrl(from, envelopeId, fileId, contentType, fileName))
 
     override def submitEnvelope(
       submission: Submission,
