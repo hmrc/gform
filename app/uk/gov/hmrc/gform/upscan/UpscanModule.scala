@@ -18,6 +18,7 @@ package uk.gov.hmrc.gform.upscan
 
 import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.crypto.{ Decrypter, Encrypter }
+import uk.gov.hmrc.gform.auditing.AuditingModule
 import uk.gov.hmrc.gform.config.{ AppConfig, ConfigModule }
 import uk.gov.hmrc.gform.form.FormService
 import uk.gov.hmrc.gform.formtemplate.FormTemplateModule
@@ -31,7 +32,8 @@ class UpscanModule(
   formTemplateModule: FormTemplateModule,
   appConfig: AppConfig,
   mongoModule: MongoModule,
-  objectStoreModule: ObjectStoreModule
+  objectStoreModule: ObjectStoreModule,
+  auditingModule: AuditingModule
 )(implicit
   ec: ExecutionContext
 ) {
@@ -49,7 +51,8 @@ class UpscanModule(
       upscanService,
       formTemplateModule.formTemplateService,
       configModule.controllerComponents,
-      objectStoreModule.objectStoreService
+      objectStoreModule.objectStoreService,
+      auditingModule.auditService
     )
 
 }

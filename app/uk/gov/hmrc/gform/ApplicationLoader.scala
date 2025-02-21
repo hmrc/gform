@@ -348,7 +348,8 @@ class ApplicationModule(context: Context)
     formTemplateModule,
     configModule.appConfig,
     mongoModule,
-    objectStoreModule
+    objectStoreModule,
+    auditingModule
   )
 
   private val formStatisticsModule = new FormStatisticsModule(
