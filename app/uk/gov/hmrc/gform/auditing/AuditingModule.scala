@@ -64,6 +64,10 @@ class AuditingModule(
     new DefaultHttpAuditEvent(configModule.appConfig.appName),
     akkaModule.materializer
   )
+
+  val auditService = new AuditService {
+    override def auditConnector = self.auditConnector
+  }
 }
 
 object loggingHelpers {
