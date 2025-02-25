@@ -197,8 +197,7 @@ class FormComponentSpec2 extends Spec {
   }
 
   it should "parse 'choice' with option summaryValue" in {
-    val fieldValue = toFieldValue(
-      """|{
+    val fieldValue = toFieldValue("""|{
          |  "type": "choice",
          |  "id": "dutyType",
          |  "label": "Select the tax type",
@@ -222,7 +221,14 @@ class FormComponentSpec2 extends Spec {
         Choice(
           Radio,
           NonEmptyList.of(
-            OptionData.ValueBased(toSmartString("Yes"), None, None, None, OptionDataValue.StringBased("foo"), Option(toSmartString("Yes in summary"))),
+            OptionData.ValueBased(
+              toSmartString("Yes"),
+              None,
+              None,
+              None,
+              OptionDataValue.StringBased("foo"),
+              Option(toSmartString("Yes in summary"))
+            ),
             OptionData.ValueBased(toSmartString("No"), None, None, None, OptionDataValue.StringBased("bar"), None)
           ),
           Vertical,
