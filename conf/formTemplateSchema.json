@@ -793,6 +793,9 @@
                   "hint": {
                     "$ref": "#/$defs/stringOrEnCyObject"
                   },
+                  "summaryValue": {
+                    "$ref": "#/$defs/stringOrEnCyObject"
+                  },
                   "includeIf": {
                     "type": "string"
                   }

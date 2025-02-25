@@ -24,7 +24,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 trait FormTemplateSupport {
 
   val yesNoLocalisedStrings =
-    NonEmptyList.of(toSmartString("Yes"), toSmartString("No")).map(OptionData.IndexBased(_, None, None, None))
+    NonEmptyList.of(toSmartString("Yes"), toSmartString("No")).map(OptionData.IndexBased(_, None, None, None, None))
 
   val addAnotherQuestion =
     mkFormComponent(

@@ -1055,7 +1055,7 @@ class FormTemplateValidatorSpec
                   Radio,
                   NonEmptyList
                     .of(toSmartString("No"), toSmartString("Yes"))
-                    .map(OptionData.IndexBased(_, None, None, None)),
+                    .map(OptionData.IndexBased(_, None, None, None, None)),
                   Vertical,
                   Nil,
                   None,
@@ -1089,7 +1089,7 @@ class FormTemplateValidatorSpec
                   Radio,
                   NonEmptyList
                     .of(toSmartString("Yes please"), toSmartString("No thanks"))
-                    .map(OptionData.IndexBased(_, None, None, None)),
+                    .map(OptionData.IndexBased(_, None, None, None, None)),
                   Vertical,
                   Nil,
                   None,
@@ -1379,8 +1379,8 @@ class FormTemplateValidatorSpec
         if (isCheckbox) Checkbox else Radio,
         NonEmptyList.of(
           OptionData
-            .ValueBased(toSmartString("Yes", "Iawn"), None, None, None, OptionDataValue.StringBased(stringValue)),
-          OptionData.ValueBased(toSmartString("No", "Na"), None, None, None, OptionDataValue.StringBased("bar"))
+            .ValueBased(toSmartString("Yes", "Iawn"), None, None, None, OptionDataValue.StringBased(stringValue), None),
+          OptionData.ValueBased(toSmartString("No", "Na"), None, None, None, OptionDataValue.StringBased("bar"), None)
         ),
         if (isCheckbox) Vertical else Horizontal,
         List.empty[Int],
@@ -1452,7 +1452,8 @@ class FormTemplateValidatorSpec
               0
             )
           )
-        )
+        ),
+        summaryValue = None
       )
     )
 }

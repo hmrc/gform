@@ -50,7 +50,7 @@ class FormComponentSpec2 extends Spec {
           Radio,
           NonEmptyList
             .of("Natural gas", "Other gas")
-            .map(l => OptionData.IndexBased(toSmartString(l), None, None, None)),
+            .map(l => OptionData.IndexBased(toSmartString(l), None, None, None, None)),
           Vertical,
           List.empty[Int],
           None,
@@ -111,8 +111,9 @@ class FormComponentSpec2 extends Spec {
         Choice(
           Radio,
           NonEmptyList.of(
-            OptionData.ValueBased(toSmartString("Yes", "Iawn"), None, None, None, OptionDataValue.StringBased("foo")),
-            OptionData.ValueBased(toSmartString("No", "Na"), None, None, None, OptionDataValue.StringBased("bar"))
+            OptionData
+              .ValueBased(toSmartString("Yes", "Iawn"), None, None, None, OptionDataValue.StringBased("foo"), None),
+            OptionData.ValueBased(toSmartString("No", "Na"), None, None, None, OptionDataValue.StringBased("bar"), None)
           ),
           Vertical,
           List.empty[Int],
@@ -165,8 +166,64 @@ class FormComponentSpec2 extends Spec {
         Choice(
           Radio,
           NonEmptyList.of(
-            OptionData.ValueBased(toSmartString("Yes"), None, None, None, OptionDataValue.StringBased("foo")),
-            OptionData.ValueBased(toSmartString("No"), None, None, None, OptionDataValue.StringBased("bar"))
+            OptionData.ValueBased(toSmartString("Yes"), None, None, None, OptionDataValue.StringBased("foo"), None),
+            OptionData.ValueBased(toSmartString("No"), None, None, None, OptionDataValue.StringBased("bar"), None)
+          ),
+          Vertical,
+          List.empty[Int],
+          None,
+          None,
+          None,
+          LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
+          None,
+          None,
+          true
+        ),
+        toSmartString("Select the tax type"),
+        false,
+        None,
+        None,
+        None,
+        validIf = None,
+        mandatory = true,
+        editable = true,
+        submissible = true,
+        derived = false,
+        onlyShowOnSummary = false,
+        None,
+        None
+      )
+    )
+  }
+
+  it should "parse 'choice' with option summaryValue" in {
+    val fieldValue = toFieldValue(
+      """|{
+         |  "type": "choice",
+         |  "id": "dutyType",
+         |  "label": "Select the tax type",
+         |  "choices": [
+         |    {
+         |      "value": "foo",
+         |      "label": "Yes",
+         |      "summaryValue": "Yes in summary"
+         |    },
+         |    {
+         |      "value": "bar",
+         |      "label": "No"
+         |    }
+         |  ],
+         |  "hideChoicesSelected": true
+         |}""")
+
+    fieldValue should beJsSuccess(
+      FormComponent(
+        FormComponentId("dutyType"),
+        Choice(
+          Radio,
+          NonEmptyList.of(
+            OptionData.ValueBased(toSmartString("Yes"), None, None, None, OptionDataValue.StringBased("foo"), Option(toSmartString("Yes in summary"))),
+            OptionData.ValueBased(toSmartString("No"), None, None, None, OptionDataValue.StringBased("bar"), None)
           ),
           Vertical,
           List.empty[Int],
