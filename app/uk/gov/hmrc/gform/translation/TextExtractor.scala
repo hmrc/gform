@@ -204,14 +204,14 @@ class Translator(json: Json, paths: List[List[Instruction]], val topLevelExprDat
     rows: List[Row]
   )(topCursor: HCursor, cursors: List[HCursor => ACursor]): HCursor =
     modifyTopLevelExpression(topCursor, cursors) { case (translationState, expr, path) =>
-      val rowsForPath = rows.filter(_.path === path)
+      val rowsForPath = rows.filter(_.path === path).distinct
       rowsForPath.foldRight(expr) { case (row, currentExpr) =>
         translationState.constants.find(_.enString === row.en) match {
           case None => currentExpr
           case Some(TranslatableConstant.NonTranslated(Constant(en))) =>
             currentExpr.replace(s"'$en'", s"'${row.en}'|'${row.cy}'")
           case Some(TranslatableConstant.Translated(Constant(en), Constant(cy))) =>
-            currentExpr.replace(s"'$en','$cy'", s"'${row.en}'|'${row.cy}'")
+            currentExpr.replaceAll(s"'$en'\\s*\\|\\s*'$cy'", s"'${row.en}'|'${row.cy}'")
         }
       }
     }
@@ -223,7 +223,7 @@ class Translator(json: Json, paths: List[List[Instruction]], val topLevelExprDat
           case TranslatableConstant.NonTranslated(Constant(en)) =>
             currentExprAcc.replace(s"'$en'", s"'✅'")
           case TranslatableConstant.Translated(Constant(en), Constant(cy)) =>
-            currentExprAcc.replace(s"'$en','$cy'", s"'✅','✅'")
+            currentExprAcc.replaceAll(s"'$en'\\s*\\|\\s*'$cy'", s"'✅'")
         }
       }
     }

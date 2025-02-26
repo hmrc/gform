@@ -985,7 +985,8 @@ class TextExtractorSuite extends FunSuite {
               "email": "if auth.emailLogin && user.affinityGroup != 'agent' then emailAddressGG else if auth.emailLogin && user.affinityGroup = 'agent' then emailAgent else auth.email",
               "employeesYour": "if employee || agent then 'your' else 'the employee’s'",
               "liveLives": "if employee || agent then 'live' else 'lives'",
-              "employeesYourCap": "if employee || agent then 'Your'|'Cy-Your' + ' ' else 'Employee’s '"
+              "employeesYourCap": "if employee || agent then 'Your'|'Cy-Your' + ' ' else 'Employee’s '",
+              "emptyWelsh": "if employee || agent then 'Your'|'' + ' ' else 'Employee’s '"
             }
           }
           """
@@ -1001,7 +1002,9 @@ class TextExtractorSuite extends FunSuite {
       Row(".expressions.liveLives", "live", ""),
       Row(".expressions.liveLives", "lives", ""),
       Row(".expressions.employeesYourCap", "Your", "Cy-Your"),
-      Row(".expressions.employeesYourCap", "Employee’s ", "")
+      Row(".expressions.employeesYourCap", "Employee’s ", ""),
+      Row(".expressions.emptyWelsh", "Your", ""),
+      Row(".expressions.emptyWelsh", "Employee’s ", "")
     )
 
     val translator = Translator(json, List.empty[List[Instruction]])
@@ -1110,6 +1113,71 @@ class TextExtractorSuite extends FunSuite {
          |Employee’s,Cy-Employee’s
          |Page unavailable,CY-Page unavailable
          |Page is unavailable until next week,CY-Page is unavailable until next week
+         |""".stripMargin
+
+    val translatableRows = TextExtractor.readCvsFromString(csv)
+    val (res, stats) = TextExtractor.translateFile(translatableRows, json.spaces2)
+    assertEquals(parse(res).toOption.get, expected)
+  }
+
+  test("top level expression translation with whitespaces") {
+    val json =
+      json"""
+          {
+            "expressions": {
+              "emptyWelsh": "if 1 = 1 then 'vessel'|'' else 'installation'|''",
+              "emptyWelshWithWhiteSpaces": "if 1 = 1 then 'Your' | '' + ' ' else 'Employee’s'  |  ''"
+            }
+          }
+          """
+
+    val expected =
+      json"""
+          {
+            "expressions": {
+              "emptyWelsh": "if 1 = 1 then 'vessel'|'cy-vessel' else 'installation'|'cy-installation'",
+              "emptyWelshWithWhiteSpaces": "if 1 = 1 then 'Your'|'Cy-Your' + ' ' else 'Employee’s'|'Cy-Employee’s'"
+            }
+          }
+          """
+
+    val csv =
+      """|en,cy
+         |vessel,cy-vessel
+         |installation,cy-installation
+         |Your,Cy-Your
+         |Employee’s,Cy-Employee’s
+         |""".stripMargin
+
+    val translatableRows = TextExtractor.readCvsFromString(csv)
+    val (res, stats) = TextExtractor.translateFile(translatableRows, json.spaces2)
+    assertEquals(parse(res).toOption.get, expected)
+  }
+
+  test("top level expression with duplicate english content") {
+    val json =
+      json"""
+          {
+            "expressions": {
+              "heading": "if prevFc contains 0 then ('EN1') else if prevFc contains 1 then ('EN2') else if prevFc contains 2 then ('EN3') else ('EN1')"
+            }
+          }
+          """
+
+    val expected =
+      json"""
+          {
+            "expressions": {
+              "heading": "if prevFc contains 0 then ('EN1'|'CY1') else if prevFc contains 1 then ('EN2'|'CY2') else if prevFc contains 2 then ('EN3'|'CY3') else ('EN1'|'CY1')"
+            }
+          }
+          """
+
+    val csv =
+      """|en,cy
+         |EN1,CY1
+         |EN2,CY2
+         |EN3,CY3
          |""".stripMargin
 
     val translatableRows = TextExtractor.readCvsFromString(csv)
