@@ -154,8 +154,8 @@ trait Rewriter {
         }
         .flatten
         .collect {
-          case OptionData.ValueBased(_, _, Some(includeIf), _, _) => includeIf
-          case OptionData.IndexBased(_, _, Some(includeIf), _)    => includeIf
+          case OptionData.ValueBased(_, _, Some(includeIf), _, _, _) => includeIf
+          case OptionData.IndexBased(_, _, Some(includeIf), _, _)    => includeIf
         }
     }
 
@@ -279,8 +279,8 @@ trait Rewriter {
 
     def isDynamic(options: NonEmptyList[OptionData]): Boolean =
       options.exists {
-        case OptionData.IndexBased(_, _, _, Some(_)) => true
-        case _                                       => false
+        case OptionData.IndexBased(_, _, _, Some(_), _) => true
+        case _                                          => false
       }
 
     def rewrite(booleanExpr: BooleanExpr): Either[UnexpectedState, BooleanExpr] = booleanExpr match {
@@ -304,12 +304,12 @@ trait Rewriter {
               invalidDynamicUsage(formComponentId, exprString)
             case Choice(_, options, _, _, _, _, _, _, _, _, _) =>
               val possibleValues = options.collect {
-                case OptionData.ValueBased(_, _, _, _, OptionDataValue.StringBased(value)) =>
+                case OptionData.ValueBased(_, _, _, _, OptionDataValue.StringBased(value), _) =>
                   value
               }.toSet
 
               val exprBasedExists = options.collectFirst {
-                case OptionData.ValueBased(_, _, _, _, OptionDataValue.ExprBased(_)) =>
+                case OptionData.ValueBased(_, _, _, _, OptionDataValue.ExprBased(_), _) =>
               }.isDefined
 
               validate(
@@ -325,14 +325,14 @@ trait Rewriter {
             case RevealingChoice(options, _) =>
               val possibleValues = options
                 .map(_.choice)
-                .collect { case OptionData.ValueBased(_, _, _, _, OptionDataValue.StringBased(value)) =>
+                .collect { case OptionData.ValueBased(_, _, _, _, OptionDataValue.StringBased(value), _) =>
                   value
                 }
                 .toSet
 
               val exprBasedExists = options
                 .map(_.choice)
-                .collectFirst { case OptionData.ValueBased(_, _, _, _, OptionDataValue.ExprBased(expr)) =>
+                .collectFirst { case OptionData.ValueBased(_, _, _, _, OptionDataValue.ExprBased(expr), _) =>
                   expr
                 }
                 .isDefined
@@ -367,11 +367,11 @@ trait Rewriter {
               invalidDynamicUsage(formComponentId, exprString)
             case Choice(Radio | YesNo, options, _, _, _, _, _, _, _, _, _) =>
               val possibleValues = options.collect {
-                case OptionData.ValueBased(_, _, _, _, OptionDataValue.StringBased(value)) =>
+                case OptionData.ValueBased(_, _, _, _, OptionDataValue.StringBased(value), _) =>
                   value
               }.toSet
               val exprBasedExists = options.collectFirst {
-                case OptionData.ValueBased(_, _, _, _, OptionDataValue.ExprBased(_)) =>
+                case OptionData.ValueBased(_, _, _, _, OptionDataValue.ExprBased(_), _) =>
               }.isDefined
 
               validate(
@@ -389,13 +389,13 @@ trait Rewriter {
             case RevealingChoice(options, false) =>
               val possibleValues = options
                 .map(_.choice)
-                .collect { case OptionData.ValueBased(_, _, _, _, OptionDataValue.StringBased(value)) =>
+                .collect { case OptionData.ValueBased(_, _, _, _, OptionDataValue.StringBased(value), _) =>
                   value
                 }
                 .toSet
               val exprBasedExists = options
                 .map(_.choice)
-                .collectFirst { case OptionData.ValueBased(_, _, _, _, OptionDataValue.ExprBased(expr)) =>
+                .collectFirst { case OptionData.ValueBased(_, _, _, _, OptionDataValue.ExprBased(expr), _) =>
                   expr
                 }
                 .isDefined
@@ -482,8 +482,8 @@ trait Rewriter {
           )
         case IsChoice(choice) =>
           replaceFormComponent(formComponent).copy(`type` = choice.copy(options = choice.options.map {
-            case OptionData.ValueBased(l, h, i, d, v) => OptionData.ValueBased(l, h, replaceIncludeIf(i), d, v)
-            case OptionData.IndexBased(l, h, i, d)    => OptionData.IndexBased(l, h, replaceIncludeIf(i), d)
+            case OptionData.ValueBased(l, h, i, d, v, s) => OptionData.ValueBased(l, h, replaceIncludeIf(i), d, v, s)
+            case OptionData.IndexBased(l, h, i, d, s)    => OptionData.IndexBased(l, h, replaceIncludeIf(i), d, s)
           }))
         case otherwise => replaceFormComponent(formComponent)
       }

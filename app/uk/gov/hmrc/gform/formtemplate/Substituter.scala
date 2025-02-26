@@ -106,9 +106,9 @@ object Substituter {
   ): Substituter[A, OptionData] = (substitutions, t) =>
     t match {
       case o: OptionData.IndexBased => o.copy(label = o.label(substitutions), includeIf = o.includeIf(substitutions))
-      case o @ OptionData.ValueBased(_, _, _, _, OptionDataValue.StringBased(_)) =>
+      case o @ OptionData.ValueBased(_, _, _, _, OptionDataValue.StringBased(_), _) =>
         o.copy(label = o.label(substitutions), includeIf = o.includeIf(substitutions))
-      case o @ OptionData.ValueBased(_, _, _, _, OptionDataValue.ExprBased(expr)) =>
+      case o @ OptionData.ValueBased(_, _, _, _, OptionDataValue.ExprBased(expr), _) =>
         o.copy(
           label = o.label(substitutions),
           includeIf = o.includeIf(substitutions),

@@ -803,7 +803,7 @@ class TemplateValidatorSpec extends Spec {
   it should "allow reference to addAnotherQuestion of AddToList section" in {
 
     val yesNoLocalisedStrings =
-      NonEmptyList.of(toSmartString("Yes"), toSmartString("No")).map(OptionData.IndexBased(_, None, None, None))
+      NonEmptyList.of(toSmartString("Yes"), toSmartString("No")).map(OptionData.IndexBased(_, None, None, None, None))
 
     val addToListPage = mkSection("addToListPage", List(mkFormComponent("fieldA", Value))).page
     val addAnotherQuestion =
@@ -837,7 +837,7 @@ class TemplateValidatorSpec extends Spec {
   it should "validate forward references in AddToList fields within duplicateExists boolean expressions" in {
 
     val yesNoLocalisedStrings =
-      NonEmptyList.of(toSmartString("Yes"), toSmartString("No")).map(OptionData.IndexBased(_, None, None, None))
+      NonEmptyList.of(toSmartString("Yes"), toSmartString("No")).map(OptionData.IndexBased(_, None, None, None, None))
 
     val fieldA = FormCtx(FormComponentId("fieldA"))
     val fieldB = FormCtx(FormComponentId("fieldB"))

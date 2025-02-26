@@ -68,7 +68,7 @@ class JsonParseTestGroup extends Spec {
               FormComponentId("cid"),
               Choice(
                 Radio,
-                NonEmptyList.of("A", "B").map(l => OptionData.IndexBased(toSmartString(l), None, None, None)),
+                NonEmptyList.of("A", "B").map(l => OptionData.IndexBased(toSmartString(l), None, None, None, None)),
                 Vertical,
                 List(),
                 None,
@@ -139,7 +139,8 @@ class JsonParseTestGroup extends Spec {
                  "label": "A"
                },
                {
-                 "label": "B"
+                 "label": "B",
+                 "summaryValue": "SV"
                }
             ]
           }
@@ -160,7 +161,10 @@ class JsonParseTestGroup extends Spec {
               FormComponentId("cid"),
               Choice(
                 Radio,
-                NonEmptyList.of("A", "B").map(l => OptionData.IndexBased(toSmartString(l), None, None, None)),
+                NonEmptyList.of(
+                  OptionData.IndexBased(toSmartString("A"), None, None, None, None),
+                  OptionData.IndexBased(toSmartString("B"), None, None, None, Option(toSmartString("SV")))
+                ),
                 Vertical,
                 List(),
                 None,

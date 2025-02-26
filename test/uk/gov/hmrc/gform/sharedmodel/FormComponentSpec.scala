@@ -33,10 +33,12 @@ class FormComponentSpec extends Spec {
   val yesNoLocalisedStrings =
     NonEmptyList
       .of(toSmartString("Yes", "Iawn"), toSmartString("No", "Na"))
-      .map(OptionData.IndexBased(_, None, None, None))
+      .map(OptionData.IndexBased(_, None, None, None, None))
 
   private val gases =
-    NonEmptyList.of("Natural gas", "Other gas").map(l => OptionData.IndexBased(toSmartString(l), None, None, None))
+    NonEmptyList
+      .of("Natural gas", "Other gas")
+      .map(l => OptionData.IndexBased(toSmartString(l), None, None, None, None))
 
   "FieldValue json object" should "parse as Text if it not include 'type' field" in {
     val fieldValue = toFieldValue("""|{
@@ -1633,7 +1635,9 @@ class FormComponentSpec extends Spec {
         FormComponentId("haveIncludedInvoice"),
         Choice(
           Radio,
-          NonEmptyList.of("Yes", "No", "Not sure").map(l => OptionData.IndexBased(toSmartString(l), None, None, None)),
+          NonEmptyList
+            .of("Yes", "No", "Not sure")
+            .map(l => OptionData.IndexBased(toSmartString(l), None, None, None, None)),
           Vertical,
           List(1),
           None,

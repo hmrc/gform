@@ -573,7 +573,7 @@ object FormTemplateValidator {
       case DividerPosition.Number(i) => false
       case DividerPosition.Value(d) =>
         choice.options.collectFirst {
-          case OptionData.ValueBased(_, _, _, _, OptionDataValue.StringBased(value)) if value === d => true
+          case OptionData.ValueBased(_, _, _, _, OptionDataValue.StringBased(value), _) if value === d => true
         }.isEmpty
     }
 
@@ -597,8 +597,8 @@ object FormTemplateValidator {
 
     def details(choice: Choice): String = {
       val choices = choice.options.map {
-        case OptionData.ValueBased(ss, _, _, _, _) => ss.defaultRawValue(LangADT.En)
-        case OptionData.IndexBased(ss, _, _, _)    => ss.defaultRawValue(LangADT.En)
+        case OptionData.ValueBased(ss, _, _, _, _, _) => ss.defaultRawValue(LangADT.En)
+        case OptionData.IndexBased(ss, _, _, _, _)    => ss.defaultRawValue(LangADT.En)
       }
 
       "Got choices:" + choices + ", dividerPosition: " + choice.dividerPosition
@@ -610,7 +610,7 @@ object FormTemplateValidator {
 
   def validateChoiceNoneChoiceValue(sectionsList: List[Page]): ValidationResult = {
     def check(choice: Choice): Boolean = {
-      val values = choice.options.collect { case OptionData.ValueBased(_, _, _, _, OptionDataValue.StringBased(v)) =>
+      val values = choice.options.collect { case OptionData.ValueBased(_, _, _, _, OptionDataValue.StringBased(v), _) =>
         v
       }
       choice.noneChoice.fold(false) {
@@ -620,7 +620,7 @@ object FormTemplateValidator {
     }
 
     def details(choice: Choice): String = {
-      val values = choice.options.collect { case OptionData.ValueBased(_, _, _, _, OptionDataValue.StringBased(v)) =>
+      val values = choice.options.collect { case OptionData.ValueBased(_, _, _, _, OptionDataValue.StringBased(v), _) =>
         v
       }
 
@@ -696,7 +696,7 @@ object FormTemplateValidator {
     }
 
     def checkUnique(choice: Choice): Boolean = {
-      val values = choice.options.collect { case OptionData.ValueBased(_, _, _, _, value) =>
+      val values = choice.options.collect { case OptionData.ValueBased(_, _, _, _, value, _) =>
         value
       }
       values.size =!= values.distinct.size
@@ -724,7 +724,7 @@ object FormTemplateValidator {
       } else false
 
     def getStringBasedOptionDataValues(choice: Choice): List[String] =
-      choice.options.collect { case OptionData.ValueBased(_, _, _, _, OptionDataValue.StringBased(value)) =>
+      choice.options.collect { case OptionData.ValueBased(_, _, _, _, OptionDataValue.StringBased(value), _) =>
         value
       }
 
@@ -773,7 +773,7 @@ object FormTemplateValidator {
 
     def checkUnique(revealingChoice: RevealingChoice): Boolean = {
       val choices = revealingChoice.options.map(_.choice)
-      val values = choices.collect { case OptionData.ValueBased(_, _, _, _, value) =>
+      val values = choices.collect { case OptionData.ValueBased(_, _, _, _, value, _) =>
         value
       }
       values.size =!= values.distinct.size
@@ -924,7 +924,7 @@ object FormTemplateValidator {
     def validateOptions(
       options: List[OptionData]
     ): List[ValidationResult] =
-      options.collect { case OptionData.ValueBased(_, _, _, _, OptionDataValue.StringBased(value)) =>
+      options.collect { case OptionData.ValueBased(_, _, _, _, OptionDataValue.StringBased(value), _) =>
         value match {
           case SizeRefType.regex(_*) => Valid
           case _ =>
@@ -940,7 +940,7 @@ object FormTemplateValidator {
       index: SizeRefType
     ): ValidationResult = {
       val availableOptions = options.toList.collect {
-        case OptionData.ValueBased(_, _, _, _, OptionDataValue.StringBased(value)) =>
+        case OptionData.ValueBased(_, _, _, _, OptionDataValue.StringBased(value), _) =>
           value
       }
       val availableOptionsStr = availableOptions.mkString(", ")
@@ -1884,7 +1884,7 @@ object FormTemplateValidator {
 
     def choiceFormCtxIds(choice: Choice): List[FormComponentId] = choice.options.collect {
       case OptionData
-            .ValueBased(_, _, _, Some(Dynamic.ATLBased(fcId)), OptionDataValue.ExprBased(FormCtx(formComponentId)))
+            .ValueBased(_, _, _, Some(Dynamic.ATLBased(fcId)), OptionDataValue.ExprBased(FormCtx(formComponentId)), _)
           if fcId === formComponentId =>
         formComponentId
     }
@@ -1905,8 +1905,8 @@ object FormTemplateValidator {
   private def areChoiceOptionsDataRetrievedBased(choice: Option[Choice]): Boolean =
     choice.fold(false)(c =>
       c.options.exists {
-        case OptionData.IndexBased(_, _, _, d)    => d.fold(false)(d => isDataRetrieveBased(d))
-        case OptionData.ValueBased(_, _, _, d, _) => d.fold(false)(d => isDataRetrieveBased(d))
+        case OptionData.IndexBased(_, _, _, d, _)    => d.fold(false)(d => isDataRetrieveBased(d))
+        case OptionData.ValueBased(_, _, _, d, _, _) => d.fold(false)(d => isDataRetrieveBased(d))
       }
     )
 

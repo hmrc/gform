@@ -195,8 +195,8 @@ trait Verifier {
 
   private def removeIncludeIfFromOptionData(optionData: OptionData) =
     optionData match {
-      case i @ OptionData.IndexBased(_, _, _, _)    => i.copy(includeIf = None)
-      case i @ OptionData.ValueBased(_, _, _, _, _) => i.copy(includeIf = None)
+      case i @ OptionData.IndexBased(_, _, _, _, _)    => i.copy(includeIf = None)
+      case i @ OptionData.ValueBased(_, _, _, _, _, _) => i.copy(includeIf = None)
     }
 
   private def mkComponentsOptional(page: Page): Page =
