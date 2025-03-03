@@ -560,7 +560,7 @@ object TextExtractor {
 
       if (extractAndTranslate.isTranslateable(spreadsheet)) {
         val welshTranslation: String = extractAndTranslate.translate(spreadsheet)
-        (missingRows, row.copy(en = row.en, cy = unescapeNewLine(welshTranslation)) :: rows)
+        (missingRows, row.copy(en = unescapeNewLine(row.en), cy = unescapeNewLine(welshTranslation)) :: rows)
       } else {
         if (row.cy.nonEmpty || isTopLevelExpression(row.path)) {
           (missingRows, rows)
