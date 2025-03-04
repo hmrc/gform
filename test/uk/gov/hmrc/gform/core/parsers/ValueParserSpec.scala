@@ -793,7 +793,8 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
       TextExpression(
         Period(
           DateCtx(DateFormCtxVar(FormCtx("d1"))),
-          DateCtx(DateFormCtxVar(FormCtx("d2")))
+          DateCtx(DateFormCtxVar(FormCtx("d2"))),
+          PeriodType.Period
         )
       )
     )
@@ -806,7 +807,11 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
       ("${period(d1, d2).totalMonths}", PeriodFn.TotalMonths),
       ("${period(d1, d2).years}", PeriodFn.Years),
       ("${period(d1, d2).months}", PeriodFn.Months),
-      ("${period(d1, d2).days}", PeriodFn.Days)
+      ("${period(d1, d2).days}", PeriodFn.Days),
+      ("${period(d1, d2).totalDays}", PeriodFn.TotalDays),
+      ("${period(d1, d2).totalWeeks}", PeriodFn.TotalWeeks),
+      ("${daysBetween(d1, d2).sum}", PeriodFn.TotalDays),
+      ("${weeksBetween(d1, d2).sum}", PeriodFn.TotalWeeks)
     )
     forAll(table) { (f: String, expectedFn: PeriodFn) =>
       val res = ValueParser.validate(f)
@@ -815,13 +820,40 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
           PeriodExt(
             Period(
               DateCtx(DateFormCtxVar(FormCtx("d1"))),
-              DateCtx(DateFormCtxVar(FormCtx("d2")))
+              DateCtx(DateFormCtxVar(FormCtx("d2"))),
+              PeriodType.Period
             ),
             expectedFn
           )
         )
       )
     }
+  }
+
+  it should "parse daysBetween(d1, d2) function" in {
+    val res = ValueParser.validate("${daysBetween(d1, d2)}")
+    res.toOption.value should be(
+      TextExpression(
+        Period(
+          DateCtx(DateFormCtxVar(FormCtx("d1"))),
+          DateCtx(DateFormCtxVar(FormCtx("d2"))),
+          PeriodType.Days
+        )
+      )
+    )
+  }
+
+  it should "parse weeksBetween(d1, d2) function" in {
+    val res = ValueParser.validate("${weeksBetween(d1, d2)}")
+    res.toOption.value should be(
+      TextExpression(
+        Period(
+          DateCtx(DateFormCtxVar(FormCtx("d1"))),
+          DateCtx(DateFormCtxVar(FormCtx("d2"))),
+          PeriodType.Weeks
+        )
+      )
+    )
   }
 
   it should "parse form.lang as LangCtx" in {
