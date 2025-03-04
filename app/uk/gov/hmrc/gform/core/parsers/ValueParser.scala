@@ -298,7 +298,7 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
     | (periodFun ~ "." ~ "sum|totalMonths|years|months|days|totalDays|totalWeeks".r ^^ {
       case _ ~ (dateExpr1: DateExpr) ~ _ ~ (dateExpr2: DateExpr) ~ _ ~ _ ~ prop =>
         PeriodExt(
-          Period(DateCtx(dateExpr1), DateCtx(dateExpr2)),
+          Period(DateCtx(dateExpr1), DateCtx(dateExpr2), PeriodType.Period),
           prop match {
             case "sum"         => PeriodFn.Sum
             case "totalMonths" => PeriodFn.TotalMonths
@@ -319,7 +319,7 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
         prop match {
           case ".sum" =>
             PeriodExt(
-              Period(DateCtx(dateExpr1), DateCtx(dateExpr2)),
+              Period(DateCtx(dateExpr1), DateCtx(dateExpr2), PeriodType.Period),
               PeriodFn.TotalDays
             )
           case _ =>
@@ -331,7 +331,7 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
         prop match {
           case ".sum" =>
             PeriodExt(
-              Period(DateCtx(dateExpr1), DateCtx(dateExpr2)),
+              Period(DateCtx(dateExpr1), DateCtx(dateExpr2), PeriodType.Period),
               PeriodFn.TotalWeeks
             )
           case _ =>
@@ -339,7 +339,7 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
         }
     })
     | periodFun ^^ { case _ ~ dateExpr1 ~ _ ~ dateExpr2 ~ _ =>
-      Period(DateCtx(dateExpr1), DateCtx(dateExpr2))
+      Period(DateCtx(dateExpr1), DateCtx(dateExpr2), PeriodType.Period)
     }
     | quotedLocalisedConstant
     | FormComponentId.unanchoredIdValidation <~ ".sum" ^^ (value => Sum(FormCtx(FormComponentId(value))))

@@ -793,7 +793,8 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
       TextExpression(
         Period(
           DateCtx(DateFormCtxVar(FormCtx("d1"))),
-          DateCtx(DateFormCtxVar(FormCtx("d2")))
+          DateCtx(DateFormCtxVar(FormCtx("d2"))),
+          PeriodType.Period
         )
       )
     )
@@ -819,7 +820,8 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
           PeriodExt(
             Period(
               DateCtx(DateFormCtxVar(FormCtx("d1"))),
-              DateCtx(DateFormCtxVar(FormCtx("d2")))
+              DateCtx(DateFormCtxVar(FormCtx("d2"))),
+              PeriodType.Period
             ),
             expectedFn
           )

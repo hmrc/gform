@@ -87,7 +87,7 @@ final case class Count(formComponentId: FormComponentId) extends Expr
 final case class Index(formComponentId: FormComponentId) extends Expr
 final case class FormCtx(formComponentId: FormComponentId) extends Expr
 final case class AddressLens(formComponentId: FormComponentId, detail: AddressDetail) extends Expr
-final case class Period(dateCtx1: DateCtx, dateCtx2: DateCtx, periodType: PeriodType = PeriodType.Period) extends Expr
+final case class Period(dateCtx1: DateCtx, dateCtx2: DateCtx, periodType: PeriodType) extends Expr
 final case class Size(formComponentId: FormComponentId, index: SizeRefType) extends Expr
 final case class Typed(expr: Expr, tpe: ExplicitExprType) extends Expr
 final case class NumberedList(formComponentId: FormComponentId) extends Expr
