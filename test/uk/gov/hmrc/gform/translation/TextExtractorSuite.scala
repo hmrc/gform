@@ -1184,4 +1184,48 @@ class TextExtractorSuite extends FunSuite {
     val (res, stats) = TextExtractor.translateFile(translatableRows, json.spaces2)
     assertEquals(parse(res).toOption.get, expected)
   }
+
+  test("translate json with markdown") {
+    val json =
+      json"""
+          {
+            "sections": [
+              {
+                "fields": [
+                  {
+                    "infoText": {
+                      "en": "You need to send forms within **24 hours**.\n\nIf you do not send us these details in time you will need to start a new application.\n\nWhen you are ready to submit all of your forms you will need to [return to each of your saved forms](/submissions/new-form/AEO-journey-selector)"
+                    }
+                  }
+                ]
+              }
+            ]
+          }"""
+
+    val expected =
+      json"""
+          {
+            "sections": [
+              {
+                "fields": [
+                  {
+                    "infoText": {
+                      "en": "You need to send forms within **24 hours**.\n\nIf you do not send us these details in time you will need to start a new application.\n\nWhen you are ready to submit all of your forms you will need to [return to each of your saved forms](/submissions/new-form/AEO-journey-selector)",
+                      "cy": "CY1\n\nCY2\n\nCY3 [CY4](/submissions/new-form/AEO-journey-selector)"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+          """
+
+    val csv =
+      """|en,cy
+         |You need to send forms within **24 hours**.\n\nIf you do not send us these details in time you will need to start a new application.\n\nWhen you are ready to submit all of your forms you will need to [return to each of your saved forms](/submissions/new-form/AEO-journey-selector),CY1\n\nCY2\n\nCY3 [CY4](/submissions/new-form/AEO-journey-selector)""".stripMargin
+
+    val translatableRows = TextExtractor.readCvsFromString(csv)
+    val (res, stats) = TextExtractor.translateFile(translatableRows, json.spaces2)
+    assertEquals(parse(res).toOption.get, expected)
+  }
 }
