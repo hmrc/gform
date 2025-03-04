@@ -41,7 +41,7 @@ sealed trait Expr {
     case Subtraction(l, r)   => l.ifElses ++ r.ifElses
     case Divide(l, r)        => l.ifElses ++ r.ifElses
     case HideZeroDecimals(l) => l.ifElses
-    case Period(l, r)        => l.ifElses ++ r.ifElses
+    case Period(l, r, _)     => l.ifElses ++ r.ifElses
     case Sum(l)              => l.ifElses
     case PeriodExt(p, _)     => p.ifElses
     case i @ IfElse(cond, l, r) =>
@@ -58,7 +58,7 @@ sealed trait Expr {
     case Subtraction(l, r)   => l.constants ++ r.constants
     case Divide(l, r)        => l.constants ++ r.constants
     case HideZeroDecimals(l) => l.constants
-    case Period(l, r)        => l.constants ++ r.constants
+    case Period(l, r, _)     => l.constants ++ r.constants
     case Sum(l)              => l.constants
     case PeriodExt(p, _)     => p.constants
     case IfElse(cond, l, r) =>
@@ -87,7 +87,7 @@ final case class Count(formComponentId: FormComponentId) extends Expr
 final case class Index(formComponentId: FormComponentId) extends Expr
 final case class FormCtx(formComponentId: FormComponentId) extends Expr
 final case class AddressLens(formComponentId: FormComponentId, detail: AddressDetail) extends Expr
-final case class Period(dateCtx1: Expr, dateCtx2: Expr) extends Expr
+final case class Period(dateCtx1: Expr, dateCtx2: Expr, periodType: PeriodType = PeriodType.Period) extends Expr
 final case class Size(formComponentId: FormComponentId, index: SizeRefType) extends Expr
 final case class Typed(expr: Expr, tpe: ExplicitExprType) extends Expr
 final case class NumberedList(formComponentId: FormComponentId) extends Expr
@@ -124,6 +124,14 @@ object ExplicitExprType {
   implicit val format: OFormat[ExplicitExprType] = derived.oformat()
 }
 
+sealed trait PeriodType
+object PeriodType {
+  case object Period extends PeriodType
+  case object Weeks extends PeriodType
+  case object Days extends PeriodType
+  implicit val format: OFormat[PeriodType] = derived.oformat()
+}
+
 sealed trait PeriodFn
 object PeriodFn {
   case object Sum extends PeriodFn
@@ -131,6 +139,8 @@ object PeriodFn {
   case object Years extends PeriodFn
   case object Months extends PeriodFn
   case object Days extends PeriodFn
+  case object TotalDays extends PeriodFn
+  case object TotalWeeks extends PeriodFn
   implicit val format: OFormat[PeriodFn] = derived.oformat()
 }
 final case class PeriodExt(period: Expr, func: PeriodFn) extends Expr

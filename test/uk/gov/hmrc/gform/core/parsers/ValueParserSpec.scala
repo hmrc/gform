@@ -806,7 +806,11 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
       ("${period(d1, d2).totalMonths}", PeriodFn.TotalMonths),
       ("${period(d1, d2).years}", PeriodFn.Years),
       ("${period(d1, d2).months}", PeriodFn.Months),
-      ("${period(d1, d2).days}", PeriodFn.Days)
+      ("${period(d1, d2).days}", PeriodFn.Days),
+      ("${period(d1, d2).totalDays}", PeriodFn.TotalDays),
+      ("${period(d1, d2).totalWeeks}", PeriodFn.TotalWeeks),
+      ("${daysBetween(d1, d2)}", PeriodFn.TotalDays),
+      ("${weeksBetween(d1, d2)}", PeriodFn.TotalWeeks)
     )
     forAll(table) { (f: String, expectedFn: PeriodFn) =>
       val res = ValueParser.validate(f)

@@ -295,7 +295,7 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
     | "year(" ~ dateExpr ~ ")" ^^ { case _ ~ dateExpr ~ _ =>
       DateFunction(DateProjection.Year(dateExpr))
     }
-    | (periodFun ~ "." ~ "sum|totalMonths|years|months|days".r ^^ {
+    | (periodFun ~ "." ~ "sum|totalMonths|years|months|days|totalDays|totalWeeks".r ^^ {
       case _ ~ (dateExpr1: DateExpr) ~ _ ~ (dateExpr2: DateExpr) ~ _ ~ _ ~ prop =>
         PeriodExt(
           Period(DateCtx(dateExpr1), DateCtx(dateExpr2)),
@@ -305,12 +305,38 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
             case "years"       => PeriodFn.Years
             case "months"      => PeriodFn.Months
             case "days"        => PeriodFn.Days
+            case "totalDays"   => PeriodFn.TotalDays
+            case "totalWeeks"  => PeriodFn.TotalWeeks
             case _ =>
               throw new IllegalArgumentException(
-                "period(*,*).prop value is invalid. Allowed prop values are sum,totalMonths,years,months,days"
+                "period(*,*).prop value is invalid. Allowed prop values are sum,totalMonths,years,months,days,totalDays,totalWeeks"
               )
           }
         )
+    })
+    | ("daysBetween(" ~ dateExpr ~ "," ~ dateExpr ~ ")" ~ ".sum|".r ^^ {
+      case _ ~ (dateExpr1: DateExpr) ~ _ ~ (dateExpr2: DateExpr) ~ _ ~ prop =>
+        prop match {
+          case ".sum" =>
+            PeriodExt(
+              Period(DateCtx(dateExpr1), DateCtx(dateExpr2)),
+              PeriodFn.TotalDays
+            )
+          case _ =>
+            Period(DateCtx(dateExpr1), DateCtx(dateExpr2), PeriodType.Days)
+        }
+    })
+    | ("weeksBetween(" ~ dateExpr ~ "," ~ dateExpr ~ ")" ~ ".sum|".r ^^ {
+      case _ ~ (dateExpr1: DateExpr) ~ _ ~ (dateExpr2: DateExpr) ~ _ ~ prop =>
+        prop match {
+          case ".sum" =>
+            PeriodExt(
+              Period(DateCtx(dateExpr1), DateCtx(dateExpr2)),
+              PeriodFn.TotalWeeks
+            )
+          case _ =>
+            Period(DateCtx(dateExpr1), DateCtx(dateExpr2), PeriodType.Weeks)
+        }
     })
     | periodFun ^^ { case _ ~ dateExpr1 ~ _ ~ dateExpr2 ~ _ =>
       Period(DateCtx(dateExpr1), DateCtx(dateExpr2))
