@@ -22,13 +22,14 @@ import uk.gov.hmrc.gform.core.FutureSyntax
 import uk.gov.hmrc.gform.dms.FileAttachment
 import uk.gov.hmrc.gform.objectstore.{ Envelope, MetadataXml, ObjectStoreAlgebra, ReconciliationId, RouteEnvelopeRequest }
 import uk.gov.hmrc.gform.objectstore.ObjectStoreService.FileIds._
-import uk.gov.hmrc.gform.sdes.dms.DmsWorkItemAlgebra
+import uk.gov.hmrc.gform.sdes.workitem.DestinationWorkItemAlgebra
 import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AllowedFileTypes, FormTemplateId }
 import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination
+import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination.Dms
 import uk.gov.hmrc.gform.submission.{ PdfAndXmlSummaries, Submission }
 import uk.gov.hmrc.gform.time.TimeProvider
 import uk.gov.hmrc.http.HeaderCarrier
@@ -43,7 +44,7 @@ class FileUploadService(
   fileUploadFrontendConnector: FileUploadFrontendConnector,
   timeModule: TimeProvider = new TimeProvider,
   objectStoreService: ObjectStoreAlgebra[Future],
-  dmsWorkItemAlgebra: DmsWorkItemAlgebra[Future]
+  destinationWorkItemAlgebra: DestinationWorkItemAlgebra[Future]
 )(implicit ex: ExecutionContext)
     extends FileUploadAlgebra[Future] with FileDownloadAlgebra[Future] {
   private val logger = LoggerFactory.getLogger(getClass)
@@ -172,7 +173,7 @@ class FileUploadService(
     for {
       objectSummary <-
         objectStoreService.zipFiles(envelopeId, SdesDestination.Dms.objectStorePaths(envelopeId))
-      _ <- dmsWorkItemAlgebra.pushWorkItem(envelopeId, formTemplateId, submissionRef, objectSummary)
+      _ <- destinationWorkItemAlgebra.pushWorkItem(envelopeId, formTemplateId, submissionRef, objectSummary, Dms)
     } yield ()
 
   private def getContentType(contentType: String) = contentType match {

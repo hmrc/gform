@@ -17,7 +17,6 @@
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
 import cats.Show
-import cats.instances.string._
 import cats.syntax.show._
 import play.api.libs.json.{ JsValue, Writes }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationIncludeIf.HandlebarValue
@@ -63,20 +62,36 @@ package object destinations {
           |}""".stripMargin
 
     case dataStore: Destination.DataStore =>
-      import hmrcDms._
+      import dataStore._
       s"""|{
           |  "id": "${id.id}",
+          |  "routing": "{$destination}",
           |  "includeIf":  "${getHandlebarValue(destination.includeIf)}",
           |  ${optionalField("failOnError", Option(destination.failOnError), true)}
-          |  "${Destination.typeDiscriminatorFieldName}": "${Destination.hmrcDms}",
-          |  "dmsFormId": "$dmsFormId",
-          |  "customerId": ${TextExpression.format.writes(TextExpression(customerId))},
-          |  "classificationType": "$classificationType",
-          |  ${optionalField("dataOutputFormat", Option("xml"))}
-          |  ${optionalField("closedStatus", Option(backscan), None)}
-          |  ${optionalField("formdataXml", Option(formdataXml), false)}
-          |  ${optionalField("instructionPdfFields", Option(instructionPdfFields), None)}
-          |  "businessArea": "$businessArea"
+          |  "formId": "${dataStore.formId}",
+          |  "version": "$version",
+          |  "taxpayerId": ${TextExpression.format.writes(TextExpression(taxpayerId))},
+          |  "regime": "$regime",
+          |  "includeSessionInfo": "$includeSessionInfo",
+          |  "handlebarPayload": "$handlebarPayload",
+          |  "formDataPayload": "$formDataPayload",
+          |  ${optionalField("convertSingleQuotes", Option(convertSingleQuotes))}
+          |  ${optionalField("payload", Option(payload))}
+          |  ${optionalField("validateHandlebarPayload", Option(validateHandlebarPayload))}
+          |  ${optionalField("jsonSchema", Option(jsonSchema))}
+          |}""".stripMargin
+
+    case infoArchive: Destination.InfoArchive =>
+      import infoArchive._
+      s"""|{
+          |  "id": "${infoArchive.id}",
+          |  "includeIf":  "${getHandlebarValue(destination.includeIf)}",
+          |  ${optionalField("failOnError", Option(destination.failOnError), true)}
+          |  "formId": "${infoArchive.formId}",
+          |  "paymentReference": ${TextExpression.format.writes(TextExpression(paymentReference))},
+          |  ${optionalField("nino", nino.map(n => TextExpression.format.writes(TextExpression(n))))},
+          |  ${optionalField("utr", utr.map(u => TextExpression.format.writes(TextExpression(u))))},
+          |  ${optionalField("postalCode", postalCode.map(p => TextExpression.format.writes(TextExpression(p))))}
           |}""".stripMargin
 
     case submissionConsolidator: Destination.SubmissionConsolidator =>

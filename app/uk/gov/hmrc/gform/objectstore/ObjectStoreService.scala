@@ -26,12 +26,14 @@ import cats.syntax.traverse._
 import org.slf4j.LoggerFactory
 import uk.gov.hmrc.gform.envelope.EnvelopeAlgebra
 import uk.gov.hmrc.gform.objectstore.ObjectStoreService.FileIds._
+import uk.gov.hmrc.gform.sdes.SdesConnector
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 import uk.gov.hmrc.gform.sharedmodel.envelope.{ EnvelopeData, EnvelopeFile }
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
 import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination
+import uk.gov.hmrc.gform.submission.destinations.PgpEncryption
 import uk.gov.hmrc.gform.submission.{ PdfAndXmlSummaries, Submission }
 import uk.gov.hmrc.gform.time.TimeProvider
 import uk.gov.hmrc.http.HeaderCarrier
@@ -44,7 +46,8 @@ import scala.concurrent.{ ExecutionContext, Future }
 
 class ObjectStoreService(
   objectStoreConnector: ObjectStoreConnector,
-  envelopeService: EnvelopeAlgebra[Future]
+  envelopeService: EnvelopeAlgebra[Future],
+  sdesConnector: SdesConnector
 )(implicit
   ec: ExecutionContext
 ) extends ObjectStoreAlgebra[Future] {
@@ -327,6 +330,35 @@ class ObjectStoreService(
     case _      => ContentType.`application/xml`
   }
 
+  override def zipAndEncrypt(envelopeId: EnvelopeId, objectStorePaths: ObjectStorePaths)(implicit
+    hc: HeaderCarrier,
+    m: Materializer
+  ): Future[ObjectSummaryWithMd5] = for {
+    _           <- zipFiles(envelopeId, objectStorePaths)
+    maybeSource <- getZipFile(envelopeId, objectStorePaths)
+    publicKey   <- sdesConnector.getPublicKey()
+    objSummary <- maybeSource match {
+                    case Some(obj) =>
+                      val byteStringFuture: Future[ByteString] =
+                        obj.content.runFold(ByteString.empty)(_ ++ _)
+                      byteStringFuture.flatMap { concatenatedByteString =>
+                        val encrypted =
+                          PgpEncryption.createEncryptedData(publicKey.publicKey, concatenatedByteString.toArray)
+                        uploadFileWithDir(
+                          objectStorePaths.ephemeral,
+                          s"${objectStorePaths.zipFilePrefix}${envelopeId.value}.zip",
+                          ByteString(encrypted),
+                          ContentType.`application/zip`
+                        )
+                      }
+                    case None =>
+                      Future.failed(
+                        new Exception(
+                          s"File ${objectStorePaths.zipFilePrefix}${envelopeId.value}.zip not found in the object store."
+                        )
+                      )
+                  }
+  } yield objSummary
 }
 
 object ObjectStoreService {

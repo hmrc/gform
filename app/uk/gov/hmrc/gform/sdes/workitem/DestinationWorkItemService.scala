@@ -14,32 +14,32 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.sdes.datastore
+package uk.gov.hmrc.gform.sdes.workitem
 
 import cats.syntax.functor._
 import org.bson.types.ObjectId
 import org.mongodb.scala.model.Filters
 import org.mongodb.scala.model.Filters.equal
-import uk.gov.hmrc.gform.sdes.SdesRouting
-import uk.gov.hmrc.gform.envelope.EnvelopeAlgebra
 import uk.gov.hmrc.gform.scheduler.datastore.DataStoreWorkItemRepo
+import uk.gov.hmrc.gform.scheduler.dms.DmsWorkItemRepo
+import uk.gov.hmrc.gform.scheduler.infoarchive.InfoArchiveWorkItemRepo
+import uk.gov.hmrc.gform.sdes.{ SdesConfig, SdesRouting }
 import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
-import uk.gov.hmrc.gform.sharedmodel.sdes.{ CorrelationId, FileAudit, FileChecksum, FileMetaData, SdesDestination, SdesNotifyRequest, SdesWorkItem, SdesWorkItemData, SdesWorkItemPageData }
+import uk.gov.hmrc.gform.sharedmodel.sdes._
 import uk.gov.hmrc.mongo.workitem.{ ProcessingStatus, WorkItem }
 import uk.gov.hmrc.objectstore.client.ObjectSummaryWithMd5
 
 import java.util.{ Base64, UUID }
 import scala.concurrent.{ ExecutionContext, Future }
 
-trait DataStoreWorkItemAlgebra[F[_]] {
+trait DestinationWorkItemAlgebra[F[_]] {
   def pushWorkItem(
     envelopeId: EnvelopeId,
     formTemplateId: FormTemplateId,
     submissionRef: SubmissionRef,
     objWithSummary: ObjectSummaryWithMd5,
-    dataStoreRouting: SdesRouting,
     destination: SdesDestination
   ): F[Unit]
 
@@ -52,35 +52,38 @@ trait DataStoreWorkItemAlgebra[F[_]] {
   def search(
     page: Int,
     pageSize: Int,
+    sdesDestination: SdesDestination,
     formTemplateId: Option[FormTemplateId],
     status: Option[ProcessingStatus]
   ): F[SdesWorkItemPageData]
 
-  def enqueue(id: String): F[Unit]
+  def enqueue(id: String, sdesDestination: SdesDestination): F[Unit]
 
-  def find(id: String): F[Option[WorkItem[SdesWorkItem]]]
+  def find(id: String, sdesDestination: SdesDestination): F[Option[WorkItem[SdesWorkItem]]]
 
-  def findByEnvelopeId(envelopeId: EnvelopeId): F[List[WorkItem[SdesWorkItem]]]
+  def findByEnvelopeId(envelopeId: EnvelopeId, sdesDestination: SdesDestination): F[List[WorkItem[SdesWorkItem]]]
 
-  def delete(id: String): F[Unit]
+  def delete(id: String, sdesDestination: SdesDestination): F[Unit]
 }
 
-class DataStoreWorkItemService(
+class DestinationWorkItemService(
+  dmsWorkItemRepo: DmsWorkItemRepo,
   dataStoreWorkItemRepo: DataStoreWorkItemRepo,
-  envelopeAlgebra: EnvelopeAlgebra[Future],
-  fileLocationUrl: String
+  infoArchiveWorkItemRepo: InfoArchiveWorkItemRepo,
+  fileLocationUrl: String,
+  sdesConfig: SdesConfig
 )(implicit ec: ExecutionContext)
-    extends DataStoreWorkItemAlgebra[Future] {
+    extends DestinationWorkItemAlgebra[Future] {
   override def pushWorkItem(
     envelopeId: EnvelopeId,
     formTemplateId: FormTemplateId,
     submissionRef: SubmissionRef,
     objWithSummary: ObjectSummaryWithMd5,
-    dataStoreRouting: SdesRouting,
-    destination: SdesDestination
+    sdesDestination: SdesDestination
   ): Future[Unit] = {
     val correlationId = UUID.randomUUID().toString
-    val sdesNotifyRequest = createNotifyRequest(objWithSummary, correlationId, dataStoreRouting)
+    val sdesRouting = sdesDestination.sdesRouting(sdesConfig)
+    val sdesNotifyRequest = createNotifyRequest(objWithSummary, correlationId, sdesRouting)
     val sdesWorkItem =
       SdesWorkItem(
         CorrelationId(correlationId),
@@ -88,9 +91,14 @@ class DataStoreWorkItemService(
         formTemplateId,
         submissionRef,
         sdesNotifyRequest,
-        destination
+        sdesDestination
       )
-    dataStoreWorkItemRepo.pushNew(sdesWorkItem).void
+    sdesDestination match {
+      case SdesDestination.Dms => dmsWorkItemRepo.pushNew(sdesWorkItem).void
+      case SdesDestination.HmrcIlluminate | SdesDestination.DataStore | SdesDestination.DataStoreLegacy =>
+        dataStoreWorkItemRepo.pushNew(sdesWorkItem).void
+      case SdesDestination.InfoArchive => infoArchiveWorkItemRepo.pushNew(sdesWorkItem).void
+    }
   }
 
   override def createNotifyRequest(
@@ -114,6 +122,7 @@ class DataStoreWorkItemService(
   override def search(
     page: Int,
     pageSize: Int,
+    sdesDestination: SdesDestination,
     formTemplateId: Option[FormTemplateId],
     status: Option[ProcessingStatus]
   ): Future[SdesWorkItemPageData] = {
@@ -122,29 +131,50 @@ class DataStoreWorkItemService(
     val sort = equal("receivedAt", -1)
 
     val skip = page * pageSize
+    val collection = findCollection(sdesDestination)
     for {
       dmsWorkItem <-
-        dataStoreWorkItemRepo.collection.find(query).sort(sort).skip(skip).limit(pageSize).toFuture().map(_.toList)
+        collection.find(query).sort(sort).skip(skip).limit(pageSize).toFuture().map(_.toList)
       dmsWorkItemData = dmsWorkItem.map(workItem => SdesWorkItemData.fromWorkItem(workItem, 1))
-      count <- dataStoreWorkItemRepo.collection.countDocuments(query).toFuture()
+      count <- collection.countDocuments(query).toFuture()
     } yield SdesWorkItemPageData(dmsWorkItemData, count)
   }
 
-  override def delete(id: String): Future[Unit] =
-    dataStoreWorkItemRepo.collection
+  private def findCollection(sdesDestination: SdesDestination) = sdesDestination match {
+    case SdesDestination.Dms => dmsWorkItemRepo.collection
+    case SdesDestination.HmrcIlluminate | SdesDestination.DataStore | SdesDestination.DataStoreLegacy =>
+      dataStoreWorkItemRepo.collection
+    case SdesDestination.InfoArchive => infoArchiveWorkItemRepo.collection
+  }
+
+  override def delete(id: String, sdesDestination: SdesDestination): Future[Unit] =
+    findCollection(sdesDestination)
       .deleteOne(equal("_id", new ObjectId(id)))
       .toFuture()
       .map(_.getDeletedCount > 0)
       .void
 
-  override def enqueue(id: String): Future[Unit] =
-    dataStoreWorkItemRepo.markAs(new ObjectId(id), ProcessingStatus.ToDo).void
+  override def enqueue(id: String, sdesDestination: SdesDestination): Future[Unit] =
+    sdesDestination match {
+      case SdesDestination.Dms => dmsWorkItemRepo.markAs(new ObjectId(id), ProcessingStatus.ToDo).void
+      case SdesDestination.HmrcIlluminate | SdesDestination.DataStore | SdesDestination.DataStoreLegacy =>
+        dataStoreWorkItemRepo.markAs(new ObjectId(id), ProcessingStatus.ToDo).void
+      case SdesDestination.InfoArchive => infoArchiveWorkItemRepo.markAs(new ObjectId(id), ProcessingStatus.ToDo).void
+    }
 
-  override def find(id: String): Future[Option[WorkItem[SdesWorkItem]]] =
-    dataStoreWorkItemRepo.findById(new ObjectId(id))
+  override def find(id: String, sdesDestination: SdesDestination): Future[Option[WorkItem[SdesWorkItem]]] =
+    sdesDestination match {
+      case SdesDestination.Dms => dmsWorkItemRepo.findById(new ObjectId(id))
+      case SdesDestination.HmrcIlluminate | SdesDestination.DataStore | SdesDestination.DataStoreLegacy =>
+        dataStoreWorkItemRepo.findById(new ObjectId(id))
+      case SdesDestination.InfoArchive => infoArchiveWorkItemRepo.findById(new ObjectId(id))
+    }
 
-  override def findByEnvelopeId(envelopeId: EnvelopeId): Future[List[WorkItem[SdesWorkItem]]] = {
+  override def findByEnvelopeId(
+    envelopeId: EnvelopeId,
+    sdesDestination: SdesDestination
+  ): Future[List[WorkItem[SdesWorkItem]]] = {
     val query = Filters.equal("item.envelopeId", envelopeId.value)
-    dataStoreWorkItemRepo.collection.find(query).toFuture().map(_.toList)
+    findCollection(sdesDestination).find(query).toFuture().map(_.toList)
   }
 }

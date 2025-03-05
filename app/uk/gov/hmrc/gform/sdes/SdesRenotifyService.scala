@@ -68,6 +68,8 @@ class SdesRenotifyService(
                                         } yield objSummary
                                       case SdesDestination.Dms =>
                                         objectStoreAlgebra.zipFiles(submission.envelopeId, paths)
+                                      case SdesDestination.InfoArchive =>
+                                        objectStoreAlgebra.zipAndEncrypt(submission.envelopeId, paths)
                                     }
                       res <- sdesAlgebra.renotifySDES(submission, objSummary)
                     } yield res

@@ -110,4 +110,9 @@ trait ObjectStoreAlgebra[F[_]] {
     hmrcDms: HmrcDms,
     formTemplateId: FormTemplateId
   )(implicit hc: HeaderCarrier): F[ObjectSummaryWithMd5]
+
+  def zipAndEncrypt(envelopeId: EnvelopeId, objectStorePaths: ObjectStorePaths)(implicit
+    hc: HeaderCarrier,
+    m: Materializer
+  ): F[ObjectSummaryWithMd5]
 }

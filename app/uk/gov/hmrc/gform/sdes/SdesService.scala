@@ -33,8 +33,7 @@ import uk.gov.hmrc.gform.envelope.EnvelopeAlgebra
 import uk.gov.hmrc.gform.history.DateFilter
 import uk.gov.hmrc.gform.objectstore.{ ObjectStoreAlgebra, ObjectStoreService }
 import uk.gov.hmrc.gform.repo.Repo
-import uk.gov.hmrc.gform.sdes.datastore.DataStoreWorkItemAlgebra
-import uk.gov.hmrc.gform.sdes.dms.DmsWorkItemAlgebra
+import uk.gov.hmrc.gform.sdes.workitem.DestinationWorkItemAlgebra
 import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
@@ -95,8 +94,7 @@ trait SdesAlgebra[F[_]] {
 class SdesService(
   sdesConnector: SdesConnector,
   repoSdesSubmission: Repo[SdesSubmission],
-  dmsWorkItemAlgebra: DmsWorkItemAlgebra[Future],
-  dataStoreWorkItemAlgebra: DataStoreWorkItemAlgebra[Future],
+  destinationWorkItemAlgebra: DestinationWorkItemAlgebra[Future],
   envelopeAlgebra: EnvelopeAlgebra[Future],
   sdesConfig: SdesConfig,
   sdesHistoryAlgebra: SdesHistoryAlgebra[Future],
@@ -257,12 +255,12 @@ class SdesService(
   ): Future[HttpResponse] = {
     val sdesDestination = sdesSubmission.sdesDestination
     val sdesRouting = sdesDestination.sdesRouting(sdesConfig)
-    val notifyRequest = sdesDestination match {
-      case SdesDestination.DataStore | SdesDestination.DataStoreLegacy | SdesDestination.HmrcIlluminate =>
-        dataStoreWorkItemAlgebra.createNotifyRequest(objWithSummary, sdesSubmission._id.value, sdesRouting)
-      case SdesDestination.Dms =>
-        dmsWorkItemAlgebra.createNotifyRequest(objWithSummary, sdesSubmission._id)
-    }
+    val notifyRequest =
+      destinationWorkItemAlgebra.createNotifyRequest(
+        objWithSummary,
+        sdesSubmission._id.value,
+        sdesRouting
+      )
     val sdesHistory = SdesHistory.create(
       sdesSubmission.envelopeId,
       sdesSubmission._id,
@@ -384,7 +382,7 @@ class SdesService(
     sdesDestination match {
       case SdesDestination.DataStore | SdesDestination.DataStoreLegacy | SdesDestination.HmrcIlluminate =>
         objectStoreAlgebra.deleteFile(paths.ephemeral, fileName)
-      case SdesDestination.Dms => objectStoreAlgebra.deleteZipFile(envelopeId, paths)
+      case SdesDestination.Dms | SdesDestination.InfoArchive => objectStoreAlgebra.deleteZipFile(envelopeId, paths)
     }
   }
 
@@ -428,6 +426,8 @@ class SdesService(
                                         } yield objSummary
                                       case SdesDestination.Dms =>
                                         objectStoreAlgebra.zipFiles(submission.envelopeId, paths)
+                                      case SdesDestination.InfoArchive =>
+                                        objectStoreAlgebra.zipAndEncrypt(submission.envelopeId, paths)
                                     }
                       res <- createWorkItem(submission, objSummary)
                     } yield res
@@ -440,26 +440,14 @@ class SdesService(
 
   private def createWorkItem(sdesSubmission: SdesSubmission, objWithSummary: ObjectSummaryWithMd5): Future[Unit] = {
     val sdesDestination = sdesSubmission.sdesDestination
-    val sdesRouting = sdesDestination.sdesRouting(sdesConfig)
     for {
-      _ <- sdesDestination match {
-             case SdesDestination.DataStore | SdesDestination.DataStoreLegacy | SdesDestination.HmrcIlluminate =>
-               dataStoreWorkItemAlgebra.pushWorkItem(
-                 sdesSubmission.envelopeId,
-                 sdesSubmission.formTemplateId,
-                 sdesSubmission.submissionRef,
-                 objWithSummary,
-                 sdesRouting,
-                 sdesDestination
-               )
-             case SdesDestination.Dms =>
-               dmsWorkItemAlgebra.pushWorkItem(
-                 sdesSubmission.envelopeId,
-                 sdesSubmission.formTemplateId,
-                 sdesSubmission.submissionRef,
-                 objWithSummary
-               )
-           }
+      _ <- destinationWorkItemAlgebra.pushWorkItem(
+             sdesSubmission.envelopeId,
+             sdesSubmission.formTemplateId,
+             sdesSubmission.submissionRef,
+             objWithSummary,
+             sdesDestination
+           )
       _ <-
         saveSdesSubmission(
           sdesSubmission.copy(

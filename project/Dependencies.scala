@@ -45,7 +45,10 @@ object Dependencies {
     "io.github.samueleresca"       %% "pekko-quartz-scheduler"            % "1.2.0-pekko-1.0.x",
     "org.apache.xmlgraphics"        % "fop"                               % "2.9",
     "org.jsoup"                     % "jsoup"                             % "1.18.1",
-    "org.apache.poi"                % "poi-ooxml"                         % "5.2.4"
+    "org.apache.poi"                % "poi-ooxml"                         % "5.2.4",
+    "org.bouncycastle"              % "bcprov-jdk18on"                    % "1.80",
+    "org.bouncycastle"              % "bcpg-jdk18on"                      % "1.80",
+    "org.bouncycastle"              % "bcpkix-jdk18on"                    % "1.80"
   )
 
   def test(scope: String = "test") = Seq(
