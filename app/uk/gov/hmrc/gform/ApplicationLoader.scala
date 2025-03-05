@@ -122,7 +122,8 @@ class ApplicationModule(context: Context)
   private val timeModule = new TimeModule
   private val mongoModule = new MongoModule(configModule)
   private val envelopeModule = new EnvelopeModule(mongoModule, configModule)
-  private val objectStoreModule = new ObjectStoreModule(configModule, wsClient, akkaModule, envelopeModule)
+  private val objectStoreModule =
+    new ObjectStoreModule(configModule, wsClient, akkaModule, envelopeModule, wSHttpModule)
 
   private val shutterModule = new ShutterModule(mongoModule, configModule)
   private val notificationBannerModule = new NotificationBannerModule(mongoModule, configModule)
@@ -165,7 +166,6 @@ class ApplicationModule(context: Context)
   private val sdesModule =
     new SdesModule(
       configModule,
-      wSHttpModule,
       mongoModule,
       objectStoreModule,
       akkaModule,
@@ -293,7 +293,8 @@ class ApplicationModule(context: Context)
       notifierModule,
       envelopeModule,
       objectStoreModule,
-      sdesModule
+      sdesModule,
+      materializer
     )
 
   private val dmsModule =

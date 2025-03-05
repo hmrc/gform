@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.gform.submission.destinations
 
+import java.time.Instant
 import cats.instances.future._
 import org.slf4j.LoggerFactory
 import uk.gov.hmrc.gform.core.{ FOpt, fromFutureA, success }
@@ -25,21 +26,21 @@ import uk.gov.hmrc.gform.formtemplate.FormTemplateAlgebra
 import uk.gov.hmrc.gform.objectstore.{ Envelope, File, FileStatus, ObjectStoreAlgebra }
 import uk.gov.hmrc.gform.pdfgenerator.{ FopService, PdfGeneratorService }
 import uk.gov.hmrc.gform.sdes.WelshDefaults
-import uk.gov.hmrc.gform.sdes.dms.DmsWorkItemAlgebra
+import uk.gov.hmrc.gform.sdes.workitem.DestinationWorkItemAlgebra
 import uk.gov.hmrc.gform.sharedmodel.LangADT
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId, Submitted }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.HandlebarsTemplateProcessorModel
+import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination.Dms
 import uk.gov.hmrc.gform.submission.PdfAndXmlSummariesFactory
 import uk.gov.hmrc.gform.submission.handlebars.HandlebarsModelTree
 import uk.gov.hmrc.http.HeaderCarrier
 
-import java.time.Instant
 import scala.concurrent.ExecutionContext
 
 class DmsSubmitter(
   objectStoreAlgebra: ObjectStoreAlgebra[FOpt],
-  dmsWorkItemAlgebra: DmsWorkItemAlgebra[FOpt],
+  destinationWorkItemAlgebra: DestinationWorkItemAlgebra[FOpt],
   formService: FormAlgebra[FOpt],
   formTemplateService: FormTemplateAlgebra[FOpt],
   pdfGeneratorService: PdfGeneratorService,
@@ -79,8 +80,8 @@ class DmsSubmitter(
       envelope      <- envelopeAlgebra.get(submission.envelopeId)
       objectSummary <- objectStoreAlgebra.submitEnvelope(submission, summaries, updatedDms, formTemplate._id)
       _ <-
-        dmsWorkItemAlgebra
-          .pushWorkItem(submission.envelopeId, form.formTemplateId, submission.submissionRef, objectSummary)
+        destinationWorkItemAlgebra
+          .pushWorkItem(submission.envelopeId, form.formTemplateId, submission.submissionRef, objectSummary, Dms)
       envelopeDetails <-
         success(
           Envelope(envelope.files.map(f => File(FileId(f.fileId), FileStatus.Available, f.fileName, f.length)))

@@ -42,6 +42,8 @@ trait PdfAndXmlSummariesFactory {
     hmrcDms: HmrcDms,
     l: LangADT
   )(implicit now: Instant): Future[PdfAndXmlSummaries]
+
+  def pdfSummary(accessiblePdf: Boolean): Future[PdfAndXmlSummaries]
 }
 
 object PdfAndXmlSummariesFactory {
@@ -213,5 +215,20 @@ object PdfAndXmlSummariesFactory {
             Some(XmlGeneratorService.xmlDec + "\n" + prettyPrinter.formatNodes(filledHandlebarWithMetadata))
           }
       }
+
+    override def pdfSummary(accessiblePdf: Boolean): Future[PdfAndXmlSummaries] =
+      for {
+        pdf <- if (accessiblePdf) {
+                 fopService.render(pdfData.content)
+               } else {
+                 pdfGeneratorService.generatePDFBytesLocal(pdfData.content.replace("<br>", "<br/>"))
+               }
+      } yield PdfAndXmlSummaries(
+        pdfSummary = createPdfSummary(pdf),
+        instructionPdfSummary = None,
+        roboticsFile = None,
+        roboticsFileExtension = None,
+        formDataXml = None
+      )
   }
 }
