@@ -25,7 +25,7 @@ import uk.gov.hmrc.gform.Helpers.{ toLocalisedString, toSmartString }
 import uk.gov.hmrc.gform.core.parsers.ValueParser
 import uk.gov.hmrc.gform.core.{ Invalid, Opt, Valid, ValidationResult }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.PageLink
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AnyDate, BulletedList, Checkbox, Choice, ChoicesAvailable, ChoicesSelected, Constant, DataRetrieveCtx, Date, DateCtx, DateFormCtxVar, Dynamic, Equals, ExprWithPath, FormComponent, FormComponentId, FormComponentValidator, FormCtx, HideZeroDecimals, Horizontal, IfElse, IncludeIf, IndexOfDataRetrieveCtx, InformationMessage, Instruction, IsTrue, LeafExpr, LinkCtx, LookupColumn, Not, NumberedList, Offset, OptionData, OptionDataValue, Page, PageId, PostcodeLookup, Radio, Section, ShortText, StandardInfo, SummariseGroupAsGrid, TemplatePath, Text, ValidIf, Value, Vertical }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AnyDate, BulletedList, Checkbox, Choice, ChoicesAvailable, ChoicesSelected, Constant, DataRetrieveCtx, Date, DateCtx, DateFormCtxVar, Dynamic, Equals, ExprWithPath, FormComponent, FormComponentId, FormComponentValidator, FormCtx, HideZeroDecimals, Horizontal, IfElse, IncludeIf, IndexOf, IndexOfDataRetrieveCtx, InformationMessage, Instruction, IsTrue, LeafExpr, LinkCtx, LookupColumn, Not, NumberedList, Offset, OptionData, OptionDataValue, Page, PageId, PostcodeLookup, Radio, Section, ShortText, StandardInfo, SummariseGroupAsGrid, TemplatePath, Text, ValidIf, Value, Vertical }
 import uk.gov.hmrc.gform.sharedmodel._
 
 class FormTemplateValidatorSpec
@@ -1344,6 +1344,96 @@ class FormTemplateValidatorSpec
         val sections: List[Section] = List(page1, page2)
         val result: ValidationResult = FormTemplateValidator.validateDataRetrieveForwardReferences(sections)
         result shouldBe expectedResult
+      }
+    }
+  }
+
+  "validateNoPIITitleConstraints" should {
+    "validate that no PII fields are used in titles" in {
+      val pageWithPiiField = mkSectionNonRepeatingPage(
+        name = "page1",
+        formComponents = List(mkFormComponent("name", Text(ShortText.default, Value), editable = true)),
+        pageId = Some(PageId("page1"))
+      ).page
+      val table = Table(
+        ("sections", "expected"),
+        (
+          List(
+            mkAddToList(
+              name = "atlPage",
+              pages = NonEmptyList.of(
+                pageWithPiiField,
+                Page(
+                  SmartString(
+                    LocalisedString(Map(LangADT.En -> "{0}")),
+                    List(FormCtx(FormComponentId("name")))
+                  ),
+                  None,
+                  None,
+                  None,
+                  None,
+                  None,
+                  None,
+                  List.empty,
+                  None,
+                  None,
+                  None,
+                  None,
+                  None,
+                  None,
+                  None,
+                  None,
+                  None
+                )
+              )
+            )
+          ),
+          Invalid(
+            "Field id [name] can only be used in title if it does not contain PII or noPIITitle is defined"
+          )
+        ),
+        (
+          List(
+            mkAddToList(
+              name = "atlPage",
+              pages = NonEmptyList.of(
+                pageWithPiiField
+              )
+            ),
+            Section.NonRepeatingPage(
+              Page(
+                SmartString(
+                  LocalisedString(Map(LangADT.En -> "{0}")),
+                  List(IndexOf(FormComponentId("name"), 1))
+                ),
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                List.empty,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None
+              )
+            )
+          ),
+          Invalid(
+            "Field id [name] can only be used in title if it does not contain PII or noPIITitle is defined"
+          )
+        )
+      )
+      forAll(table) { (sections, expected) =>
+        val formTemplate = mkFormTemplate(sections)
+        val allExpressions: List[ExprWithPath] = LeafExpr(TemplatePath.root, formTemplate)
+        FormTemplateValidator.validateNoPIITitleConstraints(formTemplate, allExpressions) shouldBe expected
       }
     }
   }
