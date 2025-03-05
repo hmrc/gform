@@ -354,8 +354,11 @@ object FormTemplateValidator {
     allExpressions: List[ExprWithPath]
   ): ValidationResult = {
     val exprRefs: List[(Expr, FormComponentId)] = allExpressions.flatMap(x =>
-      x.referenceInfos.collect { case FormCtxExpr(_, FormCtx(fcId)) =>
-        (x.expr, fcId)
+      x.referenceInfos.collect {
+        case FormCtxExpr(_, FormCtx(fcId)) =>
+          (x.expr, fcId)
+        case IndexOfExpr(_, IndexOf(fcId, _)) =>
+          (x.expr, fcId)
       }
     )
     val idsWithNoPII = noPIIFcIds(formTemplate)
