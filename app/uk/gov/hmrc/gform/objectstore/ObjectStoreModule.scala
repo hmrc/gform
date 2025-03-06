@@ -164,7 +164,7 @@ class ObjectStoreModule(
       summaries: PdfAndXmlSummaries,
       hmrcDms: Destination.HmrcDms,
       formTemplateId: FormTemplateId
-    )(implicit hc: HeaderCarrier): FOpt[ObjectSummaryWithMd5] =
+    )(implicit hc: HeaderCarrier): FOpt[Unit] =
       fromFutureA(objectStoreService.submitEnvelope(submission, summaries, hmrcDms, formTemplateId))
 
     override def zipAndEncrypt(envelopeId: EnvelopeId, objectStorePaths: ObjectStorePaths)(implicit

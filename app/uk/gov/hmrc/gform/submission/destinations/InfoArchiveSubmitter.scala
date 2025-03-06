@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.gform.submission.destinations
 
-import org.apache.pekko.stream.Materializer
 import org.apache.pekko.util.ByteString
 import uk.gov.hmrc.gform.core.{ FOpt, fromFutureA }
 import uk.gov.hmrc.gform.formtemplate.FormTemplateAlgebra
@@ -43,7 +42,7 @@ class InfoArchiveSubmitter(
   fopService: FopService,
   formTemplateService: FormTemplateAlgebra[FOpt],
   destinationWorkItemAlgebra: DestinationWorkItemAlgebra[FOpt]
-)(implicit ec: ExecutionContext, m: Materializer)
+)(implicit ec: ExecutionContext)
     extends InfoArchiveSubmitterAlgebra[FOpt] {
 
   override def apply(
@@ -104,10 +103,7 @@ class InfoArchiveSubmitter(
              ByteString(sip),
              ContentType.`application/xml`
            )
-      objSummary <- objectStoreAlgebra.zipAndEncrypt(envelopeId, paths)
-      _ <-
-        destinationWorkItemAlgebra
-          .pushWorkItem(envelopeId, formTemplateId, submission.submissionRef, objSummary, InfoArchive)
+      _ <- destinationWorkItemAlgebra.pushWorkItem(envelopeId, formTemplateId, submission.submissionRef, InfoArchive)
     } yield ()
   }
 

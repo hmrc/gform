@@ -23,15 +23,13 @@ import org.mongodb.scala.model.Filters.equal
 import uk.gov.hmrc.gform.scheduler.datastore.DataStoreWorkItemRepo
 import uk.gov.hmrc.gform.scheduler.dms.DmsWorkItemRepo
 import uk.gov.hmrc.gform.scheduler.infoarchive.InfoArchiveWorkItemRepo
-import uk.gov.hmrc.gform.sdes.{ SdesConfig, SdesRouting }
 import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.gform.sharedmodel.sdes._
 import uk.gov.hmrc.mongo.workitem.{ ProcessingStatus, WorkItem }
-import uk.gov.hmrc.objectstore.client.ObjectSummaryWithMd5
 
-import java.util.{ Base64, UUID }
+import java.util.UUID
 import scala.concurrent.{ ExecutionContext, Future }
 
 trait DestinationWorkItemAlgebra[F[_]] {
@@ -39,15 +37,8 @@ trait DestinationWorkItemAlgebra[F[_]] {
     envelopeId: EnvelopeId,
     formTemplateId: FormTemplateId,
     submissionRef: SubmissionRef,
-    objWithSummary: ObjectSummaryWithMd5,
     destination: SdesDestination
   ): F[Unit]
-
-  def createNotifyRequest(
-    objSummary: ObjectSummaryWithMd5,
-    correlationId: String,
-    dataStoreRouting: SdesRouting
-  ): SdesNotifyRequest
 
   def search(
     page: Int,
@@ -69,28 +60,22 @@ trait DestinationWorkItemAlgebra[F[_]] {
 class DestinationWorkItemService(
   dmsWorkItemRepo: DmsWorkItemRepo,
   dataStoreWorkItemRepo: DataStoreWorkItemRepo,
-  infoArchiveWorkItemRepo: InfoArchiveWorkItemRepo,
-  fileLocationUrl: String,
-  sdesConfig: SdesConfig
+  infoArchiveWorkItemRepo: InfoArchiveWorkItemRepo
 )(implicit ec: ExecutionContext)
     extends DestinationWorkItemAlgebra[Future] {
   override def pushWorkItem(
     envelopeId: EnvelopeId,
     formTemplateId: FormTemplateId,
     submissionRef: SubmissionRef,
-    objWithSummary: ObjectSummaryWithMd5,
     sdesDestination: SdesDestination
   ): Future[Unit] = {
     val correlationId = UUID.randomUUID().toString
-    val sdesRouting = sdesDestination.sdesRouting(sdesConfig)
-    val sdesNotifyRequest = createNotifyRequest(objWithSummary, correlationId, sdesRouting)
     val sdesWorkItem =
       SdesWorkItem(
         CorrelationId(correlationId),
         envelopeId,
         formTemplateId,
         submissionRef,
-        sdesNotifyRequest,
         sdesDestination
       )
     sdesDestination match {
@@ -100,24 +85,6 @@ class DestinationWorkItemService(
       case SdesDestination.InfoArchive => infoArchiveWorkItemRepo.pushNew(sdesWorkItem).void
     }
   }
-
-  override def createNotifyRequest(
-    objSummary: ObjectSummaryWithMd5,
-    correlationId: String,
-    dataStoreRouting: SdesRouting
-  ): SdesNotifyRequest =
-    SdesNotifyRequest(
-      dataStoreRouting.informationType,
-      FileMetaData(
-        dataStoreRouting.recipientOrSender,
-        objSummary.location.fileName,
-        s"$fileLocationUrl${objSummary.location.asUri}",
-        FileChecksum(value = Base64.getDecoder.decode(objSummary.contentMd5.value).map("%02x".format(_)).mkString),
-        objSummary.contentLength,
-        List()
-      ),
-      FileAudit(correlationId)
-    )
 
   override def search(
     page: Int,

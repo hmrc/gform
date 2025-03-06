@@ -32,7 +32,6 @@ import uk.gov.hmrc.gform.sharedmodel.envelope.{ EnvelopeData, EnvelopeFile }
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
-import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination
 import uk.gov.hmrc.gform.submission.destinations.PgpEncryption
 import uk.gov.hmrc.gform.submission.{ PdfAndXmlSummaries, Submission }
 import uk.gov.hmrc.gform.time.TimeProvider
@@ -235,7 +234,7 @@ class ObjectStoreService(
     summaries: PdfAndXmlSummaries,
     hmrcDms: HmrcDms,
     formTemplateId: FormTemplateId
-  )(implicit hc: HeaderCarrier): Future[ObjectSummaryWithMd5] = {
+  )(implicit hc: HeaderCarrier): Future[Unit] = {
     logger.debug(s"env-id submit: ${submission.envelopeId}")
     val timeProvider = new TimeProvider
     val date = timeProvider.localDateTime().format(DateTimeFormatter.ofPattern("yyyyMMdd"))
@@ -319,9 +318,7 @@ class ObjectStoreService(
       _ <- uploadFormDataF
       _ <- uploadRoboticsContentF
       _ <- uploadMetadataXmlF
-      envelopeId = submission.envelopeId
-      objectSummary <- zipFiles(envelopeId, SdesDestination.Dms.objectStorePaths(envelopeId))
-    } yield objectSummary
+    } yield ()
   }
 
   private def getContentType(contentType: String) = contentType match {

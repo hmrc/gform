@@ -98,13 +98,8 @@ class SdesModule(
   val dataStoreWorkItemRepo = new DataStoreWorkItemRepo(mongoModule.mongoComponent)
   val infoArchiveWorkItemRepo = new InfoArchiveWorkItemRepo(mongoModule.mongoComponent)
 
-  val destinationWorkItemService: DestinationWorkItemAlgebra[Future] = new DestinationWorkItemService(
-    dmsWorkItemRepo,
-    dataStoreWorkItemRepo,
-    infoArchiveWorkItemRepo,
-    fileLocationUrl,
-    configModule.sdesConfig
-  )
+  val destinationWorkItemService: DestinationWorkItemAlgebra[Future] =
+    new DestinationWorkItemService(dmsWorkItemRepo, dataStoreWorkItemRepo, infoArchiveWorkItemRepo)
 
   val destinationWorkItemController: DestinationWorkItemController =
     new DestinationWorkItemController(configModule.controllerComponents, destinationWorkItemService)
@@ -120,7 +115,8 @@ class SdesModule(
       envelopeModule.envelopeService,
       configModule.sdesConfig,
       sdesHistoryService,
-      objectStoreModule.objectStoreService
+      objectStoreModule.objectStoreService,
+      fileLocationUrl
     )(ex, akkaModule.materializer)
 
   private val lockRepoSdesAlert: MongoLockRepository = new MongoLockRepository(
@@ -188,13 +184,12 @@ class SdesModule(
       envelopeId: EnvelopeId,
       formTemplateId: FormTemplateId,
       submissionRef: SubmissionRef,
-      notifyRequest: SdesNotifyRequest,
       destination: SdesDestination
     )(implicit
       hc: HeaderCarrier
     ): FOpt[HttpResponse] =
       fromFutureA(
-        sdesService.notifySDES(correlationId, envelopeId, formTemplateId, submissionRef, notifyRequest, destination)
+        sdesService.notifySDES(correlationId, envelopeId, formTemplateId, submissionRef, destination)
       )
 
     override def renotifySDES(sdesSubmission: SdesSubmission, objWithSummary: ObjectSummaryWithMd5)(implicit
@@ -248,19 +243,11 @@ class SdesModule(
       envelopeId: EnvelopeId,
       formTemplateId: FormTemplateId,
       submissionRef: SubmissionRef,
-      objWithSummary: ObjectSummaryWithMd5,
       destination: SdesDestination
     ): FOpt[Unit] =
       fromFutureA(
-        destinationWorkItemService.pushWorkItem(envelopeId, formTemplateId, submissionRef, objWithSummary, destination)
+        destinationWorkItemService.pushWorkItem(envelopeId, formTemplateId, submissionRef, destination)
       )
-
-    override def createNotifyRequest(
-      objSummary: ObjectSummaryWithMd5,
-      correlationId: String,
-      dataStoreRouting: SdesRouting
-    ): SdesNotifyRequest =
-      destinationWorkItemService.createNotifyRequest(objSummary, correlationId, dataStoreRouting)
 
     override def search(
       page: Int,

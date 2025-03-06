@@ -181,18 +181,10 @@ class DataStoreSubmitter(
              byteString,
              ContentType.`application/json`
            )
-
-      objWithSummary <- objectStoreAlgebra.uploadFileWithDir(
-                          paths.ephemeral,
-                          fileName,
-                          byteString,
-                          ContentType.`application/json`
-                        )
       _ <- destinationWorkItemAlgebra.pushWorkItem(
              submission.envelopeId,
              submission.dmsMetaData.formTemplateId,
              submission.submissionRef,
-             objWithSummary,
              destination
            )
     } yield ()

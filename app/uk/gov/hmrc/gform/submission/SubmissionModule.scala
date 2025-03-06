@@ -90,7 +90,7 @@ class SubmissionModule(
     pdfGeneratorModule.fopService,
     formTemplateModule.fOptFormTemplateAlgebra,
     sdesModule.foptDestinationWorkItemService
-  )(ex, materializer)
+  )
 
   private val stateTransitionService = new StateTransitionService(formModule.fOptFormService)
 

@@ -38,7 +38,7 @@ class InfoArchiveQueueService(
   override def sendWorkItem(sdesWorkItem: WorkItem[SdesWorkItem]): Future[Unit] = {
     implicit val hc = HeaderCarrier()
     val workItem = sdesWorkItem.item
-    logger.debug(s"sending a notification ${workItem.sdesNotifyRequest} in sendWorkItem for info-archive")
+    logger.debug(s"sending a notification for ${workItem.envelopeId} in sendWorkItem to info-archive")
 
     infoArchiveAlgebra
       .notifySDES(
@@ -46,7 +46,6 @@ class InfoArchiveQueueService(
         workItem.envelopeId,
         workItem.formTemplateId,
         workItem.submissionRef,
-        workItem.sdesNotifyRequest,
         workItem.destination
       )
       .void(ec)
