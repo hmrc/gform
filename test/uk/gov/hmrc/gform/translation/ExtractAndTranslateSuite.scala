@@ -70,7 +70,7 @@ class ExtractAndTranslateSuite extends FunSuite {
         "30 (approximately)",
         "Utensils",
         "25 (approximately)",
-        """\n\n You do not need to include original costs of items, current values, or brands."""
+        """You do not need to include original costs of items, current values, or brands."""
       )
     ),
     (
@@ -113,6 +113,162 @@ class ExtractAndTranslateSuite extends FunSuite {
         """<a href="https://CIRD135000">cloud computing</a>""",
         """Next you'll need to tell us which categories incurred qualifying expenditure, and how much was spent. &nbsp; &nbsp;"""
       )
+    ),
+    (
+      """<h3 class='govuk-heading-l'>Amount to pay now: ${grandTotal}</h3>\n\nYou need to use the banking details below. Save this information for your records. It cannot be emailed to you for security reasons.""",
+      List(
+        "Amount to pay now: ${grandTotal}",
+        """You need to use the banking details below. Save this information for your records. It cannot be emailed to you for security reasons."""
+      )
+    ),
+    (
+      """You need to send us all of the relevant forms within **24 hours**.\n\nIf you do not send us these details in time, you will need to start a new application.\n\nWhen you are ready to submit all of your forms, you will need to [return to each of your saved forms](/submissions/new-form/AEO-journey-selector) to submit them.\n\nIf you have sent us all the relevant details, we will tell you within 90 calendar days if your application has been successful.\n\nIf your application is unsuccessful we will tell you why.""",
+      List(
+        "You need to send us all of the relevant forms within **24 hours**.",
+        "If you do not send us these details in time, you will need to start a new application.",
+        "When you are ready to submit all of your forms, you will need to [return to each of your saved forms](/submissions/new-form/AEO-journey-selector) to submit them.",
+        "If you have sent us all the relevant details, we will tell you within 90 calendar days if your application has been successful.",
+        "If your application is unsuccessful we will tell you why."
+      )
+    ),
+    (
+      """On the next pages we will ask you some details, including: <ul><li>where you live</li><li>if you're eligible for this allowance</li><li>when you were registered as blind (for England and Wales)</li><li>the local authority you are registered blind with (for England and Wales)</li><li>the allowance amount</li></ul> \n\n<div class=\"govuk-inset-text\">\nYou can only tell us about one tax year at a time.\n</div>""",
+      List(
+        "On the next pages we will ask you some details, including:",
+        "where you live",
+        "if you're eligible for this allowance",
+        "when you were registered as blind (for England and Wales)",
+        "the local authority you are registered blind with (for England and Wales)",
+        "the allowance amount",
+        "You can only tell us about one tax year at a time."
+      )
+    ),
+    (
+      """##Blind Person’s allowance\n\n\nYou can tell us if: <ul><li>the allowance is missing from your Personal tax account </li><li>you no longer receive this allowance</li></ul>\n\n""",
+      List(
+        "Blind Person’s allowance",
+        "You can tell us if:",
+        "the allowance is missing from your Personal tax account",
+        "you no longer receive this allowance"
+      )
+    ),
+    (
+      """###What has changed \n \n You can now operate PAYE on a proportion of the employee’s income.""",
+      List(
+        "What has changed",
+        "You can now operate PAYE on a proportion of the employee’s income."
+      )
+    ),
+    (
+      """For each animated television or film, we’ll ask for:\n* the name\n* the BFI reference number\n* the pre–production start date\n  * proof of British certification""",
+      List(
+        "For each animated television or film, we’ll ask for:",
+        "the name",
+        "the BFI reference number",
+        "the pre–production start date",
+        "proof of British certification"
+      )
+    ),
+    (
+      """For each animated television or film, we’ll ask for:\n- the name\n- the BFI reference number\n* the pre–production start date\n  - proof of British certification""",
+      List(
+        "For each animated television or film, we’ll ask for:",
+        "the name",
+        "the BFI reference number",
+        "the pre–production start date",
+        "proof of British certification"
+      )
+    ),
+    (
+      """you’ll need to provide their:\n\n* name\n\n* address \n\n* date of birth in the format DD MM YYYY \n\n\n\nHMRC may use these details to make checks or contact the participants if we have any questions.""",
+      List(
+        "you’ll need to provide their:",
+        "name",
+        "address",
+        "date of birth in the format DD MM YYYY",
+        "HMRC may use these details to make checks or contact the participants if we have any questions."
+      )
+    ),
+    (
+      """you’ll need to provide their:\n\n- name\n\n- address \n\n- date of birth in the format DD MM YYYY \n\n\n\nHMRC may use these details to make checks or contact the participants if we have any questions.""",
+      List(
+        "you’ll need to provide their:",
+        "name",
+        "address",
+        "date of birth in the format DD MM YYYY",
+        "HMRC may use these details to make checks or contact the participants if we have any questions."
+      )
+    ),
+    (
+      """you’ll need to provide their:\n\n*name\n\n-address""",
+      List(
+        "you’ll need to provide their:",
+        "*name",
+        "-address"
+      )
+    ),
+    (
+      """We sent a confirmation email to **${email}** with your submission reference. \n\n[Print or save a PDF copy of your form](${link.printAcknowledgementPdf})\n ## What happens next\n\n We aim to process your application within 15 working days.""",
+      List(
+        "We sent a confirmation email to **${email}** with your submission reference.",
+        "[Print or save a PDF copy of your form](${link.printAcknowledgementPdf})",
+        "What happens next",
+        "We aim to process your application within 15 working days."
+      )
+    ),
+    (
+      "###${name} confirmed that: \n\n <ul> <li>they understand that any money they repay cannot be paid back to them again</li> <li>to the best of their knowledge, the details they have provided are correct</li> </ul>\n\n###Payment details\n\n<table><tbody><tr> <td><b>Sort code</b></td> <td>20 50 46</td> </tr> <tr> <td><b>Account number</b></td> <td>83016684</td> </tr> <tr> <td><b>Account name</b></td> <td>HMRC&nbsp;GOV&nbsp;SCHEMES</td> </tr> <tr> <td><b>Payment reference&nbsp;</b></td> <td>${paymentReference}</td> </tr> </tbody> </table>",
+      List(
+        "${name} confirmed that:",
+        "they understand that any money they repay cannot be paid back to them again",
+        "to the best of their knowledge, the details they have provided are correct",
+        "Payment details",
+        "<b>Sort code</b>",
+        "20 50 46",
+        "<b>Account number</b>",
+        "<b>Account name</b>",
+        "HMRC&nbsp;GOV&nbsp;SCHEMES",
+        "<b>Payment reference\u00a0</b>"
+      )
+    ),
+    (
+      """We sent a confirmation email to **${email}** with your submission reference. The email does not include a copy of your answers. \n\n[Print or save a copy of your form (opens in new tab)](${link.printAcknowledgementPdf})  \n\n ## What happens next \n\nYour return will now be processed.\n\n If we need to discuss your return, we will get in touch using the contact information we hold.\n\n ## Keep your details up-to-date \n\n You must tell the <a href="https://www.gov.uk/government/organisations/hm-revenue-customs/contact/mineral-oils-reliefs">Mineral Oil Reliefs Centre</a> about any changes to the information contained within your RDCO approval.""",
+      List(
+        "We sent a confirmation email to **${email}** with your submission reference. The email does not include a copy of your answers.",
+        "[Print or save a copy of your form (opens in new tab)](${link.printAcknowledgementPdf})",
+        "What happens next",
+        "Your return will now be processed.",
+        "If we need to discuss your return, we will get in touch using the contact information we hold.",
+        "Keep your details up-to-date",
+        """You must tell the <a href="https://www.gov.uk/government/organisations/hm-revenue-customs/contact/mineral-oils-reliefs">Mineral Oil Reliefs Centre</a> about any changes to the information contained within your RDCO approval."""
+      )
+    ),
+    (
+      """\n* Austria \n* Belgium \n* Bulgaria \n* Croatia \n* Republic of Cyprus \n* Czech Republic""",
+      List(
+        "Austria",
+        "Belgium",
+        "Bulgaria",
+        "Croatia",
+        "Republic of Cyprus",
+        "Czech Republic"
+      )
+    ),
+    (
+      """<p>You must tell us which premises the business will be producing the following in:</p> <ul>${if noBeerSelected then '<li>beer</li>' else ''} ${if noCiderSelected then '<li>cider or perry</li>'  else ''} ${if noWineSelected then '<li>Wine</li>'  else ''} ${if noSpiritSelected then '<li>spirits</li>'  else ''}</ul> <p><a href='${link.addedProductionPremises}'>Return to add these details</a></p>""",
+      List(
+        "You must tell us which premises the business will be producing the following in:",
+        "${if noBeerSelected then '",
+        "beer",
+        "' else ''} ${if noCiderSelected then '",
+        "cider or perry",
+        "'  else ''} ${if noWineSelected then '",
+        "Wine",
+        "'  else ''} ${if noSpiritSelected then '",
+        "spirits",
+        "'  else ''}",
+        """<a href="${link.addedProductionPremises}">Return to add these details</a>"""
+      ) // HTML in expressions needs better way of handling.
     )
   ).zipWithIndex.foreach { case ((english, expectedBreakdown), index) =>
     test(s"html extraction ${index + 1}") {
@@ -343,23 +499,113 @@ class ExtractAndTranslateSuite extends FunSuite {
          |</ul>CY7"""
     ),
     (
-      (
-        Map.empty[EnFromSpreadsheet, CyFromSpreadsheet],
-        """<p>${abc}</p>""",
-        """<p>${abc}</p>"""
-      ),
+      Map.empty[EnFromSpreadsheet, CyFromSpreadsheet],
+      """<p>${abc}</p>""",
+      """<p>${abc}</p>"""
     ),
     (
-      (
-        Map(
-          (
-            EnFromSpreadsheet("Hello"),
-            CyFromSpreadsheet("CY1")
-          )
-        ),
-        """<div><p>Hello</p><p>1234</p></div>""",
-        """<div><p>CY1</p><p>1234</p></div>"""
+      Map(
+        (
+          EnFromSpreadsheet("Hello"),
+          CyFromSpreadsheet("CY1")
+        )
       ),
+      """<div><p>Hello</p><p>1234</p></div>""",
+      """<div><p>CY1</p><p>1234</p></div>"""
+    ),
+    (
+      Map(
+        (
+          EnFromSpreadsheet("EN1"),
+          CyFromSpreadsheet("CY1")
+        ),
+        (
+          EnFromSpreadsheet("EN2"),
+          CyFromSpreadsheet("CY2")
+        ),
+        (
+          EnFromSpreadsheet("EN3"),
+          CyFromSpreadsheet("CY3")
+        )
+      ),
+      """\n\nEN1\n\n\nEN2\n   \nEN3""",
+      """\n\nCY1\n\n\nCY2\n   \nCY3"""
+    ),
+    (
+      Map(
+        (
+          EnFromSpreadsheet("EN1"),
+          CyFromSpreadsheet("CY1")
+        ),
+        (
+          EnFromSpreadsheet("EN2"),
+          CyFromSpreadsheet("CY2")
+        ),
+        (
+          EnFromSpreadsheet("EN3"),
+          CyFromSpreadsheet("CY3")
+        )
+      ),
+      """\n\nEN1\n*EN2\n  *EN3""",
+      """\n\nCY1\n*CY2\n  *CY3"""
+    ),
+    (
+      Map(
+        (
+          EnFromSpreadsheet("EN1"),
+          CyFromSpreadsheet("CY1")
+        ),
+        (
+          EnFromSpreadsheet("EN2"),
+          CyFromSpreadsheet("CY2")
+        ),
+        (
+          EnFromSpreadsheet("EN3"),
+          CyFromSpreadsheet("CY3")
+        )
+      ),
+      """\n\nEN1\n-EN2\n  -EN3""",
+      """\n\nCY1\n-CY2\n  -CY3"""
+    ),
+    (
+      Map(
+        (
+          EnFromSpreadsheet("EN1"),
+          CyFromSpreadsheet("CY1")
+        ),
+        (
+          EnFromSpreadsheet("EN2"),
+          CyFromSpreadsheet("CY2")
+        ),
+        (
+          EnFromSpreadsheet("EN3"),
+          CyFromSpreadsheet("CY3")
+        )
+      ),
+      """<div>EN1<ul><li>EN2</li></ul>EN3</div>""",
+      """<div>CY1<ul><li>CY2</li></ul>CY3</div>"""
+    ),
+    (
+      Map(
+        (
+          EnFromSpreadsheet("EN1"),
+          CyFromSpreadsheet("CY1")
+        ),
+        (
+          EnFromSpreadsheet("EN2"),
+          CyFromSpreadsheet("CY2")
+        ),
+        (
+          EnFromSpreadsheet("EN3"),
+          CyFromSpreadsheet("CY3")
+        ),
+        (
+          EnFromSpreadsheet("EN4"),
+          CyFromSpreadsheet("CY4")
+        )
+      ),
+      """###EN1\n##EN2\n #EN3 \n\n #EN4""",
+      """###CY1\n##CY2\n #CY3 \n\n #CY4"""
     )
   ).zipWithIndex.foreach { case ((spreadsheetData, english, expectedWelsh), index) =>
     val spreadsheet = Spreadsheet(spreadsheetData)

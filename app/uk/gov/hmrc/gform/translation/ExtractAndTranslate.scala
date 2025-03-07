@@ -25,7 +25,6 @@ import org.jsoup.nodes.Node
 import org.jsoup.nodes.TextNode
 import play.api.libs.json.JsString
 import scala.jdk.StreamConverters._
-import scala.jdk.CollectionConverters._
 import shapeless.syntax.typeable._
 import uk.gov.hmrc.gform.sharedmodel.{ LangADT, SmartStringTemplateReader }
 
@@ -98,7 +97,20 @@ class Spreadsheet(val rows: Map[EnFromSpreadsheet, CyFromSpreadsheet]) {
 
   def get(textType: TextType): Option[CyFromSpreadsheet] = {
     val normalisedEnglish = textType.content.replaceAll("\"", "'")
-    normalisedMap.get(normalisedEnglish)
+
+    ExtractAndTranslate.markdownBreakdown(normalisedEnglish) match {
+      case Nil         => None
+      case head :: Nil => normalisedMap.get(head)
+      case fragments =>
+        val maybeCyMarkdown: Option[String] = fragments.foldLeft[Option[String]](Some(normalisedEnglish)) {
+          case (acc, enFragment) =>
+            val cyFragment: Option[CyFromSpreadsheet] = normalisedMap.get(enFragment)
+            cyFragment.flatMap { cy =>
+              acc.map(_.replace(enFragment, cy.value))
+            }
+        }
+        maybeCyMarkdown.map(CyFromSpreadsheet(_))
+    }
   }
 }
 
@@ -107,6 +119,27 @@ object Spreadsheet {
 }
 
 object ExtractAndTranslate {
+
+  def markdownBreakdown(text: String): List[String] = text
+    .split(
+      // markdown lists with extra padding ('\n\n* ' or '\n\n- ' note the space at the end)
+      """\\n\s*\\n\s*[\*-]\s+"""
+    )
+    .flatMap(_.split("""\\n\s*\\n""")) // markdown paragraphs (usually \n\n)
+    .flatMap(_.split("""\\n\s*[\*-]""")) // markdown lists (usually \n* or \n-)
+    .flatMap(_.split("""\\n\s*#+""")) // markdown heading following new line (usually \n##)
+    .map { s =>
+      val s1 = if (s.startsWith("""\n""")) {
+        s.drop(2)
+      } else s
+      if (s1.endsWith("""\n""")) {
+        s1.dropRight(2)
+      } else s1
+    }
+    .map(_.trim.dropWhile(_ === '#')) // Ignore all # at the beginning of the text
+    .map(_.trim)
+    .filter(!_.isEmpty)
+    .toList
 
   final class BlockHtmlElementsAndOwnTexts(nodes: List[TextType], val root: Node, val originalText: String)
       extends ExtractAndTranslate {
@@ -132,7 +165,11 @@ object ExtractAndTranslate {
     }
 
     val translateTexts: List[EnTextToTranslate] =
-      nodes.map(_.content).filterNot(nonTranslatable).map(en => EnTextToTranslate(en))
+      nodes
+        .map(_.content)
+        .filterNot(nonTranslatable)
+        .flatMap(en => markdownBreakdown(en))
+        .map(en => EnTextToTranslate(en))
 
     def isTranslateable(spreadsheet: Spreadsheet): Boolean =
       translateTexts.forall(enTextToTranslate => spreadsheet.contains(enTextToTranslate.en))
@@ -146,10 +183,12 @@ object ExtractAndTranslate {
                 textNode.text(ot.whiteSpaceStart + cyFromSpreadsheet.value + ot.whiteSpaceEnd)
               } else {
                 parentNode.cast[Element].foreach { element =>
-                  element.children().iterator().asScala.foreach { child =>
-                    child.remove()
+                  element.nodeStream.toScala(List).drop(1).foreach { child =>
+                    if (child == textNode) {
+                      child.before(cyFromSpreadsheet.value)
+                      child.remove()
+                    }
                   }
-                  element.html(cyFromSpreadsheet.value)
                 }
               }
             case TextType.InlineElement(element) =>

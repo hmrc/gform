@@ -518,6 +518,82 @@ class TextExtractorSuite extends FunSuite {
     assertEquals(res, expectedRows)
   }
 
+  test("Extract rows (5) - preserve white spaces at the beginning of the content") {
+    val json =
+      json"""
+          {
+            "sections": [
+              {
+                "fields": [
+                  {
+                    "infoText": {
+                       "en": "\n* Austria \n* Belgium \n* Bulgaria"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+          """
+
+    val instructions =
+      List(
+        List(
+          TraverseArray,
+          Pure(DownField("infoText")),
+          TraverseArray,
+          Pure(DownField("fields")),
+          TraverseArray,
+          Pure(DownField("sections"))
+        )
+      )
+
+    val expectedRows = List(
+      Row(".sections[0].fields[0].infoText", """\n* Austria \n* Belgium \n* Bulgaria""", "")
+    )
+
+    val res = Translator(json, instructions).fetchRows
+
+    assertEquals(res, expectedRows)
+  }
+
+  test("Extract rows (6) - preserve white spaces at the beginning of the content") {
+    val json =
+      json"""
+          {
+            "sections": [
+              {
+                "fields": [
+                  {
+                    "infoText": "\n* Austria \n* Belgium \n* Bulgaria"
+                  }
+                ]
+              }
+            ]
+          }
+          """
+
+    val instructions =
+      List(
+        List(
+          TraverseArray,
+          Pure(DownField("infoText")),
+          TraverseArray,
+          Pure(DownField("fields")),
+          TraverseArray,
+          Pure(DownField("sections"))
+        )
+      )
+
+    val expectedRows = List(
+      Row(".sections[0].fields[0].infoText", """\n* Austria \n* Belgium \n* Bulgaria""", "")
+    )
+
+    val res = Translator(json, instructions).fetchRows
+
+    assertEquals(res, expectedRows)
+  }
+
   test("Choices with values") {
     val json =
       json"""
@@ -1185,7 +1261,7 @@ class TextExtractorSuite extends FunSuite {
     assertEquals(parse(res).toOption.get, expected)
   }
 
-  test("translate json with markdown") {
+  test("translate json with markdown (1)") {
     val json =
       json"""
           {
@@ -1222,7 +1298,58 @@ class TextExtractorSuite extends FunSuite {
 
     val csv =
       """|en,cy
-         |You need to send forms within **24 hours**.\n\nIf you do not send us these details in time you will need to start a new application.\n\nWhen you are ready to submit all of your forms you will need to [return to each of your saved forms](/submissions/new-form/AEO-journey-selector),CY1\n\nCY2\n\nCY3 [CY4](/submissions/new-form/AEO-journey-selector)""".stripMargin
+         |You need to send forms within **24 hours**.,CY1
+         |If you do not send us these details in time you will need to start a new application.,CY2
+         |When you are ready to submit all of your forms you will need to [return to each of your saved forms](/submissions/new-form/AEO-journey-selector),CY3 [CY4](/submissions/new-form/AEO-journey-selector)""".stripMargin
+
+    val translatableRows = TextExtractor.readCvsFromString(csv)
+    val (res, stats) = TextExtractor.translateFile(translatableRows, json.spaces2)
+    assertEquals(parse(res).toOption.get, expected)
+  }
+
+  test("translate json with markdown (2)") {
+    val json =
+      json"""
+          {
+            "sections": [
+              {
+                "fields": [
+                  {
+                    "infoText": {
+                      "en": "\n* Austria \n* Belgium \n* Bulgaria \n* Croatia \n* Republic of Cyprus \n* Czech Republic"
+                    }
+                  }
+                ]
+              }
+            ]
+          }"""
+
+    val expected =
+      json"""
+          {
+            "sections": [
+              {
+                "fields": [
+                  {
+                    "infoText": {
+                      "en": "\n* Austria \n* Belgium \n* Bulgaria \n* Croatia \n* Republic of Cyprus \n* Czech Republic",
+                      "cy": "\n* Awstria \n* Gwlad Belg \n* Bwlgaria \n* Croatia \n* Gweriniaeth Cyprus \n* Y Weriniaeth Tsiec"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+          """
+
+    val csv =
+      """|en,cy
+         |Austria,Awstria
+         |Belgium,Gwlad Belg
+         |Bulgaria,Bwlgaria
+         |Croatia,Croatia
+         |Republic of Cyprus,Gweriniaeth Cyprus
+         |Czech Republic,Y Weriniaeth Tsiec""".stripMargin
 
     val translatableRows = TextExtractor.readCvsFromString(csv)
     val (res, stats) = TextExtractor.translateFile(translatableRows, json.spaces2)
