@@ -29,7 +29,7 @@ import play.api.inject.SimpleInjector
 import play.api.libs.ws.ahc.AhcWSComponents
 import play.api.mvc.EssentialFilter
 import play.api.routing.Router
-import uk.gov.hmrc.crypto.SymmetricCryptoFactory
+import uk.gov.hmrc.crypto.{ Decrypter, Encrypter, SymmetricCryptoFactory }
 import uk.gov.hmrc.gform.akka.AkkaModule
 import uk.gov.hmrc.gform.auditing.AuditingModule
 import uk.gov.hmrc.gform.builder.BuilderModule
@@ -61,6 +61,7 @@ import uk.gov.hmrc.gform.playcomponents.PlayComponents
 import uk.gov.hmrc.gform.playcomponents.PlayComponentsModule
 import uk.gov.hmrc.gform.proxy.ProxyModule
 import uk.gov.hmrc.gform.repo.Repo
+import uk.gov.hmrc.gform.retrieval.RetrievalModule
 import uk.gov.hmrc.gform.save4later.FormMongoCache
 import uk.gov.hmrc.gform.scheduler.SchedulerModule
 import uk.gov.hmrc.gform.sdes.SdesModule
@@ -190,7 +191,7 @@ class ApplicationModule(context: Context)
     configModule.typesafeConfig
   )
 
-  private val jsonCrypto =
+  private val jsonCrypto: Encrypter with Decrypter =
     SymmetricCryptoFactory.aesCryptoFromConfig(baseConfigKey = "json.encryption", configModule.typesafeConfig)
 
   private val prodExpiryDays: Int = configModule.appConfig.formExpiryDays
@@ -297,6 +298,8 @@ class ApplicationModule(context: Context)
       materializer
     )
 
+  private val retrievalModule = new RetrievalModule(mongoModule, configModule, timeModule.timeProvider, jsonCrypto)
+
   private val dmsModule =
     new DmsModule(
       fileUploadModule,
@@ -397,7 +400,8 @@ class ApplicationModule(context: Context)
     builderModule,
     shutterModule,
     handlebarsPayloadModule,
-    historyModule
+    historyModule,
+    retrievalModule
   )
 
   override lazy val httpRequestHandler: HttpRequestHandler = playComponentsModule.httpRequestHandler
