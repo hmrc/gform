@@ -20,8 +20,7 @@ import org.apache.pekko.http.scaladsl.model.StatusCodes
 import play.api.libs.json.Format
 import uk.gov.hmrc.crypto.{ Decrypter, Encrypter }
 import uk.gov.hmrc.gform.sharedmodel.form.FormId
-import uk.gov.hmrc.gform.sharedmodel.retrieval.AuthRetrievals
-import uk.gov.hmrc.gform.time.TimeProvider
+import uk.gov.hmrc.gform.sharedmodel.retrieval.FormAuthRetrievals
 import uk.gov.hmrc.http.UpstreamErrorResponse
 import uk.gov.hmrc.mongo.cache.{ DataKey, MongoCacheRepository }
 
@@ -29,20 +28,19 @@ import scala.concurrent.{ ExecutionContext, Future }
 
 class RetrievalCache(
   mongoCacheRepository: MongoCacheRepository[String],
-  jsonCrypto: Encrypter with Decrypter,
-  timeProvider: TimeProvider
+  jsonCrypto: Encrypter with Decrypter
 )(implicit
   ec: ExecutionContext
 ) extends RetrievalPersistenceAlgebra[Future] {
-  implicit val formatEncrypted: Format[AuthRetrievals] = EncryptedRetrievalFormat.formatEncrypted(jsonCrypto)
-  //implicit val format: OFormat[AuthRetrievals] = Json.format[AuthRetrievals]
+  implicit val formatEncrypted: Format[FormAuthRetrievals] =
+    EncryptedFormAuthRetrievalFormat.formatEncrypted(jsonCrypto)
 
-  private val retrievalsDataKey: DataKey[AuthRetrievals] = DataKey("retrievals")
+  private val retrievalsDataKey: DataKey[FormAuthRetrievals] = DataKey("retrievals")
 
-  override def find(formId: FormId): Future[Option[AuthRetrievals]] = mongoCacheRepository
-    .get[AuthRetrievals](formId.value)(retrievalsDataKey)
+  override def find(formId: FormId): Future[Option[FormAuthRetrievals]] = mongoCacheRepository
+    .get[FormAuthRetrievals](formId.value)(retrievalsDataKey)
 
-  override def get(formId: FormId): Future[AuthRetrievals] = find(formId) map {
+  override def get(formId: FormId): Future[FormAuthRetrievals] = find(formId) map {
     case None =>
       throw UpstreamErrorResponse(
         s"Not found 'authRetrieval' for the given id: '${formId.value}'",
@@ -52,7 +50,7 @@ class RetrievalCache(
       retrieval
   }
 
-  override def upsert(retrieval: AuthRetrievals): Future[Unit] =
+  override def upsert(retrieval: FormAuthRetrievals): Future[Unit] =
     mongoCacheRepository
       .put(retrieval._id.value)(retrievalsDataKey, retrieval)
       .map(_ => ())

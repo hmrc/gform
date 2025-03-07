@@ -61,7 +61,7 @@ import uk.gov.hmrc.gform.playcomponents.PlayComponents
 import uk.gov.hmrc.gform.playcomponents.PlayComponentsModule
 import uk.gov.hmrc.gform.proxy.ProxyModule
 import uk.gov.hmrc.gform.repo.Repo
-import uk.gov.hmrc.gform.retrieval.RetrievalModule
+import uk.gov.hmrc.gform.retrieval.FormAuthRetrievalModule
 import uk.gov.hmrc.gform.save4later.FormMongoCache
 import uk.gov.hmrc.gform.scheduler.SchedulerModule
 import uk.gov.hmrc.gform.sdes.SdesModule
@@ -298,7 +298,7 @@ class ApplicationModule(context: Context)
       materializer
     )
 
-  private val retrievalModule = new RetrievalModule(mongoModule, configModule, timeModule.timeProvider, jsonCrypto)
+  private val retrievalModule = new FormAuthRetrievalModule(mongoModule, configModule, jsonCrypto)
 
   private val dmsModule =
     new DmsModule(

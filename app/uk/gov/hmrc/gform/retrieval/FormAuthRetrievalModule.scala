@@ -19,7 +19,6 @@ package uk.gov.hmrc.gform.retrieval
 import uk.gov.hmrc.crypto.{ Decrypter, Encrypter }
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.mongo.MongoModule
-import uk.gov.hmrc.gform.time.TimeProvider
 import uk.gov.hmrc.mongo.CurrentTimestampSupport
 import uk.gov.hmrc.mongo.cache.CacheIdType.SimpleCacheId
 import uk.gov.hmrc.mongo.cache.MongoCacheRepository
@@ -27,27 +26,27 @@ import uk.gov.hmrc.mongo.cache.MongoCacheRepository
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{ ExecutionContext, Future }
 
-class RetrievalModule(
+class FormAuthRetrievalModule(
   mongoModule: MongoModule,
   configModule: ConfigModule,
-  timeProvider: TimeProvider,
   jsonCrypto: Encrypter with Decrypter
 )(implicit
   ex: ExecutionContext
 ) {
-
   private val mongoCacheRepository = new MongoCacheRepository[String](
     mongoModule.mongoComponent,
-    "retrieval",
+    "formAuthRetrievals",
     true,
     configModule.appConfig.formExpiryDays.days,
     new CurrentTimestampSupport(),
     SimpleCacheId
   )
+
   private val retrievalRepository: RetrievalPersistenceAlgebra[Future] =
-    new RetrievalCache(mongoCacheRepository, jsonCrypto, timeProvider)
+    new RetrievalCache(mongoCacheRepository, jsonCrypto)
 
-  private val retrievalService = new RetrievalService(retrievalRepository)
+  private val formAuthRetrievalService: FormAuthRetrievalService = new FormAuthRetrievalService(retrievalRepository)
 
-  val retrievalController = new RetrievalController(retrievalService, configModule.controllerComponents)
+  val formAuthRetrievalController: FormAuthRetrievalController =
+    new FormAuthRetrievalController(formAuthRetrievalService, configModule.controllerComponents)
 }

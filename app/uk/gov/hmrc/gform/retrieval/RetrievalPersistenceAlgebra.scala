@@ -17,11 +17,11 @@
 package uk.gov.hmrc.gform.retrieval
 
 import uk.gov.hmrc.gform.sharedmodel.form.FormId
-import uk.gov.hmrc.gform.sharedmodel.retrieval.AuthRetrievals
+import uk.gov.hmrc.gform.sharedmodel.retrieval.FormAuthRetrievals
 
 trait RetrievalPersistenceAlgebra[F[_]] {
-  def find(formId: FormId): F[Option[AuthRetrievals]]
-  def get(formId: FormId): F[AuthRetrievals]
-  def upsert(retrieval: AuthRetrievals): F[Unit]
+  def find(formId: FormId): F[Option[FormAuthRetrievals]]
+  def get(formId: FormId): F[FormAuthRetrievals]
+  def upsert(retrieval: FormAuthRetrievals): F[Unit]
   def delete(formId: FormId): F[Unit]
 }

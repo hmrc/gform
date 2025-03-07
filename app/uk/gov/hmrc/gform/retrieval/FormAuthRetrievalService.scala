@@ -17,19 +17,19 @@
 package uk.gov.hmrc.gform.retrieval
 
 import uk.gov.hmrc.gform.sharedmodel.form.FormId
-import uk.gov.hmrc.gform.sharedmodel.retrieval.AuthRetrievals
+import uk.gov.hmrc.gform.sharedmodel.retrieval.FormAuthRetrievals
 
 import scala.concurrent.Future
 
-class RetrievalService(
+class FormAuthRetrievalService(
   retrievalRepo: RetrievalPersistenceAlgebra[Future]
 ) {
 
-  def find(formId: FormId): Future[Option[AuthRetrievals]] = retrievalRepo.find(formId)
+  def find(formId: FormId): Future[Option[FormAuthRetrievals]] = retrievalRepo.find(formId)
 
-  def get(formId: FormId): Future[AuthRetrievals] = retrievalRepo.get(formId)
+  def get(formId: FormId): Future[FormAuthRetrievals] = retrievalRepo.get(formId)
 
-  def upsert(retrieval: AuthRetrievals): Future[Unit] = retrievalRepo.upsert(retrieval)
+  def upsert(retrieval: FormAuthRetrievals): Future[Unit] = retrievalRepo.upsert(retrieval)
 
   def delete(formId: FormId): Future[Unit] = retrievalRepo.delete(formId)
 }
