@@ -295,52 +295,44 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
     | "year(" ~ dateExpr ~ ")" ^^ { case _ ~ dateExpr ~ _ =>
       DateFunction(DateProjection.Year(dateExpr))
     }
-    | (periodFun ~ "." ~ "sum|totalMonths|years|months|days|totalDays|totalWeeks".r ^^ {
+    | (periodFun ~ "." ~ "sum|totalMonths|years|months|days".r ^^ {
       case _ ~ (dateExpr1: DateExpr) ~ _ ~ (dateExpr2: DateExpr) ~ _ ~ _ ~ prop =>
         PeriodExt(
-          Period(DateCtx(dateExpr1), DateCtx(dateExpr2), PeriodType.Period),
+          Period(DateCtx(dateExpr1), DateCtx(dateExpr2)),
           prop match {
             case "sum"         => PeriodFn.Sum
             case "totalMonths" => PeriodFn.TotalMonths
             case "years"       => PeriodFn.Years
             case "months"      => PeriodFn.Months
             case "days"        => PeriodFn.Days
-            case "totalDays"   => PeriodFn.TotalDays
-            case "totalWeeks"  => PeriodFn.TotalWeeks
             case _ =>
               throw new IllegalArgumentException(
-                "period(*,*).prop value is invalid. Allowed prop values are sum,totalMonths,years,months,days,totalDays,totalWeeks"
+                "period(*,*).prop value is invalid. Allowed prop values are sum,totalMonths,years,months,days"
               )
           }
         )
     })
+    | periodFun ^^ { case _ ~ dateExpr1 ~ _ ~ dateExpr2 ~ _ =>
+      Period(DateCtx(dateExpr1), DateCtx(dateExpr2))
+    }
     | ("daysBetween(" ~ dateExpr ~ "," ~ dateExpr ~ ")" ~ ".sum|".r ^^ {
       case _ ~ (dateExpr1: DateExpr) ~ _ ~ (dateExpr2: DateExpr) ~ _ ~ prop =>
         prop match {
           case ".sum" =>
-            PeriodExt(
-              Period(DateCtx(dateExpr1), DateCtx(dateExpr2), PeriodType.Period),
-              PeriodFn.TotalDays
-            )
+            Between(DateCtx(dateExpr1), DateCtx(dateExpr2), MeasurementType.SumDays)
           case _ =>
-            Period(DateCtx(dateExpr1), DateCtx(dateExpr2), PeriodType.Days)
+            Between(DateCtx(dateExpr1), DateCtx(dateExpr2), MeasurementType.Days)
         }
     })
     | ("weeksBetween(" ~ dateExpr ~ "," ~ dateExpr ~ ")" ~ ".sum|".r ^^ {
       case _ ~ (dateExpr1: DateExpr) ~ _ ~ (dateExpr2: DateExpr) ~ _ ~ prop =>
         prop match {
           case ".sum" =>
-            PeriodExt(
-              Period(DateCtx(dateExpr1), DateCtx(dateExpr2), PeriodType.Period),
-              PeriodFn.TotalWeeks
-            )
+            Between(DateCtx(dateExpr1), DateCtx(dateExpr2), MeasurementType.SumWeeks)
           case _ =>
-            Period(DateCtx(dateExpr1), DateCtx(dateExpr2), PeriodType.Weeks)
+            Between(DateCtx(dateExpr1), DateCtx(dateExpr2), MeasurementType.Weeks)
         }
     })
-    | periodFun ^^ { case _ ~ dateExpr1 ~ _ ~ dateExpr2 ~ _ =>
-      Period(DateCtx(dateExpr1), DateCtx(dateExpr2), PeriodType.Period)
-    }
     | quotedLocalisedConstant
     | FormComponentId.unanchoredIdValidation <~ ".sum" ^^ (value => Sum(FormCtx(FormComponentId(value))))
     | "hideZeroDecimals(" ~ _expr1 ~ ")" ^^ { case _ ~ value ~ _ =>

@@ -114,7 +114,8 @@ object FormTemplatePIIRefsHelper {
       case Index(FormComponentId(value))          => List(value)
       case FormCtx(FormComponentId(value))        => List(value)
       case AddressLens(FormComponentId(value), _) => List(value)
-      case Period(dateCtx1, dateCtx2, _) =>
+      case Period(dateCtx1, dateCtx2)             => extractRefs(dateCtx1) ++ extractRefs(dateCtx2)
+      case Between(dateCtx1, dateCtx2, _) =>
         dateCtx1.value.maybeFormCtx.map(_.formComponentId.value) ++ dateCtx2.value.maybeFormCtx.map(
           _.formComponentId.value
         )
