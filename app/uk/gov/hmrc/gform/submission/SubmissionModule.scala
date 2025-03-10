@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.gform.submission
 
+import org.apache.pekko.stream.Materializer
 import org.mongodb.scala.model.{ IndexModel, IndexOptions }
 import org.mongodb.scala.model.Indexes.ascending
 import uk.gov.hmrc.gform.config.ConfigModule
@@ -32,7 +33,7 @@ import uk.gov.hmrc.gform.notifier.NotifierModule
 import uk.gov.hmrc.gform.objectstore.ObjectStoreModule
 import uk.gov.hmrc.gform.repo.{ Repo, RepoAlgebra }
 import uk.gov.hmrc.gform.sdes.SdesModule
-import uk.gov.hmrc.gform.submission.destinations.{ DataStoreSubmitter, DestinationModule, DestinationSubmitter, DestinationsSubmitter, DestinationsSubmitterAlgebra, DmsSubmitter, StateTransitionService }
+import uk.gov.hmrc.gform.submission.destinations.{ DataStoreSubmitter, DestinationModule, DestinationSubmitter, DestinationsSubmitter, DestinationsSubmitterAlgebra, DmsSubmitter, InfoArchiveSubmitter, StateTransitionService }
 import uk.gov.hmrc.gform.submissionconsolidator.SubmissionConsolidatorModule
 
 import scala.concurrent.ExecutionContext
@@ -51,7 +52,8 @@ class SubmissionModule(
   notifierModule: NotifierModule,
   envelopeModule: EnvelopeModule,
   objectStoreModule: ObjectStoreModule,
-  sdesModule: SdesModule
+  sdesModule: SdesModule,
+  materializer: Materializer
 )(implicit ex: ExecutionContext) {
 
   //TODO: this should be replaced with save4later for submissions
@@ -68,7 +70,7 @@ class SubmissionModule(
 
   private val fileUploadServiceDmsSubmitter = new DmsSubmitter(
     objectStoreModule.foptObjectStoreService,
-    sdesModule.foptDmsWorkItemService,
+    sdesModule.foptDestinationWorkItemService,
     formModule.fOptFormService,
     formTemplateModule.fOptFormTemplateAlgebra,
     pdfGeneratorModule.pdfGeneratorService,
@@ -79,7 +81,15 @@ class SubmissionModule(
 
   val dataStoreSubmitter = new DataStoreSubmitter(
     objectStoreModule.foptObjectStoreService,
-    sdesModule.foptDataStoreWorkItemService
+    sdesModule.foptDestinationWorkItemService
+  )
+
+  val infoArchiveSubmitter = new InfoArchiveSubmitter(
+    objectStoreModule.foptObjectStoreService,
+    pdfGeneratorModule.pdfGeneratorService,
+    pdfGeneratorModule.fopService,
+    formTemplateModule.fOptFormTemplateAlgebra,
+    sdesModule.foptDestinationWorkItemService
   )
 
   private val stateTransitionService = new StateTransitionService(formModule.fOptFormService)
@@ -92,6 +102,7 @@ class SubmissionModule(
     destinationModule.destinationAuditer,
     submissionConsolidatorModule.submissionConsolidator,
     dataStoreSubmitter,
+    infoArchiveSubmitter,
     configModule.sdesConfig
   )
 

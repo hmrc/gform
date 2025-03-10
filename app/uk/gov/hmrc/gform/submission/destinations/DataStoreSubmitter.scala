@@ -34,7 +34,7 @@ import org.json4s.native.JsonMethods
 import org.json4s.native.Printer.compact
 import uk.gov.hmrc.gform.formtemplate.{ HandlebarsSchemaErrorParser, JsonSchemaValidator }
 import uk.gov.hmrc.gform.objectstore.ObjectStoreAlgebra
-import uk.gov.hmrc.gform.sdes.datastore.DataStoreWorkItemAlgebra
+import uk.gov.hmrc.gform.sdes.workitem.DestinationWorkItemAlgebra
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -45,7 +45,7 @@ import scala.util.matching.Regex
 
 class DataStoreSubmitter(
   objectStoreAlgebra: ObjectStoreAlgebra[FOpt],
-  dataStoreWorkItemAlgebra: DataStoreWorkItemAlgebra[FOpt]
+  destinationWorkItemAlgebra: DestinationWorkItemAlgebra[FOpt]
 )(implicit
   ec: ExecutionContext
 ) extends DataStoreSubmitterAlgebra[FOpt] {
@@ -181,19 +181,10 @@ class DataStoreSubmitter(
              byteString,
              ContentType.`application/json`
            )
-
-      objWithSummary <- objectStoreAlgebra.uploadFileWithDir(
-                          paths.ephemeral,
-                          fileName,
-                          byteString,
-                          ContentType.`application/json`
-                        )
-      _ <- dataStoreWorkItemAlgebra.pushWorkItem(
+      _ <- destinationWorkItemAlgebra.pushWorkItem(
              submission.envelopeId,
              submission.dmsMetaData.formTemplateId,
              submission.submissionRef,
-             objWithSummary,
-             dataStoreRouting,
              destination
            )
     } yield ()
