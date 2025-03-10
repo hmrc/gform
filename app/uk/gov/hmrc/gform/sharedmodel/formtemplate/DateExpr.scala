@@ -95,9 +95,6 @@ case class DateOrElse(field1: DateExpr, field2: DateExpr) extends DateExpr
 case class DateConstructExpr(dayMonth: DateExpr, year: Expr) extends DateExpr
 
 object DateExpr {
-  def apply(field: String): DateExpr =
-    DateExpr(field)
-
   implicit val format: OFormat[DateExpr] = derived.oformat()
 
   private def allFormCtxExprs(dateExpr: DateExpr): List[FormCtx] = dateExpr match {

@@ -90,7 +90,7 @@ final case class Index(formComponentId: FormComponentId) extends Expr
 final case class FormCtx(formComponentId: FormComponentId) extends Expr
 final case class AddressLens(formComponentId: FormComponentId, detail: AddressDetail) extends Expr
 final case class Period(dateCtx1: Expr, dateCtx2: Expr) extends Expr
-final case class Between(dateCtx1: DateCtx, dateCtx2: DateCtx, measurementType: MeasurementType) extends Expr
+final case class Between(dateCtx1: Expr, dateCtx2: Expr, measurementType: MeasurementType) extends Expr
 final case class Size(formComponentId: FormComponentId, index: SizeRefType) extends Expr
 final case class Typed(expr: Expr, tpe: ExplicitExprType) extends Expr
 final case class NumberedList(formComponentId: FormComponentId) extends Expr
@@ -179,16 +179,6 @@ object FormCtx {
   }
 
   implicit val format: OFormat[FormCtx] = OFormatWithTemplateReadFallback(readsForTemplateJson)
-}
-
-object DateCtx {
-  lazy val readsForTemplateJson: Reads[DateCtx] = Reads {
-    case JsString(exprAsStr) =>
-      ExprParsers.validateDateCtx(exprAsStr).fold(error => JsError(error.toString), JsSuccess(_))
-    case otherwise => JsError(s"Invalid expression. Expected String, got $otherwise")
-  }
-
-  implicit val format: OFormat[DateCtx] = OFormatWithTemplateReadFallback(readsForTemplateJson)
 }
 
 final case class ParamCtx(queryParam: QueryParam) extends Expr

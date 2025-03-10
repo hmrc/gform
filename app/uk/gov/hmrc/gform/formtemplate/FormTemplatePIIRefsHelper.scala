@@ -102,23 +102,20 @@ object FormTemplatePIIRefsHelper {
 
   private def extractRefs(expr: Expr): List[String] =
     expr match {
-      case Add(field1, field2)                    => extractRefs(field1) ++ extractRefs(field2)
-      case Multiply(field1, field2)               => extractRefs(field1) ++ extractRefs(field2)
-      case Subtraction(field1, field2)            => extractRefs(field1) ++ extractRefs(field2)
-      case Divide(field1, field2)                 => extractRefs(field1) ++ extractRefs(field2)
-      case HideZeroDecimals(field1)               => extractRefs(field1)
-      case IfElse(_, field1, field2)              => extractRefs(field1) ++ extractRefs(field2)
-      case Else(field1, field2)                   => extractRefs(field1) ++ extractRefs(field2)
-      case Sum(field1)                            => extractRefs(field1)
-      case Count(FormComponentId(value))          => List(value)
-      case Index(FormComponentId(value))          => List(value)
-      case FormCtx(FormComponentId(value))        => List(value)
-      case AddressLens(FormComponentId(value), _) => List(value)
-      case Period(dateCtx1, dateCtx2)             => extractRefs(dateCtx1) ++ extractRefs(dateCtx2)
-      case Between(dateCtx1, dateCtx2, _) =>
-        dateCtx1.value.maybeFormCtx.map(_.formComponentId.value) ++ dateCtx2.value.maybeFormCtx.map(
-          _.formComponentId.value
-        )
+      case Add(field1, field2)                                => extractRefs(field1) ++ extractRefs(field2)
+      case Multiply(field1, field2)                           => extractRefs(field1) ++ extractRefs(field2)
+      case Subtraction(field1, field2)                        => extractRefs(field1) ++ extractRefs(field2)
+      case Divide(field1, field2)                             => extractRefs(field1) ++ extractRefs(field2)
+      case HideZeroDecimals(field1)                           => extractRefs(field1)
+      case IfElse(_, field1, field2)                          => extractRefs(field1) ++ extractRefs(field2)
+      case Else(field1, field2)                               => extractRefs(field1) ++ extractRefs(field2)
+      case Sum(field1)                                        => extractRefs(field1)
+      case Count(FormComponentId(value))                      => List(value)
+      case Index(FormComponentId(value))                      => List(value)
+      case FormCtx(FormComponentId(value))                    => List(value)
+      case AddressLens(FormComponentId(value), _)             => List(value)
+      case Period(dateCtx1, dateCtx2)                         => extractRefs(dateCtx1) ++ extractRefs(dateCtx2)
+      case Between(dateCtx1, dateCtx2, _)                     => extractRefs(dateCtx1) ++ extractRefs(dateCtx2)
       case PeriodExt(period, func)                            => extractRefs(period)
       case ParamCtx(queryParam)                               => List("param." + queryParam.value)
       case AuthCtx(value)                                     => List("auth." + value.toString.toLowerCase)

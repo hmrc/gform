@@ -17,7 +17,7 @@
 package uk.gov.hmrc.gform.core.parsers
 
 import uk.gov.hmrc.gform.core.Opt
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ DateCtx, DateExpr, FormComponentId, FormCtx }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponentId, FormCtx }
 
 import scala.util.parsing.combinator.RegexParsers
 
@@ -26,15 +26,10 @@ trait ExprParsers extends RegexParsers {
   val expr: Parser[FormCtx] = "${" ~> FormComponentId.unanchoredIdValidation <~ "}" ^^ { field =>
     FormCtx(FormComponentId(field))
   }
-
-  val exprDate: Parser[DateCtx] = "${" ~> FormComponentId.unanchoredIdValidation <~ "}" ^^ { field =>
-    DateCtx(DateExpr(field))
-  }
 }
 
 case object ExprParsers extends ExprParsers with ParsingHelper {
 
   def validateFormCtx(expression: String): Opt[FormCtx] = validateWithParser(expression, expr)
-  def validateDateCtx(expression: String): Opt[DateCtx] = validateWithParser(expression, exprDate)
 
 }

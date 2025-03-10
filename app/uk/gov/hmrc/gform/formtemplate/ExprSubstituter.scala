@@ -32,7 +32,7 @@ object ExprSubstituter extends Substituter[ExprSubstitutions, FormTemplate] {
         case Divide(l, r)           => Divide(substitute(substitutions, l), substitute(substitutions, r))
         case HideZeroDecimals(l)    => HideZeroDecimals(substitute(substitutions, l))
         case Period(l, r)           => Period(substitute(substitutions, l), substitute(substitutions, r))
-        case Between(l, r, m)       => Between(DateCtx(l.value(substitutions)), DateCtx(r.value(substitutions)), m)
+        case Between(l, r, m)       => Between(substitute(substitutions, l), substitute(substitutions, r), m)
         case Sum(l)                 => Sum(substitute(substitutions, l))
         case PeriodExt(p, pe)       => PeriodExt(substitute(substitutions, p), pe)
         case DateCtx(dateExpr)      => DateCtx(dateExpr(substitutions))
