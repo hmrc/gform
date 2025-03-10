@@ -20,24 +20,24 @@ import play.api.libs.functional.syntax.toFunctionalBuilderOps
 import play.api.libs.json._
 import uk.gov.hmrc.auth.core.CredentialRole
 import uk.gov.hmrc.gform.sharedmodel.AffinityGroup
-import uk.gov.hmrc.gform.sharedmodel.form.FormId
+import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 
 case class FormAuthRetrievals(
-  _id: FormId,
+  _id: EnvelopeId,
   email: Option[String],
-  emailLogin: Option[String],
-  ggLogin: Option[String],
+  emailLogin: Boolean,
+  ggLogin: Boolean,
   payeNino: Option[String],
   ctUtr: Option[String],
   saUtr: Option[String],
   payeRef: Option[String],
   vrn: Option[String],
-  affinityGroup: AffinityGroup,
-  credentialRole: CredentialRole
+  affinityGroup: Option[AffinityGroup],
+  credentialRole: Option[CredentialRole]
 )
 
 object FormAuthRetrievals {
-  private def optionFormat[T: Format]: Format[Option[T]] = new Format[Option[T]] {
+  def optionFormat[T: Format]: Format[Option[T]] = new Format[Option[T]] {
     override def reads(json: JsValue): JsResult[Option[T]] = json.validateOpt[T]
 
     override def writes(o: Option[T]): JsValue = o match {
@@ -47,31 +47,31 @@ object FormAuthRetrievals {
   }
 
   private val reads: Reads[FormAuthRetrievals] = (
-    (FormId.format: Reads[FormId]) and
+    (EnvelopeId.oformat: Reads[EnvelopeId]) and
       (__ \ "email").readNullable[String] and
-      (__ \ "emailLogin").readNullable[String] and
-      (__ \ "ggLogin").readNullable[String] and
+      (__ \ "emailLogin").read[Boolean] and
+      (__ \ "ggLogin").read[Boolean] and
       (__ \ "payeNino").readNullable[String] and
       (__ \ "ctUtr").readNullable[String] and
       (__ \ "saUtr").readNullable[String] and
       (__ \ "payeRef").readNullable[String] and
       (__ \ "vrn").readNullable[String] and
-      (__ \ "affinityGroup").read[AffinityGroup] and
-      (__ \ "credentialRole").read[CredentialRole]
+      (__ \ "affinityGroup").readNullable[AffinityGroup] and
+      (__ \ "credentialRole").readNullable[CredentialRole]
   )(FormAuthRetrievals.apply _)
 
   private val writes: Writes[FormAuthRetrievals] = Writes[FormAuthRetrievals](retrievals =>
-    FormId.format.writes(retrievals._id) ++
+    EnvelopeId.oformat.writes(retrievals._id) ++
       Json.obj("email" -> optionFormat[String].writes(retrievals.email)) ++
-      Json.obj("emailLogin" -> optionFormat[String].writes(retrievals.emailLogin)) ++
-      Json.obj("ggLogin" -> optionFormat[String].writes(retrievals.ggLogin)) ++
+      Json.obj("emailLogin" -> retrievals.emailLogin) ++
+      Json.obj("ggLogin" -> retrievals.ggLogin) ++
       Json.obj("payeNino" -> optionFormat[String].writes(retrievals.payeNino)) ++
       Json.obj("ctUtr" -> optionFormat[String].writes(retrievals.ctUtr)) ++
       Json.obj("saUtr" -> optionFormat[String].writes(retrievals.saUtr)) ++
       Json.obj("payeRef" -> optionFormat[String].writes(retrievals.payeRef)) ++
       Json.obj("vrn" -> optionFormat[String].writes(retrievals.vrn)) ++
-      Json.obj("affinityGroup" -> AffinityGroup.format.writes(retrievals.affinityGroup)) ++
-      retrievals.credentialRole.toJson.as[JsObject]
+      Json.obj("affinityGroup" -> optionFormat[AffinityGroup].writes(retrievals.affinityGroup)) ++
+      Json.obj("credentialRole" -> optionFormat[CredentialRole].writes(retrievals.credentialRole))
   )
 
   implicit val format: Format[FormAuthRetrievals] = Format[FormAuthRetrievals](reads, writes)

@@ -21,7 +21,7 @@ import play.api.libs.json._
 import uk.gov.hmrc.auth.core.CredentialRole
 import uk.gov.hmrc.crypto.{ Crypted, Decrypter, Encrypter, PlainText }
 import uk.gov.hmrc.gform.sharedmodel.AffinityGroup
-import uk.gov.hmrc.gform.sharedmodel.form.FormId
+import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.retrieval.FormAuthRetrievals
 
 object EncryptedFormAuthRetrievalFormat {
@@ -34,17 +34,17 @@ object EncryptedFormAuthRetrievalFormat {
         }
 
       private val reads: Reads[FormAuthRetrievals] = (
-        (FormId.format: Reads[FormId]) and
+        (EnvelopeId.oformat: Reads[EnvelopeId]) and
           readEncryptedOpt(__ \ "email") and
-          readEncryptedOpt(__ \ "emailLogin") and
-          readEncryptedOpt(__ \ "ggLogin") and
+          (__ \ "emailLogin").read[Boolean] and
+          (__ \ "ggLogin").read[Boolean] and
           readEncryptedOpt(__ \ "payeNino") and
           readEncryptedOpt(__ \ "ctUtr") and
           readEncryptedOpt(__ \ "saUtr") and
           readEncryptedOpt(__ \ "payeRef") and
           readEncryptedOpt(__ \ "vrn") and
-          (__ \ "affinityGroup").read[AffinityGroup] and
-          (__ \ "credentialRole").read[CredentialRole]
+          (__ \ "affinityGroup").readNullable[AffinityGroup] and
+          (__ \ "credentialRole").readNullable[CredentialRole]
       )(FormAuthRetrievals.apply _)
 
       override def reads(json: JsValue): JsResult[FormAuthRetrievals] = {
@@ -59,16 +59,20 @@ object EncryptedFormAuthRetrievalFormat {
         os.fold[JsValue](JsNull)(s => JsString(jsonCrypto.encrypt(PlainText(Json.toJson(s).toString())).value))
 
       override def writes(retrievals: FormAuthRetrievals): JsValue =
-        FormId.format.writes(retrievals._id) ++
+        EnvelopeId.oformat.writes(retrievals._id) ++
           Json.obj("email" -> writeOpt(retrievals.email)) ++
-          Json.obj("emailLogin" -> writeOpt(retrievals.emailLogin)) ++
-          Json.obj("ggLogin" -> writeOpt(retrievals.ggLogin)) ++
+          Json.obj("emailLogin" -> retrievals.emailLogin) ++
+          Json.obj("ggLogin" -> retrievals.ggLogin) ++
           Json.obj("payeNino" -> writeOpt(retrievals.payeNino)) ++
           Json.obj("ctUtr" -> writeOpt(retrievals.ctUtr)) ++
           Json.obj("saUtr" -> writeOpt(retrievals.saUtr)) ++
           Json.obj("payeRef" -> writeOpt(retrievals.payeRef)) ++
           Json.obj("vrn" -> writeOpt(retrievals.vrn)) ++
-          Json.obj("affinityGroup" -> AffinityGroup.format.writes(retrievals.affinityGroup)) ++
-          retrievals.credentialRole.toJson.as[JsObject]
+          Json.obj(
+            "affinityGroup" -> FormAuthRetrievals.optionFormat[AffinityGroup].writes(retrievals.affinityGroup)
+          ) ++
+          Json.obj(
+            "credentialRole" -> FormAuthRetrievals.optionFormat[CredentialRole].writes(retrievals.credentialRole)
+          )
     }
 }
