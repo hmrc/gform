@@ -277,10 +277,10 @@ class Translator(json: Json, paths: List[List[Instruction]], val topLevelExprDat
         val path = CursorOp.opsToPath(aCursor.history)
         attemptString
           .map { en =>
-            Row(path, TextExtractor.escapeNewLine(en.trim), "") :: rows
+            Row(path, TextExtractor.escapeNewLine(en), "") :: rows
           }
           .orElse(attemptLang.map { lang =>
-            Row(path, TextExtractor.escapeNewLine(lang.en.trim), TextExtractor.escapeNewLine(lang.cy.trim)) :: rows
+            Row(path, TextExtractor.escapeNewLine(lang.en), TextExtractor.escapeNewLine(lang.cy)) :: rows
           })
           .toOption
           .getOrElse(rows)
