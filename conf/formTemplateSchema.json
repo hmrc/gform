@@ -479,7 +479,14 @@
           "type": "string"
         },
         "continueIf": {
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
         },
         "continueLabel": {
           "$ref": "#/$defs/stringOrEnCyObject"

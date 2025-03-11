@@ -17,11 +17,11 @@
 package uk.gov.hmrc.gform.sharedmodel.formtemplate.generators
 
 import org.scalacheck.Gen
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Continue, ContinueIf, Stop }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.ContinueIf
 
 trait ContinueIfGen {
   def continueIfGen: Gen[ContinueIf] =
-    Gen.oneOf(Gen.const(Continue), Gen.const(Stop))
+    Gen.oneOf(Gen.const(ContinueIf.Continue), Gen.const(ContinueIf.Stop))
 }
 
 object ContinueIfGen extends ContinueIfGen
