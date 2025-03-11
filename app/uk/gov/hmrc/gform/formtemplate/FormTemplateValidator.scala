@@ -532,6 +532,8 @@ object FormTemplateValidator {
 
     val validations = allExpressions.flatMap(_.referenceInfos).collect {
       case BetweenExpr(path, Between(expr1, expr2, _)) => List(validateExpr(expr1, path), validateExpr(expr2, path))
+      case SumExpr(path, Sum(Between(dateCtx1, dateCtx2, _))) =>
+        List(validateExpr(dateCtx1, path), validateExpr(dateCtx2, path))
     }
     Monoid.combineAll(validations.flatten)
   }
