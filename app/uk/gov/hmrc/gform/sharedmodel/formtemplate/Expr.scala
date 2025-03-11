@@ -131,8 +131,6 @@ sealed trait MeasurementType
 object MeasurementType {
   case object Weeks extends MeasurementType
   case object Days extends MeasurementType
-  case object SumWeeks extends MeasurementType
-  case object SumDays extends MeasurementType
   implicit val format: OFormat[MeasurementType] = derived.oformat()
 }
 

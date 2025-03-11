@@ -319,7 +319,7 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
       case _ ~ (dateExpr1: DateExpr) ~ _ ~ (dateExpr2: DateExpr) ~ _ ~ prop =>
         prop match {
           case ".sum" =>
-            Between(DateCtx(dateExpr1), DateCtx(dateExpr2), MeasurementType.SumDays)
+            Sum(Between(DateCtx(dateExpr1), DateCtx(dateExpr2), MeasurementType.Days))
           case _ =>
             Between(DateCtx(dateExpr1), DateCtx(dateExpr2), MeasurementType.Days)
         }
@@ -328,7 +328,7 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
       case _ ~ (dateExpr1: DateExpr) ~ _ ~ (dateExpr2: DateExpr) ~ _ ~ prop =>
         prop match {
           case ".sum" =>
-            Between(DateCtx(dateExpr1), DateCtx(dateExpr2), MeasurementType.SumWeeks)
+            Sum(Between(DateCtx(dateExpr1), DateCtx(dateExpr2), MeasurementType.Weeks))
           case _ =>
             Between(DateCtx(dateExpr1), DateCtx(dateExpr2), MeasurementType.Weeks)
         }

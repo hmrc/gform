@@ -828,9 +828,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     val table = Table(
       ("function", "expected prop"),
       ("${daysBetween(d1, d2)}", MeasurementType.Days),
-      ("${daysBetween(d1, d2).sum}", MeasurementType.SumDays),
-      ("${weeksBetween(d1, d2)}", MeasurementType.Weeks),
-      ("${weeksBetween(d1, d2).sum}", MeasurementType.SumWeeks)
+      ("${weeksBetween(d1, d2)}", MeasurementType.Weeks)
     )
     forAll(table) { (f: String, expectedFn: MeasurementType) =>
       val res = ValueParser.validate(f)
@@ -840,6 +838,28 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
             DateCtx(DateFormCtxVar(FormCtx("d1"))),
             DateCtx(DateFormCtxVar(FormCtx("d2"))),
             expectedFn
+          )
+        )
+      )
+    }
+  }
+
+  it should "parse days/weeks between sum functions" in {
+    val table = Table(
+      ("function", "expected prop"),
+      ("${daysBetween(d1, d2).sum}", MeasurementType.Days),
+      ("${weeksBetween(d1, d2).sum}", MeasurementType.Weeks)
+    )
+    forAll(table) { (f: String, expectedFn: MeasurementType) =>
+      val res = ValueParser.validate(f)
+      res.toOption.value should be(
+        TextExpression(
+          Sum(
+            Between(
+              DateCtx(DateFormCtxVar(FormCtx("d1"))),
+              DateCtx(DateFormCtxVar(FormCtx("d2"))),
+              expectedFn
+            )
           )
         )
       )
