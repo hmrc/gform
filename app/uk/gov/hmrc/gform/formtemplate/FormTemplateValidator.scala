@@ -896,12 +896,12 @@ object FormTemplateValidator {
       } else Valid
     }
 
-    val labelNotEmpty: ValidationResult = sectionsList.flatMap { page =>
+    val labelOrShortNameNotEmpty: ValidationResult = sectionsList.flatMap { page =>
       page.allFormComponents.collect { case fc @ IsPostcodeLookup(_) =>
-        if (fc.label.allNonEmpty) Valid
+        if (fc.label.allNonEmpty || fc.shortName.map(_.allNonEmpty).getOrElse(false)) Valid
         else
           Invalid(
-            s"A label is required for postcodeLookup '${fc.id.value}' to use on summarySection."
+            s"A label (or shortName) is required for postcodeLookup '${fc.id.value}' to use on summarySection."
           )
       }
     }.combineAll
@@ -911,7 +911,7 @@ object FormTemplateValidator {
         singlePostcodeLookupOnly,
         noPostcodeLookupInReveliangChoiceOrGroup,
         noOtherComponentsAllowed,
-        labelNotEmpty
+        labelOrShortNameNotEmpty
       )
     )
 

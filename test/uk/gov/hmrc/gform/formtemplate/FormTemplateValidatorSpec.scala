@@ -740,17 +740,54 @@ class FormTemplateValidatorSpec
   }
 
   "validate postcode lookup" should {
-    "return a label is required for postcodeLookup to use on summarySection error when a label is empty" in {
+    "return a label (or shortName) is required for postcodeLookup to use on summarySection error when a label is empty" in {
+      val emptyLabel = toSmartString("")
+      val postcodeLookup = mkFormComponent("postcodeLookup1", PostcodeLookup(None, None, None), emptyLabel)
       val pages = List(
         mkSectionNonRepeatingPage(
           name = "section1",
-          formComponents = List(mkFormComponent("postcodeLookup1", PostcodeLookup(None, None, None), toSmartString("")))
+          formComponents = List(postcodeLookup)
         ).page
       )
 
       val result = FormTemplateValidator.validatePostcodeLookup(pages)
 
-      result shouldBe Invalid("A label is required for postcodeLookup 'postcodeLookup1' to use on summarySection.")
+      result shouldBe Invalid(
+        "A label (or shortName) is required for postcodeLookup 'postcodeLookup1' to use on summarySection."
+      )
+    }
+
+    "succeed when shortName label is non-empty" in {
+      val emptyLabel = toSmartString("")
+      val shortName = toSmartString("en-shortName")
+      val postcodeLookup = mkFormComponent("postcodeLookup1", PostcodeLookup(None, None, None), emptyLabel)
+        .copy(shortName = Some(shortName))
+      val pages = List(
+        mkSectionNonRepeatingPage(
+          name = "section1",
+          formComponents = List(postcodeLookup)
+        ).page
+      )
+
+      val result = FormTemplateValidator.validatePostcodeLookup(pages)
+
+      result shouldBe Valid
+    }
+
+    "succeed when only welsh label is empty" in {
+      val emptyWelshLabel = toSmartString("en-label", "")
+      val postcodeLookup =
+        mkFormComponent("postcodeLookup1", PostcodeLookup(None, None, None), emptyWelshLabel)
+      val pages = List(
+        mkSectionNonRepeatingPage(
+          name = "section1",
+          formComponents = List(postcodeLookup)
+        ).page
+      )
+
+      val result = FormTemplateValidator.validatePostcodeLookup(pages)
+
+      result shouldBe Valid
     }
   }
 
