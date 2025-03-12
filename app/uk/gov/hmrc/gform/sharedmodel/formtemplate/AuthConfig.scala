@@ -145,7 +145,8 @@ case class HmrcVerified(
   ivFailure: LocalisedString,
   agentAccess: AgentAccess,
   minimumCL: String,
-  allowOrganisations: Boolean
+  allowOrganisations: Boolean,
+  allowSAIndividuals: Boolean
 ) extends AuthConfig
 case object HmrcSimpleModule extends AuthConfig
 case class HmrcEnrolmentModule(enrolmentAuth: EnrolmentAuth) extends AuthConfig
@@ -239,21 +240,49 @@ object AuthConfig {
         maybeCompositeConfigs          <- (json \ "configs").validateOpt[NonEmptyList[AuthConfig]]
         maybeEnrolmentOutcomes         <- (json \ "enrolmentOutcomes").validateOpt[EnrolmentOutcomes]
         maybeAllowOrganisations        <- (json \ "allowOrganisations").validateOpt[Boolean]
+        maybeAllowSAIndividuals        <- (json \ "allowSAIndividuals").validateOpt[Boolean]
 
         authConfig <- authModule match {
                         case AuthModule.AnonymousAccess => JsSuccess(Anonymous)
                         case AuthModule.AWSALBAccess    => JsSuccess(AWSALBAuth)
                         case AuthModule.HmrcAny         => JsSuccess(HmrcAny)
                         case AuthModule.HmrcVerified =>
-                          (maybeIvFailure, maybeAgentAccess, maybeMinimumCL) match {
-                            case (Some(ivFailure), Some(maybeAgentAccess), Some(maybeMinimumCL)) =>
-                              val allowOrganisations = maybeAllowOrganisations.getOrElse(false)
-                              JsSuccess(HmrcVerified(ivFailure, maybeAgentAccess, maybeMinimumCL, allowOrganisations))
-                            case (otherIvFailure, otherAgentAccess, otherMinimumCL) =>
+                          (
+                            maybeIvFailure,
+                            maybeAgentAccess,
+                            maybeMinimumCL,
+                            maybeAllowOrganisations,
+                            maybeAllowSAIndividuals
+                          ) match {
+                            case (
+                                  Some(ivFailure),
+                                  Some(maybeAgentAccess),
+                                  Some(maybeMinimumCL),
+                                  Some(allowOrganisations),
+                                  Some(allowSAIndividuals)
+                                ) =>
+                              JsSuccess(
+                                HmrcVerified(
+                                  ivFailure,
+                                  maybeAgentAccess,
+                                  maybeMinimumCL,
+                                  allowOrganisations,
+                                  allowSAIndividuals
+                                )
+                              )
+                            case (
+                                  otherIvFailure,
+                                  otherAgentAccess,
+                                  otherMinimumCL,
+                                  otherAllowOrganisations,
+                                  otherAllowSAIndividuals
+                                ) =>
                               JsError(
                                 s"Missing ${otherIvFailure.map(_ => "").getOrElse("ivFailure ")}" +
                                   s"${otherAgentAccess.map(_ => "").getOrElse("agentAccess ")}" +
-                                  s"${otherMinimumCL.map(_ => "").getOrElse("minimumCL ")}field"
+                                  s"${otherMinimumCL.map(_ => "").getOrElse("minimumCL ")}" +
+                                  s"${otherAllowOrganisations.map(_ => "").getOrElse("allowOrganisations ")}" +
+                                  s"${otherAllowSAIndividuals.map(_ => "").getOrElse("allowSAIndividuals ")}field"
                               )
                           }
                         case AuthModule.Hmrc =>
@@ -316,7 +345,7 @@ object AuthConfig {
                           maybeCompositeConfigs match {
                             case Some(configs) =>
                               val notAllowedConfigs = configs.toList.collectFirst {
-                                case v @ (Anonymous | AWSALBAuth | HmrcAny | HmrcVerified(_, _, _, _) |
+                                case v @ (Anonymous | AWSALBAuth | HmrcAny | HmrcVerified(_, _, _, _, _) |
                                     HmrcEnrolmentModule(_) | HmrcAgentModule(_) | HmrcAgentWithEnrolmentModule(_, _) |
                                     OfstedUser | Composite(_)) =>
                                   v
