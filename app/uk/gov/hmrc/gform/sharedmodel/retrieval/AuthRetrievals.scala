@@ -22,7 +22,7 @@ import uk.gov.hmrc.auth.core.CredentialRole
 import uk.gov.hmrc.gform.sharedmodel.AffinityGroup
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 
-case class FormAuthRetrievals(
+case class AuthRetrievals(
   _id: EnvelopeId,
   email: Option[String],
   emailLogin: Boolean,
@@ -36,7 +36,7 @@ case class FormAuthRetrievals(
   credentialRole: Option[CredentialRole]
 )
 
-object FormAuthRetrievals {
+object AuthRetrievals {
   def optionFormat[T: Format]: Format[Option[T]] = new Format[Option[T]] {
     override def reads(json: JsValue): JsResult[Option[T]] = json.validateOpt[T]
 
@@ -46,7 +46,7 @@ object FormAuthRetrievals {
     }
   }
 
-  private val reads: Reads[FormAuthRetrievals] = (
+  private val reads: Reads[AuthRetrievals] = (
     (EnvelopeId.oformat: Reads[EnvelopeId]) and
       (__ \ "email").readNullable[String] and
       (__ \ "emailLogin").read[Boolean] and
@@ -58,9 +58,9 @@ object FormAuthRetrievals {
       (__ \ "vrn").readNullable[String] and
       (__ \ "affinityGroup").readNullable[AffinityGroup] and
       (__ \ "credentialRole").readNullable[CredentialRole]
-  )(FormAuthRetrievals.apply _)
+  )(AuthRetrievals.apply _)
 
-  private val writes: Writes[FormAuthRetrievals] = Writes[FormAuthRetrievals](retrievals =>
+  private val writes: Writes[AuthRetrievals] = Writes[AuthRetrievals](retrievals =>
     EnvelopeId.oformat.writes(retrievals._id) ++
       Json.obj("email" -> optionFormat[String].writes(retrievals.email)) ++
       Json.obj("emailLogin" -> retrievals.emailLogin) ++
@@ -74,5 +74,5 @@ object FormAuthRetrievals {
       Json.obj("credentialRole" -> optionFormat[CredentialRole].writes(retrievals.credentialRole))
   )
 
-  implicit val format: Format[FormAuthRetrievals] = Format[FormAuthRetrievals](reads, writes)
+  implicit val format: Format[AuthRetrievals] = Format[AuthRetrievals](reads, writes)
 }

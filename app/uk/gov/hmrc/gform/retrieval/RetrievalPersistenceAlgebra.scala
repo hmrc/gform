@@ -16,12 +16,12 @@
 
 package uk.gov.hmrc.gform.retrieval
 
-import uk.gov.hmrc.gform.sharedmodel.form.FormId
-import uk.gov.hmrc.gform.sharedmodel.retrieval.FormAuthRetrievals
+import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
+import uk.gov.hmrc.gform.sharedmodel.retrieval.AuthRetrievals
 
 trait RetrievalPersistenceAlgebra[F[_]] {
-  def find(formId: FormId): F[Option[FormAuthRetrievals]]
-  def get(formId: FormId): F[FormAuthRetrievals]
-  def upsert(retrieval: FormAuthRetrievals): F[Unit]
-  def delete(formId: FormId): F[Unit]
+  def find(envelopeId: EnvelopeId): F[Option[AuthRetrievals]]
+  def get(envelopeId: EnvelopeId): F[AuthRetrievals]
+  def upsert(retrieval: AuthRetrievals): F[Unit]
+  def delete(envelopeId: EnvelopeId): F[Unit]
 }

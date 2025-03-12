@@ -16,20 +16,20 @@
 
 package uk.gov.hmrc.gform.retrieval
 
-import uk.gov.hmrc.gform.sharedmodel.form.FormId
-import uk.gov.hmrc.gform.sharedmodel.retrieval.FormAuthRetrievals
+import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
+import uk.gov.hmrc.gform.sharedmodel.retrieval.AuthRetrievals
 
 import scala.concurrent.Future
 
-class FormAuthRetrievalService(
+class AuthRetrievalService(
   retrievalRepo: RetrievalPersistenceAlgebra[Future]
 ) {
 
-  def find(formId: FormId): Future[Option[FormAuthRetrievals]] = retrievalRepo.find(formId)
+  def find(envelopeId: EnvelopeId): Future[Option[AuthRetrievals]] = retrievalRepo.find(envelopeId)
 
-  def get(formId: FormId): Future[FormAuthRetrievals] = retrievalRepo.get(formId)
+  def get(envelopeId: EnvelopeId): Future[AuthRetrievals] = retrievalRepo.get(envelopeId)
 
-  def upsert(retrieval: FormAuthRetrievals): Future[Unit] = retrievalRepo.upsert(retrieval)
+  def upsert(retrieval: AuthRetrievals): Future[Unit] = retrievalRepo.upsert(retrieval)
 
-  def delete(formId: FormId): Future[Unit] = retrievalRepo.delete(formId)
+  def delete(envelopeId: EnvelopeId): Future[Unit] = retrievalRepo.delete(envelopeId)
 }

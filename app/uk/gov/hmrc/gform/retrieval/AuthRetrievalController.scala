@@ -19,29 +19,29 @@ package uk.gov.hmrc.gform.retrieval
 import play.api.libs.json.Json
 import play.api.mvc.{ Action, AnyContent, ControllerComponents }
 import uk.gov.hmrc.gform.controllers.BaseController
-import uk.gov.hmrc.gform.sharedmodel.form.FormId
-import uk.gov.hmrc.gform.sharedmodel.retrieval.FormAuthRetrievals
+import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
+import uk.gov.hmrc.gform.sharedmodel.retrieval.AuthRetrievals
 
 import scala.concurrent.ExecutionContext
 
-class FormAuthRetrievalController(
-  retrievalService: FormAuthRetrievalService,
+class AuthRetrievalController(
+  retrievalService: AuthRetrievalService,
   controllerComponents: ControllerComponents
 )(implicit ec: ExecutionContext)
     extends BaseController(controllerComponents) {
 
-  def upsertRetrievals(): Action[FormAuthRetrievals] =
-    Action.async(parse.json[FormAuthRetrievals]) { request =>
-      val authRetrievals = request.body
+  def upsertRetrievals(): Action[AuthRetrievals] =
+    Action.async(parse.json[AuthRetrievals]) { request =>
+      val authRetrievals: AuthRetrievals = request.body
       retrievalService.upsert(authRetrievals).map { _ =>
         NoContent
       }
     }
 
-  def getRetrievals(formId: FormId): Action[AnyContent] =
+  def getRetrievals(envelopeId: EnvelopeId): Action[AnyContent] =
     Action.async { _ =>
       retrievalService
-        .get(formId)
+        .get(envelopeId)
         .map(retrieval => Ok(Json.toJson(retrieval)))
     }
 }

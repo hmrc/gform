@@ -26,14 +26,14 @@ import uk.gov.hmrc.mongo.cache.MongoCacheRepository
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{ ExecutionContext, Future }
 
-class FormAuthRetrievalModule(
+class AuthRetrievalModule(
   mongoModule: MongoModule,
   configModule: ConfigModule,
   jsonCrypto: Encrypter with Decrypter
 )(implicit
   ex: ExecutionContext
 ) {
-  private val mongoCacheRepository = new MongoCacheRepository[String](
+  private val mongoCacheRepository: MongoCacheRepository[String] = new MongoCacheRepository[String](
     mongoModule.mongoComponent,
     "formAuthRetrievals",
     true,
@@ -43,10 +43,10 @@ class FormAuthRetrievalModule(
   )
 
   private val retrievalRepository: RetrievalPersistenceAlgebra[Future] =
-    new RetrievalCache(mongoCacheRepository, jsonCrypto)
+    new AuthRetrievalCache(mongoCacheRepository, jsonCrypto)
 
-  private val formAuthRetrievalService: FormAuthRetrievalService = new FormAuthRetrievalService(retrievalRepository)
+  private val authRetrievalService: AuthRetrievalService = new AuthRetrievalService(retrievalRepository)
 
-  val formAuthRetrievalController: FormAuthRetrievalController =
-    new FormAuthRetrievalController(formAuthRetrievalService, configModule.controllerComponents)
+  val authRetrievalController: AuthRetrievalController =
+    new AuthRetrievalController(authRetrievalService, configModule.controllerComponents)
 }

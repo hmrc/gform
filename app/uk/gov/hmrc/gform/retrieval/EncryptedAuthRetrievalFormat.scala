@@ -22,18 +22,18 @@ import uk.gov.hmrc.auth.core.CredentialRole
 import uk.gov.hmrc.crypto.{ Crypted, Decrypter, Encrypter, PlainText }
 import uk.gov.hmrc.gform.sharedmodel.AffinityGroup
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
-import uk.gov.hmrc.gform.sharedmodel.retrieval.FormAuthRetrievals
+import uk.gov.hmrc.gform.sharedmodel.retrieval.AuthRetrievals
 
-object EncryptedFormAuthRetrievalFormat {
-  def formatEncrypted(jsonCrypto: Encrypter with Decrypter): Format[FormAuthRetrievals] =
-    new Format[FormAuthRetrievals] {
+object EncryptedAuthRetrievalFormat {
+  def formatEncrypted(jsonCrypto: Encrypter with Decrypter): Format[AuthRetrievals] =
+    new Format[AuthRetrievals] {
       private def readEncryptedOpt(path: JsPath): Reads[Option[String]] =
         path.readNullable[String].map {
           case Some(s) => Some(Json.parse(jsonCrypto.decrypt(Crypted(s)).value).as[String])
           case _       => None
         }
 
-      private val reads: Reads[FormAuthRetrievals] = (
+      private val reads: Reads[AuthRetrievals] = (
         (EnvelopeId.oformat: Reads[EnvelopeId]) and
           readEncryptedOpt(__ \ "email") and
           (__ \ "emailLogin").read[Boolean] and
@@ -45,10 +45,10 @@ object EncryptedFormAuthRetrievalFormat {
           readEncryptedOpt(__ \ "vrn") and
           (__ \ "affinityGroup").readNullable[AffinityGroup] and
           (__ \ "credentialRole").readNullable[CredentialRole]
-      )(FormAuthRetrievals.apply _)
+      )(AuthRetrievals.apply _)
 
-      override def reads(json: JsValue): JsResult[FormAuthRetrievals] = {
-        val authResult: JsResult[FormAuthRetrievals] = json.validate[FormAuthRetrievals](reads)
+      override def reads(json: JsValue): JsResult[AuthRetrievals] = {
+        val authResult: JsResult[AuthRetrievals] = json.validate[AuthRetrievals](reads)
         authResult match {
           case JsSuccess(a, _) => JsSuccess(a)
           case JsError(e)      => JsError("Failed to parse JSON " + e)
@@ -58,7 +58,7 @@ object EncryptedFormAuthRetrievalFormat {
       private def writeOpt(os: Option[String]): JsValue =
         os.fold[JsValue](JsNull)(s => JsString(jsonCrypto.encrypt(PlainText(Json.toJson(s).toString())).value))
 
-      override def writes(retrievals: FormAuthRetrievals): JsValue =
+      override def writes(retrievals: AuthRetrievals): JsValue =
         EnvelopeId.oformat.writes(retrievals._id) ++
           Json.obj("email" -> writeOpt(retrievals.email)) ++
           Json.obj("emailLogin" -> retrievals.emailLogin) ++
@@ -69,10 +69,10 @@ object EncryptedFormAuthRetrievalFormat {
           Json.obj("payeRef" -> writeOpt(retrievals.payeRef)) ++
           Json.obj("vrn" -> writeOpt(retrievals.vrn)) ++
           Json.obj(
-            "affinityGroup" -> FormAuthRetrievals.optionFormat[AffinityGroup].writes(retrievals.affinityGroup)
+            "affinityGroup" -> AuthRetrievals.optionFormat[AffinityGroup].writes(retrievals.affinityGroup)
           ) ++
           Json.obj(
-            "credentialRole" -> FormAuthRetrievals.optionFormat[CredentialRole].writes(retrievals.credentialRole)
+            "credentialRole" -> AuthRetrievals.optionFormat[CredentialRole].writes(retrievals.credentialRole)
           )
     }
 }

@@ -142,5 +142,5 @@ POST          /history/filter                                                   
 GET           /history/previous/:formTemplateRawId/:historyId                                           uk.gov.hmrc.gform.history.HistoryController.previousHistoryId(formTemplateRawId: FormTemplateRawId, historyId: HistoryId)
 GET           /history/next/:formTemplateRawId/:historyId                                               uk.gov.hmrc.gform.history.HistoryController.nextHistoryId(formTemplateRawId: FormTemplateRawId, historyId: HistoryId)
 
-GET           /retrieval/:formId                                                                        uk.gov.hmrc.gform.retrieval.FormAuthRetrievalController.getRetrievals(formId: FormId)
-POST          /retrieval                                                                                uk.gov.hmrc.gform.retrieval.FormAuthRetrievalController.upsertRetrievals()
+GET           /retrieval/:envelopeId                                                                    uk.gov.hmrc.gform.retrieval.AuthRetrievalController.getRetrievals(envelopeId: EnvelopeId)
+POST          /retrieval                                                                                uk.gov.hmrc.gform.retrieval.AuthRetrievalController.upsertRetrievals()
