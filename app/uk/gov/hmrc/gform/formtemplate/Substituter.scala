@@ -309,6 +309,16 @@ object Substituter {
       errorExample = t.errorExample(substitutions)
     )
 
+  implicit def continueIfSubstituter[A](implicit
+    ev: Substituter[A, BooleanExpr]
+  ): Substituter[A, ContinueIf] = (substitutions, t) =>
+    t match {
+      case ContinueIf.Continue => ContinueIf.Continue
+      case ContinueIf.Stop     => ContinueIf.Stop
+      case ContinueIf.Conditional(booleanExpression) =>
+        ContinueIf.Conditional(booleanExpression(substitutions))
+    }
+
   implicit def pageSubstituter[A](implicit
     ev: Substituter[A, Expr],
     ev2: Substituter[A, BooleanExpr]
@@ -320,6 +330,7 @@ object Substituter {
       shortName = t.shortName(substitutions),
       caption = t.caption(substitutions),
       includeIf = t.includeIf(substitutions),
+      continueIf = t.continueIf(substitutions),
       fields = t.fields(substitutions),
       continueLabel = t.continueLabel(substitutions),
       instruction = t.instruction(substitutions),

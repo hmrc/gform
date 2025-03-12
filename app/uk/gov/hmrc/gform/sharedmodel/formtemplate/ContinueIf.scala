@@ -17,16 +17,24 @@
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
 import play.api.libs.json._
+import uk.gov.hmrc.gform.core.parsers.BooleanExprParser
 
 sealed trait ContinueIf
-case object Continue extends ContinueIf
-case object Stop extends ContinueIf
 
 object ContinueIf {
 
+  case object Continue extends ContinueIf
+  case object Stop extends ContinueIf
+  case class Conditional(booleanExpression: BooleanExpr) extends ContinueIf
+
   private val templateReads: Reads[ContinueIf] = Reads {
-    case JsTrue    => JsSuccess(Continue)
-    case JsFalse   => JsSuccess(Stop)
+    case JsTrue  => JsSuccess(Continue)
+    case JsFalse => JsSuccess(Stop)
+    case JsString(str) =>
+      BooleanExprParser.validate(str) match {
+        case Left(unexpectedState) => JsError(unexpectedState.error)
+        case Right(be)             => JsSuccess(Conditional(be))
+      }
     case otherwise => JsError(s"Invalid continueIf value. Expected 'true' or 'false', got $otherwise")
   }
 
