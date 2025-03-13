@@ -82,6 +82,7 @@ trait Verifier {
       _ <- fromOptA(FormTemplateValidator.validateNoPIITitleConstraints(formTemplate, allExpressions).toEither)
       _ <- fromOptA(FormTemplateValidator.validateAddressReferencesConstraints(formTemplate, allExpressions).toEither)
       _ <- fromOptA(FormTemplateValidator.validatePeriodFunReferenceConstraints(formTemplate, allExpressions).toEither)
+      _ <- fromOptA(FormTemplateValidator.validateBetweenFunReferenceConstraints(formTemplate, allExpressions).toEither)
       _ <- fromOptA(
              FormTemplateValidator.validateDateFunctionReferenceConstraints(formTemplate, allExpressions).toEither
            )

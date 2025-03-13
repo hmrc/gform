@@ -115,6 +115,7 @@ object FormTemplatePIIRefsHelper {
       case FormCtx(FormComponentId(value))                    => List(value)
       case AddressLens(FormComponentId(value), _)             => List(value)
       case Period(dateCtx1, dateCtx2)                         => extractRefs(dateCtx1) ++ extractRefs(dateCtx2)
+      case Between(dateCtx1, dateCtx2, _)                     => extractRefs(dateCtx1) ++ extractRefs(dateCtx2)
       case PeriodExt(period, func)                            => extractRefs(period)
       case ParamCtx(queryParam)                               => List("param." + queryParam.value)
       case AuthCtx(value)                                     => List("auth." + value.toString.toLowerCase)

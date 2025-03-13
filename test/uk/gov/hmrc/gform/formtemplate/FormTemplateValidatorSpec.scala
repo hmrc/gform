@@ -285,6 +285,79 @@ class FormTemplateValidatorSpec
     }
   }
 
+  "validateBetweenFunReferenceConstraints" should {
+
+    "validate references in daysBetween/weeksBetween function" in {
+
+      val table = Table(
+        ("expression", "expectedResult"),
+        ("${daysBetween(startDate, endDate)}", Valid),
+        ("${daysBetween(startDate, endDate).sum}", Valid),
+        ("${weeksBetween(startDate, endDate)}", Valid),
+        ("${weeksBetween(startDate, endDate).sum}", Valid),
+        (
+          "${daysBetween(startDate, name)}",
+          Invalid(
+            "sections.fields.[id=infoField].infoText: Form component 'name' used in daysBetween/weeksBetween function should be date type"
+          )
+        ),
+        (
+          "${daysBetween(startDate, name).sum}",
+          Invalid(
+            "sections.fields.[id=infoField].infoText: Form component 'name' used in daysBetween/weeksBetween function should be date type"
+          )
+        ),
+        (
+          "${weeksBetween(startDate, name)}",
+          Invalid(
+            "sections.fields.[id=infoField].infoText: Form component 'name' used in daysBetween/weeksBetween function should be date type"
+          )
+        ),
+        (
+          "${weeksBetween(startDate, name).sum}",
+          Invalid(
+            "sections.fields.[id=infoField].infoText: Form component 'name' used in daysBetween/weeksBetween function should be date type"
+          )
+        )
+      )
+
+      forAll(table) { (expression, expectedResult) =>
+        val formTemplate = mkFormTemplate(
+          List(
+            mkSectionNonRepeatingPage(
+              name = "section1",
+              formComponents = List(
+                mkFormComponent("name"),
+                mkFormComponent("startDate", Date(AnyDate, Offset(0), None), true),
+                mkFormComponent("endDate", Date(AnyDate, Offset(0), None), true)
+              )
+            ),
+            mkSectionNonRepeatingPage(
+              name = "section2",
+              formComponents = List(
+                mkFormComponent(
+                  "infoField",
+                  InformationMessage(
+                    StandardInfo,
+                    SmartString(
+                      LocalisedString(Map(LangADT.En -> "{0}")),
+                      ValueParser.validateWithParser(expression, ValueParser.expr).toOption.toSeq.toList
+                    )
+                  ),
+                  true
+                )
+              )
+            )
+          )
+        )
+        val allExpressions: List[ExprWithPath] = LeafExpr(TemplatePath.root, formTemplate)
+
+        val result = FormTemplateValidator.validateBetweenFunReferenceConstraints(formTemplate, allExpressions)
+        result shouldBe expectedResult
+      }
+    }
+  }
+
   "validateUniquePageIds" should {
     "validate page ids are unique" in {
       val table = Table(

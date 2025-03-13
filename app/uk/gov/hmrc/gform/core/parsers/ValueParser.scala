@@ -315,6 +315,24 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
     | periodFun ^^ { case _ ~ dateExpr1 ~ _ ~ dateExpr2 ~ _ =>
       Period(DateCtx(dateExpr1), DateCtx(dateExpr2))
     }
+    | ("daysBetween(" ~ dateExpr ~ "," ~ dateExpr ~ ")" ~ ".sum|".r ^^ {
+      case _ ~ (dateExpr1: DateExpr) ~ _ ~ (dateExpr2: DateExpr) ~ _ ~ prop =>
+        prop match {
+          case ".sum" =>
+            Sum(Between(DateCtx(dateExpr1), DateCtx(dateExpr2), MeasurementType.Days))
+          case _ =>
+            Between(DateCtx(dateExpr1), DateCtx(dateExpr2), MeasurementType.Days)
+        }
+    })
+    | ("weeksBetween(" ~ dateExpr ~ "," ~ dateExpr ~ ")" ~ ".sum|".r ^^ {
+      case _ ~ (dateExpr1: DateExpr) ~ _ ~ (dateExpr2: DateExpr) ~ _ ~ prop =>
+        prop match {
+          case ".sum" =>
+            Sum(Between(DateCtx(dateExpr1), DateCtx(dateExpr2), MeasurementType.Weeks))
+          case _ =>
+            Between(DateCtx(dateExpr1), DateCtx(dateExpr2), MeasurementType.Weeks)
+        }
+    })
     | quotedLocalisedConstant
     | FormComponentId.unanchoredIdValidation <~ ".sum" ^^ (value => Sum(FormCtx(FormComponentId(value))))
     | "hideZeroDecimals(" ~ _expr1 ~ ")" ^^ { case _ ~ value ~ _ =>

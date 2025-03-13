@@ -228,6 +228,9 @@ object FormTemplateValidator {
       case ReferenceInfo.PeriodExtExpr(path, PeriodExt(Period(DateCtx(dateExpr1), DateCtx(dateExpr2)), _))
           if dateExprInvalidRefs(dateExpr1, dateExpr2).nonEmpty =>
         invalid(path, dateExprInvalidRefs(dateExpr1, dateExpr2): _*)
+      case ReferenceInfo.BetweenExpr(path, Between(DateCtx(dateExpr1), DateCtx(dateExpr2), _))
+          if dateExprInvalidRefs(dateExpr1, dateExpr2).nonEmpty =>
+        invalid(path, dateExprInvalidRefs(dateExpr1, dateExpr2): _*)
       case ReferenceInfo.SizeExpr(path, Size(formComponentId, _)) if !allFcIds(formComponentId) =>
         invalid(path, formComponentId)
       case ReferenceInfo.LinkCtxExpr(path, LinkCtx(PageLink(pageId))) if !allPageIds.contains(pageId) =>
@@ -497,6 +500,43 @@ object FormTemplateValidator {
       case PeriodExpr(path, Period(expr1, expr2)) => List(validateExpr(expr1, path), validateExpr(expr2, path))
       case PeriodExtExpr(path, PeriodExt(Period(expr1, expr2), _)) =>
         List(validateExpr(expr1, path), validateExpr(expr2, path))
+    }
+    Monoid.combineAll(validations.flatten)
+  }
+
+  def validateBetweenFunReferenceConstraints(
+    formTemplate: FormTemplate,
+    allExpressions: List[ExprWithPath]
+  ): ValidationResult = {
+
+    val fcIdToComponentType: Map[FormComponentId, ComponentType] = mkFcIdToComponentType(formTemplate)
+
+    def validateExpr(expr: Expr, path: TemplatePath): ValidationResult =
+      expr
+        .cast[DateCtx]
+        .map(
+          _.value.maybeFormCtx
+            .foldLeft[ValidationResult](Valid)((v, formCtx) =>
+              v.combine(
+                validateFormComponentTypeDate(
+                  path,
+                  formCtx.formComponentId,
+                  "daysBetween/weeksBetween",
+                  fcIdToComponentType
+                )
+              )
+            )
+        )
+        .getOrElse(
+          Invalid(
+            s"${path.path}: Expression $expr used in daysBetween/weeksBetween function should be a date expression"
+          )
+        )
+
+    val validations = allExpressions.flatMap(_.referenceInfos).collect {
+      case BetweenExpr(path, Between(expr1, expr2, _)) => List(validateExpr(expr1, path), validateExpr(expr2, path))
+      case SumExpr(path, Sum(Between(dateCtx1, dateCtx2, _))) =>
+        List(validateExpr(dateCtx1, path), validateExpr(dateCtx2, path))
     }
     Monoid.combineAll(validations.flatten)
   }
@@ -1245,9 +1285,11 @@ object FormTemplateValidator {
       case Period(dateCtx1, dateCtx2) =>
         checkFields(dateCtx1, dateCtx2)
       case PeriodExt(periodFun, _) => validate(periodFun, sections)
-      case DataRetrieveCtx(_, _)   => Valid
-      case DataRetrieveCount(_)    => Valid
-      case LookupColumn(value, _)  => validate(FormCtx(value), sections)
+      case Between(dateCtx1, dateCtx2, _) =>
+        checkFields(dateCtx1, dateCtx2)
+      case DataRetrieveCtx(_, _)  => Valid
+      case DataRetrieveCount(_)   => Valid
+      case LookupColumn(value, _) => validate(FormCtx(value), sections)
       case CsvCountryCountCheck(value, _, _) =>
         SectionHelper
           .addToListIds(sections)

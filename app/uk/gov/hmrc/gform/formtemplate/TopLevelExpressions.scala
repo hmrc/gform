@@ -160,6 +160,7 @@ object TopLevelExpressions {
         case Divide(l, r)                  => Divide(loop(l), loop(r))
         case HideZeroDecimals(l)           => HideZeroDecimals(loop(l))
         case Period(l, r)                  => Period(loop(l), loop(r))
+        case Between(l, r, m)              => Between(loop(l), loop(r), m)
         case Sum(l)                        => Sum(loop(l))
         case PeriodExt(p, pe)              => PeriodExt(loop(p), pe)
         case DateCtx(dateExpr)             => DateCtx(loopDateExpr(dateExpr))

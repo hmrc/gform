@@ -42,6 +42,7 @@ sealed trait Expr {
     case Divide(l, r)        => l.ifElses ++ r.ifElses
     case HideZeroDecimals(l) => l.ifElses
     case Period(l, r)        => l.ifElses ++ r.ifElses
+    case Between(l, r, _)    => l.ifElses ++ r.ifElses
     case Sum(l)              => l.ifElses
     case PeriodExt(p, _)     => p.ifElses
     case i @ IfElse(cond, l, r) =>
@@ -59,6 +60,7 @@ sealed trait Expr {
     case Divide(l, r)        => l.constants ++ r.constants
     case HideZeroDecimals(l) => l.constants
     case Period(l, r)        => l.constants ++ r.constants
+    case Between(l, r, _)    => l.constants ++ r.constants
     case Sum(l)              => l.constants
     case PeriodExt(p, _)     => p.constants
     case IfElse(cond, l, r) =>
@@ -88,6 +90,7 @@ final case class Index(formComponentId: FormComponentId) extends Expr
 final case class FormCtx(formComponentId: FormComponentId) extends Expr
 final case class AddressLens(formComponentId: FormComponentId, detail: AddressDetail) extends Expr
 final case class Period(dateCtx1: Expr, dateCtx2: Expr) extends Expr
+final case class Between(dateCtx1: Expr, dateCtx2: Expr, measurementType: MeasurementType) extends Expr
 final case class Size(formComponentId: FormComponentId, index: SizeRefType) extends Expr
 final case class Typed(expr: Expr, tpe: ExplicitExprType) extends Expr
 final case class NumberedList(formComponentId: FormComponentId) extends Expr
@@ -122,6 +125,13 @@ object ExplicitExprType {
   ) extends ExplicitExprType
 
   implicit val format: OFormat[ExplicitExprType] = derived.oformat()
+}
+
+sealed trait MeasurementType
+object MeasurementType {
+  case object Weeks extends MeasurementType
+  case object Days extends MeasurementType
+  implicit val format: OFormat[MeasurementType] = derived.oformat()
 }
 
 sealed trait PeriodFn
