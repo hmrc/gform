@@ -25,10 +25,9 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.time.SpanSugar.convertIntToGrainOfTime
 import org.scalatest.time.{ Millis, Seconds, Span }
 import org.scalatest.{ BeforeAndAfterAll, BeforeAndAfterEach }
-import uk.gov.hmrc.auth.core.User
+import play.api.libs.json.JsString
 import uk.gov.hmrc.crypto.SymmetricCryptoFactory.{ aesCrypto, composeCrypto }
 import uk.gov.hmrc.gform.MongoComponentSupport
-import uk.gov.hmrc.gform.sharedmodel.AffinityGroup
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.FormGen
 import uk.gov.hmrc.gform.sharedmodel.retrieval.AuthRetrievals
 import uk.gov.hmrc.http.{ HeaderCarrier, UpstreamErrorResponse }
@@ -49,16 +48,57 @@ class AuthRetrievalCacheSpec
   val envelopeId = envelopeIdGen.pureApply(Gen.Parameters.default, Seed(1))
   val retrievals: AuthRetrievals = AuthRetrievals(
     envelopeId,
-    Some("test@user.com"),
-    emailLogin = false,
-    ggLogin = true,
-    Some("AB123456C"),
-    None,
-    Some("2223106666"),
-    Some("123/FX987"),
-    None,
-    Some(AffinityGroup.Individual),
-    Some(User)
+    JsString("""
+               |{
+               |  "_id": {
+               |    "envelopeId": "f0a77c8c-86f6-48dd-9d9f-dbadd3a37869"
+               |  },
+               |  "materialisedRetrievals": {
+               |    "AuthenticatedRetrievals": {
+               |      "governmentGatewayId": {
+               |        "ggId": "2147447375173198"
+               |      },
+               |      "enrolments": {
+               |        "enrolments": [
+               |          {
+               |            "identifiers": [
+               |              {
+               |                "key": "UTR",
+               |                "value": "2376236723"
+               |              }
+               |            ],
+               |            "state": "Activated",
+               |            "enrolment": "IR-SA"
+               |          },
+               |          {
+               |            "identifiers": [
+               |              {
+               |                "key": "NINO",
+               |                "value": "AB123456C"
+               |              }
+               |            ],
+               |            "state": "Activated",
+               |            "enrolment": "HMRC-NI"
+               |          }
+               |        ]
+               |      },
+               |      "affinityGroup": "individual",
+               |      "groupIdentifier": "123456SAIND",
+               |      "maybeNino": {
+               |        "value": "AB123456C"
+               |      },
+               |      "otherRetrievals": {
+               |        "name": {
+               |          "name": "TestUser"
+               |        },
+               |        "email": "user@test.com"
+               |      },
+               |      "confidenceLevel": 200,
+               |      "credentialRole": "User"
+               |    }
+               |  }
+               |}
+               |""".stripMargin)
   )
   override protected def afterAll(): Unit = {
     mongoComponent.database.drop().toFuture().futureValue
