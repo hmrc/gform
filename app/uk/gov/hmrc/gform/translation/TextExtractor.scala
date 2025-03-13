@@ -369,6 +369,8 @@ object TextExtractor {
       Pure(DownField("errorMessage")) :: root,
       Pure(DownField("repeatLabel")) :: root,
       Pure(DownField("repeatAddAnotherText")) :: root,
+      Pure(DownField("chooseAddressLabel")) :: root,
+      Pure(DownField("confirmAddressLabel")) :: root,
       Pure(DownField("summaryValue")) :: root,
       TraverseArray :: Pure(DownField("header")) :: root,
       Pure(DownField("value")) :: TraverseArray :: Pure(DownField("values")) :: TraverseArray :: Pure(
