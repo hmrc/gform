@@ -595,6 +595,54 @@ class AuthConfigSpec extends Spec with ScalaCheckDrivenPropertyChecks {
     )
   }
 
+  it should "return error for hmrcVerified auth without allowOrganisations defined" in {
+    val authConfigValue = toAuthConfig(s"""|{
+                                           |    "authModule": "hmrcVerified",
+                                           |    "ivFailure": "#You are unable to use this service because we have not been able to confirm your identity",
+                                           |    "agentAccess": "denyAnyAgentAffinityUser",
+                                           |    "minimumCL": "200",
+                                           |    "allowSAIndividuals": false
+                                           |  }""".stripMargin)
+    authConfigValue.isError shouldBe true
+    authConfigValue.asInstanceOf[JsError].errors.flatMap(_._2) should contain(
+      JsonValidationError("Missing allowOrganisations field")
+    )
+  }
+
+  it should "return error for hmrcVerified auth without allowSAIndividuals defined" in {
+    val authConfigValue = toAuthConfig(s"""|{
+                                           |    "authModule": "hmrcVerified",
+                                           |    "ivFailure": "#You are unable to use this service because we have not been able to confirm your identity",
+                                           |    "agentAccess": "denyAnyAgentAffinityUser",
+                                           |    "minimumCL": "200",
+                                           |    "allowOrganisations": false
+                                           |  }""".stripMargin)
+    authConfigValue.isError shouldBe true
+    authConfigValue.asInstanceOf[JsError].errors.flatMap(_._2) should contain(
+      JsonValidationError("Missing allowSAIndividuals field")
+    )
+  }
+
+  it should "parse hmrcVerified auth with everything" in {
+    val authConfigValue = toAuthConfig(s"""|{
+                                           |    "authModule": "hmrcVerified",
+                                           |    "ivFailure": "#You are unable to use this service because we have not been able to confirm your identity",
+                                           |    "agentAccess": "denyAnyAgentAffinityUser",
+                                           |    "minimumCL": "200",
+                                           |    "allowOrganisations": false,
+                                           |    "allowSAIndividuals": true
+                                           |  }""".stripMargin)
+    authConfigValue shouldBe JsSuccess(
+      HmrcVerified(
+        toLocalisedString("#You are unable to use this service because we have not been able to confirm your identity"),
+        DenyAnyAgentAffinityUser,
+        "200",
+        allowOrganisations = false,
+        allowSAIndividuals = true
+      )
+    )
+  }
+
   "enrolmentActionMatch" should "return no action with input None" in {
     AuthConfig.enrolmentActionMatch(None) shouldBe NoAction
   }
