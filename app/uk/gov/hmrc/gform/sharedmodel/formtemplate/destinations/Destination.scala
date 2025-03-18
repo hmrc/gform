@@ -206,7 +206,14 @@ object Destination {
   implicit val leafExprs: LeafExpr[Destination] = (path: TemplatePath, t: Destination) =>
     t match {
       case d: DestinationWithCustomerId => List(ExprWithPath(path + "customerId", d.customerId()))
-      case _                            => Nil
+      case d: DestinationWithPaymentReference =>
+        List(ExprWithPath(path + "paymentReference", d.paymentReference)) ++
+          List(
+            d.nino.map(n => ExprWithPath(path + "nino", n)).toList,
+            d.utr.map(u => ExprWithPath(path + "utr", u)).toList,
+            d.postalCode.map(pc => ExprWithPath(path + "postalCode", pc)).toList
+          ).flatten
+      case _ => Nil
     }
 }
 
