@@ -258,17 +258,50 @@ class ExtractAndTranslateSuite extends FunSuite {
       """<p>You must tell us which premises the business will be producing the following in:</p> <ul>${if noBeerSelected then '<li>beer</li>' else ''} ${if noCiderSelected then '<li>cider or perry</li>'  else ''} ${if noWineSelected then '<li>Wine</li>'  else ''} ${if noSpiritSelected then '<li>spirits</li>'  else ''}</ul> <p><a href='${link.addedProductionPremises}'>Return to add these details</a></p>""",
       List(
         "You must tell us which premises the business will be producing the following in:",
-        "${if noBeerSelected then '",
-        "beer",
-        "' else ''} ${if noCiderSelected then '",
-        "cider or perry",
-        "'  else ''} ${if noWineSelected then '",
-        "Wine",
-        "'  else ''} ${if noSpiritSelected then '",
-        "spirits",
-        "'  else ''}",
+        "${if noBeerSelected then '<li>beer</li>' else ''} ${if noCiderSelected then '<li>cider or perry</li>'  else ''} ${if noWineSelected then '<li>Wine</li>'  else ''} ${if noSpiritSelected then '<li>spirits</li>'  else ''}",
         """<a href="${link.addedProductionPremises}">Return to add these details</a>"""
-      ) // HTML in expressions needs better way of handling.
+      )
+    ),
+    (
+      "<ul class='govuk-list govuk-list--bullet'><li style='${if numberVideoGames = 0 then 'display:none' else ''}'>${numberVideoGames} video game(s)</li><li style='${if numberFilms = 0 then 'display:none' else ''}'>${numberFilms} film(s)</li></ul>",
+      List(
+        "${numberVideoGames} video game(s)",
+        "${numberFilms} film(s)"
+      )
+    ),
+    (
+      "You must tell ${if (isAgent) then 'us' else 'them'}",
+      List(
+        "You must tell ${if (isAgent) then 'us' else 'them'}"
+      )
+    ),
+    (
+      """## What happens next\n\n ${if consentToEmailChoice contains 1 then 'We will now consider your application.\n\n We aim to get in touch within 30 days.' else concat('We will now consider your application.\n\n We aim to get in touch within 60 days.', contactEmail, '')}""",
+      List(
+        "What happens next",
+        """${if consentToEmailChoice contains 1 then 'We will now consider your application.\n\n We aim to get in touch within 30 days.' else concat('We will now consider your application.\n\n We aim to get in touch within 60 days.', contactEmail, '')}"""
+      )
+    ),
+    (
+      """This means that ${businessName} made money from:\n\n* doing business (‘trading profits’)\n\n* investments\n\n* selling assets for more than they cost (‘chargeable gains’)""",
+      List(
+        "This means that ${businessName} made money from:",
+        "doing business (‘trading profits’)",
+        "investments",
+        "selling assets for more than they cost (‘chargeable gains’)"
+      )
+    ),
+    (
+      "${if consent contains 0 then 'We will only use this.' else 'We will only use that.'}",
+      List("${if consent contains 0 then 'We will only use this.' else 'We will only use that.'}")
+    ),
+    (
+      "${if (ccHasQe contains 0) then 'foo'|'bar' else 0}",
+      List.empty[String] // Nothing to translate
+    ),
+    (
+      "${if (ccHasQe contains 0) then ccTotalQualifyingExpenditure else 0}",
+      List.empty[String] // Nothing to translate
     )
   ).zipWithIndex.foreach { case ((english, expectedBreakdown), index) =>
     test(s"html extraction ${index + 1}") {
@@ -606,6 +639,39 @@ class ExtractAndTranslateSuite extends FunSuite {
       ),
       """###EN1\n##EN2\n #EN3 \n\n #EN4""",
       """###CY1\n##CY2\n #CY3 \n\n #CY4"""
+    ),
+    (
+      Map(
+        (
+          EnFromSpreadsheet("${numberVideoGames} video game(s)"),
+          CyFromSpreadsheet("${numberVideoGames} CY1")
+        ),
+        (EnFromSpreadsheet("${numberFilms} film(s)"), CyFromSpreadsheet("${numberFilms} CY2"))
+      ),
+      "<ul class='govuk-list govuk-list--bullet'><li style='${if numberVideoGames = 0 then 'display:none' else ''}'>${numberVideoGames} video game(s)</li><li style='${if numberFilms = 0 then 'display:none' else ''}'>${numberFilms} film(s)</li></ul>",
+      """<ul class="govuk-list govuk-list--bullet"><li style="${if numberVideoGames = 0 then 'display:none' else ''}">${numberVideoGames} CY1</li><li style="${if numberFilms = 0 then 'display:none' else ''}">${numberFilms} CY2</li></ul>"""
+    ),
+    (
+      Map(
+        (
+          EnFromSpreadsheet("This means that ${businessName} made money from:"),
+          CyFromSpreadsheet("CY1")
+        ),
+        (
+          EnFromSpreadsheet("doing business (‘trading profits’)"),
+          CyFromSpreadsheet("CY2")
+        ),
+        (
+          EnFromSpreadsheet("investments"),
+          CyFromSpreadsheet("CY3")
+        ),
+        (
+          EnFromSpreadsheet("selling assets for more than they cost (‘chargeable gains’)"),
+          CyFromSpreadsheet("CY4")
+        )
+      ),
+      """This means that ${businessName} made money from:\n\n* doing business (‘trading profits’)\n\n* investments\n\n* selling assets for more than they cost (‘chargeable gains’)""",
+      """CY1\n\n* CY2\n\n* CY3\n\n* CY4"""
     )
   ).zipWithIndex.foreach { case ((spreadsheetData, english, expectedWelsh), index) =>
     val spreadsheet = Spreadsheet(spreadsheetData)

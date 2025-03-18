@@ -95,10 +95,11 @@ class Spreadsheet(val rows: Map[EnFromSpreadsheet, CyFromSpreadsheet]) {
     normalisedMap.contains(normalisedEnglish)
   }
 
-  def get(textType: TextType): Option[CyFromSpreadsheet] = {
-    val normalisedEnglish = textType.content.replaceAll("\"", "'")
+  def get(textType: TextType, lookup: Map[Int, String]): Option[CyFromSpreadsheet] = {
+    val normalisedEnglish0 = textType.content.replaceAll("\"", "'")
+    val normalisedEnglish = ExprMasker.unmask(normalisedEnglish0, lookup)
 
-    ExtractAndTranslate.markdownBreakdown(normalisedEnglish) match {
+    ExtractAndTranslate.markdownBreakdown(normalisedEnglish, lookup) match {
       case Nil         => None
       case head :: Nil => normalisedMap.get(head)
       case fragments =>
@@ -120,40 +121,54 @@ object Spreadsheet {
 
 object ExtractAndTranslate {
 
-  def markdownBreakdown(text: String): List[String] = text
-    .split(
-      // markdown lists with extra padding ('\n\n* ' or '\n\n- ' note the space at the end)
-      """\\n\s*\\n\s*[\*-]\s+"""
-    )
-    .flatMap(_.split("""\\n\s*\\n""")) // markdown paragraphs (usually \n\n)
-    .flatMap(_.split("""\\n\s*[\*-]""")) // markdown lists (usually \n* or \n-)
-    .flatMap(_.split("""\\n\s*#+""")) // markdown heading following new line (usually \n##)
-    .map { s =>
-      val s1 = if (s.startsWith("""\n""")) {
-        s.drop(2)
-      } else s
-      if (s1.endsWith("""\n""")) {
-        s1.dropRight(2)
-      } else s1
-    }
-    .map(_.trim.dropWhile(_ === '#')) // Ignore all # at the beginning of the text
-    .map(_.trim)
-    .filter(!_.isEmpty)
-    .toList
+  def markdownBreakdown(text: String, lookup: Map[Int, String]): List[String] =
+    text
+      .split(
+        // markdown lists with extra padding ('\n\n* ' or '\n\n- ' note the space at the end)
+        """\\n\s*\\n\s*[\*-]\s+"""
+      )
+      .flatMap(_.split("""\\n\s*\\n""")) // markdown paragraphs (usually \n\n)
+      .flatMap(_.split("""\\n\s*[\*-]""")) // markdown lists (usually \n* or \n-)
+      .flatMap(_.split("""\\n\s*#+""")) // markdown heading following new line (usually \n##)
+      .map { s =>
+        val s1 = if (s.startsWith("""\n""")) {
+          s.drop(2)
+        } else s
+        if (s1.endsWith("""\n""")) {
+          s1.dropRight(2)
+        } else s1
+      }
+      .map(_.trim.dropWhile(_ === '#')) // Ignore all # at the beginning of the text
+      .map(_.trim)
+      .filter(!_.isEmpty)
+      .toList
+      .map(s => ExprMasker.unmask(s, lookup))
 
-  final class BlockHtmlElementsAndOwnTexts(nodes: List[TextType], val root: Node, val originalText: String)
-      extends ExtractAndTranslate {
+  private val numberRegex = """^([0-9]+)$""".r
+
+  final class BlockHtmlElementsAndOwnTexts(
+    nodes: List[TextType],
+    val root: Node,
+    val originalText: String,
+    val lookup: Map[Int, String]
+  ) extends ExtractAndTranslate {
 
     def isStandaloneExpr(text: String): Boolean =
       SmartStringTemplateReader.templateReads
         .reads(JsString(text))
         .fold(
           _ => false,
-          _.rawValue(LangADT.En).trim === "{0}"
+          { s =>
+            val translatableConstants = s.interpolations.flatMap(_.constants).filter {
+              case TranslatableConstant.NonTranslated(en) => !numberRegex.matches(en.value)
+              case TranslatableConstant.Translated(en, _) => false
+            }
+            s.rawValue(LangADT.En).trim === "{0}" &&
+            translatableConstants.isEmpty // Is there any non-translated text constant
+          }
         )
 
     def nonTranslatable(text: String): Boolean = {
-      val numberRegex = """^([0-9]+)$""".r
       val trimmedText = text.trim.replaceAll("""\\n""", "")
 
       trimmedText.isEmpty || // do not translate empty strings
@@ -167,16 +182,16 @@ object ExtractAndTranslate {
     val translateTexts: List[EnTextToTranslate] =
       nodes
         .map(_.content)
+        .flatMap(en => markdownBreakdown(en, lookup))
         .filterNot(nonTranslatable)
-        .flatMap(en => markdownBreakdown(en))
         .map(en => EnTextToTranslate(en))
 
     def isTranslateable(spreadsheet: Spreadsheet): Boolean =
       translateTexts.forall(enTextToTranslate => spreadsheet.contains(enTextToTranslate.en))
 
     def translate(spreadsheet: Spreadsheet): String = {
-      nodes.zipWithIndex.foreach { case (node, index) =>
-        spreadsheet.get(node).foreach { cyFromSpreadsheet =>
+      nodes.foreach { node =>
+        spreadsheet.get(node, lookup).foreach { cyFromSpreadsheet =>
           node match {
             case ot @ TextType.OwnText(textNode, parentNode) =>
               if (parentNode.nameIs("body")) {
@@ -236,12 +251,14 @@ object ExtractAndTranslate {
       val sb = new StringBuffer()
       root.html(sb)
       val resultHtml = sb.toString().trim()
-      replacements.foldRight(resultHtml) { case (repl, acc) => acc.replace(repl.from, repl.to) }
-
+      val res = replacements.foldRight(resultHtml) { case (repl, acc) => acc.replace(repl.from, repl.to) }
+      ExprMasker.unmask(res, lookup)
     }
   }
 
-  def apply(english: String): ExtractAndTranslate = {
+  def apply(rawEnglish: String): ExtractAndTranslate = {
+    val (english, lookup) = ExprMasker.mask(rawEnglish)
+
     val document: Document = Jsoup.parseBodyFragment(english)
     document.outputSettings().prettyPrint(false) // Don't pretty print result of calls to .html() etc
     val body: Element = document.body()
@@ -269,7 +286,7 @@ object ExtractAndTranslate {
 
     val compoudedTreeNodes = compoud(treeNodes)
 
-    new BlockHtmlElementsAndOwnTexts(compoudedTreeNodes, body, english)
+    new BlockHtmlElementsAndOwnTexts(compoudedTreeNodes, body, english, lookup)
   }
 
   def compoud(treeNodes: List[TextType]): List[TextType] =
