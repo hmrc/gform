@@ -1,4 +1,4 @@
-import play.core.PlayVersion
+import play.sbt.PlayImport.caffeine
 import sbt.*
 object Dependencies {
 
@@ -14,7 +14,8 @@ object Dependencies {
   val circeVersion = "0.14.5"
 
   val compile = Seq(
-    "org.scala-lang.modules" %% "scala-xml" % "2.3.0",
+    caffeine,
+    "org.scala-lang.modules"       %% "scala-xml"                         % "2.3.0",
     "com.github.pureconfig"        %% "pureconfig"                        % "0.17.2",
     "uk.gov.hmrc.mongo"            %% "hmrc-mongo-work-item-repo-play-30" % hmrcMongoVersion,
     "uk.gov.hmrc"                  %% "bootstrap-backend-play-30"         % bootstrapVersion,

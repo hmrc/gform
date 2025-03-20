@@ -18,6 +18,7 @@ package uk.gov.hmrc.gform.formtemplate
 
 import cats.implicits._
 import org.slf4j.LoggerFactory
+import play.api.cache.caffeine.CaffeineCacheApi
 import play.api.libs.json.{ JsObject, Json }
 import play.api.mvc.{ ControllerComponents, Results }
 import uk.gov.hmrc.gform.auditing.loggingHelpers
@@ -33,18 +34,24 @@ import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.gform.notificationbanner.NotificationService
 import uk.gov.hmrc.gform.sharedmodel.LatestFormTemplateNotFoundException
 
+import scala.concurrent.duration.Duration
+
 class FormTemplatesController(
   controllerComponents: ControllerComponents,
   formTemplateService: FormTemplateService,
   formRedirectService: FormRedirectService,
   shutterService: ShutterService,
   notificationService: NotificationService,
-  handler: RequestHandlerAlg[FOpt]
+  handler: RequestHandlerAlg[FOpt],
+  formTemplateCache: CaffeineCacheApi,
+  formTemplateExpiry: Duration
 )(implicit
   ex: ExecutionContext
 ) extends BaseController(controllerComponents) {
 
   private val logger = LoggerFactory.getLogger(getClass)
+
+  println(s"formTemplateExpiry: $formTemplateExpiry")
 
   val inputStream = getClass.getClassLoader.getResourceAsStream("formTemplateSchema.json")
   val schemaStream = scala.io.Source.fromInputStream(inputStream).mkString
@@ -126,15 +133,19 @@ class FormTemplatesController(
   }
 
   private def findLatestFormTemplate(id: FormTemplateId): Future[FormTemplate] =
-    findLatestFormTemplateId(id)
-      .flatMap(id =>
-        formTemplateService
-          .find(id)
-          .flatMap {
-            case Some(ft) => Future.successful(ft)
-            case None     => Future.failed(LatestFormTemplateNotFoundException(s"Latest form template of '$id' not found"))
-          }
-      )
+    formTemplateCache.getOrElseUpdate[FormTemplate]("formTemplate", formTemplateExpiry) {
+      println(s"reloading form template")
+      findLatestFormTemplateId(id)
+        .flatMap(id =>
+          formTemplateService
+            .find(id)
+            .flatMap {
+              case Some(ft) => Future.successful(ft)
+              case None =>
+                Future.failed(LatestFormTemplateNotFoundException(s"Latest form template of '$id' not found"))
+            }
+        )
+    }
 
   private def findLatestFormTemplateId(id: FormTemplateId): Future[FormTemplateId] =
     formRedirectService.find(id) flatMap {

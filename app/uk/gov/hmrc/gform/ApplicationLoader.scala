@@ -22,6 +22,7 @@ import org.mongodb.scala.model.{ IndexModel, IndexOptions }
 import org.slf4j.LoggerFactory
 import play.api.ApplicationLoader.Context
 import play.api._
+import play.api.cache.caffeine.CaffeineCacheManager
 import play.api.http._
 import play.api.i18n.I18nComponents
 import play.api.inject.Injector
@@ -140,6 +141,8 @@ class ApplicationModule(context: Context)
   )
   private val historyModule = new HistoryModule(configModule, mongoModule)
 
+  private val caffeineCacheManager = new CaffeineCacheManager(configModule.typesafeConfig, actorSystem)
+
   val formTemplateModule =
     new FormTemplateModule(
       controllerComponents,
@@ -149,7 +152,8 @@ class ApplicationModule(context: Context)
       handlebarsTemplateService,
       handlebarsSchemaService,
       historyModule,
-      configModule
+      configModule,
+      caffeineCacheManager
     )
 
   private val handlebarsPayloadModule =

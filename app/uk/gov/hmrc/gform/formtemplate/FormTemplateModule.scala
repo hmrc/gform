@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.gform.formtemplate
 
+import play.api.cache.caffeine.{ CaffeineCacheApi, CaffeineCacheManager }
 import play.api.mvc.ControllerComponents
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.core.FOpt
@@ -36,6 +37,7 @@ import uk.gov.hmrc.gform.shutter.ShutterModule
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
+import scala.concurrent.duration.{ FiniteDuration, MILLISECONDS }
 
 class FormTemplateModule(
   controllerComponents: ControllerComponents,
@@ -45,7 +47,8 @@ class FormTemplateModule(
   handlebarsTemplateService: HandlebarsTemplateAlgebra[Future],
   handlebarsSchemaService: HandlebarsSchemaAlgebra[Future],
   historyModule: HistoryModule,
-  configModule: ConfigModule
+  configModule: ConfigModule,
+  cacheManager: CaffeineCacheManager
 )(implicit
   ex: ExecutionContext
 ) {
@@ -103,6 +106,9 @@ class FormTemplateModule(
     historyModule.historyService.save
   ).futureInterpreter
 
+  val formTemplateExpiry =
+    FiniteDuration(configModule.typesafeConfig.getDuration("formTemplateExpiry").toMillis, MILLISECONDS)
+
   val formTemplatesController: FormTemplatesController =
     new FormTemplatesController(
       controllerComponents,
@@ -110,7 +116,9 @@ class FormTemplateModule(
       formRedirectService,
       shutterModule.shutterService,
       notificationBannerModule.notificationService,
-      handler
+      handler,
+      new CaffeineCacheApi(cacheManager.getCache[Any, Any]("cacheFormTemplate")),
+      formTemplateExpiry
     )
 
   val fOptFormTemplateAlgebra: FormTemplateAlgebra[FOpt] = new FormTemplateAlgebra[FOpt] {
