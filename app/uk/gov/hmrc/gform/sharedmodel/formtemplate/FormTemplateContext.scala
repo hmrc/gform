@@ -23,11 +23,15 @@ import uk.gov.hmrc.gform.notificationbanner.NotificationBanner
 
 final case class FormTemplateContext(
   formTemplate: FormTemplate,
-  redirects: Option[FormTemplateId], // FormTemplateId which has formTemplate._id in its legacyIds
-  shutter: Option[Shutter] = None,
-  notificationBanner: Option[NotificationBanner] = None
+  redirects: Option[FormTemplateId] // FormTemplateId which has formTemplate._id in its legacyIds
 )
 
 object FormTemplateContext {
   implicit val format: OFormat[FormTemplateContext] = derived.oformat()
+}
+
+final case class FormTemplateBehavior(shutter: Option[Shutter], notificationBanner: Option[NotificationBanner])
+
+object FormTemplateBehavior {
+  implicit val format: OFormat[FormTemplateBehavior] = derived.oformat()
 }
