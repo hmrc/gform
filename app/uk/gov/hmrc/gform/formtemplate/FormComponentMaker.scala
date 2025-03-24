@@ -314,13 +314,17 @@ class FormComponentMaker(json: JsValue) {
       summaryValue   <- toOpt((json \ "summaryValue").validate[SmartString], "/summaryValue")
       caption        <- toOpt((json \ "caption").validateOpt[String], "/caption")
       captionClasses <- toOpt((json \ "captionClasses").validateOpt[String].map(_.getOrElse("")), "/captionClasses")
+      smallText      <- toOpt((json \ "smallText").validateOpt[Boolean].map(_.getOrElse(false)), "/smallText")
       classes        <- toOpt((json \ "classes").validateOpt[String].map(_.getOrElse("")), "/classes")
       firstCellIsHeader <-
         toOpt(
           (json \ "firstCellIsHeader").validateOpt[String].map(_.getOrElse("false")).map(_.toBoolean),
           "/firstCellIsHeader"
         )
-    } yield TableComp(header, rows, summaryValue, caption, captionClasses, classes, firstCellIsHeader)
+    } yield {
+      val enhancedClasses: String = if (smallText) s"$classes govuk-table--small-text-until-tablet".trim else classes
+      TableComp(header, rows, summaryValue, caption, captionClasses, enhancedClasses, firstCellIsHeader)
+    }
   }
 
   def optFieldValue(): Opt[FormComponent] =
