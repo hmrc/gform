@@ -338,6 +338,7 @@ object TextExtractor {
       Pure(DownField("progressIndicator")) :: root,
       Pure(DownField("summaryName")) :: root,
       Pure(DownField("description")) :: root,
+      Pure(DownField("descriptionTotal")) :: root,
       Pure(DownField("summaryDescription")) :: root,
       Pure(DownField("caption")) :: root,
       Pure(DownField("continueLabel")) :: root,

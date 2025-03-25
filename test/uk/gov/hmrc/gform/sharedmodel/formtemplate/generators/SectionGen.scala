@@ -185,6 +185,7 @@ trait SectionGen {
       errorMessage          <- Gen.option(smartStringGen)
       maybePageId           <- Gen.option(PageIdGen.pageIdGen)
       cyaPage               <- Gen.option(checkYourAnswerPageGen)
+      descriptionTotal      <- smartStringGen
     } yield Section
       .AddToList(
         title,
@@ -205,7 +206,8 @@ trait SectionGen {
         infoMessage,
         errorMessage,
         pageIdToDisplayAfterRemove = maybePageId,
-        cyaPage = cyaPage
+        cyaPage = cyaPage,
+        descriptionTotal = Some(AtlDescription.SmartStringBased(descriptionTotal))
       )
 
   def sectionGen: Gen[Section] = Gen.oneOf(nonRepeatingPageSectionGen, repeatingPageSectionGen, addToListSectionGen)

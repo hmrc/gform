@@ -70,7 +70,8 @@ object Section {
     defaultPage: Option[Page] = None,
     cyaPage: Option[CheckYourAnswersPage] = None,
     fields: Option[NonEmptyList[FormComponent]] = None,
-    pageIdToDisplayAfterRemove: Option[PageId] = None
+    pageIdToDisplayAfterRemove: Option[PageId] = None,
+    descriptionTotal: Option[AtlDescription]
   ) extends Section {
     val pageId: PageId = PageId(addAnotherQuestion.id.value)
     override lazy val expandedFormComponents: List[FormComponent] = pages.toList.flatMap(_.expandedFormComponents)
@@ -102,7 +103,8 @@ object Section {
           LeafExpr(path + "defaultPage", a.defaultPage) ++
           LeafExpr(path + "cyaPage", a.cyaPage) ++
           LeafExpr(path + "fields", a.fields) ++
-          LeafExpr(path + "errorMessage", a.infoMessage)
+          LeafExpr(path + "errorMessage", a.infoMessage) ++
+          LeafExpr(path + "descriptionTotal", a.descriptionTotal)
     }
 }
 
