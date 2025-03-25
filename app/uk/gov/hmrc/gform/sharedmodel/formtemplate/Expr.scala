@@ -313,6 +313,7 @@ object StringFnc {
   case object UpperCase extends StringFnc
   case object LowerCase extends StringFnc
   case object RemoveSpaces extends StringFnc
+  case object LowerCaseFirst extends StringFnc
   case class SubString(beginIndex: Int, endIndex: Int) extends StringFnc
   implicit val format: OFormat[StringFnc] = derived.oformat()
 }

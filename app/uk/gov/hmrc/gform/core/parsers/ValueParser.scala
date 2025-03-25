@@ -378,6 +378,9 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
     | "lowercase(" ~ _expr1 ~ ")" ^^ { case _ ~ value ~ _ =>
       StringOps(value, StringFnc.LowerCase)
     }
+    | "lowercaseFirst(" ~ _expr1 ~ ")" ^^ { case _ ~ value ~ _ =>
+      StringOps(value, StringFnc.LowerCaseFirst)
+    }
     | "concat(" ~ _expr1 ~ (("," ~> _expr1) *) ~ ")" ^^ { case _ ~ expr ~ exprs ~ _ =>
       Concat(expr +: exprs)
     }
