@@ -57,7 +57,8 @@ class FormTemplatesControllerRequestHandler[F[_]](
         booleanExpressionsContext <- booleanExpressionsContextOpt
         _                         <- rejectUnusedBooleanExpr(booleanExpressionsContext)
         formTemplate              <- formTemplateOpt
-        expressionsOutput         <- substituteExpressionsOutput(formTemplate.expressionsOutput, expressionsContext)
+        expressionsOutput <-
+          substituteExpressionsOutput(formTemplate.expressionsOutput, expressionsContext, booleanExpressionsContext)
       } yield {
         val email = expressionsContext.expressions.get(ExpressionId("email"))
         (
@@ -93,8 +94,13 @@ class FormTemplatesControllerRequestHandler[F[_]](
 
   private def substituteExpressionsOutput(
     maybeExpressionsOutput: Option[ExpressionOutput],
-    exprSubstitutions: ExprSubstitutions
+    exprSubstitutions: ExprSubstitutions,
+    booleanExprSubstitutions: BooleanExprSubstitutions
   ): Opt[Option[ExpressionOutput]] = maybeExpressionsOutput.traverse[Opt, ExpressionOutput] { expressionOutput =>
+    import uk.gov.hmrc.gform.formtemplate.ExprSubstituter._
+    import uk.gov.hmrc.gform.formtemplate.BooleanExprSubstituter._
+    val eSubstituter = implicitly[Substituter[ExprSubstitutions, Expr]]
+    val beSubstituter = implicitly[Substituter[BooleanExprSubstitutions, Expr]]
     exprSubstitutions.resolveSelfReferences.flatMap { resolveSelfReferences =>
       val lookup = resolveSelfReferences.expressions
       expressionOutput.lookup.toList
@@ -108,7 +114,8 @@ class FormTemplatesControllerRequestHandler[F[_]](
                 )
               )
             ) { expr =>
-              val exprSubs = ExprSubstituter.substituteExpr(exprSubstitutions, expr)
+              val exprSubs0: Expr = eSubstituter.substitute(exprSubstitutions, expr)
+              val exprSubs: Expr = beSubstituter.substitute(booleanExprSubstitutions, exprSubs0)
               Right(expressionId -> exprSubs)
             }
         }

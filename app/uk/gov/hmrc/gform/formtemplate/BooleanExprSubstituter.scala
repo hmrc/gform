@@ -22,7 +22,7 @@ object BooleanExprSubstituter extends Substituter[BooleanExprSubstitutions, Form
 
   import uk.gov.hmrc.gform.formtemplate.Substituter.SubstituterSyntax
 
-  implicit val exprSubstituter: Substituter[BooleanExprSubstitutions, Expr] =
+  implicit val booleanExprSubstituterForExpr: Substituter[BooleanExprSubstitutions, Expr] =
     new Substituter[BooleanExprSubstitutions, Expr] {
       def substitute(substitutions: BooleanExprSubstitutions, t: Expr): Expr = t match {
         case Else(l, r)            => Else(substitute(substitutions, l), substitute(substitutions, r))

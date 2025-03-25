@@ -31,7 +31,6 @@ import uk.gov.hmrc.gform.core.FOpt
 import uk.gov.hmrc.gform.des.DesAlgebra
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.form.FormAlgebra
-import uk.gov.hmrc.gform.formtemplate.ExprSubstituter
 import uk.gov.hmrc.gform.formtemplate.TopLevelExpressions
 import uk.gov.hmrc.gform.formtemplate.{ BooleanExprId, Substituter }
 import uk.gov.hmrc.gform.formtemplate.{ BooleanExprSubstitutions, ExprSubstitutions, FormTemplateAlgebra, RequestHandlerAlg }
@@ -69,10 +68,13 @@ class TestOnlyController(
 
   private val formTemplatesRepo = new Repo[FormTemplate]("formTemplate", mongoComponent, _._id.value)
 
-  private def substituteExpr(exprSubstitutions: ExprSubstitutions): ExprSubstitutions =
+  private def substituteExpr(exprSubstitutions: ExprSubstitutions): ExprSubstitutions = {
+    import uk.gov.hmrc.gform.formtemplate.ExprSubstituter._
+    val substituter = implicitly[Substituter[ExprSubstitutions, Expr]]
     ExprSubstitutions(exprSubstitutions.expressions.map { case (id, expr) =>
-      id -> ExprSubstituter.substituteExpr(exprSubstitutions, expr)
+      id -> substituter.substitute(exprSubstitutions, expr)
     })
+  }
 
   private def substituteBooleanExprsInExprs(
     booleanExprSubstitutions: BooleanExprSubstitutions,
