@@ -487,6 +487,7 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
                                  |   "caption": "This is caption",
                                  |   "captionClasses": "test-caption-classes",
                                  |   "firstCellIsHeader": "false",
+                                 |   "smallText": true,
                                  |   "classes": "test-classes",
                                  |   "header": [
                                  |     {
@@ -644,7 +645,7 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
           toSmartString("Summary value"),
           Some("This is caption"),
           "test-caption-classes",
-          "test-classes",
+          "test-classes govuk-table--small-text-until-tablet",
           false
         ),
         SmartString(LocalisedString(Map(LangADT.En -> "Table of data")), List()),

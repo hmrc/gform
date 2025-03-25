@@ -2408,6 +2408,35 @@ class JsonSchemeValidatorSpec extends FunSuite {
   }
 
   test(
+    "validateJson rejects the form when smallText is not a boolean"
+  ) {
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": "test label",
+            "type": "table",
+            "smallText": "true",
+            "header": [
+              "header 1",
+              "header 2",
+              "header 3"
+            ]
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at ID <testId>: Property smallText expected type [Boolean], found [String]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
     "validateJson rejects the form gracefully when the displayInSummary property is an invalid type"
   ) {
     val testProperties =
@@ -5779,6 +5808,33 @@ class JsonSchemeValidatorSpec extends FunSuite {
               {
                 "en": "en header 2"
               }
+            ]
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = validateJson(jsonTemplate)
+
+    val expectedResult = Right(())
+
+    assertEquals(result, expectedResult)
+  }
+
+  test(
+    "validateJson accepts the form when smallText a boolean"
+  ) {
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": "test label",
+            "type": "table",
+            "smallText": true,
+            "header": [
+              "header 1",
+              "header 2",
+              "header 3"
             ]
           }
         """

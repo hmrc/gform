@@ -1072,6 +1072,9 @@
         },
         "pageIdsToDisplayOnChange": {
           "type": "array"
+        },
+        "smallText": {
+          "type": "boolean"
         }
       },
       "dependencies": {
