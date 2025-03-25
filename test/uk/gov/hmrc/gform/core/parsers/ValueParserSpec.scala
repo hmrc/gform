@@ -1218,6 +1218,13 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     )
   }
 
+  it should "parse lowercaseFirst function" in {
+    val res = ValueParser.validate("${lowercaseFirst(fieldId)}")
+    res.toOption.value should be(
+      TextExpression(StringOps(FormCtx(FormComponentId("fieldId")), StringFnc.LowerCaseFirst))
+    )
+  }
+
   it should "parse lowercase, uppercase, and capitalize functions" in {
     val res = ValueParser.validate("${capitalize(uppercase(lowercase(fieldId)))}")
     res.toOption.value should be(
