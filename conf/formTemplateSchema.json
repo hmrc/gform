@@ -472,9 +472,6 @@
         "descriptionTotal": {
           "anyOf": [
             {
-              "$ref": "#/$defs/stringOrEnCyObject"
-            },
-            {
               "$ref": "#/$defs/atlDescriptionObject"
             }
           ]

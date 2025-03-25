@@ -212,9 +212,9 @@ trait Rewriter {
             _,
             _,
             _,
+            _,
             cyaPage,
             fields,
-            _,
             _
           ) =>
         includeIf.toList ++ pages.toList.flatMap(_.includeIf.toList) ++ fields.fold(List.empty[IncludeIf])(

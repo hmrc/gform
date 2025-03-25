@@ -947,7 +947,7 @@ class TemplateValidatorSpec extends Spec {
       None,
       None,
       None,
-      descriptionTotal = None
+      None
     )
 
   private def mkFormComponent(name: String, expr: Expr, validIf: Option[ValidIf] = None) =

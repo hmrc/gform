@@ -383,7 +383,7 @@ object Substituter {
         cyaPage = addToList.cyaPage(substitutions),
         fields = addToList.fields(substitutions),
         errorMessage = addToList.errorMessage(substitutions),
-        descriptionTotal = addToList.descriptionTotal(substitutions)
+        descriptionTotal = addToList.descriptionTotal
       )
     }
 

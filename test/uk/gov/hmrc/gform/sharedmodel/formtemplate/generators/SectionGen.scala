@@ -207,7 +207,7 @@ trait SectionGen {
         errorMessage,
         pageIdToDisplayAfterRemove = maybePageId,
         cyaPage = cyaPage,
-        descriptionTotal = Some(AtlDescription.SmartStringBased(descriptionTotal))
+        descriptionTotal = Some(AtlDescription.KeyValueBased(descriptionTotal, descriptionTotal))
       )
 
   def sectionGen: Gen[Section] = Gen.oneOf(nonRepeatingPageSectionGen, repeatingPageSectionGen, addToListSectionGen)
