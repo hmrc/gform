@@ -31,20 +31,23 @@ import uk.gov.hmrc.gform.history.HistoryService
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplateId, FormTemplateRaw, FormTemplateRawId }
 import org.apache.poi.ss.usermodel.{ Cell, CellType }
 import org.apache.poi.xssf.usermodel._
+import uk.gov.hmrc.gform.formtemplatemetadata.FormTemplateMetadataService
 
 import scala.util.{ Failure, Success, Try }
 
 class TranslationController(
   formTemplateService: FormTemplateService,
   historyService: HistoryService,
-  controllerComponents: ControllerComponents
+  controllerComponents: ControllerComponents,
+  metadataService: FormTemplateMetadataService
 )(implicit ec: ExecutionContext)
     extends BaseController(controllerComponents) {
 
   private val interpreter = new FormTemplatesControllerRequestHandler(
     formTemplateService.verifyAndSave,
     formTemplateService.save,
-    historyService.save
+    historyService.save,
+    metadataService.save
   ).futureInterpreter
 
   //Ignore missing fonts in headless environments (for XLSX generation)

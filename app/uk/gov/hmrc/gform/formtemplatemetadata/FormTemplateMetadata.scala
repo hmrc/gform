@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,20 +14,15 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.formtemplate
+package uk.gov.hmrc.gform.formtemplatemetadata
 
-import julienrf.json.derived
-import play.api.libs.json.OFormat
-import uk.gov.hmrc.gform.repo.DeleteResult
+import play.api.libs.json.{ Json, OFormat }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 
-case class DeleteResults(
-  formTemplate: DeleteResult,
-  formTemplateSpecimen: DeleteResult,
-  formTemplateRaw: DeleteResult,
-  formRedirect: DeleteResult,
-  formTemplateMetadata: DeleteResult
-)
+import java.time.Instant
 
-object DeleteResults {
-  implicit val format: OFormat[DeleteResults] = derived.oformat()
+final case class FormTemplateMetadata(_id: FormTemplateId, updatedAt: Instant)
+
+object FormTemplateMetadata {
+  implicit val format: OFormat[FormTemplateMetadata] = Json.format[FormTemplateMetadata]
 }

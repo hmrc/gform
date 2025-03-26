@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,20 +14,15 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.formtemplate
+package uk.gov.hmrc.gform.formtemplatemetadata
 
-import julienrf.json.derived
-import play.api.libs.json.OFormat
-import uk.gov.hmrc.gform.repo.DeleteResult
+import uk.gov.hmrc.gform.core.FOpt
+import uk.gov.hmrc.gform.repo.Repo
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 
-case class DeleteResults(
-  formTemplate: DeleteResult,
-  formTemplateSpecimen: DeleteResult,
-  formTemplateRaw: DeleteResult,
-  formRedirect: DeleteResult,
-  formTemplateMetadata: DeleteResult
-)
+import scala.concurrent.Future
 
-object DeleteResults {
-  implicit val format: OFormat[DeleteResults] = derived.oformat()
+class FormTemplateMetadataService(repo: Repo[FormTemplateMetadata]) {
+  def save(formTemplateMetadata: FormTemplateMetadata): FOpt[Unit] = repo.upsert(formTemplateMetadata)
+  def get(formTemplateId: FormTemplateId): Future[FormTemplateMetadata] = repo.get(formTemplateId.value)
 }

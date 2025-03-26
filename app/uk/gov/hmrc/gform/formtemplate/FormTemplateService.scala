@@ -23,6 +23,7 @@ import uk.gov.hmrc.gform.config.AppConfig
 import uk.gov.hmrc.gform.core.{ FOpt, _ }
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.formredirect.FormRedirect
+import uk.gov.hmrc.gform.formtemplatemetadata.FormTemplateMetadata
 import uk.gov.hmrc.gform.handlebarstemplate.{ HandlebarsSchemaAlgebra, HandlebarsTemplateAlgebra }
 import uk.gov.hmrc.gform.repo.Repo
 import uk.gov.hmrc.gform.sharedmodel.{ HandlebarsSchemaId, HandlebarsTemplateId }
@@ -43,6 +44,7 @@ class FormTemplateService(
   formTemplateRepo: Repo[FormTemplate],
   formTemplateRawRepo: Repo[FormTemplateRaw],
   formRedirectRepo: Repo[FormRedirect],
+  formTemplateMetadataRepo: Repo[FormTemplateMetadata],
   handlebarsTemplateAlgebra: HandlebarsTemplateAlgebra[FOpt],
   handlebarsSchemaAlgebra: HandlebarsSchemaAlgebra[FOpt],
   appConfig: AppConfig
@@ -75,11 +77,13 @@ class FormTemplateService(
       formTemplateDeleteResult    <- formTemplateRepo.delete(formTemplateId.value)
       specimenDeleteResult        <- formTemplateRepo.delete("specimen-" + formTemplateId.value)
       formTemplateRawDeleteResult <- formTemplateRawRepo.delete(formTemplateId.value)
+      formTemplateMetadataResult  <- formTemplateMetadataRepo.delete(formTemplateId.value)
     } yield DeleteResults(
       formTemplateDeleteResult,
       specimenDeleteResult,
       formTemplateRawDeleteResult,
-      formRedirectDeleteResult
+      formRedirectDeleteResult,
+      formTemplateMetadataResult
     )
 
   def list(): Future[List[String]] =

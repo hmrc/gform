@@ -25,6 +25,7 @@ import play.api.libs.circe.Circe
 import play.api.libs.json.{ JsError, JsObject, JsString, JsSuccess }
 import play.api.libs.json.{ Json => PlayJson }
 import play.api.mvc.{ ControllerComponents, Result, Results }
+
 import scala.concurrent.Future
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.core._
@@ -32,6 +33,7 @@ import uk.gov.hmrc.gform.formtemplate.{ FormTemplateService, FormTemplatesContro
 import uk.gov.hmrc.gform.history.HistoryService
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import io.circe.generic.semiauto._
+import uk.gov.hmrc.gform.formtemplatemetadata.FormTemplateMetadataService
 
 import scala.concurrent.ExecutionContext
 
@@ -972,7 +974,8 @@ object BuilderSupport {
 class BuilderController(
   controllerComponents: ControllerComponents,
   formTemplateService: FormTemplateService,
-  historyService: HistoryService
+  historyService: HistoryService,
+  metadataService: FormTemplateMetadataService
 )(implicit
   ex: ExecutionContext
 ) extends BaseController(controllerComponents) with Circe {
@@ -981,7 +984,8 @@ class BuilderController(
     new FormTemplatesControllerRequestHandler(
       formTemplateService.verifyAndSave,
       formTemplateService.save,
-      historyService.save
+      historyService.save,
+      metadataService.save
     ).futureInterpreter
 
   private def applyUpdateFunction(

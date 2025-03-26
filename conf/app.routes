@@ -51,6 +51,8 @@ GET           /formtemplates-redirects/:page/:pageSize                          
 GET           /formtemplates-with-handlebars/:formTemplateId                                            uk.gov.hmrc.gform.formtemplate.FormTemplatesController.getHandlebarsTemplateIds(formTemplateId: FormTemplateId)
 GET           /formtemplates/:formTemplateId/behavior                                                   uk.gov.hmrc.gform.formtemplate.FormTemplatesController.getBehavior(formTemplateId: FormTemplateId)
 
+GET           /formtemplates/:formTemplateId/metadata                                                   uk.gov.hmrc.gform.formtemplatemetadata.FormTemplateMetadataController.get(formTemplateId: FormTemplateId)
+
 GET           /handlebarstemplates                                                                      uk.gov.hmrc.gform.handlebarstemplate.HandlebarsTemplateController.all
 POST          /handlebarstemplates/:handlebarsTemplateId                                                uk.gov.hmrc.gform.handlebarstemplate.HandlebarsTemplateController.upsert(handlebarsTemplateId: HandlebarsTemplateId)
 GET           /handlebarstemplates/:handlebarsTemplateId                                                uk.gov.hmrc.gform.handlebarstemplate.HandlebarsTemplateController.get(handlebarsTemplateId: HandlebarsTemplateId)

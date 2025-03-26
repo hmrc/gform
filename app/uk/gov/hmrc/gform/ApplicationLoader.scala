@@ -46,6 +46,7 @@ import uk.gov.hmrc.gform.form.FormService
 import uk.gov.hmrc.gform.formmetadata.FormMetadataModule
 import uk.gov.hmrc.gform.formstatistics.FormStatisticsModule
 import uk.gov.hmrc.gform.formtemplate.FormTemplateModule
+import uk.gov.hmrc.gform.formtemplatemetadata.FormTemplateMetadataModule
 import uk.gov.hmrc.gform.graphite.GraphiteModule
 import uk.gov.hmrc.gform.handlebarstemplate.{ HandlebarsSchemaAlgebra, HandlebarsSchemaService, HandlebarsTemplateAlgebra, HandlebarsTemplateModule, HandlebarsTemplateService }
 import uk.gov.hmrc.gform.history.HistoryModule
@@ -139,6 +140,7 @@ class ApplicationModule(context: Context)
     handlebarsSchemaRepo
   )
   private val historyModule = new HistoryModule(configModule, mongoModule)
+  private val formTemplateMetadataModule = new FormTemplateMetadataModule(configModule, mongoModule)
 
   val formTemplateModule =
     new FormTemplateModule(
@@ -149,7 +151,8 @@ class ApplicationModule(context: Context)
       handlebarsTemplateService,
       handlebarsSchemaService,
       historyModule,
-      configModule
+      configModule,
+      formTemplateMetadataModule
     )
 
   private val handlebarsPayloadModule =
@@ -161,7 +164,8 @@ class ApplicationModule(context: Context)
     )
 
   private val emailModule = new EmailModule(configModule, wSHttpModule, notifierModule, formTemplateModule)
-  private val translationModule = new TranslationModule(formTemplateModule, historyModule, configModule)
+  private val translationModule =
+    new TranslationModule(formTemplateModule, historyModule, configModule, formTemplateMetadataModule.metadataService)
   private val pdfGeneratorModule = new PdfGeneratorModule(playComponents.context.environment)
 
   private val sdesModule =
@@ -371,7 +375,12 @@ class ApplicationModule(context: Context)
   new SchedulerModule(configModule, mongoModule, sdesModule, akkaModule, applicationLifecycle)
 
   private val builderModule =
-    new BuilderModule(controllerComponents, formTemplateModule.formTemplateService, historyModule)
+    new BuilderModule(
+      controllerComponents,
+      formTemplateModule.formTemplateService,
+      historyModule,
+      formTemplateMetadataModule.metadataService
+    )
 
   private val playComponentsModule = new PlayComponentsModule(
     playComponents,
@@ -401,7 +410,8 @@ class ApplicationModule(context: Context)
     shutterModule,
     handlebarsPayloadModule,
     historyModule,
-    retrievalModule
+    retrievalModule,
+    formTemplateMetadataModule
   )
 
   override lazy val httpRequestHandler: HttpRequestHandler = playComponentsModule.httpRequestHandler
