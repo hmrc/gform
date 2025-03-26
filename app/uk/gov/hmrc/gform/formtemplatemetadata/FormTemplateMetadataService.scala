@@ -18,11 +18,7 @@ package uk.gov.hmrc.gform.formtemplatemetadata
 
 import uk.gov.hmrc.gform.core.FOpt
 import uk.gov.hmrc.gform.repo.Repo
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
-
-import scala.concurrent.Future
 
 class FormTemplateMetadataService(repo: Repo[FormTemplateMetadata]) {
   def save(formTemplateMetadata: FormTemplateMetadata): FOpt[Unit] = repo.upsert(formTemplateMetadata)
-  def get(formTemplateId: FormTemplateId): Future[FormTemplateMetadata] = repo.get(formTemplateId.value)
 }

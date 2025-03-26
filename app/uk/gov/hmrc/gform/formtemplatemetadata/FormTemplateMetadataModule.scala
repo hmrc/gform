@@ -16,17 +16,13 @@
 
 package uk.gov.hmrc.gform.formtemplatemetadata
 
-import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.mongo.MongoModule
 import uk.gov.hmrc.gform.repo.Repo
 
 import scala.concurrent.ExecutionContext
 
-class FormTemplateMetadataModule(configModule: ConfigModule, mongoModule: MongoModule)(implicit ex: ExecutionContext) {
+class FormTemplateMetadataModule(mongoModule: MongoModule)(implicit ex: ExecutionContext) {
   val formTemplateMetadataRepo: Repo[FormTemplateMetadata] =
     new Repo[FormTemplateMetadata]("formTemplateMetadata", mongoModule.mongoComponent, _._id.value)
   val metadataService: FormTemplateMetadataService = new FormTemplateMetadataService(formTemplateMetadataRepo)
-
-  val formTemplateMetadataController: FormTemplateMetadataController =
-    new FormTemplateMetadataController(configModule.controllerComponents, metadataService)
 }

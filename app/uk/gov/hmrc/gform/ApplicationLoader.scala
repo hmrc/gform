@@ -140,7 +140,7 @@ class ApplicationModule(context: Context)
     handlebarsSchemaRepo
   )
   private val historyModule = new HistoryModule(configModule, mongoModule)
-  private val formTemplateMetadataModule = new FormTemplateMetadataModule(configModule, mongoModule)
+  private val formTemplateMetadataModule = new FormTemplateMetadataModule(mongoModule)
 
   val formTemplateModule =
     new FormTemplateModule(

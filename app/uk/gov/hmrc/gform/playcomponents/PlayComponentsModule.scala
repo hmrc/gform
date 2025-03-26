@@ -94,7 +94,6 @@ class PlayComponentsModule(
     submissionModule.submissionController,
     submissionModule.formBundleController,
     formTemplateModule.formTemplatesController,
-    formTemplateMetadataModule.formTemplateMetadataController,
     handlebarsPayloadModule.handlebarTemplateController,
     handlebarsPayloadModule.handlebarSchemaController,
     configModule.configController,
