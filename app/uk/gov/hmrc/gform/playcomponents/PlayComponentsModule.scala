@@ -114,6 +114,9 @@ class PlayComponentsModule(
     sdesModule.destinationWorkItemController,
     historyModule.historyController,
     retrievalModule.authRetrievalController
+    sdesModule.dmsWorkItemController,
+    sdesModule.dataStoreWorkItemController,
+    historyModule.historyController
   )
 
   private val healthController =
