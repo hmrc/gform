@@ -470,11 +470,7 @@
           ]
         },
         "descriptionTotal": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/atlDescriptionObject"
-            }
-          ]
+          "$ref": "#/$defs/atlDescriptionObject"
         },
         "shortName": {
           "$ref": "#/$defs/stringOrEnCyObject"

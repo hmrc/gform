@@ -328,6 +328,8 @@ object TextExtractor {
   def pathForSection(root: List[Instruction]): List[List[Instruction]] = {
     val confirmationQuestion = Pure(DownField("question")) :: Pure(DownField("confirmation")) :: root
     val addAnotherQuestion = Pure(DownField("addAnotherQuestion")) :: root
+    val descriptionTotal = Pure(DownField("descriptionTotal")) :: root
+    val description = Pure(DownField("description")) :: root
     List(
       Pure(DownField("title")) :: root,
       Pure(DownField("noPIITitle")) :: root,
@@ -337,8 +339,11 @@ object TextExtractor {
       Pure(DownField("errorExample")) :: root,
       Pure(DownField("progressIndicator")) :: root,
       Pure(DownField("summaryName")) :: root,
-      Pure(DownField("description")) :: root,
-      Pure(DownField("descriptionTotal")) :: root,
+      description,
+      TraverseArray :: Pure(DownField("key")) :: description,
+      TraverseArray :: Pure(DownField("value")) :: description,
+      TraverseArray :: Pure(DownField("key")) :: descriptionTotal,
+      TraverseArray :: Pure(DownField("value")) :: descriptionTotal,
       Pure(DownField("summaryDescription")) :: root,
       Pure(DownField("caption")) :: root,
       Pure(DownField("continueLabel")) :: root,
