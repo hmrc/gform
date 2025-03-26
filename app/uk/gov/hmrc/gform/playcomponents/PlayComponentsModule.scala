@@ -111,12 +111,10 @@ class PlayComponentsModule(
     shutterModule.shutterController,
     sdesModule.sdesCallbackController,
     sdesModule.sdesController,
-    sdesModule.destinationWorkItemController,
-    historyModule.historyController,
-    retrievalModule.authRetrievalController
     sdesModule.dmsWorkItemController,
     sdesModule.dataStoreWorkItemController,
-    historyModule.historyController
+    historyModule.historyController,
+    retrievalModule.authRetrievalController
   )
 
   private val healthController =
