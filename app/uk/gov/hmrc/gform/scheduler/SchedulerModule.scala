@@ -73,7 +73,7 @@ class SchedulerModule(
       dataStoreNotificationRepository,
       config.dataStore.poller.pollLimit,
       config.dataStore.queue.maxFailureCount,
-      config.dataStore.queue.retryAfter.toMillis
+      config.dataStore.queue.retryAfter.toNanos
     )
 
   new DataStoreQueuePollingService(
@@ -92,7 +92,7 @@ class SchedulerModule(
       infoArchiveNotificationRepository,
       config.infoArchive.poller.pollLimit,
       config.infoArchive.queue.maxFailureCount,
-      config.infoArchive.queue.retryAfter.toMillis
+      config.infoArchive.queue.retryAfter.toNanos
     )
 
   new InfoArchiveQueuePollingService(
