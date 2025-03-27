@@ -67,6 +67,7 @@ object Section {
     presentationHint: Option[PresentationHint],
     infoMessage: Option[SmartString],
     errorMessage: Option[SmartString],
+    descriptionTotal: Option[AtlDescription.KeyValueBased],
     defaultPage: Option[Page] = None,
     cyaPage: Option[CheckYourAnswersPage] = None,
     fields: Option[NonEmptyList[FormComponent]] = None,
@@ -102,7 +103,8 @@ object Section {
           LeafExpr(path + "defaultPage", a.defaultPage) ++
           LeafExpr(path + "cyaPage", a.cyaPage) ++
           LeafExpr(path + "fields", a.fields) ++
-          LeafExpr(path + "errorMessage", a.infoMessage)
+          LeafExpr(path + "errorMessage", a.infoMessage) ++
+          LeafExpr(path + "descriptionTotal", a.descriptionTotal)
     }
 }
 

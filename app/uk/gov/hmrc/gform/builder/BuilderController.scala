@@ -158,7 +158,8 @@ object BuilderSupport {
       Property("repeatsUntil", PropertyBehaviour.PurgeWhenEmpty),
       Property("pageIdToDisplayAfterRemove", PropertyBehaviour.PurgeWhenEmpty),
       Property("presentationHint", PropertyBehaviour.PurgeWhenEmpty),
-      Property("continueLabel", PropertyBehaviour.PurgeWhenEmpty)
+      Property("continueLabel", PropertyBehaviour.PurgeWhenEmpty),
+      Property("descriptionTotal", PropertyBehaviour.PurgeWhenEmpty)
     )
 
     modifyAtlRepeater(

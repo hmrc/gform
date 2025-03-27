@@ -351,6 +351,7 @@ trait FormTemplateSupport {
       None,
       None,
       None,
+      None,
       defaultPage,
       pageIdToDisplayAfterRemove = pageIdToDisplayAfterRemove
     )
