@@ -100,7 +100,8 @@ class FormComponentMaker(json: JsValue) {
   lazy val regimeType: Option[String] = (json \ "regimeType").asOpt[String]
 
   lazy val fieldsJson: Option[List[JsValue]] = (json \ "fields").asOpt[List[JsValue]]
-  lazy val errorMessage: Option[SmartString] = (json \ "errorMessage").asOpt[SmartString]
+  lazy val optErrorMessage: Opt[Option[SmartString]] =
+    toOpt((json \ "errorMessage").validateOpt[SmartString], "/errorMessage")
 
   lazy val fields: Option[List[FormComponentMaker]] = fieldsJson.map(_.map(new FormComponentMaker(_)))
   lazy val optIncludeIf: Opt[Option[IncludeIf]] = toOpt((json \ "includeIf").validateOpt[IncludeIf], "/includeIf")
@@ -137,10 +138,13 @@ class FormComponentMaker(json: JsValue) {
     toOpt((json \ "international").validateOpt[Boolean], "/international")
   lazy val optInfoText: Opt[SmartString] = toOpt((json \ "infoText").validate[SmartString], "/infoText")
   lazy val infoType: Option[String] = (json \ "infoType").asOpt[String]
-  lazy val shortName: Option[SmartString] = (json \ "shortName").asOpt[SmartString]
-  lazy val errorShortName: Option[SmartString] = (json \ "errorShortName").asOpt[SmartString]
-  lazy val errorShortNameStart: Option[SmartString] = (json \ "errorShortNameStart").asOpt[SmartString]
-  lazy val errorExample: Option[SmartString] = (json \ "errorExample").asOpt[SmartString]
+  lazy val optShortName: Opt[Option[SmartString]] = toOpt((json \ "shortName").validateOpt[SmartString], "/shortName")
+  lazy val optErrorShortName: Opt[Option[SmartString]] =
+    toOpt((json \ "errorShortName").validateOpt[SmartString], "/errorShortName")
+  lazy val optErrorShortNameStart: Opt[Option[SmartString]] =
+    toOpt((json \ "errorShortNameStart").validateOpt[SmartString], "/errorShortNameStart")
+  lazy val optErrorExample: Opt[Option[SmartString]] =
+    toOpt((json \ "errorExample").validateOpt[SmartString], "/errorExample")
   lazy val optMaybeRepeatsMax: Opt[Option[Int]] = toOpt((json \ "repeatsMax").validateOpt[Int], "/repeatsMax")
   lazy val optMaybeRepeatsMin: Opt[Option[Int]] = toOpt((json \ "repeatsMin").validateOpt[Int], "/repeatsMin")
   lazy val repeatLabel: Option[SmartString] = (json \ "repeatLabel").asOpt[SmartString]
@@ -331,6 +335,11 @@ class FormComponentMaker(json: JsValue) {
     for {
       label                    <- optLabel
       helpText                 <- optHelpText
+      shortName                <- optShortName
+      errorMessage             <- optErrorMessage
+      errorShortName           <- optErrorShortName
+      errorShortNameStart      <- optErrorShortNameStart
+      errorExample             <- optErrorExample
       presHint                 <- optMaybePresentationHintExpr
       mes                      <- optMES
       ct                       <- componentTypeOpt
@@ -346,6 +355,11 @@ class FormComponentMaker(json: JsValue) {
     } yield mkFieldValue(
       label,
       helpText,
+      shortName,
+      errorMessage,
+      errorShortName,
+      errorShortNameStart,
+      errorExample,
       presHint,
       mes,
       ct,
@@ -376,6 +390,11 @@ class FormComponentMaker(json: JsValue) {
   private def mkFieldValue(
     label: Option[SmartString],
     helpText: Option[SmartString],
+    shortName: Option[SmartString],
+    errorMessage: Option[SmartString],
+    errorShortName: Option[SmartString],
+    errorShortNameStart: Option[SmartString],
+    errorExample: Option[SmartString],
     presHint: Option[List[PresentationHint]],
     mes: MES,
     ct: ComponentType,
