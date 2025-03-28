@@ -19,14 +19,14 @@ package uk.gov.hmrc.gform.translation
 import scala.concurrent.ExecutionContext
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.formtemplate.FormTemplateModule
-import uk.gov.hmrc.gform.formtemplatemetadata.FormTemplateMetadataService
+import uk.gov.hmrc.gform.gformfrontend.GformFrontendConnector
 import uk.gov.hmrc.gform.history.HistoryModule
 
 class TranslationModule(
   formTemplateModule: FormTemplateModule,
   historyModule: HistoryModule,
   configModule: ConfigModule,
-  metadataService: FormTemplateMetadataService
+  gformFrontendConnector: GformFrontendConnector
 )(implicit
   ex: ExecutionContext
 ) {
@@ -35,7 +35,7 @@ class TranslationModule(
       formTemplateModule.formTemplateService,
       historyModule.historyService,
       configModule.controllerComponents,
-      metadataService
+      gformFrontendConnector
     )
 
 }

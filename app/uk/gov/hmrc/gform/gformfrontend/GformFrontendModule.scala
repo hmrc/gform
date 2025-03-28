@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,17 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.formtemplatemetadata
+package uk.gov.hmrc.gform.gformfrontend
 
-import uk.gov.hmrc.gform.mongo.MongoModule
-import uk.gov.hmrc.gform.repo.Repo
+import uk.gov.hmrc.gform.config.ConfigModule
+import uk.gov.hmrc.gform.wshttp.WSHttpModule
 
 import scala.concurrent.ExecutionContext
 
-class FormTemplateMetadataModule(mongoModule: MongoModule)(implicit ex: ExecutionContext) {
-  val formTemplateMetadataRepo: Repo[FormTemplateMetadata] =
-    new Repo[FormTemplateMetadata]("formTemplateMetadata", mongoModule.mongoComponent, _._id.value)
-  val metadataService: FormTemplateMetadataService = new FormTemplateMetadataService(formTemplateMetadataRepo)
+class GformFrontendModule(wSHttpModule: WSHttpModule, configModule: ConfigModule)(implicit ec: ExecutionContext) {
+
+  lazy val gformFrontendConnector: GformFrontendConnector =
+    new GformFrontendConnector(wSHttpModule.auditableWSHttp, gformFrontendBaseUrl)
+
+  private lazy val gformFrontendBaseUrl = s"${configModule.serviceConfig.baseUrl("gform-frontend")}/submissions"
 }

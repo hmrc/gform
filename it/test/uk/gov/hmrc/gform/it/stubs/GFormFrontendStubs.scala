@@ -14,11 +14,20 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.formtemplatemetadata
+package uk.gov.hmrc.gform.it.stubs
 
-import uk.gov.hmrc.gform.core.FOpt
-import uk.gov.hmrc.gform.repo.Repo
+import com.github.tomakehurst.wiremock.client.WireMock
+import com.github.tomakehurst.wiremock.client.WireMock.{ ok, stubFor }
+import uk.gov.hmrc.gform.repo.DeleteResult
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.JsonUtils
 
-class FormTemplateMetadataService(repo: Repo[FormTemplateMetadata]) {
-  def save(formTemplateMetadata: FormTemplateMetadata): FOpt[Unit] = repo.upsert(formTemplateMetadata)
+trait GFormFrontendStubs {
+
+  def gformFrontendFormTemplateCacheStub(formTemplateId: String) =
+    stubFor(
+      WireMock
+        .delete(s"/submissions/formtemplates/$formTemplateId/cache")
+        .willReturn(ok(JsonUtils.toJsonStr(DeleteResult(formTemplateId, deleted = true))))
+    )
+
 }

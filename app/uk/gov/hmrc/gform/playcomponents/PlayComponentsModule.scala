@@ -35,7 +35,6 @@ import uk.gov.hmrc.gform.employments.EmploymentsModule
 import uk.gov.hmrc.gform.envelope.EnvelopeModule
 import uk.gov.hmrc.gform.form.FormModule
 import uk.gov.hmrc.gform.formtemplate.FormTemplateModule
-import uk.gov.hmrc.gform.formtemplatemetadata.FormTemplateMetadataModule
 import uk.gov.hmrc.gform.handlebarstemplate.HandlebarsTemplateModule
 import uk.gov.hmrc.gform.history.HistoryModule
 import uk.gov.hmrc.gform.metrics.MetricsModule
@@ -81,8 +80,7 @@ class PlayComponentsModule(
   shutterModule: ShutterModule,
   handlebarsPayloadModule: HandlebarsTemplateModule,
   historyModule: HistoryModule,
-  retrievalModule: AuthRetrievalModule,
-  formTemplateMetadataModule: FormTemplateMetadataModule
+  retrievalModule: AuthRetrievalModule
 )(implicit ec: ExecutionContext) {
   private val logger = LoggerFactory.getLogger(getClass)
 

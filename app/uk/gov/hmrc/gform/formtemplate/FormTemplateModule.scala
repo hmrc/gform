@@ -22,7 +22,7 @@ import uk.gov.hmrc.gform.core.FOpt
 import uk.gov.hmrc.gform.core.fromFutureA
 import uk.gov.hmrc.gform.formredirect.FormRedirect
 import uk.gov.hmrc.gform.formredirect.FormRedirectService
-import uk.gov.hmrc.gform.formtemplatemetadata.FormTemplateMetadataModule
+import uk.gov.hmrc.gform.gformfrontend.GformFrontendModule
 import uk.gov.hmrc.gform.handlebarstemplate.{ HandlebarsSchemaAlgebra, HandlebarsTemplateAlgebra }
 import uk.gov.hmrc.gform.history.HistoryModule
 import uk.gov.hmrc.gform.mongo.MongoModule
@@ -47,7 +47,7 @@ class FormTemplateModule(
   handlebarsSchemaService: HandlebarsSchemaAlgebra[Future],
   historyModule: HistoryModule,
   configModule: ConfigModule,
-  formTemplateMetadataModule: FormTemplateMetadataModule
+  gformFrontendModule: GformFrontendModule
 )(implicit
   ex: ExecutionContext
 ) {
@@ -92,10 +92,10 @@ class FormTemplateModule(
       formTemplateRepo,
       formTemplateRawRepo,
       formRedirectRepo,
-      formTemplateMetadataModule.formTemplateMetadataRepo,
       foptHandlebarsPayloadService,
       foptHandlebarsSchemaService,
-      configModule.appConfig
+      configModule.appConfig,
+      gformFrontendModule.gformFrontendConnector
     )
   val formRedirectService: FormRedirectService =
     new FormRedirectService(formRedirectRepo)
@@ -104,7 +104,7 @@ class FormTemplateModule(
     formTemplateService.verifyAndSave,
     formTemplateService.save,
     historyModule.historyService.save,
-    formTemplateMetadataModule.metadataService.save
+    gformFrontendModule.gformFrontendConnector.saveFormTemplateCache
   ).futureInterpreter
 
   val formTemplatesController: FormTemplatesController =

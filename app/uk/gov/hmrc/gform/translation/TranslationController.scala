@@ -31,7 +31,7 @@ import uk.gov.hmrc.gform.history.HistoryService
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplateId, FormTemplateRaw, FormTemplateRawId }
 import org.apache.poi.ss.usermodel.{ Cell, CellType }
 import org.apache.poi.xssf.usermodel._
-import uk.gov.hmrc.gform.formtemplatemetadata.FormTemplateMetadataService
+import uk.gov.hmrc.gform.gformfrontend.GformFrontendConnector
 
 import scala.util.{ Failure, Success, Try }
 
@@ -39,7 +39,7 @@ class TranslationController(
   formTemplateService: FormTemplateService,
   historyService: HistoryService,
   controllerComponents: ControllerComponents,
-  metadataService: FormTemplateMetadataService
+  gformFrontendConnector: GformFrontendConnector
 )(implicit ec: ExecutionContext)
     extends BaseController(controllerComponents) {
 
@@ -47,7 +47,7 @@ class TranslationController(
     formTemplateService.verifyAndSave,
     formTemplateService.save,
     historyService.save,
-    metadataService.save
+    gformFrontendConnector.saveFormTemplateCache
   ).futureInterpreter
 
   //Ignore missing fonts in headless environments (for XLSX generation)

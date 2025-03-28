@@ -27,11 +27,8 @@ import scala.language.postfixOps
 import uk.gov.hmrc.gform.config.FileInfoConfig
 import uk.gov.hmrc.gform.core.{ FOpt, Opt, fromOptA }
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
-import uk.gov.hmrc.gform.formtemplatemetadata.FormTemplateMetadata
 import uk.gov.hmrc.gform.history.FormTemplateHistory
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Default, Expr, ExpressionOutput, FormCategory, FormComponentId, FormTemplate, FormTemplateRaw, SummarySection, TopLevelRef }
-
-import java.time.Instant
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Default, Expr, ExpressionOutput, FormCategory, FormComponentId, FormTemplate, FormTemplateId, FormTemplateRaw, SummarySection, TopLevelRef }
 
 trait RequestHandlerAlg[F[_]] {
   def handleRequest(templateRaw: FormTemplateRaw): F[Unit]
@@ -41,7 +38,7 @@ class FormTemplatesControllerRequestHandler[F[_]](
   verifyAndSave: FormTemplate => ExprSubstitutions => BooleanExprSubstitutions => FOpt[Unit],
   save: FormTemplateRaw => FOpt[Unit],
   saveHistory: FormTemplateHistory => FOpt[Unit],
-  saveMetadata: FormTemplateMetadata => FOpt[Unit]
+  saveCache: FormTemplateId => FOpt[Unit]
 )(implicit ec: ExecutionContext) {
 
   val futureInterpreter = new RequestHandlerAlg[FOpt] {
@@ -129,7 +126,7 @@ class FormTemplatesControllerRequestHandler[F[_]](
       _  <- verifyAndSave(ft._1)(ft._2)(ft._3)
       _  <- save(templateRaw)
       _  <- saveHistory(FormTemplateHistory.fromFormTemplateRaw(templateRaw))
-      _  <- saveMetadata(FormTemplateMetadata(ft._1._id, Instant.now()))
+      _  <- saveCache(ft._1._id)
     } yield ()
 }
 

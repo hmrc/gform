@@ -33,7 +33,7 @@ import uk.gov.hmrc.gform.formtemplate.{ FormTemplateService, FormTemplatesContro
 import uk.gov.hmrc.gform.history.HistoryService
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import io.circe.generic.semiauto._
-import uk.gov.hmrc.gform.formtemplatemetadata.FormTemplateMetadataService
+import uk.gov.hmrc.gform.gformfrontend.GformFrontendConnector
 
 import scala.concurrent.ExecutionContext
 
@@ -975,7 +975,7 @@ class BuilderController(
   controllerComponents: ControllerComponents,
   formTemplateService: FormTemplateService,
   historyService: HistoryService,
-  metadataService: FormTemplateMetadataService
+  gformFrontendConnector: GformFrontendConnector
 )(implicit
   ex: ExecutionContext
 ) extends BaseController(controllerComponents) with Circe {
@@ -985,7 +985,7 @@ class BuilderController(
       formTemplateService.verifyAndSave,
       formTemplateService.save,
       historyService.save,
-      metadataService.save
+      gformFrontendConnector.saveFormTemplateCache
     ).futureInterpreter
 
   private def applyUpdateFunction(

@@ -25,7 +25,7 @@ case class DeleteResults(
   formTemplateSpecimen: DeleteResult,
   formTemplateRaw: DeleteResult,
   formRedirect: DeleteResult,
-  formTemplateMetadata: DeleteResult
+  formTemplateCache: DeleteResult
 )
 
 object DeleteResults {
