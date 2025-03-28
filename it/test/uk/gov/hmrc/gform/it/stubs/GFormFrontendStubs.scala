@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,20 +14,20 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.formtemplate
+package uk.gov.hmrc.gform.it.stubs
 
-import julienrf.json.derived
-import play.api.libs.json.OFormat
+import com.github.tomakehurst.wiremock.client.WireMock
+import com.github.tomakehurst.wiremock.client.WireMock.{ ok, stubFor }
 import uk.gov.hmrc.gform.repo.DeleteResult
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.JsonUtils
 
-case class DeleteResults(
-  formTemplate: DeleteResult,
-  formTemplateSpecimen: DeleteResult,
-  formTemplateRaw: DeleteResult,
-  formRedirect: DeleteResult,
-  formTemplateCache: DeleteResult
-)
+trait GFormFrontendStubs {
 
-object DeleteResults {
-  implicit val format: OFormat[DeleteResults] = derived.oformat()
+  def gformFrontendFormTemplateCacheStub(formTemplateId: String) =
+    stubFor(
+      WireMock
+        .delete(s"/submissions/formtemplates/$formTemplateId/cache")
+        .willReturn(ok(JsonUtils.toJsonStr(DeleteResult(formTemplateId, deleted = true))))
+    )
+
 }

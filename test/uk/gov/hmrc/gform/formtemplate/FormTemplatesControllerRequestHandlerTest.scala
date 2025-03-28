@@ -39,6 +39,8 @@ class FormTemplatesControllerRequestHandlerTest extends AnyWordSpec with Matcher
 
   val saveHistory: FOpt[Unit] = EitherT(Future.successful(().asRight))
 
+  val saveCache: FOpt[Unit] = EitherT(Future.successful(().asRight))
+
   "handle a valid upsert request with Destinations section" in {
     withFixture(
       Json.parse(
@@ -48,7 +50,8 @@ class FormTemplatesControllerRequestHandlerTest extends AnyWordSpec with Matcher
       val handler = new FormTemplatesControllerRequestHandler(
         _ => _ => _ => verifySideEffect.get,
         _ => sideEffect,
-        _ => saveHistory
+        _ => saveHistory,
+        _ => saveCache
       )
       val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
 
@@ -72,7 +75,8 @@ class FormTemplatesControllerRequestHandlerTest extends AnyWordSpec with Matcher
       val handler = new FormTemplatesControllerRequestHandler(
         _ => _ => _ => verifySideEffect.get,
         _ => sideEffect,
-        _ => saveHistory
+        _ => saveHistory,
+        _ => saveCache
       )
       val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
 
@@ -91,7 +95,8 @@ class FormTemplatesControllerRequestHandlerTest extends AnyWordSpec with Matcher
       val handler = new FormTemplatesControllerRequestHandler(
         _ => _ => _ => verifySideEffect.get,
         _ => sideEffect,
-        _ => saveHistory
+        _ => saveHistory,
+        _ => saveCache
       )
       val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
 
@@ -114,7 +119,8 @@ class FormTemplatesControllerRequestHandlerTest extends AnyWordSpec with Matcher
       val handler = new FormTemplatesControllerRequestHandler(
         _ => _ => _ => verifySideEffect.get,
         _ => sideEffect,
-        _ => saveHistory
+        _ => saveHistory,
+        _ => saveCache
       )
       val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
 
@@ -137,7 +143,8 @@ class FormTemplatesControllerRequestHandlerTest extends AnyWordSpec with Matcher
       val handler = new FormTemplatesControllerRequestHandler(
         _ => _ => _ => verifySideEffect.get,
         _ => sideEffect,
-        _ => saveHistory
+        _ => saveHistory,
+        _ => saveCache
       )
       val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
 
@@ -160,7 +167,8 @@ class FormTemplatesControllerRequestHandlerTest extends AnyWordSpec with Matcher
       val handler = new FormTemplatesControllerRequestHandler(
         _ => _ => _ => verifySideEffect.get,
         _ => sideEffect,
-        _ => saveHistory
+        _ => saveHistory,
+        _ => saveCache
       )
       val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
 
@@ -184,7 +192,8 @@ class FormTemplatesControllerRequestHandlerTest extends AnyWordSpec with Matcher
       val handler = new FormTemplatesControllerRequestHandler(
         _ => _ => _ => verifySideEffect.get,
         _ => sideEffect,
-        _ => saveHistory
+        _ => saveHistory,
+        _ => saveCache
       )
       val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
 
@@ -207,7 +216,8 @@ class FormTemplatesControllerRequestHandlerTest extends AnyWordSpec with Matcher
       val handler = new FormTemplatesControllerRequestHandler(
         _ => _ => _ => verifySideEffect.get,
         _ => sideEffect,
-        _ => saveHistory
+        _ => saveHistory,
+        _ => saveCache
       )
       val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
 
@@ -231,7 +241,8 @@ class FormTemplatesControllerRequestHandlerTest extends AnyWordSpec with Matcher
       val handler = new FormTemplatesControllerRequestHandler(
         _ => _ => _ => verifySideEffect.get,
         _ => sideEffect,
-        _ => saveHistory
+        _ => saveHistory,
+        _ => saveCache
       )
       val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
 
@@ -255,7 +266,8 @@ class FormTemplatesControllerRequestHandlerTest extends AnyWordSpec with Matcher
       val handler = new FormTemplatesControllerRequestHandler(
         _ => _ => _ => verifySideEffect.get,
         _ => sideEffect,
-        _ => saveHistory
+        _ => saveHistory,
+        _ => saveCache
       )
       val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
 
@@ -279,7 +291,8 @@ class FormTemplatesControllerRequestHandlerTest extends AnyWordSpec with Matcher
       val handler = new FormTemplatesControllerRequestHandler(
         _ => _ => _ => verifySideEffect.get,
         _ => sideEffect,
-        _ => saveHistory
+        _ => saveHistory,
+        _ => saveCache
       )
       val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
 
@@ -303,7 +316,8 @@ class FormTemplatesControllerRequestHandlerTest extends AnyWordSpec with Matcher
       val handler = new FormTemplatesControllerRequestHandler(
         _ => _ => _ => verifySideEffect.get,
         _ => sideEffect,
-        _ => saveHistory
+        _ => saveHistory,
+        _ => saveCache
       )
       val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
 
@@ -327,7 +341,8 @@ class FormTemplatesControllerRequestHandlerTest extends AnyWordSpec with Matcher
       val handler = new FormTemplatesControllerRequestHandler(
         _ => _ => _ => verifySideEffect.get,
         _ => sideEffect,
-        _ => saveHistory
+        _ => saveHistory,
+        _ => saveCache
       )
       val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
 
@@ -343,7 +358,12 @@ class FormTemplatesControllerRequestHandlerTest extends AnyWordSpec with Matcher
       Json.parse(validRequestBodyWithPrintSection("hmrc", "${user.broken}", Some(""""serviceId": "someId",""")))
     ) { (sideEffect, _, templateRaw) =>
       val handler =
-        new FormTemplatesControllerRequestHandler(_ => _ => _ => sideEffect, _ => sideEffect, _ => saveHistory)
+        new FormTemplatesControllerRequestHandler(
+          _ => _ => _ => sideEffect,
+          _ => sideEffect,
+          _ => saveHistory,
+          _ => saveCache
+        )
       val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
 
       whenReady(eventualResult.value) { response =>
@@ -359,7 +379,8 @@ class FormTemplatesControllerRequestHandlerTest extends AnyWordSpec with Matcher
         val handler = new FormTemplatesControllerRequestHandler(
           _ => _ => _ => verifySideEffect.get,
           _ => sideEffect,
-          _ => saveHistory
+          _ => saveHistory,
+          _ => saveCache
         )
         val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
 
@@ -384,7 +405,8 @@ class FormTemplatesControllerRequestHandlerTest extends AnyWordSpec with Matcher
       val handler = new FormTemplatesControllerRequestHandler(
         _ => _ => _ => verifySideEffect.get,
         _ => sideEffect,
-        _ => saveHistory
+        _ => saveHistory,
+        _ => saveCache
       )
       val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
 
@@ -409,7 +431,8 @@ class FormTemplatesControllerRequestHandlerTest extends AnyWordSpec with Matcher
       val handler = new FormTemplatesControllerRequestHandler(
         _ => _ => _ => verifySideEffect.get,
         _ => sideEffect,
-        _ => saveHistory
+        _ => saveHistory,
+        _ => saveCache
       )
       val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
 
@@ -434,7 +457,8 @@ class FormTemplatesControllerRequestHandlerTest extends AnyWordSpec with Matcher
       val handler = new FormTemplatesControllerRequestHandler(
         _ => _ => _ => verifySideEffect.get,
         _ => sideEffect,
-        _ => saveHistory
+        _ => saveHistory,
+        _ => saveCache
       )
       val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
 
@@ -459,7 +483,8 @@ class FormTemplatesControllerRequestHandlerTest extends AnyWordSpec with Matcher
       val handler = new FormTemplatesControllerRequestHandler(
         _ => _ => _ => verifySideEffect.get,
         _ => sideEffect,
-        _ => saveHistory
+        _ => saveHistory,
+        _ => saveCache
       )
       val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
 

@@ -23,6 +23,7 @@ import uk.gov.hmrc.gform.config.AppConfig
 import uk.gov.hmrc.gform.core.{ FOpt, _ }
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.formredirect.FormRedirect
+import uk.gov.hmrc.gform.gformfrontend.GformFrontendConnector
 import uk.gov.hmrc.gform.handlebarstemplate.{ HandlebarsSchemaAlgebra, HandlebarsTemplateAlgebra }
 import uk.gov.hmrc.gform.repo.Repo
 import uk.gov.hmrc.gform.sharedmodel.{ HandlebarsSchemaId, HandlebarsTemplateId }
@@ -45,7 +46,8 @@ class FormTemplateService(
   formRedirectRepo: Repo[FormRedirect],
   handlebarsTemplateAlgebra: HandlebarsTemplateAlgebra[FOpt],
   handlebarsSchemaAlgebra: HandlebarsSchemaAlgebra[FOpt],
-  appConfig: AppConfig
+  appConfig: AppConfig,
+  gformFrontendConnector: GformFrontendConnector
 )(implicit
   ec: ExecutionContext
 ) extends Verifier with Rewriter with SubstituteExpressions with SubstituteBooleanExprs
@@ -71,15 +73,17 @@ class FormTemplateService(
 
   def delete(formTemplateId: FormTemplateId): FOpt[DeleteResults] =
     for {
-      formRedirectDeleteResult    <- formRedirectRepo.deleteByFieldName("redirect", formTemplateId.value)
-      formTemplateDeleteResult    <- formTemplateRepo.delete(formTemplateId.value)
-      specimenDeleteResult        <- formTemplateRepo.delete("specimen-" + formTemplateId.value)
-      formTemplateRawDeleteResult <- formTemplateRawRepo.delete(formTemplateId.value)
+      formRedirectDeleteResult      <- formRedirectRepo.deleteByFieldName("redirect", formTemplateId.value)
+      formTemplateDeleteResult      <- formTemplateRepo.delete(formTemplateId.value)
+      specimenDeleteResult          <- formTemplateRepo.delete("specimen-" + formTemplateId.value)
+      formTemplateRawDeleteResult   <- formTemplateRawRepo.delete(formTemplateId.value)
+      formTemplateCacheDeleteResult <- gformFrontendConnector.deleteFormTemplateCache(formTemplateId)
     } yield DeleteResults(
       formTemplateDeleteResult,
       specimenDeleteResult,
       formTemplateRawDeleteResult,
-      formRedirectDeleteResult
+      formRedirectDeleteResult,
+      formTemplateCacheDeleteResult
     )
 
   def list(): Future[List[String]] =

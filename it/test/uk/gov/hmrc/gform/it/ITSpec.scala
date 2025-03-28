@@ -55,6 +55,7 @@ trait ITSpec
     "json.encryption.previousKeys"                  -> "",
     "microservice.services.file-upload.port"        -> s"$wiremockPort",
     "microservice.services.file-upload.path-prefix" -> "",
+    "microservice.services.gform-frontend.port"     -> s"$wiremockPort",
     "proxy.username"                                -> "gform",
     "proxy.password"                                -> "gform",
     "proxy.host"                                    -> "outbound-proxy-vip",
