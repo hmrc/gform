@@ -27,6 +27,7 @@ import uk.gov.hmrc.gform.Helpers.toSmartString
 import uk.gov.hmrc.gform.it.sample.FormTemplateSample
 import uk.gov.hmrc.gform.repo.DeleteResult
 import uk.gov.hmrc.gform.formtemplate.DeleteResults
+import uk.gov.hmrc.gform.it.stubs.GFormFrontendStubs
 import uk.gov.hmrc.gform.sharedmodel.email.LocalisedEmailTemplateId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.PrintSummaryPdf
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.Section.NonRepeatingPage
@@ -38,7 +39,7 @@ import uk.gov.hmrc.gform.sharedmodel.{ AvailableLanguages, LangADT, LocalisedStr
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class FormTemplatesIT extends ITSpec with FormTemplateSample with BeforeAndAfterEach {
+class FormTemplatesIT extends ITSpec with FormTemplateSample with BeforeAndAfterEach with GFormFrontendStubs {
 
   override implicit val defaultPatience: PatienceConfig =
     PatienceConfig(timeout = Span(15, Seconds), interval = Span(500, Millis))
@@ -164,6 +165,7 @@ class FormTemplatesIT extends ITSpec with FormTemplateSample with BeforeAndAfter
 
   "delete template" should "delete the requested template" in {
     Given("I POST a form template")
+    gformFrontendFormTemplateCacheStub("basic")
     post(basicFormTemplate().toString).to("/formtemplates").send()
 
     When("I delete the form template by id")
@@ -175,7 +177,8 @@ class FormTemplatesIT extends ITSpec with FormTemplateSample with BeforeAndAfter
       DeleteResult("basic", true),
       DeleteResult("specimen-basic", true),
       DeleteResult("basic", true),
-      DeleteResult("basic", false)
+      DeleteResult("basic", false),
+      DeleteResult("basic", true)
     )
     val getTemplateResponse = get("/formtemplates/basic").send()
     getTemplateResponse.status shouldBe StatusCodes.NotFound.intValue

@@ -46,6 +46,7 @@ import uk.gov.hmrc.gform.form.FormService
 import uk.gov.hmrc.gform.formmetadata.FormMetadataModule
 import uk.gov.hmrc.gform.formstatistics.FormStatisticsModule
 import uk.gov.hmrc.gform.formtemplate.FormTemplateModule
+import uk.gov.hmrc.gform.gformfrontend.GformFrontendModule
 import uk.gov.hmrc.gform.graphite.GraphiteModule
 import uk.gov.hmrc.gform.handlebarstemplate.{ HandlebarsSchemaAlgebra, HandlebarsSchemaService, HandlebarsTemplateAlgebra, HandlebarsTemplateModule, HandlebarsTemplateService }
 import uk.gov.hmrc.gform.history.HistoryModule
@@ -140,6 +141,8 @@ class ApplicationModule(context: Context)
   )
   private val historyModule = new HistoryModule(configModule, mongoModule)
 
+  private val gformFrontendModule = new GformFrontendModule(wSHttpModule, configModule)
+
   val formTemplateModule =
     new FormTemplateModule(
       controllerComponents,
@@ -149,7 +152,8 @@ class ApplicationModule(context: Context)
       handlebarsTemplateService,
       handlebarsSchemaService,
       historyModule,
-      configModule
+      configModule,
+      gformFrontendModule
     )
 
   private val handlebarsPayloadModule =
@@ -161,7 +165,8 @@ class ApplicationModule(context: Context)
     )
 
   private val emailModule = new EmailModule(configModule, wSHttpModule, notifierModule, formTemplateModule)
-  private val translationModule = new TranslationModule(formTemplateModule, historyModule, configModule)
+  private val translationModule =
+    new TranslationModule(formTemplateModule, historyModule, configModule, gformFrontendModule.gformFrontendConnector)
   private val pdfGeneratorModule = new PdfGeneratorModule(playComponents.context.environment)
 
   private val sdesModule =
@@ -371,7 +376,12 @@ class ApplicationModule(context: Context)
   new SchedulerModule(configModule, mongoModule, sdesModule, akkaModule, applicationLifecycle)
 
   private val builderModule =
-    new BuilderModule(controllerComponents, formTemplateModule.formTemplateService, historyModule)
+    new BuilderModule(
+      controllerComponents,
+      formTemplateModule.formTemplateService,
+      historyModule,
+      gformFrontendModule.gformFrontendConnector
+    )
 
   private val playComponentsModule = new PlayComponentsModule(
     playComponents,

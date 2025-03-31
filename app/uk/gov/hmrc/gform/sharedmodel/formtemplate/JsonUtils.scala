@@ -75,6 +75,9 @@ trait JsonUtils {
   def constReads[A](a: A): Reads[A] = new Reads[A] {
     def reads(json: JsValue): JsResult[A] = JsSuccess(a)
   }
+
+  def toJsonStr[T: Writes](obj: T): String =
+    Json.toJson(obj).toString
 }
 
 object JsonUtils extends JsonUtils

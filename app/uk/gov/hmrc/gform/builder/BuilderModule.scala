@@ -18,6 +18,7 @@ package uk.gov.hmrc.gform.builder
 
 import play.api.mvc.ControllerComponents
 import uk.gov.hmrc.gform.formtemplate.FormTemplateService
+import uk.gov.hmrc.gform.gformfrontend.GformFrontendConnector
 import uk.gov.hmrc.gform.history.HistoryModule
 
 import scala.concurrent.ExecutionContext
@@ -25,10 +26,16 @@ import scala.concurrent.ExecutionContext
 class BuilderModule(
   controllerComponents: ControllerComponents,
   formTemplateService: FormTemplateService,
-  historyModule: HistoryModule
+  historyModule: HistoryModule,
+  gformFrontendConnector: GformFrontendConnector
 )(implicit ex: ExecutionContext) {
 
   val builderController: BuilderController =
-    new BuilderController(controllerComponents, formTemplateService, historyModule.historyService)
+    new BuilderController(
+      controllerComponents,
+      formTemplateService,
+      historyModule.historyService,
+      gformFrontendConnector
+    )
 
 }

@@ -19,12 +19,12 @@ package uk.gov.hmrc.gform.formtemplate
 import cats.implicits._
 import org.slf4j.LoggerFactory
 import play.api.libs.json.{ JsObject, Json }
-import play.api.mvc.{ ControllerComponents, Results }
+import play.api.mvc.{ Action, AnyContent, ControllerComponents, Results }
 import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.formredirect.FormRedirectService
 import uk.gov.hmrc.gform.formtemplate.FormTemplatePIIRefsHelper.PIIDetailsResponse
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplate, FormTemplateContext, FormTemplateId, FormTemplateRaw, FormTemplateRawId }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplate, FormTemplateBehavior, FormTemplateContext, FormTemplateId, FormTemplateRaw, FormTemplateRawId }
 import uk.gov.hmrc.gform.shutter.ShutterService
 import uk.gov.hmrc.gform.core.FOpt
 import uk.gov.hmrc.gform.translation.TextExtractor
@@ -105,12 +105,19 @@ class FormTemplatesController(
   def getWithRedirects(id: FormTemplateId) = formTemplateAction("getWithRedirects", id) { _ =>
     val formTemplateContext =
       for {
-        formTemplate            <- findLatestFormTemplate(id)
-        redirects               <- formRedirectService.find(formTemplate._id)
-        mayBeShutter            <- shutterService.find(formTemplate._id)
-        maybeNotificationBanner <- notificationService.find(formTemplate._id)
-      } yield FormTemplateContext(formTemplate, redirects.map(_.redirect), mayBeShutter, maybeNotificationBanner)
+        formTemplate <- findLatestFormTemplate(id)
+        redirects    <- formRedirectService.find(formTemplate._id)
+      } yield FormTemplateContext(formTemplate, redirects.map(_.redirect))
     formTemplateContext.asOkJson
+  }
+
+  def getBehavior(id: FormTemplateId): Action[AnyContent] = formTemplateAction("getBehavior", id) { _ =>
+    val formTemplateBehavior =
+      for {
+        shutter            <- shutterService.find(id)
+        notificationBanner <- notificationService.find(id)
+      } yield FormTemplateBehavior(shutter, notificationBanner)
+    formTemplateBehavior.asOkJson
   }
 
   private def findFormTemplate(id: FormTemplateId): Future[FormTemplate] =

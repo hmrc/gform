@@ -14,20 +14,17 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.formtemplate
+package uk.gov.hmrc.gform.gformfrontend
 
-import julienrf.json.derived
-import play.api.libs.json.OFormat
-import uk.gov.hmrc.gform.repo.DeleteResult
+import uk.gov.hmrc.gform.config.ConfigModule
+import uk.gov.hmrc.gform.wshttp.WSHttpModule
 
-case class DeleteResults(
-  formTemplate: DeleteResult,
-  formTemplateSpecimen: DeleteResult,
-  formTemplateRaw: DeleteResult,
-  formRedirect: DeleteResult,
-  formTemplateCache: DeleteResult
-)
+import scala.concurrent.ExecutionContext
 
-object DeleteResults {
-  implicit val format: OFormat[DeleteResults] = derived.oformat()
+class GformFrontendModule(wSHttpModule: WSHttpModule, configModule: ConfigModule)(implicit ec: ExecutionContext) {
+
+  lazy val gformFrontendConnector: GformFrontendConnector =
+    new GformFrontendConnector(wSHttpModule.auditableWSHttp, gformFrontendBaseUrl)
+
+  private lazy val gformFrontendBaseUrl = s"${configModule.serviceConfig.baseUrl("gform-frontend")}/submissions"
 }

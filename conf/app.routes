@@ -49,6 +49,7 @@ DELETE        /formtemplates/:formTemplateId                                    
 GET           /formtemplates-with-redirects/:formTemplateId                                             uk.gov.hmrc.gform.formtemplate.FormTemplatesController.getWithRedirects(formTemplateId: FormTemplateId)
 GET           /formtemplates-redirects/:page/:pageSize                                                  uk.gov.hmrc.gform.formtemplate.FormTemplatesController.getRedirects(page: Int, pageSize: Int)
 GET           /formtemplates-with-handlebars/:formTemplateId                                            uk.gov.hmrc.gform.formtemplate.FormTemplatesController.getHandlebarsTemplateIds(formTemplateId: FormTemplateId)
+GET           /formtemplates/:formTemplateId/behavior                                                   uk.gov.hmrc.gform.formtemplate.FormTemplatesController.getBehavior(formTemplateId: FormTemplateId)
 
 GET           /handlebarstemplates                                                                      uk.gov.hmrc.gform.handlebarstemplate.HandlebarsTemplateController.all
 POST          /handlebarstemplates/:handlebarsTemplateId                                                uk.gov.hmrc.gform.handlebarstemplate.HandlebarsTemplateController.upsert(handlebarsTemplateId: HandlebarsTemplateId)
