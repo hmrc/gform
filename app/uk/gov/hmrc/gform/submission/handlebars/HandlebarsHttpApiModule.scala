@@ -56,8 +56,9 @@ class HandlebarsHttpApiModule(
       .toMap
 
   private def getDynamicValue(token: String): String = token match {
-    case "UUID" => UUID.randomUUID().toString
-    case "NOW"  => ZonedDateTime.now(ZoneOffset.UTC).truncatedTo(ChronoUnit.SECONDS).toString
+    case "UUID"    => UUID.randomUUID().toString
+    case "NOW"     => ZonedDateTime.now(ZoneOffset.UTC).truncatedTo(ChronoUnit.SECONDS).toString
+    case otherwise => otherwise
   }
 
   private def appendUriSegment(base: String, toAppend: String) =
