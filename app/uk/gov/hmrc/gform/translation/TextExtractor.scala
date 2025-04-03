@@ -47,10 +47,6 @@ case class TranslatedRow(
   cy: String
 )
 
-case class EnTextToTranslate(
-  en: String
-)
-
 case class Row(
   path: String,
   en: String,
@@ -209,9 +205,15 @@ class Translator(json: Json, paths: List[List[Instruction]], val topLevelExprDat
         translationState.constants.find(_.enString === row.en) match {
           case None => currentExpr
           case Some(TranslatableConstant.NonTranslated(Constant(en))) =>
-            currentExpr.replace(s"'$en'", s"'${row.en}'|'${row.cy}'")
-          case Some(TranslatableConstant.Translated(Constant(en), Constant(cy))) =>
-            currentExpr.replaceAll(s"'$en'\\s*\\|\\s*'$cy'", s"'${row.en}'|'${row.cy}'")
+            val beg = row.en.takeWhile(s => s.isWhitespace || s === '-' || s === '*')
+            val end = row.en.reverse.takeWhile(_.isWhitespace).reverse
+            currentExpr.replace(s"'$en'", s"'${row.en}'|'$beg${(row.cy)}$end'")
+          case Some(TranslatableConstant.Translated(Constant(en0), Constant(cy0))) =>
+            val en = en0.replace("*", "\\*")
+            val cy = cy0.replace("*", "\\*")
+            val beg = row.en.takeWhile(s => s.isWhitespace || s === '-' || s === '*')
+            val end = row.en.reverse.takeWhile(_.isWhitespace).reverse
+            currentExpr.replaceAll(s"'$en'\\s*\\|\\s*'$cy'", s"'${row.en}'|'$beg${row.cy}$end'")
         }
       }
     }
@@ -277,10 +279,10 @@ class Translator(json: Json, paths: List[List[Instruction]], val topLevelExprDat
         val path = CursorOp.opsToPath(aCursor.history)
         attemptString
           .map { en =>
-            Row(path, TextExtractor.escapeNewLine(en), "") :: rows
+            Row(path, en, "") :: rows
           }
           .orElse(attemptLang.map { lang =>
-            Row(path, TextExtractor.escapeNewLine(lang.en), TextExtractor.escapeNewLine(lang.cy)) :: rows
+            Row(path, lang.en, lang.cy) :: rows
           })
           .toOption
           .getOrElse(rows)
@@ -289,15 +291,15 @@ class Translator(json: Json, paths: List[List[Instruction]], val topLevelExprDat
       }
       .distinct
 
-  def fetchRows: List[Row] = smartStringsRows(smartStringCursors) ++ topLevelExprData.toRows
+  val fetchRows: List[Row] = smartStringsRows(smartStringCursors) ++ topLevelExprData.toRows
 
-  def rowsForTranslation: List[TranslatedRow] = fetchRows
+  val rowsForTranslation: List[TranslatedRow] = fetchRows
     .filterNot(row => ExtractAndTranslate(row.en).translateTexts.isEmpty)
     .map(row => TranslatedRow(row.en, row.cy))
     .distinct
     .sortBy(_.en)
 
-  def untranslatedRowsForTranslation: List[EnTextToTranslate] = fetchRows
+  val untranslatedRowsForTranslation: List[EnTextToTranslate] = fetchRows
     .filterNot(row => row.cy.trim.nonEmpty) // Do not send to translation what has a welsh in json
     .flatMap(row => ExtractAndTranslate(row.en).translateTexts)
     .distinct
@@ -319,9 +321,6 @@ class Translator(json: Json, paths: List[List[Instruction]], val topLevelExprDat
 }
 
 object TextExtractor {
-
-  def unescapeNewLine(s: String) = s.replaceAll("\\\\n", "\n")
-  def escapeNewLine(s: String) = s.replace("\n", "\\n")
 
   import Instruction._
 
@@ -367,6 +366,8 @@ object TextExtractor {
       Pure(DownField("infoText")) :: root,
       Pure(DownField("noneChoiceError")) :: root,
       Pure(DownField("dividerText")) :: root,
+      Pure(DownField("prefix")) :: root,
+      Pure(DownField("suffix")) :: root,
       Pure(DownField("shortName")) :: root,
       Pure(DownField("errorShortName")) :: root,
       Pure(DownField("errorShortNameStart")) :: root,
@@ -384,6 +385,8 @@ object TextExtractor {
       ) :: root,
       List(Pure(DownField("errorMessage")), TraverseArray, Pure(DownField("validators"))) ++ root,
       List(TraverseArray, Pure(DownField("choices"))) ++ root,
+      List(Pure(DownField("hint")), TraverseArray, Pure(DownField("choices"))) ++ root,
+      List(Pure(DownField("summaryValue")), TraverseArray, Pure(DownField("choices"))) ++ root,
       List(TraverseArray, Pure(DownField("optionHelpText"))) ++ root,
       List(TraverseArray, Pure(DownField("hints"))) ++ root,
       Pure(DownField("key")) :: miniSummaryList
@@ -505,7 +508,7 @@ object TextExtractor {
     val rowsString: List[List[String]] = rows.sortBy(_.path).map { row =>
       List(row.path, row.en, row.cy)
     }
-    List("path", "en", "cy") :: rowsString
+    List("path", "en", "cy") :: escapeString(rowsString)
   }
 
   private def prepareTranslatebleRows(rows: List[TranslatedRow]): List[(String, String)] = {
@@ -521,9 +524,17 @@ object TextExtractor {
     writer.close()
   }
 
+  def escape(s: String): String = s.replace("\n", "\\n")
+
+  def escapeString(row: List[List[String]]): List[List[String]] = row.map(_.map(escape))
+
+  def escapeRows(rows: List[(String, String)]): List[(String, String)] = rows.map { case (en, cy) =>
+    (escape(en), escape(cy))
+  }
+
   private def writeTranslatableCvsToOutputStream(rows: List[TranslatedRow], bos: BufferedOutputStream): Unit = {
     val writer = CSVWriter.open(bos)
-    writer.writeAll(prepareTranslatebleRows(rows).map { case (en, cy) => List(en, cy) })
+    writer.writeAll(escapeRows(prepareTranslatebleRows(rows)).map { case (en, cy) => List(en, cy) })
     writer.close()
   }
 
@@ -532,7 +543,7 @@ object TextExtractor {
     bos: BufferedOutputStream
   ): Unit = {
     val writer = CSVWriter.open(bos)
-    writer.writeAll(rows.sortBy(_.en).map(en => List(en.en)))
+    writer.writeAll(TextExtractor.escapeString(rows.sortBy(_.en).map(en => List(en.en))))
     writer.close()
   }
 
@@ -568,7 +579,7 @@ object TextExtractor {
 
       if (extractAndTranslate.isTranslateable(spreadsheet)) {
         val welshTranslation: String = extractAndTranslate.translate(spreadsheet)
-        (missingRows, row.copy(en = unescapeNewLine(row.en), cy = unescapeNewLine(welshTranslation)) :: rows)
+        (missingRows, row.copy(cy = welshTranslation) :: rows)
       } else {
         if (row.cy.nonEmpty || isTopLevelExpression(row.path)) {
           (missingRows, rows)

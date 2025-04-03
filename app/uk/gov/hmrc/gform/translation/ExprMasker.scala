@@ -18,22 +18,28 @@ package uk.gov.hmrc.gform.translation
 
 object ExprMasker {
 
+  def primaryRegex: String = "\\$\\{¦redacted[0-9]+¦}"
+
+  // Using Broken Bar (¦) to form expression which cannot be present
+  // in json template
+  private def toRedacted(i: Int): String = s"$${¦redacted$i¦}"
+
+  private val exprRegex = "\\$\\{((?s).*?)}".r
+
   def mask(str: String): (String, Map[Int, String]) = {
     val exprs = exprRegex.findAllIn(str).toSet.toList
 
     val lookup = exprs.zipWithIndex.map { case (expr, index) => index -> expr }.toMap
 
     val redacted = exprs.zipWithIndex.foldRight(str) { case ((expr, index), acc) =>
-      val i = index + 1
-      acc.replace(expr, s"$${redacted$i}")
+      acc.replace(expr, toRedacted(index))
     }
     (redacted, lookup)
   }
 
   def unmask(str: String, lookup: Map[Int, String]): String = {
     val exprLookup = lookup.map { case (index, value) =>
-      val i = index + 1
-      s"$${redacted$i}" -> value
+      toRedacted(index) -> value
     }
     val exprs = exprRegex.findAllIn(str).toSet.toList
 
@@ -42,5 +48,8 @@ object ExprMasker {
     }
   }
 
-  private val exprRegex = "\\$\\{(.*?)}".r
+  def remask(str: String, lookup: Map[Int, String]): String =
+    lookup.toList.foldLeft(str) { case (current, (index, expr)) =>
+      current.replace(expr, toRedacted(index))
+    }
 }

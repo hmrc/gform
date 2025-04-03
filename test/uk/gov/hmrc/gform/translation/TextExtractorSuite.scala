@@ -549,7 +549,7 @@ class TextExtractorSuite extends FunSuite {
       )
 
     val expectedRows = List(
-      Row(".sections[0].fields[0].infoText", """\n* Austria \n* Belgium \n* Bulgaria""", "")
+      Row(".sections[0].fields[0].infoText", "\n* Austria \n* Belgium \n* Bulgaria", "")
     )
 
     val res = Translator(json, instructions).fetchRows
@@ -586,7 +586,7 @@ class TextExtractorSuite extends FunSuite {
       )
 
     val expectedRows = List(
-      Row(".sections[0].fields[0].infoText", """\n* Austria \n* Belgium \n* Bulgaria""", "")
+      Row(".sections[0].fields[0].infoText", "\n* Austria \n* Belgium \n* Bulgaria", "")
     )
 
     val res = Translator(json, instructions).fetchRows
@@ -643,6 +643,53 @@ class TextExtractorSuite extends FunSuite {
 
     assertEquals(res, expectedRows)
 
+  }
+
+  test("Choices with hint and summaryValue") {
+    val json =
+      json"""
+          {
+            "sections": [
+              {
+                "fields": [
+                  {
+                    "label": "What is your email"
+                  },
+                  {
+                    "label": "Sic code",
+                    "choices": [
+                      {
+                        "en" : "Choice 1",
+                        "hint": "Choice 1 hint",
+                        "summaryValue": "Choice 1 summary value"
+                      },
+                      {
+                        "en" : "Choice 2",
+                        "hint": "Choice 2 hint",
+                        "summaryValue": "Choice 2 summary value"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+          """
+
+    val expectedRows = List(
+      Row(".sections[0].fields[0].label", "What is your email", ""),
+      Row(".sections[0].fields[1].choices[0]", "Choice 1", ""),
+      Row(".sections[0].fields[1].choices[0].hint", "Choice 1 hint", ""),
+      Row(".sections[0].fields[1].choices[0].summaryValue", "Choice 1 summary value", ""),
+      Row(".sections[0].fields[1].choices[1]", "Choice 2", ""),
+      Row(".sections[0].fields[1].choices[1].hint", "Choice 2 hint", ""),
+      Row(".sections[0].fields[1].choices[1].summaryValue", "Choice 2 summary value", ""),
+      Row(".sections[0].fields[1].label", "Sic code", "")
+    )
+
+    val res = Translator(json, TextExtractor.gformPaths).fetchRows
+
+    assertEquals(res, expectedRows)
   }
 
   test("generateExpressionOpHistory") {
@@ -1008,7 +1055,6 @@ class TextExtractorSuite extends FunSuite {
     )
 
     val expected = List(
-      TranslatedRow("${expression} ${expression}", ""),
       TranslatedRow("there", "")
     )
     val res = Translator(json, instructions).rowsForTranslation
@@ -1261,46 +1307,153 @@ class TextExtractorSuite extends FunSuite {
     assertEquals(parse(res).toOption.get, expected)
   }
 
-  test("translate json with markdown (1)") {
+  test("top level expression white space preservation") {
     val json =
       json"""
           {
-            "sections": [
-              {
-                "fields": [
-                  {
-                    "infoText": {
-                      "en": "You need to send forms within **24 hours**.\n\nIf you do not send us these details in time you will need to start a new application.\n\nWhen you are ready to submit all of your forms you will need to [return to each of your saved forms](/submissions/new-form/AEO-journey-selector)"
-                    }
-                  }
-                ]
-              }
-            ]
-          }"""
+            "expressions": {
+              "heading": "if prevFc contains 0 then '\n \nEN1: \n' else '\nEN2: '"
+            }
+          }
+          """
 
     val expected =
       json"""
           {
-            "sections": [
-              {
-                "fields": [
-                  {
-                    "infoText": {
-                      "en": "You need to send forms within **24 hours**.\n\nIf you do not send us these details in time you will need to start a new application.\n\nWhen you are ready to submit all of your forms you will need to [return to each of your saved forms](/submissions/new-form/AEO-journey-selector)",
-                      "cy": "CY1\n\nCY2\n\nCY3 [CY4](/submissions/new-form/AEO-journey-selector)"
-                    }
-                  }
-                ]
-              }
-            ]
+            "expressions": {
+              "heading": "if prevFc contains 0 then '\n \nEN1: \n'|'\n \nCY1: \n' else '\nEN2: '|'\nCY2: '"
+            }
           }
           """
 
     val csv =
       """|en,cy
-         |You need to send forms within **24 hours**.,CY1
-         |If you do not send us these details in time you will need to start a new application.,CY2
-         |When you are ready to submit all of your forms you will need to [return to each of your saved forms](/submissions/new-form/AEO-journey-selector),CY3 [CY4](/submissions/new-form/AEO-journey-selector)""".stripMargin
+         |EN1:,CY1:
+         |EN2:,CY2:
+         |""".stripMargin
+
+    val translatableRows = TextExtractor.readCvsFromString(csv)
+    val (res, stats) = TextExtractor.translateFile(translatableRows, json.spaces2)
+    assertEquals(parse(res).toOption.get, expected)
+  }
+
+  test("top level expression white space preservation - idempotence (1)") {
+
+    val json =
+      json"""
+          {
+            "expressions": {
+              "heading": "if prevFc contains 0 then '\n\nEN1: '|'\n\nCY1: ' else '\nEN2: '|'\nCY2: '"
+            }
+          }
+          """
+
+    val expected =
+      json"""
+          {
+            "expressions": {
+              "heading": "if prevFc contains 0 then '\n\nEN1: '|'\n\nCY1: ' else '\nEN2: '|'\nCY2: '"
+            }
+          }
+          """
+
+    val csv =
+      """|en,cy
+         |EN1:,CY1:
+         |EN2:,CY2:
+         |""".stripMargin
+
+    val translatableRows = TextExtractor.readCvsFromString(csv)
+    val (res, stats) = TextExtractor.translateFile(translatableRows, json.spaces2)
+    assertEquals(parse(res).toOption.get, expected)
+  }
+
+  test("top level expression white space preservation - idempotence (2)") {
+
+    val json =
+      json"""
+          {
+            "expressions": {
+              "heading": "if prevFc contains 0 then '\n\nEN1: '|'\n\nCY1: ' else '\nEN2: '|'\nCY2: '"
+            }
+          }
+          """
+
+    val expected =
+      json"""
+          {
+            "expressions": {
+              "heading": "if prevFc contains 0 then '\n\nEN1: '|'\n\nCY1: ' else '\nEN2: '|'\nCY2: '"
+            }
+          }
+          """
+
+    val csv =
+      """|en,cy
+         |EN3:,CY3:
+         |EN4:,CY4:
+         |""".stripMargin // Nothing match by purpose
+
+    val translatableRows = TextExtractor.readCvsFromString(csv)
+    val (res, stats) = TextExtractor.translateFile(translatableRows, json.spaces2)
+    assertEquals(parse(res).toOption.get, expected)
+  }
+
+  test("top level expression with markdown like data (1)") {
+
+    val json =
+      json"""
+          {
+            "expressions": {
+              "heading": "if bporNotApplicable then '- Ineligible' else '* Ineligible'"
+            }
+          }
+          """
+
+    val expected =
+      json"""
+          {
+            "expressions": {
+              "heading": "if bporNotApplicable then '- Ineligible'|'- CY1' else '* Ineligible'|'* CY1'"
+            }
+          }
+          """
+
+    val csv =
+      """|en,cy
+         |Ineligible,CY1
+         |""".stripMargin
+
+    val translatableRows = TextExtractor.readCvsFromString(csv)
+    val (res, stats) = TextExtractor.translateFile(translatableRows, json.spaces2)
+    assertEquals(parse(res).toOption.get, expected)
+  }
+
+  test("top level expression with markdown like data (2) - replacement") {
+
+    val json =
+      json"""
+          {
+            "expressions": {
+              "heading": "if bporNotApplicable then '- IneligibleX'|'- CY1' else '* IneligibleY'|'* CY2'"
+            }
+          }
+          """
+
+    val expected =
+      json"""
+          {
+            "expressions": {
+              "heading": "if bporNotApplicable then '- IneligibleX'|'- CY3' else '* IneligibleY'|'* CY4'"
+            }
+          }
+          """
+
+    val csv =
+      """|en,cy
+         |IneligibleX,CY3
+         |IneligibleY,CY4
+         |""".stripMargin
 
     val translatableRows = TextExtractor.readCvsFromString(csv)
     val (res, stats) = TextExtractor.translateFile(translatableRows, json.spaces2)
@@ -1355,4 +1508,283 @@ class TextExtractorSuite extends FunSuite {
     val (res, stats) = TextExtractor.translateFile(translatableRows, json.spaces2)
     assertEquals(parse(res).toOption.get, expected)
   }
+
+  test("do not translate markdown with 'missing' (ie. empty) translation") {
+    val json =
+      json"""
+          {
+            "sections": [
+              {
+                "fields": [
+                  {
+                    "infoText": {
+                      "en": "\n* Austria \n* Belgium \n* Bulgaria \n* Croatia \n* Republic of Cyprus \n* Czech Republic"
+                    }
+                  }
+                ]
+              }
+            ]
+          }"""
+
+    val expected =
+      json"""
+          {
+            "sections": [
+              {
+                "fields": [
+                  {
+                    "infoText": {
+                      "en": "\n* Austria \n* Belgium \n* Bulgaria \n* Croatia \n* Republic of Cyprus \n* Czech Republic",
+                      "cy": ""
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+          """
+
+    val csv =
+      """|en,cy
+         |Austria,
+         |Belgium,Gwlad Belg
+         |Bulgaria,Bwlgaria
+         |Croatia,Croatia
+         |Republic of Cyprus,Gweriniaeth Cyprus
+         |Czech Republic,Y Weriniaeth Tsiec""".stripMargin
+
+    val translatableRows = TextExtractor.readCvsFromString(csv)
+    val (res, stats) = TextExtractor.translateFile(translatableRows, json.spaces2)
+    assertEquals(parse(res).toOption.get, expected)
+  }
+
+  test("do not translate markdown with 'incomplete' translation") {
+    val json =
+      json"""
+          {
+            "sections": [
+              {
+                "fields": [
+                  {
+                    "infoText": {
+                      "en": "\n* Austria \n* Belgium \n* Bulgaria \n* Croatia \n* Republic of Cyprus \n* Czech Republic"
+                    }
+                  }
+                ]
+              }
+            ]
+          }"""
+
+    val expected =
+      json"""
+          {
+            "sections": [
+              {
+                "fields": [
+                  {
+                    "infoText": {
+                      "en": "\n* Austria \n* Belgium \n* Bulgaria \n* Croatia \n* Republic of Cyprus \n* Czech Republic",
+                      "cy": ""
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+          """
+
+    val csv =
+      """|en,cy
+         |Belgium,Gwlad Belg
+         |Bulgaria,Bwlgaria
+         |Croatia,Croatia
+         |Republic of Cyprus,Gweriniaeth Cyprus
+         |Czech Republic,Y Weriniaeth Tsiec""".stripMargin
+
+    val translatableRows = TextExtractor.readCvsFromString(csv)
+    val (res, stats) = TextExtractor.translateFile(translatableRows, json.spaces2)
+    assertEquals(parse(res).toOption.get, expected)
+  }
+
+  test("translate expression containing whole sentence") {
+    val json =
+      json"""
+          {
+            "sections": [
+              {
+                "fields": [
+                  {
+                    "infoText": {
+                      "en": "Include the types of income generated in each country$${if 1 = 1 then ', such as business profits or dividends.' else '. Acceptable income types are business profits or pensions.'}"
+                    }
+                  }
+                ]
+              }
+            ]
+          }"""
+
+    val expected =
+      json"""
+          {
+            "sections": [
+              {
+                "fields": [
+                  {
+                    "infoText": {
+                      "en": "Include the types of income generated in each country$${if 1 = 1 then ', such as business profits or dividends.' else '. Acceptable income types are business profits or pensions.'}",
+                      "cy": "CY1"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+          """
+
+    val csv =
+      """|en,cy
+         |"Include the types of income generated in each country${if 1 = 1 then ', such as business profits or dividends.' else '. Acceptable income types are business profits or pensions.'}",CY1""".stripMargin
+
+    val translatableRows = TextExtractor.readCvsFromString(csv)
+    val (res, stats) = TextExtractor.translateFile(translatableRows, json.spaces2)
+    assertEquals(parse(res).toOption.get, expected)
+  }
+
+  test("translate sentence with new line 1") {
+    val json =
+      json"""
+          {
+            "sections": [
+              {
+                "fields": [
+                  {
+                    "infoText": {
+                      "en": "We will use these for your ongoing \ncorrespondence and returns for duty on gas for use as road fuel."
+                    }
+                  }
+                ]
+              }
+            ]
+          }"""
+
+    val expected =
+      json"""
+          {
+            "sections": [
+              {
+                "fields": [
+                  {
+                    "infoText": {
+                      "en": "We will use these for your ongoing \ncorrespondence and returns for duty on gas for use as road fuel.",
+                      "cy": "CY1"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+          """
+
+    val csv =
+      """|en,cy
+         |We will use these for your ongoing \ncorrespondence and returns for duty on gas for use as road fuel.,CY1""".stripMargin
+
+    val translatableRows = TextExtractor.readCvsFromString(csv)
+    val (res, stats) = TextExtractor.translateFile(translatableRows, json.spaces2)
+    assertEquals(parse(res).toOption.get, expected)
+  }
+
+  test("translate sentence with new line 2") {
+    val json =
+      json"""
+          {
+            "sections": [
+              {
+                "fields": [
+                  {
+                    "infoText": {
+                      "en": "We will use these for your ongoing \ncorrespondence and returns for duty on gas for use as road fuel."
+                    }
+                  }
+                ]
+              }
+            ]
+          }"""
+
+    val expected =
+      json"""
+          {
+            "sections": [
+              {
+                "fields": [
+                  {
+                    "infoText": {
+                      "en": "We will use these for your ongoing \ncorrespondence and returns for duty on gas for use as road fuel.",
+                      "cy": "CY1\nCY2"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+          """
+
+    val csv =
+      """|en,cy
+         |We will use these for your ongoing \ncorrespondence and returns for duty on gas for use as road fuel.,CY1\nCY2""".stripMargin
+
+    val translatableRows = TextExtractor.readCvsFromString(csv)
+    val (res, stats) = TextExtractor.translateFile(translatableRows, json.spaces2)
+    assertEquals(parse(res).toOption.get, expected)
+  }
+
+  test("translate sentences with where one sentence is prefix of another") {
+    val json =
+      json"""
+          {
+            "sections": [
+              {
+                "fields": [
+                  {
+                    "infoText": {
+                      "en": "For each entity covered by this election, you’ll need to provide the:\n\n* name\n\n* address \n\n* name of qualifying company that owns or part owns the entity\n\n* percentage of entity owned by the qualifying company\n\n Include all the entities’ details in one document."
+                    }
+                  }
+                ]
+              }
+            ]
+          }"""
+
+    val expected =
+      json"""
+          {
+            "sections": [
+              {
+                "fields": [
+                  {
+                    "infoText": {
+                      "en": "For each entity covered by this election, you’ll need to provide the:\n\n* name\n\n* address \n\n* name of qualifying company that owns or part owns the entity\n\n* percentage of entity owned by the qualifying company\n\n Include all the entities’ details in one document.",
+                      "cy": "CY1\n\n* CY4\n\n* CY3 \n\n* CY5\n\n* CY6\n\n CY2"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+          """
+
+    val csv =
+      """|en,cy
+         |"For each entity covered by this election, you’ll need to provide the:",CY1
+         |Include all the entities’ details in one document.,CY2
+         |address,CY3
+         |name,CY4
+         |name of qualifying company that owns or part owns the entity,CY5
+         |percentage of entity owned by the qualifying company,CY6""".stripMargin
+
+    val translatableRows = TextExtractor.readCvsFromString(csv)
+    val (res, stats) = TextExtractor.translateFile(translatableRows, json.spaces2)
+    assertEquals(parse(res).toOption.get, expected)
+  }
+
 }

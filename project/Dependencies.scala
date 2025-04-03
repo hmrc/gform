@@ -63,7 +63,7 @@ object Dependencies {
     "org.jsoup"               % "jsoup"                  % "1.15.4"            % scope,
     //"com.github.tomakehurst"  % "wiremock-jre8"               % "2.27.1"            % scope,
     "com.vladsch.flexmark" % "flexmark-all"            % "0.64.0"         % scope,
-    "org.scalameta"       %% "munit"                   % "0.7.29"         % scope,
+    "org.scalameta"       %% "munit"                   % "1.1.0"          % scope,
     "uk.gov.hmrc.mongo"   %% "hmrc-mongo-test-play-30" % hmrcMongoVersion % scope,
     "com.storm-enroute"   %% "scalameter"              % "0.21"           % scope,
     "com.typesafe"        %% "ssl-config-core"         % "0.6.1"          % scope // # Needed for it:test to run on JDK 17

@@ -101,7 +101,12 @@ class TranslationController(
           ExtractAndTranslate(translatableRow.en).translateTexts
 
         if (breakdown.size > 1) {
-          Some(EnTextBreakdown(translatableRow.en, breakdown.map(_.en)))
+          Some(
+            EnTextBreakdown(
+              TextExtractor.escape(translatableRow.en),
+              breakdown.map(enTextToTranslate => TextExtractor.escape(enTextToTranslate.en))
+            )
+          )
         } else None
       }
 
@@ -137,7 +142,7 @@ class TranslationController(
   ): Action[AnyContent] =
     withFormTemplate(formTemplateId) { json =>
       val jsonAsString = Json.prettyPrint(json.value)
-      Ok.chunked(StreamConverters.fromInputStream(() => generateXlsx(generate(jsonAsString))))
+      Ok.chunked(StreamConverters.fromInputStream(() => generateXlsx(TextExtractor.escapeRows(generate(jsonAsString)))))
         .withHeaders(
           CONTENT_TYPE        -> "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
           CONTENT_DISPOSITION -> s"""attachment; filename="${formTemplateId.value}.xlsx""""
@@ -231,14 +236,18 @@ class TranslationController(
     }
 
   private def getCellValue(cell: Cell): String =
-    cell.getCellType() match {
-      case CellType._NONE   => ""
-      case CellType.BLANK   => ""
-      case CellType.BOOLEAN => cell.getBooleanCellValue().toString
-      case CellType.ERROR   => ""
-      case CellType.FORMULA => ""
-      case CellType.NUMERIC => cell.getNumericCellValue().toString
-      case CellType.STRING  => cell.getStringCellValue()
+    if (cell == null) {
+      "" // LibreOffice spreadsheets may return null for a cell
+    } else {
+      cell.getCellType() match {
+        case CellType._NONE   => ""
+        case CellType.BLANK   => ""
+        case CellType.BOOLEAN => cell.getBooleanCellValue().toString
+        case CellType.ERROR   => ""
+        case CellType.FORMULA => ""
+        case CellType.NUMERIC => cell.getNumericCellValue().toString
+        case CellType.STRING  => cell.getStringCellValue()
+      }
     }
 
   def translateCsv(
