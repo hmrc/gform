@@ -74,6 +74,7 @@ sealed trait Expr {
       }
 
     case c @ Constant(_) => TranslatableConstant(c) :: Nil
+    case Concat(exprs)   => exprs.flatMap(_.constants)
     case otherwise       => List.empty[TranslatableConstant]
   }
 }
