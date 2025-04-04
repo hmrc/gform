@@ -18,15 +18,12 @@ package uk.gov.hmrc.gform.submission.destinations
 
 import org.apache.pekko.util.ByteString
 import uk.gov.hmrc.gform.core.{ FOpt, fromFutureA }
-import uk.gov.hmrc.gform.form.FormAlgebra
 import uk.gov.hmrc.gform.formtemplate.FormTemplateAlgebra
-import uk.gov.hmrc.gform.objectstore.MetadataXml.xmlDec
 import uk.gov.hmrc.gform.objectstore.{ ObjectStoreAlgebra, ObjectStorePaths }
 import uk.gov.hmrc.gform.pdfgenerator.{ FopService, PdfGeneratorService }
 import uk.gov.hmrc.gform.sdes.workitem.DestinationWorkItemAlgebra
 import uk.gov.hmrc.gform.sharedmodel.{ DestinationResult, LangADT }
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
-import uk.gov.hmrc.gform.sharedmodel.form.Submitted
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination
 import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination.InfoArchive
 import uk.gov.hmrc.gform.submission.{ InfoArchiveXMLGenerator, PdfAndXmlSummariesFactory }
@@ -44,8 +41,7 @@ class InfoArchiveSubmitter(
   pdfGeneratorService: PdfGeneratorService,
   fopService: FopService,
   formTemplateService: FormTemplateAlgebra[FOpt],
-  destinationWorkItemAlgebra: DestinationWorkItemAlgebra[FOpt],
-  formService: FormAlgebra[FOpt]
+  destinationWorkItemAlgebra: DestinationWorkItemAlgebra[FOpt]
 )(implicit ec: ExecutionContext)
     extends InfoArchiveSubmitterAlgebra[FOpt] {
 
@@ -72,6 +68,7 @@ class InfoArchiveSubmitter(
 
     val paths: ObjectStorePaths = ObjectStorePaths.infoArchivePaths(envelopeId)
 
+    val xmlDec = """<?xml version="1.0" encoding="UTF-8""""
     val sip =
       xmlDec + "\n" + prettyPrinter.formatNodes(InfoArchiveXMLGenerator.generateSip(envelopeId, formattedCurrentTime))
 
@@ -107,7 +104,6 @@ class InfoArchiveSubmitter(
              ContentType.`application/xml`
            )
       _ <- destinationWorkItemAlgebra.pushWorkItem(envelopeId, formTemplateId, submission.submissionRef, InfoArchive)
-      _ <- formService.updateFormStatus(submissionInfo.formId, Submitted)
     } yield ()
   }
 
