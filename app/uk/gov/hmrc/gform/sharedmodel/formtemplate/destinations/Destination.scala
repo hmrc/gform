@@ -41,13 +41,6 @@ sealed trait DestinationWithTaxpayerId extends Destination {
   def taxpayerId(): Expr
 }
 
-sealed trait DestinationWithPaymentReference extends Destination {
-  def paymentReference: Expr
-  def nino: Option[Expr]
-  def utr: Option[Expr]
-  def postalCode: Option[Expr]
-}
-
 sealed trait DestinationIncludeIf extends Product with Serializable
 
 object DestinationIncludeIf {
@@ -106,17 +99,6 @@ object Destination {
     jsonSchema: Option[JsValue]
   ) extends Destination with DestinationWithTaxpayerId
 
-  case class InfoArchive(
-    id: DestinationId,
-    includeIf: DestinationIncludeIf,
-    failOnError: Boolean,
-    formId: FormId,
-    paymentReference: Expr,
-    nino: Option[Expr],
-    utr: Option[Expr],
-    postalCode: Option[Expr]
-  ) extends Destination with DestinationWithPaymentReference
-
   case class HandlebarsHttpApi(
     id: DestinationId,
     profile: ProfileName,
@@ -172,7 +154,6 @@ object Destination {
   val typeDiscriminatorFieldName: String = "type"
   val hmrcDms: String = "hmrcDms"
   val dataStore: String = "hmrcIlluminate"
-  val infoArchive: String = "hmrcInfoArchive"
   val submissionConsolidator: String = "submissionConsolidator"
   val handlebarsHttpApi: String = "handlebarsHttpApi"
   val composite: String = "composite"
@@ -192,7 +173,6 @@ object Destination {
         typeDiscriminatorFieldName,
         hmrcDms                -> UploadableHmrcDmsDestination.reads,
         dataStore              -> UploadableDataStoreDestination.reads,
-        infoArchive            -> UploadableInfoArchiveDestination.reads,
         submissionConsolidator -> UploadableSubmissionConsolidator.reads,
         handlebarsHttpApi      -> UploadableHandlebarsHttpApiDestination.reads,
         composite              -> UploadableCompositeDestination.reads,
@@ -322,40 +302,6 @@ object UploadableDataStoreDestination {
     override def reads(json: JsValue): JsResult[Destination.DataStore] =
       d.reads(json).flatMap(_.toDataStoreDestination.fold(JsError(_), JsSuccess(_)))
   }
-}
-
-object UploadableInfoArchiveDestination {
-  implicit val reads: Reads[Destination.InfoArchive] = new Reads[Destination.InfoArchive] {
-    implicit val formIdFormat: Format[FormId] = FormId.destformat
-    private val d: Reads[UploadableInfoArchiveDestination] = derived.reads[UploadableInfoArchiveDestination]()
-    override def reads(json: JsValue): JsResult[Destination.InfoArchive] =
-      d.reads(json).flatMap(_.toInfoArchiveDestination.fold(JsError(_), JsSuccess(_)))
-  }
-}
-
-case class UploadableInfoArchiveDestination(
-  id: DestinationId,
-  includeIf: DestinationIncludeIf,
-  failOnError: Option[Boolean],
-  formId: FormId,
-  paymentReference: TextExpression,
-  nino: Option[TextExpression],
-  utr: Option[TextExpression],
-  postalCode: Option[TextExpression]
-) {
-  private def toInfoArchiveDestination: Either[String, Destination.InfoArchive] =
-    for {
-      cvii <- addErrorInfo(id, None, includeIf)
-    } yield Destination.InfoArchive(
-      id,
-      cvii,
-      failOnError.getOrElse(false),
-      formId,
-      paymentReference.expr,
-      nino.map(_.expr),
-      utr.map(_.expr),
-      postalCode.map(_.expr)
-    )
 }
 
 object UploadableSubmissionConsolidator {

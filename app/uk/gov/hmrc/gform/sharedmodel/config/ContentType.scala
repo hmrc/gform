@@ -19,18 +19,8 @@ package uk.gov.hmrc.gform.sharedmodel.config
 import cats.Eq
 import play.api.libs.json.{ Format, JsString }
 import uk.gov.hmrc.gform.sharedmodel.ValueClassFormat
-import uk.gov.hmrc.gform.sharedmodel.config.ContentType.{ `application/json`, `application/pdf`, `application/xml`, `application/zip`, `image/jpeg` }
 
-case class ContentType(value: String) {
-  def extension: String = this match {
-    case `application/pdf`  => "pdf"
-    case `application/xml`  => "xml"
-    case `application/json` => "json"
-    case `image/jpeg`       => "jpg"
-    case `application/zip`  => "zip"
-    case _                  => "pdf"
-  }
-}
+case class ContentType(value: String)
 
 object ContentType {
 

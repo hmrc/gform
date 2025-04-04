@@ -111,7 +111,8 @@ class PlayComponentsModule(
     shutterModule.shutterController,
     sdesModule.sdesCallbackController,
     sdesModule.sdesController,
-    sdesModule.destinationWorkItemController,
+    sdesModule.dmsWorkItemController,
+    sdesModule.dataStoreWorkItemController,
     historyModule.historyController,
     retrievalModule.authRetrievalController
   )

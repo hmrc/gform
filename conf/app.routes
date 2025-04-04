@@ -130,11 +130,17 @@ GET           /sdes/submissions/all-destinations                                
 POST          /sdes/submissions/migration/:from/:to                                                     uk.gov.hmrc.gform.sdes.SdesController.sdesMigration(from, to)
 GET           /sdes/history/:correlationId                                                              uk.gov.hmrc.gform.sdes.SdesController.historyById(correlationId: CorrelationId)
 
-GET           /destination-work-item/search/:page/:pageSize                                             uk.gov.hmrc.gform.sdes.workitem.DestinationWorkItemController.search(page: Int, pageSize: Int, destination: SdesDestination, formTemplateId: Option[FormTemplateId], status: Option[ProcessingStatus])
-POST          /destination-work-item/enqueue/:id                                                        uk.gov.hmrc.gform.sdes.workitem.DestinationWorkItemController.enqueue(id: String, destination: SdesDestination)
-GET           /destination-work-item/:id                                                                uk.gov.hmrc.gform.sdes.workitem.DestinationWorkItemController.get(id: String, destination: SdesDestination)
-GET           /destination-work-item/envelopeId/:envelopeId                                             uk.gov.hmrc.gform.sdes.workitem.DestinationWorkItemController.getByEnvelopeId(envelopeId: EnvelopeId, destination: SdesDestination)
-DELETE        /destination-work-item/:id                                                                uk.gov.hmrc.gform.sdes.workitem.DestinationWorkItemController.delete(id: String, destination: SdesDestination)
+GET           /dms-work-item/search/:page/:pageSize                                                     uk.gov.hmrc.gform.sdes.dms.DmsWorkItemController.search(page: Int, pageSize: Int, formTemplateId: Option[FormTemplateId], status: Option[ProcessingStatus])
+POST          /dms-work-item/enqueue/:id                                                                uk.gov.hmrc.gform.sdes.dms.DmsWorkItemController.enqueue(id: String)
+GET           /dms-work-item/:id                                                                        uk.gov.hmrc.gform.sdes.dms.DmsWorkItemController.get(id: String)
+GET           /dms-work-item/envelopeId/:envelopeId                                                     uk.gov.hmrc.gform.sdes.dms.DmsWorkItemController.getByEnvelopeId(envelopeId: EnvelopeId)
+DELETE        /dms-work-item/:id                                                                        uk.gov.hmrc.gform.sdes.dms.DmsWorkItemController.delete(id: String)
+
+GET           /data-store-work-item/search/:page/:pageSize                                              uk.gov.hmrc.gform.sdes.datastore.DataStoreWorkItemController.search(page: Int, pageSize: Int, formTemplateId: Option[FormTemplateId], status: Option[ProcessingStatus])
+POST          /data-store-work-item/enqueue/:id                                                         uk.gov.hmrc.gform.sdes.datastore.DataStoreWorkItemController.enqueue(id: String)
+GET           /data-store-work-item/:id                                                                 uk.gov.hmrc.gform.sdes.datastore.DataStoreWorkItemController.get(id: String)
+GET           /data-store-work-item/envelopeId/:envelopeId                                              uk.gov.hmrc.gform.sdes.datastore.DataStoreWorkItemController.getByEnvelopeId(envelopeId: EnvelopeId)
+DELETE        /data-store-work-item/:id                                                                 uk.gov.hmrc.gform.sdes.datastore.DataStoreWorkItemController.delete(id: String)
 
 GET           /history-all-ids                                                                          uk.gov.hmrc.gform.history.HistoryController.allFormTemplateIds()
 GET           /history/template/:historyId                                                              uk.gov.hmrc.gform.history.HistoryController.historyFor(historyId: HistoryId)

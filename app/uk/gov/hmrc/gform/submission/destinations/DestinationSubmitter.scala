@@ -42,7 +42,6 @@ class DestinationSubmitter[M[_]](
   destinationAuditer: Option[DestinationAuditAlgebra[M]],
   submissionConsolidator: SubmissionConsolidatorAlgebra[M],
   dataStore: DataStoreSubmitterAlgebra[M],
-  infoArchive: InfoArchiveSubmitterAlgebra[M],
   sdesConfig: SdesConfig,
   handlebarsTemplateProcessor: HandlebarsTemplateProcessor = RealHandlebarsTemplateProcessor
 )(implicit monadError: MonadError[M, Throwable])
@@ -159,14 +158,6 @@ class DestinationSubmitter[M[_]](
           destinationEvaluation.evaluation.find(_.destinationId === d.id),
           accumulatedModel,
           modelTree
-        ).map(_ => None)
-      case d: Destination.InfoArchive =>
-        submitToInfoArchive(
-          submissionInfo,
-          modelTree,
-          destinationEvaluation.evaluation.find(_.destinationId === d.id),
-          d,
-          l
         ).map(_ => None)
       case d: Destination.HandlebarsHttpApi => submitToHandlebars(d, accumulatedModel, modelTree, submissionInfo)
       case d: Destination.Composite =>
@@ -323,21 +314,6 @@ class DestinationSubmitter[M[_]](
         }
     }
   }
-
-  def submitToInfoArchive(
-    submissionInfo: DestinationSubmissionInfo,
-    modelTree: HandlebarsModelTree,
-    destinationResult: Option[DestinationResult],
-    d: Destination.InfoArchive,
-    l: LangADT
-  )(implicit hc: HeaderCarrier): M[Unit] =
-    monadError.handleErrorWith(infoArchive(submissionInfo, modelTree, destinationResult, d, l)) { msg =>
-      if (d.failOnError)
-        raiseDestinationError(submissionInfo.formId, d.id, msg)
-      else {
-        logErrorInMonad(submissionInfo.formId, d.id, "Failed execution but has 'failOnError' set to false. Ignoring.")
-      }
-    }
 
   private def submitToHandlebars(
     d: Destination.HandlebarsHttpApi,

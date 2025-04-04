@@ -25,14 +25,12 @@ import uk.gov.hmrc.gform.akka.AkkaModule
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.core.{ FOpt, fromFutureA }
 import uk.gov.hmrc.gform.envelope.EnvelopeModule
-import uk.gov.hmrc.gform.sdes.SdesConnector
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 import uk.gov.hmrc.gform.sharedmodel.envelope.EnvelopeData
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination
 import uk.gov.hmrc.gform.submission.{ PdfAndXmlSummaries, Submission }
-import uk.gov.hmrc.gform.wshttp.WSHttpModule
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.objectstore.client
 import uk.gov.hmrc.objectstore.client.config.ObjectStoreClientConfig
@@ -45,8 +43,7 @@ class ObjectStoreModule(
   configModule: ConfigModule,
   wsClient: WSClient,
   akkaModule: AkkaModule,
-  envelopeModule: EnvelopeModule,
-  wSHttpModule: WSHttpModule
+  envelopeModule: EnvelopeModule
 )(implicit ex: ExecutionContext) {
 
   private val baseUrl = configModule.serviceConfig.baseUrl("object-store")
@@ -70,22 +67,8 @@ class ObjectStoreModule(
       akkaModule.actorSystem
     )
 
-  private val sdesBaseUrl = configModule.serviceConfig.baseUrl("sdes")
-  private val sdesBasePath = configModule.sdesConfig.basePath
-  private val sdesKeyAndCredentialsApiBaseUrl = configModule.serviceConfig.baseUrl("sdes-key-and-credentials-api")
-  private val sdesKeyAndCredentialsApiBasePath = configModule.sdesKeyAndCredentialsApiConfig.basePath
-
-  val sdesConnector: SdesConnector =
-    new SdesConnector(
-      wSHttpModule.auditableWSHttp,
-      sdesBaseUrl,
-      sdesBasePath,
-      sdesKeyAndCredentialsApiBaseUrl,
-      sdesKeyAndCredentialsApiBasePath
-    )
-
   val objectStoreService: ObjectStoreAlgebra[Future] =
-    new ObjectStoreService(objectStoreConnector, envelopeModule.envelopeService, sdesConnector)
+    new ObjectStoreService(objectStoreConnector, envelopeModule.envelopeService)
 
   val objectStoreController: ObjectStoreController =
     new ObjectStoreController(configModule.controllerComponents, objectStoreService)
@@ -164,13 +147,7 @@ class ObjectStoreModule(
       summaries: PdfAndXmlSummaries,
       hmrcDms: Destination.HmrcDms,
       formTemplateId: FormTemplateId
-    )(implicit hc: HeaderCarrier): FOpt[Unit] =
+    )(implicit hc: HeaderCarrier): FOpt[ObjectSummaryWithMd5] =
       fromFutureA(objectStoreService.submitEnvelope(submission, summaries, hmrcDms, formTemplateId))
-
-    override def zipAndEncrypt(envelopeId: EnvelopeId, objectStorePaths: ObjectStorePaths)(implicit
-      hc: HeaderCarrier,
-      m: Materializer
-    ): FOpt[ObjectSummaryWithMd5] =
-      fromFutureA(objectStoreService.zipAndEncrypt(envelopeId, objectStorePaths))
   }
 }
