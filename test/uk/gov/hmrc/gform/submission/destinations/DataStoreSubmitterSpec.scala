@@ -46,7 +46,7 @@ class DataStoreSubmitterSpec extends AnyWordSpecLike with Matchers with MockFact
          |$specificError
          | at [Source: (String)"""".stripMargin
 
-    val errorEnd: String = s""""; line: $errorLine, column: $errorColumn]"""
+    val errorEnd: String = s""""; line: $errorLine, column: $errorColumn], full json:\n$incorrectJson"""
 
     errorStart + incorrectJson + errorEnd
   }
