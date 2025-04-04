@@ -171,6 +171,7 @@ class RepoDestinationAuditer(
   private def getDestinationType(destination: Destination): String = destination match {
     case _: Destination.HmrcDms           => Destination.hmrcDms
     case _: Destination.DataStore         => Destination.dataStore
+    case _: Destination.InfoArchive       => Destination.infoArchive
     case _: Destination.Composite         => Destination.composite
     case _: Destination.StateTransition   => Destination.stateTransition
     case d: Destination.HandlebarsHttpApi => s"${Destination.handlebarsHttpApi}.${d.profile.name}"

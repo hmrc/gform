@@ -52,7 +52,7 @@ class FileUploadModule(
       fileUploadFrontendConnector,
       timeModule.timeProvider,
       objectStoreModule.objectStoreService,
-      sdesModule.dmsWorkItemService
+      sdesModule.destinationWorkItemService
     )
 
   private lazy val config: FUConfig = FUConfig(

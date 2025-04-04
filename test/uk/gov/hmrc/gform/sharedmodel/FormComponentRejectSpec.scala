@@ -128,16 +128,17 @@ class FormComponentRejectSpec extends Spec with TableDrivenPropertyChecks {
   it should "reject template containing invalid reference field" in {
     val table = Table(
       // format: off
-      ("json",                                     "expectedMessage"),
-      ("invalid-count-usage",                      "sections.fields.[id=lastInfo].infoText: textA cannot be use with .count function. Only AddToList id can be used with .count"),
-      ("invalid-sum-usage",                        "sections.fields.[id=lastInfo].infoText: textA cannot be use with .sum function. Only numeric fields from Group component, Repeated section or AddToList section can be used with .sum function"),
-      ("invalid-repeated-section-cross-reference", "fields.[id=fieldB].label: fieldA belongs to different Repeated section"),
-      ("invalid-group-cross-reference",            "fields.[id=groupB].[id=fieldB].label: fieldA belongs to different Group component"),
-      ("nonexistent-field-reference-in-if-else",   "sections.fields.[id=textA].label: foo doesn't exist in the form"),
-      ("nonexistent-field-reference",              "sections.fields.[id=textA].label: textB doesn't exist in the form"),
-      ("empty-shortname-non-repeated",             "shortName is empty for title: 'Page A'. If you want to hide page title on summary page, use 'presentationHint': 'invisiblePageTitle' instead."),
-      ("empty-shortname-repeated",                 "shortName is empty for title: 'Page A'. If you want to hide page title on summary page, use 'presentationHint': 'invisiblePageTitle' instead."),
-      ("empty-shortname-add-to-list",              "shortName is empty for title: 'Page $n'. If you want to hide page title on summary page, use 'presentationHint': 'invisiblePageTitle' instead."),
+      ("json",                                      "expectedMessage"),
+      ("invalid-count-usage",                       "sections.fields.[id=lastInfo].infoText: textA cannot be use with .count function. Only AddToList id can be used with .count"),
+      ("invalid-sum-usage",                         "sections.fields.[id=lastInfo].infoText: textA cannot be use with .sum function. Only numeric fields from Group component, Repeated section or AddToList section can be used with .sum function"),
+      ("invalid-repeated-section-cross-reference",  "fields.[id=fieldB].label: fieldA belongs to different Repeated section"),
+      ("invalid-group-cross-reference",             "fields.[id=groupB].[id=fieldB].label: fieldA belongs to different Group component"),
+      ("nonexistent-field-reference-in-if-else",    "sections.fields.[id=textA].label: foo doesn't exist in the form"),
+      ("nonexistent-field-reference",               "sections.fields.[id=textA].label: textB doesn't exist in the form"),
+      ("nonexistent-field-reference-in-destination","destinations.paymentReference: paymentReference doesn't exist in the form"),
+      ("empty-shortname-non-repeated",              "shortName is empty for title: 'Page A'. If you want to hide page title on summary page, use 'presentationHint': 'invisiblePageTitle' instead."),
+      ("empty-shortname-repeated",                  "shortName is empty for title: 'Page A'. If you want to hide page title on summary page, use 'presentationHint': 'invisiblePageTitle' instead."),
+      ("empty-shortname-add-to-list",               "shortName is empty for title: 'Page $n'. If you want to hide page title on summary page, use 'presentationHint': 'invisiblePageTitle' instead."),
       // format: on
     )
     val appConfig = AppConfig.loadOrThrow(ConfigFactory.load())

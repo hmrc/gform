@@ -38,20 +38,21 @@ class TestOnlyObjectStoreController(
   def downloadDmsFiles(envelopeId: EnvelopeId) = Action.async { implicit request =>
     val paths = SdesDestination.Dms.objectStorePaths(envelopeId)
     val fileName = s"${envelopeId.value}.zip"
-    objectStoreAlgebra
-      .getZipFile(envelopeId, paths)
-      .map {
-        case Some(objectSource) =>
-          Ok.streamed(
-            objectSource.content,
-            contentLength = Some(objectSource.metadata.contentLength),
-            contentType = Some(objectSource.metadata.contentType)
-          ).as(ContentType.`application/zip`.value)
-            .withHeaders(
-              Results.contentDispositionHeader(inline = false, name = Some(fileName)).toList: _*
-            )
-        case None => BadRequest(s"File ${paths.ephemeral.value}/$fileName not found")
-      }
+    for {
+      _            <- objectStoreAlgebra.zipFiles(envelopeId, paths)
+      objectSource <- objectStoreAlgebra.getZipFile(envelopeId, paths)
+    } yield objectSource match {
+      case Some(objectSource) =>
+        Ok.streamed(
+          objectSource.content,
+          contentLength = Some(objectSource.metadata.contentLength),
+          contentType = Some(objectSource.metadata.contentType)
+        ).as(ContentType.`application/zip`.value)
+          .withHeaders(
+            Results.contentDispositionHeader(inline = false, name = Some(fileName)).toList: _*
+          )
+      case None => BadRequest(s"File ${paths.ephemeral.value}/$fileName not found")
+    }
   }
 
   def downloadDataStoreFile(envelopeId: EnvelopeId) = Action.async { implicit request =>
@@ -82,6 +83,26 @@ class TestOnlyObjectStoreController(
             )
         case None => BadRequest(s"File ${paths.permanent.value}/$fileName not found")
       }
+  }
+
+  def downloadInfoArchiveFiles(envelopeId: EnvelopeId) = Action.async { implicit request =>
+    val paths = SdesDestination.InfoArchive.objectStorePaths(envelopeId)
+    val fileName = s"${paths.zipFilePrefix}${envelopeId.value}.zip"
+    for {
+      _            <- objectStoreAlgebra.zipFiles(envelopeId, paths)
+      objectSource <- objectStoreAlgebra.getZipFile(envelopeId, paths)
+    } yield objectSource match {
+      case Some(objectSource) =>
+        Ok.streamed(
+          objectSource.content,
+          contentLength = Some(objectSource.metadata.contentLength),
+          contentType = Some(objectSource.metadata.contentType)
+        ).as(ContentType.`application/zip`.value)
+          .withHeaders(
+            Results.contentDispositionHeader(inline = false, name = Some(fileName)).toList: _*
+          )
+      case None => BadRequest(s"File ${paths.ephemeral.value}/$fileName not found")
+    }
   }
 
 }

@@ -29,6 +29,7 @@ sealed trait SdesDestination extends Product with Serializable {
     case SdesDestination.DataStore       => sdesConfig.dataStore
     case SdesDestination.DataStoreLegacy => sdesConfig.hmrcIlluminate
     case SdesDestination.Dms             => sdesConfig.dms
+    case SdesDestination.InfoArchive     => sdesConfig.infoArchive
   }
 
   def objectStorePaths(envelopeId: EnvelopeId): ObjectStorePaths =
@@ -37,6 +38,7 @@ sealed trait SdesDestination extends Product with Serializable {
       case SdesDestination.DataStore       => ObjectStorePaths.dataStorePaths(envelopeId)
       case SdesDestination.DataStoreLegacy => ObjectStorePaths.dataStorePaths(envelopeId)
       case SdesDestination.Dms             => ObjectStorePaths.dmsPaths(envelopeId)
+      case SdesDestination.InfoArchive     => ObjectStorePaths.infoArchivePaths(envelopeId)
     }
 }
 
@@ -45,6 +47,7 @@ object SdesDestination {
   case object HmrcIlluminate extends SdesDestination
   case object DataStoreLegacy extends SdesDestination // Alias for HmrcIlluminate (deprecated)
   case object DataStore extends SdesDestination
+  case object InfoArchive extends SdesDestination
 
   implicit val equal: Eq[SdesDestination] = Eq.fromUniversalEquals
   implicit val format: Format[SdesDestination] =
@@ -52,7 +55,8 @@ object SdesDestination {
       "Dms"             -> Dms,
       "HmrcIlluminate"  -> HmrcIlluminate,
       "DataStoreLegacy" -> DataStoreLegacy,
-      "DataStore"       -> DataStore
+      "DataStore"       -> DataStore,
+      "InfoArchive"     -> InfoArchive
     )
 
   def fromName(destination: SdesDestination): String = destination match {
@@ -60,6 +64,7 @@ object SdesDestination {
     case HmrcIlluminate  => "HmrcIlluminate"
     case DataStoreLegacy => "DataStoreLegacy"
     case DataStore       => "DataStore"
+    case InfoArchive     => "InfoArchive"
   }
 
   def fromString(destination: String): SdesDestination = destination match {
@@ -67,5 +72,6 @@ object SdesDestination {
     case "HmrcIlluminate"  => HmrcIlluminate
     case "DataStoreLegacy" => DataStoreLegacy
     case "DataStore"       => DataStore
+    case "InfoArchive"     => InfoArchive
   }
 }

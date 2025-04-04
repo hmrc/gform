@@ -17,14 +17,21 @@
 package uk.gov.hmrc.gform.sdes
 
 import org.slf4j.LoggerFactory
-import play.api.libs.json.Json
+import play.api.http.Status
+import play.api.libs.json.{ JsError, JsResult, JsSuccess, JsValue, Json }
 import uk.gov.hmrc.gform.sharedmodel.sdes.SdesNotifyRequest
 import uk.gov.hmrc.gform.wshttp.{ FutureHttpResponseSyntax, WSHttp }
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpReads, HttpReadsInstances, HttpResponse }
 
 import scala.concurrent.{ ExecutionContext, Future }
 
-class SdesConnector(wSHttp: WSHttp, sdesBaseUrl: String, sdesBasePath: String)(implicit
+class SdesConnector(
+  wSHttp: WSHttp,
+  sdesBaseUrl: String,
+  sdesBasePath: String,
+  sdesKeyAndCredentialsApiBaseUrl: String,
+  sdesKeyAndCredentialsApiBasePath: String
+)(implicit
   ex: ExecutionContext
 ) {
   private val logger = LoggerFactory.getLogger(getClass)
@@ -47,4 +54,37 @@ class SdesConnector(wSHttp: WSHttp, sdesBaseUrl: String, sdesBasePath: String)(i
       .POST[SdesNotifyRequest, HttpResponse](url, payload, headers)
       .failWithNonSuccessStatusCodes(url)
   }
+
+  def getPublicKey()(implicit hc: HeaderCarrier): Future[SdesPublicKey] = {
+    val identifier = "sdes-encryption-public-key"
+    logger.info(s"Calling $identifier api")
+    val url = s"$sdesKeyAndCredentialsApiBaseUrl$sdesKeyAndCredentialsApiBasePath/sdes-encryption-public-key/current"
+    wSHttp
+      .GET[HttpResponse](url)
+      .map { httpResponse =>
+        httpResponse.status match {
+          case Status.OK =>
+            processPublicKey(httpResponse.json).fold(
+              invalid =>
+                throw new RuntimeException(
+                  s"Calling $identifier returned successfully, but marshalling of data failed with: $invalid"
+                ),
+              valid => {
+                logger.info(s"Calling $identifier returned Success.")
+                valid
+              }
+            )
+          case other =>
+            throw new RuntimeException(
+              s"Problem when calling $identifier. Http status: $other, body: ${httpResponse.body}"
+            )
+        }
+      }
+  }
+
+  private def processPublicKey(json: JsValue): JsResult[SdesPublicKey] =
+    json.validate[SdesPublicKey] match {
+      case JsSuccess(publicKey, _) => JsSuccess(publicKey)
+      case unexpected              => JsError(s"Expected object response for $unexpected")
+    }
 }
