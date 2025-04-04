@@ -64,7 +64,6 @@ object DestinationsValidator {
         .groupBy {
           case _: Destination.HmrcDms                => Destination.hmrcDms
           case _: Destination.DataStore              => Destination.dataStore
-          case _: Destination.InfoArchive            => Destination.infoArchive
           case _: Destination.HandlebarsHttpApi      => Destination.handlebarsHttpApi
           case _: Destination.Email                  => Destination.email
           case _: Destination.StateTransition        => Destination.stateTransition

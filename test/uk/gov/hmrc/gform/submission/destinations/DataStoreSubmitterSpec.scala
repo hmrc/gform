@@ -21,16 +21,16 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike
 import uk.gov.hmrc.gform.objectstore.ObjectStoreAlgebra
 import uk.gov.hmrc.gform.core.FOpt
-import uk.gov.hmrc.gform.sdes.workitem.DestinationWorkItemAlgebra
+import uk.gov.hmrc.gform.sdes.datastore.DataStoreWorkItemAlgebra
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationId
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class DataStoreSubmitterSpec extends AnyWordSpecLike with Matchers with MockFactory {
   private val objectStoreAlgebra = mock[ObjectStoreAlgebra[FOpt]]
-  private val destinationWorkItemAlgebra = mock[DestinationWorkItemAlgebra[FOpt]]
+  private val dataStoreWorkItemAlgebra = mock[DataStoreWorkItemAlgebra[FOpt]]
 
-  private val dataStoreSubmitter = new DataStoreSubmitter(objectStoreAlgebra, destinationWorkItemAlgebra)
+  private val dataStoreSubmitter = new DataStoreSubmitter(objectStoreAlgebra, dataStoreWorkItemAlgebra)
 
   private val destinationId = DestinationId("dataStoreIlluminate")
   private val payloadDiscriminator = "handlebar"

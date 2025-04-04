@@ -39,7 +39,7 @@ class DmsQueueService(
   override def sendWorkItem(sdesWorkItem: WorkItem[SdesWorkItem]): Future[Unit] = {
     implicit val hc = HeaderCarrier()
     val workItem = sdesWorkItem.item
-    logger.debug(s"sending a notification for ${workItem.envelopeId} in sendWorkItem to dms")
+    logger.debug(s"sending a notification ${workItem.sdesNotifyRequest} in sendWorkItem for dms")
 
     sdesAlgebra
       .notifySDES(
@@ -47,6 +47,7 @@ class DmsQueueService(
         workItem.envelopeId,
         workItem.formTemplateId,
         workItem.submissionRef,
+        workItem.sdesNotifyRequest,
         Dms
       )
       .void(ec)
