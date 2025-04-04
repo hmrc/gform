@@ -213,13 +213,18 @@ class TranslationController(
         }
         .toList
 
-      val enIndex: Int = firstRowList.indexOf("en")
-      val cyIndex: Int = firstRowList.indexOf("cy")
+      val enIndex0: Int = firstRowList.indexOf("en")
+      val cyIndex0: Int = firstRowList.indexOf("cy")
+
+      val enIndex = if (enIndex0 == -1) 0 else enIndex0 // If 'en' header is missing assume that first column is english
+      val cyIndex = if (cyIndex0 == -1) 1 else cyIndex0 // If 'cy' header is missing assume that second column is welsh
+
+      val toDrop = if (enIndex0 == -1) 0 else 1
 
       val spreadheetRows: Map[EnFromSpreadsheet, CyFromSpreadsheet] = translations
         .rowIterator()
         .asScala
-        .drop(1)
+        .drop(toDrop)
         .filter { row =>
           row.getLastCellNum =!= -1 // Ignore empty rows. Google Sheets or Libre are adding empty rows past the last translation
         }
@@ -227,6 +232,9 @@ class TranslationController(
           val en = getCellValue(row.getCell(enIndex))
           val cy = getCellValue(row.getCell(cyIndex))
           (EnFromSpreadsheet(en), CyFromSpreadsheet(cy))
+        }
+        .filterNot { case (EnFromSpreadsheet(en), CyFromSpreadsheet(cy)) =>
+          en.trim.isEmpty && cy.trim.isEmpty // Drop empty lines
         }
         .toMap
 
