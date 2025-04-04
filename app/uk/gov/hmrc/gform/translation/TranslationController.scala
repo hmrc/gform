@@ -209,7 +209,7 @@ class TranslationController(
         .cellIterator()
         .asScala
         .map { cell =>
-          cell.getStringCellValue()
+          cell.getStringCellValue().toLowerCase()
         }
         .toList
 
