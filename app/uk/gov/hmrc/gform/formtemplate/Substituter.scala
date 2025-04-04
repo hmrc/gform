@@ -498,6 +498,14 @@ object Substituter {
         d.copy(customerId = d.customerId(substitutions), includeIf = d.includeIf(substitutions))
       case d: Destination.DataStore =>
         d.copy(taxpayerId = d.taxpayerId(substitutions), includeIf = d.includeIf(substitutions))
+      case d: Destination.InfoArchive =>
+        d.copy(
+          includeIf = d.includeIf(substitutions),
+          paymentReference = d.paymentReference(substitutions),
+          nino = d.nino(substitutions),
+          utr = d.utr(substitutions),
+          postalCode = d.postalCode(substitutions)
+        )
       case d: Destination.Composite =>
         d.copy(destinations = d.destinations(substitutions), includeIf = d.includeIf(substitutions))
       case d: Destination.SubmissionConsolidator =>
