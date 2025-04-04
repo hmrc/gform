@@ -131,26 +131,31 @@ class DataStoreSubmitter(
       }
     } else Right(())
 
-  def convertToJson(string: String, destinationId: DestinationId, payloadDiscriminator: String): JsObject =
+  private def replacePII(value: String): String = {
+    val stringRegex: Regex = """"[^:"]*":\s*".*"""".r
+
+    stringRegex.replaceAllIn(
+      value,
+      regexMatch => {
+        val matchedString: String = regexMatch.matched
+        val (field, value) = matchedString.splitAt(matchedString.indexOf(":"))
+        val numberOfSpaces = value.splitAt(value.indexOf(":") + 1)._2.takeWhile(_ === ' ').length
+        val valueLength: Int = value.length - 3 - numberOfSpaces // Minus 3 for the colon and quotation marks
+        field + s""":${" " * numberOfSpaces}"$valueLength""""
+      }
+    )
+  }
+
+  def convertToJson(payload: String, destinationId: DestinationId, payloadDiscriminator: String): JsObject =
     Try {
-      Json.parse(string)
+      Json.parse(payload)
     }.fold(
       error => {
-        val stringRegex: Regex = """"[^:"]*":\s*".*"""".r
-
-        val errorWithoutPii: String = stringRegex.replaceAllIn(
-          error.getMessage,
-          regexMatch => {
-            val matchedString: String = regexMatch.matched
-            val (field, value) = matchedString.splitAt(matchedString.indexOf(":"))
-            val numberOfSpaces = value.splitAt(value.indexOf(":") + 1)._2.takeWhile(_ === ' ').length
-            val valueLength: Int = value.length - 3 - numberOfSpaces // Minus 3 for the colon and quotation marks
-            field + s""":${" " * numberOfSpaces}"$valueLength""""
-          }
-        )
+        val errorMessageWithoutPii = replacePII(error.getMessage)
+        val fullJsonWithoutPii: String = replacePII(payload)
 
         throw new Exception(
-          s"Data store destination '${destinationId.id}' error, failed to parse $payloadDiscriminator payload into a json:\n$errorWithoutPii"
+          s"Data store destination '${destinationId.id}' error, failed to parse $payloadDiscriminator payload into a json:\n$errorMessageWithoutPii, full json:\n$fullJsonWithoutPii"
         )
       },
       jsValue =>
