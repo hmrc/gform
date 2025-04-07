@@ -89,5 +89,5 @@ class JsonHttpClientSpec extends HttpClientSpec with ScalaCheckDrivenPropertyChe
   }
 
   private def buildClient[F[_]](underlying: HttpClient[F])(implicit me: MonadError[F, Throwable]): HttpClient[F] =
-    underlying.json
+    underlying.json(Map.empty)
 }

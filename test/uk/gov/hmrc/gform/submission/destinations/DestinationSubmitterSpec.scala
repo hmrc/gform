@@ -23,7 +23,7 @@ import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import uk.gov.hmrc.gform.notifier.NotifierAlgebra
 import uk.gov.hmrc.gform.sdes.{ SdesConfig, SdesRouting, WelshDefaults }
 import uk.gov.hmrc.gform.sharedmodel.{ DestinationEvaluation, DestinationResult, LangADT, PdfContent, SubmissionRef, UserSession }
-import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormData, FormId }
+import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, Form, FormData, FormId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationIncludeIf.HandlebarValue
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.{ HmrcDms, InfoArchive, SubmissionConsolidator }
@@ -63,7 +63,16 @@ class DestinationSubmitterSpec
     ) { (si, handlebarsHttpApi, template, responseCode, pdfData, structuredFormData) =>
       val httpResponse = HttpResponse(responseCode, null)
       val model = HandlebarsTemplateProcessorModel()
-      val theTree = tree(si.formId, model, si.submission.submissionRef, template, pdfData, None, structuredFormData)
+      val theTree = tree(
+        si.formId,
+        model,
+        si.submission.submissionRef,
+        template,
+        pdfData,
+        None,
+        structuredFormData,
+        si.submission.envelopeId
+      )
 
       createSubmitter
         .expectIncludeIfEvaluation(
@@ -108,7 +117,16 @@ class DestinationSubmitterSpec
     ) { (si, handlebarsHttpApi, template, pdfData, structuredFormData) =>
       val model = HandlebarsTemplateProcessorModel.empty
       val theTree =
-        tree(si.formId, model, si.submission.submissionRef, template, pdfData, None, structuredFormData)
+        tree(
+          si.formId,
+          model,
+          si.submission.submissionRef,
+          template,
+          pdfData,
+          None,
+          structuredFormData,
+          si.submission.envelopeId
+        )
 
       createSubmitter
         .expectIncludeIfEvaluation(
@@ -145,7 +163,16 @@ class DestinationSubmitterSpec
       val handlebarsHttpApi =
         generatedHandlebarsHttpApi.copy(failOnError = false, includeIf = HandlebarValue(true.toString))
       val model = HandlebarsTemplateProcessorModel()
-      val theTree = tree(si.formId, model, si.submission.submissionRef, template, pdfData, None, structuredFormData)
+      val theTree = tree(
+        si.formId,
+        model,
+        si.submission.submissionRef,
+        template,
+        pdfData,
+        None,
+        structuredFormData,
+        si.submission.envelopeId
+      )
 
       createSubmitter
         .expectHandlebarsSubmission(handlebarsHttpApi, HandlebarsTemplateProcessorModel.empty, theTree, httpResponse)
@@ -192,7 +219,16 @@ class DestinationSubmitterSpec
       val httpResponse = HttpResponse(responseCode, "foobar")
       val model = HandlebarsTemplateProcessorModel()
 
-      val theTree = tree(si.formId, model, si.submission.submissionRef, template, pdfData, None, structuredFormData)
+      val theTree = tree(
+        si.formId,
+        model,
+        si.submission.submissionRef,
+        template,
+        pdfData,
+        None,
+        structuredFormData,
+        si.submission.envelopeId
+      )
       val result: Possible[Option[HandlebarsDestinationResponse]] = createSubmitter
         .expectHandlebarsSubmission(handlebarsHttpApi, HandlebarsTemplateProcessorModel.empty, theTree, httpResponse)
         .expectIncludeIfEvaluation(
@@ -248,7 +284,16 @@ class DestinationSubmitterSpec
     ) { (si, hmrcDms, template, pdfData, instructionPdfData, structuredFormData) =>
       val model = HandlebarsTemplateProcessorModel()
       val theTree =
-        tree(si.formId, model, si.submission.submissionRef, template, pdfData, instructionPdfData, structuredFormData)
+        tree(
+          si.formId,
+          model,
+          si.submission.submissionRef,
+          template,
+          pdfData,
+          instructionPdfData,
+          structuredFormData,
+          si.submission.envelopeId
+        )
 
       createSubmitter
         .expectHmrcDmsSubmission(si, HandlebarsTemplateProcessorModel.empty, theTree, hmrcDms, LangADT.En)
@@ -285,7 +330,16 @@ class DestinationSubmitterSpec
     ) { (si, hmrcDms, template, pdfData, instructionPdfData, structuredFormData) =>
       val model = HandlebarsTemplateProcessorModel()
       val theTree =
-        tree(si.formId, model, si.submission.submissionRef, template, pdfData, instructionPdfData, structuredFormData)
+        tree(
+          si.formId,
+          model,
+          si.submission.submissionRef,
+          template,
+          pdfData,
+          instructionPdfData,
+          structuredFormData,
+          si.submission.envelopeId
+        )
 
       createSubmitter
         .expectIncludeIfEvaluation(
@@ -324,7 +378,16 @@ class DestinationSubmitterSpec
     ) { (si, hmrcDms, template, pdfData, instructionPdfData, structuredFormData) =>
       val model = HandlebarsTemplateProcessorModel()
       val theTree =
-        tree(si.formId, model, si.submission.submissionRef, template, pdfData, instructionPdfData, structuredFormData)
+        tree(
+          si.formId,
+          model,
+          si.submission.submissionRef,
+          template,
+          pdfData,
+          instructionPdfData,
+          structuredFormData,
+          si.submission.envelopeId
+        )
 
       createSubmitter
         .expectIncludeIfEvaluation(
@@ -359,7 +422,16 @@ class DestinationSubmitterSpec
     ) { (si, hmrcDms, template, pdfData, instructionPdfData, structuredFormData) =>
       val model = HandlebarsTemplateProcessorModel.empty
       val theTree =
-        tree(si.formId, model, si.submission.submissionRef, template, pdfData, instructionPdfData, structuredFormData)
+        tree(
+          si.formId,
+          model,
+          si.submission.submissionRef,
+          template,
+          pdfData,
+          instructionPdfData,
+          structuredFormData,
+          si.submission.envelopeId
+        )
 
       createSubmitter
         .expectHmrcDmsSubmissionFailure(
@@ -405,7 +477,16 @@ class DestinationSubmitterSpec
     ) { (si, hmrcDms, template, pdfData, instructionPdfData, structuredFormData) =>
       val model = HandlebarsTemplateProcessorModel.empty
       val theTree =
-        tree(si.formId, model, si.submission.submissionRef, template, pdfData, instructionPdfData, structuredFormData)
+        tree(
+          si.formId,
+          model,
+          si.submission.submissionRef,
+          template,
+          pdfData,
+          instructionPdfData,
+          structuredFormData,
+          si.submission.envelopeId
+        )
 
       val res: Possible[Option[HandlebarsDestinationResponse]] = createSubmitter
         .expectHmrcDmsSubmissionFailure(
@@ -459,7 +540,8 @@ class DestinationSubmitterSpec
         formTemplate,
         PdfContent(""),
         None,
-        structuredFormData
+        structuredFormData,
+        submissionInfo.submission.envelopeId
       )
       createSubmitter
         .expectIncludeIfEvaluation(
@@ -522,7 +604,8 @@ class DestinationSubmitterSpec
         formTemplate,
         PdfContent(""),
         None,
-        structuredFormData
+        structuredFormData,
+        submissionInfo.submission.envelopeId
       )
       createSubmitter
         .expectIncludeIfEvaluation(
@@ -562,7 +645,8 @@ class DestinationSubmitterSpec
         formTemplate,
         PdfContent(""),
         None,
-        structuredFormData
+        structuredFormData,
+        submissionInfo.submission.envelopeId
       )
       createSubmitter
         .expectIncludeIfEvaluation(
@@ -632,7 +716,8 @@ class DestinationSubmitterSpec
         formTemplate,
         PdfContent(""),
         None,
-        structuredFormData
+        structuredFormData,
+        submissionInfo.submission.envelopeId
       )
       val res = createSubmitter
         .expectIncludeIfEvaluation(
@@ -912,7 +997,17 @@ class DestinationSubmitterSpec
     formTemplate: FormTemplate,
     pdfData: PdfContent,
     instructionPdfData: Option[PdfContent],
-    structuredFormData: StructuredFormValue.ObjectStructure
+    structuredFormData: StructuredFormValue.ObjectStructure,
+    envelopeId: EnvelopeId
   ) =
-    HandlebarsModelTree(id, submissionRef, formTemplate, pdfData, instructionPdfData, structuredFormData, model)
+    HandlebarsModelTree(
+      id,
+      submissionRef,
+      formTemplate,
+      pdfData,
+      instructionPdfData,
+      structuredFormData,
+      model,
+      envelopeId
+    )
 }

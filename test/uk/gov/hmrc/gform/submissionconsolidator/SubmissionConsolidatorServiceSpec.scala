@@ -238,7 +238,8 @@ class SubmissionConsolidatorServiceSpec
                   PdfContent(""),
                   None,
                   structuredFormData,
-                  model
+                  model,
+                  destinationSubmissionInfo.submission.envelopeId
                 )
   } yield TestData(
     submissionConsolidator,

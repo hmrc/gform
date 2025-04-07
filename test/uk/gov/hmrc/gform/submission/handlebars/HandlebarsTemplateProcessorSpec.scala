@@ -18,7 +18,7 @@ package uk.gov.hmrc.gform.submission.handlebars
 
 import com.fasterxml.jackson.databind.JsonNode
 import uk.gov.hmrc.gform.Spec
-import uk.gov.hmrc.gform.sharedmodel.form.FormId
+import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FormId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.JsonNodes
 import uk.gov.hmrc.gform.sharedmodel.{ PdfContent, SubmissionRef }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ HandlebarsTemplateProcessorModel, SingleQuoteReplacementLexer, TemplateType }
@@ -115,7 +115,8 @@ class HandlebarsTemplateProcessorSpec extends Spec {
           PdfContent(""),
           None,
           StructuredFormValue.ObjectStructure(Nil),
-          model
+          model,
+          EnvelopeId("some-envelope-id")
         )
       ),
       templateType
@@ -137,7 +138,8 @@ class HandlebarsTemplateProcessorSpec extends Spec {
           PdfContent(""),
           None,
           StructuredFormValue.ObjectStructure(Nil),
-          HandlebarsTemplateProcessorModel(model)
+          HandlebarsTemplateProcessorModel(model),
+          EnvelopeId("some-envelope-id")
         )
       ),
       templateType

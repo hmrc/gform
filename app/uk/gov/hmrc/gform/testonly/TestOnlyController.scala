@@ -227,7 +227,8 @@ class TestOnlyController(
               submissionData.pdfData,
               submissionData.instructionPDFData,
               submissionData.structuredFormData,
-              model
+              model,
+              form.envelopeId
             )
             destination match {
               case d: Destination.HandlebarsHttpApi =>

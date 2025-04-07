@@ -839,6 +839,7 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
             None,
             StructuredFormValue.ObjectStructure(Nil),
             rootModel,
+            EnvelopeId("some-envelope-id"),
             HandlebarsModelTree(
               FormId("childId"),
               childSubmissionReference,
@@ -846,7 +847,8 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
               PdfContent(""),
               None,
               StructuredFormValue.ObjectStructure(Nil),
-              childModel
+              childModel,
+              EnvelopeId("some-envelope-id")
             )
           )
 
@@ -878,7 +880,8 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
           PdfContent(""),
           None,
           StructuredFormValue.ObjectStructure(Nil),
-          model
+          model,
+          EnvelopeId("some-envelope-id")
         )
       )
     )
@@ -898,7 +901,8 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
           PdfContent(""),
           None,
           StructuredFormValue.ObjectStructure(Nil),
-          model
+          model,
+          EnvelopeId("some-envelope-id")
         )
       )
     )

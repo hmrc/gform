@@ -19,17 +19,22 @@ package uk.gov.hmrc.gform.submission.handlebars
 import cats.MonadError
 import org.scalacheck.Gen
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
+import uk.gov.hmrc.gform.config.ProfileConfiguration
 import uk.gov.hmrc.gform.sharedmodel.PdfContent
-import uk.gov.hmrc.gform.sharedmodel.form.FormId
-import uk.gov.hmrc.gform.{ Possible, Spec, possibleMonadError }
+import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FormId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.{ DestinationGen, PrimitiveGen }
 import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
+import uk.gov.hmrc.gform.submission.destinations.DestinationSubmissionInfoGen
 import uk.gov.hmrc.gform.wshttp.HttpClient
+import uk.gov.hmrc.gform.{ Possible, Spec, possibleMonadError }
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 
-class HandlebarsHttpApiSubmitterSpec extends Spec with ScalaCheckDrivenPropertyChecks {
+class HandlebarsHttpApiSubmitterSpec
+    extends Spec with ScalaCheckDrivenPropertyChecks with DestinationSubmissionInfoGen {
   private implicit val hc: HeaderCarrier = HeaderCarrier()
+
+  val profileConfig = ProfileConfiguration(ProfileName("foo"), "baseUrl", None, Map.empty[String, String])
 
   "A GET destination" should "make a GET request, applying the template to the URI" in {
     forAll(
@@ -112,6 +117,7 @@ class HandlebarsHttpApiSubmitterSpec extends Spec with ScalaCheckDrivenPropertyC
     val submitter =
       new RealHandlebarsHttpApiSubmitter(
         Map(ProfileName("foo") -> httpClient),
+        Map(ProfileName("foo") -> profileConfig),
         handlebarsTemplateProcessor
       )
 
@@ -181,6 +187,7 @@ class HandlebarsHttpApiSubmitterSpec extends Spec with ScalaCheckDrivenPropertyC
     val submitter =
       new RealHandlebarsHttpApiSubmitter(
         Map(ProfileName("foo") -> httpClient),
+        Map(ProfileName("foo") -> profileConfig),
         handlebarsTemplateProcessor
       )
 
@@ -257,6 +264,7 @@ class HandlebarsHttpApiSubmitterSpec extends Spec with ScalaCheckDrivenPropertyC
     val submitter =
       new RealHandlebarsHttpApiSubmitter(
         Map(ProfileName("foo") -> httpClient),
+        Map(ProfileName("foo") -> profileConfig),
         handlebarsTemplateProcessor
       )
 
@@ -354,6 +362,7 @@ class HandlebarsHttpApiSubmitterSpec extends Spec with ScalaCheckDrivenPropertyC
     val submitter =
       new RealHandlebarsHttpApiSubmitter(
         Map(ProfileName("foo") -> httpClient),
+        Map(ProfileName("foo") -> profileConfig),
         handlebarsTemplateProcessor
       )
 
@@ -413,6 +422,7 @@ class HandlebarsHttpApiSubmitterSpec extends Spec with ScalaCheckDrivenPropertyC
     val submitter =
       new RealHandlebarsHttpApiSubmitter(
         Map(ProfileName("foo") -> httpClient),
+        Map(ProfileName("foo") -> profileConfig),
         handlebarsTemplateProcessor
       )
 
@@ -523,6 +533,7 @@ class HandlebarsHttpApiSubmitterSpec extends Spec with ScalaCheckDrivenPropertyC
     val submitter =
       new RealHandlebarsHttpApiSubmitter(
         Map(ProfileName("foo") -> httpClient),
+        Map(ProfileName("foo") -> profileConfig),
         handlebarsTemplateProcessor
       )
 
@@ -543,7 +554,8 @@ class HandlebarsHttpApiSubmitterSpec extends Spec with ScalaCheckDrivenPropertyC
       PdfContent(""),
       None,
       StructuredFormValue.ObjectStructure(Nil),
-      model
+      model,
+      EnvelopeId("some-envelope-id")
     )
 
 }

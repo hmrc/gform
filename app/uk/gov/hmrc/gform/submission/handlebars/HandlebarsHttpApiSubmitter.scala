@@ -17,14 +17,19 @@
 package uk.gov.hmrc.gform.submission.handlebars
 
 import cats.MonadError
+import cats.syntax.all._
 import org.slf4j.LoggerFactory
+import play.api.libs.json._
+import uk.gov.hmrc.gform.config.ProfileConfiguration
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations._
 import uk.gov.hmrc.gform.submission.destinations._
 import uk.gov.hmrc.gform.wshttp.HttpClient
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
-import play.api.libs.json._
-import cats.syntax.all._
+
+import java.time.format.DateTimeFormatter
+import java.time.{ ZoneOffset, ZonedDateTime }
 import scala.util.Try
+import scala.util.matching.Regex
 
 trait HandlebarsHttpApiSubmitter[F[_]] {
   def apply(
@@ -36,11 +41,13 @@ trait HandlebarsHttpApiSubmitter[F[_]] {
 
 class RealHandlebarsHttpApiSubmitter[F[_]](
   httpClients: Map[ProfileName, HttpClient[F]],
+  profileConfig: Map[ProfileName, ProfileConfiguration],
   handlebarsTemplateProcessor: HandlebarsTemplateProcessor = RealHandlebarsTemplateProcessor
 )(implicit monadError: MonadError[F, Throwable])
     extends HandlebarsHttpApiSubmitter[F] {
 
   private val logger = LoggerFactory.getLogger(getClass)
+
   def apply(
     destination: Destination.HandlebarsHttpApi,
     accumulatedModel: HandlebarsTemplateProcessorModel,
@@ -102,7 +109,7 @@ class RealHandlebarsHttpApiSubmitter[F[_]](
       )
 
     RealHandlebarsHttpApiSubmitter
-      .selectHttpClient(destination.profile, destination.payloadType, httpClients)
+      .selectHttpClient(destination.profile, destination.payloadType, httpClients, profileConfig, modelTree)
       .flatMap { httpClient =>
         val uri =
           handlebarsTemplateProcessor(
@@ -135,11 +142,29 @@ class RealHandlebarsHttpApiSubmitter[F[_]](
 }
 
 object RealHandlebarsHttpApiSubmitter {
+  private val checkToken: Regex = "^\\{(.*)}$".r
+  private val dateFormat: Regex = "^dateFormat\\((.*)\\)$".r
+
+  def getDynamicHeaderValue(token: String, tree: HandlebarsModelTree): String = token match {
+    case "envelopeId"  => tree.value.envelopeId.value
+    case dateFormat(p) => DateTimeFormatter.ofPattern(p).format(ZonedDateTime.now(ZoneOffset.UTC))
+    case _             => token
+  }
+
   def selectHttpClient[F[_]](
     profile: ProfileName,
     payloadType: TemplateType,
-    httpClients: Map[ProfileName, HttpClient[F]]
-  )(implicit me: MonadError[F, Throwable]): F[HttpClient[F]] =
+    httpClients: Map[ProfileName, HttpClient[F]],
+    profileConfig: Map[ProfileName, ProfileConfiguration],
+    modelTree: HandlebarsModelTree
+  )(implicit me: MonadError[F, Throwable]): F[HttpClient[F]] = {
+    val dynamicHeaders: Map[String, String] = profileConfig.get(profile).fold(Map.empty[String, String]) { p =>
+      p.httpHeaders.map {
+        case (k, checkToken(v)) => k -> getDynamicHeaderValue(v, modelTree)
+        case static             => static
+      }
+    }
+
     httpClients
       .get(profile)
       .fold(
@@ -148,14 +173,19 @@ object RealHandlebarsHttpApiSubmitter {
             s"No HttpClient found for profile ${profile.name}. Have HttpClient for ${httpClients.keySet.map(_.name)}"
           )
         )
-      )((c: HttpClient[F]) => wrapHttpClient(c, payloadType).pure)
+      )((c: HttpClient[F]) => wrapHttpClient(c, payloadType, dynamicHeaders).pure)
+  }
 
-  private def wrapHttpClient[F[_]](http: HttpClient[F], templateType: TemplateType)(implicit
+  private def wrapHttpClient[F[_]](
+    http: HttpClient[F],
+    templateType: TemplateType,
+    additionalHeaders: Map[String, String]
+  )(implicit
     me: MonadError[F, Throwable]
   ): HttpClient[F] =
     templateType match {
-      case TemplateType.JSON  => http.json
-      case TemplateType.XML   => http.xml
+      case TemplateType.JSON  => http.json(additionalHeaders)
+      case TemplateType.XML   => http.xml(additionalHeaders)
       case TemplateType.Plain => http
     }
 }

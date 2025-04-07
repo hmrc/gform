@@ -69,7 +69,8 @@ class DestinationsSubmitterSpec
               pdfData,
               instructionPdfData,
               structuredFormValue,
-              destinationModel
+              destinationModel,
+              submissionInfo.submission.envelopeId
             ),
             Some(formData),
             LangADT.En,
@@ -134,7 +135,8 @@ class DestinationsSubmitterSpec
             PdfContent(""),
             None,
             StructuredFormValue.ObjectStructure(Nil),
-            initialModel
+            initialModel,
+            submissionInfo.submission.envelopeId
           ),
           Some(formData),
           LangADT.En,

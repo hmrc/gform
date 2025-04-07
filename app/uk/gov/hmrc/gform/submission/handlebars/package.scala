@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.gform.submission
 
-import uk.gov.hmrc.gform.sharedmodel.form.FormId
+import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FormId }
 import uk.gov.hmrc.gform.sharedmodel.{ PdfContent, SubmissionRef }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.HandlebarsTemplateProcessorModel
@@ -34,6 +34,7 @@ package object handlebars {
       instructionPdfData: Option[PdfContent],
       structuredFormData: StructuredFormValue.ObjectStructure,
       model: HandlebarsTemplateProcessorModel,
+      envelopeId: EnvelopeId,
       children: HandlebarsModelTree*
     ): HandlebarsModelTree =
       Tree(
@@ -44,7 +45,8 @@ package object handlebars {
           model,
           pdfData,
           instructionPdfData,
-          structuredFormData
+          structuredFormData,
+          envelopeId
         ),
         children: _*
       )
