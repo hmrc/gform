@@ -25,8 +25,11 @@ final case class SdesConfig(
   hmrcIlluminate: SdesRouting,
   dataStore: SdesRouting,
   lockTTL: Long,
-  welshDefaults: WelshDefaults
+  welshDefaults: WelshDefaults,
+  infoArchive: SdesRouting
 )
+
+final case class SdesKeyAndCredentialsApiConfig(basePath: String)
 
 final case class WelshDefaults(classificationType: String, businessArea: String)
 
