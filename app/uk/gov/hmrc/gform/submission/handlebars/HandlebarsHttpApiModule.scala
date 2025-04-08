@@ -18,11 +18,15 @@ package uk.gov.hmrc.gform.submission.handlebars
 
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.core.{ FOpt, fOptMonadError }
+import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.ProfileName
 import uk.gov.hmrc.gform.wshttp.HttpClient.HttpClientBuildingSyntax
 import uk.gov.hmrc.gform.wshttp._
 
+import java.time.format.DateTimeFormatter
+import java.time.{ ZoneOffset, ZonedDateTime }
 import scala.concurrent.ExecutionContext
+import scala.util.matching.Regex
 
 class HandlebarsHttpApiModule(
   wSHttpModule: WSHttpModule,
@@ -30,22 +34,35 @@ class HandlebarsHttpApiModule(
 )(implicit ec: ExecutionContext) {
 
   private val rootHttpClient: HttpClient[FOpt] = wSHttpModule.auditingHttpClient
+  private val checkToken: Regex = "^\\{(.*)}$".r
+  private val dateFormat: Regex = "^dateFormat\\((.*)\\)$".r
 
-  private val httpClientMap: Map[ProfileName, HttpClient[FOpt]] =
+  private val httpClientMap: Map[ProfileName, EnvelopeId => HttpClient[FOpt]] =
     configModule
       .DestinationsServicesConfig()
       .view
       .mapValues { profileConfiguration =>
-        rootHttpClient
-          .buildUri(uri => appendUriSegment(profileConfiguration.baseUrl, uri))
-          .buildHeaderCarrier { hc =>
-            hc.copy(
-              authorization = profileConfiguration.authorization orElse hc.authorization,
-              extraHeaders = hc.extraHeaders ++ profileConfiguration.httpHeaders
-            )
-          }
+        def buildHttpClient(envelopeId: EnvelopeId): HttpClient[FOpt] =
+          rootHttpClient
+            .buildUri(uri => appendUriSegment(profileConfiguration.baseUrl, uri))
+            .buildHeaderCarrier { hc =>
+              hc.copy(
+                authorization = profileConfiguration.authorization orElse hc.authorization,
+                extraHeaders = hc.extraHeaders ++ profileConfiguration.httpHeaders.map {
+                  case (k, checkToken(v)) => k -> getDynamicHeaderValue(v, envelopeId)
+                  case static             => static
+                }
+              )
+            }
+        buildHttpClient(_)
       }
       .toMap
+
+  private def getDynamicHeaderValue(token: String, envelopeId: EnvelopeId): String = token match {
+    case "envelopeId"  => envelopeId.value
+    case dateFormat(p) => DateTimeFormatter.ofPattern(p).format(ZonedDateTime.now(ZoneOffset.UTC))
+    case _             => token
+  }
 
   private def appendUriSegment(base: String, toAppend: String) =
     if (toAppend.isEmpty) base
@@ -53,5 +70,5 @@ class HandlebarsHttpApiModule(
     else s"$base/$toAppend"
 
   val handlebarsHttpSubmitter: HandlebarsHttpApiSubmitter[FOpt] =
-    new RealHandlebarsHttpApiSubmitter(httpClientMap, configModule.DestinationsServicesConfig())
+    new RealHandlebarsHttpApiSubmitter(httpClientMap)
 }

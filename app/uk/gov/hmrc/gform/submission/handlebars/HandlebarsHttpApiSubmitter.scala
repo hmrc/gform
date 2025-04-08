@@ -20,28 +20,25 @@ import cats.MonadError
 import cats.syntax.all._
 import org.slf4j.LoggerFactory
 import play.api.libs.json._
-import uk.gov.hmrc.gform.config.ProfileConfiguration
+import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations._
 import uk.gov.hmrc.gform.submission.destinations._
 import uk.gov.hmrc.gform.wshttp.HttpClient
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 
-import java.time.format.DateTimeFormatter
-import java.time.{ ZoneOffset, ZonedDateTime }
 import scala.util.Try
-import scala.util.matching.Regex
 
 trait HandlebarsHttpApiSubmitter[F[_]] {
   def apply(
     destination: Destination.HandlebarsHttpApi,
     accumulatedModel: HandlebarsTemplateProcessorModel,
-    modelTree: HandlebarsModelTree
+    modelTree: HandlebarsModelTree,
+    submissionInfo: DestinationSubmissionInfo
   )(implicit hc: HeaderCarrier): F[HttpResponse]
 }
 
 class RealHandlebarsHttpApiSubmitter[F[_]](
-  httpClients: Map[ProfileName, HttpClient[F]],
-  profileConfig: Map[ProfileName, ProfileConfiguration],
+  httpClients: Map[ProfileName, EnvelopeId => HttpClient[F]],
   handlebarsTemplateProcessor: HandlebarsTemplateProcessor = RealHandlebarsTemplateProcessor
 )(implicit monadError: MonadError[F, Throwable])
     extends HandlebarsHttpApiSubmitter[F] {
@@ -51,7 +48,8 @@ class RealHandlebarsHttpApiSubmitter[F[_]](
   def apply(
     destination: Destination.HandlebarsHttpApi,
     accumulatedModel: HandlebarsTemplateProcessorModel,
-    modelTree: HandlebarsModelTree
+    modelTree: HandlebarsModelTree,
+    submissionInfo: DestinationSubmissionInfo
   )(implicit hc: HeaderCarrier): F[HttpResponse] = {
 
     def parseAndProcessAsList(input: String): List[String] =
@@ -109,7 +107,7 @@ class RealHandlebarsHttpApiSubmitter[F[_]](
       )
 
     RealHandlebarsHttpApiSubmitter
-      .selectHttpClient(destination.profile, destination.payloadType, httpClients, profileConfig, modelTree)
+      .selectHttpClient(destination.profile, destination.payloadType, httpClients, submissionInfo)
       .flatMap { httpClient =>
         val uri =
           handlebarsTemplateProcessor(
@@ -142,29 +140,13 @@ class RealHandlebarsHttpApiSubmitter[F[_]](
 }
 
 object RealHandlebarsHttpApiSubmitter {
-  private val checkToken: Regex = "^\\{(.*)}$".r
-  private val dateFormat: Regex = "^dateFormat\\((.*)\\)$".r
-
-  def getDynamicHeaderValue(token: String, tree: HandlebarsModelTree): String = token match {
-    case "envelopeId"  => tree.value.envelopeId.fold("Unknown envelope ID")(e => e.value)
-    case dateFormat(p) => DateTimeFormatter.ofPattern(p).format(ZonedDateTime.now(ZoneOffset.UTC))
-    case _             => token
-  }
 
   def selectHttpClient[F[_]](
     profile: ProfileName,
     payloadType: TemplateType,
-    httpClients: Map[ProfileName, HttpClient[F]],
-    profileConfig: Map[ProfileName, ProfileConfiguration],
-    modelTree: HandlebarsModelTree
-  )(implicit me: MonadError[F, Throwable]): F[HttpClient[F]] = {
-    val dynamicHeaders: Map[String, String] = profileConfig.get(profile).fold(Map.empty[String, String]) { p =>
-      p.httpHeaders.map {
-        case (k, checkToken(v)) => k -> getDynamicHeaderValue(v, modelTree)
-        case static             => static
-      }
-    }
-
+    httpClients: Map[ProfileName, EnvelopeId => HttpClient[F]],
+    submissionInfo: DestinationSubmissionInfo
+  )(implicit me: MonadError[F, Throwable]): F[HttpClient[F]] =
     httpClients
       .get(profile)
       .fold(
@@ -173,19 +155,19 @@ object RealHandlebarsHttpApiSubmitter {
             s"No HttpClient found for profile ${profile.name}. Have HttpClient for ${httpClients.keySet.map(_.name)}"
           )
         )
-      )((c: HttpClient[F]) => wrapHttpClient(c, payloadType, dynamicHeaders).pure)
-  }
+      ) { (c: EnvelopeId => HttpClient[F]) =>
+        wrapHttpClient(c(submissionInfo.submission.envelopeId), payloadType).pure
+      }
 
   private def wrapHttpClient[F[_]](
     http: HttpClient[F],
-    templateType: TemplateType,
-    additionalHeaders: Map[String, String]
+    templateType: TemplateType
   )(implicit
     me: MonadError[F, Throwable]
   ): HttpClient[F] =
     templateType match {
-      case TemplateType.JSON  => http.json(additionalHeaders)
-      case TemplateType.XML   => http.xml(additionalHeaders)
+      case TemplateType.JSON  => http.json
+      case TemplateType.XML   => http.xml
       case TemplateType.Plain => http
     }
 }

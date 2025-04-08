@@ -16,10 +16,10 @@
 
 package uk.gov.hmrc.gform.wshttp
 
-import HttpClient.HttpClientBuildingSyntax
 import cats.MonadError
 import org.scalacheck.Gen
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
+import uk.gov.hmrc.gform.wshttp.HttpClient.HttpClientBuildingSyntax
 import uk.gov.hmrc.gform.{ Possible, possibleMonadError }
 
 class JsonHttpClientSpec extends HttpClientSpec with ScalaCheckDrivenPropertyChecks {
@@ -89,5 +89,5 @@ class JsonHttpClientSpec extends HttpClientSpec with ScalaCheckDrivenPropertyChe
   }
 
   private def buildClient[F[_]](underlying: HttpClient[F])(implicit me: MonadError[F, Throwable]): HttpClient[F] =
-    underlying.json(Map.empty)
+    underlying.json
 }

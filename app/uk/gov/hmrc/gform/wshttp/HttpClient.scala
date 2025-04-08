@@ -56,39 +56,35 @@ object HttpClient {
     def successResponsesOnly(implicit monadError: MonadError[F, Throwable]): SuccessfulResponseHttpClient[F] =
       new SuccessfulResponseHttpClient(underlying)
 
-    def json(extras: Map[String, String])(implicit monadError: MonadError[F, Throwable]): HttpClient[F] =
+    def json(implicit monadError: MonadError[F, Throwable]): HttpClient[F] =
       new HttpClient[F] {
         private val contentType = "application/json"
 
         override def get(uri: String)(implicit hc: HeaderCarrier): F[HttpResponse] = underlying.get(uri)
 
         def post(uri: String, jsonString: String)(implicit hc: HeaderCarrier): F[HttpResponse] =
-          httpRequest(underlying.post(_, _)(addHeaders(hc, contentType, extras)), uri, jsonString)(Some(Json.parse))
+          httpRequest(underlying.post(_, _)(addContentTypeHeader(hc, contentType)), uri, jsonString)(Some(Json.parse))
 
         def put(uri: String, jsonString: String)(implicit hc: HeaderCarrier): F[HttpResponse] =
-          httpRequest(underlying.put(_, _)(addHeaders(hc, contentType, extras)), uri, jsonString)(Some(Json.parse))
+          httpRequest(underlying.put(_, _)(addContentTypeHeader(hc, contentType)), uri, jsonString)(Some(Json.parse))
       }
 
-    def xml(extras: Map[String, String])(implicit monadError: MonadError[F, Throwable]): HttpClient[F] =
+    def xml(implicit monadError: MonadError[F, Throwable]): HttpClient[F] =
       new HttpClient[F] {
         private val contentType = "application/xml"
 
         override def get(uri: String)(implicit hc: HeaderCarrier): F[HttpResponse] = underlying.get(uri)
 
         def post(uri: String, xmlString: String)(implicit hc: HeaderCarrier): F[HttpResponse] =
-          httpRequest(underlying.post(_, _)(addHeaders(hc, contentType, extras)), uri, xmlString)(None)
+          httpRequest(underlying.post(_, _)(addContentTypeHeader(hc, contentType)), uri, xmlString)(None)
 
         def put(uri: String, xmlString: String)(implicit hc: HeaderCarrier): F[HttpResponse] =
-          httpRequest(underlying.put(_, _)(addHeaders(hc, contentType, extras)), uri, xmlString)(None)
+          httpRequest(underlying.put(_, _)(addContentTypeHeader(hc, contentType)), uri, xmlString)(None)
       }
   }
 
-  private def addHeaders(
-    hc: HeaderCarrier,
-    contentType: String,
-    additionalHeaders: Map[String, String]
-  ): HeaderCarrier =
-    hc.copy(extraHeaders = ("Content-Type" -> contentType) :: hc.extraHeaders.toList ::: additionalHeaders.toList)
+  private def addContentTypeHeader(hc: HeaderCarrier, contentType: String): HeaderCarrier =
+    hc.copy(extraHeaders = ("Content-Type" -> contentType) :: hc.extraHeaders.toList)
 
   private def httpRequest[F[_]](method: (String, String) => F[HttpResponse], uri: String, payload: String)(
     parser: Option[String => JsValue]

@@ -22,15 +22,15 @@ import org.scalacheck.Gen
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import uk.gov.hmrc.gform.notifier.NotifierAlgebra
 import uk.gov.hmrc.gform.sdes.{ SdesConfig, SdesRouting, WelshDefaults }
-import uk.gov.hmrc.gform.sharedmodel.{ DestinationEvaluation, DestinationResult, LangADT, PdfContent, SubmissionRef, UserSession }
-import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, Form, FormData, FormId }
+import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormData, FormId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationIncludeIf.HandlebarValue
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.{ HmrcDms, InfoArchive, SubmissionConsolidator }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationIncludeIf.HandlebarValue
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.{ DestinationGen, FormTemplateGen, PrimitiveGen }
 import uk.gov.hmrc.gform.sharedmodel.generators.{ PdfDataGen, StructuredFormValueGen }
 import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
+import uk.gov.hmrc.gform.sharedmodel._
 import uk.gov.hmrc.gform.submission.handlebars.{ FocussedHandlebarsModelTree, HandlebarsHttpApiSubmitter, HandlebarsModelTree, HandlebarsTemplateProcessor }
 import uk.gov.hmrc.gform.submissionconsolidator.SubmissionConsolidatorAlgebra
 import uk.gov.hmrc.gform.{ Possible, Spec, possibleMonadError }
@@ -70,8 +70,7 @@ class DestinationSubmitterSpec
         template,
         pdfData,
         None,
-        structuredFormData,
-        si.submission.envelopeId
+        structuredFormData
       )
 
       createSubmitter
@@ -81,7 +80,13 @@ class DestinationSubmitterSpec
           FocussedHandlebarsModelTree(theTree),
           requiredResult = true
         )
-        .expectHandlebarsSubmission(handlebarsHttpApi, HandlebarsTemplateProcessorModel.empty, theTree, httpResponse)
+        .expectHandlebarsSubmission(
+          handlebarsHttpApi,
+          HandlebarsTemplateProcessorModel.empty,
+          theTree,
+          httpResponse,
+          si
+        )
         .expectDestinationAudit(
           handlebarsHttpApi,
           Some(responseCode),
@@ -124,8 +129,7 @@ class DestinationSubmitterSpec
           template,
           pdfData,
           None,
-          structuredFormData,
-          si.submission.envelopeId
+          structuredFormData
         )
 
       createSubmitter
@@ -170,12 +174,17 @@ class DestinationSubmitterSpec
         template,
         pdfData,
         None,
-        structuredFormData,
-        si.submission.envelopeId
+        structuredFormData
       )
 
       createSubmitter
-        .expectHandlebarsSubmission(handlebarsHttpApi, HandlebarsTemplateProcessorModel.empty, theTree, httpResponse)
+        .expectHandlebarsSubmission(
+          handlebarsHttpApi,
+          HandlebarsTemplateProcessorModel.empty,
+          theTree,
+          httpResponse,
+          si
+        )
         .expectIncludeIfEvaluation(
           "true",
           HandlebarsTemplateProcessorModel.empty,
@@ -226,11 +235,16 @@ class DestinationSubmitterSpec
         template,
         pdfData,
         None,
-        structuredFormData,
-        si.submission.envelopeId
+        structuredFormData
       )
       val result: Possible[Option[HandlebarsDestinationResponse]] = createSubmitter
-        .expectHandlebarsSubmission(handlebarsHttpApi, HandlebarsTemplateProcessorModel.empty, theTree, httpResponse)
+        .expectHandlebarsSubmission(
+          handlebarsHttpApi,
+          HandlebarsTemplateProcessorModel.empty,
+          theTree,
+          httpResponse,
+          si
+        )
         .expectIncludeIfEvaluation(
           "true",
           HandlebarsTemplateProcessorModel.empty,
@@ -291,8 +305,7 @@ class DestinationSubmitterSpec
           template,
           pdfData,
           instructionPdfData,
-          structuredFormData,
-          si.submission.envelopeId
+          structuredFormData
         )
 
       createSubmitter
@@ -337,8 +350,7 @@ class DestinationSubmitterSpec
           template,
           pdfData,
           instructionPdfData,
-          structuredFormData,
-          si.submission.envelopeId
+          structuredFormData
         )
 
       createSubmitter
@@ -385,8 +397,7 @@ class DestinationSubmitterSpec
           template,
           pdfData,
           instructionPdfData,
-          structuredFormData,
-          si.submission.envelopeId
+          structuredFormData
         )
 
       createSubmitter
@@ -429,8 +440,7 @@ class DestinationSubmitterSpec
           template,
           pdfData,
           instructionPdfData,
-          structuredFormData,
-          si.submission.envelopeId
+          structuredFormData
         )
 
       createSubmitter
@@ -484,8 +494,7 @@ class DestinationSubmitterSpec
           template,
           pdfData,
           instructionPdfData,
-          structuredFormData,
-          si.submission.envelopeId
+          structuredFormData
         )
 
       val res: Possible[Option[HandlebarsDestinationResponse]] = createSubmitter
@@ -540,8 +549,7 @@ class DestinationSubmitterSpec
         formTemplate,
         PdfContent(""),
         None,
-        structuredFormData,
-        submissionInfo.submission.envelopeId
+        structuredFormData
       )
       createSubmitter
         .expectIncludeIfEvaluation(
@@ -604,8 +612,7 @@ class DestinationSubmitterSpec
         formTemplate,
         PdfContent(""),
         None,
-        structuredFormData,
-        submissionInfo.submission.envelopeId
+        structuredFormData
       )
       createSubmitter
         .expectIncludeIfEvaluation(
@@ -645,8 +652,7 @@ class DestinationSubmitterSpec
         formTemplate,
         PdfContent(""),
         None,
-        structuredFormData,
-        submissionInfo.submission.envelopeId
+        structuredFormData
       )
       createSubmitter
         .expectIncludeIfEvaluation(
@@ -716,8 +722,7 @@ class DestinationSubmitterSpec
         formTemplate,
         PdfContent(""),
         None,
-        structuredFormData,
-        submissionInfo.submission.envelopeId
+        structuredFormData
       )
       val res = createSubmitter
         .expectIncludeIfEvaluation(
@@ -888,13 +893,19 @@ class DestinationSubmitterSpec
       handlebarsHttpApi: Destination.HandlebarsHttpApi,
       accumulatedModel: HandlebarsTemplateProcessorModel,
       tree: HandlebarsModelTree,
-      response: HttpResponse
+      response: HttpResponse,
+      sdi: DestinationSubmissionInfo
     ): SubmitterParts[F] = {
       (handlebarsSubmitter
-        .apply(_: Destination.HandlebarsHttpApi, _: HandlebarsTemplateProcessorModel, _: HandlebarsModelTree)(
+        .apply(
+          _: Destination.HandlebarsHttpApi,
+          _: HandlebarsTemplateProcessorModel,
+          _: HandlebarsModelTree,
+          _: DestinationSubmissionInfo
+        )(
           _: HeaderCarrier
         ))
-        .expects(handlebarsHttpApi, accumulatedModel, tree, hc)
+        .expects(handlebarsHttpApi, accumulatedModel, tree, sdi, hc)
         .returning(F.pure(response))
       this
     }
@@ -997,8 +1008,7 @@ class DestinationSubmitterSpec
     formTemplate: FormTemplate,
     pdfData: PdfContent,
     instructionPdfData: Option[PdfContent],
-    structuredFormData: StructuredFormValue.ObjectStructure,
-    envelopeId: EnvelopeId
+    structuredFormData: StructuredFormValue.ObjectStructure
   ) =
     HandlebarsModelTree(
       id,
@@ -1007,7 +1017,6 @@ class DestinationSubmitterSpec
       pdfData,
       instructionPdfData,
       structuredFormData,
-      model,
-      envelopeId
+      model
     )
 }

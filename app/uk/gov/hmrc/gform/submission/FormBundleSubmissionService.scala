@@ -155,8 +155,7 @@ class FormBundleSubmissionService[F[_]](
         processorModelByFormId(formTreeNode.formIdData),
         pdfHtmlByFormId(formTreeNode.formIdData),
         None,
-        submissionDataByFormId(formTreeNode.formIdData).structuredFormData,
-        None
+        submissionDataByFormId(formTreeNode.formIdData).structuredFormData
       )
     }
 

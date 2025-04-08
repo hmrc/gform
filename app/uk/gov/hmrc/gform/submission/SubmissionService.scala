@@ -138,8 +138,7 @@ class SubmissionService(
           submissionData.pdfData,
           submissionData.instructionPDFData,
           submissionData.structuredFormData,
-          model,
-          form.envelopeId
+          model
         )
       )
 
