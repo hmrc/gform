@@ -146,7 +146,7 @@ object RealHandlebarsHttpApiSubmitter {
   private val dateFormat: Regex = "^dateFormat\\((.*)\\)$".r
 
   def getDynamicHeaderValue(token: String, tree: HandlebarsModelTree): String = token match {
-    case "envelopeId"  => tree.value.envelopeId.value
+    case "envelopeId"  => tree.value.envelopeId.fold("Unknown envelope ID")(e => e.value)
     case dateFormat(p) => DateTimeFormatter.ofPattern(p).format(ZonedDateTime.now(ZoneOffset.UTC))
     case _             => token
   }

@@ -156,7 +156,7 @@ class FormBundleSubmissionService[F[_]](
         pdfHtmlByFormId(formTreeNode.formIdData),
         None,
         submissionDataByFormId(formTreeNode.formIdData).structuredFormData,
-        EnvelopeId("some-envelope-id")
+        None
       )
     }
 

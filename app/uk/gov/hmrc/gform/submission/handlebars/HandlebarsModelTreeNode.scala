@@ -30,5 +30,5 @@ case class HandlebarsModelTreeNode(
   pdfData: PdfContent,
   instructionPdfData: Option[PdfContent],
   structuredFormData: StructuredFormValue.ObjectStructure,
-  envelopeId: EnvelopeId
+  envelopeId: Option[EnvelopeId]
 )

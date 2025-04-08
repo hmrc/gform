@@ -46,7 +46,7 @@ package object handlebars {
           pdfData,
           instructionPdfData,
           structuredFormData,
-          envelopeId
+          Some(envelopeId)
         ),
         children: _*
       )
