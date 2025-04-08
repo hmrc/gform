@@ -37,9 +37,9 @@ object InfoArchiveXMLGenerator {
           <CorrelationID>{submission.envelopeId.value}</CorrelationID >
           <FormType>Charge</FormType>
           <SubmissionDate>{submission.submittedDate.format(formatter)}</SubmissionDate>
-          <NINO>{destinationResult.flatMap(_.nino).getOrElse("")}</NINO>
-          <UTR>{destinationResult.flatMap(_.utr).getOrElse("")}</UTR>
-          <PostCode>{destinationResult.flatMap(_.postalCode).getOrElse("")}</PostCode>
+          {destinationResult.flatMap(r => r.nino.filter(_.nonEmpty).map(nino => <NINO>{nino}</NINO>)).getOrElse(NodeSeq.Empty)}
+          {destinationResult.flatMap(r => r.utr.filter(_.nonEmpty).map(utr => <UTR>{utr}</UTR>)).getOrElse(NodeSeq.Empty)}
+          {destinationResult.flatMap(r => r.postalCode.filter(_.nonEmpty).map(postalCode => <PostCode>{postalCode}</PostCode>)).getOrElse(NodeSeq.Empty)}
           <SubmissionReference>{submission.submissionRef}</SubmissionReference>
           <PaymentReference>{destinationResult.flatMap(_.paymentReference).getOrElse("")}</PaymentReference>
           <Attachments>
