@@ -383,7 +383,7 @@ object Substituter {
         cyaPage = addToList.cyaPage(substitutions),
         fields = addToList.fields(substitutions),
         errorMessage = addToList.errorMessage(substitutions),
-        descriptionTotal = addToList.descriptionTotal
+        descriptionTotal = addToList.descriptionTotal(substitutions)
       )
     }
 
@@ -418,6 +418,12 @@ object Substituter {
       case k: AtlDescription.KeyValueBased =>
         k.copy(key = k.key(substitutions), value = k.value(substitutions))
     }
+
+  implicit def descriptionTotalSubstituter[A](implicit
+    ev: Substituter[A, Expr],
+    ev2: Substituter[A, BooleanExpr]
+  ): Substituter[A, AtlDescription.KeyValueBased] = (substitutions, t) =>
+    t.copy(key = t.key(substitutions), value = t.value(substitutions))
 
   implicit def formKindSubstituter[A](implicit
     ev: Substituter[A, Expr],
