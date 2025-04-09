@@ -422,12 +422,8 @@ object Substituter {
   implicit def descriptionTotalSubstituter[A](implicit
     ev: Substituter[A, Expr],
     ev2: Substituter[A, BooleanExpr]
-  ): Substituter[A, Option[AtlDescription.KeyValueBased]] = (substitutions, t) =>
-    t match {
-      case Some(kvPair) =>
-        Option(kvPair.copy(key = kvPair.key(substitutions), value = kvPair.value(substitutions)))
-      case _ => None
-    }
+  ): Substituter[A, AtlDescription.KeyValueBased] = (substitutions, t) =>
+    t.copy(key = t.key(substitutions), value = t.value(substitutions))
 
   implicit def formKindSubstituter[A](implicit
     ev: Substituter[A, Expr],
