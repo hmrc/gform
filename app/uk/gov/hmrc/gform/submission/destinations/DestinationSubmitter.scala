@@ -345,7 +345,7 @@ class DestinationSubmitter[M[_]](
     modelTree: HandlebarsModelTree,
     submissionInfo: DestinationSubmissionInfo
   )(implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]] =
-    handlebars(d, accumulatedModel, modelTree)
+    handlebars(d, accumulatedModel, modelTree, submissionInfo)
       .flatMap[HandlebarsDestinationResponse] { response =>
         if (response.isSuccess)
           createSuccessResponse(d, response)

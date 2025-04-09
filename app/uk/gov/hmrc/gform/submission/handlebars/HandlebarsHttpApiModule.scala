@@ -18,13 +18,13 @@ package uk.gov.hmrc.gform.submission.handlebars
 
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.core.{ FOpt, fOptMonadError }
+import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.ProfileName
-import uk.gov.hmrc.gform.wshttp._
 import uk.gov.hmrc.gform.wshttp.HttpClient.HttpClientBuildingSyntax
+import uk.gov.hmrc.gform.wshttp._
 
-import java.time.temporal.ChronoUnit
+import java.time.format.DateTimeFormatter
 import java.time.{ ZoneOffset, ZonedDateTime }
-import java.util.UUID
 import scala.concurrent.ExecutionContext
 import scala.util.matching.Regex
 
@@ -35,30 +35,33 @@ class HandlebarsHttpApiModule(
 
   private val rootHttpClient: HttpClient[FOpt] = wSHttpModule.auditingHttpClient
   private val checkToken: Regex = "^\\{(.*)}$".r
+  private val dateFormat: Regex = "^dateFormat\\((.*)\\)$".r
 
-  private val httpClientMap: Map[ProfileName, HttpClient[FOpt]] =
+  private val httpClientMap: Map[ProfileName, EnvelopeId => HttpClient[FOpt]] =
     configModule
       .DestinationsServicesConfig()
       .view
       .mapValues { profileConfiguration =>
-        rootHttpClient
-          .buildUri(uri => appendUriSegment(profileConfiguration.baseUrl, uri))
-          .buildHeaderCarrier { hc =>
-            hc.copy(
-              authorization = profileConfiguration.authorization orElse hc.authorization,
-              extraHeaders = hc.extraHeaders ++ profileConfiguration.httpHeaders.map {
-                case (k, checkToken(v)) => k -> getDynamicValue(v)
-                case otherwise          => otherwise
-              }
-            )
-          }
+        def buildHttpClient(envelopeId: EnvelopeId): HttpClient[FOpt] =
+          rootHttpClient
+            .buildUri(uri => appendUriSegment(profileConfiguration.baseUrl, uri))
+            .buildHeaderCarrier { hc =>
+              hc.copy(
+                authorization = profileConfiguration.authorization orElse hc.authorization,
+                extraHeaders = hc.extraHeaders ++ profileConfiguration.httpHeaders.map {
+                  case (k, checkToken(v)) => k -> getDynamicHeaderValue(v, envelopeId)
+                  case static             => static
+                }
+              )
+            }
+        buildHttpClient(_)
       }
       .toMap
 
-  private def getDynamicValue(token: String): String = token match {
-    case "UUID"    => UUID.randomUUID().toString
-    case "NOW"     => ZonedDateTime.now(ZoneOffset.UTC).truncatedTo(ChronoUnit.SECONDS).toString
-    case otherwise => otherwise
+  private def getDynamicHeaderValue(token: String, envelopeId: EnvelopeId): String = token match {
+    case "envelopeId"  => envelopeId.value
+    case dateFormat(p) => DateTimeFormatter.ofPattern(p).format(ZonedDateTime.now(ZoneOffset.UTC))
+    case _             => token
   }
 
   private def appendUriSegment(base: String, toAppend: String) =

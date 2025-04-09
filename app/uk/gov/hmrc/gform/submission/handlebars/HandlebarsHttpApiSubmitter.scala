@@ -17,34 +17,39 @@
 package uk.gov.hmrc.gform.submission.handlebars
 
 import cats.MonadError
+import cats.syntax.all._
 import org.slf4j.LoggerFactory
+import play.api.libs.json._
+import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations._
 import uk.gov.hmrc.gform.submission.destinations._
 import uk.gov.hmrc.gform.wshttp.HttpClient
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
-import play.api.libs.json._
-import cats.syntax.all._
+
 import scala.util.Try
 
 trait HandlebarsHttpApiSubmitter[F[_]] {
   def apply(
     destination: Destination.HandlebarsHttpApi,
     accumulatedModel: HandlebarsTemplateProcessorModel,
-    modelTree: HandlebarsModelTree
+    modelTree: HandlebarsModelTree,
+    submissionInfo: DestinationSubmissionInfo
   )(implicit hc: HeaderCarrier): F[HttpResponse]
 }
 
 class RealHandlebarsHttpApiSubmitter[F[_]](
-  httpClients: Map[ProfileName, HttpClient[F]],
+  httpClients: Map[ProfileName, EnvelopeId => HttpClient[F]],
   handlebarsTemplateProcessor: HandlebarsTemplateProcessor = RealHandlebarsTemplateProcessor
 )(implicit monadError: MonadError[F, Throwable])
     extends HandlebarsHttpApiSubmitter[F] {
 
   private val logger = LoggerFactory.getLogger(getClass)
+
   def apply(
     destination: Destination.HandlebarsHttpApi,
     accumulatedModel: HandlebarsTemplateProcessorModel,
-    modelTree: HandlebarsModelTree
+    modelTree: HandlebarsModelTree,
+    submissionInfo: DestinationSubmissionInfo
   )(implicit hc: HeaderCarrier): F[HttpResponse] = {
 
     def parseAndProcessAsList(input: String): List[String] =
@@ -102,7 +107,7 @@ class RealHandlebarsHttpApiSubmitter[F[_]](
       )
 
     RealHandlebarsHttpApiSubmitter
-      .selectHttpClient(destination.profile, destination.payloadType, httpClients)
+      .selectHttpClient(destination.profile, destination.payloadType, httpClients, submissionInfo)
       .flatMap { httpClient =>
         val uri =
           handlebarsTemplateProcessor(
@@ -135,10 +140,12 @@ class RealHandlebarsHttpApiSubmitter[F[_]](
 }
 
 object RealHandlebarsHttpApiSubmitter {
+
   def selectHttpClient[F[_]](
     profile: ProfileName,
     payloadType: TemplateType,
-    httpClients: Map[ProfileName, HttpClient[F]]
+    httpClients: Map[ProfileName, EnvelopeId => HttpClient[F]],
+    submissionInfo: DestinationSubmissionInfo
   )(implicit me: MonadError[F, Throwable]): F[HttpClient[F]] =
     httpClients
       .get(profile)
@@ -148,7 +155,9 @@ object RealHandlebarsHttpApiSubmitter {
             s"No HttpClient found for profile ${profile.name}. Have HttpClient for ${httpClients.keySet.map(_.name)}"
           )
         )
-      )((c: HttpClient[F]) => wrapHttpClient(c, payloadType).pure)
+      ) { (c: EnvelopeId => HttpClient[F]) =>
+        wrapHttpClient(c(submissionInfo.submission.envelopeId), payloadType).pure
+      }
 
   private def wrapHttpClient[F[_]](http: HttpClient[F], templateType: TemplateType)(implicit
     me: MonadError[F, Throwable]

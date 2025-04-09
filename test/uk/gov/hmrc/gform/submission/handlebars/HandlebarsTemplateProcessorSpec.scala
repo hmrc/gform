@@ -19,10 +19,9 @@ package uk.gov.hmrc.gform.submission.handlebars
 import com.fasterxml.jackson.databind.JsonNode
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.sharedmodel.form.FormId
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.JsonNodes
-import uk.gov.hmrc.gform.sharedmodel.{ PdfContent, SubmissionRef }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ HandlebarsTemplateProcessorModel, SingleQuoteReplacementLexer, TemplateType }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ HandlebarsTemplateProcessorModel, JsonNodes, SingleQuoteReplacementLexer, TemplateType }
 import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
+import uk.gov.hmrc.gform.sharedmodel.{ PdfContent, SubmissionRef }
 
 class HandlebarsTemplateProcessorSpec extends Spec {
   "apply" must "work with JSON" in {

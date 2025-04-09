@@ -16,10 +16,10 @@
 
 package uk.gov.hmrc.gform.wshttp
 
-import HttpClient.HttpClientBuildingSyntax
 import cats.MonadError
 import org.scalacheck.Gen
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
+import uk.gov.hmrc.gform.wshttp.HttpClient.HttpClientBuildingSyntax
 import uk.gov.hmrc.gform.{ Possible, possibleMonadError }
 
 class JsonHttpClientSpec extends HttpClientSpec with ScalaCheckDrivenPropertyChecks {

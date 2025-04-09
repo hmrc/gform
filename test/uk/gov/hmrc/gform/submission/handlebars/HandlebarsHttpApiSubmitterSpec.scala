@@ -20,30 +20,41 @@ import cats.MonadError
 import org.scalacheck.Gen
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import uk.gov.hmrc.gform.sharedmodel.PdfContent
-import uk.gov.hmrc.gform.sharedmodel.form.FormId
-import uk.gov.hmrc.gform.{ Possible, Spec, possibleMonadError }
+import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FormId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.{ DestinationGen, PrimitiveGen }
 import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
+import uk.gov.hmrc.gform.submission.destinations.{ DestinationSubmissionInfo, DestinationSubmissionInfoGen }
 import uk.gov.hmrc.gform.wshttp.HttpClient
+import uk.gov.hmrc.gform.{ Possible, Spec, possibleMonadError }
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 
-class HandlebarsHttpApiSubmitterSpec extends Spec with ScalaCheckDrivenPropertyChecks {
+class HandlebarsHttpApiSubmitterSpec
+    extends Spec with ScalaCheckDrivenPropertyChecks with DestinationSubmissionInfoGen {
   private implicit val hc: HeaderCarrier = HeaderCarrier()
+
+  private def submissionInfoGen: Gen[DestinationSubmissionInfo] =
+    DestinationSubmissionInfoGen.destinationSubmissionInfoGen.map { si =>
+      si.copy(submission =
+        si.submission.copy(_id = si.submission._id.copy(formId = form._id), envelopeId = EnvelopeId("envId"))
+      )
+    }
 
   "A GET destination" should "make a GET request, applying the template to the URI" in {
     forAll(
       destinationGen(HttpMethod.GET),
       submitterPartsGen[Possible],
-      PrimitiveGen.urlContextPathGen
-    ) { (destination, sp, expectedUri) =>
+      PrimitiveGen.urlContextPathGen,
+      submissionInfoGen
+    ) { (destination, sp, expectedUri, si) =>
       val processorModel = HandlebarsTemplateProcessorModel.empty
       val expectedResponse = mock[HttpResponse]
 
-      sp.expectTemplateProcessorApplication(destination.uri, processorModel, TemplateType.Plain, expectedUri)
+      sp.expectHttpClientApply()
+        .expectTemplateProcessorApplication(destination.uri, processorModel, TemplateType.Plain, expectedUri)
         .expectHttpGet(destination.profile, expectedUri, Right(expectedResponse))
 
-      sp.submitter.apply(destination, HandlebarsTemplateProcessorModel.empty, tree(processorModel)) shouldBe Right(
+      sp.submitter.apply(destination, HandlebarsTemplateProcessorModel.empty, tree(processorModel), si) shouldBe Right(
         expectedResponse
       )
     }
@@ -55,35 +66,42 @@ class HandlebarsHttpApiSubmitterSpec extends Spec with ScalaCheckDrivenPropertyC
       Gen.alphaNumStr,
       submitterPartsGen[Possible],
       PrimitiveGen.urlContextPathGen,
-      Gen.alphaNumStr
-    ) { (d, payload, sp, expectedUri, expectedBody) =>
+      Gen.alphaNumStr,
+      submissionInfoGen
+    ) { (d, payload, sp, expectedUri, expectedBody, si) =>
       val destination = d.copy(payload = Option(payload), payloadType = TemplateType.Plain)
       val processorModel = HandlebarsTemplateProcessorModel.empty
       val expectedResponse = mock[HttpResponse]
 
-      sp.expectTemplateProcessorApplication(destination.uri, processorModel, TemplateType.Plain, expectedUri)
+      sp.expectHttpClientApply()
+        .expectTemplateProcessorApplication(destination.uri, processorModel, TemplateType.Plain, expectedUri)
         .expectTemplateProcessorApplication(payload, processorModel, destination.payloadType, expectedBody)
         .expectHttpPostJson(destination.profile, expectedBody, expectedUri, Right(expectedResponse))
 
-      sp.submitter.apply(destination, HandlebarsTemplateProcessorModel.empty, tree(processorModel)) shouldBe Right(
+      sp.submitter.apply(destination, HandlebarsTemplateProcessorModel.empty, tree(processorModel), si) shouldBe Right(
         expectedResponse
       )
     }
   }
 
   it should "make a POST request when there is no payload" in {
-    forAll(destinationGen(HttpMethod.POST), submitterPartsGen[Possible], PrimitiveGen.urlContextPathGen) {
-      (d, sp, expectedUri) =>
-        val destination = d.copy(payload = None, payloadType = TemplateType.Plain)
-        val processorModel = HandlebarsTemplateProcessorModel.empty
-        val expectedResponse = mock[HttpResponse]
+    forAll(
+      destinationGen(HttpMethod.POST),
+      submitterPartsGen[Possible],
+      PrimitiveGen.urlContextPathGen,
+      submissionInfoGen
+    ) { (d, sp, expectedUri, si) =>
+      val destination = d.copy(payload = None, payloadType = TemplateType.Plain)
+      val processorModel = HandlebarsTemplateProcessorModel.empty
+      val expectedResponse = mock[HttpResponse]
 
-        sp.expectTemplateProcessorApplication(destination.uri, processorModel, TemplateType.Plain, expectedUri)
-          .expectHttpPostJson(destination.profile, "", expectedUri, Right(expectedResponse))
+      sp.expectHttpClientApply()
+        .expectTemplateProcessorApplication(destination.uri, processorModel, TemplateType.Plain, expectedUri)
+        .expectHttpPostJson(destination.profile, "", expectedUri, Right(expectedResponse))
 
-        sp.submitter.apply(destination, HandlebarsTemplateProcessorModel.empty, tree(processorModel)) shouldBe Right(
-          expectedResponse
-        )
+      sp.submitter.apply(destination, HandlebarsTemplateProcessorModel.empty, tree(processorModel), si) shouldBe Right(
+        expectedResponse
+      )
     }
   }
 
@@ -106,18 +124,25 @@ class HandlebarsHttpApiSubmitterSpec extends Spec with ScalaCheckDrivenPropertyC
                       |  }""".stripMargin
     val payload = "[" + payload1 + "," + payload2 + "]"
     val d = destinationGen(HttpMethod.POST).sample.get
+    val httpClientMap = mock[EnvelopeId => HttpClient[Possible]]
     val httpClient = mock[HttpClient[Possible]]
     val handlebarsTemplateProcessor = mock[HandlebarsTemplateProcessor]
+    val destinationSubmissionInfo = submissionInfoGen.sample.get
 
     val submitter =
       new RealHandlebarsHttpApiSubmitter(
-        Map(ProfileName("foo") -> httpClient),
+        Map(ProfileName("foo") -> httpClientMap),
         handlebarsTemplateProcessor
       )
 
     val destination = d.copy(payload = Option(payload), payloadType = TemplateType.Plain, multiRequestPayload = true)
     val processorModel = HandlebarsTemplateProcessorModel.empty
     val expectedResponse = mock[HttpResponse]
+
+    (httpClientMap
+      .apply(_: EnvelopeId))
+      .expects(EnvelopeId("envId"))
+      .returning(httpClient)
 
     (httpClient
       .post(_: String, _: String)(_: HeaderCarrier))
@@ -141,7 +166,12 @@ class HandlebarsHttpApiSubmitterSpec extends Spec with ScalaCheckDrivenPropertyC
       .once()
 
     submitter
-      .apply(destination, HandlebarsTemplateProcessorModel.empty, tree(processorModel)) shouldBe Right(
+      .apply(
+        destination,
+        HandlebarsTemplateProcessorModel.empty,
+        tree(processorModel),
+        destinationSubmissionInfo
+      ) shouldBe Right(
       expectedResponse
     )
   }
@@ -176,11 +206,13 @@ class HandlebarsHttpApiSubmitterSpec extends Spec with ScalaCheckDrivenPropertyC
     val payload = "[" + payload1 + "," + payload2 + "," + payload3 + "]"
     val d = destinationGen(HttpMethod.POST).sample.get
     val httpClient = mock[HttpClient[Possible]]
+    val httpClientMap = mock[EnvelopeId => HttpClient[Possible]]
     val handlebarsTemplateProcessor = mock[HandlebarsTemplateProcessor]
+    val destinationSubmissionInfo = submissionInfoGen.sample.get
 
     val submitter =
       new RealHandlebarsHttpApiSubmitter(
-        Map(ProfileName("foo") -> httpClient),
+        Map(ProfileName("foo") -> httpClientMap),
         handlebarsTemplateProcessor
       )
 
@@ -189,6 +221,13 @@ class HandlebarsHttpApiSubmitterSpec extends Spec with ScalaCheckDrivenPropertyC
     val expectedResponse = mock[HttpResponse]
 
     (() => expectedResponse.toString).expects().returning("response").anyNumberOfTimes()
+
+    (httpClientMap
+      .apply(_: EnvelopeId))
+      .expects(EnvelopeId("envId"))
+      .returning(httpClient)
+      .anyNumberOfTimes()
+
     (httpClient
       .post(_: String, _: String)(_: HeaderCarrier))
       .expects(where { (_, body, _) =>
@@ -224,7 +263,12 @@ class HandlebarsHttpApiSubmitterSpec extends Spec with ScalaCheckDrivenPropertyC
       .returning("foo")
       .once()
 
-    val res = submitter.apply(destination, HandlebarsTemplateProcessorModel.empty, tree(processorModel))
+    val res = submitter.apply(
+      destination,
+      HandlebarsTemplateProcessorModel.empty,
+      tree(processorModel),
+      destinationSubmissionInfo
+    )
 
     res match {
       case Left(error) => error.getMessage shouldBe "error response"
@@ -252,17 +296,24 @@ class HandlebarsHttpApiSubmitterSpec extends Spec with ScalaCheckDrivenPropertyC
     val payload = "[" + payload1 + "," + payload2 + "]"
     val d = destinationGen(HttpMethod.POST).sample.get
     val httpClient = mock[HttpClient[Possible]]
+    val httpClientMap = mock[EnvelopeId => HttpClient[Possible]]
     val handlebarsTemplateProcessor = mock[HandlebarsTemplateProcessor]
+    val destinationSubmissionInfo = submissionInfoGen.sample.get
 
     val submitter =
       new RealHandlebarsHttpApiSubmitter(
-        Map(ProfileName("foo") -> httpClient),
+        Map(ProfileName("foo") -> httpClientMap),
         handlebarsTemplateProcessor
       )
 
     val destination = d.copy(payload = Option(payload), payloadType = TemplateType.Plain, multiRequestPayload = false)
     val processorModel = HandlebarsTemplateProcessorModel.empty
     val expectedResponse = mock[HttpResponse]
+
+    (httpClientMap
+      .apply(_: EnvelopeId))
+      .expects(EnvelopeId("envId"))
+      .returning(httpClient)
 
     (httpClient
       .post(_: String, _: String)(_: HeaderCarrier))
@@ -286,7 +337,12 @@ class HandlebarsHttpApiSubmitterSpec extends Spec with ScalaCheckDrivenPropertyC
       .once()
 
     submitter
-      .apply(destination, HandlebarsTemplateProcessorModel.empty, tree(processorModel)) shouldBe Right(
+      .apply(
+        destination,
+        HandlebarsTemplateProcessorModel.empty,
+        tree(processorModel),
+        destinationSubmissionInfo
+      ) shouldBe Right(
       expectedResponse
     )
   }
@@ -297,35 +353,52 @@ class HandlebarsHttpApiSubmitterSpec extends Spec with ScalaCheckDrivenPropertyC
       Gen.alphaNumStr,
       submitterPartsGen[Possible],
       PrimitiveGen.urlContextPathGen,
-      Gen.alphaNumStr
-    ) { (d, payload, sp, expectedUri, expectedBody) =>
+      Gen.alphaNumStr,
+      submissionInfoGen
+    ) { (d, payload, sp, expectedUri, expectedBody, si) =>
       val destination = d.copy(payload = Option(payload), payloadType = TemplateType.Plain)
       val processorModel = HandlebarsTemplateProcessorModel.empty
       val expectedResponse = mock[HttpResponse]
 
-      sp.expectTemplateProcessorApplication(destination.uri, processorModel, TemplateType.Plain, expectedUri)
+      sp.expectHttpClientApply()
+        .expectTemplateProcessorApplication(destination.uri, processorModel, TemplateType.Plain, expectedUri)
         .expectTemplateProcessorApplication(payload, processorModel, destination.payloadType, expectedBody)
         .expectHttpPutJson(destination.profile, expectedBody, expectedUri, Right(expectedResponse))
 
-      sp.submitter.apply(destination, HandlebarsTemplateProcessorModel.empty, tree(processorModel)) shouldBe Right(
+      sp.submitter.apply(
+        destination,
+        HandlebarsTemplateProcessorModel.empty,
+        tree(processorModel),
+        si
+      ) shouldBe Right(
         expectedResponse
       )
     }
   }
 
   it should "make a PUT request when there is no payload" in {
-    forAll(destinationGen(HttpMethod.PUT), submitterPartsGen[Possible], PrimitiveGen.urlContextPathGen) {
-      (d, sp, expectedUri) =>
-        val destination = d.copy(payload = None, payloadType = TemplateType.Plain)
-        val processorModel = HandlebarsTemplateProcessorModel.empty
-        val expectedResponse = mock[HttpResponse]
+    forAll(
+      destinationGen(HttpMethod.PUT),
+      submitterPartsGen[Possible],
+      PrimitiveGen.urlContextPathGen,
+      submissionInfoGen
+    ) { (d, sp, expectedUri, si) =>
+      val destination = d.copy(payload = None, payloadType = TemplateType.Plain)
+      val processorModel = HandlebarsTemplateProcessorModel.empty
+      val expectedResponse = mock[HttpResponse]
 
-        sp.expectTemplateProcessorApplication(destination.uri, processorModel, TemplateType.Plain, expectedUri)
-          .expectHttpPutJson(destination.profile, "", expectedUri, Right(expectedResponse))
+      sp.expectHttpClientApply()
+        .expectTemplateProcessorApplication(destination.uri, processorModel, TemplateType.Plain, expectedUri)
+        .expectHttpPutJson(destination.profile, "", expectedUri, Right(expectedResponse))
 
-        sp.submitter.apply(destination, HandlebarsTemplateProcessorModel.empty, tree(processorModel)) shouldBe Right(
-          expectedResponse
-        )
+      sp.submitter.apply(
+        destination,
+        HandlebarsTemplateProcessorModel.empty,
+        tree(processorModel),
+        si
+      ) shouldBe Right(
+        expectedResponse
+      )
     }
   }
 
@@ -349,17 +422,24 @@ class HandlebarsHttpApiSubmitterSpec extends Spec with ScalaCheckDrivenPropertyC
     val payload = "[" + payload1 + "," + payload2 + "]"
     val d = destinationGen(HttpMethod.PUT).sample.get
     val httpClient = mock[HttpClient[Possible]]
+    val httpClientMap = mock[EnvelopeId => HttpClient[Possible]]
     val handlebarsTemplateProcessor = mock[HandlebarsTemplateProcessor]
+    val destinationSubmissionInfo = submissionInfoGen.sample.get
 
     val submitter =
       new RealHandlebarsHttpApiSubmitter(
-        Map(ProfileName("foo") -> httpClient),
+        Map(ProfileName("foo") -> httpClientMap),
         handlebarsTemplateProcessor
       )
 
     val destination = d.copy(payload = Option(payload), payloadType = TemplateType.Plain, multiRequestPayload = true)
     val processorModel = HandlebarsTemplateProcessorModel.empty
     val expectedResponse = mock[HttpResponse]
+
+    (httpClientMap
+      .apply(_: EnvelopeId))
+      .expects(EnvelopeId("envId"))
+      .returning(httpClient)
 
     (httpClient
       .put(_: String, _: String)(_: HeaderCarrier))
@@ -383,7 +463,12 @@ class HandlebarsHttpApiSubmitterSpec extends Spec with ScalaCheckDrivenPropertyC
       .once()
 
     submitter
-      .apply(destination, HandlebarsTemplateProcessorModel.empty, tree(processorModel)) shouldBe Right(
+      .apply(
+        destination,
+        HandlebarsTemplateProcessorModel.empty,
+        tree(processorModel),
+        destinationSubmissionInfo
+      ) shouldBe Right(
       expectedResponse
     )
   }
@@ -408,17 +493,24 @@ class HandlebarsHttpApiSubmitterSpec extends Spec with ScalaCheckDrivenPropertyC
     val payload = "[" + payload1 + "," + payload2 + "]"
     val d = destinationGen(HttpMethod.PUT).sample.get
     val httpClient = mock[HttpClient[Possible]]
+    val httpClientMap = mock[EnvelopeId => HttpClient[Possible]]
     val handlebarsTemplateProcessor = mock[HandlebarsTemplateProcessor]
+    val destinationSubmissionInfo = submissionInfoGen.sample.get
 
     val submitter =
       new RealHandlebarsHttpApiSubmitter(
-        Map(ProfileName("foo") -> httpClient),
+        Map(ProfileName("foo") -> httpClientMap),
         handlebarsTemplateProcessor
       )
 
     val destination = d.copy(payload = Option(payload), payloadType = TemplateType.Plain, multiRequestPayload = false)
     val processorModel = HandlebarsTemplateProcessorModel.empty
     val expectedResponse = mock[HttpResponse]
+
+    (httpClientMap
+      .apply(_: EnvelopeId))
+      .expects(EnvelopeId("envId"))
+      .returning(httpClient)
 
     (httpClient
       .put(_: String, _: String)(_: HeaderCarrier))
@@ -442,13 +534,19 @@ class HandlebarsHttpApiSubmitterSpec extends Spec with ScalaCheckDrivenPropertyC
       .once()
 
     submitter
-      .apply(destination, HandlebarsTemplateProcessorModel.empty, tree(processorModel)) shouldBe Right(
+      .apply(
+        destination,
+        HandlebarsTemplateProcessorModel.empty,
+        tree(processorModel),
+        destinationSubmissionInfo
+      ) shouldBe Right(
       expectedResponse
     )
   }
 
   case class SubmitterParts[F[_]](
     submitter: HandlebarsHttpApiSubmitter[F],
+    httpClientMap: EnvelopeId => HttpClient[F],
     httpClient: HttpClient[F],
     templateProcessor: HandlebarsTemplateProcessor
   ) {
@@ -470,6 +568,16 @@ class HandlebarsHttpApiSubmitterSpec extends Spec with ScalaCheckDrivenPropertyC
         )
         .expects(in, HandlebarsTemplateProcessorModel.empty, rootFocussedTree(modelInFocus), templateType)
         .returning(out)
+
+      this
+    }
+
+    def expectHttpClientApply(): SubmitterParts[F] = {
+      (httpClientMap
+        .apply(_: EnvelopeId))
+        .expects(EnvelopeId("envId"))
+        .returning(httpClient)
+        .anyNumberOfTimes()
 
       this
     }
@@ -517,16 +625,17 @@ class HandlebarsHttpApiSubmitterSpec extends Spec with ScalaCheckDrivenPropertyC
   }
 
   private def submitterPartsGen[F[_]](implicit me: MonadError[F, Throwable]): Gen[SubmitterParts[F]] = {
+    val httpClientMap = mock[EnvelopeId => HttpClient[F]]
     val httpClient = mock[HttpClient[F]]
     val handlebarsTemplateProcessor = mock[HandlebarsTemplateProcessor]
 
     val submitter =
       new RealHandlebarsHttpApiSubmitter(
-        Map(ProfileName("foo") -> httpClient),
+        Map(ProfileName("foo") -> httpClientMap),
         handlebarsTemplateProcessor
       )
 
-    SubmitterParts(submitter, httpClient, handlebarsTemplateProcessor)
+    SubmitterParts(submitter, httpClientMap, httpClient, handlebarsTemplateProcessor)
   }
 
   private def destinationGen(method: HttpMethod): Gen[Destination.HandlebarsHttpApi] =
