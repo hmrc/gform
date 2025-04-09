@@ -159,10 +159,7 @@ object RealHandlebarsHttpApiSubmitter {
         wrapHttpClient(c(submissionInfo.submission.envelopeId), payloadType).pure
       }
 
-  private def wrapHttpClient[F[_]](
-    http: HttpClient[F],
-    templateType: TemplateType
-  )(implicit
+  private def wrapHttpClient[F[_]](http: HttpClient[F], templateType: TemplateType)(implicit
     me: MonadError[F, Throwable]
   ): HttpClient[F] =
     templateType match {
