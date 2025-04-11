@@ -51,25 +51,16 @@ class FormTemplatesController(
 
   def upsert() = Action.async(parse.tolerantText) { implicit request =>
     val templateString: String = request.body
-    val translatableRows: List[(String, String)] = TextExtractor.generateTranslatableRows(templateString)
-
-    val maybeInvalidHtmlError = HtmlValidator.validate(translatableRows)
-
-    maybeInvalidHtmlError match {
-      case Some(invalidHtmlError) => BadRequest(invalidHtmlError.asJson).pure[Future]
-      case None =>
-        JsonSchemaValidator.checkSchema(templateString, schemaStream, JsonSchemaErrorParser.parseErrorMessages) match {
-          case Left(error) => error.asBadRequest.pure[Future]
-          case Right(()) =>
-            val jsValue: JsObject =
-              Json
-                .parse(templateString)
-                .as[JsObject] // This parsing should succeed since schema validation detected no errors
-            val formTemplateRaw = FormTemplateRaw(jsValue)
-            doUpsert(formTemplateRaw)
-        }
+    JsonSchemaValidator.checkSchema(templateString, schemaStream, JsonSchemaErrorParser.parseErrorMessages) match {
+      case Left(error) => error.asBadRequest.pure[Future]
+      case Right(()) =>
+        val jsValue: JsObject =
+          Json
+            .parse(templateString)
+            .as[JsObject] // This parsing should succeed since schema validation detected no errors
+        val formTemplateRaw = FormTemplateRaw(jsValue)
+        doUpsert(formTemplateRaw)
     }
-
   }
 
   // No Schema validation
@@ -78,6 +69,19 @@ class FormTemplatesController(
     addFormTemplateIdToMdc(FormTemplateId(formTemplateRaw._id.value))
     logger.info(s"FormTemplatesController.upsert: ${loggingHelpers.cleanHeaders(request.headers)}")
     doUpsert(formTemplateRaw)
+  }
+
+  def validateHtml() = Action.async(parse.tolerantText) { implicit request =>
+    val templateString: String = request.body
+    val translatableRows: List[(String, String)] = TextExtractor.generateTranslatableRows(templateString)
+    val maybeInvalidHtmlError = HtmlValidator.validate(translatableRows)
+
+    maybeInvalidHtmlError match {
+      case Some(invalidHtmlError) => BadRequest(invalidHtmlError.asJson).pure[Future]
+      case None =>
+        Ok.pure[Future]
+    }
+
   }
 
   private def doUpsert(formTemplateRaw: FormTemplateRaw) =
