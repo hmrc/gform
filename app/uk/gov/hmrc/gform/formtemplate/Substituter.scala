@@ -273,7 +273,7 @@ object Substituter {
           rows = t.rows(substitutions),
           summaryValue = t.summaryValue(substitutions)
         )
-      case b: Button => b
+      case b: Button => b.copy(reference = b.reference(substitutions), amountInPence = b.amountInPence(substitutions))
     }
 
   implicit def formComponentValidatorSubstituter[A](implicit
