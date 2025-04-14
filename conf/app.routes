@@ -39,7 +39,8 @@ PUT           /formBundles/:userId/:formTemplateId/:accessCode/:status/forceStat
 GET           /formtemplates                                                                            uk.gov.hmrc.gform.formtemplate.FormTemplatesController.all
 POST          /formtemplates                                                                            uk.gov.hmrc.gform.formtemplate.FormTemplatesController.upsert
 POST          /formtemplates/fast                                                                       uk.gov.hmrc.gform.formtemplate.FormTemplatesController.upsertFast
-POST          /formtemplates/validateHtml                                                               uk.gov.hmrc.gform.formtemplate.FormTemplatesController.validateHtml
+POST          /formtemplates/validate-html                                                              uk.gov.hmrc.gform.formtemplate.FormTemplatesController.validateHtml
+POST          /formtemplates/validate-schema                                                            uk.gov.hmrc.gform.formtemplate.FormTemplatesController.validateSchema
 GET           /formtemplates/get-titles-with-pii/:formTemplateRawId                                     uk.gov.hmrc.gform.formtemplate.FormTemplatesController.getTitlesWithPII(formTemplateRawId: FormTemplateRawId, filters: Option[String], includeJson: Boolean)
 GET           /formtemplates/:formTemplateId/internal                                                   uk.gov.hmrc.gform.formtemplate.FormTemplatesController.get(formTemplateId: FormTemplateId)
 GET           /formtemplates/:formTemplateId/latest                                                     uk.gov.hmrc.gform.formtemplate.FormTemplatesController.getLatest(formTemplateId: FormTemplateId)

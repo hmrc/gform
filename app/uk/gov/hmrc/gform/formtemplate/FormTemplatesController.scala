@@ -80,7 +80,14 @@ class FormTemplatesController(
       case Some(invalidHtmlError) => BadRequest(invalidHtmlError.asJson).pure[Future]
       case None                   => Ok.pure[Future]
     }
+  }
 
+  def validateSchema() = Action.async(parse.tolerantText) { implicit request =>
+    val templateString: String = request.body
+    JsonSchemaValidator.checkSchema(templateString, schemaStream, JsonSchemaErrorParser.parseErrorMessages) match {
+      case Left(error) => error.asBadRequest.pure[Future]
+      case Right(())   => Ok.pure[Future]
+    }
   }
 
   private def doUpsert(formTemplateRaw: FormTemplateRaw) =
