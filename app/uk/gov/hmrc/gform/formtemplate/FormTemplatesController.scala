@@ -78,8 +78,7 @@ class FormTemplatesController(
 
     maybeInvalidHtmlError match {
       case Some(invalidHtmlError) => BadRequest(invalidHtmlError.asJson).pure[Future]
-      case None =>
-        Ok.pure[Future]
+      case None                   => Ok.pure[Future]
     }
 
   }
