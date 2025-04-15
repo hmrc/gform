@@ -231,34 +231,75 @@ class Translator(json: Json, paths: List[List[Instruction]], val topLevelExprDat
     }
 
   private def toTranslateJson(
-    rows: List[Row]
-  )(topCursor: HCursor, cursors: List[HCursor => ACursor]): HCursor = {
-    val lookup: Map[String, Row] = rows.map(row => row.path -> row).toMap
-    cursors
-      .foldLeft(topCursor) { case (acc, f) =>
-        val aCursor = f(acc)
-        aCursor.withFocus { json =>
-          val path = CursorOp.opsToPath(aCursor.history)
-          if (json.isArray) {
-            json
-          } else {
-            val attemptLang = aCursor.as[Lang]
-            val attemptString = aCursor.as[String]
-            lookup.get(path) match {
-              case None => json // Ignore missing translation
-              case Some(row) =>
-                val tran = Json.obj(
-                  "en" -> Json.fromString(row.en),
-                  "cy" -> Json.fromString(row.cy)
-                )
-                if (attemptString.isRight) tran
-                else if (attemptLang.isRight) json.deepMerge(tran)
-                else throw new Exception(s"Cannot translate path: $path. Invalid focus: $json")
-            }
+    rows: List[Row],
+    json: Json
+  ): Json = {
+    val excludedPrefixes = Set("expressions")
+    def isExcluded(path: List[String]): Boolean =
+      path.headOption.exists(excludedPrefixes.contains)
+    val lookup: Map[String, Row] = rows.iterator
+      .filterNot(row => row.path.stripPrefix(".").startsWith("expressions"))
+      .map(row => row.path.stripPrefix(".") -> row)
+      .toMap
+    def buildPath(path: List[String]): String =
+      path
+        .map {
+          case s if s.forall(_.isDigit) => s"[$s]"
+          case s                        => s".$s"
+        }
+        .mkString
+        .stripPrefix(".")
 
+    def walk(json: Json, path: List[String]): Json =
+      if (isExcluded(path)) json
+      else
+        json.foldWith(new Json.Folder[Json] {
+          def onNull: Json = Json.Null
+          def onBoolean(value: Boolean): Json = Json.fromBoolean(value)
+          def onNumber(value: JsonNumber): Json = Json.fromJsonNumber(value)
+          def onString(value: String): Json = Json.fromString(value)
+
+          def onArray(arr: Vector[Json]): Json = Json.fromValues(
+            arr.zipWithIndex.map { case (item, i) => walk(item, path :+ i.toString) }
+          )
+
+          def onObject(obj: JsonObject): Json = {
+            val objectLevelPath = buildPath(path)
+            lookup.get(objectLevelPath) match {
+              case Some(row) if obj.contains("en") && !obj.contains("cy") =>
+                val merged = obj
+                  .add("en", Json.fromString(row.en))
+                  .add("cy", Json.fromString(row.cy))
+                return Json.fromJsonObject(merged)
+              case _ =>
+            }
+            val updatedFields = obj.toMap.map { case (key, value) =>
+              val fullPath = buildPath(path :+ key)
+              lookup.get(fullPath) match {
+                case Some(row) =>
+                  value.asString match {
+                    case Some(_) =>
+                      key -> Json.obj(
+                        "en" -> Json.fromString(row.en),
+                        "cy" -> Json.fromString(row.cy)
+                      )
+                    case None if value.isObject =>
+                      val merged = value.asObject.get
+                        .add("en", Json.fromString(row.en))
+                        .add("cy", Json.fromString(row.cy))
+                      key -> Json.fromJsonObject(merged)
+                    case _ =>
+                      key -> walk(value, path :+ key)
+                  }
+                case None =>
+                  key -> walk(value, path :+ key)
+              }
+            }
+            Json.fromFields(updatedFields)
           }
-        }.root
-      }
+        })
+
+    walk(json, Nil)
   }
 
   private def toTranslateJsonDebug(topCursor: HCursor, cursors: List[HCursor => ACursor]): HCursor =
@@ -305,13 +346,12 @@ class Translator(json: Json, paths: List[List[Instruction]], val topLevelExprDat
     .distinct
     .sortBy(_.en)
 
-  def translateJson(
-    expressionRows: List[Row]
-  ): Json =
-    applyOperations(
-      toTranslateJson(expressionRows),
-      translateExpressions(expressionRows)
-    ).focus.get
+  def translateJson(expressionRows: List[Row]): Json = {
+    val topLevelCursors = replyCursorOps(topLevelExprData.cursorOps)
+    val afterExpressions = translateExpressions(expressionRows)(json.hcursor, topLevelCursors)
+    val finalJson = toTranslateJson(expressionRows, afterExpressions.focus.getOrElse(json))
+    finalJson
+  }
 
   def translateJsonDebug: Json =
     applyOperations(
