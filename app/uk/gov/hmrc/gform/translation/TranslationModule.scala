@@ -21,19 +21,32 @@ import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.formtemplate.FormTemplateModule
 import uk.gov.hmrc.gform.gformfrontend.GformFrontendConnector
 import uk.gov.hmrc.gform.history.HistoryModule
+import uk.gov.hmrc.gform.mongo.MongoModule
+import uk.gov.hmrc.gform.translation.audit.TranslationAuditRepository
 
 class TranslationModule(
   formTemplateModule: FormTemplateModule,
   historyModule: HistoryModule,
   configModule: ConfigModule,
+  mongoModule: MongoModule,
   gformFrontendConnector: GformFrontendConnector
 )(implicit
   ex: ExecutionContext
 ) {
+  val translationAuditRepo: TranslationAuditRepository = new TranslationAuditRepository(
+    mongoModule,
+    configModule.appConfig
+  )
+
+  val translationService: TranslationService = new TranslationService(
+    translationAuditRepo
+  )
+
   val translationController: TranslationController =
     new TranslationController(
       formTemplateModule.formTemplateService,
       historyModule.historyService,
+      translationService,
       configModule.controllerComponents,
       gformFrontendConnector
     )

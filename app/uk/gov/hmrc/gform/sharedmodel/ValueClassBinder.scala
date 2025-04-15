@@ -29,6 +29,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Coordinates, FormTemplateId, FormTemplateRawId }
 import uk.gov.hmrc.gform.sharedmodel.notifier.NotifierEmailAddress
 import uk.gov.hmrc.gform.sharedmodel.sdes._
+import uk.gov.hmrc.gform.translation.audit.TranslationAuditId
 import uk.gov.hmrc.mongo.workitem.ProcessingStatus
 import uk.gov.hmrc.mongo.workitem.ProcessingStatus.Implicits.format
 
@@ -47,6 +48,10 @@ object ValueClassBinder {
 
   implicit val historyIdBinder: PathBindable[HistoryId] = {
     implicit val read: Reads[HistoryId] = HistoryId.flatReads
+    valueClassBinder(_.id)
+  }
+  implicit val translationAuditIdBinder: PathBindable[TranslationAuditId] = {
+    implicit val read: Reads[TranslationAuditId] = TranslationAuditId.flatReads
     valueClassBinder(_.id)
   }
   implicit val accessCodeBinder: PathBindable[AccessCode] = valueClassBinder(_.value)

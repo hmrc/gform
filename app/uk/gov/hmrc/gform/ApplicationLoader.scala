@@ -166,7 +166,13 @@ class ApplicationModule(context: Context)
 
   private val emailModule = new EmailModule(configModule, wSHttpModule, notifierModule, formTemplateModule)
   private val translationModule =
-    new TranslationModule(formTemplateModule, historyModule, configModule, gformFrontendModule.gformFrontendConnector)
+    new TranslationModule(
+      formTemplateModule,
+      historyModule,
+      configModule,
+      mongoModule,
+      gformFrontendModule.gformFrontendConnector
+    )
   private val pdfGeneratorModule = new PdfGeneratorModule(playComponents.context.environment)
 
   private val sdesModule =
