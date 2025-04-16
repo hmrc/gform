@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.gform.sharedmodel.graph
 
-import cats.syntax.either._
 import scalax.collection.Graph
 import scalax.collection.GraphPredef._, scalax.collection.GraphEdge._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._

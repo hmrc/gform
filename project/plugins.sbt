@@ -8,9 +8,9 @@ resolvers += "Typesafe Releases" at "https://repo.typesafe.com/typesafe/releases
 
 addSbtPlugin("uk.gov.hmrc" % "sbt-auto-build" % "3.24.0")
 
-addSbtPlugin("uk.gov.hmrc" % "sbt-distributables" % "2.5.0")
+addSbtPlugin("uk.gov.hmrc" % "sbt-distributables" % "2.6.0")
 
-addSbtPlugin("org.playframework" % "sbt-plugin" % "3.0.3")
+addSbtPlugin("org.playframework" % "sbt-plugin" % "3.0.6")
 
 addSbtPlugin("org.scalameta" % "sbt-scalafmt" % "2.5.0")
 

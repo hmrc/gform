@@ -552,11 +552,11 @@ object JsonSchemaErrorParser {
     goDownSchema(schema, schemaLocation.split("/").toList.tail ++ List("type")) match {
       case Left(_) => error.getMessage
 
-      case Right(requiredType) =>
-        val maybeRequiredType: Option[String] = if (requiredType.isArray) {
-          requiredType.as[List[String]].map(_.mkString(", ")).toOption
-        } else if (requiredType.isString) {
-          requiredType.asString
+      case Right(requiredTypeJson) =>
+        val maybeRequiredType: Option[String] = if (requiredTypeJson.isArray) {
+          requiredTypeJson.as[List[String]].map(_.mkString(", ")).toOption
+        } else if (requiredTypeJson.isString) {
+          requiredTypeJson.asString
         } else {
           None
         }

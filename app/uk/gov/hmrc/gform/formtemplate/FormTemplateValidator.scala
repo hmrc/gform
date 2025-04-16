@@ -93,13 +93,13 @@ object FormTemplateValidator {
   }
 
   def validateUniquePageIds(sectionsList: List[Section]): ValidationResult = {
-    val ids: List[PageId] =
+    val pageIds: List[PageId] =
       sectionsList.flatMap(
         _.fold(_.page.id.toList)(_.page.id.toList)(p =>
           p.defaultPage.flatMap(_.id).toList ++ p.pages.toList.flatMap(_.id)
         )
       )
-    val duplicateIds = ids.groupBy(identity).collect {
+    val duplicateIds = pageIds.groupBy(identity).collect {
       case (_, ids) if ids.size > 1 => ids.head
     }
     duplicateIds.isEmpty.validationResult(
@@ -108,11 +108,11 @@ object FormTemplateValidator {
   }
 
   def validateUniqueTaskIds(formTemplate: FormTemplate): ValidationResult = {
-    val ids: List[TaskId] =
+    val taskIds: List[TaskId] =
       formTemplate.formKind.fold(classic => List.empty[TaskId])(taskList =>
         taskList.sections.toList.flatMap(_.tasks.toList.flatMap(_.id))
       )
-    val duplicateIds = ids.groupBy(identity).collect {
+    val duplicateIds = taskIds.groupBy(identity).collect {
       case (_, ids) if ids.size > 1 => ids.head
     }
     duplicateIds.isEmpty.validationResult(

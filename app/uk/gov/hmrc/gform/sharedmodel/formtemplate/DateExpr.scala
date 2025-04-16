@@ -96,17 +96,6 @@ case class DateConstructExpr(dayMonth: DateExpr, year: Expr) extends DateExpr
 
 object DateExpr {
   implicit val format: OFormat[DateExpr] = derived.oformat()
-
-  private def allFormCtxExprs(dateExpr: DateExpr): List[FormCtx] = dateExpr match {
-    case DateValueExpr(_)              => Nil
-    case DateFormCtxVar(formCtx)       => formCtx :: Nil
-    case DateExprWithOffset(dExpr, _)  => allFormCtxExprs(dExpr)
-    case HmrcTaxPeriodCtx(formCtx, _)  => formCtx :: Nil
-    case DataRetrieveDateCtx(_, _)     => Nil
-    case DateIfElse(_, field1, field2) => allFormCtxExprs(field1) ++ allFormCtxExprs(field2)
-    case DateOrElse(field1, field2)    => allFormCtxExprs(field1) ++ allFormCtxExprs(field2)
-    case DateConstructExpr(_, _)       => Nil
-  }
 }
 
 object Expr2DateExpr {
