@@ -19,12 +19,16 @@ package uk.gov.hmrc.gform.translation
 import cats.implicits._
 
 import java.io.{ BufferedOutputStream, ByteArrayInputStream, ByteArrayOutputStream }
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.util.Locale
+import java.util.zip.{ ZipEntry, ZipOutputStream }
 import play.api.libs.Files.TemporaryFile
 import play.api.libs.json.{ JsObject, Json }
 import org.apache.pekko.stream.scaladsl.StreamConverters
 import play.api.mvc.{ Action, AnyContent, ControllerComponents, Result }
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.ExecutionContext
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.formtemplate.{ FormTemplateService, FormTemplatesControllerRequestHandler }
 import uk.gov.hmrc.gform.history.HistoryService
@@ -34,10 +38,13 @@ import org.apache.poi.xssf.usermodel._
 import uk.gov.hmrc.gform.gformfrontend.GformFrontendConnector
 
 import scala.util.{ Failure, Success, Try }
+import uk.gov.hmrc.gform.translation.audit.TranslationResult
+import uk.gov.hmrc.gform.translation.audit.TranslationAuditId
 
 class TranslationController(
   formTemplateService: FormTemplateService,
   historyService: HistoryService,
+  translationService: TranslationService,
   controllerComponents: ControllerComponents,
   gformFrontendConnector: GformFrontendConnector
 )(implicit ec: ExecutionContext)
@@ -240,7 +247,7 @@ class TranslationController(
 
       val spreadsheet = Spreadsheet(spreadheetRows)
 
-      runTranslation(formTemplateId, spreadsheet)
+      runTranslation(formTemplateId, spreadsheet, workBook)
     }
 
   private def getCellValue(cell: Cell): String =
@@ -258,31 +265,48 @@ class TranslationController(
       }
     }
 
-  def translateCsv(
-    formTemplateId: FormTemplateId
-  ): Action[AnyContent] =
-    Action.async { request =>
-      val maybeCsv: Option[String] = request.body.asText
-
-      maybeCsv.fold[Future[Result]](
-        BadRequest("No csv file provided. Please make sure to use 'Content-type: text/plain'").pure[Future]
-      ) { csv =>
-        val translatableRows = TextExtractor.readCvsFromString(csv)
-        runTranslation(formTemplateId, translatableRows)
-      }
-    }
-
-  private def runTranslation(formTemplateId: FormTemplateId, spreadsheet: Spreadsheet) =
+  private def runTranslation(formTemplateId: FormTemplateId, spreadsheet: Spreadsheet, workbook: XSSFWorkbook) =
     formTemplateService
       .get(FormTemplateRawId(formTemplateId.value))
-      .map(json => insertLanguages(json.value))
-      .flatMap { json =>
+      .map { originalJson =>
+        val json = insertLanguages(originalJson.value)
         val jsonAsString = Json.prettyPrint(json)
         val (translatedJson, stats) = TextExtractor.translateFile(spreadsheet, jsonAsString)
         val jsonToSave = Json.parse(translatedJson).as[JsObject]
+
+        (originalJson, jsonToSave, stats)
+      }
+      .flatMap { case (originalJson, jsonToSave, stats) =>
         interpreter
           .handleRequest(FormTemplateRaw(jsonToSave))
-          .fold(_.asBadRequest, _ => Ok(stats.spaces2))
+          .foldF(
+            error =>
+              translationService
+                .saveAudit(
+                  formTemplateId,
+                  originalJson,
+                  jsonToSave,
+                  workbook,
+                  TranslationResult.Failure(error.error)
+                )
+                .map(_ => error.asBadRequest)
+                .value,
+            _ =>
+              translationService
+                .saveAudit(
+                  formTemplateId,
+                  originalJson,
+                  jsonToSave,
+                  workbook,
+                  TranslationResult.Success
+                )
+                .map(r => Ok(stats.spaces2))
+                .value
+          )
+          .map {
+            case Left(error) => BadRequest(s"Error when storing translation audit: $error")
+            case Right(s)    => s
+          }
       }
 
   private def insertLanguages(json: JsObject): JsObject = {
@@ -315,4 +339,72 @@ class TranslationController(
           Ok(Json.parse(outputJson))
         }
     }
+
+  def translationAuditAll(): Action[AnyContent] =
+    Action.async { request =>
+      translationService.all().map { allAudits =>
+        Ok(Json.toJson(allAudits))
+      }
+    }
+
+  def translationAudit(formTemplateId: FormTemplateId): Action[AnyContent] =
+    Action.async { request =>
+      translationService.latestAudit(formTemplateId).map { latestAudit =>
+        latestAudit.fold[Result](NotFound)(la => Ok(Json.toJson(la)))
+      }
+    }
+
+  def translationAuditResult(translationAuditId: TranslationAuditId): Action[AnyContent] =
+    Action.async { request =>
+      translationService.findAudit(translationAuditId).map { translationAudit =>
+        translationAudit.fold[Result](NotFound)(ta => Ok(Json.toJson(ta.jsonAfter)))
+      }
+    }
+
+  def translationAuditFull(translationAuditId: TranslationAuditId) = Action.async { request =>
+    translationService.findAudit(translationAuditId).map { maybeTranslationAudit =>
+      maybeTranslationAudit match {
+        case None => NotFound
+        case Some(translationAudit) =>
+          val formTemplateId = translationAudit.formTemplateId
+          val formatter = DateTimeFormatter
+            .ofPattern("yyyy-MM-dd'T'HH-mm-ss")
+            .withLocale(Locale.UK)
+            .withZone(ZoneId.of("Europe/London"))
+          val createdAt = formatter.format(translationAudit.createdAt)
+          val fileName = s"${formTemplateId.value}-$createdAt.zip"
+
+          val baos = new ByteArrayOutputStream()
+          val zos = new ZipOutputStream(new BufferedOutputStream(baos))
+
+          try {
+            zos.putNextEntry(new ZipEntry(formTemplateId.value + "-source.json"))
+            zos.write(Json.prettyPrint(translationAudit.jsonBefore).getBytes())
+            zos.closeEntry()
+
+            zos.putNextEntry(new ZipEntry(formTemplateId.value + "-result.json"))
+            zos.write(Json.prettyPrint(translationAudit.jsonAfter).getBytes())
+            zos.closeEntry()
+
+            val baos: ByteArrayOutputStream = new ByteArrayOutputStream()
+            translationAudit.spreadsheet.write(baos)
+            zos.putNextEntry(new ZipEntry(formTemplateId.value + ".xlsx"))
+            zos.write(baos.toByteArray())
+            zos.closeEntry()
+            baos.close()
+
+          } finally zos.close()
+
+          val bais = new ByteArrayInputStream(baos.toByteArray)
+
+          Ok.chunked(
+            StreamConverters.fromInputStream(() => bais)
+          ).withHeaders(
+            CONTENT_TYPE -> "application/zip",
+            CONTENT_DISPOSITION ->
+              s"""attachment; filename = "$fileName"""
+          )
+      }
+    }
+  }
 }

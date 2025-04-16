@@ -103,8 +103,11 @@ GET           /translation-excel/:formTemplateId/brief                          
 GET           /translation/:formTemplateId/internal                                                     uk.gov.hmrc.gform.translation.TranslationController.generateInternalCsv(formTemplateId: FormTemplateId)
 GET           /translation/:formTemplateId/debug                                                        uk.gov.hmrc.gform.translation.TranslationController.translateCsvDebug(formTemplateId: FormTemplateId)
 GET           /translation/:formTemplateId/breakdown                                                    uk.gov.hmrc.gform.translation.TranslationController.textBreakdown(formTemplateId: FormTemplateId)
-POST          /translation/:formTemplateId                                                              uk.gov.hmrc.gform.translation.TranslationController.translateCsv(formTemplateId: FormTemplateId)
 POST          /translation-excel/:formTemplateId                                                        uk.gov.hmrc.gform.translation.TranslationController.translateXlsx(formTemplateId: FormTemplateId)
+GET           /translation-audit/overview-all                                                           uk.gov.hmrc.gform.translation.TranslationController.translationAuditAll()
+GET           /translation-audit/overview/:formTemplateId                                               uk.gov.hmrc.gform.translation.TranslationController.translationAudit(formTemplateId: FormTemplateId)
+GET           /translation-audit/result/:translationAuditId                                             uk.gov.hmrc.gform.translation.TranslationController.translationAuditResult(translationAuditId: TranslationAuditId)
+GET           /translation-audit/full/:translationAuditId                                               uk.gov.hmrc.gform.translation.TranslationController.translationAuditFull(translationAuditId: TranslationAuditId)
 
 GET           /notification-banner                                                                      uk.gov.hmrc.gform.notificationbanner.NotificationBannerController.findAllNotificationBanners()
 GET           /notification-banner/:formTemplateId                                                      uk.gov.hmrc.gform.notificationbanner.NotificationBannerController.find(formTemplateId: FormTemplateId)

@@ -66,7 +66,8 @@ lazy val microservice = (project in file("."))
       "uk.gov.hmrc.gform.upscan.UpscanReference",
       "uk.gov.hmrc.gform.sharedmodel.sdes._",
       "uk.gov.hmrc.gform.testonly.SnapshotId",
-      "uk.gov.hmrc.mongo.workitem.ProcessingStatus"
+      "uk.gov.hmrc.mongo.workitem.ProcessingStatus",
+      "uk.gov.hmrc.gform.translation.audit.TranslationAuditId"
     ),
     resolvers ++= Seq(
       Resolver.jcenterRepo,
