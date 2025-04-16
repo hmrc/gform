@@ -44,8 +44,8 @@ package object destinations {
           |  "requiredState": "${requiredState.toString}"
           |}""".stripMargin
 
-    case hmrcDms: Destination.HmrcDms =>
-      import hmrcDms._
+    case hmrcDmsDestination: Destination.HmrcDms =>
+      import hmrcDmsDestination._
       s"""|{
           |  "id": "${id.id}",
           |  "includeIf":  "${getHandlebarValue(destination.includeIf)}",
@@ -61,14 +61,14 @@ package object destinations {
           |  "businessArea": "$businessArea"
           |}""".stripMargin
 
-    case dataStore: Destination.DataStore =>
-      import dataStore._
+    case dataStoreDestination: Destination.DataStore =>
+      import dataStoreDestination._
       s"""|{
           |  "id": "${id.id}",
           |  "routing": "{$destination}",
           |  "includeIf":  "${getHandlebarValue(destination.includeIf)}",
           |  ${optionalField("failOnError", Option(destination.failOnError), true)}
-          |  "formId": "${dataStore.formId}",
+          |  "formId": "${dataStoreDestination.formId}",
           |  "version": "$version",
           |  "taxpayerId": ${TextExpression.format.writes(TextExpression(taxpayerId))},
           |  "regime": "$regime",

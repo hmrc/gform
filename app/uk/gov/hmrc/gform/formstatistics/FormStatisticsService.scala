@@ -251,8 +251,8 @@ class FormStatisticsService(
               Document(
                 "$regexMatch" -> Document("input" -> "$data.form.userId", "regex" -> "^email")
               ),
-              1.toBson(),
-              0.toBson()
+              1.toBson,
+              0.toBson
             )
           )
         ),
@@ -270,8 +270,8 @@ class FormStatisticsService(
                   )
                 )
               ),
-              1.toBson(),
-              0.toBson()
+              1.toBson,
+              0.toBson
             )
           )
         )

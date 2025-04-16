@@ -81,7 +81,7 @@ class FileUploadConnector(
               new Exception(s"POST to $url failed with status $status. Response body: '${response.body}'")
             )
           }
-        } recoverWith { case ex =>
+        } recoverWith { ex =>
         Future.failed(new Exception(s"POST to $url failed. $ex"))
       }
     }
