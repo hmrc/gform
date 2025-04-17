@@ -24,6 +24,9 @@ import io.circe.CursorOp._
 import io.circe.parser._
 import java.io.{ BufferedOutputStream, BufferedReader, StringReader }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.Constant
+import scala.collection.parallel.CollectionConverters._
+import java.util.concurrent.ForkJoinPool
+import scala.collection.parallel.ForkJoinTaskSupport
 
 case class Lang(en: String, cy: String)
 
@@ -379,6 +382,7 @@ class Translator(json: Json, paths: List[List[Instruction]], val topLevelExprDat
   }
 
   private def resolveConcretePaths(json: Json, instructions: List[Instruction]): List[String] = {
+
     def getArrayIndex(cursor: HCursor): Option[Int] =
       for {
         parentArray <- cursor.up.focus.flatMap(_.asArray)
@@ -386,9 +390,6 @@ class Translator(json: Json, paths: List[List[Instruction]], val topLevelExprDat
         idx = parentArray.indexWhere(_.noSpaces == current.noSpaces)
         if idx >= 0
       } yield idx
-
-//    def isInArray(cursor: HCursor): Boolean =
-//      cursor.up.focus.exists(_.isArray)
 
     def incrementLastIndex(path: StringBuilder): Unit = {
       val pattern = """\[(\d+)\]$""".r
@@ -453,8 +454,7 @@ class Translator(json: Json, paths: List[List[Instruction]], val topLevelExprDat
               getArrayIndex(h).foreach { i =>
                 appendArrayIndex(path, i, append = appendIndex)
               }
-              val res = eval(rest, h, path, wasMoveRight = false)
-              res
+              eval(rest, h, path, wasMoveRight = false)
             case None => Nil
           }
 
@@ -484,8 +484,10 @@ class Translator(json: Json, paths: List[List[Instruction]], val topLevelExprDat
         case _ => Nil
       }
 
+    // Thread-safe: construct cursor inside method
     val pathBuilder = new StringBuilder
-    eval(instructions, json.hcursor, pathBuilder)
+    val freshCursor = json.hcursor
+    eval(instructions.reverse, freshCursor, pathBuilder)
   }
 
   val t0 = System.nanoTime()
@@ -494,12 +496,10 @@ class Translator(json: Json, paths: List[List[Instruction]], val topLevelExprDat
   println(s"✅ Unique instruction sets: ${instructionSets.size}")
   val t1 = System.nanoTime()
   println(s"⏱ computeInstructionPathsFromPaths: ${(t1 - t0) / 1_000_000} ms")
+  val parallelInstructions = instructionSets.par
+  parallelInstructions.tasksupport = new ForkJoinTaskSupport(new ForkJoinPool(Runtime.getRuntime.availableProcessors()))
   val pathSet: Set[String] =
-    instructionSets
-      .map(_.reverse)
-      .distinctBy(instruction => instruction.map(_.toString).mkString("-")) // structural uniqueness
-      .flatMap(resolveConcretePaths(json, _))
-      .toSet
+    parallelInstructions.flatMap(resolveConcretePaths(json, _)).toList.toSet
   val t2 = System.nanoTime()
   println(s"⏱ resolveConcretePaths: ${(t2 - t1) / 1_000_000} ms")
   val fetchRows: List[Row] =
@@ -854,52 +854,6 @@ object TextExtractor {
       val rows = Translator(json, gformPaths).rowsForTranslation
       prepareTranslatebleRows(rows)
     }
-
-//  def generateTranslatableRows(source: String): List[(String, String)] =
-//    parse(source).toOption.fold(List.empty[(String, String)]) { json =>
-//      def buildPath(path: List[String]): String =
-//        path
-//          .map {
-//            case s if s.forall(_.isDigit) => s"[$s]"
-//            case s                        => s".$s"
-//          }
-//          .mkString
-//          .stripPrefix(".")
-//      def extractTextFromHtml(html: String): String = {
-//        val doc = Jsoup.parseBodyFragment(html)
-//        val body = doc.body()
-//        body.text().trim
-//      }
-//      def walk(json: Json, path: List[String]): List[(String, String)] =
-//        json.arrayOrObject[List[(String, String)]](
-//          Nil,
-//          arr => arr.zipWithIndex.flatMap { case (elem, i) => walk(elem, path :+ i.toString) }.toList,
-//          obj =>
-//            obj.toList.flatMap { case (key, value) =>
-//              val fullPath = buildPath(path :+ key)
-//              value.fold(
-//                jsonNull = Nil,
-//                jsonBoolean = _ => Nil,
-//                jsonNumber = _ => Nil,
-//                jsonString = str => {
-//                  val cleaned = extractTextFromHtml(str)
-//                  if (cleaned.nonEmpty) List(fullPath -> cleaned) else Nil
-//                },
-//                jsonArray = arr => walk(Json.fromValues(arr), path :+ key),
-//                jsonObject = nested =>
-//                  nested("en") match {
-//                    case Some(json) if json.isString =>
-//                      val cleaned = extractTextFromHtml(json.asString.getOrElse(""))
-//                      if (cleaned.nonEmpty) List(fullPath -> cleaned)
-//                      else walk(Json.fromJsonObject(nested), path :+ key)
-//                    case _ =>
-//                      walk(Json.fromJsonObject(nested), path :+ key)
-//                  }
-//              )
-//            }
-//        )
-//      walk(json, Nil)
-//    }
 
   def generateBriefTranslatableRows(source: String): List[EnTextToTranslate] =
     parse(source).toOption.fold(List.empty[EnTextToTranslate]) { json =>
