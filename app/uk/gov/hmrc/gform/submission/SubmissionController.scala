@@ -73,7 +73,12 @@ class SubmissionController(controllerComponents: ControllerComponents, submissio
 
   private def submissionDetailsFormIdData(formIdData: FormIdData, envelopeId: EnvelopeId): Action[AnyContent] =
     formAction("submissionDetailsFormIdData", formIdData) { _ =>
-      submissionService.submissionDetails(SubmissionId(formIdData.toFormId, envelopeId)).asOkJson
+      submissionService
+        .submissionDetails(SubmissionId(formIdData.toFormId, envelopeId))
+        .map {
+          case Some(details) => Ok(Json.toJson(details))
+          case None          => NotFound
+        }
     }
 
   def retrieveAll(formTemplateId: FormTemplateId, page: Int, pageSize: Int): Action[AnyContent] = Action.async { _ =>
