@@ -311,28 +311,201 @@ class Translator(json: Json, paths: List[List[Instruction]], val topLevelExprDat
         }.root
       }
 
-  private def smartStringsRows(cursors: List[HCursor => ACursor]): List[Row] =
-    cursors
-      .foldLeft(List.empty[Row]) { case (rows, f) =>
-        val aCursor = f(json.hcursor)
-        val attemptLang = aCursor.as[Lang]
-        val attemptString = aCursor.as[String]
-        val path = CursorOp.opsToPath(aCursor.history)
-        attemptString
-          .map { en =>
-            Row(path, en, "") :: rows
-          }
-          .orElse(attemptLang.map { lang =>
-            Row(path, lang.en, lang.cy) :: rows
-          })
-          .toOption
-          .getOrElse(rows)
-          .sortBy(_.path)
-
+  private def computeInstructionPathsFromPaths(
+    paths: List[List[Instruction]],
+    json: Json
+  ): List[List[Instruction]] = {
+    def loop(instructions: List[Instruction], cursor: HCursor): List[List[Instruction]] = {
+      val reducingInProgress = resolveInstruction(instructions, cursor)
+      val instructionsList = eliminateDeepTraverse(reducingInProgress)
+      instructionsList.flatMap { inst =>
+        val needsMore = inst.exists {
+          case TraverseArray => true
+          case _             => false
+        }
+        if (needsMore) loop(inst, cursor) else List(inst)
       }
-      .distinct
+    }
+    val topCursor = json.hcursor
+    val smartStringPaths = paths.map(TraverseArray :: _) ++ paths
+    smartStringPaths.flatMap(path => loop(path, topCursor))
+  }
 
-  val fetchRows: List[Row] = smartStringsRows(smartStringCursors) ++ topLevelExprData.toRows
+  private def fetchRowsFromPaths(json: Json, allowedPaths: Set[String]): List[Row] = {
+    import scala.collection.mutable.ListBuffer
+
+    def walk(json: Json, path: String, rows: ListBuffer[Row]): Unit = {
+      val cleanPath = if (path.startsWith(".")) path.drop(1) else path
+
+      if (!allowedPaths.contains(cleanPath)) {
+        json.arrayOrObject[Unit](
+          (),
+          arr =>
+            arr.zipWithIndex.foreach { case (v, i) =>
+              walk(v, s"$path[$i]", rows)
+            },
+          obj =>
+            obj.toList.foreach { case (k, v) =>
+              val next = if (path.isEmpty) k else s"$path.$k"
+              walk(v, next, rows)
+            }
+        )
+      } else {
+        json.fold[Unit](
+          jsonNull = (),
+          jsonBoolean = _ => (),
+          jsonNumber = _ => (),
+          jsonString = str => rows += Row(s".$cleanPath", str, ""),
+          jsonArray = _ => (),
+          jsonObject = obj => {
+            val enRow = obj("en").flatMap(_.asString).map { en =>
+              val cy = obj("cy").flatMap(_.asString).getOrElse("")
+              Row(s".$cleanPath", en, cy)
+            }
+            enRow.foreach(rows += _)
+            obj.toList.foreach {
+              case ("en" | "cy", _) => ()
+              case (k, v) =>
+                val next = if (path.isEmpty) k else s"$path.$k"
+                walk(v, next, rows)
+            }
+          }
+        )
+      }
+    }
+    val result = ListBuffer.empty[Row]
+    walk(json, "", result)
+    result.toList
+  }
+
+  private def resolveConcretePaths(json: Json, instructions: List[Instruction]): List[String] = {
+    def getArrayIndex(cursor: HCursor): Option[Int] =
+      for {
+        parentArray <- cursor.up.focus.flatMap(_.asArray)
+        current     <- cursor.focus
+        idx = parentArray.indexWhere(_.noSpaces == current.noSpaces)
+        if idx >= 0
+      } yield idx
+
+//    def isInArray(cursor: HCursor): Boolean =
+//      cursor.up.focus.exists(_.isArray)
+
+    def incrementLastIndex(path: StringBuilder): Unit = {
+      val pattern = """\[(\d+)\]$""".r
+      val asString = path.toString
+      pattern.findFirstMatchIn(asString).foreach { m =>
+        val current = m.group(1).toInt
+        val start = m.start(1) - 1
+        path.replace(start, path.length, s"[${current + 1}]")
+      }
+    }
+
+    def appendPathSegment(path: StringBuilder, segment: String): Unit = {
+      if (path.nonEmpty) path.append(".")
+      path.append(segment)
+    }
+
+    def appendArrayIndex(path: StringBuilder, index: Int, append: Boolean): Unit =
+      if (append) {
+        path.append(s"[$index]")
+      } else {
+        val str = path.toString
+        val pattern = """^(.*)\[\d+\]$""".r
+        str match {
+          case pattern(prefix) =>
+            path.setLength(0)
+            path.append(prefix)
+            path.append(s"[$index]")
+          case _ =>
+            path.append(s"[$index]")
+        }
+      }
+
+    def eval(
+      insts: List[Instruction],
+      cursor: HCursor,
+      path: StringBuilder,
+      wasMoveRight: Boolean = false
+    ): List[String] =
+      insts match {
+        case Nil =>
+          List(path.toString)
+
+        case Pure(DownField(name)) :: rest =>
+          cursor.downField(name).success match {
+            case Some(h) =>
+              val appendIndex = wasMoveRight || cursor.focus.exists(_.isArray)
+              getArrayIndex(h).foreach { i =>
+                appendArrayIndex(path, i, append = appendIndex)
+              }
+              val lenBefore = path.length
+              appendPathSegment(path, name)
+              val res = eval(rest, h, path, wasMoveRight = false)
+              path.setLength(lenBefore)
+              res
+            case None => Nil
+          }
+
+        case Pure(DownArray) :: rest =>
+          cursor.downArray.success match {
+            case Some(h) =>
+              val appendIndex = wasMoveRight || cursor.focus.exists(_.isArray)
+              getArrayIndex(h).foreach { i =>
+                appendArrayIndex(path, i, append = appendIndex)
+              }
+              val res = eval(rest, h, path, wasMoveRight = false)
+              res
+            case None => Nil
+          }
+
+        case Pure(MoveRight) :: rest =>
+          cursor.right.success match {
+            case Some(h) =>
+              incrementLastIndex(path)
+              eval(rest, h, path, wasMoveRight = true)
+            case None => Nil
+          }
+
+        case TraverseArray :: rest =>
+          cursor.focus.flatMap(_.asArray) match {
+            case Some(arr) =>
+              arr.indices.toList.flatMap { idx =>
+                cursor.downN(idx).success.toList.flatMap { h =>
+                  val lenBefore = path.length
+                  path.append(s"[$idx]")
+                  val res = eval(rest, h, path, wasMoveRight = false)
+                  path.setLength(lenBefore)
+                  res
+                }
+              }
+            case None => Nil
+          }
+
+        case _ => Nil
+      }
+
+    val pathBuilder = new StringBuilder
+    eval(instructions, json.hcursor, pathBuilder)
+  }
+
+  val t0 = System.nanoTime()
+  val instructionSets: List[List[Instruction]] =
+    computeInstructionPathsFromPaths(paths.distinct, json).distinct
+  println(s"✅ Unique instruction sets: ${instructionSets.size}")
+  val t1 = System.nanoTime()
+  println(s"⏱ computeInstructionPathsFromPaths: ${(t1 - t0) / 1_000_000} ms")
+  val pathSet: Set[String] =
+    instructionSets
+      .map(_.reverse)
+      .distinctBy(instruction => instruction.map(_.toString).mkString("-")) // structural uniqueness
+      .flatMap(resolveConcretePaths(json, _))
+      .toSet
+  val t2 = System.nanoTime()
+  println(s"⏱ resolveConcretePaths: ${(t2 - t1) / 1_000_000} ms")
+  val fetchRows: List[Row] =
+    fetchRowsFromPaths(json, pathSet) ++ topLevelExprData.toRows
+  val t3 = System.nanoTime()
+  println(s"⏱ fetchRowsFromPaths (+ toRows): ${(t3 - t2) / 1_000_000} ms")
 
   val rowsForTranslation: List[TranslatedRow] = fetchRows
     .filterNot(row => ExtractAndTranslate(row.en).translateTexts.isEmpty)
@@ -681,6 +854,52 @@ object TextExtractor {
       val rows = Translator(json, gformPaths).rowsForTranslation
       prepareTranslatebleRows(rows)
     }
+
+//  def generateTranslatableRows(source: String): List[(String, String)] =
+//    parse(source).toOption.fold(List.empty[(String, String)]) { json =>
+//      def buildPath(path: List[String]): String =
+//        path
+//          .map {
+//            case s if s.forall(_.isDigit) => s"[$s]"
+//            case s                        => s".$s"
+//          }
+//          .mkString
+//          .stripPrefix(".")
+//      def extractTextFromHtml(html: String): String = {
+//        val doc = Jsoup.parseBodyFragment(html)
+//        val body = doc.body()
+//        body.text().trim
+//      }
+//      def walk(json: Json, path: List[String]): List[(String, String)] =
+//        json.arrayOrObject[List[(String, String)]](
+//          Nil,
+//          arr => arr.zipWithIndex.flatMap { case (elem, i) => walk(elem, path :+ i.toString) }.toList,
+//          obj =>
+//            obj.toList.flatMap { case (key, value) =>
+//              val fullPath = buildPath(path :+ key)
+//              value.fold(
+//                jsonNull = Nil,
+//                jsonBoolean = _ => Nil,
+//                jsonNumber = _ => Nil,
+//                jsonString = str => {
+//                  val cleaned = extractTextFromHtml(str)
+//                  if (cleaned.nonEmpty) List(fullPath -> cleaned) else Nil
+//                },
+//                jsonArray = arr => walk(Json.fromValues(arr), path :+ key),
+//                jsonObject = nested =>
+//                  nested("en") match {
+//                    case Some(json) if json.isString =>
+//                      val cleaned = extractTextFromHtml(json.asString.getOrElse(""))
+//                      if (cleaned.nonEmpty) List(fullPath -> cleaned)
+//                      else walk(Json.fromJsonObject(nested), path :+ key)
+//                    case _ =>
+//                      walk(Json.fromJsonObject(nested), path :+ key)
+//                  }
+//              )
+//            }
+//        )
+//      walk(json, Nil)
+//    }
 
   def generateBriefTranslatableRows(source: String): List[EnTextToTranslate] =
     parse(source).toOption.fold(List.empty[EnTextToTranslate]) { json =>

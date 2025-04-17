@@ -678,13 +678,13 @@ class TextExtractorSuite extends FunSuite {
 
     val expectedRows = List(
       Row(".sections[0].fields[0].label", "What is your email", ""),
+      Row(".sections[0].fields[1].label", "Sic code", ""),
       Row(".sections[0].fields[1].choices[0]", "Choice 1", ""),
       Row(".sections[0].fields[1].choices[0].hint", "Choice 1 hint", ""),
       Row(".sections[0].fields[1].choices[0].summaryValue", "Choice 1 summary value", ""),
       Row(".sections[0].fields[1].choices[1]", "Choice 2", ""),
       Row(".sections[0].fields[1].choices[1].hint", "Choice 2 hint", ""),
-      Row(".sections[0].fields[1].choices[1].summaryValue", "Choice 2 summary value", ""),
-      Row(".sections[0].fields[1].label", "Sic code", "")
+      Row(".sections[0].fields[1].choices[1].summaryValue", "Choice 2 summary value", "")
     )
 
     val res = Translator(json, TextExtractor.gformPaths).fetchRows
