@@ -90,8 +90,7 @@ object Translator {
           case Pure(cursorOp) =>
             (aCursor.replayOne(cursorOp), Wrapper(instruction) :: reducingInProgress, deepTraverseIsDefined)
           case TraverseArray if !deepTraverseIsDefined =>
-            val maybeArray: Option[Json] = aCursor.focus
-            val arraySize: Option[Int] = maybeArray.flatMap(_.asArray).map(_.size)
+            val arraySize: Option[Int] = aCursor.values.map(_.size)
             arraySize.fold((aCursor, reducingInProgress, deepTraverseIsDefined)) { size =>
               (aCursor, DeepTraverse(size) :: Wrapper(Pure(DownArray)) :: reducingInProgress, true)
             }
@@ -136,7 +135,7 @@ class Translator(json: Json, paths: List[List[Instruction]], val topLevelExprDat
   import Translator._
   import Instruction._
 
-  private val smartStringCursors: List[HCursor => ACursor] = {
+  private val onlyRealCursorOps: List[List[CursorOp]] = {
     def loop(instructions: List[Instruction], cursor: HCursor): List[List[Instruction]] = {
       val reducingInProgress: List[ReductionInProgress] = resolveInstruction(instructions, cursor)
       val instructionsList: List[List[Instruction]] = eliminateDeepTraverse(reducingInProgress)
@@ -150,16 +149,19 @@ class Translator(json: Json, paths: List[List[Instruction]], val topLevelExprDat
       }
     }
 
-    val smartStringPaths = paths.map(Instruction.TraverseArray :: _) ++ paths
+    val smartStringPaths = paths.map(Instruction.TraverseArray :: _)
     val topCursor: HCursor = json.hcursor
     val cursorOps: List[List[CursorOp]] =
       smartStringPaths.flatMap { path =>
         loop(path, topCursor).map(generateOpHistory)
       }
 
-    val cursors: List[HCursor => ACursor] = replyCursorOps(cursorOps)
-    cursors
+    cursorOps.filter { history =>
+      json.hcursor.replay(history).succeeded
+    }
   }
+
+  private val smartStringCursors: List[HCursor => ACursor] = replyCursorOps(onlyRealCursorOps)
 
   private def applyOperations[A](
     smartStringOperation: (HCursor, List[HCursor => ACursor]) => HCursor,
