@@ -142,8 +142,8 @@ class SubmissionService(
         )
       )
 
-  def submissionDetails(submissionId: SubmissionId): Future[Submission] =
-    submissionRepo.get(submissionId.idString)
+  def submissionDetails(submissionId: SubmissionId): Future[Option[Submission]] =
+    submissionRepo.find(submissionId.idString)
 
   private def findSubmission(submissionId: SubmissionId) =
     fromFutureA(submissionRepo.get(submissionId.idString))
