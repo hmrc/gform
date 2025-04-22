@@ -24,9 +24,6 @@ import io.circe.CursorOp._
 import io.circe.parser._
 import java.io.{ BufferedOutputStream, BufferedReader, StringReader }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.Constant
-import scala.collection.parallel.CollectionConverters._
-import java.util.concurrent.ForkJoinPool
-import scala.collection.parallel.ForkJoinTaskSupport
 
 case class Lang(en: String, cy: String)
 
@@ -495,12 +492,10 @@ class Translator(json: Json, paths: List[List[Instruction]], val topLevelExprDat
     result.toList
   }
 
-  val instructionSets: List[List[Instruction]] =
+  private val instructionSets: List[List[Instruction]] =
     computeInstructionPathsFromPaths(paths.distinct, json).distinct
-  private val parallelInstructions = instructionSets.par
-  parallelInstructions.tasksupport = new ForkJoinTaskSupport(new ForkJoinPool(Runtime.getRuntime.availableProcessors()))
   private val pathSet: Set[String] =
-    parallelInstructions.flatMap(resolveConcretePaths(json, _)).toList.toSet
+    instructionSets.flatMap(resolveConcretePaths(json, _)).toSet
   val fetchRows: List[Row] =
     fetchRowsFromPaths(json, pathSet) ++ topLevelExprData.toRows
 

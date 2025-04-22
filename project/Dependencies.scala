@@ -48,8 +48,7 @@ object Dependencies {
     "org.apache.poi"                % "poi-ooxml"                         % "5.2.4",
     "org.bouncycastle"              % "bcprov-jdk18on"                    % "1.80",
     "org.bouncycastle"              % "bcpg-jdk18on"                      % "1.80",
-    "org.bouncycastle"              % "bcpkix-jdk18on"                    % "1.80",
-    "org.scala-lang.modules"       %% "scala-parallel-collections"        % "1.0.4"
+    "org.bouncycastle"              % "bcpkix-jdk18on"                    % "1.80"
   )
 
   def test(scope: String = "test") = Seq(
