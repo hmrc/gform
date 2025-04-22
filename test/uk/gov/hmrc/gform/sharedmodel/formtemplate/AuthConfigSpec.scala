@@ -623,6 +623,23 @@ class AuthConfigSpec extends Spec with ScalaCheckDrivenPropertyChecks {
     )
   }
 
+  it should "return error for hmrcVerified auth with minimumCL 50" in {
+    val authConfigValue = toAuthConfig(s"""|{
+                                           |    "authModule": "hmrcVerified",
+                                           |    "ivFailure": "#You are unable to use this service because we have not been able to confirm your identity",
+                                           |    "agentAccess": "denyAnyAgentAffinityUser",
+                                           |    "minimumCL": "50",
+                                           |    "allowOrganisations": false,
+                                           |    "allowSAIndividuals": false
+                                           |  }""".stripMargin)
+    authConfigValue.isError shouldBe true
+    authConfigValue.asInstanceOf[JsError].errors.flatMap(_._2) should contain(
+      JsonValidationError(
+        "Invalid JSON value (50) for custom read of uk.gov.hmrc.gform.sharedmodel.formtemplate.MinimumConfidenceLevel. allowed values are \"200\", \"250\"."
+      )
+    )
+  }
+
   it should "parse hmrcVerified auth with everything" in {
     val authConfigValue = toAuthConfig(s"""|{
                                            |    "authModule": "hmrcVerified",
