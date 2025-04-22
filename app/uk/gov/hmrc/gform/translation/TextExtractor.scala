@@ -382,22 +382,30 @@ class Translator(json: Json, paths: List[List[Instruction]], val topLevelExprDat
   }
 
   private def resolveConcretePaths(json: Json, instructions: List[Instruction]): List[String] = {
+    val pathBuilder = new StringBuilder(128)
+    val result = scala.collection.mutable.ListBuffer[String]()
 
     def getArrayIndex(cursor: HCursor): Option[Int] =
       for {
         parentArray <- cursor.up.focus.flatMap(_.asArray)
         current     <- cursor.focus
-        idx = parentArray.indexWhere(_.noSpaces == current.noSpaces)
+        idx = parentArray.indexWhere(_.equals(current))
         if idx >= 0
       } yield idx
 
     def incrementLastIndex(path: StringBuilder): Unit = {
-      val pattern = """\[(\d+)\]$""".r
-      val asString = path.toString
-      pattern.findFirstMatchIn(asString).foreach { m =>
-        val current = m.group(1).toInt
-        val start = m.start(1) - 1
-        path.replace(start, path.length, s"[${current + 1}]")
+      val lastBracketPos = path.lastIndexOf("[")
+      if (lastBracketPos >= 0) {
+        val closeBracketPos = path.indexOf("]", lastBracketPos)
+        if (closeBracketPos >= 0) {
+          val idxStr = path.substring(lastBracketPos + 1, closeBracketPos)
+          try {
+            val idx = idxStr.toInt
+            path.replace(lastBracketPos + 1, closeBracketPos, (idx + 1).toString)
+          } catch {
+            case _: NumberFormatException =>
+          }
+        }
       }
     }
 
@@ -410,41 +418,40 @@ class Translator(json: Json, paths: List[List[Instruction]], val topLevelExprDat
       if (append) {
         path.append(s"[$index]")
       } else {
-        val str = path.toString
-        val pattern = """^(.*)\[\d+\]$""".r
-        str match {
-          case pattern(prefix) =>
-            path.setLength(0)
-            path.append(prefix)
+        val lastBracketPos = path.lastIndexOf("[")
+        if (lastBracketPos >= 0) {
+          val closeBracketPos = path.indexOf("]", lastBracketPos)
+          if (closeBracketPos >= 0) {
+            path.setLength(lastBracketPos)
             path.append(s"[$index]")
-          case _ =>
+          } else {
             path.append(s"[$index]")
+          }
+        } else {
+          path.append(s"[$index]")
         }
       }
 
     def eval(
       insts: List[Instruction],
       cursor: HCursor,
-      path: StringBuilder,
       wasMoveRight: Boolean = false
-    ): List[String] =
+    ): Unit = {
+      val lenBefore = pathBuilder.length
       insts match {
         case Nil =>
-          List(path.toString)
+          result += pathBuilder.toString
 
         case Pure(DownField(name)) :: rest =>
           cursor.downField(name).success match {
             case Some(h) =>
               val appendIndex = wasMoveRight || cursor.focus.exists(_.isArray)
               getArrayIndex(h).foreach { i =>
-                appendArrayIndex(path, i, append = appendIndex)
+                appendArrayIndex(pathBuilder, i, append = appendIndex)
               }
-              val lenBefore = path.length
-              appendPathSegment(path, name)
-              val res = eval(rest, h, path, wasMoveRight = false)
-              path.setLength(lenBefore)
-              res
-            case None => Nil
+              appendPathSegment(pathBuilder, name)
+              eval(rest, h, false)
+            case None =>
           }
 
         case Pure(DownArray) :: rest =>
@@ -452,60 +459,50 @@ class Translator(json: Json, paths: List[List[Instruction]], val topLevelExprDat
             case Some(h) =>
               val appendIndex = wasMoveRight || cursor.focus.exists(_.isArray)
               getArrayIndex(h).foreach { i =>
-                appendArrayIndex(path, i, append = appendIndex)
+                appendArrayIndex(pathBuilder, i, append = appendIndex)
               }
-              eval(rest, h, path, wasMoveRight = false)
-            case None => Nil
+              eval(rest, h, false)
+            case None =>
           }
 
         case Pure(MoveRight) :: rest =>
           cursor.right.success match {
             case Some(h) =>
-              incrementLastIndex(path)
-              eval(rest, h, path, wasMoveRight = true)
-            case None => Nil
+              incrementLastIndex(pathBuilder)
+              eval(rest, h, wasMoveRight = true)
+            case None =>
           }
 
         case TraverseArray :: rest =>
           cursor.focus.flatMap(_.asArray) match {
             case Some(arr) =>
-              arr.indices.toList.flatMap { idx =>
-                cursor.downN(idx).success.toList.flatMap { h =>
-                  val lenBefore = path.length
-                  path.append(s"[$idx]")
-                  val res = eval(rest, h, path, wasMoveRight = false)
-                  path.setLength(lenBefore)
-                  res
+              for (idx <- arr.indices)
+                cursor.downN(idx).success.foreach { h =>
+                  val arrLenBefore = pathBuilder.length
+                  pathBuilder.append(s"[$idx]")
+                  eval(rest, h, false)
+                  pathBuilder.setLength(arrLenBefore)
                 }
-              }
-            case None => Nil
+            case None =>
           }
 
-        case _ => Nil
+        case _ =>
       }
-
-    // Thread-safe: construct cursor inside method
-    val pathBuilder = new StringBuilder
+      pathBuilder.setLength(lenBefore)
+    }
     val freshCursor = json.hcursor
-    eval(instructions.reverse, freshCursor, pathBuilder)
+    eval(instructions.reverse, freshCursor)
+    result.toList
   }
 
-  val t0 = System.nanoTime()
   val instructionSets: List[List[Instruction]] =
     computeInstructionPathsFromPaths(paths.distinct, json).distinct
-  println(s"✅ Unique instruction sets: ${instructionSets.size}")
-  val t1 = System.nanoTime()
-  println(s"⏱ computeInstructionPathsFromPaths: ${(t1 - t0) / 1_000_000} ms")
-  val parallelInstructions = instructionSets.par
+  private val parallelInstructions = instructionSets.par
   parallelInstructions.tasksupport = new ForkJoinTaskSupport(new ForkJoinPool(Runtime.getRuntime.availableProcessors()))
-  val pathSet: Set[String] =
+  private val pathSet: Set[String] =
     parallelInstructions.flatMap(resolveConcretePaths(json, _)).toList.toSet
-  val t2 = System.nanoTime()
-  println(s"⏱ resolveConcretePaths: ${(t2 - t1) / 1_000_000} ms")
   val fetchRows: List[Row] =
     fetchRowsFromPaths(json, pathSet) ++ topLevelExprData.toRows
-  val t3 = System.nanoTime()
-  println(s"⏱ fetchRowsFromPaths (+ toRows): ${(t3 - t2) / 1_000_000} ms")
 
   val rowsForTranslation: List[TranslatedRow] = fetchRows
     .filterNot(row => ExtractAndTranslate(row.en).translateTexts.isEmpty)
