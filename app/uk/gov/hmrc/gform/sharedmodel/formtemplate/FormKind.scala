@@ -91,7 +91,8 @@ final case class Task(
   declarationSection: Option[DeclarationSection],
   includeIf: Option[IncludeIf],
   caption: Option[SmartString],
-  startIf: Option[IncludeIf]
+  startIf: Option[IncludeIf],
+  notRequiredIf: Option[IncludeIf]
 )
 
 object Task {
@@ -104,5 +105,6 @@ object Task {
       LeafExpr(path + "declarationSection", t.declarationSection) ++
       LeafExpr(path + "includeIf", t.includeIf) ++
       LeafExpr(path + "caption", t.caption) ++
-      LeafExpr(path + "startIf", t.startIf)
+      LeafExpr(path + "startIf", t.startIf) ++
+      LeafExpr(path + "notRequiredIf", t.notRequiredIf)
 }

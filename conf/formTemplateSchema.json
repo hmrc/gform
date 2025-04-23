@@ -584,6 +584,9 @@
               "includeIf": {
                 "type": "string"
               },
+              "notRequiredIf": {
+                "type": "string"
+              },
               "caption": {
                 "$ref": "#/$defs/stringOrEnCyObject"
               },
