@@ -24,7 +24,7 @@ import scala.language.implicitConversions
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.formtemplate.BooleanExprId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.AddressDetail.Country
-import uk.gov.hmrc.gform.sharedmodel.formtemplate._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Contains, _ }
 
 class BooleanExprParserSpec extends AnyFlatSpec with Matchers with EitherValues with OptionValues {
 
@@ -89,6 +89,43 @@ class BooleanExprParserSpec extends AnyFlatSpec with Matchers with EitherValues 
 
     res shouldBe Right(Contains(FormCtx("fieldId"), Constant("1")))
 
+  }
+
+  it should "parse contains with sugar simple or" in {
+    val res = BooleanExprParser.validate("""${fieldId contains (1 || 2)}""")
+
+    res shouldBe Right(Or(Contains(FormCtx("fieldId"), Constant("1")), Contains(FormCtx("fieldId"), Constant("2"))))
+  }
+
+  it should "parse contains with sugar simple and" in {
+    val res = BooleanExprParser.validate("""${fieldId contains (1 && 2)}""")
+
+    res shouldBe Right(And(Contains(FormCtx("fieldId"), Constant("1")), Contains(FormCtx("fieldId"), Constant("2"))))
+  }
+
+  it should "parse contains with sugar complex" in {
+    val res = BooleanExprParser.validate("""${fieldId contains (1 || (2 && 4))}""")
+
+    res shouldBe Right(
+      Or(
+        Contains(FormCtx("fieldId"), Constant("1")),
+        And(Contains(FormCtx("fieldId"), Constant("2")), Contains(FormCtx("fieldId"), Constant("4")))
+      )
+    )
+  }
+
+  it should "parse contains with sugar complex alt" in {
+    val res = BooleanExprParser.validate("""${fieldId contains ((1 || 2 || 4) && 6)}""")
+
+    res shouldBe Right(
+      And(
+        Or(
+          Or(Contains(FormCtx("fieldId"), Constant("1")), Contains(FormCtx("fieldId"), Constant("2"))),
+          Contains(FormCtx("fieldId"), Constant("4"))
+        ),
+        Contains(FormCtx("fieldId"), Constant("6"))
+      )
+    )
   }
 
   it should "parse logical negation expressions" in {

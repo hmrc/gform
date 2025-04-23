@@ -16,21 +16,22 @@
 
 package uk.gov.hmrc.gform.core.parsers
 
-import scala.language.postfixOps
-import java.time.LocalDate
-import scala.util.parsing.combinator._
 import uk.gov.hmrc.gform.core.Opt
+import uk.gov.hmrc.gform.core.parsers.Sugar.{ SugarAnd, SugarExpr, SugarOr }
 import uk.gov.hmrc.gform.formtemplate.BooleanExprId
-import uk.gov.hmrc.gform.sharedmodel.{ DataRetrieve, DataRetrieveDefinitions, DataRetrieveId }
 import uk.gov.hmrc.gform.sharedmodel.dblookup.CollectionName
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.PageLink
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.LookupFnc.{ CountryName, SicDescription }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.SelectionCriteriaValue.{ SelectionCriteriaExpr, SelectionCriteriaReference, SelectionCriteriaSimpleValue }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.UserField.Enrolment
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
+import uk.gov.hmrc.gform.sharedmodel.{ DataRetrieve, DataRetrieveDefinitions, DataRetrieveId }
 
+import java.time.LocalDate
 import scala.annotation.nowarn
+import scala.language.postfixOps
 import scala.util.matching.Regex
+import scala.util.parsing.combinator._
 
 trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
 
@@ -593,6 +594,9 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
     | exprFormCtx ~ ">" ~ exprFormCtx ^^ { case expr1 ~ _ ~ expr2 =>
       GreaterThan(expr1, expr2)
     }
+    | formCtxParse ~ "(?i)\\Qcontains\\E".r ~ "(" ~ parseSugar ~ ")" ^^ { case formCtx ~ _ ~ _ ~ sugar ~ _ =>
+      Sugar.buildContains(formCtx, sugar)
+    }
     | formCtxParse ~ "(?i)\\Qcontains\\E".r ~ exprFormCtx ^^ { case formCtx ~ _ ~ expr =>
       Contains(formCtx, expr)
     }
@@ -657,6 +661,20 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
   lazy val hmrcTaxPeriodInfo: Parser[HmrcTaxPeriodInfo] = ("periodTo" ^^^ HmrcTaxPeriodInfo.PeriodTo
     | "periodFrom" ^^^ HmrcTaxPeriodInfo.PeriodFrom
     | "periodDue" ^^^ HmrcTaxPeriodInfo.PeriodDue)
+
+  ///===============   Syntactic sugar parsers =======
+
+  lazy val sugarExpr: Parser[SugarExpr] = exprFormCtx ^^ (expr => SugarExpr(expr))
+
+  lazy val sugar0: Parser[Sugar] = sugarExpr | "(" ~> parseSugar <~ ")"
+
+  lazy val sugar1: PackratParser[Sugar] = sugar1 ~ "||" ~ sugar0 ^^ { case expr1 ~ _ ~ expr2 =>
+    SugarOr(expr1, expr2)
+  } | sugar0
+
+  lazy val parseSugar: PackratParser[Sugar] = parseSugar ~ "&&" ~ sugar1 ^^ { case expr1 ~ _ ~ expr2 =>
+    SugarAnd(expr1, expr2)
+  } | sugar1
 
   ///===============   expression parser =======
 
