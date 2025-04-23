@@ -397,7 +397,8 @@ object Substituter {
       summarySection = t.summarySection(substitutions),
       declarationSection = t.declarationSection(substitutions),
       includeIf = t.includeIf(substitutions),
-      startIf = t.startIf(substitutions)
+      startIf = t.startIf(substitutions),
+      notRequiredIf = t.notRequiredIf(substitutions)
     )
 
   implicit def taskSectionSubstituter[A](implicit

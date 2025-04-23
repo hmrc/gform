@@ -1528,8 +1528,9 @@ object FormTemplateValidator {
 
             val taskConditions = formTemplate.formKind.fold(_ => Seq.empty[(BooleanExpr, String)])(tasklist =>
               tasklist.sections.toList.flatMap(_.tasks.toList.zipWithIndex.flatMap { case (task, id) =>
-                task.startIf.map(i => i.booleanExpr -> s"${id + 1}. task's startIf") ++ task.includeIf
-                  .map(i => i.booleanExpr -> s"${id + 1}. task's includeIf")
+                task.startIf.map(i => i.booleanExpr -> s"${id + 1}. task's startIf") ++
+                  task.notRequiredIf.map(i => i.booleanExpr -> s"${id + 1}. task's notRequiredIf") ++
+                  task.includeIf.map(i => i.booleanExpr -> s"${id + 1}. task's includeIf")
               })
             )
             (formComponentConditions ++ sectionConditions ++ taskConditions ++ dataRetrieveConditions).map {
