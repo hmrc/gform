@@ -86,24 +86,6 @@ object EnrolmentCheckVerb {
   }
 }
 
-sealed trait MinimumConfidenceLevel extends Product with Serializable
-case object CL200 extends MinimumConfidenceLevel
-case object CL250 extends MinimumConfidenceLevel
-
-object MinimumConfidenceLevel {
-
-  private val cl200 = "200"
-  private val cl250 = "250"
-
-  implicit val format: Format[MinimumConfidenceLevel] =
-    ADTFormat.formatEnumeration(cl200 -> CL200, cl250 -> CL250)
-
-  def asString(cl: MinimumConfidenceLevel): String = cl match {
-    case CL200 => cl200
-    case CL250 => cl250
-  }
-}
-
 sealed trait AuthModule extends Product with Serializable
 
 object AuthModule {
@@ -249,7 +231,7 @@ object AuthConfig {
         maybeEnrolmentSection          <- (json \ "enrolmentSection").validateOpt[EnrolmentSection]
         maybeEnrolmentCheck            <- (json \ "enrolmentCheck").validateOpt[EnrolmentCheckVerb]
         maybeIvFailure                 <- (json \ "ivFailure").validateOpt[LocalisedString]
-        maybeMinimumCL                 <- (json \ "minimumCL").validateOpt[MinimumConfidenceLevel]
+        maybeMinimumCL                 <- (json \ "minimumCL").validateOpt[String]
         maybeEmailCodeTemplate         <- (json \ "emailCodeTemplate").validateOpt[LocalisedEmailTemplateId]
         maybeEmailUseInfo              <- (json \ "emailUseInfo").validateOpt[LocalisedString]
         maybeEmailCodeHelp             <- (json \ "emailCodeHelp").validateOpt[LocalisedString]
@@ -283,7 +265,7 @@ object AuthConfig {
                                 HmrcVerified(
                                   ivFailure,
                                   maybeAgentAccess,
-                                  MinimumConfidenceLevel.asString(maybeMinimumCL),
+                                  maybeMinimumCL,
                                   allowOrganisations,
                                   allowSAIndividuals
                                 )
