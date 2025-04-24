@@ -6543,6 +6543,58 @@ class JsonSchemeValidatorSpec extends FunSuite {
   }
 
   test(
+    "validateJson accepts the form when a multiple underscored keys are present"
+  ) {
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": [
+              {
+                "en": "test label 1",
+                "_en": "test label underscored",
+                "includeIf": "1=1",
+                "_includeIf": "2=2"
+              },
+              {
+                "en": "test label 2",
+                "_en": "test label 2 underscored"
+              }
+            ],
+            "type": "choice",
+            "choices": [
+              {
+                "en": "en choice 1",
+                "_en": "en choice underscored",
+                "cy": "cy choice 1",
+                "_cy": "cy choice underscored",
+                "dynamic": "dynamic.one",
+                "hint": {
+                  "en": "en hint 1",
+                  "_en": "en hint underscored",
+                  "cy": "cy hint 1",
+                  "_cy": "cy hint underscored"
+                },
+                "value": "NONE",
+                "_includeIf": "1=1"
+              },
+              {
+                "en": "en choice 2"
+              }
+            ]
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = validateJson(jsonTemplate)
+
+    val expectedResult = Right(())
+
+    assertEquals(result, expectedResult)
+  }
+
+  test(
     "validateJson accepts the form when a task contains the property caption as a string"
   ) {
     val testProperties =
