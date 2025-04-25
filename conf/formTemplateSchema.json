@@ -241,7 +241,8 @@
           "$ref": "#/$defs/stringOrEnCyObject"
         },
         "minimumCL": {
-          "$ref": "#/$defs/stringOrEnCyObject"
+          "type": "string",
+          "pattern": "^(200|250)$"
         },
         "allowOrganisations": {
           "type": "boolean"
