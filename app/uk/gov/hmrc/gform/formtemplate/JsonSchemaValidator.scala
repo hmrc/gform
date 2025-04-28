@@ -34,7 +34,7 @@ object JsonSchemaValidator {
     parser.parse(json) match {
       case Right(originalJson) =>
         val strippedJson = removeUnderscoreKeysAndCommentsPreservingTopId(originalJson)
-        validateJson(strippedJson, originalJson, schema, errorParser)
+        validateJson(strippedJson, schema, errorParser)
 
       case Left(parsingFailure) =>
         Left(SchemaValidationException("Json error: " + parsingFailure))
@@ -42,7 +42,6 @@ object JsonSchemaValidator {
 
   private def validateJson(
     filteredJson: Json,
-    originalJson: Json,
     schema: String,
     errorParser: (NonEmptyList[ValidationError], Json, Json) => SchemaValidationException
   ): Either[SchemaValidationException, Unit] =
