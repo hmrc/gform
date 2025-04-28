@@ -17,10 +17,9 @@
 package uk.gov.hmrc.gform.formtemplate
 
 import cats.data.{ NonEmptyList, ValidatedNel }
-import io.circe.Json
+import io.circe.{ Json, JsonObject }
 import io.circe.jawn.JawnParser
-import io.circe.schema.Schema
-import io.circe.schema.ValidationError
+import io.circe.schema.{ Schema, ValidationError }
 import uk.gov.hmrc.gform.exceptions.SchemaValidationException
 
 object JsonSchemaValidator {
@@ -31,24 +30,51 @@ object JsonSchemaValidator {
     json: String,
     schema: String,
     errorParser: (NonEmptyList[ValidationError], Json, Json) => SchemaValidationException
-  ): Either[SchemaValidationException, Unit] = parser.parse(json) match {
-    case Right(json)          => validateJson(json, schema, errorParser)
-    case Left(parsingFailure) => Left(SchemaValidationException("Json error: " + parsingFailure))
-  }
+  ): Either[SchemaValidationException, Unit] =
+    parser.parse(json) match {
+      case Right(originalJson) =>
+        val strippedJson = removeUnderscoreKeysAndCommentsPreservingTopId(originalJson)
+        validateJson(strippedJson, schema, errorParser)
+
+      case Left(parsingFailure) =>
+        Left(SchemaValidationException("Json error: " + parsingFailure))
+    }
 
   private def validateJson(
-    json: Json,
+    filteredJson: Json,
     schema: String,
     errorParser: (NonEmptyList[ValidationError], Json, Json) => SchemaValidationException
   ): Either[SchemaValidationException, Unit] =
     parser.parse(schema) match {
-      case Left(parsingFailure) => Left(SchemaValidationException("Schema error: " + parsingFailure))
-      case Right(schema) =>
-        val formTemplateSchema: Schema = Schema.load(schema)
-        val validated: ValidatedNel[ValidationError, Unit] = formTemplateSchema.validate(json)
+      case Left(parsingFailure) =>
+        Left(SchemaValidationException("Schema error: " + parsingFailure))
+      case Right(schemaJson) =>
+        val formTemplateSchema: Schema = Schema.load(schemaJson)
+        val validated: ValidatedNel[ValidationError, Unit] = formTemplateSchema.validate(filteredJson)
 
         validated.leftMap { errors =>
-          errorParser(errors, schema, json)
+          errorParser(errors, schemaJson, filteredJson)
         }.toEither
     }
+
+  private def removeUnderscoreKeysAndCommentsPreservingTopId(json: Json): Json =
+    json.arrayOrObject(
+      json,
+      arr => Json.fromValues(arr.map(removeUnderscoreKeysAndCommentsPreservingTopId)),
+      obj =>
+        Json.fromJsonObject(
+          JsonObject.fromIterable(
+            obj.toIterable
+              .collect {
+                case ("_id", value) => "_id" -> value //keep _id at top level (form ID)
+                case (key, value) if !key.startsWith("_") && key != "comment" =>
+                  key -> value
+              }
+              .map { case (k, v) =>
+                val cleanedValue = if (v.isObject || v.isArray) removeUnderscoreKeysAndCommentsPreservingTopId(v) else v
+                k -> cleanedValue
+              }
+          )
+        )
+    )
 }
