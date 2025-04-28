@@ -3,20 +3,6 @@
   "title": "gForm form config schema",
   "description": "Validation of any form posted to gForm platform",
   "type": "object",
-  "patternProperties": {
-    "^(comment)": {
-      "$ref": "#/$defs/stringOrEnCyObject"
-    },
-    "^(_)": {
-      "type": [
-        "array",
-        "boolean",
-        "number",
-        "object",
-        "string"
-      ]
-    }
-  },
   "additionalProperties": false,
   "properties": {
     "_id": {
@@ -430,20 +416,6 @@
   "$defs": {
     "sections": {
       "type": "object",
-      "patternProperties": {
-        "^(comment)": {
-          "$ref": "#/$defs/stringOrEnCyObject"
-        },
-        "^(_)": {
-          "type": [
-            "array",
-            "boolean",
-            "number",
-            "object",
-            "string"
-          ]
-        }
-      },
       "additionalProperties": false,
       "properties": {
         "id": {
@@ -721,20 +693,6 @@
     },
     "fields": {
       "type": "object",
-      "patternProperties": {
-        "^(comment)": {
-          "$ref": "#/$defs/stringOrEnCyObject"
-        },
-        "^(_)": {
-          "type": [
-            "array",
-            "boolean",
-            "number",
-            "object",
-            "string"
-          ]
-        }
-      },
       "additionalProperties": false,
       "properties": {
         "id": {
@@ -782,17 +740,6 @@
               },
               {
                 "type": "object",
-                "patternProperties": {
-                  "^(_)": {
-                    "type": [
-                      "array",
-                      "boolean",
-                      "number",
-                      "object",
-                      "string"
-                    ]
-                  }
-                },
                 "properties": {
                   "en": {
                     "type": "string"
@@ -1403,11 +1350,6 @@
           "type": "array",
           "items": {
             "type": "object",
-            "patternProperties": {
-              "^(_)": {
-                "type": "string"
-              }
-            },
             "properties": {
               "includeIf": {
                 "type": "string"
@@ -1433,11 +1375,6 @@
         "type": "object",
         "oneOf": [
           {
-            "patternProperties": {
-              "^(_)": {
-                "type": "string"
-              }
-            },
             "properties": {
               "type": {
                 "type": "string",
@@ -1476,11 +1413,6 @@
             "additionalProperties": false
           },
           {
-            "patternProperties": {
-              "^(_)": {
-                "type": "string"
-              }
-            },
             "properties": {
               "type": {
                 "type": "string",
@@ -1515,11 +1447,6 @@
             "additionalProperties": false
           },
           {
-            "patternProperties": {
-              "^(_)": {
-                "type": "string"
-              }
-            },
             "properties": {
               "type": {
                 "type": "string",
@@ -1558,11 +1485,6 @@
             "additionalProperties": false
           },
           {
-            "patternProperties": {
-              "^(_)": {
-                "type": "string"
-              }
-            },
             "properties": {
               "type": {
                 "type": "string",
@@ -1617,11 +1539,6 @@
             "additionalProperties": false
           },
           {
-            "patternProperties": {
-              "^(_)": {
-                "type": "string"
-              }
-            },
             "properties": {
               "type": {
                 "type": "string",
@@ -1657,11 +1574,6 @@
             "additionalProperties": false
           },
           {
-            "patternProperties": {
-              "^(_)": {
-                "type": "string"
-              }
-            },
             "properties": {
               "type": {
                 "type": "string",
@@ -1704,11 +1616,6 @@
             "additionalProperties": false
           },
           {
-            "patternProperties": {
-              "^(_)": {
-                "type": "string"
-              }
-            },
             "properties": {
               "type": {
                 "type": "string",
@@ -1743,11 +1650,6 @@
             "additionalProperties": false
           },
           {
-            "patternProperties": {
-              "^(_)": {
-                "type": "string"
-              }
-            },
             "properties": {
               "type": {
                 "type": "string",

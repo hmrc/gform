@@ -33,7 +33,7 @@ object JsonSchemaValidator {
   ): Either[SchemaValidationException, Unit] =
     parser.parse(json) match {
       case Right(originalJson) =>
-        val strippedJson = removeUnderscoreKeysPreservingTopId(originalJson)
+        val strippedJson = removeUnderscoreKeysAndCommentsPreservingTopId(originalJson)
         validateJson(strippedJson, originalJson, schema, errorParser)
 
       case Left(parsingFailure) =>
@@ -58,21 +58,21 @@ object JsonSchemaValidator {
         }.toEither
     }
 
-  private def removeUnderscoreKeysPreservingTopId(json: Json): Json =
+  private def removeUnderscoreKeysAndCommentsPreservingTopId(json: Json): Json =
     json.arrayOrObject(
       json,
-      arr => Json.fromValues(arr.map(removeUnderscoreKeysPreservingTopId)),
+      arr => Json.fromValues(arr.map(removeUnderscoreKeysAndCommentsPreservingTopId)),
       obj =>
         Json.fromJsonObject(
           JsonObject.fromIterable(
             obj.toIterable
               .collect {
-                case ("_id", value) => "_id" -> value //keep _id at top level
-                case (key, value) if !key.startsWith("_") =>
+                case ("_id", value) => "_id" -> value //keep _id at top level (form ID)
+                case (key, value) if !key.startsWith("_") && key != "comment" =>
                   key -> value
               }
               .map { case (k, v) =>
-                val cleanedValue = if (v.isObject || v.isArray) removeUnderscoreKeysPreservingTopId(v) else v
+                val cleanedValue = if (v.isObject || v.isArray) removeUnderscoreKeysAndCommentsPreservingTopId(v) else v
                 k -> cleanedValue
               }
           )
