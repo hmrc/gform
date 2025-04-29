@@ -87,7 +87,6 @@ trait Verifier {
              FormTemplateValidator.validateDateFunctionReferenceConstraints(formTemplate, allExpressions).toEither
            )
       _ <- fromOptA(FormTemplateValidator.validateDateConstructExpressions(allExpressions).toEither)
-      _ <- fromOptA(FormTemplateValidator.validateSectionShortNames(formTemplate).toEither)
       _ <- fromOptA(FormTemplateValidator.validateSummarySection(formTemplate).toEither)
       _ <- fromOptA(FormTemplateValidator.validateAddToListCYAPage(formTemplate).toEither)
       _ <- fromOptA(FormTemplateValidator.validateAddToListDefaultPage(formTemplate).toEither)
