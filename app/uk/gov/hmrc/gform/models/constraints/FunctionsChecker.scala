@@ -23,6 +23,17 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 class FunctionsChecker(formTemplate: FormTemplate, allExpressions: List[ExprWithPath]) {
 
   private val allowedCountIds: Set[FormComponentId] = formTemplate.formKind.allSections
+    .collect {
+      case s: Section.AddToList => Seq(s.addAnotherQuestion.id) ++ s.pages.toList.flatMap(_.fields.map(_.id)).toSet
+      case s: Section.NonRepeatingPage =>
+        s.page.fields.collect { case fc @ IsMultiFileUpload(fu) =>
+          fc.id
+        }
+    }
+    .flatten
+    .toSet
+
+  private val allowedIndexIds: Set[FormComponentId] = formTemplate.formKind.allSections
     .collect { case s: Section.AddToList =>
       Seq(s.addAnotherQuestion.id) ++ s.pages.toList.flatMap(_.fields.map(_.id)).toSet
     }
@@ -45,9 +56,9 @@ class FunctionsChecker(formTemplate: FormTemplate, allExpressions: List[ExprWith
       )
     case ReferenceInfo.CountExpr(path, Count(formComponentId)) if !allowedCountIds(formComponentId) =>
       Invalid(
-        s"${path.path}: $formComponentId cannot be use with .count function. Only AddToList id can be used with .count"
+        s"${path.path}: $formComponentId cannot be use with .count function. Only MultiFile upload and AddToList id can be used with .count"
       )
-    case ReferenceInfo.IndexExpr(path, Index(formComponentId)) if !allowedCountIds(formComponentId) =>
+    case ReferenceInfo.IndexExpr(path, Index(formComponentId)) if !allowedIndexIds(formComponentId) =>
       Invalid(
         s"${path.path}: $formComponentId cannot be use with .index function. Only AddToList id can be used with .index"
       )
