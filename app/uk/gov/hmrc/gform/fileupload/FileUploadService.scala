@@ -22,12 +22,13 @@ import uk.gov.hmrc.gform.core.FutureSyntax
 import uk.gov.hmrc.gform.dms.FileAttachment
 import uk.gov.hmrc.gform.objectstore.{ Envelope, MetadataXml, ObjectStoreAlgebra, ReconciliationId, RouteEnvelopeRequest }
 import uk.gov.hmrc.gform.objectstore.ObjectStoreService.FileIds._
-import uk.gov.hmrc.gform.sdes.workitem.DestinationWorkItemAlgebra
+import uk.gov.hmrc.gform.sdes.dms.DmsWorkItemAlgebra
+import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AllowedFileTypes, FormTemplateId }
-import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination.Dms
+import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination
 import uk.gov.hmrc.gform.submission.{ PdfAndXmlSummaries, Submission }
 import uk.gov.hmrc.gform.time.TimeProvider
 import uk.gov.hmrc.http.HeaderCarrier
@@ -42,7 +43,7 @@ class FileUploadService(
   fileUploadFrontendConnector: FileUploadFrontendConnector,
   timeModule: TimeProvider = new TimeProvider,
   objectStoreService: ObjectStoreAlgebra[Future],
-  destinationWorkItemAlgebra: DestinationWorkItemAlgebra[Future]
+  dmsWorkItemAlgebra: DmsWorkItemAlgebra[Future]
 )(implicit ex: ExecutionContext)
     extends FileUploadAlgebra[Future] with FileDownloadAlgebra[Future] {
   private val logger = LoggerFactory.getLogger(getClass)
@@ -159,12 +160,20 @@ class FileUploadService(
       _ <- uploadFormDataF
       _ <- uploadRoboticsContentF
       _ <- uploadMetadataXmlF
-      _ <-
-        if (objectStore)
-          destinationWorkItemAlgebra.pushWorkItem(submission.envelopeId, formTemplateId, submission.submissionRef, Dms)
-        else fileUploadConnector.routeEnvelope(RouteEnvelopeRequest(submission.envelopeId, "dfs", "DMS"))
+      _ <- if (objectStore)
+             zipAndPushWorkItem(submission.envelopeId, formTemplateId, submission.submissionRef)
+           else fileUploadConnector.routeEnvelope(RouteEnvelopeRequest(submission.envelopeId, "dfs", "DMS"))
     } yield ()
   }
+
+  private def zipAndPushWorkItem(envelopeId: EnvelopeId, formTemplateId: FormTemplateId, submissionRef: SubmissionRef)(
+    implicit hc: HeaderCarrier
+  ): Future[Unit] =
+    for {
+      objectSummary <-
+        objectStoreService.zipFiles(envelopeId, SdesDestination.Dms.objectStorePaths(envelopeId))
+      _ <- dmsWorkItemAlgebra.pushWorkItem(envelopeId, formTemplateId, submissionRef, objectSummary)
+    } yield ()
 
   private def getContentType(contentType: String) = contentType match {
     case "json" => ContentType.`application/json`

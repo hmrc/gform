@@ -33,7 +33,8 @@ import uk.gov.hmrc.gform.envelope.EnvelopeAlgebra
 import uk.gov.hmrc.gform.history.DateFilter
 import uk.gov.hmrc.gform.objectstore.{ ObjectStoreAlgebra, ObjectStoreService }
 import uk.gov.hmrc.gform.repo.Repo
-import uk.gov.hmrc.gform.sdes.workitem.DestinationWorkItemAlgebra
+import uk.gov.hmrc.gform.sdes.datastore.DataStoreWorkItemAlgebra
+import uk.gov.hmrc.gform.sdes.dms.DmsWorkItemAlgebra
 import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
@@ -45,7 +46,6 @@ import uk.gov.hmrc.mongo.play.json.Codecs
 import uk.gov.hmrc.objectstore.client.ObjectSummaryWithMd5
 
 import java.time.{ Instant, LocalDateTime }
-import java.util.Base64
 import scala.concurrent.{ ExecutionContext, Future }
 
 trait SdesAlgebra[F[_]] {
@@ -55,6 +55,7 @@ trait SdesAlgebra[F[_]] {
     envelopeId: EnvelopeId,
     formTemplateId: FormTemplateId,
     submissionRef: SubmissionRef,
+    notifyRequest: SdesNotifyRequest,
     destination: SdesDestination
   )(implicit
     hc: HeaderCarrier
@@ -94,12 +95,12 @@ trait SdesAlgebra[F[_]] {
 class SdesService(
   sdesConnector: SdesConnector,
   repoSdesSubmission: Repo[SdesSubmission],
-  destinationWorkItemAlgebra: DestinationWorkItemAlgebra[Future],
+  dmsWorkItemAlgebra: DmsWorkItemAlgebra[Future],
+  dataStoreWorkItemAlgebra: DataStoreWorkItemAlgebra[Future],
   envelopeAlgebra: EnvelopeAlgebra[Future],
   sdesConfig: SdesConfig,
   sdesHistoryAlgebra: SdesHistoryAlgebra[Future],
-  objectStoreAlgebra: ObjectStoreAlgebra[Future],
-  fileLocationUrl: String
+  objectStoreAlgebra: ObjectStoreAlgebra[Future]
 )(implicit
   ec: ExecutionContext,
   m: Materializer
@@ -111,49 +112,31 @@ class SdesService(
     envelopeId: EnvelopeId,
     formTemplateId: FormTemplateId,
     submissionRef: SubmissionRef,
+    notifyRequest: SdesNotifyRequest,
     destination: SdesDestination
   )(implicit
     hc: HeaderCarrier
   ): Future[HttpResponse] = {
     val sdesSubmission =
       SdesSubmission.createSdesSubmission(correlationId, envelopeId, formTemplateId, submissionRef, destination)
+
     val sdesRouting = sdesSubmission.sdesDestination.sdesRouting(sdesConfig)
+    val sdesHistory =
+      SdesHistory.create(
+        envelopeId,
+        correlationId,
+        NotificationStatus.FileReady,
+        notifyRequest.file.name,
+        None,
+        Some(notifyRequest)
+      )
 
     for {
-      objSummary <- prepareFileForNotification(envelopeId, destination)
-      notifyRequest = createNotifyRequest(objSummary, correlationId, sdesRouting)
-      sdesHistory =
-        SdesHistory.create(
-          envelopeId,
-          correlationId,
-          NotificationStatus.FileReady,
-          notifyRequest.file.name,
-          None,
-          Some(notifyRequest)
-        )
       res <- sdesConnector.notifySDES(notifyRequest, sdesRouting)
       _   <- saveSdesSubmission(sdesSubmission.copy(submittedAt = Some(Instant.now), status = FileReady))
       _   <- sdesHistoryAlgebra.save(sdesHistory)
     } yield res
   }
-
-  private def createNotifyRequest(
-    objSummary: ObjectSummaryWithMd5,
-    correlationId: CorrelationId,
-    dataStoreRouting: SdesRouting
-  ): SdesNotifyRequest =
-    SdesNotifyRequest(
-      dataStoreRouting.informationType,
-      FileMetaData(
-        dataStoreRouting.recipientOrSender,
-        objSummary.location.fileName,
-        s"$fileLocationUrl${objSummary.location.asUri}",
-        FileChecksum(value = Base64.getDecoder.decode(objSummary.contentMd5.value).map("%02x".format(_)).mkString),
-        objSummary.contentLength,
-        List()
-      ),
-      FileAudit(correlationId.value)
-    )
 
   override def saveSdesSubmission(sdesSubmission: SdesSubmission): Future[Unit] =
     repoSdesSubmission.upsert(sdesSubmission).toFuture
@@ -274,12 +257,12 @@ class SdesService(
   ): Future[HttpResponse] = {
     val sdesDestination = sdesSubmission.sdesDestination
     val sdesRouting = sdesDestination.sdesRouting(sdesConfig)
-    val notifyRequest =
-      createNotifyRequest(
-        objWithSummary,
-        sdesSubmission._id,
-        sdesRouting
-      )
+    val notifyRequest = sdesDestination match {
+      case SdesDestination.DataStore | SdesDestination.DataStoreLegacy | SdesDestination.HmrcIlluminate =>
+        dataStoreWorkItemAlgebra.createNotifyRequest(objWithSummary, sdesSubmission._id.value, sdesRouting)
+      case SdesDestination.Dms =>
+        dmsWorkItemAlgebra.createNotifyRequest(objWithSummary, sdesSubmission._id)
+    }
     val sdesHistory = SdesHistory.create(
       sdesSubmission.envelopeId,
       sdesSubmission._id,
@@ -401,58 +384,52 @@ class SdesService(
     sdesDestination match {
       case SdesDestination.DataStore | SdesDestination.DataStoreLegacy | SdesDestination.HmrcIlluminate =>
         objectStoreAlgebra.deleteFile(paths.ephemeral, fileName)
-      case SdesDestination.Dms | SdesDestination.InfoArchive => objectStoreAlgebra.deleteZipFile(envelopeId, paths)
+      case SdesDestination.Dms => objectStoreAlgebra.deleteZipFile(envelopeId, paths)
     }
   }
 
   private def isLocked(submission: SdesSubmission): Boolean =
     submission.lockedAt.exists(_.isAfter(Instant.now().minusMillis(sdesConfig.lockTTL)))
 
-  private def prepareFileForNotification(envelopeId: EnvelopeId, destination: SdesDestination)(implicit
-    hc: HeaderCarrier
-  ): Future[ObjectSummaryWithMd5] = {
-    val paths = destination.objectStorePaths(envelopeId)
-    destination match {
-      case SdesDestination.DataStore | SdesDestination.DataStoreLegacy | SdesDestination.HmrcIlluminate =>
-        val fileName = s"${envelopeId.value}.json"
-        for {
-          maybeObject <- objectStoreAlgebra.getFile(paths.permanent, fileName)
-          objSummary <- maybeObject match {
-                          case Some(obj) =>
-                            val byteStringFuture: Future[ByteString] =
-                              obj.content.runFold(ByteString.empty)(_ ++ _)
-
-                            byteStringFuture.flatMap { concatenatedByteString =>
-                              objectStoreAlgebra.uploadFileWithDir(
-                                paths.ephemeral,
-                                fileName,
-                                concatenatedByteString,
-                                ContentType.`application/json`
-                              )
-                            }
-                          case None =>
-                            Future.failed(
-                              new Exception(
-                                s"File ${envelopeId.value}.json not found in the object store."
-                              )
-                            )
-                        }
-        } yield objSummary
-      case SdesDestination.Dms =>
-        objectStoreAlgebra.zipFiles(envelopeId, paths)
-      case SdesDestination.InfoArchive =>
-        objectStoreAlgebra.zipAndEncrypt(envelopeId, paths)
-    }
-  }
-
   override def resend(correlationId: CorrelationId)(implicit hc: HeaderCarrier): Future[Unit] =
     for {
       sdesSubmission <- findSdesSubmission(correlationId)
       result <- sdesSubmission match {
                   case Some(submission) =>
+                    val sdesDestination = submission.sdesDestination
+                    val paths = sdesDestination.objectStorePaths(submission.envelopeId)
                     for {
-                      _   <- prepareFileForNotification(submission.envelopeId, submission.sdesDestination)
-                      res <- createWorkItem(submission)
+                      objSummary <- sdesDestination match {
+                                      case SdesDestination.DataStore | SdesDestination.DataStoreLegacy |
+                                          SdesDestination.HmrcIlluminate =>
+                                        val fileName = s"${submission.envelopeId.value}.json"
+                                        for {
+                                          maybeObject <- objectStoreAlgebra.getFile(paths.permanent, fileName)
+                                          objSummary <- maybeObject match {
+                                                          case Some(obj) =>
+                                                            val byteStringFuture: Future[ByteString] =
+                                                              obj.content.runFold(ByteString.empty)(_ ++ _)
+
+                                                            byteStringFuture.flatMap { concatenatedByteString =>
+                                                              objectStoreAlgebra.uploadFileWithDir(
+                                                                paths.ephemeral,
+                                                                fileName,
+                                                                concatenatedByteString,
+                                                                ContentType.`application/json`
+                                                              )
+                                                            }
+                                                          case None =>
+                                                            Future.failed(
+                                                              new Exception(
+                                                                s"File ${submission.envelopeId.value}.json not found in the object store."
+                                                              )
+                                                            )
+                                                        }
+                                        } yield objSummary
+                                      case SdesDestination.Dms =>
+                                        objectStoreAlgebra.zipFiles(submission.envelopeId, paths)
+                                    }
+                      res <- createWorkItem(submission, objSummary)
                     } yield res
                   case None =>
                     Future.failed(
@@ -461,15 +438,28 @@ class SdesService(
                 }
     } yield result
 
-  private def createWorkItem(sdesSubmission: SdesSubmission): Future[Unit] = {
+  private def createWorkItem(sdesSubmission: SdesSubmission, objWithSummary: ObjectSummaryWithMd5): Future[Unit] = {
     val sdesDestination = sdesSubmission.sdesDestination
+    val sdesRouting = sdesDestination.sdesRouting(sdesConfig)
     for {
-      _ <- destinationWorkItemAlgebra.pushWorkItem(
-             sdesSubmission.envelopeId,
-             sdesSubmission.formTemplateId,
-             sdesSubmission.submissionRef,
-             sdesDestination
-           )
+      _ <- sdesDestination match {
+             case SdesDestination.DataStore | SdesDestination.DataStoreLegacy | SdesDestination.HmrcIlluminate =>
+               dataStoreWorkItemAlgebra.pushWorkItem(
+                 sdesSubmission.envelopeId,
+                 sdesSubmission.formTemplateId,
+                 sdesSubmission.submissionRef,
+                 objWithSummary,
+                 sdesRouting,
+                 sdesDestination
+               )
+             case SdesDestination.Dms =>
+               dmsWorkItemAlgebra.pushWorkItem(
+                 sdesSubmission.envelopeId,
+                 sdesSubmission.formTemplateId,
+                 sdesSubmission.submissionRef,
+                 objWithSummary
+               )
+           }
       _ <-
         saveSdesSubmission(
           sdesSubmission.copy(

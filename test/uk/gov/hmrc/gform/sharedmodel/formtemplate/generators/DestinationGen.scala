@@ -17,12 +17,11 @@
 package uk.gov.hmrc.gform.sharedmodel.formtemplate.generators
 import org.scalacheck.Gen
 import uk.gov.hmrc.gform.sharedmodel.EmailVerifierService
-import uk.gov.hmrc.gform.sharedmodel.form.{ FormId, FormStatus }
+import uk.gov.hmrc.gform.sharedmodel.form.FormStatus
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.Expr
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationIncludeIf.HandlebarValue
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DataOutputFormat, Destination, DestinationId, DestinationIncludeIf, ProjectId, TemplateType }
 import uk.gov.hmrc.gform.sharedmodel.notifier.{ NotifierPersonalisationFieldId, NotifierTemplateId }
-import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination.{ DataStore, DataStoreLegacy, Dms, HmrcIlluminate, InfoArchive }
 
 trait DestinationGen {
   def destinationIdGen: Gen[DestinationId] =
@@ -116,62 +115,6 @@ trait DestinationGen {
       multiRequestPayload,
       None
     )
-
-  def sdesDestinationGen = Gen.oneOf(List(Dms, HmrcIlluminate, DataStoreLegacy, DataStore, InfoArchive))
-  def taxpayerIdGen: Gen[Expr] = ExprGen.exprGen()
-
-  def dataStoreGen: Gen[Destination.DataStore] =
-    for {
-      id                       <- destinationIdGen
-      destination              <- sdesDestinationGen
-      includeIf                <- includeIfGen()
-      failOnError              <- PrimitiveGen.booleanGen
-      formId                   <- dmsFormIdGen
-      taxpayerId               <- taxpayerIdGen
-      includeSessionInfo       <- PrimitiveGen.booleanGen
-      handlebarPayload         <- PrimitiveGen.booleanGen
-      formDataPayload          <- PrimitiveGen.booleanGen
-      validateHandlebarPayload <- PrimitiveGen.booleanGen
-    } yield Destination
-      .DataStore(
-        id,
-        destination,
-        includeIf,
-        failOnError,
-        FormId(formId),
-        "1",
-        taxpayerId,
-        "regime",
-        includeSessionInfo,
-        handlebarPayload,
-        formDataPayload,
-        None,
-        None,
-        validateHandlebarPayload,
-        None
-      )
-
-  def infoArchiveGen: Gen[Destination.InfoArchive] =
-    for {
-      id               <- destinationIdGen
-      includeIf        <- includeIfGen()
-      failOnError      <- PrimitiveGen.booleanGen
-      formId           <- dmsFormIdGen
-      paymentReference <- ExprGen.exprGen()
-      nino             <- Gen.option(ExprGen.exprGen())
-      utr              <- Gen.option(ExprGen.exprGen())
-      postalCode       <- Gen.option(ExprGen.exprGen())
-    } yield Destination
-      .InfoArchive(
-        id,
-        includeIf,
-        failOnError,
-        FormId(formId),
-        paymentReference,
-        nino,
-        utr,
-        postalCode
-      )
 
   def handlebarsHttpApiGen(
     includeIf: Option[DestinationIncludeIf] = None,

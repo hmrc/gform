@@ -24,7 +24,7 @@ import uk.gov.hmrc.gform.notifier.NotifierAlgebra
 import uk.gov.hmrc.gform.sdes.{ SdesConfig, SdesRouting, WelshDefaults }
 import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormData, FormId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.{ HmrcDms, InfoArchive, SubmissionConsolidator }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.{ HmrcDms, SubmissionConsolidator }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationIncludeIf.HandlebarValue
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.{ DestinationGen, FormTemplateGen, PrimitiveGen }
@@ -371,9 +371,7 @@ class DestinationSubmitterSpec
           submitter,
           None,
           LangADT.En,
-          DestinationEvaluation(
-            List(DestinationResult(hmrcDms.id, None, Some(si.customerId), None, None, None, None, None))
-          ),
+          DestinationEvaluation(List(DestinationResult(hmrcDms.id, None, Some(si.customerId), None))),
           UserSession.empty
         ) shouldBe Right(None)
     }
@@ -468,9 +466,7 @@ class DestinationSubmitterSpec
           submitter,
           None,
           LangADT.En,
-          DestinationEvaluation(
-            List(DestinationResult(hmrcDms.id, None, Some(si.customerId), None, None, None, None, None))
-          ),
+          DestinationEvaluation(List(DestinationResult(hmrcDms.id, None, Some(si.customerId), None))),
           UserSession.empty
         ) shouldBe Right(None)
     }
@@ -521,9 +517,7 @@ class DestinationSubmitterSpec
           submitter,
           None,
           LangADT.En,
-          DestinationEvaluation(
-            List(DestinationResult(hmrcDms.id, None, Some(si.customerId), None, None, None, None, None))
-          ),
+          DestinationEvaluation(List(DestinationResult(hmrcDms.id, None, Some(si.customerId), None))),
           UserSession.empty
         )
 
@@ -579,18 +573,7 @@ class DestinationSubmitterSpec
           Some(formData),
           LangADT.En,
           DestinationEvaluation(
-            List(
-              DestinationResult(
-                submissionConsolidator.id,
-                None,
-                Some(submissionInfo.customerId),
-                None,
-                None,
-                None,
-                None,
-                None
-              )
-            )
+            List(DestinationResult(submissionConsolidator.id, None, Some(submissionInfo.customerId), None))
           ),
           UserSession.empty
         ) shouldBe Right(None)
@@ -689,18 +672,7 @@ class DestinationSubmitterSpec
           Some(formData),
           LangADT.En,
           DestinationEvaluation(
-            List(
-              DestinationResult(
-                submissionConsolidator.id,
-                None,
-                Some(submissionInfo.customerId),
-                None,
-                None,
-                None,
-                None,
-                None
-              )
-            )
+            List(DestinationResult(submissionConsolidator.id, None, Some(submissionInfo.customerId), None))
           ),
           UserSession.empty
         ) shouldBe Right(None)
@@ -749,18 +721,7 @@ class DestinationSubmitterSpec
           Some(formData),
           LangADT.En,
           DestinationEvaluation(
-            List(
-              DestinationResult(
-                submissionConsolidator.id,
-                None,
-                Some(submissionInfo.customerId),
-                None,
-                None,
-                None,
-                None,
-                None
-              )
-            )
+            List(DestinationResult(submissionConsolidator.id, None, Some(submissionInfo.customerId), None))
           ),
           UserSession.empty
         )
@@ -779,8 +740,7 @@ class DestinationSubmitterSpec
     handlebarsSubmitter: HandlebarsHttpApiSubmitter[F],
     destinationAuditer: DestinationAuditAlgebra[F],
     handlebarsTemplateProcessor: HandlebarsTemplateProcessor,
-    submissionConsolidatorService: SubmissionConsolidatorAlgebra[F],
-    infoArchiveSubmitter: InfoArchiveSubmitterAlgebra[F]
+    submissionConsolidatorService: SubmissionConsolidatorAlgebra[F]
   )(implicit F: MonadError[F, Throwable]) {
 
     def expectHmrcDmsSubmission(
@@ -823,26 +783,6 @@ class DestinationSubmitterSpec
         )
         .expects(destination, submissionInfo, accumulatedModel, model, Some(formData), hc)
         .returning(F.raiseError(new Exception(error)))
-      this
-    }
-
-    def expectInfoArchiveSubmission(
-      si: DestinationSubmissionInfo,
-      modelTree: HandlebarsModelTree,
-      result: Option[DestinationResult],
-      infoArchive: InfoArchive,
-      l: LangADT
-    )(implicit F: Applicative[F]): SubmitterParts[F] = {
-      (infoArchiveSubmitter
-        .apply(
-          _: DestinationSubmissionInfo,
-          _: HandlebarsModelTree,
-          _: Option[DestinationResult],
-          _: InfoArchive,
-          _: LangADT
-        )(_: HeaderCarrier))
-        .expects(si, modelTree, result, infoArchive, l, hc)
-        .returning(F.pure(()))
       this
     }
 
@@ -966,11 +906,9 @@ class DestinationSubmitterSpec
     val destinationAuditer = mock[DestinationAuditAlgebra[Possible]]
     val submissionConsolidator = mock[SubmissionConsolidatorAlgebra[Possible]]
     val dataStoreSubmitter = mock[DataStoreSubmitterAlgebra[Possible]]
-    val infoArchiveSubmitter = mock[InfoArchiveSubmitterAlgebra[Possible]]
     val sdesRouting = SdesRouting("api-key", "information-type", "recipient-or-sender")
     val defaults = WelshDefaults("WLU-WCC-XDFSWelshLanguageService", "WLU")
-    val sdesConfig =
-      SdesConfig("base-path", "file-location-url", sdesRouting, sdesRouting, sdesRouting, 100L, defaults, sdesRouting)
+    val sdesConfig = SdesConfig("base-path", "file-location-url", sdesRouting, sdesRouting, sdesRouting, 100L, defaults)
     val submitter =
       new DestinationSubmitter[Possible](
         dmsSubmitter,
@@ -980,7 +918,6 @@ class DestinationSubmitterSpec
         Some(destinationAuditer),
         submissionConsolidator,
         dataStoreSubmitter,
-        infoArchiveSubmitter,
         sdesConfig,
         handlebarsTemplateProcessor
       )
@@ -991,8 +928,7 @@ class DestinationSubmitterSpec
       handlebarsSubmitter,
       destinationAuditer,
       handlebarsTemplateProcessor,
-      submissionConsolidator,
-      infoArchiveSubmitter
+      submissionConsolidator
     )
   }
 

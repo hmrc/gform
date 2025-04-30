@@ -21,7 +21,7 @@ import com.typesafe.config.{ Config => TypeSafeConfig }
 import play.api.Configuration
 import play.api.mvc.ControllerComponents
 import uk.gov.hmrc.gform.notifier.NotifierConfig
-import uk.gov.hmrc.gform.sdes.{ SdesAlertConfig, SdesConfig, SdesKeyAndCredentialsApiConfig, SdesRenotifyConfig }
+import uk.gov.hmrc.gform.sdes.{ SdesAlertConfig, SdesConfig, SdesRenotifyConfig }
 import uk.gov.hmrc.gform.sharedmodel.config.ExposedConfig
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.ProfileName
 import uk.gov.hmrc.http.Authorization
@@ -50,10 +50,6 @@ class ConfigModule(
   val isProd: Boolean = typesafeConfig.getString("play.http.router") =!= "testOnlyDoNotUseInAppConf.Routes"
 
   val sdesConfig: SdesConfig = ConfigSource.default.at("microservice.services.sdes").loadOrThrow[SdesConfig]
-  val sdesKeyAndCredentialsApiConfig: SdesKeyAndCredentialsApiConfig =
-    ConfigSource.default
-      .at("microservice.services.sdes-key-and-credentials-api")
-      .loadOrThrow[SdesKeyAndCredentialsApiConfig]
 
   val controllerConfigs = ControllerConfigs.fromConfig(configuration)
 
