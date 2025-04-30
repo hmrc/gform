@@ -27,6 +27,7 @@ final case class SdesWorkItem(
   envelopeId: EnvelopeId,
   formTemplateId: FormTemplateId,
   submissionRef: SubmissionRef,
+  sdesNotifyRequest: SdesNotifyRequest,
   destination: SdesDestination
 )
 

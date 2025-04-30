@@ -116,24 +116,22 @@ class ObjectStoreConnector(
     hc: HeaderCarrier
   ): Future[ObjectSummaryWithMd5] =
     objectStoreClient.zip(
-      from = objectStorePaths.permanent,
-      to = objectStorePaths.ephemeral.file(s"${objectStorePaths.zipFilePrefix}${envelopeId.value}$zipExtension")
+      from = directory(envelopeId.value),
+      to = objectStorePaths.ephemeral.file(s"${envelopeId.value}$zipExtension")
     )
 
   def deleteZipFile(envelopeId: EnvelopeId, objectStorePaths: ObjectStorePaths)(implicit
     hc: HeaderCarrier
   ): Future[Unit] =
     objectStoreClient.deleteObject(
-      path = objectStorePaths.ephemeral.file(s"${objectStorePaths.zipFilePrefix}${envelopeId.value}$zipExtension")
+      path = objectStorePaths.ephemeral.file(s"${envelopeId.value}$zipExtension")
     )
 
   def getZipFile(envelopeId: EnvelopeId, objectStorePaths: ObjectStorePaths)(implicit
     hc: HeaderCarrier
   ): Future[Option[client.Object[Source[ByteString, NotUsed]]]] =
     objectStoreClient
-      .getObject(path =
-        objectStorePaths.ephemeral.file(s"${objectStorePaths.zipFilePrefix}${envelopeId.value}$zipExtension")
-      )
+      .getObject(path = objectStorePaths.ephemeral.file(s"${envelopeId.value}$zipExtension"))
 
   def uploadFromUrl(from: java.net.URL, envelopeId: EnvelopeId, fileName: String)(implicit
     hc: HeaderCarrier

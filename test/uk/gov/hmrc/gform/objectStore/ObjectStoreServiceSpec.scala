@@ -22,7 +22,7 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import uk.gov.hmrc.gform.envelope.EnvelopeAlgebra
-import uk.gov.hmrc.gform.sdes.SdesConnector
+import uk.gov.hmrc.gform.objectstore.{ ObjectStoreConnector, ObjectStoreService }
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 import uk.gov.hmrc.gform.sharedmodel.envelope.{ EnvelopeData, EnvelopeFile }
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
@@ -166,10 +166,9 @@ class ObjectStoreServiceSpec extends AnyFlatSpec with Matchers with ScalaFutures
   def fixture(): Fixture = {
     val objectStoreConnector = mock[ObjectStoreConnector]
     val envelopeAlgebra = mock[EnvelopeAlgebra[Future]]
-    val sdesConnector = mock[SdesConnector]
 
     Fixture(
-      new ObjectStoreService(objectStoreConnector, envelopeAlgebra, sdesConnector),
+      new ObjectStoreService(objectStoreConnector, envelopeAlgebra),
       objectStoreConnector,
       envelopeAlgebra
     )

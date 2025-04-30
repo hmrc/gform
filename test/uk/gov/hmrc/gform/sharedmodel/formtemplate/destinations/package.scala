@@ -81,19 +81,6 @@ package object destinations {
           |  ${optionalField("jsonSchema", Option(jsonSchema))}
           |}""".stripMargin
 
-    case infoArchive: Destination.InfoArchive =>
-      import infoArchive._
-      s"""|{
-          |  "id": "${infoArchive.id}",
-          |  "includeIf":  "${getHandlebarValue(destination.includeIf)}",
-          |  ${optionalField("failOnError", Option(destination.failOnError), true)}
-          |  "formId": "${infoArchive.formId}",
-          |  "paymentReference": ${TextExpression.format.writes(TextExpression(paymentReference))},
-          |  ${optionalField("nino", nino.map(n => TextExpression.format.writes(TextExpression(n))))},
-          |  ${optionalField("utr", utr.map(u => TextExpression.format.writes(TextExpression(u))))},
-          |  ${optionalField("postalCode", postalCode.map(p => TextExpression.format.writes(TextExpression(p))))}
-          |}""".stripMargin
-
     case submissionConsolidator: Destination.SubmissionConsolidator =>
       s"""|{
           |  "id": "${submissionConsolidator.id.id}",

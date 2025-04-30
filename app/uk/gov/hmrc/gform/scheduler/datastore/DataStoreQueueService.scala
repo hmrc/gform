@@ -38,7 +38,7 @@ class DataStoreQueueService(
   override def sendWorkItem(sdesWorkItem: WorkItem[SdesWorkItem]): Future[Unit] = {
     implicit val hc = HeaderCarrier()
     val workItem = sdesWorkItem.item
-    logger.debug(s"sending a notification for ${workItem.envelopeId} in sendWorkItem to data-store")
+    logger.debug(s"sending a notification ${workItem.sdesNotifyRequest} in sendWorkItem for data-store")
 
     dataStoreAlgebra
       .notifySDES(
@@ -46,6 +46,7 @@ class DataStoreQueueService(
         workItem.envelopeId,
         workItem.formTemplateId,
         workItem.submissionRef,
+        workItem.sdesNotifyRequest,
         workItem.destination
       )
       .void(ec)
