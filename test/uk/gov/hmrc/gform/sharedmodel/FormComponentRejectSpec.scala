@@ -136,9 +136,6 @@ class FormComponentRejectSpec extends Spec with TableDrivenPropertyChecks {
       ("nonexistent-field-reference-in-if-else",    "sections.fields.[id=textA].label: foo doesn't exist in the form"),
       ("nonexistent-field-reference",               "sections.fields.[id=textA].label: textB doesn't exist in the form"),
       ("nonexistent-field-reference-in-destination","destinations.paymentReference: paymentReference doesn't exist in the form"),
-      ("empty-shortname-non-repeated",              "shortName is empty for title: 'Page A'. If you want to hide page title on summary page, use 'presentationHint': 'invisiblePageTitle' instead."),
-      ("empty-shortname-repeated",                  "shortName is empty for title: 'Page A'. If you want to hide page title on summary page, use 'presentationHint': 'invisiblePageTitle' instead."),
-      ("empty-shortname-add-to-list",               "shortName is empty for title: 'Page $n'. If you want to hide page title on summary page, use 'presentationHint': 'invisiblePageTitle' instead."),
       // format: on
     )
     val appConfig = AppConfig.loadOrThrow(ConfigFactory.load())

@@ -303,32 +303,6 @@ object FormTemplateValidator {
     exprValidationResults.combine(pageValidationResults.combineAll)
   }
 
-  def validateSectionShortNames(formTemplate: FormTemplate): ValidationResult = {
-
-    def checkEmpty(maybeSmartString: Option[SmartString]): Boolean =
-      maybeSmartString.fold(false) { smartString =>
-        smartString.internals.forall(_.localised.value(LangADT.En).trim.isEmpty)
-      }
-
-    def checkPage(page: Page): ValidationResult =
-      if (checkEmpty(page.shortName)) {
-        val title = page.title.defaultRawValue(LangADT.En)
-        Invalid(
-          s"shortName is empty for title: '$title'. If you want to hide page title on summary page, use 'presentationHint': 'invisiblePageTitle' instead."
-        )
-      } else Valid
-
-    val isEmptyShortNamePresent: List[ValidationResult] =
-      formTemplate.formKind.allSections.flatMap {
-        case s: Section.NonRepeatingPage => checkPage(s.page) :: Nil
-        case s: Section.RepeatingPage    => checkPage(s.page) :: Nil
-        case s: Section.AddToList        => s.pages.toList.map(page => checkPage(page))
-      }
-
-    isEmptyShortNamePresent.find(!_.isValid).getOrElse(Valid)
-
-  }
-
   def validateReferencesConstraints(
     formTemplate: FormTemplate,
     allExpressions: List[ExprWithPath]
