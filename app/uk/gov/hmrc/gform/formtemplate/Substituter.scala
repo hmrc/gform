@@ -251,12 +251,13 @@ object Substituter {
       case InformationMessage(infoType, infoText, summaryValue) =>
         InformationMessage(infoType, infoText(substitutions), summaryValue(substitutions))
       case f @ FileUpload(_, _) => f
-      case f @ MultiFileUpload(_, _, hint, uploadAnotherLabel) =>
+      case f @ MultiFileUpload(_, _, hint, uploadAnotherLabel, continueText) =>
         MultiFileUpload(
           fileSizeLimit = f.fileSizeLimit,
           allowedFileTypes = f.allowedFileTypes,
           hint = f.hint(substitutions),
-          uploadAnotherLabel = f.uploadAnotherLabel(substitutions)
+          uploadAnotherLabel = f.uploadAnotherLabel(substitutions),
+          continueText = f.continueText(substitutions)
         )
       case t @ Time(_, _) => t
       case p @ PostcodeLookup(_, _, _) =>

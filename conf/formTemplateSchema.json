@@ -877,6 +877,9 @@
         "infoText": {
           "$ref": "#/$defs/stringOrEnCyObject"
         },
+        "continueText": {
+          "$ref": "#/$defs/stringOrEnCyObject"
+        },
         "infoType": {
           "type": "string",
           "enum": [

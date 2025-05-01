@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.gform.formtemplate
 
+import cats.data.NonEmptyList
 import org.scalatest.flatspec.AnyFlatSpecLike
 import org.scalatest.matchers.should.Matchers
 import play.api.libs.json.Json
@@ -819,6 +820,69 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
       false,
       None
     )
+    result shouldBe Right(expected)
+  }
+
+  it should "parse multiFile component" in {
+    val json =
+      Json.parse("""
+                   |{
+                   |  "id": "fileTest",
+                   |  "type": "multiFile",
+                   |  "label": "Upload a file",
+                   |  "uploadAnotherLabel": "Upload another file",
+                   |  "labelSize": "m",
+                   |  "errorShortNameStart": "Supporting document",
+                   |  "errorShortName": "supporting document",
+                   |  "helpText": "This file must be a PDF, JPG, DOCX or PPTX, maximum 10MB in size.",
+                   |  "continueText": "If you have finished uploading your files you can continue to the next page",
+                   |  "fileSizeLimit": 10,
+                   |  "allowedFileTypes": [
+                   |    "pdf",
+                   |    "jpg",
+                   |    "docx",
+                   |    "pptx"
+                   |  ]
+                   |}
+                   |""".stripMargin)
+
+    val formComponentMaker = new FormComponentMaker(json)
+    val result = formComponentMaker.optFieldValue()
+
+    val expected = FormComponent(
+      FormComponentId("fileTest"),
+      MultiFileUpload(
+        Some(10),
+        Some(AllowedFileTypes(NonEmptyList("pdf", List("jpg", "docx", "pptx")))),
+        None,
+        Some(toSmartString("Upload another file")),
+        Some(toSmartString("If you have finished uploading your files you can continue to the next page"))
+      ),
+      toSmartString("Upload a file"),
+      isPageHeading = false,
+      Some(toSmartString("This file must be a PDF, JPG, DOCX or PPTX, maximum 10MB in size.")),
+      None,
+      None,
+      None,
+      mandatory = true,
+      editable = true,
+      submissible = true,
+      derived = false,
+      onlyShowOnSummary = false,
+      None,
+      None,
+      List(),
+      None,
+      Some(Medium),
+      Some(toSmartString("supporting document")),
+      Some(toSmartString("Supporting document")),
+      None,
+      notPII = false,
+      None,
+      None,
+      None
+    )
+
     result shouldBe Right(expected)
   }
 
