@@ -28,7 +28,8 @@ class UpscanService(
         upscanCallbackSuccess.reference,
         upscanCallbackSuccess.fileStatus,
         ConfirmationFailure.AllOk,
-        Instant.now()
+        Instant.now(),
+        Some(upscanCallbackSuccess.uploadDetails.fileName)
       )
     )
 
@@ -42,7 +43,8 @@ class UpscanService(
         reference,
         fileStatus,
         confirmationFailure,
-        Instant.now()
+        Instant.now(),
+        None
       )
     )
 

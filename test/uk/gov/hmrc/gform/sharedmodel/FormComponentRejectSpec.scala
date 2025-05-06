@@ -129,7 +129,7 @@ class FormComponentRejectSpec extends Spec with TableDrivenPropertyChecks {
     val table = Table(
       // format: off
       ("json",                                      "expectedMessage"),
-      ("invalid-count-usage",                       "sections.fields.[id=lastInfo].infoText: textA cannot be use with .count function. Only AddToList id can be used with .count"),
+      ("invalid-count-usage",                       "sections.fields.[id=lastInfo].infoText: textA cannot be use with .count function. Only MultiFile upload and AddToList id can be used with .count"),
       ("invalid-sum-usage",                         "sections.fields.[id=lastInfo].infoText: textA cannot be use with .sum function. Only numeric fields from Group component, Repeated section or AddToList section can be used with .sum function"),
       ("invalid-repeated-section-cross-reference",  "fields.[id=fieldB].label: fieldA belongs to different Repeated section"),
       ("invalid-group-cross-reference",             "fields.[id=groupB].[id=fieldB].label: fieldA belongs to different Group component"),

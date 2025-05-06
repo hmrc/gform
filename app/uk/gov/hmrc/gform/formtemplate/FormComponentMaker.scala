@@ -795,7 +795,14 @@ class FormComponentMaker(json: JsValue) {
     maybeAllowedFileTypes   <- toOpt((json \ "allowedFileTypes").validateOpt[AllowedFileTypes], "/allowedFileTypes")
     maybeHint               <- toOpt((json \ "hint").validateOpt[SmartString], "/hint")
     maybeUploadAnotherLabel <- toOpt((json \ "uploadAnotherLabel").validateOpt[SmartString], "/uploadAnotherLabel")
-  } yield MultiFileUpload(maybeFileSizeLimit, maybeAllowedFileTypes, maybeHint, maybeUploadAnotherLabel)
+    maybeContinueText       <- toOpt((json \ "continueText").validateOpt[SmartString], "/continueText")
+  } yield MultiFileUpload(
+    maybeFileSizeLimit,
+    maybeAllowedFileTypes,
+    maybeHint,
+    maybeUploadAnotherLabel,
+    maybeContinueText
+  )
 
   private lazy val infoOpt: Opt[InformationMessage] =
     for {

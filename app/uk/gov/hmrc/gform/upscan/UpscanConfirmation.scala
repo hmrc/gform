@@ -25,7 +25,8 @@ case class UpscanConfirmation(
   _id: UpscanReference,
   status: UpscanFileStatus,
   confirmationFailure: ConfirmationFailure,
-  confirmedAt: Instant
+  confirmedAt: Instant,
+  filename: Option[String]
 )
 
 object UpscanConfirmation {
