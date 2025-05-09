@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.gform
 
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponent, Number, PositiveNumber, Sterling, Text, TextArea }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponent, Number, PositiveNumber, Sterling, Text, TextArea, WholeSterling }
 
 package object ops {
 
@@ -25,6 +25,11 @@ package object ops {
       case Text(_: Sterling, _, _, _, _, _, _)  => true
       case TextArea(_: Sterling, _, _, _, _, _) => true
       case _                                    => false
+    }
+    def isWholeSterling = formComponent.`type` match {
+      case Text(_: WholeSterling, _, _, _, _, _, _)  => true
+      case TextArea(_: WholeSterling, _, _, _, _, _) => true
+      case _                                         => false
     }
     def isNumber = formComponent.`type` match {
       case Text(Number(_, _, _, _), _, _, _, _, _, _)  => true
@@ -37,6 +42,7 @@ package object ops {
       case _                                                   => false
     }
 
-    def isNumeric = formComponent.isNumber || formComponent.isPositiveNumber || formComponent.isSterling
+    def isNumeric =
+      formComponent.isNumber || formComponent.isPositiveNumber || formComponent.isSterling || formComponent.isWholeSterling
   }
 }
