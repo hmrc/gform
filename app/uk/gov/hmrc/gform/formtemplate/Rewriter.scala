@@ -424,12 +424,30 @@ trait Rewriter {
     val rewriteIncludeIfRules: Possible[List[(IncludeIf, IncludeIf)]] =
       includeIfs.traverse { includeIf =>
         rewrite(includeIf.booleanExpr)
-          .map(booleanExpr => includeIf -> IncludeIf(booleanExpr)): Possible[(IncludeIf, IncludeIf)]
+          .map { booleanExpr =>
+            val disableIncludeIfs = formTemplate.overrides.fold(false)(_.disableIncludeIfs.getOrElse(false))
+            val includeIfUpd =
+              if (disableIncludeIfs)
+                IncludeIf(IsTrue)
+              else
+                IncludeIf(booleanExpr)
+
+            includeIf -> includeIfUpd
+          }: Possible[(IncludeIf, IncludeIf)]
       }
     val rewriteValidIfRules: Possible[List[(ValidIf, ValidIf)]] =
       validIfs.traverse { validIf =>
         rewrite(validIf.booleanExpr)
-          .map(booleanExpr => validIf -> ValidIf(booleanExpr)): Possible[(ValidIf, ValidIf)]
+          .map { booleanExpr =>
+            val disableValidIfs = formTemplate.overrides.fold(false)(_.disableValidIfs.getOrElse(false))
+            val validIfUpd =
+              if (disableValidIfs)
+                ValidIf(IsTrue)
+              else
+                ValidIf(booleanExpr)
+
+            validIf -> validIfUpd
+          }: Possible[(ValidIf, ValidIf)]
       }
 
     // Updating of FormTemplate with rewritten IfElse expression would be complex, so we are not going to do it.
@@ -491,11 +509,20 @@ trait Rewriter {
         case otherwise => replaceFormComponent(formComponent)
       }
 
-      def replaceFormComponent(formComponent: FormComponent): FormComponent = formComponent.copy(
-        validIf = replaceValidIf(formComponent.validIf),
-        includeIf = replaceIncludeIf(formComponent.includeIf),
-        validators = formComponent.validators.map(replaceValidator)
-      )
+      def replaceFormComponent(formComponent: FormComponent): FormComponent = {
+        val disableUploads = formTemplate.overrides.fold(false)(_.disableUploads.getOrElse(false))
+        val component = formComponent match {
+          case fc @ IsFileUpload(_) if disableUploads      => fc.copy(mandatory = false)
+          case fc @ IsMultiFileUpload(_) if disableUploads => fc.copy(mandatory = false)
+          case otherwise                                   => otherwise
+        }
+
+        component.copy(
+          validIf = replaceValidIf(formComponent.validIf),
+          includeIf = replaceIncludeIf(formComponent.includeIf),
+          validators = formComponent.validators.map(replaceValidator)
+        )
+      }
 
       def replaceFields(fields: List[FormComponent]): List[FormComponent] = fields.map(replaceFormComponentNested)
 
@@ -550,10 +577,14 @@ trait Rewriter {
           i.copy(value = replaceIncludeIf(Some(includeIf)).getOrElse(IncludeIf(IsTrue)))
       }
 
-      def replaceRedirects(redirects: Option[NonEmptyList[RedirectCtx]]) =
-        redirects.flatMap(
-          _.toList.map(r => r.copy(`if` = replaceIncludeIf(Some(r.`if`)).getOrElse(r.`if`))).toNel
-        )
+      def replaceRedirects(maybeRedirects: Option[NonEmptyList[RedirectCtx]]) =
+        maybeRedirects.flatMap { redirects =>
+          val disableRedirects = formTemplate.overrides.fold(false)(_.disableRedirects.getOrElse(false))
+          if (disableRedirects)
+            None
+          else
+            redirects.toList.map(r => r.copy(`if` = replaceIncludeIf(Some(r.`if`)).getOrElse(r.`if`))).toNel
+        }
 
       def replaceConfirmationRedirects(redirects: NonEmptyList[ConfirmationRedirect]) =
         redirects.map(r => r.copy(`if` = replaceIncludeIf(Some(r.`if`)).getOrElse(r.`if`)))
@@ -578,6 +609,15 @@ trait Rewriter {
           }
         }
 
+      def replaceContinueIf(maybeContinueIf: Option[ContinueIf]): Option[ContinueIf] =
+        maybeContinueIf.map { continueIf =>
+          val disableContinueIfs = formTemplate.overrides.fold(false)(_.disableContinueIfs.getOrElse(false))
+          if (disableContinueIfs)
+            ContinueIf.Continue
+          else
+            continueIf
+        }
+
       def updateSection(section: Section): Section =
         section match {
           case s: Section.NonRepeatingPage =>
@@ -587,7 +627,8 @@ trait Rewriter {
                 fields = replaceFields(s.page.fields),
                 redirects = replaceRedirects(s.page.redirects),
                 confirmation = replaceConfirmation(s.page.confirmation),
-                dataRetrieve = replaceDataRetrieveIf(s.page.includeIf, s.page.dataRetrieve)
+                dataRetrieve = replaceDataRetrieveIf(s.page.includeIf, s.page.dataRetrieve),
+                continueIf = replaceContinueIf(s.page.continueIf)
               )
             )
           case s: Section.RepeatingPage =>
@@ -597,7 +638,8 @@ trait Rewriter {
                 fields = replaceFields(s.page.fields),
                 redirects = replaceRedirects(s.page.redirects),
                 confirmation = replaceConfirmation(s.page.confirmation),
-                dataRetrieve = replaceDataRetrieveIf(s.page.includeIf, s.page.dataRetrieve)
+                dataRetrieve = replaceDataRetrieveIf(s.page.includeIf, s.page.dataRetrieve),
+                continueIf = replaceContinueIf(s.page.continueIf)
               )
             )
           case s: Section.AddToList =>
@@ -612,7 +654,8 @@ trait Rewriter {
                   redirects = replaceRedirects(page.redirects),
                   confirmation = replaceConfirmation(page.confirmation),
                   caption = page.caption.orElse(s.caption),
-                  dataRetrieve = replaceDataRetrieveIf(page.includeIf, page.dataRetrieve)
+                  dataRetrieve = replaceDataRetrieveIf(page.includeIf, page.dataRetrieve),
+                  continueIf = replaceContinueIf(page.continueIf)
                 )
               ),
               fields = replaceFieldsNel(s.fields),
