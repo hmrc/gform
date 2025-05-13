@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.gform.submission
 
+import org.apache.commons.text.StringEscapeUtils
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.json4s.native.JsonMethods
 import org.json4s.native.Printer.compact
@@ -170,7 +171,7 @@ object PdfAndXmlSummariesFactory {
             val xml = XmlGeneratorService.xmlDec + <data xmlns:xfa="http://www.xfa.org/schema/xfa-data/1.0/">
               {body}
             </data>
-            org.apache.commons.text.StringEscapeUtils.unescapeXml(xml)
+            StringEscapeUtils.unescapeXml(xml)
           }
         case DataOutputFormat.JSON =>
           Some(
@@ -204,7 +205,8 @@ object PdfAndXmlSummariesFactory {
                   now,
                   l,
                   envelopeId,
-                  filledHandlebarTemplate
+                  filledHandlebarTemplate,
+                  sanitizeRequired = true
                 )
               }
               </data>
@@ -212,9 +214,12 @@ object PdfAndXmlSummariesFactory {
             try {
               val prettyPrinter = new PrettyPrinter(1000, 2, minimizeEmpty = true)
               Some(XmlGeneratorService.xmlDec + "\n" + prettyPrinter.formatNodes(filledHandlebarWithMetadata))
+                .map(StringEscapeUtils.unescapeXml)
             } catch {
               case e: Exception =>
-                throw new RuntimeException(s"XML formatting failed for robotic handlebars: ${e.getMessage}")
+                throw new RuntimeException(
+                  s"XML formatting failed for robotic handlebars: ${e.getMessage}, form template id: ${formTemplateId.value}"
+                )
             }
           }
       }
