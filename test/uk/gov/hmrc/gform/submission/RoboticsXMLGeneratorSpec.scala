@@ -269,7 +269,8 @@ case object RoboticsXMLGeneratorSpec extends Spec {
         dateSubmitted,
         lEn,
         Some(envelopeId),
-        formData
+        formData,
+        sanitizeRequired = true
       ) shouldBe expected
     RoboticsXMLGenerator
       .apply(
@@ -279,7 +280,8 @@ case object RoboticsXMLGeneratorSpec extends Spec {
         dateSubmittedBST,
         lCy,
         Some(envelopeId),
-        formData
+        formData,
+        sanitizeRequired = true
       ) shouldBe expectedBST
   }
 

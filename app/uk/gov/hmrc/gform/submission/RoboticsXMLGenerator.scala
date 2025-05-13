@@ -25,7 +25,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue.{ ArrayNode, ObjectStructure, TextNode }
 import uk.gov.hmrc.gform.sharedmodel.structuredform.{ Field, RoboticsXml, StructuredFormValue }
 
-import scala.xml.{ Elem, NodeSeq }
+import scala.xml.{ Elem, NodeSeq, SAXParseException, Text }
 
 object RoboticsXMLGenerator {
 
@@ -52,13 +52,28 @@ object RoboticsXMLGenerator {
     now: Instant,
     l: LangADT,
     maybeEnvelopeId: Option[EnvelopeId],
-    filledHandlebarTemplate: String
+    filledHandlebarTemplate: String,
+    sanitizeRequired: Boolean
   ): NodeSeq =
     // Used for XML produced with a handlebar template
     <gform id={formId.value} dms-id={dmsId} submission-reference={submissionRef.withoutHyphens}>{
       dateSubmitted(now)
     }{datetimeSubmitted(now)}{userLanguage(l)}{maybeEnvelopeId.map(correlationId).getOrElse("")}{
-      xml.XML.loadStringNodes(filledHandlebarTemplate)
+      try {
+        val xmlNodes = xml.XML.loadStringNodes(filledHandlebarTemplate)
+        if (sanitizeRequired) sanitizeXml(xmlNodes) else xmlNodes
+      } catch {
+        case ex: SAXParseException =>
+          throw new RuntimeException(
+            s"Malformed XML for form template ID '${formId.value}': ${ex.getMessage}",
+            ex
+          )
+        case ex: Exception =>
+          throw new RuntimeException(
+            s"Unexpected error during XML parsing for form template ID '${formId.value}'",
+            ex
+          )
+      }
     }</gform>
 
   private val replacements =
@@ -133,4 +148,13 @@ object RoboticsXMLGenerator {
         case _                   => acc
       }
     }
+
+  private def sanitizeXml(nodes: NodeSeq): NodeSeq = nodes.map {
+    case elem: Elem =>
+      elem.copy(child = sanitizeXml(elem.child))
+    case Text(text) =>
+      Text(sanitizeContent(text))
+    case other =>
+      other
+  }
 }
