@@ -287,8 +287,13 @@ class DestinationSubmitter[M[_]](
     )
     dataStore.validateSchema(d, payload) match {
       case Left(message) =>
-        val json = Json.parse(payload)
-        val payloadWithoutPII = Json.prettyPrint(replaceStringsWithLengths(json))
+        val payloadWithoutPII =
+          try {
+            val json = Json.parse(payload)
+            Json.prettyPrint(replaceStringsWithLengths(json))
+          } catch {
+            case e: Exception => s"Failed to parse JSON payload: ${e.getMessage}"
+          }
         throw new RuntimeException(
           s"Schema validation failed for submission id '${submissionInfo.formId.value}': $message \nPayload: $payloadWithoutPII"
         )
