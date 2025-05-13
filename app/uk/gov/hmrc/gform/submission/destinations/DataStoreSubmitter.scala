@@ -32,6 +32,7 @@ import uk.gov.hmrc.gform.submission.handlebars.{ FocussedHandlebarsModelTree, Ha
 import uk.gov.hmrc.gform.submission.{ DataStoreFileGenerator, RoboticsXMLGenerator }
 import org.json4s.native.JsonMethods
 import org.json4s.native.Printer.compact
+import org.slf4j.LoggerFactory
 import uk.gov.hmrc.gform.formtemplate.{ HandlebarsSchemaErrorParser, JsonSchemaValidator }
 import uk.gov.hmrc.gform.objectstore.ObjectStoreAlgebra
 import uk.gov.hmrc.gform.sdes.datastore.DataStoreWorkItemAlgebra
@@ -49,6 +50,7 @@ class DataStoreSubmitter(
 )(implicit
   ec: ExecutionContext
 ) extends DataStoreSubmitterAlgebra[FOpt] {
+  private val logger = LoggerFactory.getLogger(getClass)
 
   // Throws an exception, but we cannot recover from it, so it is not reflected in a type as Option[String]
   override def generatePayload(
@@ -116,6 +118,7 @@ class DataStoreSubmitter(
     if (dataStore.validateHandlebarPayload) {
       dataStore.jsonSchema match {
         case Some(schema) =>
+          logger.debug(s"Validating json schema for payload: ${replacePII(payload)}, schema: ${schema.toString}")
           JsonSchemaValidator.checkSchema(
             payload,
             schema.toString,

@@ -209,8 +209,13 @@ object PdfAndXmlSummariesFactory {
               }
               </data>
 
-            val prettyPrinter = new PrettyPrinter(1000, 2, minimizeEmpty = true)
-            Some(XmlGeneratorService.xmlDec + "\n" + prettyPrinter.formatNodes(filledHandlebarWithMetadata))
+            try {
+              val prettyPrinter = new PrettyPrinter(1000, 2, minimizeEmpty = true)
+              Some(XmlGeneratorService.xmlDec + "\n" + prettyPrinter.formatNodes(filledHandlebarWithMetadata))
+            } catch {
+              case e: Exception =>
+                throw new RuntimeException(s"XML formatting failed for robotic handlebars: ${e.getMessage}")
+            }
           }
       }
   }
