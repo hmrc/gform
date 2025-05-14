@@ -424,30 +424,12 @@ trait Rewriter {
     val rewriteIncludeIfRules: Possible[List[(IncludeIf, IncludeIf)]] =
       includeIfs.traverse { includeIf =>
         rewrite(includeIf.booleanExpr)
-          .map { booleanExpr =>
-            val disableIncludeIfs = formTemplate.overrides.fold(false)(_.disableIncludeIfs.getOrElse(false))
-            val includeIfUpd =
-              if (disableIncludeIfs)
-                IncludeIf(IsTrue)
-              else
-                IncludeIf(booleanExpr)
-
-            includeIf -> includeIfUpd
-          }: Possible[(IncludeIf, IncludeIf)]
+          .map(booleanExpr => includeIf -> IncludeIf(booleanExpr)): Possible[(IncludeIf, IncludeIf)]
       }
     val rewriteValidIfRules: Possible[List[(ValidIf, ValidIf)]] =
       validIfs.traverse { validIf =>
         rewrite(validIf.booleanExpr)
-          .map { booleanExpr =>
-            val disableValidIfs = formTemplate.overrides.fold(false)(_.disableValidIfs.getOrElse(false))
-            val validIfUpd =
-              if (disableValidIfs)
-                ValidIf(IsTrue)
-              else
-                ValidIf(booleanExpr)
-
-            validIf -> validIfUpd
-          }: Possible[(ValidIf, ValidIf)]
+          .map(booleanExpr => validIf -> ValidIf(booleanExpr)): Possible[(ValidIf, ValidIf)]
       }
 
     // Updating of FormTemplate with rewritten IfElse expression would be complex, so we are not going to do it.
@@ -478,15 +460,19 @@ trait Rewriter {
     } yield {
       val includeIfRulesLookup: Map[IncludeIf, IncludeIf] = includeIfRules.toMap
       val validIfRulesLookup: Map[ValidIf, ValidIf] = validIfRules.toMap
+      val disableIncludeIfs: Boolean = formTemplate.overrides.fold(false)(_.disableIncludeIfs.getOrElse(false))
+      val disableValidIfs: Boolean = formTemplate.overrides.fold(false)(_.disableValidIfs.getOrElse(false))
 
       def replaceIncludeIf(includeIf: Option[IncludeIf]): Option[IncludeIf] =
-        includeIf.flatMap(includeIfRulesLookup.get)
+        if (disableIncludeIfs) None else includeIf.flatMap(includeIfRulesLookup.get)
 
       def replaceValidIf(validIf: Option[ValidIf]): Option[ValidIf] =
-        validIf.flatMap(validIfRulesLookup.get)
+        if (disableValidIfs) None else validIf.flatMap(validIfRulesLookup.get)
 
       def replaceValidator(validator: FormComponentValidator): FormComponentValidator =
-        validator.copy(validIf = validIfRulesLookup.getOrElse(validator.validIf, validator.validIf))
+        validator.copy(validIf =
+          if (disableValidIfs) ValidIf(IsTrue) else validIfRulesLookup.getOrElse(validator.validIf, validator.validIf)
+        )
 
       def replaceFormComponentNested(formComponent: FormComponent): FormComponent = formComponent match {
         case IsGroup(group) =>

@@ -311,7 +311,22 @@ class RewriterSpec extends FunSuite with FormTemplateSupport with RewriterSuppor
     val pageTitle2 = SmartString(localised = LocalisedString(m = Map(LangADT.En -> "English page title 2")), Nil)
     val page2 = simplePage.copy(
       title = pageTitle2,
-      fields = List(mkFormComponent("fc2", Value).copy(includeIf = falseIncludeIf, validIf = falseValidIf))
+      fields = List(
+        mkFormComponent("fc2", Value).copy(
+          includeIf = falseIncludeIf,
+          validIf = falseValidIf,
+          validators = List(
+            FormComponentValidator(
+              falseValidIf.value,
+              SmartString(localised = LocalisedString(m = Map(LangADT.En -> "Invalid reason 1")), Nil)
+            ),
+            FormComponentValidator(
+              falseValidIf.value,
+              SmartString(localised = LocalisedString(m = Map(LangADT.En -> "Invalid reason 2")), Nil)
+            )
+          )
+        )
+      )
     )
 
     val formTemplate = mkFormTemplate(
@@ -327,15 +342,13 @@ class RewriterSpec extends FunSuite with FormTemplateSupport with RewriterSuppor
       val firstPage = formTemplate.formKind.allSections.head.page()
       val secondPage = formTemplate.formKind.allSections(1).page()
 
-      val expectedIncludeIf = Some(IncludeIf(IsTrue))
-      val expectedValidIf = Some(ValidIf(IsTrue))
-
-      assertEquals(firstPage.includeIf, expectedIncludeIf)
+      assertEquals(firstPage.includeIf, None)
       assertEquals(firstPage.continueIf, Some(Continue))
       assertEquals(firstPage.redirects, None)
       assertEquals(firstPage.fields.head.mandatory, false)
-      assertEquals(secondPage.fields.head.includeIf, expectedIncludeIf)
-      assertEquals(secondPage.fields.head.validIf, expectedValidIf)
+      assertEquals(secondPage.fields.head.includeIf, None)
+      assertEquals(secondPage.fields.head.validIf, None)
+      secondPage.fields.head.validators.map(validator => assertEquals(validator.validIf, ValidIf(IsTrue)))
     })
   }
 }
