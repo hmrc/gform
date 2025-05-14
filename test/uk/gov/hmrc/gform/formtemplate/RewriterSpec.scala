@@ -19,7 +19,7 @@ package uk.gov.hmrc.gform.formtemplate
 import cats.data.NonEmptyList
 import munit.FunSuite
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.ContinueIf.{ Continue, Stop }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.ContinueIf.Stop
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.Section.NonRepeatingPage
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.{ ExampleData, LangADT, LocalisedString, SmartString }
@@ -343,7 +343,7 @@ class RewriterSpec extends FunSuite with FormTemplateSupport with RewriterSuppor
       val secondPage = formTemplate.formKind.allSections(1).page()
 
       assertEquals(firstPage.includeIf, None)
-      assertEquals(firstPage.continueIf, Some(Continue))
+      assertEquals(firstPage.continueIf, None)
       assertEquals(firstPage.redirects, None)
       assertEquals(firstPage.fields.head.mandatory, false)
       assertEquals(secondPage.fields.head.includeIf, None)

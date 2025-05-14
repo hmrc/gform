@@ -460,11 +460,15 @@ trait Rewriter {
     } yield {
       val includeIfRulesLookup: Map[IncludeIf, IncludeIf] = includeIfRules.toMap
       val validIfRulesLookup: Map[ValidIf, ValidIf] = validIfRules.toMap
-      val disableIncludeIfs: Boolean = formTemplate.overrides.fold(false)(_.disableIncludeIfs.getOrElse(false))
-      val disableValidIfs: Boolean = formTemplate.overrides.fold(false)(_.disableValidIfs.getOrElse(false))
 
-      def replaceIncludeIf(includeIf: Option[IncludeIf]): Option[IncludeIf] =
-        if (disableIncludeIfs) None else includeIf.flatMap(includeIfRulesLookup.get)
+      lazy val disableIncludeIfs: Boolean = formTemplate.overrides.fold(false)(_.disableIncludeIfs.getOrElse(false))
+      lazy val disableValidIfs: Boolean = formTemplate.overrides.fold(false)(_.disableValidIfs.getOrElse(false))
+      lazy val disableContinueIfs = formTemplate.overrides.fold(false)(_.disableContinueIfs.getOrElse(false))
+      lazy val disableUploads = formTemplate.overrides.fold(false)(_.disableUploads.getOrElse(false))
+      lazy val disableRedirects = formTemplate.overrides.fold(false)(_.disableRedirects.getOrElse(false))
+
+      def replaceIncludeIf(includeIf: Option[IncludeIf], skipDisabledCheck: Boolean = false): Option[IncludeIf] =
+        if (disableIncludeIfs && !skipDisabledCheck) None else includeIf.flatMap(includeIfRulesLookup.get)
 
       def replaceValidIf(validIf: Option[ValidIf]): Option[ValidIf] =
         if (disableValidIfs) None else validIf.flatMap(validIfRulesLookup.get)
@@ -496,7 +500,6 @@ trait Rewriter {
       }
 
       def replaceFormComponent(formComponent: FormComponent): FormComponent = {
-        val disableUploads = formTemplate.overrides.fold(false)(_.disableUploads.getOrElse(false))
         val component = formComponent match {
           case fc @ IsFileUpload(_) if disableUploads      => fc.copy(mandatory = false)
           case fc @ IsMultiFileUpload(_) if disableUploads => fc.copy(mandatory = false)
@@ -563,20 +566,24 @@ trait Rewriter {
           i.copy(value = replaceIncludeIf(Some(includeIf)).getOrElse(IncludeIf(IsTrue)))
       }
 
-      def replaceRedirects(maybeRedirects: Option[NonEmptyList[RedirectCtx]]) =
-        maybeRedirects.flatMap { redirects =>
-          val disableRedirects = formTemplate.overrides.fold(false)(_.disableRedirects.getOrElse(false))
-          if (disableRedirects)
-            None
-          else
-            redirects.toList.map(r => r.copy(`if` = replaceIncludeIf(Some(r.`if`)).getOrElse(r.`if`))).toNel
-        }
+      def replaceRedirects(redirects: Option[NonEmptyList[RedirectCtx]]) =
+        if (disableRedirects) None
+        else
+          redirects.flatMap(
+            _.toList
+              .map(r => r.copy(`if` = replaceIncludeIf(Some(r.`if`), skipDisabledCheck = true).getOrElse(r.`if`)))
+              .toNel
+          )
 
-      def replaceConfirmationRedirects(redirects: NonEmptyList[ConfirmationRedirect]) =
-        redirects.map(r => r.copy(`if` = replaceIncludeIf(Some(r.`if`)).getOrElse(r.`if`)))
+      def replaceConfirmationRedirects(redirects: Option[NonEmptyList[ConfirmationRedirect]]) =
+        if (disableRedirects) None
+        else
+          redirects.map(
+            _.map(r => r.copy(`if` = replaceIncludeIf(Some(r.`if`), skipDisabledCheck = true).getOrElse(r.`if`)))
+          )
 
       def replaceConfirmation(confirmation: Option[Confirmation]): Option[Confirmation] =
-        confirmation.map(c => c.copy(redirects = c.redirects.map(replaceConfirmationRedirects)))
+        confirmation.map(c => c.copy(redirects = replaceConfirmationRedirects(c.redirects)))
 
       def replaceDataRetrieveIf(includeIf: Option[IncludeIf], dataRetrieves: Option[NonEmptyList[DataRetrieve]]) =
         dataRetrieves.map { drs =>
@@ -596,13 +603,7 @@ trait Rewriter {
         }
 
       def replaceContinueIf(maybeContinueIf: Option[ContinueIf]): Option[ContinueIf] =
-        maybeContinueIf.map { continueIf =>
-          val disableContinueIfs = formTemplate.overrides.fold(false)(_.disableContinueIfs.getOrElse(false))
-          if (disableContinueIfs)
-            ContinueIf.Continue
-          else
-            continueIf
-        }
+        if (disableContinueIfs) None else maybeContinueIf
 
       def updateSection(section: Section): Section =
         section match {
