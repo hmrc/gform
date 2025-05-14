@@ -563,7 +563,7 @@ trait Rewriter {
       def replaceDesIncludeIf(desIncludeIfValue: DestinationIncludeIf) = desIncludeIfValue match {
         case s @ DestinationIncludeIf.HandlebarValue(_) => s
         case i @ DestinationIncludeIf.IncludeIfValue(includeIf) =>
-          i.copy(value = replaceIncludeIf(Some(includeIf)).getOrElse(IncludeIf(IsTrue)))
+          i.copy(value = replaceIncludeIf(Some(includeIf), skipDisabledCheck = true).getOrElse(IncludeIf(IsTrue)))
       }
 
       def replaceRedirects(redirects: Option[NonEmptyList[RedirectCtx]]) =
