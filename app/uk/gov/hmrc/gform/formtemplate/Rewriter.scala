@@ -461,14 +461,22 @@ trait Rewriter {
       val includeIfRulesLookup: Map[IncludeIf, IncludeIf] = includeIfRules.toMap
       val validIfRulesLookup: Map[ValidIf, ValidIf] = validIfRules.toMap
 
-      def replaceIncludeIf(includeIf: Option[IncludeIf]): Option[IncludeIf] =
-        includeIf.flatMap(includeIfRulesLookup.get)
+      lazy val disableIncludeIfs: Boolean = formTemplate.overrides.fold(false)(_.disableIncludeIfs.getOrElse(false))
+      lazy val disableValidIfs: Boolean = formTemplate.overrides.fold(false)(_.disableValidIfs.getOrElse(false))
+      lazy val disableContinueIfs = formTemplate.overrides.fold(false)(_.disableContinueIfs.getOrElse(false))
+      lazy val disableUploads = formTemplate.overrides.fold(false)(_.disableUploads.getOrElse(false))
+      lazy val disableRedirects = formTemplate.overrides.fold(false)(_.disableRedirects.getOrElse(false))
+
+      def replaceIncludeIf(includeIf: Option[IncludeIf], skipDisabledCheck: Boolean = false): Option[IncludeIf] =
+        if (disableIncludeIfs && !skipDisabledCheck) None else includeIf.flatMap(includeIfRulesLookup.get)
 
       def replaceValidIf(validIf: Option[ValidIf]): Option[ValidIf] =
-        validIf.flatMap(validIfRulesLookup.get)
+        if (disableValidIfs) None else validIf.flatMap(validIfRulesLookup.get)
 
       def replaceValidator(validator: FormComponentValidator): FormComponentValidator =
-        validator.copy(validIf = validIfRulesLookup.getOrElse(validator.validIf, validator.validIf))
+        validator.copy(validIf =
+          if (disableValidIfs) ValidIf(IsTrue) else validIfRulesLookup.getOrElse(validator.validIf, validator.validIf)
+        )
 
       def replaceFormComponentNested(formComponent: FormComponent): FormComponent = formComponent match {
         case IsGroup(group) =>
@@ -491,11 +499,19 @@ trait Rewriter {
         case otherwise => replaceFormComponent(formComponent)
       }
 
-      def replaceFormComponent(formComponent: FormComponent): FormComponent = formComponent.copy(
-        validIf = replaceValidIf(formComponent.validIf),
-        includeIf = replaceIncludeIf(formComponent.includeIf),
-        validators = formComponent.validators.map(replaceValidator)
-      )
+      def replaceFormComponent(formComponent: FormComponent): FormComponent = {
+        val component = formComponent match {
+          case fc @ IsFileUpload(_) if disableUploads      => fc.copy(mandatory = false)
+          case fc @ IsMultiFileUpload(_) if disableUploads => fc.copy(mandatory = false)
+          case otherwise                                   => otherwise
+        }
+
+        component.copy(
+          validIf = replaceValidIf(formComponent.validIf),
+          includeIf = replaceIncludeIf(formComponent.includeIf),
+          validators = formComponent.validators.map(replaceValidator)
+        )
+      }
 
       def replaceFields(fields: List[FormComponent]): List[FormComponent] = fields.map(replaceFormComponentNested)
 
@@ -547,19 +563,27 @@ trait Rewriter {
       def replaceDesIncludeIf(desIncludeIfValue: DestinationIncludeIf) = desIncludeIfValue match {
         case s @ DestinationIncludeIf.HandlebarValue(_) => s
         case i @ DestinationIncludeIf.IncludeIfValue(includeIf) =>
-          i.copy(value = replaceIncludeIf(Some(includeIf)).getOrElse(IncludeIf(IsTrue)))
+          i.copy(value = replaceIncludeIf(Some(includeIf), skipDisabledCheck = true).getOrElse(IncludeIf(IsTrue)))
       }
 
       def replaceRedirects(redirects: Option[NonEmptyList[RedirectCtx]]) =
-        redirects.flatMap(
-          _.toList.map(r => r.copy(`if` = replaceIncludeIf(Some(r.`if`)).getOrElse(r.`if`))).toNel
-        )
+        if (disableRedirects) None
+        else
+          redirects.flatMap(
+            _.toList
+              .map(r => r.copy(`if` = replaceIncludeIf(Some(r.`if`), skipDisabledCheck = true).getOrElse(r.`if`)))
+              .toNel
+          )
 
-      def replaceConfirmationRedirects(redirects: NonEmptyList[ConfirmationRedirect]) =
-        redirects.map(r => r.copy(`if` = replaceIncludeIf(Some(r.`if`)).getOrElse(r.`if`)))
+      def replaceConfirmationRedirects(redirects: Option[NonEmptyList[ConfirmationRedirect]]) =
+        if (disableRedirects) None
+        else
+          redirects.map(
+            _.map(r => r.copy(`if` = replaceIncludeIf(Some(r.`if`), skipDisabledCheck = true).getOrElse(r.`if`)))
+          )
 
       def replaceConfirmation(confirmation: Option[Confirmation]): Option[Confirmation] =
-        confirmation.map(c => c.copy(redirects = c.redirects.map(replaceConfirmationRedirects)))
+        confirmation.map(c => c.copy(redirects = replaceConfirmationRedirects(c.redirects)))
 
       def replaceDataRetrieveIf(includeIf: Option[IncludeIf], dataRetrieves: Option[NonEmptyList[DataRetrieve]]) =
         dataRetrieves.map { drs =>
@@ -578,6 +602,9 @@ trait Rewriter {
           }
         }
 
+      def replaceContinueIf(maybeContinueIf: Option[ContinueIf]): Option[ContinueIf] =
+        if (disableContinueIfs) None else maybeContinueIf
+
       def updateSection(section: Section): Section =
         section match {
           case s: Section.NonRepeatingPage =>
@@ -587,7 +614,8 @@ trait Rewriter {
                 fields = replaceFields(s.page.fields),
                 redirects = replaceRedirects(s.page.redirects),
                 confirmation = replaceConfirmation(s.page.confirmation),
-                dataRetrieve = replaceDataRetrieveIf(s.page.includeIf, s.page.dataRetrieve)
+                dataRetrieve = replaceDataRetrieveIf(s.page.includeIf, s.page.dataRetrieve),
+                continueIf = replaceContinueIf(s.page.continueIf)
               )
             )
           case s: Section.RepeatingPage =>
@@ -597,7 +625,8 @@ trait Rewriter {
                 fields = replaceFields(s.page.fields),
                 redirects = replaceRedirects(s.page.redirects),
                 confirmation = replaceConfirmation(s.page.confirmation),
-                dataRetrieve = replaceDataRetrieveIf(s.page.includeIf, s.page.dataRetrieve)
+                dataRetrieve = replaceDataRetrieveIf(s.page.includeIf, s.page.dataRetrieve),
+                continueIf = replaceContinueIf(s.page.continueIf)
               )
             )
           case s: Section.AddToList =>
@@ -612,7 +641,8 @@ trait Rewriter {
                   redirects = replaceRedirects(page.redirects),
                   confirmation = replaceConfirmation(page.confirmation),
                   caption = page.caption.orElse(s.caption),
-                  dataRetrieve = replaceDataRetrieveIf(page.includeIf, page.dataRetrieve)
+                  dataRetrieve = replaceDataRetrieveIf(page.includeIf, page.dataRetrieve),
+                  continueIf = replaceContinueIf(page.continueIf)
                 )
               ),
               fields = replaceFieldsNel(s.fields),

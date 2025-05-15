@@ -169,6 +169,27 @@
       "description": "Defines whether the PTA Menu is displayed in the header",
       "type": "boolean"
     },
+    "overrides": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "disableUploads": {
+          "type": "boolean"
+        },
+        "disableValidIfs": {
+          "type": "boolean"
+        },
+        "disableIncludeIfs": {
+          "type": "boolean"
+        },
+        "disableContinueIfs": {
+          "type": "boolean"
+        },
+        "disableRedirects": {
+          "type": "boolean"
+        }
+      }
+    },
     "referrerConfig": {
       "type": "object",
       "properties": {

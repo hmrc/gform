@@ -551,7 +551,8 @@ trait ExampleFormTemplate {
     false,
     false,
     Some(serviceStartPageUrl),
-    true
+    true,
+    None
   )
 }
 

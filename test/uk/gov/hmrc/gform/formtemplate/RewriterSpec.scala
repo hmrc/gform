@@ -18,10 +18,13 @@ package uk.gov.hmrc.gform.formtemplate
 
 import cats.data.NonEmptyList
 import munit.FunSuite
-import scala.concurrent.Future
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
-import uk.gov.hmrc.gform.sharedmodel.{ ExampleData, LangADT, LocalisedString, SmartString }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.ContinueIf.Stop
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.Section.NonRepeatingPage
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
+import uk.gov.hmrc.gform.sharedmodel.{ ExampleData, LangADT, LocalisedString, SmartString }
+
+import scala.concurrent.Future
 
 class RewriterSpec extends FunSuite with FormTemplateSupport with RewriterSupport {
 
@@ -270,5 +273,82 @@ class RewriterSpec extends FunSuite with FormTemplateSupport with RewriterSuppor
         })
       }
     }
+  }
+
+  test("Rewrite includeIfs, validIfs, continueIfs, fileUploads & redirects when overrides set") {
+    val overrides = Some(
+      Overrides(
+        disableUploads = Some(true),
+        disableValidIfs = Some(true),
+        disableIncludeIfs = Some(true),
+        disableContinueIfs = Some(true),
+        disableRedirects = Some(true)
+      )
+    )
+
+    val falseExpr = Equals(Constant("0"), Constant("1"))
+    val falseIncludeIf = Some(IncludeIf(falseExpr))
+    val falseValidIf = Some(ValidIf(falseExpr))
+    val redirects = Some(
+      NonEmptyList(
+        RedirectCtx(
+          IncludeIf(IsTrue),
+          SmartString(localised = LocalisedString(m = Map(LangADT.En -> "http://so.me/url")), Nil)
+        ),
+        Nil
+      )
+    )
+
+    val pageTitle1 = SmartString(localised = LocalisedString(m = Map(LangADT.En -> "English page title 1")), Nil)
+    val page1 = simplePage.copy(
+      title = pageTitle1,
+      fields = List(mkFormComponent("fc1", FileUpload(None, None), editable = true).copy(mandatory = true)),
+      includeIf = falseIncludeIf,
+      continueIf = Some(Stop),
+      redirects = redirects
+    )
+
+    val pageTitle2 = SmartString(localised = LocalisedString(m = Map(LangADT.En -> "English page title 2")), Nil)
+    val page2 = simplePage.copy(
+      title = pageTitle2,
+      fields = List(
+        mkFormComponent("fc2", Value).copy(
+          includeIf = falseIncludeIf,
+          validIf = falseValidIf,
+          validators = List(
+            FormComponentValidator(
+              falseValidIf.value,
+              SmartString(localised = LocalisedString(m = Map(LangADT.En -> "Invalid reason 1")), Nil)
+            ),
+            FormComponentValidator(
+              falseValidIf.value,
+              SmartString(localised = LocalisedString(m = Map(LangADT.En -> "Invalid reason 2")), Nil)
+            )
+          )
+        )
+      )
+    )
+
+    val formTemplate = mkFormTemplate(
+      List(
+        NonRepeatingPage(page1),
+        NonRepeatingPage(page2)
+      )
+    ).copy(overrides = overrides)
+
+    val obtainedF: Future[Either[UnexpectedState, FormTemplate]] = rewriter.rewrite(formTemplate).value
+
+    obtainedF.map(_.map { formTemplate =>
+      val firstPage = formTemplate.formKind.allSections.head.page()
+      val secondPage = formTemplate.formKind.allSections(1).page()
+
+      assertEquals(firstPage.includeIf, None)
+      assertEquals(firstPage.continueIf, None)
+      assertEquals(firstPage.redirects, None)
+      assertEquals(firstPage.fields.head.mandatory, false)
+      assertEquals(secondPage.fields.head.includeIf, None)
+      assertEquals(secondPage.fields.head.validIf, None)
+      secondPage.fields.head.validators.map(validator => assertEquals(validator.validIf, ValidIf(IsTrue)))
+    })
   }
 }
