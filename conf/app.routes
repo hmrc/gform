@@ -14,6 +14,8 @@ POST          /forms/:userId/:formTemplateId/:accessCode/from-legacy            
 
 GET           /forms/all/:userId/:formTemplateId                                                        uk.gov.hmrc.gform.form.FormController.getAll(userId: UserId, formTemplateId: FormTemplateId)
 
+GET           /forms/envelope/:envelopeId                                                               uk.gov.hmrc.gform.form.FormController.getFormByEnvelopeId(envelopeId: EnvelopeId)
+
 GET           /forms/:userId/:formTemplateId                                                            uk.gov.hmrc.gform.form.FormController.getPlain(userId: UserId, formTemplateId: String)
 GET           /forms/:userId/:formTemplateId/:accessCode                                                uk.gov.hmrc.gform.form.FormController.get(userId: UserId, formTemplateId: String, accessCode: AccessCode)
 
