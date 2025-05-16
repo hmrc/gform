@@ -23,7 +23,11 @@ case class DestinationResult(
   destinationId: DestinationId,
   includeIf: Option[Boolean],
   customerId: Option[String],
-  taxpayerId: Option[String]
+  taxpayerId: Option[String],
+  paymentReference: Option[String],
+  nino: Option[String],
+  utr: Option[String],
+  postalCode: Option[String]
 )
 
 object DestinationResult {

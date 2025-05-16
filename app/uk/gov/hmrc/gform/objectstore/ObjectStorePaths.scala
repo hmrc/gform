@@ -22,20 +22,30 @@ import uk.gov.hmrc.objectstore.client.Path
 trait ObjectStorePaths {
   def permanent: Path.Directory
   def ephemeral: Path.Directory // Deleted on FileProcessed notification from SDES
+  def zipFilePrefix: String
 }
 object ObjectStorePaths {
   def dmsPaths(envelopeId: EnvelopeId) = new ObjectStorePaths {
     val permanent: Path.Directory = Path.Directory("envelopes/" + envelopeId.value)
     val ephemeral: Path.Directory = Path.Directory("sdes")
+    val zipFilePrefix: String = ""
   }
 
   def hmrcIlluminatePaths(envelopeId: EnvelopeId) = new ObjectStorePaths {
     val permanent: Path.Directory = Path.Directory("hmrc-illuminate/envelopes/" + envelopeId.value)
     val ephemeral: Path.Directory = Path.Directory("sdes/hmrc-illuminate")
+    val zipFilePrefix: String = ""
   }
 
   def dataStorePaths(envelopeId: EnvelopeId) = new ObjectStorePaths {
     val permanent: Path.Directory = Path.Directory("data-store/envelopes/" + envelopeId.value)
     val ephemeral: Path.Directory = Path.Directory("sdes/data-store")
+    val zipFilePrefix: String = ""
+  }
+
+  def infoArchivePaths(envelopeId: EnvelopeId) = new ObjectStorePaths {
+    val permanent: Path.Directory = Path.Directory("info-archive/envelopes/" + envelopeId.value)
+    val ephemeral: Path.Directory = Path.Directory("sdes/info-archive")
+    val zipFilePrefix: String = "GFDA_"
   }
 }
