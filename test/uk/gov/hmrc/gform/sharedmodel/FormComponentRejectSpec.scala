@@ -134,7 +134,8 @@ class FormComponentRejectSpec extends Spec with TableDrivenPropertyChecks {
       ("invalid-repeated-section-cross-reference",  "fields.[id=fieldB].label: fieldA belongs to different Repeated section"),
       ("invalid-group-cross-reference",             "fields.[id=groupB].[id=fieldB].label: fieldA belongs to different Group component"),
       ("nonexistent-field-reference-in-if-else",    "sections.fields.[id=textA].label: foo doesn't exist in the form"),
-      ("nonexistent-field-reference",               "sections.fields.[id=textA].label: textB doesn't exist in the form")
+      ("nonexistent-field-reference",               "sections.fields.[id=textA].label: textB doesn't exist in the form"),
+      ("nonexistent-field-reference-in-destination","destinations.paymentReference: paymentReference doesn't exist in the form"),
       // format: on
     )
     val appConfig = AppConfig.loadOrThrow(ConfigFactory.load())
