@@ -17,13 +17,17 @@
 package uk.gov.hmrc.gform.save4later
 
 import org.apache.pekko.http.scaladsl.model.StatusCodes
-import org.mongodb.scala.model.{ Filters, Updates }
+import org.mongodb.scala.bson.BsonValue
+import org.mongodb.scala.model.Filters.equal
+import org.mongodb.scala.model.Projections.computed
+import org.mongodb.scala.model.{ Aggregates, Filters, Updates }
 import play.api.libs.json.Format
 import uk.gov.hmrc.crypto.{ Decrypter, Encrypter }
-import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormId, FormIdData, Submitted }
+import uk.gov.hmrc.gform.sharedmodel.form._
 import uk.gov.hmrc.gform.time.TimeProvider
 import uk.gov.hmrc.http.{ HeaderCarrier, UpstreamErrorResponse }
 import uk.gov.hmrc.mongo.cache.{ DataKey, MongoCacheRepository }
+import uk.gov.hmrc.mongo.play.json.Codecs
 
 import scala.concurrent.{ ExecutionContext, Future }
 
@@ -90,4 +94,25 @@ class FormMongoCache(
 
   override def delete(formId: FormId)(implicit hc: HeaderCarrier): Future[Unit] =
     mongoCacheRepository.deleteEntity(formId.value)
+
+  override def findByEnvelopeId(envelopeId: EnvelopeId)(implicit hc: HeaderCarrier): Future[Form] = {
+    val filter = Aggregates.filter(equal("data.form.envelopeId", envelopeId.value))
+    val project = Aggregates.project(Updates.combine(computed("formId", "$data.form._id")))
+    val pipeline = List(filter, project)
+
+    for {
+      formIds <- mongoCacheRepository.collection
+                   .aggregate[BsonValue](pipeline)
+                   .toFuture()
+                   .map(_.map(Codecs.fromBson[FormId]))
+      form <- formIds match {
+                case formId :: _ => get(formId)
+                case _ =>
+                  throw UpstreamErrorResponse(
+                    s"Not found 'form' for the given envelope id: '${envelopeId.value}'",
+                    StatusCodes.NotFound.intValue
+                  )
+              }
+    } yield form
+  }
 }
