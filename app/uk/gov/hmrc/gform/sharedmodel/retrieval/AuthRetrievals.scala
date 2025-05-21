@@ -18,7 +18,7 @@ package uk.gov.hmrc.gform.sharedmodel.retrieval
 
 import julienrf.json.derived
 import play.api.libs.json._
-import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
+import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FormIdData }
 
 case class AuthRetrievals(
   _id: EnvelopeId,
@@ -27,4 +27,13 @@ case class AuthRetrievals(
 
 object AuthRetrievals {
   implicit val format: OFormat[AuthRetrievals] = derived.oformat()
+}
+
+case class AuthRetrievalsByFormIdData(
+  formIdData: FormIdData,
+  materialisedRetrievals: JsValue
+)
+
+object AuthRetrievalsByFormIdData {
+  implicit val format: OFormat[AuthRetrievalsByFormIdData] = derived.oformat()
 }

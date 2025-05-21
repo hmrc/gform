@@ -158,3 +158,4 @@ GET           /history/next/:formTemplateRawId/:historyId                       
 
 GET           /retrieval/:envelopeId                                                                    uk.gov.hmrc.gform.retrieval.AuthRetrievalController.getRetrievals(envelopeId: EnvelopeId)
 POST          /retrieval                                                                                uk.gov.hmrc.gform.retrieval.AuthRetrievalController.upsertRetrievals()
+POST          /retrieval-by-form                                                                        uk.gov.hmrc.gform.retrieval.AuthRetrievalController.upsertRetrievalsByFormIdData()

@@ -20,20 +20,28 @@ import play.api.libs.json.Json
 import play.api.mvc.{ Action, AnyContent, ControllerComponents }
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
-import uk.gov.hmrc.gform.sharedmodel.retrieval.AuthRetrievals
+import uk.gov.hmrc.gform.sharedmodel.retrieval.{ AuthRetrievals, AuthRetrievalsByFormIdData }
 
 import scala.concurrent.ExecutionContext
 
 class AuthRetrievalController(
   retrievalService: AuthRetrievalService,
   controllerComponents: ControllerComponents
-)(implicit ec: ExecutionContext)
+)(implicit ex: ExecutionContext)
     extends BaseController(controllerComponents) {
 
   def upsertRetrievals(): Action[AuthRetrievals] =
     Action.async(parse.json[AuthRetrievals]) { request =>
       val authRetrievals: AuthRetrievals = request.body
       retrievalService.upsert(authRetrievals).map { _ =>
+        NoContent
+      }
+    }
+
+  def upsertRetrievalsByFormIdData(): Action[AuthRetrievalsByFormIdData] =
+    Action.async(parse.json[AuthRetrievalsByFormIdData]) { implicit request =>
+      val authRetrievals: AuthRetrievalsByFormIdData = request.body
+      retrievalService.upsertByFormIdData(authRetrievals).map { _ =>
         NoContent
       }
     }
