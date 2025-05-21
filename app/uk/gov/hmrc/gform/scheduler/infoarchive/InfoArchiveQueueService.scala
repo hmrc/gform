@@ -14,48 +14,47 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.scheduler.dms
+package uk.gov.hmrc.gform.scheduler.infoarchive
 
 import org.slf4j.{ Logger, LoggerFactory }
 import uk.gov.hmrc.gform.core.FutureSyntax
 import uk.gov.hmrc.gform.scheduler.{ QueueAlgebra, WorkItemRepo }
 import uk.gov.hmrc.gform.sdes.SdesAlgebra
-import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination.Dms
 import uk.gov.hmrc.gform.sharedmodel.sdes.SdesWorkItem
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.mongo.workitem.WorkItem
 
 import scala.concurrent.{ ExecutionContext, Future }
 
-class DmsQueueService(
-  sdesAlgebra: SdesAlgebra[Future],
-  dmsNotificationRepository: DmsWorkItemRepo,
-  dmsPollerLimit: Int,
-  dmsMaxFailureCount: Int,
-  dmsRetryIntervalMillis: Long
+class InfoArchiveQueueService(
+  infoArchiveAlgebra: SdesAlgebra[Future],
+  infoArchiveNotificationRepository: InfoArchiveWorkItemRepo,
+  infoArchivePollerLimit: Int,
+  infoArchiveMaxFailureCount: Int,
+  infoArchiveRetryIntervalMillis: Long
 )(implicit ec: ExecutionContext)
     extends QueueAlgebra[SdesWorkItem] {
 
   override def sendWorkItem(sdesWorkItem: WorkItem[SdesWorkItem]): Future[Unit] = {
     implicit val hc = HeaderCarrier()
     val workItem = sdesWorkItem.item
-    logger.debug(s"sending a notification for ${workItem.envelopeId} in sendWorkItem to dms")
+    logger.debug(s"sending a notification for ${workItem.envelopeId} in sendWorkItem to info-archive")
 
-    sdesAlgebra
+    infoArchiveAlgebra
       .notifySDES(
         workItem.correlationId,
         workItem.envelopeId,
         workItem.formTemplateId,
         workItem.submissionRef,
-        Dms
+        workItem.destination
       )
       .void(ec)
   }
 
-  override val repo: WorkItemRepo[SdesWorkItem] = dmsNotificationRepository
-  override val pollLimit: Int = dmsPollerLimit
+  override val repo: WorkItemRepo[SdesWorkItem] = infoArchiveNotificationRepository
+  override val pollLimit: Int = infoArchivePollerLimit
   override implicit val executionContext: ExecutionContext = ec
-  override val maxFailureCount: Int = dmsMaxFailureCount
-  override val retryIntervalMillis: Long = dmsRetryIntervalMillis
+  override val maxFailureCount: Int = infoArchiveMaxFailureCount
+  override val retryIntervalMillis: Long = infoArchiveRetryIntervalMillis
   override val logger: Logger = LoggerFactory.getLogger(getClass)
 }
