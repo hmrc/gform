@@ -16,13 +16,18 @@
 
 package uk.gov.hmrc.gform.retrieval
 
+import uk.gov.hmrc.gform.form.FormAlgebra
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
-import uk.gov.hmrc.gform.sharedmodel.retrieval.AuthRetrievals
+import uk.gov.hmrc.gform.sharedmodel.retrieval.{ AuthRetrievals, AuthRetrievalsByFormIdData }
+import uk.gov.hmrc.http.HeaderCarrier
 
-import scala.concurrent.Future
+import scala.concurrent.{ ExecutionContext, Future }
 
 class AuthRetrievalService(
-  retrievalRepo: RetrievalPersistenceAlgebra[Future]
+  retrievalRepo: RetrievalPersistenceAlgebra[Future],
+  formService: FormAlgebra[Future]
+)(implicit
+  ec: ExecutionContext
 ) {
 
   def find(envelopeId: EnvelopeId): Future[Option[AuthRetrievals]] = retrievalRepo.find(envelopeId)
@@ -30,6 +35,13 @@ class AuthRetrievalService(
   def get(envelopeId: EnvelopeId): Future[AuthRetrievals] = retrievalRepo.get(envelopeId)
 
   def upsert(retrieval: AuthRetrievals): Future[Unit] = retrievalRepo.upsert(retrieval)
+
+  def upsertByFormIdData(retrieval: AuthRetrievalsByFormIdData)(implicit hc: HeaderCarrier): Future[Unit] =
+    for {
+      form <- formService.get(retrieval.formIdData)
+      retrievalUpd = AuthRetrievals(form.envelopeId, retrieval.materialisedRetrievals)
+      _ <- retrievalRepo.upsert(retrievalUpd)
+    } yield ()
 
   def delete(envelopeId: EnvelopeId): Future[Unit] = retrievalRepo.delete(envelopeId)
 }

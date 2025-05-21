@@ -308,7 +308,7 @@ class ApplicationModule(context: Context)
       sdesModule
     )
 
-  private val retrievalModule = new AuthRetrievalModule(mongoModule, configModule, jsonCrypto)
+  private val retrievalModule = new AuthRetrievalModule(mongoModule, configModule, jsonCrypto, formService)
 
   private val dmsModule =
     new DmsModule(

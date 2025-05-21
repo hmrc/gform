@@ -18,6 +18,7 @@ package uk.gov.hmrc.gform.retrieval
 
 import uk.gov.hmrc.crypto.{ Decrypter, Encrypter }
 import uk.gov.hmrc.gform.config.ConfigModule
+import uk.gov.hmrc.gform.form.FormService
 import uk.gov.hmrc.gform.mongo.MongoModule
 import uk.gov.hmrc.mongo.CurrentTimestampSupport
 import uk.gov.hmrc.mongo.cache.CacheIdType.SimpleCacheId
@@ -29,7 +30,8 @@ import scala.concurrent.{ ExecutionContext, Future }
 class AuthRetrievalModule(
   mongoModule: MongoModule,
   configModule: ConfigModule,
-  jsonCrypto: Encrypter with Decrypter
+  jsonCrypto: Encrypter with Decrypter,
+  formService: FormService[Future]
 )(implicit
   ex: ExecutionContext
 ) {
@@ -45,7 +47,7 @@ class AuthRetrievalModule(
   private val retrievalRepository: RetrievalPersistenceAlgebra[Future] =
     new AuthRetrievalCache(mongoCacheRepository, jsonCrypto)
 
-  private val authRetrievalService: AuthRetrievalService = new AuthRetrievalService(retrievalRepository)
+  private val authRetrievalService: AuthRetrievalService = new AuthRetrievalService(retrievalRepository, formService)
 
   val authRetrievalController: AuthRetrievalController =
     new AuthRetrievalController(authRetrievalService, configModule.controllerComponents)
