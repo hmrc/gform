@@ -101,6 +101,7 @@ final case class StringOps(field1: Expr, stringFnc: StringFnc) extends Expr
 final case class ChoicesRevealedField(formComponentId: FormComponentId) extends Expr
 final case class ChoicesSelected(formComponentId: FormComponentId) extends Expr
 final case class ChoicesAvailable(formComponentId: FormComponentId) extends Expr
+final case class ChoicesSelectedSum(formComponentId: FormComponentId) extends Expr
 final case class TaskStatus(taskId: TaskId) extends Expr
 
 sealed trait SizeRefType extends Product with Serializable

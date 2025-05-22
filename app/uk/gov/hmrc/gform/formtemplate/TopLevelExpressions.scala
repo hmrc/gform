@@ -195,6 +195,7 @@ object TopLevelExpressions {
         case ChoicesRevealedField(_)       => e
         case ChoicesSelected(_)            => e
         case ChoicesAvailable(_)           => e
+        case ChoicesSelectedSum(_)         => e
         case TaskStatus(_)                 => e
         case LookupOps(expr, fn)           => LookupOps(loop(expr), fn)
       }
