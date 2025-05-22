@@ -856,7 +856,9 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
         Some(AllowedFileTypes(NonEmptyList("pdf", List("jpg", "docx", "pptx")))),
         None,
         Some(toSmartString("Upload another file")),
-        Some(toSmartString("If you have finished uploading your files you can continue to the next page"))
+        Some(toSmartString("If you have finished uploading your files you can continue to the next page")),
+        None,
+        None
       ),
       toSmartString("Upload a file"),
       isPageHeading = false,

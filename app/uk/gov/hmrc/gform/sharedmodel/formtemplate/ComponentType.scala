@@ -412,7 +412,9 @@ case class MultiFileUpload(
   allowedFileTypes: Option[AllowedFileTypes],
   hint: Option[SmartString],
   uploadAnotherLabel: Option[SmartString],
-  continueText: Option[SmartString]
+  continueText: Option[SmartString],
+  minFiles: Option[SmartString],
+  maxFiles: Option[SmartString]
 ) extends ComponentType
 
 case class StartTime(time: LocalTime) extends AnyVal
@@ -624,10 +626,12 @@ object ComponentType {
       case InformationMessage(_, infoText, summaryValue) =>
         LeafExpr(path + "infoText", infoText) ++ LeafExpr(path + "summaryValue", summaryValue)
       case FileUpload(_, _) => Nil
-      case MultiFileUpload(_, _, hint, uploadAnotherLabel, continueText) =>
+      case MultiFileUpload(_, _, hint, uploadAnotherLabel, continueText, minFiles, maxFiles) =>
         LeafExpr(path + "hint", hint) ++
           LeafExpr(path + "uploadAnotherLabel", uploadAnotherLabel) ++
-          LeafExpr(path + "continueText", continueText)
+          LeafExpr(path + "continueText", continueText) ++
+          LeafExpr(path + "minFiles", minFiles) ++
+          LeafExpr(path + "maxFiles", maxFiles)
       case Time(_, _)                  => Nil
       case MiniSummaryList(rows, _, _) => LeafExpr(path + "rows", rows)
       case t: TableComp =>
