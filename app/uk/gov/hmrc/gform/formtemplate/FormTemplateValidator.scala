@@ -277,7 +277,7 @@ object FormTemplateValidator {
       case ReferenceInfo.ChoicesSelectedExpr(path, ChoicesSelected(formComponentId))
           if !allChoiceIds(formComponentId) =>
         Invalid(s"${path.path}: $formComponentId is not a Choice in the form")
-      case ReferenceInfo.ChoicesSelectedSumExpr(path, ChoicesSelectedSum(formComponentId))
+      case ReferenceInfo.CountSelectedChoicesExpr(path, CountSelectedChoices(formComponentId))
           if !allChoiceIds(formComponentId) =>
         Invalid(s"${path.path}: $formComponentId is not a Choice in the form")
       case ReferenceInfo.ChoicesAvailableExpr(path, ChoicesAvailable(formComponentId))
@@ -1285,7 +1285,7 @@ object FormTemplateValidator {
       case ChoicesRevealedField(_)      => Valid
       case ChoicesSelected(_)           => Valid
       case ChoicesAvailable(_)          => Valid
-      case ChoicesSelectedSum(_)        => Valid
+      case CountSelectedChoices(_)      => Valid
       case TaskStatus(_)                => Valid
       case LookupOps(_, _)              => Valid
     }

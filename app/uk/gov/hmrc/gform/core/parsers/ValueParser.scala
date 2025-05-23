@@ -388,8 +388,8 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
     | "choice(" ~ FormComponentId.unanchoredIdValidation ~ ")" ^^ { case _ ~ value ~ _ =>
       Concat(FormCtx(FormComponentId(value)) :: Nil)
     }
-    | "choicesSelected(" ~ FormComponentId.unanchoredIdValidation ~ ").sum" ^^ { case _ ~ value ~ _ =>
-      ChoicesSelectedSum(FormComponentId(value))
+    | "choicesSelected(" ~ FormComponentId.unanchoredIdValidation ~ ").count" ^^ { case _ ~ value ~ _ =>
+      CountSelectedChoices(FormComponentId(value))
     }
     | "choicesSelected(" ~ FormComponentId.unanchoredIdValidation ~ ")" ^^ { case _ ~ value ~ _ =>
       ChoicesSelected(FormComponentId(value))
