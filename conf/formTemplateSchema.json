@@ -1018,6 +1018,12 @@
         "fileSizeLimit": {
           "type": "integer"
         },
+        "minFiles": {
+          "type": "string"
+        },
+        "maxFiles": {
+          "type": "string"
+        },
         "ranges": {
           "type": "array"
         },

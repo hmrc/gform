@@ -790,19 +790,25 @@ class FormComponentMaker(json: JsValue) {
     maybeAllowedFileTypes <- toOpt((json \ "allowedFileTypes").validateOpt[AllowedFileTypes], "/allowedFileTypes")
   } yield FileUpload(maybeFileSizeLimit, maybeAllowedFileTypes)
 
-  private val multiFileUploadOpt: Opt[MultiFileUpload] = for {
-    maybeFileSizeLimit      <- toOpt((json \ "fileSizeLimit").validateOpt[Int], "/fileSizeLimit")
-    maybeAllowedFileTypes   <- toOpt((json \ "allowedFileTypes").validateOpt[AllowedFileTypes], "/allowedFileTypes")
-    maybeHint               <- toOpt((json \ "hint").validateOpt[SmartString], "/hint")
-    maybeUploadAnotherLabel <- toOpt((json \ "uploadAnotherLabel").validateOpt[SmartString], "/uploadAnotherLabel")
-    maybeContinueText       <- toOpt((json \ "continueText").validateOpt[SmartString], "/continueText")
-  } yield MultiFileUpload(
-    maybeFileSizeLimit,
-    maybeAllowedFileTypes,
-    maybeHint,
-    maybeUploadAnotherLabel,
-    maybeContinueText
-  )
+  private val multiFileUploadOpt: Opt[MultiFileUpload] = {
+    for {
+      maybeFileSizeLimit      <- toOpt((json \ "fileSizeLimit").validateOpt[Int], "/fileSizeLimit")
+      maybeAllowedFileTypes   <- toOpt((json \ "allowedFileTypes").validateOpt[AllowedFileTypes], "/allowedFileTypes")
+      maybeHint               <- toOpt((json \ "hint").validateOpt[SmartString], "/hint")
+      maybeUploadAnotherLabel <- toOpt((json \ "uploadAnotherLabel").validateOpt[SmartString], "/uploadAnotherLabel")
+      maybeContinueText       <- toOpt((json \ "continueText").validateOpt[SmartString], "/continueText")
+      maybeMinFiles           <- toOpt((json \ "minFiles").validateOpt[SmartString], "/minFiles")
+      maybeMaxFiles           <- toOpt((json \ "maxFiles").validateOpt[SmartString], "/maxFiles")
+    } yield MultiFileUpload(
+      maybeFileSizeLimit,
+      maybeAllowedFileTypes,
+      maybeHint,
+      maybeUploadAnotherLabel,
+      maybeContinueText,
+      maybeMinFiles,
+      maybeMaxFiles
+    )
+  }
 
   private lazy val infoOpt: Opt[InformationMessage] =
     for {
