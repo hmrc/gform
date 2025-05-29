@@ -38,7 +38,6 @@ import uk.gov.hmrc.gform.sharedmodel.graph.DependencyGraph._
 import java.time.LocalDate
 import scala.Function.const
 import scala.annotation.nowarn
-import scala.util.matching.Regex
 import scala.util.{ Failure, Success, Try }
 
 object FormTemplateValidator {
@@ -1106,7 +1105,7 @@ object FormTemplateValidator {
     case HmrcTaxPeriod(_, _, _)                     => Valid
     case Group(fvs, _, _, _, _)                     => validate(fvs.map(_.`type`), formTemplate)
     case FileUpload(_, _)                           => Valid
-    case mf @ MultiFileUpload(_, _, _, _, _, _, _)  => validateMultFileUpload(mf)
+    case mf @ MultiFileUpload(_, _, _, _, _, _, _)  => validateMultiFileUpload(mf)
     case InformationMessage(_, _, _)                => Valid
     case Time(_, _)                                 => Valid
     case OverseasAddress(_, _, _, Some(expr), _, _) => validateOverseasAddressValue(expr, formTemplate)
@@ -1117,27 +1116,13 @@ object FormTemplateValidator {
     case Button(_, _, _, _)                         => Valid
   }
 
-  def validateMultFileUpload(mfu: MultiFileUpload) = {
-    implicit val l: LangADT = LangADT.En
-
-    def validateExprOrNumeric(field: String, maybeSmartString: Option[SmartString]): ValidationResult =
-      maybeSmartString.fold[ValidationResult](Valid) { smartString =>
-        val numericOrSingleExpr: Regex = """(\d{1,2})|(^\{0}$)""".r
-
-        smartString.defaultRawValue match {
-          case numericOrSingleExpr(_*) => Valid
-          case _ =>
-            Invalid(
-              s"multiFile field '$field' must be either 1 or 2 digits, or a single expression that will evaluate to a numeric value"
-            )
-        }
-      }
-
-    Monoid[ValidationResult].combine(
-      validateExprOrNumeric("minFiles", mfu.minFiles),
-      validateExprOrNumeric("maxFiles", mfu.maxFiles)
-    )
-  }
+  private def validateMultiFileUpload(upload: MultiFileUpload) =
+    (for {
+      min <- upload.minFiles.collect { case Constant(v) => v.toInt }
+      max <- upload.maxFiles.collect { case Constant(v) => v.toInt }
+      if min > max
+    } yield Invalid(s"minFiles ($min) cannot be greater than maxFiles ($max)"))
+      .getOrElse(Valid)
 
   def validateAddressValue(expr: Expr, formTemplate: FormTemplate): ValidationResult = {
     val sections = formTemplate.formKind.allSections

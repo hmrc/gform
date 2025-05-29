@@ -413,8 +413,8 @@ case class MultiFileUpload(
   hint: Option[SmartString],
   uploadAnotherLabel: Option[SmartString],
   continueText: Option[SmartString],
-  minFiles: Option[SmartString],
-  maxFiles: Option[SmartString]
+  minFiles: Option[Expr],
+  maxFiles: Option[Expr]
 ) extends ComponentType
 
 case class StartTime(time: LocalTime) extends AnyVal
