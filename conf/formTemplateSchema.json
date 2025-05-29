@@ -1019,10 +1019,10 @@
           "type": "integer"
         },
         "minFiles": {
-          "type": "string"
+          "$ref": "#/$defs/fileCount"
         },
         "maxFiles": {
-          "type": "string"
+            "$ref": "#/$defs/fileCount"
         },
         "ranges": {
           "type": "array"
@@ -1782,6 +1782,18 @@
           "$ref": "#/$defs/stringOrEnCyObject"
         }
       }
+    },
+    "fileCount": {
+      "type": ["number", "string"],
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "string",
+          "pattern": "^\\$\\{.+\\}$"
+        }
+      ]
     }
   }
 }

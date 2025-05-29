@@ -790,6 +790,18 @@ class FormComponentMaker(json: JsValue) {
     maybeAllowedFileTypes <- toOpt((json \ "allowedFileTypes").validateOpt[AllowedFileTypes], "/allowedFileTypes")
   } yield FileUpload(maybeFileSizeLimit, maybeAllowedFileTypes)
 
+  lazy val minFiles: Option[TextExpression] =
+    (json \ "minFiles").toOption.flatMap {
+      case JsNumber(number) => Some(TextExpression(Constant(number.toString)))
+      case _                => (json \ "minFiles").validate[TextExpression].asOpt
+    }
+
+  lazy val maxFiles: Option[TextExpression] =
+    (json \ "maxFiles").toOption.flatMap {
+      case JsNumber(number) => Some(TextExpression(Constant(number.toString)))
+      case _                => (json \ "maxFiles").validate[TextExpression].asOpt
+    }
+
   private val multiFileUploadOpt: Opt[MultiFileUpload] = {
     for {
       maybeFileSizeLimit      <- toOpt((json \ "fileSizeLimit").validateOpt[Int], "/fileSizeLimit")
@@ -797,16 +809,14 @@ class FormComponentMaker(json: JsValue) {
       maybeHint               <- toOpt((json \ "hint").validateOpt[SmartString], "/hint")
       maybeUploadAnotherLabel <- toOpt((json \ "uploadAnotherLabel").validateOpt[SmartString], "/uploadAnotherLabel")
       maybeContinueText       <- toOpt((json \ "continueText").validateOpt[SmartString], "/continueText")
-      maybeMinFiles           <- toOpt((json \ "minFiles").validateOpt[SmartString], "/minFiles")
-      maybeMaxFiles           <- toOpt((json \ "maxFiles").validateOpt[SmartString], "/maxFiles")
     } yield MultiFileUpload(
       maybeFileSizeLimit,
       maybeAllowedFileTypes,
       maybeHint,
       maybeUploadAnotherLabel,
       maybeContinueText,
-      maybeMinFiles,
-      maybeMaxFiles
+      minFiles.map(_.expr),
+      maxFiles.map(_.expr)
     )
   }
 

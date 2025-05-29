@@ -837,7 +837,7 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
                    |  "helpText": "This file must be a PDF, JPG, DOCX or PPTX, maximum 10MB in size.",
                    |  "continueText": "If you have finished uploading your files you can continue to the next page",
                    |  "fileSizeLimit": 10,
-                   |  "minFiles": "2",
+                   |  "minFiles": 2,
                    |  "maxFiles": "${maxFileUploads}",
                    |  "allowedFileTypes": [
                    |    "pdf",
@@ -859,8 +859,8 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
         None,
         Some(toSmartString("Upload another file")),
         Some(toSmartString("If you have finished uploading your files you can continue to the next page")),
-        Some(toSmartString("2")),
-        Some(toSmartString("{0}", List(FormCtx(FormComponentId("maxFileUploads")))))
+        Some(Constant("2")),
+        Some(FormCtx(FormComponentId("maxFileUploads")))
       ),
       toSmartString("Upload a file"),
       isPageHeading = false,
