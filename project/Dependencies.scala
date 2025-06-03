@@ -54,7 +54,6 @@ object Dependencies {
   def test(scope: String = "test") = Seq(
     "uk.gov.hmrc"            %% "bootstrap-test-play-30" % bootstrapVersion    % scope,
     "org.scalatestplus"      %% "scalacheck-1-14"        % "3.2.2.0"           % scope,
-    "org.pegdown"             % "pegdown"                % "1.6.0"             % scope,
     "org.playframework"      %% "play-test"              % "3.0.2"             % scope,
     "org.playframework"      %% "play-filters-helpers"   % "3.0.2"             % scope,
     "org.scalamock"          %% "scalamock"              % "5.2.0"             % scope,
