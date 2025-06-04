@@ -70,9 +70,6 @@ lazy val microservice = (project in file("."))
       "uk.gov.hmrc.gform.translation.audit.TranslationAuditId"
     ),
     resolvers ++= Seq(
-      Resolver.jcenterRepo,
-      "bintray-djspiewak-maven" at "https://dl.bintray.com/djspiewak/maven",
-      "ofsted-notify-java-client" at "https://dl.bintray.com/gov-uk-notify/maven/",
       "HMRC-open-artefacts-maven2" at "https://open.artefacts.tax.service.gov.uk/maven2",
       "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots",
       "jitpack" at "https://jitpack.io" // https://github.com/circe/circe-json-schema?tab=readme-ov-file#setup
