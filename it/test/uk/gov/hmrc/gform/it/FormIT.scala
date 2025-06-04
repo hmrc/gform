@@ -106,6 +106,7 @@ class FormIT extends ITSpec with FormTemplateSample with FormDataSample with Que
     form.envelopeExpiryDate.get.ldt.toInstant(ZoneOffset.UTC).isAfter(startInstant) shouldBe true
     form.componentIdToFileId shouldBe FormComponentIdToFileIdMapping.empty
     form.taskIdTaskStatus shouldBe TaskIdTaskStatusMapping.empty
+    form.confirmationExpr shouldBe ConfirmationExprMapping.empty
     ()
   }
 

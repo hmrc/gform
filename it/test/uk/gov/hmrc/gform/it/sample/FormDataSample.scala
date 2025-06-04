@@ -47,6 +47,7 @@ trait FormDataSample {
                                      |   }
                                      | },
                                      | "componentIdToFileId": {},
-                                     | "taskIdTaskStatus": {}
+                                     | "taskIdTaskStatus": {},
+                                     | "confirmationExpr": {}
                                      |}""".stripMargin)
 }

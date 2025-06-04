@@ -165,7 +165,8 @@ class FormSpec extends AnyFlatSpec with Matchers with ScalaCheckDrivenPropertyCh
     ),
     Some(EnvelopeExpiryDate(LocalDateTime.of(2064, 12, 1, 0, 0, 40))),
     FormComponentIdToFileIdMapping.empty,
-    TaskIdTaskStatusMapping.empty
+    TaskIdTaskStatusMapping.empty,
+    ConfirmationExprMapping.empty
   )
 
   "Format for Form" should "read json" in {
@@ -210,7 +211,8 @@ class FormSpec extends AnyFlatSpec with Matchers with ScalaCheckDrivenPropertyCh
     ThirdPartyData.empty,
     Some(EnvelopeExpiryDate(LocalDateTime.now.plusDays(1))),
     FormComponentIdToFileIdMapping.empty,
-    TaskIdTaskStatusMapping.empty
+    TaskIdTaskStatusMapping.empty,
+    ConfirmationExprMapping.empty
   )
 
   "case class Form" should "be serialized into json" in {
@@ -238,7 +240,8 @@ class FormSpec extends AnyFlatSpec with Matchers with ScalaCheckDrivenPropertyCh
         "booleanExprCache"  -> Json.obj("mapping" -> Json.obj())
       ),
       "componentIdToFileId" -> Json.obj(),
-      "taskIdTaskStatus"    -> Json.obj()
+      "taskIdTaskStatus"    -> Json.obj(),
+      "confirmationExpr"    -> Json.obj()
     )
     formJsObject shouldBe expectedFormJsObject
 
