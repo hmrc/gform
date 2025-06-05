@@ -341,6 +341,7 @@ class UpscanController(
       case UpscanValidationFailure.EntityTooLarge  => "File too large"
       case UpscanValidationFailure.EntityTooSmall  => "File too small"
       case UpscanValidationFailure.FileNameTooLong => "File name too long"
+      case UpscanValidationFailure.FileNameInvalid => "File name invalid"
       case UpscanValidationFailure.InvalidFileExtension(expectedExtension) =>
         s"Invalid file extension, expected: $expectedExtension"
       case UpscanValidationFailure.InvalidFileType(errorDetail, _) => errorDetail
@@ -349,10 +350,26 @@ class UpscanController(
   private def validateFileName(fileName: String): Validated[UpscanValidationFailure, Unit] =
     Valid(fileName)
       .ensure(UpscanValidationFailure.FileNameTooLong)(fileNameLength(_) < 255)
+      .ensure(UpscanValidationFailure.FileNameInvalid)(!containsEmoji(_))
       .map(_ => ())
 
   private def fileNameLength(fileName: String): Int =
     java.net.URLEncoder.encode(fileName, StandardCharsets.UTF_8.toString).length
+
+  private def containsEmoji(str: String): Boolean =
+    str.codePoints().anyMatch { cp =>
+      Character.getType(cp) == Character.OTHER_SYMBOL &&
+      isEmojiBlock(cp)
+    }
+  private def isEmojiBlock(cp: Int): Boolean =
+    //Emoji ranges
+    (cp >= 0x1f600 && cp <= 0x1f64f) ||
+      (cp >= 0x1f300 && cp <= 0x1f5ff) ||
+      (cp >= 0x1f680 && cp <= 0x1f6ff) ||
+      (cp >= 0x1f900 && cp <= 0x1f9ff) ||
+      (cp >= 0x1fa70 && cp <= 0x1faff) ||
+      (cp >= 0x2600 && cp <= 0x26ff) ||
+      (cp >= 0x2700 && cp <= 0x27bf)
 
   private def getFileExtension(fileName: String): Option[String] =
     fileName.split("\\.").tail.lastOption
