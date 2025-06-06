@@ -270,7 +270,6 @@ object AuthInfo {
   final case object EmailId extends AuthInfo
   final case object SaUtr extends AuthInfo
   final case object CtUtr extends AuthInfo
-  final case object Name extends AuthInfo
   final case object ItmpName extends AuthInfo
   final case class ItmpNameLens(focus: ItmpNameFocus) extends AuthInfo
   final case object ItmpDateOfBirth extends AuthInfo

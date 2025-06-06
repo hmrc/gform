@@ -534,7 +534,6 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
       | "sautr" ^^^ AuthInfo.SaUtr
       | "ctutr" ^^^ AuthInfo.CtUtr
       | "email" ^^^ AuthInfo.EmailId
-      | "name" ^^^ AuthInfo.Name
       | "itmpName" ~ "." ~ itmpNameFocus ^^ { case _ ~ _ ~ focus =>
         AuthInfo.ItmpNameLens(focus)
       }
