@@ -20,6 +20,7 @@ import java.time.{ Instant, LocalDateTime }
 import julienrf.json.derived
 import play.api.libs.json.Reads._
 import play.api.libs.json._
+import uk.gov.hmrc.gform.sharedmodel.AccessCode
 import uk.gov.hmrc.gform.sharedmodel.form.Form
 import uk.gov.hmrc.gform.sharedmodel.form.FormData
 import uk.gov.hmrc.gform.sharedmodel.form.FormId
@@ -127,13 +128,21 @@ case class Snapshot(
   createdAt: Instant,
   ggFormData: Option[GovernmentGatewayFormData]
 ) {
-  def toSnapshotForm(currentForm: Form, useOriginalTemplate: Boolean): Form = {
+  def toSnapshotForm(
+    formTemplateId: FormTemplateId,
+    currentForm: Form,
+    maybeAccessCode: Option[String]
+  ): Form = {
     val currentUserId = currentForm.userId
-    val currentId = currentForm._id
+    val currentId = maybeAccessCode match {
+      case Some(accessCode) => FormId.fromAccessCode(currentForm.userId, formTemplateId, AccessCode(accessCode))
+      case _                => FormId(currentForm.userId, formTemplateId)
+    }
+
     originalForm.copy(
       _id = currentId,
       userId = currentUserId,
-      formTemplateId = if (useOriginalTemplate) originalForm.formTemplateId else snapshotTemplateId
+      formTemplateId = formTemplateId
     )
   }
 
