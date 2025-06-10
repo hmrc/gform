@@ -23,8 +23,9 @@ import cats.{ Endo, MonadError }
 import com.typesafe.config.Config
 import org.slf4j.LoggerFactory
 import play.api.libs.json.{ JsValue, Json }
-import uk.gov.hmrc.gform.core.{ FOpt, _ }
-import uk.gov.hmrc.http.{ HeaderCarrier, HttpReads, HttpReadsInstances, HttpResponse }
+import uk.gov.hmrc.gform.core._
+import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
+import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
 
 import java.net.URL
 import scala.concurrent.ExecutionContext
@@ -154,8 +155,6 @@ class AuditingHttpClient(wsHttp: WSHttp, config: Config)(implicit ec: ExecutionC
     } else {
       hc.authorization.map(authToken => Seq("Authorization" -> authToken.value)).getOrElse(Seq.empty)
     }
-
-  private implicit val httpReads: HttpReads[HttpResponse] = HttpReadsInstances.readRaw
 
   override def get(uri: String)(implicit hc: HeaderCarrier): FOpt[HttpResponse] = fromFutureA(
     wsHttp.GET(uri, headers = authHeaders(uri)).map(handleResponse("GET", uri))

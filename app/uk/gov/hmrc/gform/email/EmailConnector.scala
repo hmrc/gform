@@ -20,15 +20,13 @@ import org.slf4j.LoggerFactory
 import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.wshttp.WSHttp
 import uk.gov.hmrc.http._
+import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
 
 import scala.concurrent.{ ExecutionContext, Future }
 
 class EmailConnector(wSHttp: WSHttp, baseUrl: String)(implicit ec: ExecutionContext) {
 
   private val logger = LoggerFactory.getLogger(getClass)
-
-  implicit val legacyRawReads: HttpReads[HttpResponse] =
-    HttpReadsInstances.throwOnFailure(HttpReadsInstances.readEitherOf(HttpReadsInstances.readRaw))
 
   def sendEmail(emailTemplate: EmailTemplate)(implicit headerCarrier: HeaderCarrier): Future[Unit] = {
     logger.info(s"send email, ${loggingHelpers.cleanHeaderCarrierHeader(headerCarrier)}")

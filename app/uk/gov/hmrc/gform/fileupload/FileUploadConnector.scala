@@ -30,6 +30,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AllowedFileTypes, FormTempla
 import uk.gov.hmrc.gform.wshttp.{ FutureHttpResponseSyntax, WSHttp }
 import uk.gov.hmrc.http.HttpReads.Implicits.readFromJson
 import uk.gov.hmrc.http._
+import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
 
 import java.time.LocalDateTime
 import scala.concurrent.{ ExecutionContext, Future }
@@ -40,9 +41,6 @@ class FileUploadConnector(
   envelopeService: EnvelopeAlgebra[Future]
 )(implicit ex: ExecutionContext) {
   private val logger = LoggerFactory.getLogger(getClass)
-
-  implicit val legacyRawReads: HttpReads[HttpResponse] =
-    HttpReadsInstances.throwOnFailure(HttpReadsInstances.readEitherOf(HttpReadsInstances.readRaw))
 
   val helper = new Helper(config)
   def createEnvelope(

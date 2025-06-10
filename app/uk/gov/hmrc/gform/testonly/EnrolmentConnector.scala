@@ -19,13 +19,11 @@ package uk.gov.hmrc.gform.testonly
 import play.api.libs.json.JsValue
 import uk.gov.hmrc.gform.wshttp.WSHttp
 import uk.gov.hmrc.http._
+import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
 
 import scala.concurrent.{ ExecutionContext, Future }
 
 class EnrolmentConnector(wSHttp: WSHttp, baseUrl: String)(implicit ec: ExecutionContext) {
-
-  implicit val legacyRawReads: HttpReads[HttpResponse] =
-    HttpReadsInstances.throwOnFailure(HttpReadsInstances.readEitherOf(HttpReadsInstances.readRaw))
 
   def upload(id: String, body: JsValue)(implicit hc: HeaderCarrier) =
     wSHttp.PUT[JsValue, HttpResponse](s"$ES6url/HMRC-OBTDS-ORG~EtmpRegistrationNumber~$id", body)

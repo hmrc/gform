@@ -21,7 +21,8 @@ import play.api.http.Status
 import play.api.libs.json.{ JsError, JsResult, JsSuccess, JsValue, Json }
 import uk.gov.hmrc.gform.sharedmodel.sdes.SdesNotifyRequest
 import uk.gov.hmrc.gform.wshttp.{ FutureHttpResponseSyntax, WSHttp }
-import uk.gov.hmrc.http.{ HeaderCarrier, HttpReads, HttpReadsInstances, HttpResponse }
+import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
+import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
 
 import scala.concurrent.{ ExecutionContext, Future }
 
@@ -40,9 +41,6 @@ class SdesConnector(
     "x-client-id"  -> sdesRouting.apiKey,
     "Content-Type" -> "application/json"
   )
-
-  implicit val legacyRawReads: HttpReads[HttpResponse] =
-    HttpReadsInstances.throwOnFailure(HttpReadsInstances.readEitherOf(HttpReadsInstances.readRaw))
 
   def notifySDES(payload: SdesNotifyRequest, sdesRouting: SdesRouting)(implicit
     hc: HeaderCarrier
