@@ -134,8 +134,7 @@ class PlayComponentsModule(
       prodRoutes,
       builderRoutes,
       testOnlyModule.testOnlyController,
-      testOnlyModule.fUInterceptor,
-      testOnlyModule.testOnlyObjectStoreController
+      testOnlyModule.fUInterceptor
     )
 
   lazy val router: Router = {
