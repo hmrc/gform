@@ -336,7 +336,8 @@ class ApplicationModule(context: Context)
     formTemplateModule.formTemplateService,
     formTemplateModule.handler,
     envelopeModule.foptEnvelopeService,
-    objectStoreModule.foptObjectStoreService
+    objectStoreModule.foptObjectStoreService,
+    formMetadaModule.formMetadataService
   )
   private val testOnlyModule =
     new TestOnlyModule(

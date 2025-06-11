@@ -21,7 +21,7 @@ import play.api.libs.json._
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplateRaw, FormTemplateRawId }
 import uk.gov.hmrc.gform.formtemplate.{ FormTemplateService, RequestHandlerAlg }
-import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId, FormId }
+import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId, FormId, FormIdData }
 import uk.gov.hmrc.gform.save4later.FormMongoCache
 import uk.gov.hmrc.gform.core.FOpt
 import uk.gov.hmrc.gform.BuildInfo
@@ -30,7 +30,9 @@ import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import cats.implicits._
 import uk.gov.hmrc.gform.envelope.EnvelopeAlgebra
+import uk.gov.hmrc.gform.formmetadata.FormMetadataAlgebra
 import uk.gov.hmrc.gform.objectstore.{ ObjectStoreAlgebra, ObjectStoreService }
+import uk.gov.hmrc.gform.sharedmodel.AccessCode
 
 class TestOnlyFormService(
   snapshotMongoCache: SnapshotMongoCache,
@@ -38,7 +40,8 @@ class TestOnlyFormService(
   formTemplateService: FormTemplateService,
   requestHandler: RequestHandlerAlg[FOpt],
   envelopeAlgebra: EnvelopeAlgebra[FOpt],
-  objectStoreAlgebra: ObjectStoreAlgebra[FOpt]
+  objectStoreAlgebra: ObjectStoreAlgebra[FOpt],
+  formMetadataAlgebra: FormMetadataAlgebra[Future]
 )(implicit ec: ExecutionContext) {
 
   private def maybeReplaceDestinations(raw: FormTemplateRaw): FormTemplateRaw = {
@@ -105,22 +108,40 @@ class TestOnlyFormService(
       case None => throw new Exception(s"We could not find snapshot item with id: $snapshotId")
     }
 
-  def restoreForm(snapshotId: SnapshotId, restoreId: String, useOriginalTemplate: Boolean)(implicit
+  def restoreForm(snapshotId: SnapshotId)(implicit
     hc: HeaderCarrier
-  ): Future[SnapshotOverview] = {
-    val snapshotF = snapshotMongoCache.find(snapshotId)
-    val currentFormF = formMongoCache.find(FormId(restoreId))
-    (snapshotF, currentFormF)
-      .mapN {
-        case (Some(snapshot), Some(currentForm)) => (snapshot, currentForm)
-        case _                                   => throw new Exception(s"We could not find cache item with id: $snapshotId or $restoreId")
-      }
-      .flatMap { case (snapshot, currentForm) =>
-        formMongoCache
-          .upsert(snapshot.toSnapshotForm(currentForm, useOriginalTemplate))
-          .map(_ => SnapshotOverview(snapshot, withData = true))
-      }
-  }
+  ): Future[SnapshotOverview] =
+    doRestoreForm(snapshotId, None)
+
+  def restoreFormWithAccessCode(snapshotId: SnapshotId, accessCode: String)(implicit
+    hc: HeaderCarrier
+  ): Future[SnapshotOverview] =
+    doRestoreForm(snapshotId, Some(accessCode))
+
+  private def doRestoreForm(
+    snapshotId: SnapshotId,
+    maybeAccessCode: Option[String]
+  )(implicit hc: HeaderCarrier): Future[SnapshotOverview] =
+    snapshotMongoCache.find(snapshotId).flatMap {
+      case Some(snapshot) =>
+        formMongoCache.find(FormId(snapshot.originalForm._id.value)).flatMap {
+          case Some(form) =>
+            val newForm = snapshot.toSnapshotForm(snapshot.snapshotTemplateId, form, maybeAccessCode)
+            val formIdData = maybeAccessCode match {
+              case Some(accessCode) =>
+                FormIdData.WithAccessCode(form.userId, snapshot.snapshotTemplateId, AccessCode(accessCode))
+              case None => FormIdData.Plain(form.userId, snapshot.snapshotTemplateId)
+            }
+            for {
+              _ <- formMongoCache.upsert(newForm)
+              _ <- formMetadataAlgebra.upsert(formIdData)
+            } yield SnapshotOverview(snapshot, withData = true)
+          case None =>
+            Future.failed(new Exception(s"We could not find form item with id: ${snapshot.originalForm._id.value}"))
+        }
+      case None =>
+        Future.failed(new Exception(s"We could not find snapshot item with id: $snapshotId"))
+    }
 
   def getSnapshots(filter: SnapshotFilter): Future[List[SnapshotOverview]] =
     snapshotMongoCache.findWithFilter(filter).map(_.map(SnapshotOverview(_, withData = false)))
