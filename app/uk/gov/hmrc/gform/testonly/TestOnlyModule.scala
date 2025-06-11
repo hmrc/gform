@@ -17,22 +17,18 @@
 package uk.gov.hmrc.gform.testonly
 
 import play.api.mvc.ControllerComponents
-import uk.gov.hmrc.gform.akka.AkkaModule
-
-import scala.concurrent.Future
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.des.DesConnector
 import uk.gov.hmrc.gform.form.FormService
 import uk.gov.hmrc.gform.formtemplate.{ FormTemplateAlgebra, FormTemplateModule }
 import uk.gov.hmrc.gform.mongo.MongoModule
-import uk.gov.hmrc.gform.objectstore.ObjectStoreModule
 import uk.gov.hmrc.gform.playcomponents.PlayComponents
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplate, FormTemplateId }
 import uk.gov.hmrc.gform.submission.SubmissionModule
 import uk.gov.hmrc.gform.submission.destinations.DestinationModule
 import uk.gov.hmrc.gform.wshttp.WSHttpModule
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ ExecutionContext, Future }
 
 class TestOnlyModule(
   mongoModule: MongoModule,
@@ -44,9 +40,7 @@ class TestOnlyModule(
   formTemplateModule: FormTemplateModule,
   destinationModule: DestinationModule,
   controllerComponents: ControllerComponents,
-  objectStoreModule: ObjectStoreModule,
-  submissionModule: SubmissionModule,
-  akkaModule: AkkaModule
+  submissionModule: SubmissionModule
 )(implicit ex: ExecutionContext) {
 
   val enrolmentConnector =
@@ -89,9 +83,4 @@ class TestOnlyModule(
       configModule.serviceConfig,
       proxyActions
     )
-
-  val testOnlyObjectStoreController: TestOnlyObjectStoreController = new TestOnlyObjectStoreController(
-    configModule.controllerComponents,
-    objectStoreModule.objectStoreService
-  )(ex, akkaModule.materializer)
 }

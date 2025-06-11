@@ -88,7 +88,7 @@ class ObjectStoreModule(
     new ObjectStoreService(objectStoreConnector, envelopeModule.envelopeService, sdesConnector)
 
   val objectStoreController: ObjectStoreController =
-    new ObjectStoreController(configModule.controllerComponents, objectStoreService)
+    new ObjectStoreController(configModule.controllerComponents, objectStoreService)(ex, akkaModule.materializer)
 
   val foptObjectStoreService: ObjectStoreAlgebra[FOpt] = new ObjectStoreAlgebra[FOpt] {
 
