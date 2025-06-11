@@ -31,7 +31,8 @@ case class SummarySection(
   keyDisplayWidth: KeyDisplayWidth.KeyDisplayWidth = KeyDisplayWidth.S,
   includeIf: Option[IncludeIf],
   pdf: Option[PdfCtx],
-  excludeFromPdf: Option[List[FormComponentId]]
+  excludeFromPdf: Option[List[FormComponentId]],
+  hideDefaultRows: Option[Boolean]
 )
 
 object SummarySection extends JsonUtils {

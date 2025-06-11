@@ -317,6 +317,9 @@
         "doneNote": {
           "type": "array"
         },
+        "hideDefaultRows": {
+          "type": "boolean"
+        },
         "fields": {
           "type": "array",
           "items": {
@@ -1022,7 +1025,7 @@
           "$ref": "#/$defs/fileCount"
         },
         "maxFiles": {
-            "$ref": "#/$defs/fileCount"
+          "$ref": "#/$defs/fileCount"
         },
         "ranges": {
           "type": "array"
@@ -1784,7 +1787,10 @@
       }
     },
     "fileCount": {
-      "type": ["number", "string"],
+      "type": [
+        "number",
+        "string"
+      ],
       "anyOf": [
         {
           "type": "number"
