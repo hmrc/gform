@@ -508,6 +508,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
       KeyDisplayWidth.S,
       None,
       None,
+      None,
       None
     ),
     None,

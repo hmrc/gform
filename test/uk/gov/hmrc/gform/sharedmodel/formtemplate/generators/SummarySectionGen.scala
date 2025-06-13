@@ -25,14 +25,15 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.SmartStringGen.smar
 trait SummarySectionGen {
   def summarySectionGen: Gen[SummarySection] =
     for {
-      title          <- smartStringGen
-      caption        <- Gen.option(smartStringGen)
-      header         <- smartStringGen
-      footer         <- smartStringGen
-      continueLabel  <- Gen.option(smartStringGen)
-      fields         <- Gen.option(PrimitiveGen.oneOrMoreGen(FormComponentGen.formComponentGen()))
-      pdf            <- Gen.option(pdfContextGen)
-      excludeFromPdf <- Gen.option(PrimitiveGen.zeroOrMoreGen(formComponentIdGen))
+      title           <- smartStringGen
+      caption         <- Gen.option(smartStringGen)
+      header          <- smartStringGen
+      footer          <- smartStringGen
+      continueLabel   <- Gen.option(smartStringGen)
+      fields          <- Gen.option(PrimitiveGen.oneOrMoreGen(FormComponentGen.formComponentGen()))
+      pdf             <- Gen.option(pdfContextGen)
+      excludeFromPdf  <- Gen.option(PrimitiveGen.zeroOrMoreGen(formComponentIdGen))
+      hideDefaultRows <- Gen.option(PrimitiveGen.booleanGen)
     } yield SummarySection(
       title,
       caption,
@@ -44,7 +45,8 @@ trait SummarySectionGen {
       KeyDisplayWidth.S,
       None,
       pdf,
-      excludeFromPdf
+      excludeFromPdf,
+      hideDefaultRows
     )
 }
 
