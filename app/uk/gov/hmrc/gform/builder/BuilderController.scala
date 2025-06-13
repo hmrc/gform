@@ -642,7 +642,9 @@ object BuilderSupport {
         Property("line2Mandatory", PropertyBehaviour.PurgeWhenEmpty),
         Property("postcodeMandatory", PropertyBehaviour.PurgeWhenEmpty),
         Property("countryLookup", PropertyBehaviour.PurgeWhenEmpty),
-        Property("countryDisplayed", PropertyBehaviour.PurgeWhenEmpty)
+        Property("countryDisplayed", PropertyBehaviour.PurgeWhenEmpty),
+        Property("displayCharCount", PropertyBehaviour.PurgeWhenEmpty),
+        Property("dataThreshold", PropertyBehaviour.PurgeWhenEmpty)
       )
 
     updateJsonByPropertyList(propertyList, formComponent, sectionData, List.empty)
