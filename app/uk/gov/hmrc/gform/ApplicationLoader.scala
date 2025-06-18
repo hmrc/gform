@@ -350,9 +350,7 @@ class ApplicationModule(context: Context)
       formTemplateModule,
       destinationModule,
       controllerComponents,
-      objectStoreModule,
-      submissionModule,
-      akkaModule
+      submissionModule
     )
 
   val dbLookupModule = new DbLookupModule(controllerComponents, mongoModule)
