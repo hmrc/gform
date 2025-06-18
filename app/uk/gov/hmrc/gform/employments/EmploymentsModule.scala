@@ -17,17 +17,17 @@
 package uk.gov.hmrc.gform.employments
 
 import uk.gov.hmrc.gform.config.ConfigModule
-import uk.gov.hmrc.gform.des.{ DesAlgebra, DesConnector }
+import uk.gov.hmrc.gform.hip.{ HipAlgebra, HipConnector }
 import uk.gov.hmrc.gform.wshttp.WSHttpModule
 
 import scala.concurrent.{ ExecutionContext, Future }
 
 class EmploymentsModule(wSHttpModule: WSHttpModule, configModule: ConfigModule)(implicit ex: ExecutionContext) {
 
-  private val desConfig = configModule.desConfig
-  private val desConnector: DesAlgebra[Future] =
-    new DesConnector(wSHttpModule.auditableWSHttp, configModule.serviceConfig.baseUrl("etmp-hod"), desConfig)
+  private val hipConfig = configModule.hipConfig
+  private val hipConnector: HipAlgebra[Future] =
+    new HipConnector(wSHttpModule.auditableWSHttp, configModule.serviceConfig.baseUrl("hip"), hipConfig)
 
-  private val employmentsService = new EmploymentsService(desConnector)
+  private val employmentsService = new EmploymentsService(hipConnector)
   val employmentsController = new EmploymentsController(configModule.controllerComponents, employmentsService)
 }

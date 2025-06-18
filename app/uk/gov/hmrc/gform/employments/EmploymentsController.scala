@@ -17,7 +17,7 @@
 package uk.gov.hmrc.gform.employments
 
 import org.slf4j.LoggerFactory
-import play.api.libs.json.JsValue
+import play.api.libs.json.JsArray
 import play.api.mvc.ControllerComponents
 import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.controllers.BaseController
@@ -31,9 +31,9 @@ class EmploymentsController(controllerComponents: ControllerComponents, employme
 
   def getEmployments(nino: String, taxYear: Int) =
     Action.async { implicit request =>
-      logger.info(s"Get Employments from DES, ${loggingHelpers.cleanHeaders(request.headers)}")
+      logger.info(s"Get Employments from HIP, ${loggingHelpers.cleanHeaders(request.headers)}")
 
-      val serviceResponse: Future[JsValue] = employments.callDES(nino, taxYear)
+      val serviceResponse: Future[JsArray] = employments.lookupEmployment(nino, taxYear)
       serviceResponse.asOkJson
 
     }

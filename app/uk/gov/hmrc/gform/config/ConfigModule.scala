@@ -46,6 +46,8 @@ class ConfigModule(
 
   val desConfig: DesConnectorConfig =
     ConfigSource.default.at("microservice.services.etmp-hod").loadOrThrow[DesConnectorConfig]
+  val hipConfig: HipConnectorConfig =
+    ConfigSource.default.at("microservice.services.hip").loadOrThrow[HipConnectorConfig]
 
   val isProd: Boolean = typesafeConfig.getString("play.http.router") =!= "testOnlyDoNotUseInAppConf.Routes"
 
@@ -172,3 +174,10 @@ class ConfigModule(
 }
 
 final case class DesConnectorConfig(basePath: String, authorizationToken: String, environment: String)
+final case class HipConnectorConfig(
+  basePath: String,
+  clientId: String,
+  secret: String,
+  originatorId: String,
+  correlationId: String
+)
