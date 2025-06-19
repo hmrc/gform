@@ -25,7 +25,6 @@ import play.api.http.HeaderNames.AUTHORIZATION
 import play.api.libs.json.JsArray
 import uk.gov.hmrc.gform.sharedmodel.hip.HipEmploymentSummary
 
-import java.util.Base64
 import scala.concurrent.{ ExecutionContext, Future }
 
 trait HipAlgebra[F[_]] {
@@ -48,13 +47,8 @@ class HipConnector(wSHttp: WSHttp, baseUrl: String, hipConfig: HipConnectorConfi
     )
   )
 
-  private def authorization: String = {
-    val clientId = hipConfig.clientId
-    val secret = hipConfig.secret
-
-    val encoded = Base64.getEncoder.encodeToString(s"$clientId:$secret".getBytes("UTF-8"))
-    s"Basic $encoded"
-  }
+  private def authorization: String =
+    s"Basic ${hipConfig.authorizationToken}"
 
   private val authHeaders: Seq[(String, String)] = Seq(
     AUTHORIZATION -> s"$authorization"
