@@ -30,6 +30,8 @@ sealed trait SectionNumber extends Product with Serializable {
       "ac" + sectionIndex.toString + "." + iterationNumber.toString
     case SectionNumber.Classic.AddToListPage.RepeaterPage(TemplateSectionIndex(sectionIndex), iterationNumber) =>
       "ar" + sectionIndex.toString + "." + iterationNumber.toString
+    case SectionNumber.Classic.AddToListPage.DeclarationPage(TemplateSectionIndex(sectionIndex), iterationNumber) =>
+      "as" + sectionIndex.toString + "." + iterationNumber.toString
     case SectionNumber.Classic.RepeatedPage(TemplateSectionIndex(sectionIndex), pageNumber) =>
       "r" + sectionIndex.toString + "." + pageNumber.toString
     case SectionNumber.TaskList(Coordinates(taskSectionNumber, taskNumber), sectionNumber) =>
@@ -53,6 +55,7 @@ object SectionNumber {
       case class Page(sectionIndex: TemplateSectionIndex, iterationNumber: Int, pageNumber: Int) extends AddToListPage
       case class CyaPage(sectionIndex: TemplateSectionIndex, iterationNumber: Int) extends AddToListPage
       case class RepeaterPage(sectionIndex: TemplateSectionIndex, iterationNumber: Int) extends AddToListPage
+      case class DeclarationPage(sectionIndex: TemplateSectionIndex, iterationNumber: Int) extends AddToListPage
     }
   }
 
@@ -74,12 +77,13 @@ object SectionNumber {
   )
 
   // format: off
-  private val NormalPageRegex            = "^n(\\d+)$".r
-  private val AddToListDefaultPageRegex  = "^ad(\\d+)$".r
-  private val AddToListPageRegex         = "^ap(\\d+)\\.(\\d+)\\.(\\d+)$".r
-  private val AddToListCyaPageRegex      = "^ac(\\d+)\\.(\\d+)$".r
-  private val AddToListRepeaterPageRegex = "^ar(\\d+)\\.(\\d+)$".r
-  private val RepeatedPageRegex          = "^r(\\d+)\\.(\\d+)$".r
+  private val NormalPageRegex                  = "^n(\\d+)$".r
+  private val AddToListDefaultPageRegex        = "^ad(\\d+)$".r
+  private val AddToListPageRegex               = "^ap(\\d+)\\.(\\d+)\\.(\\d+)$".r
+  private val AddToListCyaPageRegex            = "^ac(\\d+)\\.(\\d+)$".r
+  private val AddToListRepeaterPageRegex       = "^ar(\\d+)\\.(\\d+)$".r
+  private val AddToListDeclarationSectionRegex = "^as(\\d+)\\.(\\d+)$".r
+  private val RepeatedPageRegex                = "^r(\\d+)\\.(\\d+)$".r
   // format: on
 
   def parseClassic(string: String): Option[SectionNumber.Classic] =
@@ -102,6 +106,11 @@ object SectionNumber {
         Some(
           SectionNumber.Classic.AddToListPage
             .RepeaterPage(TemplateSectionIndex(sectionIndex.toInt), iterationNumber.toInt)
+        )
+      case AddToListDeclarationSectionRegex(sectionIndex, iterationNumber) =>
+        Some(
+          SectionNumber.Classic.AddToListPage
+            .DeclarationPage(TemplateSectionIndex(sectionIndex.toInt), iterationNumber.toInt)
         )
       case RepeatedPageRegex(sectionIndex, pageNumber) =>
         Some(SectionNumber.Classic.RepeatedPage(TemplateSectionIndex(sectionIndex.toInt), pageNumber.toInt))

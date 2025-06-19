@@ -71,7 +71,8 @@ object Section {
     defaultPage: Option[Page] = None,
     cyaPage: Option[CheckYourAnswersPage] = None,
     fields: Option[NonEmptyList[FormComponent]] = None,
-    pageIdToDisplayAfterRemove: Option[PageId] = None
+    pageIdToDisplayAfterRemove: Option[PageId] = None,
+    declarationSection: Option[DeclarationSection] = None
   ) extends Section {
     val pageId: PageId = PageId(addAnotherQuestion.id.value)
     override lazy val expandedFormComponents: List[FormComponent] = pages.toList.flatMap(_.expandedFormComponents)
@@ -104,7 +105,8 @@ object Section {
           LeafExpr(path + "cyaPage", a.cyaPage) ++
           LeafExpr(path + "fields", a.fields) ++
           LeafExpr(path + "errorMessage", a.infoMessage) ++
-          LeafExpr(path + "descriptionTotal", a.descriptionTotal)
+          LeafExpr(path + "descriptionTotal", a.descriptionTotal) ++
+          LeafExpr(path + "declarationSection", a.declarationSection)
     }
 }
 
@@ -135,6 +137,7 @@ object AtlDescription {
 
 case class DeclarationSection(
   title: SmartString,
+  caption: Option[SmartString],
   noPIITitle: Option[SmartString],
   description: Option[SmartString],
   shortName: Option[SmartString],
@@ -148,6 +151,7 @@ object DeclarationSection {
 
   implicit val leafExprs: LeafExpr[DeclarationSection] = (path: TemplatePath, t: DeclarationSection) =>
     LeafExpr(path + "title", t.title) ++
+      LeafExpr(path + "caption", t.caption) ++
       LeafExpr(path + "description", t.description) ++
       LeafExpr(path + "shortName", t.shortName) ++
       LeafExpr(path + "continueLabel", t.continueLabel) ++
