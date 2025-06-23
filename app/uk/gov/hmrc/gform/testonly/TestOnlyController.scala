@@ -31,9 +31,7 @@ import uk.gov.hmrc.gform.core.FOpt
 import uk.gov.hmrc.gform.des.DesAlgebra
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.form.FormAlgebra
-import uk.gov.hmrc.gform.formtemplate.TopLevelExpressions
-import uk.gov.hmrc.gform.formtemplate.{ BooleanExprId, Substituter }
-import uk.gov.hmrc.gform.formtemplate.{ BooleanExprSubstitutions, ExprSubstitutions, FormTemplateAlgebra, RequestHandlerAlg }
+import uk.gov.hmrc.gform.formtemplate.{ BooleanExprId, BooleanExprSubstitutions, ExprSubstitutions, ExpressionId, FormTemplateAlgebra, RequestHandlerAlg, Substituter, TopLevelExpressions }
 import uk.gov.hmrc.gform.repo.Repo
 import uk.gov.hmrc.gform.sharedmodel._
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FormId }
@@ -79,13 +77,18 @@ class TestOnlyController(
   private def substituteBooleanExprsInExprs(
     booleanExprSubstitutions: BooleanExprSubstitutions,
     exprSubstitutions: ExprSubstitutions
-  ): ExprSubstitutions = {
+  ): (ExprSubstitutions, Map[ExpressionId, String]) = {
     import uk.gov.hmrc.gform.formtemplate.BooleanExprSubstituter._
     val substituter = implicitly[Substituter[BooleanExprSubstitutions, Expr]]
-
-    ExprSubstitutions(exprSubstitutions.expressions.map { case (id, expr) =>
-      id -> substituter.substitute(booleanExprSubstitutions, expr)
-    })
+    val (errors, successes) = exprSubstitutions.expressions.partitionMap { case (id, expr) =>
+      Either
+        .catchOnly[NoSuchElementException](substituter.substitute(booleanExprSubstitutions, expr))
+        .fold(
+          error => Left(id -> error.getMessage),
+          success => Right(id -> success)
+        )
+    }
+    (ExprSubstitutions(successes.toMap), errors.toMap)
   }
 
   private def substituteBooleanExpr(
@@ -117,16 +120,17 @@ class TestOnlyController(
             booleanExpressionsContext <- BooleanExprSubstitutions.from(rawTemplate)
           } yield {
             val expressions0: ExprSubstitutions = substituteExpr(expressionsContext)
-            val expressions: ExprSubstitutions =
+            val expressionsSubsWithErrorMap: (ExprSubstitutions, Map[ExpressionId, String]) =
               substituteBooleanExprsInExprs(booleanExpressionsContext, expressions0)
             val expressionsResolved: Either[UnexpectedState, ExprSubstitutions] =
-              TopLevelExpressions.resolveReferences(expressions)
+              TopLevelExpressions.resolveReferences(expressionsSubsWithErrorMap._1)
             ExpressionsLookup(
               expressionsResolved match {
                 case Right(resolved) => resolved.expressions
-                case Left(_)         => expressions.expressions
+                case Left(_)         => expressionsSubsWithErrorMap._1.expressions
               },
-              substituteBooleanExpr(booleanExpressionsContext, expressions)
+              substituteBooleanExpr(booleanExpressionsContext, expressionsSubsWithErrorMap._1),
+              expressionsSubsWithErrorMap._2
             )
           }
 

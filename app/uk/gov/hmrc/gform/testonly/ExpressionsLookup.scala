@@ -23,7 +23,8 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ BooleanExpr, Expr, JsonUtils
 
 final case class ExpressionsLookup(
   expressions: Map[ExpressionId, Expr],
-  booleanExpressions: Map[BooleanExprId, BooleanExpr]
+  booleanExpressions: Map[BooleanExprId, BooleanExpr],
+  errorMap: Map[ExpressionId, String]
 )
 
 object ExpressionsLookup {
@@ -31,5 +32,7 @@ object ExpressionsLookup {
     JsonUtils.formatMap(ExpressionId.apply, _.id)
   implicit val booleanExprMapFormat: Format[Map[BooleanExprId, BooleanExpr]] =
     JsonUtils.formatMap(BooleanExprId.apply, _.id)
+  implicit val errorMapFormat: Format[Map[ExpressionId, String]] =
+    JsonUtils.formatMap(ExpressionId.apply, _.id)
   implicit val format: Format[ExpressionsLookup] = derived.oformat()
 }
