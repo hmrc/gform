@@ -120,17 +120,17 @@ class TestOnlyController(
             booleanExpressionsContext <- BooleanExprSubstitutions.from(rawTemplate)
           } yield {
             val expressions0: ExprSubstitutions = substituteExpr(expressionsContext)
-            val expressionsSubsWithErrorMap: (ExprSubstitutions, Map[ExpressionId, String]) =
+            val (expressionsSubs, errorMap): (ExprSubstitutions, Map[ExpressionId, String]) =
               substituteBooleanExprsInExprs(booleanExpressionsContext, expressions0)
             val expressionsResolved: Either[UnexpectedState, ExprSubstitutions] =
-              TopLevelExpressions.resolveReferences(expressionsSubsWithErrorMap._1)
+              TopLevelExpressions.resolveReferences(expressionsSubs)
             ExpressionsLookup(
               expressionsResolved match {
                 case Right(resolved) => resolved.expressions
-                case Left(_)         => expressionsSubsWithErrorMap._1.expressions
+                case Left(_)         => expressionsSubs.expressions
               },
-              substituteBooleanExpr(booleanExpressionsContext, expressionsSubsWithErrorMap._1),
-              expressionsSubsWithErrorMap._2
+              substituteBooleanExpr(booleanExpressionsContext, expressionsSubs),
+              errorMap
             )
           }
 
