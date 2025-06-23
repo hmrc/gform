@@ -460,14 +460,16 @@ object MiniSummaryRow {
     key: Option[SmartString],
     value: MiniSummaryListValue,
     includeIf: Option[IncludeIf],
-    pageId: Option[PageId]
+    pageId: Option[PageId],
+    taskId: Option[TaskId]
   ) extends MiniSummaryRow
 
   case class SmartStringRow(
     key: Option[SmartString],
     value: SmartString,
     includeIf: Option[IncludeIf],
-    pageId: Option[PageId]
+    pageId: Option[PageId],
+    taskId: Option[TaskId]
   ) extends MiniSummaryRow
 
   case class HeaderRow(

@@ -32,7 +32,7 @@ import uk.gov.hmrc.gform.sharedmodel.DataRetrieve.Attribute
 import uk.gov.hmrc.gform.sharedmodel._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.Dynamic.DataRetrieveBased
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.PageLink
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ BySubmissionReference, _ }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.graph.DependencyGraph._
 
 import java.time.LocalDate
@@ -1159,13 +1159,26 @@ object FormTemplateValidator {
         )
       ) ++ atlIds.map(fcId => PageId(fcId.value))
 
+    val taskIds: List[TaskId] =
+      formTemplate.formKind.fold(classic => List.empty[TaskId])(taskList =>
+        taskList.sections.toList.flatMap(_.tasks.toList.flatMap(_.id))
+      )
+
     Monoid.combineAll(rows.map {
       case MiniSummaryRow.ATLRow(atlId, _, _) =>
         if (atlIds.contains(atlId)) Valid else Invalid(s"$atlId is not AddToList Id")
-      case MiniSummaryRow.ValueRow(_, _, _, Some(pageId)) if !pageIds.contains(pageId) =>
+      case MiniSummaryRow.ValueRow(_, _, _, Some(pageId), _) if !pageIds.contains(pageId) =>
         Invalid(s"${pageId.id} is not a Page Id")
-      case MiniSummaryRow.SmartStringRow(_, _, _, Some(pageId)) if !pageIds.contains(pageId) =>
+      case MiniSummaryRow.ValueRow(_, _, _, _, Some(taskId)) if !taskIds.contains(taskId) =>
+        Invalid(s"${taskId.id} is not a Task Id")
+      case MiniSummaryRow.ValueRow(_, _, _, Some(pageId), Some(taskId)) =>
+        Invalid(s"Only one of 'pageId: ${pageId.id}', 'taskId: ${taskId.id}' can be defined")
+      case MiniSummaryRow.SmartStringRow(_, _, _, Some(pageId), _) if !pageIds.contains(pageId) =>
         Invalid(s"${pageId.id} is not a Page Id")
+      case MiniSummaryRow.SmartStringRow(_, _, _, _, Some(taskId)) if !taskIds.contains(taskId) =>
+        Invalid(s"${taskId.id} is not a Task Id")
+      case MiniSummaryRow.SmartStringRow(_, _, _, Some(pageId), Some(taskId)) =>
+        Invalid(s"Only one of 'pageId: ${pageId.id}', 'taskId: ${taskId.id}' can be defined")
       case _ => Valid
     })
   }
@@ -1577,7 +1590,7 @@ object FormTemplateValidator {
         s"AddToList, '${page.title.defaultRawValue(LangADT.En)}', cannot contains fields in defaultPage other than Info type. " +
           s"All fields in defaultPage for AddToList must be Info or Table or MiniSummary type."
 
-      page.fields map { fc => isViewOnlyComponent(fc, reason) }
+      page.fields map { fc => isViewOnlyComponent(fc, formTemplate, reason) }
     }
 
     val isNonInformationMessagePresent: List[ValidationResult] =
@@ -1596,7 +1609,7 @@ object FormTemplateValidator {
 
     def checkComponentType(summarySection: SummarySection) =
       summarySection.fields.fold(List.empty[ValidationResult])(fields =>
-        fields.toList.map(f => isViewOnlyComponent(f, reason(f)))
+        fields.toList.map(f => isViewOnlyComponent(f, formTemplate, reason(f)))
       )
 
     def validatePdfLinkExpr(summarySection: SummarySection) = {
@@ -1620,9 +1633,12 @@ object FormTemplateValidator {
         val summarySection = formTemplate.summarySection
         checkComponentType(summarySection) ++ validatePdfLinkExpr(summarySection)
       } { taskList =>
-        taskList.sections.toList.flatMap(
-          _.tasks.toList.flatMap(_.summarySection.map(summarySection => checkComponentType(summarySection).combineAll))
-        )
+        val summarySection = formTemplate.summarySection
+        checkComponentType(summarySection) ++ validatePdfLinkExpr(summarySection) ++
+          taskList.sections.toList.flatMap(
+            _.tasks.toList
+              .flatMap(_.summarySection.map(summarySection => checkComponentType(summarySection).combineAll))
+          )
       }
       .combineAll
   }
@@ -1631,7 +1647,7 @@ object FormTemplateValidator {
     def checkComponentType(field: FormComponent): ValidationResult = {
       val reason =
         s"All fields in Check Your Answer page for AddToList must be Info or Table or MiniSummary type. Field Id, '${field.id}' is not an info field"
-      isViewOnlyComponent(field, reason)
+      isViewOnlyComponent(field, formTemplate, reason)
     }
 
     formTemplate.formKind.allSections
@@ -1806,11 +1822,11 @@ object FormTemplateValidator {
     }
   }
 
-  private def isViewOnlyComponent(field: FormComponent, reason: String): ValidationResult =
+  private def isViewOnlyComponent(field: FormComponent, formTemplate: FormTemplate, reason: String): ValidationResult =
     field.`type` match {
       case _: InformationMessage => Valid
       case _: TableComp          => Valid
-      case _: MiniSummaryList    => Valid
+      case msl: MiniSummaryList  => validateMiniSummaryList(msl.rows, formTemplate)
       case _                     => Invalid(reason)
     }
 
@@ -1823,7 +1839,7 @@ object FormTemplateValidator {
       formTemplate.formKind.allSections.map {
         case s: Section.AddToList =>
           s.fields.fold[ValidationResult](Valid)(fields =>
-            fields.toList.map(f => isViewOnlyComponent(f, reason(f))).combineAll
+            fields.toList.map(f => isViewOnlyComponent(f, formTemplate, reason(f))).combineAll
           )
         case _ => Valid
       }
@@ -1848,7 +1864,9 @@ object FormTemplateValidator {
           if (task.declarationSection.isDefined && task.summarySection.isEmpty)
             Seq(Invalid(s"""A destinationSection requires a summarySection in a task list."""))
           else
-            task.declarationSection.map(ds => ds.fields.map(fc => isViewOnlyComponent(fc, reason(fc)))).combineAll
+            task.declarationSection
+              .map(ds => ds.fields.map(fc => isViewOnlyComponent(fc, formTemplate, reason(fc))))
+              .combineAll
         }
       }.combineAll
     }
