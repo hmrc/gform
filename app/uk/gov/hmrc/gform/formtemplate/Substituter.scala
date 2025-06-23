@@ -131,17 +131,24 @@ object Substituter {
     ev2: Substituter[A, BooleanExpr]
   ): Substituter[A, MiniSummaryRow] = (substitutions, t) =>
     t match {
-      case MiniSummaryRow.ValueRow(key, MiniSummaryListValue.AnyExpr(exp), includeIf, pageId) =>
+      case MiniSummaryRow.ValueRow(key, MiniSummaryListValue.AnyExpr(exp), includeIf, pageId, taskId) =>
         MiniSummaryRow.ValueRow(
           key(substitutions),
           MiniSummaryListValue.AnyExpr(exp(substitutions)),
           includeIf(substitutions),
-          pageId
+          pageId,
+          taskId
         )
-      case MiniSummaryRow.ValueRow(key, r, includeIf, pageId) =>
-        MiniSummaryRow.ValueRow(key.map(_(substitutions)), r, includeIf(substitutions), pageId)
-      case MiniSummaryRow.SmartStringRow(key, r, includeIf, pageId) =>
-        MiniSummaryRow.SmartStringRow(key.map(_(substitutions)), r(substitutions), includeIf(substitutions), pageId)
+      case MiniSummaryRow.ValueRow(key, r, includeIf, pageId, taskId) =>
+        MiniSummaryRow.ValueRow(key.map(_(substitutions)), r, includeIf(substitutions), pageId, taskId)
+      case MiniSummaryRow.SmartStringRow(key, r, includeIf, pageId, taskId) =>
+        MiniSummaryRow.SmartStringRow(
+          key.map(_(substitutions)),
+          r(substitutions),
+          includeIf(substitutions),
+          pageId,
+          taskId
+        )
       case MiniSummaryRow.HeaderRow(header) =>
         MiniSummaryRow.HeaderRow(header(substitutions))
       case MiniSummaryRow.ATLRow(atlId, includeIf, rows) =>

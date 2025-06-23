@@ -247,7 +247,8 @@ class FormComponentMaker(json: JsValue) {
       value     <- toOpt((json \ "value").validate[String], "/value").flatMap(SummaryListParser.validate)
       includeIf <- toOpt((json \ "includeIf").validateOpt[IncludeIf], "/includeIf")
       pageId    <- toOpt((json \ "pageId").validateOpt[PageId], "/pageId")
-    } yield MiniSummaryRow.ValueRow(key, value, includeIf, pageId)
+      taskId    <- toOpt((json \ "taskId").validateOpt[TaskId], "/taskId")
+    } yield MiniSummaryRow.ValueRow(key, value, includeIf, pageId, taskId)
 
   private def getSmartStringRow(json: JsValue): Opt[MiniSummaryRow] =
     for {
@@ -255,7 +256,8 @@ class FormComponentMaker(json: JsValue) {
       value     <- toOpt((json \ "value").validate[SmartString], "/value")
       includeIf <- toOpt((json \ "includeIf").validateOpt[IncludeIf], "/includeIf")
       pageId    <- toOpt((json \ "pageId").validateOpt[PageId], "/pageId")
-    } yield MiniSummaryRow.SmartStringRow(key, value, includeIf, pageId)
+      taskId    <- toOpt((json \ "taskId").validateOpt[TaskId], "/taskId")
+    } yield MiniSummaryRow.SmartStringRow(key, value, includeIf, pageId, taskId)
 
   private def getHeaderRow(json: JsValue): Opt[MiniSummaryRow] =
     for {

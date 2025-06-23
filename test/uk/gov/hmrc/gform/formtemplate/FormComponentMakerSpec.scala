@@ -402,7 +402,8 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
                                        |            {
                                        |              "key": "Number + Date",
                                        |              "value": "${numericAmount} - ${enteredDate}",
-                                       |              "includeIf": "${1 = 1}"
+                                       |              "includeIf": "${1 = 1}",
+                                       |              "taskId": "taskId"
                                        |            }
                                        |          ]
                                        |    }
@@ -419,6 +420,7 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
               Some(SmartString(LocalisedString(Map(LangADT.En -> "Sort Code")), List())),
               MiniSummaryListValue.Reference(FormCtx(FormComponentId("sortCode"))),
               Some(IncludeIf(Equals(Constant("2"), Constant("3")))),
+              None,
               None
             ),
             MiniSummaryRow.HeaderRow(
@@ -428,13 +430,15 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
               None,
               MiniSummaryListValue.AnyExpr(Add(Constant("2"), Constant("3"))),
               Some(IncludeIf(Equals(Constant("15"), Constant("11")))),
+              None,
               None
             ),
             MiniSummaryRow.ValueRow(
               None,
               MiniSummaryListValue.AnyExpr(Add(Constant("2"), Constant("3"))),
               Some(IncludeIf(Equals(Constant("11"), Constant("11")))),
-              Some(PageId("atlId"))
+              Some(PageId("atlId")),
+              None
             ),
             MiniSummaryRow.ATLRow(
               FormComponentId("atlID"),
@@ -452,7 +456,8 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
                 List(FormCtx(FormComponentId("numericAmount")), FormCtx(FormComponentId("enteredDate")))
               ),
               Some(IncludeIf(Equals(Constant("1"), Constant("1")))),
-              None
+              None,
+              Some(TaskId("taskId"))
             )
           ),
           DisplayInSummary.No,
