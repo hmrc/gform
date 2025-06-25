@@ -82,8 +82,9 @@ trait Rewriter {
       formTemplate.formKind.allSections.foldLeft(fcLookupDeclaration) {
         case (acc, Section.NonRepeatingPage(page)) => acc ++ lookupFromPage(page.fields) ++ questionFcid(page)
         case (acc, Section.RepeatingPage(page, _)) => acc ++ lookupFromPage(page.fields) ++ questionFcid(page)
-        case (acc, Section.AddToList(_, _, _, _, _, _, _, _, pages, _, _, _, _, _, _, _, _, _, _, _, _, _, _)) =>
-          acc ++ pages.toList.flatMap(page => lookupFromPage(page.fields) ++ questionFcid(page))
+        case (acc, Section.AddToList(_, _, _, _, _, _, _, _, pages, _, _, _, _, _, _, _, _, _, _, _, _, _, maybeDec)) =>
+          acc ++ pages.toList.flatMap(page => lookupFromPage(page.fields) ++ questionFcid(page)) ++ maybeDec.toList
+            .flatMap(dec => lookupFromPage(dec.fields))
       }
 
     val validIfsDeclaration = formTemplate.destinations match {
