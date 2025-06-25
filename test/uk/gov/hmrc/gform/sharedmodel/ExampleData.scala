@@ -132,6 +132,7 @@ trait ExampleAuthConfig extends DestinationGen {
       None,
       None,
       None,
+      None,
       Some(toSmartString("Declaration section with continueLabel")),
       decFormComponent,
       None
@@ -140,6 +141,7 @@ trait ExampleAuthConfig extends DestinationGen {
   val decSectionWithGroupComponent =
     DeclarationSection(
       toSmartString("Declaration section with Group Component"),
+      None,
       None,
       None,
       None,
@@ -487,6 +489,7 @@ trait ExampleFormTemplate {
   def declarationSection =
     DeclarationSection(
       toSmartString("Declaration"),
+      None,
       None,
       None,
       None,
