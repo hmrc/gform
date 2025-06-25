@@ -89,6 +89,7 @@ trait Verifier {
       _ <- fromOptA(FormTemplateValidator.validateDateConstructExpressions(allExpressions).toEither)
       _ <- fromOptA(FormTemplateValidator.validateSummarySection(formTemplate).toEither)
       _ <- fromOptA(FormTemplateValidator.validateAddToListCYAPage(formTemplate).toEither)
+      _ <- fromOptA(FormTemplateValidator.validateAddToListDeclarationSection(formTemplate).toEither)
       _ <- fromOptA(FormTemplateValidator.validateAddToListDefaultPage(formTemplate).toEither)
       _ <- fromOptA(FormTemplateValidator.validateAddToListInfoFields(formTemplate).toEither)
       _ <- fromOptA(FormTemplateValidator.validateAddToListAddAnotherQuestion(formTemplate).toEither)
