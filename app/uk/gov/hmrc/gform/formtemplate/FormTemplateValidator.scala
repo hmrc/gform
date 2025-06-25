@@ -1676,7 +1676,7 @@ object FormTemplateValidator {
     def checkComponentType(field: FormComponent): ValidationResult = {
       val reason =
         s"All fields in Declaration section for AddToList must be Info or Table or MiniSummary type. Field Id, '${field.id}' is not an info field"
-      isViewOnlyComponent(field, reason)
+      isViewOnlyComponent(field, formTemplate, reason)
     }
 
     def invalid(fcId: FormComponentId) = Invalid(
