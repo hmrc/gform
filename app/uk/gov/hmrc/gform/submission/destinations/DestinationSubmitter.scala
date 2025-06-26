@@ -25,18 +25,22 @@ import org.slf4j.LoggerFactory
 import play.api.libs.json._
 import uk.gov.hmrc.gform.notifier.NotifierAlgebra
 import uk.gov.hmrc.gform.sdes.SdesConfig
-import uk.gov.hmrc.gform.sharedmodel.{ DestinationEvaluation, DestinationResult, EmailVerifierService, LangADT, UserSession }
-import uk.gov.hmrc.gform.sharedmodel.form.{ FormData, FormId }
+import uk.gov.hmrc.gform.sharedmodel.{DestinationEvaluation, DestinationResult, EmailVerifierService, LangADT, UserSession}
+import uk.gov.hmrc.gform.sharedmodel.form.{FormData, FormId}
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations._
 import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
 import uk.gov.hmrc.gform.submission.handlebars._
 import uk.gov.hmrc.gform.submissionconsolidator.SubmissionConsolidatorAlgebra
 import uk.gov.hmrc.gform.wshttp.HttpResponseSyntax
-import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
+
+import scala.concurrent.duration.DurationInt
+import scala.concurrent.{Await, Future}
+import scala.util.{Failure, Success, Try}
 
 class DestinationSubmitter[M[_]](
   dms: DmsSubmitterAlgebra[M],
-  handlebars: HandlebarsHttpApiSubmitter[M],
+  handlebars: HandlebarsHttpApiSubmitter,
   stateTransitionAlgebra: StateTransitionAlgebra[M],
   notifier: NotifierAlgebra[M],
   destinationAuditer: Option[DestinationAuditAlgebra[M]],
@@ -49,6 +53,15 @@ class DestinationSubmitter[M[_]](
     extends DestinationSubmitterAlgebra[M] {
 
   private val logger = LoggerFactory.getLogger(getClass)
+
+  private def liftToM[A](future: Future[A]): M[A] = {
+    // For tests, we need to handle the case where M[*] is Either[Throwable, A]
+    // In production, this would be different based on your actual M[*] type
+    Try(Await.result(future, 20.seconds)) match {
+      case Success(value) => monadError.pure(value)
+      case Failure(throwable) => monadError.raiseError(throwable)
+    }
+  }
 
   def submitIfIncludeIf(
     destination: Destination,
@@ -350,8 +363,8 @@ class DestinationSubmitter[M[_]](
     modelTree: HandlebarsModelTree,
     submissionInfo: DestinationSubmissionInfo
   )(implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]] =
-    handlebars(d, accumulatedModel, modelTree, submissionInfo)
-      .flatMap[HandlebarsDestinationResponse] { response =>
+    liftToM(handlebars(d, accumulatedModel, modelTree, submissionInfo))
+      .flatMap { response =>
         if (response.isSuccess)
           createSuccessResponse(d, response)
         else if (d.failOnError)

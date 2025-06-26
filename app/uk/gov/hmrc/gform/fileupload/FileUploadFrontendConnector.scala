@@ -17,22 +17,28 @@
 package uk.gov.hmrc.gform.fileupload
 
 import org.apache.pekko.actor.Scheduler
+import org.apache.pekko.stream.scaladsl.Source
 import org.apache.pekko.util.ByteString
+import org.apache.pekko.NotUsed
 import org.slf4j.LoggerFactory
+import play.api.mvc.MultipartFormData.FilePart
 import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.core.FutureSyntax
 import uk.gov.hmrc.gform.objectstore.FUConfig
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
-import uk.gov.hmrc.gform.wshttp.{ FutureHttpResponseSyntax, WSHttp }
+import uk.gov.hmrc.gform.wshttp.FutureHttpResponseSyntax
+import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse, StringContextOps }
+import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.HttpReads.Implicits._
 
 import scala.concurrent.{ ExecutionContext, Future }
-import uk.gov.hmrc.http.HeaderCarrier
-
 import scala.concurrent.duration._
 
-class FileUploadFrontendConnector(config: FUConfig, wSHttp: WSHttp)(implicit ex: ExecutionContext, schduler: Scheduler)
-    extends FileUploadFrontendAlgebra[Future] with Retrying {
+class FileUploadFrontendConnector(config: FUConfig, httpClientV2: HttpClientV2)(implicit
+  ex: ExecutionContext,
+  schduler: Scheduler
+) extends FileUploadFrontendAlgebra[Future] with Retrying {
   private val logger = LoggerFactory.getLogger(getClass)
 
   def upload(envelopeId: EnvelopeId, fileId: FileId, fileName: String, body: ByteString, contentType: ContentType)(
@@ -45,9 +51,21 @@ class FileUploadFrontendConnector(config: FUConfig, wSHttp: WSHttp)(implicit ex:
     logger.info(msg)
 
     val url = s"$baseUrl/file-upload/upload/envelopes/${envelopeId.value}/files/${fileId.value}"
+    val filePart = FilePart(
+      key = fileName,
+      filename = fileName,
+      contentType = Some(contentType.value),
+      ref = Source.single(body)
+    )
+
+    val multipartData: Source[FilePart[Source[ByteString, NotUsed]], NotUsed] = Source(List(filePart))
+
     retry(
-      wSHttp
-        .POSTFile(url, fileName, body, Seq("CSRF-token" -> "nocheck"), contentType.value)
+      httpClientV2
+        .post(url"$url")
+        .setHeader("CSRF-token" -> "nocheck")
+        .withBody(multipartData)
+        .execute[HttpResponse]
         .failWithNonSuccessStatusCodes(url),
       List(10.milliseconds, 100.milliseconds, 2.seconds),
       msg

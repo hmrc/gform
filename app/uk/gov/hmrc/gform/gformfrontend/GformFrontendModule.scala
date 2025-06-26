@@ -24,7 +24,7 @@ import scala.concurrent.ExecutionContext
 class GformFrontendModule(wSHttpModule: WSHttpModule, configModule: ConfigModule)(implicit ec: ExecutionContext) {
 
   lazy val gformFrontendConnector: GformFrontendConnector =
-    new GformFrontendConnector(wSHttpModule.auditableWSHttp, gformFrontendBaseUrl)
+    new GformFrontendConnector(wSHttpModule.httpClient, gformFrontendBaseUrl)
 
   private lazy val gformFrontendBaseUrl = s"${configModule.serviceConfig.baseUrl("gform-frontend")}/submissions"
 }

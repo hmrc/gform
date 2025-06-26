@@ -16,10 +16,7 @@
 
 package uk.gov.hmrc.gform.submissionconsolidator
 
-import org.apache.pekko.actor.ActorSystem
-import org.apache.pekko.util.ByteString
 import com.github.tomakehurst.wiremock.client.WireMock._
-import com.typesafe.config.{ Config, ConfigFactory }
 import org.scalacheck.Gen
 import org.scalacheck.rng.Seed
 import org.scalamock.scalatest.MockFactory
@@ -28,14 +25,10 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.time.{ Millis, Seconds, Span }
 import play.api.libs.json.Json
-import play.api.libs.ws.WSClient
-import play.api.test.WsTestClient.InternalWSClient
-import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.gform.WiremockSupport
-import uk.gov.hmrc.gform.wshttp.WSHttp
-import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.http.hooks.HttpHook
-import uk.gov.hmrc.play.audit.http.connector.AuditConnector
+import uk.gov.hmrc.gform.wshttp.StubbedHttpClientV2
+import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
+import uk.gov.hmrc.http.client.HttpClientV2
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -43,29 +36,17 @@ class SubmissionConsolidatorConnectorSpec
     extends AnyFlatSpec with MockFactory with WiremockSupport with SCFormGen with ScalaFutures with Matchers {
 
   override implicit val patienceConfig: PatienceConfig = PatienceConfig(Span(10, Seconds), Span(1, Millis))
-  val _actorSystem: ActorSystem = ActorSystem("SubmissionConsolidatorConnectorSpec")
-  val _wsClient: WSClient = new InternalWSClient("http", wiremockPort)
-  val wsHttp: WSHttp = new WSHttp {
-    override val appName: String = "SubmissionConsolidatorConnectorSpec"
-    override val actorSystem: ActorSystem = _actorSystem
-    override val configuration: Config = ConfigFactory.load()
-    override val auditConnector: AuditConnector = mock[AuditConnector]
-    override val hooks: Seq[HttpHook] = Seq.empty
-    override val wsClient: WSClient = _wsClient
-    override def getByteString(url: String)(implicit ec: ExecutionContext): Future[ByteString] =
-      Future.successful(ByteString.empty)
-  }
-
-  override def afterAll(): Unit = {
-    super.afterAll()
-    _actorSystem.terminate()
-    _wsClient.close()
-  }
 
   trait TestFixture {
     val form: SCForm = genForm.pureApply(Gen.Parameters.default, Seed(1))
     lazy val responseStatus: Int = 200
     lazy val responseBody: String = ""
+    lazy val r: HttpResponse = HttpResponse(
+      responseStatus,
+      responseBody,
+      Map.empty[String, Seq[String]]
+    )
+    val wsHttp: HttpClientV2 = new StubbedHttpClientV2(r)
     stubFor(
       post(urlEqualTo("/submission-consolidator/form"))
         .willReturn(

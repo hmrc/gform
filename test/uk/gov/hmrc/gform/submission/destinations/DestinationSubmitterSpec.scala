@@ -36,6 +36,8 @@ import uk.gov.hmrc.gform.submissionconsolidator.SubmissionConsolidatorAlgebra
 import uk.gov.hmrc.gform.{ Possible, Spec, possibleMonadError }
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 
+import scala.concurrent.Future
+
 class DestinationSubmitterSpec
     extends Spec with DestinationSubmissionInfoGen with DestinationGen with PrimitiveGen with FormTemplateGen
     with PdfDataGen with StructuredFormValueGen with ScalaCheckDrivenPropertyChecks {
@@ -776,7 +778,7 @@ class DestinationSubmitterSpec
   case class SubmitterParts[F[_]](
     sut: DestinationSubmitter[F],
     dmsSubmitter: DmsSubmitterAlgebra[F],
-    handlebarsSubmitter: HandlebarsHttpApiSubmitter[F],
+    handlebarsSubmitter: HandlebarsHttpApiSubmitter,
     destinationAuditer: DestinationAuditAlgebra[F],
     handlebarsTemplateProcessor: HandlebarsTemplateProcessor,
     submissionConsolidatorService: SubmissionConsolidatorAlgebra[F],
@@ -906,7 +908,7 @@ class DestinationSubmitterSpec
           _: HeaderCarrier
         ))
         .expects(handlebarsHttpApi, accumulatedModel, tree, sdi, hc)
-        .returning(F.pure(response))
+        .returning(Future(response))
       this
     }
 
@@ -959,7 +961,7 @@ class DestinationSubmitterSpec
 
   private def createSubmitter: SubmitterParts[Possible] = {
     val dmsSubmitter = mock[DmsSubmitterAlgebra[Possible]]
-    val handlebarsSubmitter = mock[HandlebarsHttpApiSubmitter[Possible]]
+    val handlebarsSubmitter = mock[HandlebarsHttpApiSubmitter]
     val stateTransitionService = mock[StateTransitionAlgebra[Possible]]
     val handlebarsTemplateProcessor = mock[HandlebarsTemplateProcessor]
     val notifierService = mock[NotifierAlgebra[Possible]]
