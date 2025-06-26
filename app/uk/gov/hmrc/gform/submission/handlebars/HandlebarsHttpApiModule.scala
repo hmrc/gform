@@ -51,24 +51,6 @@ class HandlebarsHttpApiModule(
   def buildRequest(
     profile: ProfileName,
     envelopeId: EnvelopeId,
-    uri: String
-  ): RequestBuilder = {
-    val profileConfig = configModule.DestinationsServicesConfig()(profile)
-    val fullUrl = appendUriSegment(profileConfig.baseUrl, uri)
-
-    val headers: Seq[(String, String)] = (profileConfig.httpHeaders.map {
-      case (k, checkToken(v)) => k -> getDynamicHeaderValue(v, envelopeId)
-      case (k, v)             => k -> v
-    } ++ profileConfig.authorization.map(auth => "Authorization" -> auth.value)).toSeq
-
-    wSHttpModule.httpClient
-      .post(url"$fullUrl")
-      .setHeader(headers: _*)
-  }
-
-  def buildRequest(
-    profile: ProfileName,
-    envelopeId: EnvelopeId,
     uri: String,
     method: HttpMethod
   )(implicit hc: HeaderCarrier): RequestBuilder = {
