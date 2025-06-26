@@ -36,12 +36,23 @@ import uk.gov.hmrc.gform.submissionconsolidator.SubmissionConsolidatorAlgebra
 import uk.gov.hmrc.gform.{ Possible, Spec, possibleMonadError }
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 
-import scala.concurrent.Future
+import scala.concurrent.{ Await, Future }
+import scala.concurrent.duration.DurationInt
+import scala.util.{ Failure, Success, Try }
 
 class DestinationSubmitterSpec
     extends Spec with DestinationSubmissionInfoGen with DestinationGen with PrimitiveGen with FormTemplateGen
     with PdfDataGen with StructuredFormValueGen with ScalaCheckDrivenPropertyChecks {
   private implicit val hc: HeaderCarrier = HeaderCarrier()
+
+  implicit val testFutureConverter: FutureConverter[({ type L[A] = Either[Throwable, A] })#L] =
+    new FutureConverter[({ type L[A] = Either[Throwable, A] })#L] {
+      def fromFuture[A](future: Future[A]): Either[Throwable, A] =
+        Try(Await.result(future, 10.seconds)) match {
+          case Success(value)     => Right(value)
+          case Failure(throwable) => Left(throwable)
+        }
+    }
 
   private def submissionInfoGen: Gen[DestinationSubmissionInfo] =
     destinationSubmissionInfoGen.map { dsi =>

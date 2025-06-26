@@ -17,6 +17,8 @@
 package uk.gov.hmrc.gform.submissionconsolidator
 
 import com.github.tomakehurst.wiremock.client.WireMock._
+import com.typesafe.config.ConfigFactory
+import org.apache.pekko.actor.ActorSystem
 import org.scalacheck.Gen
 import org.scalacheck.rng.Seed
 import org.scalamock.scalatest.MockFactory
@@ -24,11 +26,13 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.time.{ Millis, Seconds, Span }
+import play.api.Configuration
 import play.api.libs.json.Json
+import play.api.libs.ws.ahc.AhcWSClient
 import uk.gov.hmrc.gform.WiremockSupport
-import uk.gov.hmrc.gform.wshttp.StubbedHttpClientV2
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
-import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.client.{ HttpClientV2, HttpClientV2Impl }
+import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -46,7 +50,17 @@ class SubmissionConsolidatorConnectorSpec
       responseBody,
       Map.empty[String, Seq[String]]
     )
-    val wsHttp: HttpClientV2 = new StubbedHttpClientV2(r)
+    private implicit val testActorSystem: ActorSystem = ActorSystem("test-actor-system")
+    protected val servicesConfig: ServicesConfig = mock[ServicesConfig]
+
+    private val httpClientV2: HttpClientV2 =
+      new HttpClientV2Impl(
+        wsClient = AhcWSClient(),
+        testActorSystem,
+        Configuration(ConfigFactory.load()),
+        hooks = Seq.empty
+      )
+
     stubFor(
       post(urlEqualTo("/submission-consolidator/form"))
         .willReturn(
@@ -57,7 +71,7 @@ class SubmissionConsolidatorConnectorSpec
     )
     val baseUrl = s"http://localhost:$wiremockPort"
     val submissionConsolidatorConnector =
-      new SubmissionConsolidatorConnector(wsHttp, baseUrl)
+      new SubmissionConsolidatorConnector(httpClientV2, baseUrl)
   }
 
   "sendForm" should "on success, return empty result" in new TestFixture {
