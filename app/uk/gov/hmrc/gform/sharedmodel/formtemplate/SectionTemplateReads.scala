@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
+import julienrf.json.derived
 import play.api.libs.json._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.Section.AddToList
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.JsonUtils.nelFormat
@@ -46,7 +47,12 @@ object SectionTemplateReads {
       case "addToList"        => readAddToList(json)
     }
 
-    private def readAddToList(json: JsValue) = Json.reads[AddToList].reads(json)
+    private lazy val addToListReads = new Reads[AddToList] {
+      private val dr: Reads[AddToList] = derived.reads[AddToList]()
+      override def reads(json: JsValue): JsResult[AddToList] = dr.reads(json)
+    }
+
+    private def readAddToList(json: JsValue) = addToListReads.reads(json)
 
     private def readNonRepeatingPage(json: JsValue) = json.validate[Page].map(Section.NonRepeatingPage)
 
