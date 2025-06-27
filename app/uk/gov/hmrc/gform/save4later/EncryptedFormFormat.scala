@@ -30,7 +30,6 @@ object EncryptedFormFormat {
     private val formData = "formData"
     private val thirdPartyData = "thirdPartyData"
     private val taskIdTaskStatus = "taskIdTaskStatus"
-    private val confirmationExpr = "confirmationExpr"
 
     override def writes(form: Form): JsValue =
       FormId.format.writes(form._id) ++
@@ -44,8 +43,7 @@ object EncryptedFormFormat {
         Json.obj(thirdPartyData -> jsonCrypto.encrypt(PlainText(Json.toJson(form.thirdPartyData).toString())).value) ++
         EnvelopeExpiryDate.optionFormat.writes(form.envelopeExpiryDate) ++
         Json.obj(componentIdToFileId -> FormComponentIdToFileIdMapping.format.writes(form.componentIdToFileId)) ++
-        Json.obj(taskIdTaskStatus -> TaskIdTaskStatusMapping.format.writes(form.taskIdTaskStatus)) ++
-        Json.obj(confirmationExpr -> ConfirmationExprMapping.format.writes(form.confirmationExpr))
+        Json.obj(taskIdTaskStatus -> TaskIdTaskStatusMapping.format.writes(form.taskIdTaskStatus))
 
     private val readFormData: Reads[FormData] =
       (__ \ formData)
@@ -69,8 +67,7 @@ object EncryptedFormFormat {
         readThirdPartyData and
         EnvelopeExpiryDate.optionFormat and
         Form.componentIdToFileIdWithFallback and
-        Form.taskIdTaskStatusWithFallback and
-        Form.confirmationExprWithFallback
+        Form.taskIdTaskStatusWithFallback
     )(Form.apply _)
 
     override def reads(json: JsValue): JsResult[Form] = {

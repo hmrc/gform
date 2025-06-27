@@ -76,8 +76,7 @@ class UpscanController(
     form.visitsIndex,
     form.thirdPartyData,
     form.componentIdToFileId,
-    form.taskIdTaskStatus,
-    form.confirmationExpr
+    form.taskIdTaskStatus
   )
 
   def encrypt = Action.async(parse.json) { implicit request =>
