@@ -118,8 +118,6 @@ class PlayComponentsModule(
 
   private val healthController =
     new HealthController(
-      configModule.configuration,
-      playComponents.context.environment,
       configModule.controllerComponents
     )
 

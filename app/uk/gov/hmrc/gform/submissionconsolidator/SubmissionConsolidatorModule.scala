@@ -27,7 +27,7 @@ class SubmissionConsolidatorModule(wsHttpModule: WSHttpModule, formModule: FormM
   implicit ec: ExecutionContext
 ) {
   val submissionConsolidatorConnector = new SubmissionConsolidatorConnector(
-    wsHttpModule.auditableWSHttp,
+    wsHttpModule.httpClient,
     configModule.serviceConfig.baseUrl("submission-consolidator")
   )
 

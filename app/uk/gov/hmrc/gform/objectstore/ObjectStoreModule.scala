@@ -77,7 +77,7 @@ class ObjectStoreModule(
 
   val sdesConnector: SdesConnector =
     new SdesConnector(
-      wSHttpModule.auditableWSHttp,
+      wSHttpModule.httpClient,
       sdesBaseUrl,
       sdesBasePath,
       sdesKeyAndCredentialsApiBaseUrl,

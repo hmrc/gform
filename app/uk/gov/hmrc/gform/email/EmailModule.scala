@@ -31,7 +31,7 @@ class EmailModule(
 )(implicit
   ec: ExecutionContext
 ) {
-  val emailConnector = new EmailConnector(wSHttpModule.auditableWSHttp, configModule.serviceConfig.baseUrl("email"))
+  val emailConnector = new EmailConnector(wSHttpModule.httpClient, configModule.serviceConfig.baseUrl("email"))
   val emailLogic = new EmailService(emailConnector)
 
   val emailCodeVerificationController = new EmailCodeVerificationController(

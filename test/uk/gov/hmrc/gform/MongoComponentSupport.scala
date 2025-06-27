@@ -16,12 +16,16 @@
 
 package uk.gov.hmrc.gform
 
-import org.apache.commons.lang3.RandomStringUtils
 import uk.gov.hmrc.mongo.MongoComponent
 
+import scala.util.Random
+
 trait MongoComponentSupport {
-  val mongoDbName: String = s"test-${RandomStringUtils.randomNumeric(5)}-${getClass.getSimpleName}"
+  val mongoDbName: String = s"test-${randomNumeric(5)}-${getClass.getSimpleName}"
   val mongoDBURI: String = s"mongodb://localhost:27017/$mongoDbName"
 
   val mongoComponent: MongoComponent = MongoComponent(mongoDBURI)
+
+  def randomNumeric(length: Int): String =
+    (1 to length).map(_ => Random.nextInt(10)).mkString
 }

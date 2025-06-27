@@ -39,12 +39,12 @@ class FileUploadModule(
   val fileUploadConnector: FileUploadConnector =
     new FileUploadConnector(
       config,
-      wSHttpModule.auditableWSHttp,
+      wSHttpModule.httpClient,
       envelopeModule.envelopeService
     )
 
   val fileUploadFrontendConnector: FileUploadFrontendConnector =
-    new FileUploadFrontendConnector(config, wSHttpModule.auditableWSHttp)(ex, akkaModule.actorSystem.scheduler)
+    new FileUploadFrontendConnector(config, wSHttpModule.httpClient)(ex, akkaModule.actorSystem.scheduler)
 
   val fileUploadService: FileUploadService =
     new FileUploadService(

@@ -16,23 +16,9 @@
 
 package uk.gov.hmrc.gform.wshttp
 
-import uk.gov.hmrc.gform.auditing.AuditingModule
-import uk.gov.hmrc.gform.config.ConfigModule
-import uk.gov.hmrc.gform.core.FOpt
-import uk.gov.hmrc.gform.playcomponents.PlayComponents
+import uk.gov.hmrc.http.client.HttpClientV2
 
-import scala.concurrent.ExecutionContext
+class WSHttpModule(httpClientV2: HttpClientV2) {
 
-class WSHttpModule(auditingModule: AuditingModule, configModule: ConfigModule, playComponents: PlayComponents)(implicit
-  ec: ExecutionContext
-) {
-  val auditableWSHttp: WSHttp = new WSHttpImpl(
-    configModule.appConfig.appName,
-    auditingModule.auditConnector,
-    configModule.configuration.underlying,
-    playComponents.builtInComponents.actorSystem,
-    playComponents.wsClient
-  )
-
-  val auditingHttpClient: HttpClient[FOpt] = new AuditingHttpClient(auditableWSHttp, configModule.typesafeConfig)
+  def httpClient: HttpClientV2 = httpClientV2
 }

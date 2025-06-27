@@ -45,12 +45,12 @@ class TestOnlyModule(
 
   val enrolmentConnector =
     new EnrolmentConnector(
-      wSHttpModule.auditableWSHttp,
+      wSHttpModule.httpClient,
       "http://enrolment-store-proxy.protected.mdtp:80/enrolment-store-proxy"
     )
 
   val desConnector = new DesConnector(
-    wSHttpModule.auditableWSHttp,
+    wSHttpModule.httpClient,
     configModule.serviceConfig.baseUrl("etmp-hod"),
     configModule.desConfig
   )
@@ -79,7 +79,7 @@ class TestOnlyModule(
   val fUInterceptor: FUInterceptorController =
     new FUInterceptorController(
       configModule.controllerComponents,
-      wSHttpModule.auditableWSHttp,
+      wSHttpModule.httpClient,
       configModule.serviceConfig,
       proxyActions
     )

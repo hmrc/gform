@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,32 +16,32 @@
 
 package uk.gov.hmrc.gform.submission.handlebars
 
-import cats.MonadError
-import cats.syntax.all._
 import org.slf4j.LoggerFactory
 import play.api.libs.json._
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations._
 import uk.gov.hmrc.gform.submission.destinations._
-import uk.gov.hmrc.gform.wshttp.HttpClient
+import uk.gov.hmrc.http.client.RequestBuilder
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
+import uk.gov.hmrc.http.HttpReads.Implicits._
 
+import scala.concurrent.{ ExecutionContext, Future }
 import scala.util.Try
 
-trait HandlebarsHttpApiSubmitter[F[_]] {
+trait HandlebarsHttpApiSubmitter {
   def apply(
     destination: Destination.HandlebarsHttpApi,
     accumulatedModel: HandlebarsTemplateProcessorModel,
     modelTree: HandlebarsModelTree,
     submissionInfo: DestinationSubmissionInfo
-  )(implicit hc: HeaderCarrier): F[HttpResponse]
+  )(implicit hc: HeaderCarrier): Future[HttpResponse]
 }
 
-class RealHandlebarsHttpApiSubmitter[F[_]](
-  httpClients: Map[ProfileName, EnvelopeId => HttpClient[F]],
+class RealHandlebarsHttpApiSubmitter(
+  buildRequest: (ProfileName, EnvelopeId, String, HttpMethod) => RequestBuilder,
   handlebarsTemplateProcessor: HandlebarsTemplateProcessor = RealHandlebarsTemplateProcessor
-)(implicit monadError: MonadError[F, Throwable])
-    extends HandlebarsHttpApiSubmitter[F] {
+)(implicit ec: ExecutionContext)
+    extends HandlebarsHttpApiSubmitter {
 
   private val logger = LoggerFactory.getLogger(getClass)
 
@@ -50,52 +50,21 @@ class RealHandlebarsHttpApiSubmitter[F[_]](
     accumulatedModel: HandlebarsTemplateProcessorModel,
     modelTree: HandlebarsModelTree,
     submissionInfo: DestinationSubmissionInfo
-  )(implicit hc: HeaderCarrier): F[HttpResponse] = {
+  )(implicit hc: HeaderCarrier): Future[HttpResponse] = {
 
-    def parseAndProcessAsList(input: String): List[String] =
-      Try(Json.parse(input)).toOption
-        .flatMap {
-          case jsonArray: JsArray => Some(jsonArray.value.map(_.toString).toList)
-          case _                  => None
-        }
-        .getOrElse(List(input))
-        .map(processPayload)
+    val envelopeId = submissionInfo.submission.envelopeId
+    val uri = handlebarsTemplateProcessor(
+      destination.uri,
+      accumulatedModel,
+      FocussedHandlebarsModelTree(modelTree),
+      TemplateType.Plain
+    )
+    val requestBuilder = buildRequest(destination.profile, envelopeId, uri, destination.method)
 
-    def callUntilError(
-      uri: String,
-      verb: (String, String) => F[HttpResponse]
-    ): F[HttpResponse] = {
-      val destinationId = destination.id
-      val formId = modelTree.value.formId
-      val input: List[String] = destination.payload.fold(List(""))(body => parseAndProcessAsList(body))
-
-      def logAndRaiseError(throwable: Throwable): F[HttpResponse] =
-        logError(throwable) *> monadError.raiseError(throwable)
-
-      def logInfo(message: String): F[Unit] =
-        monadError.pure(logger.info(genericLogMessage(formId, destinationId, message)))
-
-      def logError(throwable: Throwable): F[Unit] =
-        monadError.pure(
-          logger.error(genericLogMessage(formId, destinationId, throwable.getMessage), throwable)
-        )
-
-      def callUrlBodyPairs(uri: String, bodies: List[String], lastResult: Option[HttpResponse]): F[HttpResponse] =
-        bodies match {
-          case Nil => lastResult.fold(logAndRaiseError(new Exception("No input provided")))(monadError.pure)
-          case body :: rest =>
-            val resultOrError = for {
-              result <- monadError.attempt(verb(uri, body))
-              _      <- lastResult.fold(monadError.pure(()))(_ => logInfo("Successfully applied verb method"))
-            } yield result
-
-            resultOrError.flatMap {
-              case Right(result) => callUrlBodyPairs(uri, rest, Some(result))
-              case Left(error)   => logAndRaiseError(error)
-            }
-        }
-
-      callUrlBodyPairs(uri, input, None)
+    val contentType = destination.payloadType match {
+      case TemplateType.JSON  => "application/json"
+      case TemplateType.XML   => "application/xml"
+      case TemplateType.Plain => "text/plain"
     }
 
     def processPayload(template: String): String =
@@ -106,65 +75,70 @@ class RealHandlebarsHttpApiSubmitter[F[_]](
         destination.payloadType
       )
 
-    RealHandlebarsHttpApiSubmitter
-      .selectHttpClient(destination.profile, destination.payloadType, httpClients, submissionInfo)
-      .flatMap { httpClient =>
-        val uri =
-          handlebarsTemplateProcessor(
-            destination.uri,
-            accumulatedModel,
-            FocussedHandlebarsModelTree(modelTree),
-            TemplateType.Plain
-          )
-
-        if (destination.multiRequestPayload) {
-          destination.method match {
-            case HttpMethod.GET  => httpClient.get(uri)
-            case HttpMethod.POST => callUntilError(uri, httpClient.post)
-            case HttpMethod.PUT  => callUntilError(uri, httpClient.put)
-          }
-        } else {
-          destination.method match {
-            case HttpMethod.GET => httpClient.get(uri)
-            case HttpMethod.POST =>
-              val body = destination.payload.fold("")(processPayload)
-              httpClient.post(uri, body)
-            case HttpMethod.PUT =>
-              val body = destination.payload.fold("")(processPayload)
-              httpClient.put(uri, body)
-          }
+    def parseAndProcessAsList(input: String): List[String] =
+      Try(Json.parse(input)).toOption
+        .flatMap {
+          case arr: JsArray => Some(arr.value.map(_.toString).toList)
+          case _            => None
         }
+        .getOrElse(List(input))
+        .map(processPayload)
+
+    def send(body: String): Future[HttpResponse] =
+      requestBuilder
+        .setHeader("Content-Type" -> contentType)
+        .withBody(body)
+        .execute[HttpResponse]
+
+    def sendMultipleRequests(bodies: List[String]): Future[HttpResponse] =
+      if (bodies.isEmpty) {
+        send("")
+      } else {
+        def sendNext(remaining: List[String], lastResponse: Option[HttpResponse]): Future[HttpResponse] =
+          remaining match {
+            case Nil =>
+              lastResponse match {
+                case Some(response) => Future.successful(response)
+                case None           => Future.failed(new Exception("No successful responses"))
+              }
+            case body :: rest =>
+              send(body)
+                .flatMap { response =>
+                  sendNext(rest, Some(response))
+                }
+                .recoverWith { case ex =>
+                  logger.error(s"Error submitting to ${destination.id}: ${ex.getMessage}", ex)
+                  if (rest.nonEmpty) {
+                    sendNext(rest, lastResponse)
+                  } else {
+                    lastResponse match {
+                      case Some(response) => Future.successful(response)
+                      case None           => Future.failed(ex)
+                    }
+                  }
+                }
+          }
+        sendNext(bodies, None)
       }
-  }
 
-}
-
-object RealHandlebarsHttpApiSubmitter {
-
-  def selectHttpClient[F[_]](
-    profile: ProfileName,
-    payloadType: TemplateType,
-    httpClients: Map[ProfileName, EnvelopeId => HttpClient[F]],
-    submissionInfo: DestinationSubmissionInfo
-  )(implicit me: MonadError[F, Throwable]): F[HttpClient[F]] =
-    httpClients
-      .get(profile)
-      .fold(
-        me.raiseError[HttpClient[F]](
-          new Exception(
-            s"No HttpClient found for profile ${profile.name}. Have HttpClient for ${httpClients.keySet.map(_.name)}"
-          )
-        )
-      ) { (c: EnvelopeId => HttpClient[F]) =>
-        wrapHttpClient(c(submissionInfo.submission.envelopeId), payloadType).pure
-      }
-
-  private def wrapHttpClient[F[_]](http: HttpClient[F], templateType: TemplateType)(implicit
-    me: MonadError[F, Throwable]
-  ): HttpClient[F] =
-    templateType match {
-      case TemplateType.JSON  => http.json
-      case TemplateType.XML   => http.xml
-      case TemplateType.Plain => http
+    val payloads: List[String] = destination.payload match {
+      case Some(body) if destination.multiRequestPayload => parseAndProcessAsList(body)
+      case Some(body)                                    => List(processPayload(body))
+      case None                                          => List("")
     }
+
+    destination.method match {
+      case HttpMethod.GET =>
+        buildRequest(destination.profile, envelopeId, uri, destination.method)
+          .execute[HttpResponse]
+
+      case HttpMethod.POST =>
+        if (destination.multiRequestPayload) sendMultipleRequests(payloads)
+        else send(payloads.headOption.getOrElse(""))
+
+      case HttpMethod.PUT =>
+        if (destination.multiRequestPayload) sendMultipleRequests(payloads)
+        else send(payloads.headOption.getOrElse(""))
+    }
+  }
 }

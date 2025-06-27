@@ -20,14 +20,15 @@ import org.slf4j.LoggerFactory
 import play.api.http.Status
 import play.api.libs.json.{ JsError, JsResult, JsSuccess, JsValue, Json }
 import uk.gov.hmrc.gform.sharedmodel.sdes.SdesNotifyRequest
-import uk.gov.hmrc.gform.wshttp.{ FutureHttpResponseSyntax, WSHttp }
-import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
+import uk.gov.hmrc.gform.wshttp.FutureHttpResponseSyntax
+import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse, StringContextOps }
 import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
+import uk.gov.hmrc.http.client.HttpClientV2
 
 import scala.concurrent.{ ExecutionContext, Future }
 
 class SdesConnector(
-  wSHttp: WSHttp,
+  httpClient: HttpClientV2,
   sdesBaseUrl: String,
   sdesBasePath: String,
   sdesKeyAndCredentialsApiBaseUrl: String,
@@ -48,8 +49,11 @@ class SdesConnector(
     logger.info(s"SDES notification request: ${Json.stringify(Json.toJson(payload))}")
     val headers = mkHeaders(sdesRouting)
     val url = s"$sdesBaseUrl$sdesBasePath/notification/fileready"
-    wSHttp
-      .POST[SdesNotifyRequest, HttpResponse](url, payload, headers)
+    httpClient
+      .post(url"$url")
+      .withBody(Json.toJson(payload))
+      .setHeader(headers: _*)
+      .execute[HttpResponse]
       .failWithNonSuccessStatusCodes(url)
   }
 
@@ -57,8 +61,9 @@ class SdesConnector(
     val identifier = "sdes-encryption-public-key"
     logger.info(s"Calling $identifier api")
     val url = s"$sdesKeyAndCredentialsApiBaseUrl$sdesKeyAndCredentialsApiBasePath/sdes-encryption-public-key/current"
-    wSHttp
-      .GET[HttpResponse](url)
+    httpClient
+      .get(url"$url")
+      .execute[HttpResponse]
       .map { httpResponse =>
         httpResponse.status match {
           case Status.OK =>

@@ -17,13 +17,13 @@
 package uk.gov.hmrc.gform.submissionconsolidator
 
 import play.api.libs.json.Json
-import uk.gov.hmrc.gform.wshttp.WSHttp
-import uk.gov.hmrc.http.{ HeaderCarrier, HttpReads, HttpResponse }
+import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{ HeaderCarrier, HttpReads, HttpResponse, StringContextOps }
 
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.util.Try
 
-class SubmissionConsolidatorConnector(wSHttp: WSHttp, baseUrl: String)(implicit ec: ExecutionContext) {
+class SubmissionConsolidatorConnector(httpClient: HttpClientV2, baseUrl: String)(implicit ec: ExecutionContext) {
 
   private val headers = Seq("Content-Type" -> "application/json")
 
@@ -34,8 +34,11 @@ class SubmissionConsolidatorConnector(wSHttp: WSHttp, baseUrl: String)(implicit 
     }
 
   def sendForm(scForm: SCForm)(implicit headerCarrier: HeaderCarrier): Future[Either[String, Unit]] =
-    wSHttp
-      .POST(s"$baseUrl/submission-consolidator/form", scForm, headers)
+    httpClient
+      .post(url"$baseUrl/submission-consolidator/form")
+      .withBody(Json.toJson(scForm))
+      .setHeader(headers: _*)
+      .execute
       .recover { case e =>
         Left(e.getMessage)
       }

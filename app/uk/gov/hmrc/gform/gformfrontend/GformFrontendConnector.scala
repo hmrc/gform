@@ -23,26 +23,32 @@ import uk.gov.hmrc.gform.core.FOpt
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.repo.DeleteResult
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
-import uk.gov.hmrc.gform.wshttp.WSHttp
-import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
+import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse, StringContextOps }
 import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
+import uk.gov.hmrc.http.client.HttpClientV2
 
 import scala.concurrent.{ ExecutionContext, Future }
 
-class GformFrontendConnector(ws: WSHttp, baseUrl: String)(implicit ec: ExecutionContext) {
+class GformFrontendConnector(httpClient: HttpClientV2, baseUrl: String)(implicit ec: ExecutionContext) {
   implicit val hc: HeaderCarrier = new HeaderCarrier()
 
   def saveFormTemplateCache(
     formTemplateId: FormTemplateId
   )(implicit ec: ExecutionContext): FOpt[Unit] = EitherT {
     val url = s"$baseUrl/formtemplates/${formTemplateId.value}/cache"
-    ws.POST[String, HttpResponse](url, "").asEither
+    httpClient
+      .post(url"$url")
+      .withBody("")
+      .execute[HttpResponse]
+      .asEither
   }
 
   def deleteFormTemplateCache(formTemplateId: FormTemplateId)(implicit ec: ExecutionContext): FOpt[DeleteResult] =
     EitherT {
       val url = s"$baseUrl/formtemplates/${formTemplateId.value}/cache"
-      ws.DELETE[HttpResponse](url)
+      httpClient
+        .delete(url"$url")
+        .execute[HttpResponse]
         .map { httpResponse =>
           val status = httpResponse.status
           if (status === 200) {

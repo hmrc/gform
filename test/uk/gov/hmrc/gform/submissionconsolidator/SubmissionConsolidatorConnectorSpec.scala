@@ -16,10 +16,9 @@
 
 package uk.gov.hmrc.gform.submissionconsolidator
 
-import org.apache.pekko.actor.ActorSystem
-import org.apache.pekko.util.ByteString
 import com.github.tomakehurst.wiremock.client.WireMock._
-import com.typesafe.config.{ Config, ConfigFactory }
+import com.typesafe.config.ConfigFactory
+import org.apache.pekko.actor.ActorSystem
 import org.scalacheck.Gen
 import org.scalacheck.rng.Seed
 import org.scalamock.scalatest.MockFactory
@@ -27,15 +26,13 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.time.{ Millis, Seconds, Span }
+import play.api.Configuration
 import play.api.libs.json.Json
-import play.api.libs.ws.WSClient
-import play.api.test.WsTestClient.InternalWSClient
-import scala.concurrent.{ ExecutionContext, Future }
+import play.api.libs.ws.ahc.AhcWSClient
 import uk.gov.hmrc.gform.WiremockSupport
-import uk.gov.hmrc.gform.wshttp.WSHttp
-import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.http.hooks.HttpHook
-import uk.gov.hmrc.play.audit.http.connector.AuditConnector
+import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
+import uk.gov.hmrc.http.client.{ HttpClientV2, HttpClientV2Impl }
+import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -43,29 +40,27 @@ class SubmissionConsolidatorConnectorSpec
     extends AnyFlatSpec with MockFactory with WiremockSupport with SCFormGen with ScalaFutures with Matchers {
 
   override implicit val patienceConfig: PatienceConfig = PatienceConfig(Span(10, Seconds), Span(1, Millis))
-  val _actorSystem: ActorSystem = ActorSystem("SubmissionConsolidatorConnectorSpec")
-  val _wsClient: WSClient = new InternalWSClient("http", wiremockPort)
-  val wsHttp: WSHttp = new WSHttp {
-    override val appName: String = "SubmissionConsolidatorConnectorSpec"
-    override val actorSystem: ActorSystem = _actorSystem
-    override val configuration: Config = ConfigFactory.load()
-    override val auditConnector: AuditConnector = mock[AuditConnector]
-    override val hooks: Seq[HttpHook] = Seq.empty
-    override val wsClient: WSClient = _wsClient
-    override def getByteString(url: String)(implicit ec: ExecutionContext): Future[ByteString] =
-      Future.successful(ByteString.empty)
-  }
-
-  override def afterAll(): Unit = {
-    super.afterAll()
-    _actorSystem.terminate()
-    _wsClient.close()
-  }
 
   trait TestFixture {
     val form: SCForm = genForm.pureApply(Gen.Parameters.default, Seed(1))
     lazy val responseStatus: Int = 200
     lazy val responseBody: String = ""
+    lazy val r: HttpResponse = HttpResponse(
+      responseStatus,
+      responseBody,
+      Map.empty[String, Seq[String]]
+    )
+    private implicit val testActorSystem: ActorSystem = ActorSystem("test-actor-system")
+    protected val servicesConfig: ServicesConfig = mock[ServicesConfig]
+
+    private val httpClientV2: HttpClientV2 =
+      new HttpClientV2Impl(
+        wsClient = AhcWSClient(),
+        testActorSystem,
+        Configuration(ConfigFactory.load()),
+        hooks = Seq.empty
+      )
+
     stubFor(
       post(urlEqualTo("/submission-consolidator/form"))
         .willReturn(
@@ -76,7 +71,7 @@ class SubmissionConsolidatorConnectorSpec
     )
     val baseUrl = s"http://localhost:$wiremockPort"
     val submissionConsolidatorConnector =
-      new SubmissionConsolidatorConnector(wsHttp, baseUrl)
+      new SubmissionConsolidatorConnector(httpClientV2, baseUrl)
   }
 
   "sendForm" should "on success, return empty result" in new TestFixture {

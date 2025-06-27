@@ -26,9 +26,10 @@ import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.config.DesConnectorConfig
 import uk.gov.hmrc.gform.sharedmodel.des.{ DesAgentDetailsResponse, DesRegistrationRequest, DesRegistrationResponse, DesRegistrationResponseError }
 import uk.gov.hmrc.gform.sharedmodel._
-import uk.gov.hmrc.gform.wshttp.WSHttp
 import uk.gov.hmrc.http._
+import uk.gov.hmrc.http.client.HttpClientV2
 
+import java.net.URI
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.reflect.runtime.universe.TypeTag
 import scala.util.{ Failure, Success, Try }
@@ -55,8 +56,9 @@ trait DesAlgebra[F[_]] {
   def testOnlyGet(url: String): Future[HttpResponse]
 }
 
-class DesConnector(wSHttp: WSHttp, baseUrl: String, desConfig: DesConnectorConfig)(implicit ec: ExecutionContext)
-    extends DesAlgebra[Future] with LowPriorityHttpReadsJson with HttpReadsEither with HttpReadsHttpResponse {
+class DesConnector(httpClient: HttpClientV2, baseUrl: String, desConfig: DesConnectorConfig)(implicit
+  ec: ExecutionContext
+) extends DesAlgebra[Future] with LowPriorityHttpReadsJson with HttpReadsEither with HttpReadsHttpResponse {
 
   private val logger = LoggerFactory.getLogger(getClass)
 
@@ -64,9 +66,8 @@ class DesConnector(wSHttp: WSHttp, baseUrl: String, desConfig: DesConnectorConfi
     extraHeaders = Seq("Environment" -> desConfig.environment)
   )
 
-  private val authHeaders: Seq[(String, String)] = Seq(
+  private val authHeaders: (String, String) =
     "Authorization" -> s"Bearer ${desConfig.authorizationToken}"
-  )
 
   def lookupRegistration(
     utr: String,
@@ -75,12 +76,11 @@ class DesConnector(wSHttp: WSHttp, baseUrl: String, desConfig: DesConnectorConfi
 
     logger.info(s"Des registration, UTR: '$utr', ${loggingHelpers.cleanHeaderCarrierHeader(hc)}")
 
-    wSHttp
-      .POST[DesRegistrationRequest, HttpResponse](
-        s"$baseUrl${desConfig.basePath}/registration/organisation/utr/$utr",
-        desRegistrationRequest,
-        headers = authHeaders
-      )
+    httpClient
+      .post(url"$baseUrl${desConfig.basePath}/registration/organisation/utr/$utr")
+      .withBody(Json.toJson(desRegistrationRequest))
+      .setHeader(authHeaders)
+      .execute[HttpResponse]
       .map { httpResponse =>
         val status = httpResponse.status
         if (status === 404 || status === 400) {
@@ -132,11 +132,10 @@ class DesConnector(wSHttp: WSHttp, baseUrl: String, desConfig: DesConnectorConfi
 
     val url = s"$baseUrl${desConfig.basePath}/enterprise/obligation-data/$idType/$idNumber/$regimeType?status=O"
 
-    wSHttp
-      .GET[Obligation](
-        url,
-        headers = authHeaders
-      )
+    httpClient
+      .get(URI.create(url).toURL)
+      .setHeader(authHeaders)
+      .execute[Obligation]
       .map(ServiceResponse.apply)
       .recover {
         case UpstreamErrorResponse.WithStatusCode(statusCode) if statusCode == StatusCodes.NotFound.intValue =>
@@ -157,15 +156,14 @@ class DesConnector(wSHttp: WSHttp, baseUrl: String, desConfig: DesConnectorConfi
 
     val url = s"$baseUrl${desConfig.basePath}/individuals/$nino/employment/$taxYear"
 
-    wSHttp.GET[JsValue](url, headers = authHeaders)
+    httpClient.get(url"$url").setHeader(authHeaders).execute[JsValue]
   }
 
   def testOnlyGet(url: String): Future[HttpResponse] =
-    wSHttp
-      .doGet(
-        s"$baseUrl${desConfig.basePath}/$url",
-        headers = authHeaders
-      )
+    httpClient
+      .get(url"$baseUrl${desConfig.basePath}/$url")
+      .setHeader(authHeaders)
+      .execute[HttpResponse]
 
   override def lookupAgentDetails(
     idType: String,
@@ -175,11 +173,10 @@ class DesConnector(wSHttp: WSHttp, baseUrl: String, desConfig: DesConnectorConfi
       s"Des agent-details called, ${loggingHelpers.cleanHeaderCarrierHeader(hc)}"
     )
 
-    wSHttp
-      .GET[HttpResponse](
-        s"$baseUrl${desConfig.basePath}/registration/personal-details/$idType/$idNumber",
-        headers = authHeaders
-      )
+    httpClient
+      .get(url"$baseUrl${desConfig.basePath}/registration/personal-details/$idType/$idNumber")
+      .setHeader(authHeaders)
+      .execute[HttpResponse]
       .map { httpResponse =>
         val status = httpResponse.status
         if (status === 404 || status === 400) {
