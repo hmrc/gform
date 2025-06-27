@@ -25,8 +25,7 @@ case class UserData(
   visitsIndex: VisitIndex,
   thirdPartyData: ThirdPartyData,
   componentIdToFileId: FormComponentIdToFileIdMapping,
-  taskIdTaskStatus: TaskIdTaskStatusMapping,
-  confirmationExpr: ConfirmationExprMapping
+  taskIdTaskStatus: TaskIdTaskStatusMapping
 )
 
 object UserData {
