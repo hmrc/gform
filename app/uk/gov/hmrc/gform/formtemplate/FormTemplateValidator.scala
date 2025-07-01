@@ -1604,13 +1604,26 @@ object FormTemplateValidator {
 
   def validateSummarySection(formTemplate: FormTemplate): ValidationResult = {
 
+    def reasonHideAllRows(fc: FormComponent) =
+      s"Field '${fc.id}' is not Info or Table or MiniSummary. All fields in 'summarySection' must be Info or Table or MiniSummary type."
+
     def reason(fc: FormComponent) =
-      s"""Field '${fc.id}' is not Info field. All fields in 'summarySection' must be Info or Table or MiniSummary type."""
+      s"Field '${fc.id}' is not Info field. All fields in 'summarySection' must be Info (unless you specify 'hideDefaultRows': true)."
 
     def checkComponentType(summarySection: SummarySection) =
-      summarySection.fields.fold(List.empty[ValidationResult])(fields =>
-        fields.toList.map(f => isViewOnlyComponent(f, formTemplate, reason(f)))
-      )
+      if (summarySection.hideDefaultRows.getOrElse(false)) {
+        summarySection.fields.fold(List.empty[ValidationResult])(fields =>
+          fields.toList.map(f => isViewOnlyComponent(f, formTemplate, reasonHideAllRows(f)))
+        )
+
+      } else {
+        summarySection.fields.fold(List.empty[ValidationResult])(fields =>
+          fields.toList.map {
+            case IsInformationMessage(_) => Valid
+            case fc                      => Invalid(reason(fc))
+          }
+        )
+      }
 
     def validatePdfLinkExpr(summarySection: SummarySection) = {
       val smartStrings = summarySection.fields.fold(List.empty[SmartString])(f =>

@@ -258,10 +258,22 @@ object FormTemplatesControllerRequestHandler {
       val jsObject = jsValue.as[JsObject]
       val maybeExcludeFromPdf = (jsValue \ "fields").asOpt[List[JsValue]].flatMap { fieldList =>
         val formComponentIds = fieldList.flatMap { value =>
-          (value \ "excludeFromPdf").asOpt[Boolean].collect { case true =>
-            (value \ "id").asOpt[FormComponentId]
+          val isTableOrMiniSummaryList: Boolean =
+            (value \ "type").asOpt[String].exists(tpe => tpe === "miniSummaryList" || tpe === "table")
+
+          val maybeExcludeFromPdf: Option[Boolean] = (value \ "excludeFromPdf").asOpt[Boolean]
+
+          val formComponentId = (value \ "id").asOpt[FormComponentId]
+
+          // format: off
+          maybeExcludeFromPdf match {
+            case Some(true)                       => formComponentId
+            case Some(false)                      => None
+            case None if isTableOrMiniSummaryList => formComponentId // table and miniSummaryList are excludeFromPdf by default
+            case None                             => None
           }
-        }.flatten
+          // format: on
+        }
         Some(formComponentIds).filter(_.nonEmpty)
       }
       maybeExcludeFromPdf.fold(jsObject)(excludeFromPdf => jsObject ++ Json.obj("excludeFromPdf" -> excludeFromPdf))
