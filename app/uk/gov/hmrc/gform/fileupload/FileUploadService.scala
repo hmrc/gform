@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.gform.fileupload
 
+import org.apache.pekko.stream.Materializer
 import org.apache.pekko.util.ByteString
 import org.slf4j.LoggerFactory
 import uk.gov.hmrc.gform.core.FutureSyntax
@@ -192,7 +193,10 @@ class FileUploadService(
   def getEnvelope(envelopeId: EnvelopeId)(implicit hc: HeaderCarrier): Future[Envelope] =
     fileUploadConnector.getEnvelope(envelopeId)
 
-  def getFileBytes(envelopeId: EnvelopeId, fileId: FileId)(implicit hc: HeaderCarrier): Future[ByteString] =
+  def getFileBytes(envelopeId: EnvelopeId, fileId: FileId)(implicit
+    hc: HeaderCarrier,
+    mat: Materializer
+  ): Future[ByteString] =
     fileUploadConnector.getFileBytes(envelopeId, fileId)
 
   def deleteFile(envelopeId: EnvelopeId, fileId: FileId)(implicit hc: HeaderCarrier): Future[Unit] =

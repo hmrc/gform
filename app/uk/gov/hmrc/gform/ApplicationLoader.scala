@@ -26,7 +26,7 @@ import play.api.http._
 import play.api.i18n.I18nComponents
 import play.api.inject.Injector
 import play.api.inject.SimpleInjector
-import play.api.libs.ws.ahc.AhcWSComponents
+import play.api.libs.ws.ahc.{ AhcWSClient, AhcWSClientConfigFactory, AhcWSComponents }
 import play.api.mvc.EssentialFilter
 import play.api.routing.Router
 import uk.gov.hmrc.crypto.{ Decrypter, Encrypter, SymmetricCryptoFactory }
@@ -79,6 +79,7 @@ import uk.gov.hmrc.gform.time.TimeModule
 import uk.gov.hmrc.gform.translation.TranslationModule
 import uk.gov.hmrc.gform.upscan.UpscanModule
 import uk.gov.hmrc.gform.wshttp.WSHttpModule
+import uk.gov.hmrc.http.client.{ HttpClientV2, HttpClientV2Impl }
 import uk.gov.hmrc.mongo.CurrentTimestampSupport
 import uk.gov.hmrc.mongo.MongoUtils
 import uk.gov.hmrc.mongo.cache.CacheIdType.SimpleCacheId
@@ -110,6 +111,14 @@ class ApplicationModule(context: Context)
 
   logger.info(s"Starting microservice $appName")
 
+  private val httpClientV2: HttpClientV2 =
+    new HttpClientV2Impl(
+      wsClient = AhcWSClient(AhcWSClientConfigFactory.forConfig(configuration.underlying)),
+      actorSystem,
+      configuration,
+      hooks = Seq.empty
+    )
+
   private val akkaModule = new AkkaModule(materializer, actorSystem)
   protected val playComponents = new PlayComponents(context, self, self)
 
@@ -118,7 +127,7 @@ class ApplicationModule(context: Context)
   private val graphiteModule = new GraphiteModule(configuration, applicationLifecycle, metricsModule)
   protected val auditingModule =
     new AuditingModule(configModule, graphiteModule, akkaModule, applicationLifecycle)
-  protected val wSHttpModule = new WSHttpModule(auditingModule, configModule, playComponents)
+  protected lazy val wSHttpModule = new WSHttpModule(httpClientV2)
   private val proxyModule = new ProxyModule(configModule)
   private val notifierModule = new NotifierModule(configModule, proxyModule)
   private val timeModule = new TimeModule

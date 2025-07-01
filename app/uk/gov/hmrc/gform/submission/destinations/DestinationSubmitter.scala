@@ -32,11 +32,15 @@ import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
 import uk.gov.hmrc.gform.submission.handlebars._
 import uk.gov.hmrc.gform.submissionconsolidator.SubmissionConsolidatorAlgebra
 import uk.gov.hmrc.gform.wshttp.HttpResponseSyntax
+import uk.gov.hmrc.gform.core.FOpt
+import uk.gov.hmrc.gform.core.fromFutureA
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
+
+import scala.concurrent.{ ExecutionContext, Future }
 
 class DestinationSubmitter[M[_]](
   dms: DmsSubmitterAlgebra[M],
-  handlebars: HandlebarsHttpApiSubmitter[M],
+  handlebars: HandlebarsHttpApiSubmitter,
   stateTransitionAlgebra: StateTransitionAlgebra[M],
   notifier: NotifierAlgebra[M],
   destinationAuditer: Option[DestinationAuditAlgebra[M]],
@@ -45,10 +49,13 @@ class DestinationSubmitter[M[_]](
   infoArchive: InfoArchiveSubmitterAlgebra[M],
   sdesConfig: SdesConfig,
   handlebarsTemplateProcessor: HandlebarsTemplateProcessor = RealHandlebarsTemplateProcessor
-)(implicit monadError: MonadError[M, Throwable])
+)(implicit monadError: MonadError[M, Throwable], futureConverter: FutureConverter[M])
     extends DestinationSubmitterAlgebra[M] {
 
   private val logger = LoggerFactory.getLogger(getClass)
+
+  private def liftToM[A](future: Future[A]): M[A] =
+    futureConverter.fromFuture(future)
 
   def submitIfIncludeIf(
     destination: Destination,
@@ -350,8 +357,8 @@ class DestinationSubmitter[M[_]](
     modelTree: HandlebarsModelTree,
     submissionInfo: DestinationSubmissionInfo
   )(implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]] =
-    handlebars(d, accumulatedModel, modelTree, submissionInfo)
-      .flatMap[HandlebarsDestinationResponse] { response =>
+    liftToM(handlebars(d, accumulatedModel, modelTree, submissionInfo))
+      .flatMap { response =>
         if (response.isSuccess)
           createSuccessResponse(d, response)
         else if (d.failOnError)
@@ -402,4 +409,21 @@ class DestinationSubmitter[M[_]](
 object DestinationSubmitter {
   def handlebarsHttpApiFailOnErrorMessage(response: HttpResponse): String =
     s"Returned status code ${response.status} and has 'failOnError' set to true. Failing."
+}
+
+trait FutureConverter[M[_]] {
+  def fromFuture[A](future: Future[A]): M[A]
+}
+
+object FutureConverter {
+  implicit def futureConverter: FutureConverter[Future] =
+    new FutureConverter[Future] {
+      def fromFuture[A](future: Future[A]): Future[A] = future
+    }
+
+  implicit def foptConverter(implicit ec: ExecutionContext): FutureConverter[FOpt] =
+    new FutureConverter[FOpt] {
+      def fromFuture[A](future: Future[A]): FOpt[A] =
+        fromFutureA(future)
+    }
 }

@@ -22,6 +22,7 @@ import cats.syntax.flatMap._
 import cats.syntax.functor._
 import cats.syntax.traverse._
 import cats.{ Applicative, Monad }
+import org.apache.pekko.stream.Materializer
 import uk.gov.hmrc.gform.dms.FileAttachment
 import uk.gov.hmrc.gform.objectstore
 import uk.gov.hmrc.gform.objectstore.{ Envelope, File, UploadedFile }
@@ -34,9 +35,11 @@ import uk.gov.hmrc.http.HeaderCarrier
 trait FileDownloadAlgebra[F[_]] {
   def getEnvelope(envelopeId: EnvelopeId)(implicit hc: HeaderCarrier): F[Envelope]
 
-  def getFileBytes(envelopeId: EnvelopeId, fileId: FileId)(implicit hc: HeaderCarrier): F[ByteString]
+  def getFileBytes(envelopeId: EnvelopeId, fileId: FileId)(implicit hc: HeaderCarrier, mat: Materializer): F[ByteString]
 
-  def allUploadedFiles(envelopeId: EnvelopeId)(implicit hc: HeaderCarrier, F: Monad[F]): F[List[UploadedFile]] =
+  def allUploadedFiles(
+    envelopeId: EnvelopeId
+  )(implicit hc: HeaderCarrier, F: Monad[F], mat: Materializer): F[List[UploadedFile]] =
     for {
       env  <- getEnvelope(envelopeId)
       file <- uploadedFiles(envelopeId, env)
@@ -44,7 +47,8 @@ trait FileDownloadAlgebra[F[_]] {
 
   private def uploadedFiles(envelopeId: EnvelopeId, envelope: Envelope)(implicit
     hc: HeaderCarrier,
-    applicativeM: Applicative[F]
+    applicativeM: Applicative[F],
+    mat: Materializer
   ): F[List[UploadedFile]] =
     envelope.files.traverse[F, UploadedFile] { file: File =>
       getFileBytes(envelopeId, file.fileId)

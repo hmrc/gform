@@ -26,7 +26,7 @@ class EmploymentsModule(wSHttpModule: WSHttpModule, configModule: ConfigModule)(
 
   private val desConfig = configModule.desConfig
   private val desConnector: DesAlgebra[Future] =
-    new DesConnector(wSHttpModule.auditableWSHttp, configModule.serviceConfig.baseUrl("etmp-hod"), desConfig)
+    new DesConnector(wSHttpModule.httpClient, configModule.serviceConfig.baseUrl("etmp-hod"), desConfig)
 
   private val employmentsService = new EmploymentsService(desConnector)
   val employmentsController = new EmploymentsController(configModule.controllerComponents, employmentsService)
