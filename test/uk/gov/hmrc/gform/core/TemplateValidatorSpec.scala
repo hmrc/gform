@@ -207,6 +207,7 @@ class TemplateValidatorSpec extends Spec {
             None,
             None,
             None,
+            None,
             Some(toSmartString("ContinueLabel")),
             List(mkFormComponent("declarationFullName", Value)),
             None
@@ -884,6 +885,120 @@ class TemplateValidatorSpec extends Spec {
 
   }
 
+  "TemplateValidator.validateAddToListDeclarationSection" should "disallow AddToList declarationSection if no CYA page exists" in {
+    val yesNoLocalisedStrings =
+      NonEmptyList.of(toSmartString("Yes"), toSmartString("No")).map(OptionData.IndexBased(_, None, None, None, None))
+    val addToListPage = mkSection("addToListPage", List(mkFormComponent("fieldA", Value))).page
+    val addAnotherQuestion =
+      mkFormComponent(
+        "addAnother",
+        Choice(
+          YesNo,
+          yesNoLocalisedStrings,
+          Horizontal,
+          Nil,
+          None,
+          None,
+          None,
+          LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
+          None,
+          None,
+          false
+        )
+      )
+    val referenceToAddAnotherQuestion = mkFormComponent("fieldC", Count(FormComponentId("addAnother")))
+
+    val sectionA = mkAddToList("AddToList", NonEmptyList.one(addToListPage), addAnotherQuestion, None, Some(decSection))
+    val sectionB = mkSection("NonRepeated", List(referenceToAddAnotherQuestion))
+
+    val formTemplateUpd = formTemplate.copy(formKind = FormKind.Classic(List(sectionA, sectionB)))
+
+    val res = FormTemplateValidator.validateAddToListDeclarationSection(formTemplateUpd)
+    res shouldBe Invalid("AddToList declaration section for 'addAnother' can only be defined when a CYA page exists.")
+  }
+
+  it should "allow AddToList declarationSection when CYA page does exist" in {
+    val yesNoLocalisedStrings =
+      NonEmptyList.of(toSmartString("Yes"), toSmartString("No")).map(OptionData.IndexBased(_, None, None, None, None))
+    val addToListPage = mkSection("addToListPage", List(mkFormComponent("fieldA", Value))).page
+    val addAnotherQuestion =
+      mkFormComponent(
+        "addAnother",
+        Choice(
+          YesNo,
+          yesNoLocalisedStrings,
+          Horizontal,
+          Nil,
+          None,
+          None,
+          None,
+          LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
+          None,
+          None,
+          false
+        )
+      )
+    val referenceToAddAnotherQuestion = mkFormComponent("fieldC", Count(FormComponentId("addAnother")))
+    val cyaPage = mkCheckYourAnswersPage("cya")
+    val declarationSection = decSection.copy(fields = List(`fieldValue - info`))
+
+    val sectionA = mkAddToList(
+      "AddToList",
+      NonEmptyList.one(addToListPage),
+      addAnotherQuestion,
+      Some(cyaPage),
+      Some(declarationSection)
+    )
+    val sectionB = mkSection("NonRepeated", List(referenceToAddAnotherQuestion))
+
+    val formTemplateUpd = formTemplate.copy(formKind = FormKind.Classic(List(sectionA, sectionB)))
+
+    val res = FormTemplateValidator.validateAddToListDeclarationSection(formTemplateUpd)
+    res shouldBe Valid
+  }
+
+  it should "disallow AddToList declarationSection when it contains non-readonly fields" in {
+    val yesNoLocalisedStrings =
+      NonEmptyList.of(toSmartString("Yes"), toSmartString("No")).map(OptionData.IndexBased(_, None, None, None, None))
+    val addToListPage = mkSection("addToListPage", List(mkFormComponent("fieldA", Value))).page
+    val addAnotherQuestion =
+      mkFormComponent(
+        "addAnother",
+        Choice(
+          YesNo,
+          yesNoLocalisedStrings,
+          Horizontal,
+          Nil,
+          None,
+          None,
+          None,
+          LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
+          None,
+          None,
+          false
+        )
+      )
+    val referenceToAddAnotherQuestion = mkFormComponent("fieldC", Count(FormComponentId("addAnother")))
+    val cyaPage = mkCheckYourAnswersPage("cya")
+    val declarationSection = decSection.copy(fields = List(`fieldValue - number`))
+
+    val sectionA = mkAddToList(
+      "AddToList",
+      NonEmptyList.one(addToListPage),
+      addAnotherQuestion,
+      Some(cyaPage),
+      Some(declarationSection)
+    )
+    val sectionB = mkSection("NonRepeated", List(referenceToAddAnotherQuestion))
+
+    val formTemplateUpd = formTemplate.copy(formKind = FormKind.Classic(List(sectionA, sectionB)))
+
+    val res = FormTemplateValidator.validateAddToListDeclarationSection(formTemplateUpd)
+    res shouldBe Invalid(
+      "All fields in Declaration section for AddToList must be Info or Table or MiniSummary type. Field Id, 'number' is not an info field"
+    )
+  }
+
   private def mkDate(
     year: Year,
     month: Month,
@@ -928,7 +1043,30 @@ class TemplateValidatorSpec extends Spec {
       )
     )
 
-  private def mkAddToList(name: String, pages: NonEmptyList[Page], addAnotherQuestion: FormComponent) =
+  private def mkCheckYourAnswersPage(title: String) =
+    CheckYourAnswersPage(
+      Some(toSmartString(title)),
+      None,
+      toSmartString(title),
+      None,
+      None,
+      None,
+      None,
+      None,
+      None,
+      None,
+      None,
+      None,
+      None
+    )
+
+  private def mkAddToList(
+    name: String,
+    pages: NonEmptyList[Page],
+    addAnotherQuestion: FormComponent,
+    maybeCya: Option[CheckYourAnswersPage] = None,
+    maybeDeclaration: Option[DeclarationSection] = None
+  ) =
     Section.AddToList(
       toSmartString(name),
       None,
@@ -947,7 +1085,9 @@ class TemplateValidatorSpec extends Spec {
       None,
       None,
       None,
-      None
+      None,
+      cyaPage = maybeCya,
+      declarationSection = maybeDeclaration
     )
 
   private def mkFormComponent(name: String, expr: Expr, validIf: Option[ValidIf] = None) =

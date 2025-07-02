@@ -410,6 +410,29 @@ object FormTemplatesControllerRequestHandler {
       json.transform(updateSections) orElse JsSuccess(json)
     }
 
+    val transformATLDeclarationSectionFields: Reads[JsValue] = Reads { json =>
+      val declarationReads: Reads[JsObject] =
+        (__ \ "declarationSection").json.update(fieldsReads)
+
+      val updateSections: Reads[JsObject] =
+        (__ \ "sections").json.update(of[JsArray].map { case JsArray(arr) =>
+          JsArray(
+            arr.map { section =>
+              section
+                .transform(declarationReads)
+                .getOrElse(section)
+            }
+          )
+        })
+
+      val updateTaskList =
+        (__ \ "sections").json.update(
+          list((__ \ "tasks").json.update(list(updateSections)))
+        )
+
+      json.transform(updateTaskList orElse updateSections) orElse JsSuccess(json)
+    }
+
     val transformConfirmationQuestion: Reads[JsValue] = Reads { json =>
       val questionReads: Reads[JsObject] =
         (__ \ "confirmation" \ "question").json.update(choicesUpdater)
@@ -535,6 +558,7 @@ object FormTemplatesControllerRequestHandler {
         prunePrintSection andThen
         transformChoices andThen
         transformAddAnotherQuestion andThen
+        transformATLDeclarationSectionFields andThen
         transformConfirmationQuestion andThen
         moveSections andThen
         pruneDeclarationSection and
