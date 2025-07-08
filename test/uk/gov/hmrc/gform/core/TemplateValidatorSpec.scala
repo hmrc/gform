@@ -995,7 +995,7 @@ class TemplateValidatorSpec extends Spec {
 
     val res = FormTemplateValidator.validateAddToListDeclarationSection(formTemplateUpd)
     res shouldBe Invalid(
-      "All fields in Declaration section for AddToList must be Info or Table or MiniSummary type. Field Id, 'number' is not an info field"
+      "All fields in Declaration section for AddToList must be Info or Table or MiniSummary type. Field Id, 'number' is not an info field, table or mini summary."
     )
   }
 
