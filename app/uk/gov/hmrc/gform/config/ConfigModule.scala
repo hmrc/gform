@@ -47,9 +47,6 @@ class ConfigModule(
   val desConfig: DesConnectorConfig =
     ConfigSource.default.at("microservice.services.etmp-hod").loadOrThrow[DesConnectorConfig]
 
-  val companiesHouseConfig: CompaniesHouseConnectorConfig =
-    ConfigSource.default.at("microservice.services.companies-house-api").loadOrThrow[CompaniesHouseConnectorConfig]
-
   val isProd: Boolean = typesafeConfig.getString("play.http.router") =!= "testOnlyDoNotUseInAppConf.Routes"
 
   val sdesConfig: SdesConfig = ConfigSource.default.at("microservice.services.sdes").loadOrThrow[SdesConfig]
@@ -175,4 +172,3 @@ class ConfigModule(
 }
 
 final case class DesConnectorConfig(basePath: String, authorizationToken: String, environment: String)
-final case class CompaniesHouseConnectorConfig(basePath: String, authorizationToken: String)

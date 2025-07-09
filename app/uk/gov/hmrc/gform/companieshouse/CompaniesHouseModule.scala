@@ -1,16 +1,57 @@
+/*
+ * Copyright 2025 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package uk.gov.hmrc.gform.companieshouse
 
+import uk.gov.hmrc.gform.auditing.AuditingModule
+import uk.gov.hmrc.gform.companieshouse.CompaniesHouseModule.CompaniesHouseAPIConfig
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.wshttp.WSHttpModule
 
+import java.net.URI
 import scala.concurrent.ExecutionContext
 
 class CompaniesHouseModule(
-                            configModule: ConfigModule,
-                            wSHttpModule: WSHttpModule
-                          )(implicit ex: ExecutionContext) {
+  configModule: ConfigModule,
+  auditingModule: AuditingModule,
+  wSHttpModule: WSHttpModule
+)(implicit ex: ExecutionContext) {
 
-  val companiesHouseConnector = new CompaniesHouseConnector(wSHttpModule.auditableWSHttp, configModule.companiesHouseConfig)
-  val companiesHouseService = new
+  val companiesHouseConfig: CompaniesHouseAPIConfig = readCompaniesHouseConfig
 
+  val companiesHouseAuditService =
+    new CompaniesHouseAuditService(auditingModule.auditConnector, configModule.configuration)
+  val companiesHouseConnector =
+    new CompaniesHouseConnector(wSHttpModule.httpClient, companiesHouseConfig, companiesHouseAuditService)
+  val companiesHouseService =
+    new CompaniesHouseService(companiesHouseConnector, configModule.configuration, companiesHouseAuditService)
+  val companiesHouseController = new CompaniesHouseController(companiesHouseService, configModule.controllerComponents)
+
+  private def readCompaniesHouseConfig = {
+    val basePath = configModule.serviceConfig.getConfString("companies-house-api.base-path", "")
+    CompaniesHouseAPIConfig(
+      URI.create(s"${configModule.serviceConfig.baseUrl("companies-house-api")}$basePath"),
+      configModule.serviceConfig.getConfString(
+        "companies-house-api.authorization-token",
+        throw new IllegalStateException("missing config companies-house-api.authorization-token")
+      )
+    )
+  }
+}
+
+object CompaniesHouseModule {
+  case class CompaniesHouseAPIConfig(baseUrl: URI, authorizationToken: String)
 }

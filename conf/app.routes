@@ -157,3 +157,7 @@ GET           /history/next/:formTemplateRawId/:historyId                       
 GET           /retrieval/:envelopeId                                                                    uk.gov.hmrc.gform.retrieval.AuthRetrievalController.getRetrievals(envelopeId: EnvelopeId)
 POST          /retrieval                                                                                uk.gov.hmrc.gform.retrieval.AuthRetrievalController.upsertRetrievals()
 POST          /retrieval-by-form                                                                        uk.gov.hmrc.gform.retrieval.AuthRetrievalController.upsertRetrievalsByFormIdData()
+
+GET           /companieshouse/company/:companynumber                                                    uk.gov.hmrc.gform.companieshouse.CompaniesHouseController.findCompany(companynumber: String)
+GET           /companieshouse/company/:companynumber/officers                                           uk.gov.hmrc.gform.companieshouse.CompaniesHouseController.findCompanyOfficers(companynumber: String, surname: Option[String])
+
