@@ -42,7 +42,6 @@ class CompaniesHouseConnector(
 
   def getCompany(companyNumber: String)(implicit request: Request[?]): Future[JsValue] = {
     auditService.companyInformationRequest(companyNumber)
-    println(s"CM: $headersWithApiKey")
     http
       .get(url"$serviceUrl/company/$companyNumber")(HeaderCarrier())
       .setHeader(headersWithApiKey)

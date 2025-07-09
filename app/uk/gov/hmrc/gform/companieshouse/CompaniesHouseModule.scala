@@ -22,6 +22,8 @@ import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.wshttp.WSHttpModule
 
 import java.net.URI
+import java.nio.charset.StandardCharsets
+import java.util.Base64
 import scala.concurrent.ExecutionContext
 
 class CompaniesHouseModule(
@@ -42,12 +44,14 @@ class CompaniesHouseModule(
 
   private def readCompaniesHouseConfig = {
     val basePath = configModule.serviceConfig.getConfString("companies-house-api.base-path", "")
+    val rawAuthToken = configModule.serviceConfig.getConfString(
+      "companies-house-api.authorization-token",
+      throw new IllegalStateException("Missing config companies-house-api.authorization-token")
+    )
+
     CompaniesHouseAPIConfig(
       URI.create(s"${configModule.serviceConfig.baseUrl("companies-house-api")}$basePath"),
-      configModule.serviceConfig.getConfString(
-        "companies-house-api.authorization-token",
-        throw new IllegalStateException("missing config companies-house-api.authorization-token")
-      )
+      Base64.getEncoder.encodeToString(s"$rawAuthToken:".getBytes(StandardCharsets.UTF_8))
     )
   }
 }
