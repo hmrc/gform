@@ -48,32 +48,12 @@ class CompaniesHouseConnector(
       .withProxy
       .execute[HttpResponse]
       .map { response =>
-        response.status match {
-          case 200 =>
-            auditService.successfulCompanyInformationResponse(response.json)
-            response.json
-          case 404 =>
-            auditService.failedCompanyOfficersResponse(404, "Company profile not found")
-            throw new NotFoundException("Company profile not found")
-          case 401 =>
-            logger.error(
-              s"Received unauthorized response. Check whether the api-key permissions are changed. ${response.body}"
-            )
-            auditService.failedCompanyOfficersResponse(401, "Unauthorized request to companies house")
-            throw new UnauthorizedException("Unauthorized request to companies house")
-          case 403 =>
-            logger.error(s"Received forbidden response. Check whether the api-key has expired. ${response.body}")
-            auditService.failedCompanyOfficersResponse(403, "Forbidden request to companies house")
-            throw new ForbiddenException("Forbidden request to companies house")
-          case 429 =>
-            val message = "Received rate limit response from companies house"
-            logger.error(message)
-            throw new InternalServerException(message)
-          case status =>
-            logger.error(s"Received unexpected status $status. ${response.body}")
-            auditService.failedCompanyOfficersResponse(status, "Unexpected response code from companies house")
-            throw new InternalServerException("Unexpected response code from companies house")
-        }
+        handleJsonResponse(
+          response,
+          "Company profile",
+          auditService.successfulCompanyInformationResponse(response.json),
+          auditService.failedCompanyInformationResponse
+        )
       }
   }
 
@@ -98,6 +78,56 @@ class CompaniesHouseConnector(
       .execute[HttpResponse]
       .map(handleOfficersResponse)
   }
+
+  def getCompanyInsolvency(companyNumber: String)(implicit request: Request[?]): Future[JsValue] = {
+    auditService.companyInsolvencyRequest(companyNumber)
+    http
+      .get(url"$serviceUrl/company/$companyNumber/insolvency")(HeaderCarrier())
+      .setHeader(headersWithApiKey)
+      .withProxy
+      .execute[HttpResponse]
+      .map(
+        handleJsonResponse(
+          _,
+          "Company insolvency information",
+          auditService.successfulCompanyInsolvencyResponse(companyNumber),
+          auditService.failedCompanyInsolvencyResponse
+        )
+      )
+  }
+
+  private def handleJsonResponse(
+    response: HttpResponse,
+    resource: String,
+    auditSuccess: => Future[Unit],
+    auditFailure: (Int, String) => Future[Unit]
+  ): JsValue =
+    response.status match {
+      case 200 =>
+        auditSuccess
+        response.json
+      case 404 =>
+        auditFailure(404, s"$resource not found")
+        throw new NotFoundException(s"$resource not found")
+      case 401 =>
+        logger.error(
+          s"Received unauthorized response. Check whether the api-key permissions are changed. ${response.body}"
+        )
+        auditFailure(401, "Unauthorized request to companies house")
+        throw new UnauthorizedException("Unauthorized request to companies house")
+      case 403 =>
+        logger.error(s"Received forbidden response. Check whether the api-key has expired. ${response.body}")
+        auditFailure(403, "Forbidden request to companies house")
+        throw new ForbiddenException("Forbidden request to companies house")
+      case 429 =>
+        val message = "Received rate limit response from companies house"
+        logger.error(message)
+        throw new InternalServerException(message)
+      case status =>
+        logger.error(s"Received unexpected status $status. ${response.body}")
+        auditFailure(status, "Unexpected response code from companies house")
+        throw new InternalServerException("Unexpected response code from companies house")
+    }
 
   private def handleOfficersResponse(response: HttpResponse)(implicit request: Request[?]): OfficersResponse =
     response.status match {

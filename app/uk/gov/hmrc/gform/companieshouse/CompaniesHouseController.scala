@@ -65,4 +65,11 @@ class CompaniesHouseController(
       }
   }
 
+  def findCompanyInsolvency(companyNumber: String): Action[AnyContent] = Action.async { implicit request =>
+    companiesHouseService.findCompanyInsolvency(companyNumber).map(Ok(_)).recover {
+      case e: HttpException => Status(e.responseCode)
+      case _                => ServiceUnavailable
+    }
+  }
+
 }

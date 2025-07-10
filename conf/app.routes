@@ -160,4 +160,5 @@ POST          /retrieval-by-form                                                
 
 GET           /companieshouse/company/:companynumber                                                    uk.gov.hmrc.gform.companieshouse.CompaniesHouseController.findCompany(companynumber: String)
 GET           /companieshouse/company/:companynumber/officers                                           uk.gov.hmrc.gform.companieshouse.CompaniesHouseController.findCompanyOfficers(companynumber: String, surname: Option[String])
+GET           /companieshouse/company/:companynumber/insolvency                                         uk.gov.hmrc.gform.companieshouse.CompaniesHouseController.findCompanyInsolvency(companynumber: String)
 

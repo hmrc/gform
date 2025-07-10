@@ -42,8 +42,6 @@ class CompaniesHouseService(
     withCircuitBreaker {
       connector.getCompanyOfficers(companyNumber).map { response =>
         auditing.successfulCompanyOfficersResponse(response, companyNumber, surnameFilter = None)
-//        metrics.recordReturnedOfficers(response.items.length)
-
         response
       }
     }
@@ -65,9 +63,6 @@ class CompaniesHouseService(
         collectedResponses.map(response => findSpecificActiveOfficer(surname, response)).map { matchingOfficers =>
           val updated = initialResult.copy(items = matchingOfficers)
           auditing.successfulCompanyOfficersResponse(updated, companyNumber, Some(surname))
-//          metrics.recordPageHits(updated.totalResults.map(_ / 100).getOrElse(0) + 1)
-//          metrics.recordReturnedOfficers(matchingOfficers.length)
-
           updated
         }
       }
@@ -80,6 +75,11 @@ class CompaniesHouseService(
         value.name.startsWith(s"${surname.toUpperCase},")
       }
     }.toList
+
+  def findCompanyInsolvency(companyNumber: String)(implicit request: Request[?]): Future[JsValue] =
+    withCircuitBreaker {
+      connector.getCompanyInsolvency(companyNumber)
+    }
 
   override def breakOnException(t: Throwable): Boolean = t match {
     case _: NotFoundException | _: BadRequestException => false

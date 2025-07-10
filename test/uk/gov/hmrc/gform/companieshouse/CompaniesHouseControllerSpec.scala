@@ -286,4 +286,64 @@ class CompaniesHouseControllerSpec extends UnitSpec {
       status(result) shouldBe Status.SERVICE_UNAVAILABLE
     }
   }
+
+  "findCompanyInsolvency" should {
+    "return Ok and response body if find successful" in new Setup {
+      when(mockCompaniesHouseService.findCompanyInsolvency(any[String])(any[Request[_]])) `thenReturn` Future
+        .successful(jsonBody)
+      val result = await(companiesHouseController.findCompanyInsolvency(companyNumber)(FakeRequest()))
+      status(result) shouldBe Status.OK
+      contentAsJson(result) shouldBe jsonBody
+    }
+
+    "return NOT_FOUND if find successful but returns NOT_FOUND" in new Setup {
+      when(mockCompaniesHouseService.findCompanyInsolvency(any[String])(any[Request[_]])) `thenReturn` Future.failed(
+        new NotFoundException("some message")
+      )
+      val result = await(companiesHouseController.findCompanyInsolvency(companyNumber)(FakeRequest()))
+      status(result) shouldBe Status.NOT_FOUND
+    }
+
+    "return UNAUTHORIZED if find successful but returns UNAUTHORIZED" in new Setup {
+      when(mockCompaniesHouseService.findCompanyInsolvency(any[String])(any[Request[_]])) `thenReturn` Future.failed(
+        new UnauthorizedException("some message")
+      )
+
+      val result = await(companiesHouseController.findCompanyInsolvency(companyNumber)(FakeRequest()))
+      status(result) shouldBe Status.UNAUTHORIZED
+    }
+
+    "return FORBIDDEN if find successful but returns FORBIDDEN" in new Setup {
+      when(mockCompaniesHouseService.findCompanyInsolvency(any[String])(any[Request[_]])) `thenReturn` Future.failed(
+        new ForbiddenException("some message")
+      )
+
+      val result = await(companiesHouseController.findCompanyInsolvency(companyNumber)(FakeRequest()))
+      status(result) shouldBe Status.FORBIDDEN
+    }
+
+    "return GATEWAY_TIMEOUT when a TimeoutException thrown" in new Setup {
+      when(mockCompaniesHouseService.findCompanyInsolvency(any[String])(any[Request[_]])) `thenReturn` Future.failed(
+        new GatewayTimeoutException("Game Over Man")
+      )
+      val result = await(companiesHouseController.findCompanyInsolvency(companyNumber)(FakeRequest()))
+      status(result) shouldBe Status.GATEWAY_TIMEOUT
+    }
+
+    "return BadGateway when a ConnectException thrown" in new Setup {
+      when(mockCompaniesHouseService.findCompanyInsolvency(any[String])(any[Request[_]])) `thenReturn` Future.failed(
+        new BadGatewayException("Mutually agreed uncoupling")
+      )
+      val result = await(companiesHouseController.findCompanyInsolvency(companyNumber)(FakeRequest()))
+      status(result) shouldBe Status.BAD_GATEWAY
+    }
+
+    "return ServiceUnavailable when any other exception thrown" in new Setup {
+      when(mockCompaniesHouseService.findCompanyInsolvency(any[String])(any[Request[_]])) `thenReturn` Future.failed(
+        new IllegalArgumentException("I told you that bird was sick but would you listen")
+      )
+      val result = await(companiesHouseController.findCompanyInsolvency(companyNumber)(FakeRequest()))
+      status(result) shouldBe Status.SERVICE_UNAVAILABLE
+    }
+  }
 }

@@ -248,6 +248,65 @@ class CompaniesHouseControllerISpec extends ITSpec with LogCapturing with Defaul
     (Json.parse(response.body) \ "items" \ 0 \ "address").asOpt[JsValue] shouldBe empty
   }
 
+  "GET company insolvency information" should "return the same response from api to caller" in new Setup {
+    stubFor(
+      WireMock
+        .get(urlEqualTo(s"/company/$companyNumber/insolvency"))
+        .willReturn(aResponse().withStatus(200).withBody(insolvencyBody))
+    )
+    val url = s"/companieshouse/company/$companyNumber/insolvency"
+    val response = await(wsClient.url(resource(url)).get())
+    response.status shouldBe 200
+    (Json.parse(response.body) \ "cases").as[Seq[JsValue]].size should be(3)
+    (Json.parse(response.body) \ "cases" \ 0 \ "type").as[String] shouldBe "receiver-manager"
+    (Json.parse(response.body) \ "cases" \ 2 \ "type").as[String] shouldBe "in-administration"
+  }
+
+  it should "return 404 unknown company number" in new Setup {
+    stubFor(WireMock.get(urlEqualTo(s"/company/$companyNumber/insolvency")).willReturn(aResponse().withStatus(404)))
+    val url = s"/companieshouse/company/$companyNumber/insolvency"
+    val response = await(wsClient.url(resource(url)).get())
+    response.status shouldBe 404
+  }
+
+  it should "return 500 when companies house returns 429" in new Setup {
+    stubFor(WireMock.get(urlEqualTo(s"/company/$companyNumber/insolvency")).willReturn(aResponse().withStatus(429)))
+    val url = s"/companieshouse/company/$companyNumber/insolvency"
+
+    withCaptureOfLoggingFrom[CompaniesHouseConnector] { logs =>
+      val response = await(wsClient.url(resource(url)).get())
+      response.status shouldBe 500
+      val errorLogs = logs.filter(_.getLevel == Level.ERROR).map(_.getMessage)
+      errorLogs.head shouldBe "Received rate limit response from companies house"
+    }
+  }
+
+  it should "not leak MDTP headers to companies house" in new Setup {
+    // note: order matters as of wiremock 2.26
+    stubFor(WireMock.get(urlEqualTo(s"/company/$companyNumber/insolvency")).willReturn(ok(insolvencyBody)))
+    stubFor(
+      WireMock
+        .get(s"/company/$companyNumber/insolvency")
+        .withHeader(AUTHORIZATION, equalTo("Bearer authToken"))
+        .willReturn(badRequest().withBody("leaked auth token"))
+    )
+    stubFor(
+      WireMock
+        .get(s"/company/$companyNumber/insolvency")
+        .withHeader(uk.gov.hmrc.http.HeaderNames.xSessionId, equalTo("some session id"))
+        .willReturn(badRequest().withBody("leaked session id"))
+    )
+
+    val response = await(
+      wsClient
+        .url(resource(s"/companieshouse/company/$companyNumber/insolvency"))
+        .addHttpHeaders(AUTHORIZATION -> "Bearer authToken")
+        .addHttpHeaders(uk.gov.hmrc.http.HeaderNames.xSessionId -> "some session id")
+        .get()
+    )
+    response.status shouldBe OK
+  }
+
   private trait Setup {
     val companyNumber = "01234567"
 
@@ -359,6 +418,105 @@ class CompaniesHouseControllerISpec extends ITSpec with LogCapturing with Defaul
         | "undeliverable_registered_office_address":"boolean"
         |}
       """.stripMargin
+
+    val insolvencyBody =
+      """
+        |{
+        |  "etag": "somelongstring",
+        |  "cases": [
+        |    {
+        |      "type": "receiver-manager",
+        |      "dates": [],
+        |      "practitioners": [
+        |        {
+        |          "name": "John Smith",
+        |          "address": {
+        |            "address_line_1": "1 Somewhere St",
+        |            "address_line_2": "Someburb",
+        |            "locality": "Somewheresville",
+        |            "postal_code": "SM1 2WH"
+        |          },
+        |          "appointed_on": "2022-08-05",
+        |          "role": "receiver-manager"
+        |        },
+        |        {
+        |          "name": "Jane Doe",
+        |          "address": {
+        |            "address_line_1": "1 Somewhere St",
+        |            "address_line_2": "Someburb",
+        |            "locality": "Somewheresville",
+        |            "postal_code": "SM1 2WH"
+        |          },
+        |          "appointed_on": "2022-08-05",
+        |          "role": "receiver-manager"
+        |        }
+        |      ],
+        |      "links": {
+        |        "charge": "/company/01234567/charges/somestring"
+        |      },
+        |      "number": "1"
+        |    },
+        |    {
+        |      "type": "receiver-manager",
+        |      "dates": [],
+        |      "practitioners": [
+        |        {
+        |          "name": "John Smith",
+        |          "address": {
+        |            "address_line_1": "1 Somewhere St",
+        |            "address_line_2": "Someburb",
+        |            "locality": "Somewheresville",
+        |            "postal_code": "SM1 2WH"
+        |          },
+        |          "appointed_on": "2022-08-05",
+        |          "role": "receiver-manager"
+        |        },
+        |        {
+        |          "name": "Jane Doe",
+        |          "address": {
+        |            "address_line_1": "1 Somewhere St",
+        |            "address_line_2": "Someburb",
+        |            "locality": "Somewheresville",
+        |            "postal_code": "SM1 2WH"
+        |          },
+        |          "appointed_on": "2022-08-05",
+        |          "role": "receiver-manager"
+        |        }
+        |      ],
+        |      "links": {
+        |        "charge": "/company/01234567/charges/somestring"
+        |      },
+        |      "number": "2"
+        |    },
+        |    {
+        |      "type": "in-administration",
+        |      "dates": [
+        |        {
+        |          "type": "administration-started-on",
+        |          "date": "2022-10-21"
+        |        }
+        |      ],
+        |      "practitioners": [
+        |        {
+        |          "name": "John McSmith",
+        |          "address": {
+        |            "address_line_1": "58 Somewhere Rd",
+        |            "locality": "Somewheresville",
+        |            "region": "Somewhereshire",
+        |            "postal_code": "SM2 1WH"
+        |          },
+        |          "role": "practitioner"
+        |        }
+        |      ],
+        |      "number": "3"
+        |    }
+        |  ],
+        |  "status": [
+        |    "in-administration",
+        |    "receiver-manager"
+        |  ]
+        |}
+        |""".stripMargin
 
     val resignedBody = Json.obj(
       "appointed_on"         -> "2015-04-10",

@@ -35,7 +35,14 @@ class CompaniesHouseAuditService(
 
   def companyInformationRequest(companyNumber: String)(implicit request: Request[?]): Future[Unit] = {
     val detail = Map("companyNumber" -> companyNumber)
-    sendEvent(eventFor("companyInformationRequest", detail, "Companies House - Company Information Request"))
+    sendEvent(eventFor("companyInformationRequest", detail, "GForms Companies House - Company Information Request"))
+  }
+
+  def companyInsolvencyRequest(companyNumber: String)(implicit request: Request[?]): Future[Unit] = {
+    val detail = Map("companyNumber" -> companyNumber)
+    sendEvent(
+      eventFor("companyInsolvencyRequest", detail, "GForms Companies House - Company Insolvency Information Request")
+    )
   }
 
   def companyOfficersRequest(companyNumber: String, surname: Option[String] = None)(implicit
@@ -45,7 +52,7 @@ class CompaniesHouseAuditService(
       "companyNumber" -> companyNumber,
       "surname"       -> surname.getOrElse("-")
     )
-    sendEvent(eventFor("companyOfficersRequest", detail, "Companies House - Company Officers Request"))
+    sendEvent(eventFor("companyOfficersRequest", detail, "GForms Companies House - Company Officers Request"))
   }
 
   def successfulCompanyInformationResponse(response: JsValue)(implicit request: Request[?]): Future[Unit] = {
@@ -58,7 +65,7 @@ class CompaniesHouseAuditService(
       "companyName"   -> companyName,
       "companyStatus" -> companyStatus
     )
-    sendEvent(eventFor("companyInformationResponse", detail, "Companies House - Company Information Response"))
+    sendEvent(eventFor("companyInformationResponse", detail, "GForms Companies House - Company Information Response"))
   }
 
   def failedCompanyInformationResponse(errorCode: Int, errorMessage: String)(implicit
@@ -68,7 +75,7 @@ class CompaniesHouseAuditService(
       "errorCode" -> errorCode.toString,
       "error"     -> errorMessage
     )
-    sendEvent(eventFor("companyInformationResponse", detail, "Companies House - Company Information Response"))
+    sendEvent(eventFor("companyInformationResponse", detail, "GForms Companies House - Company Information Response"))
   }
 
   def successfulCompanyOfficersResponse(
@@ -96,7 +103,7 @@ class CompaniesHouseAuditService(
 
     auditConnector
       .sendExtendedEvent(
-        extendedEventFor("companyOfficersResponse", detail, "Companies House - Company Officers Response")
+        extendedEventFor("companyOfficersResponse", detail, "GForms Companies House - Company Officers Response")
       )
       .map(_ => ())
   }
@@ -108,15 +115,28 @@ class CompaniesHouseAuditService(
       "errorCode" -> errorCode.toString,
       "error"     -> errorMessage
     )
-    sendEvent(eventFor("companyOfficersResponse", detail, "Companies House - Company Officers Response"))
+    sendEvent(eventFor("companyOfficersResponse", detail, "GForms Companies House - Company Officers Response"))
   }
 
-  def suspiciousActivity(reason: String)(implicit request: Request[?]): Future[Unit] = {
+  def successfulCompanyInsolvencyResponse(companyNumber: String)(implicit request: Request[?]): Future[Unit] = {
     val detail = Map(
-      "context" -> "Incoming payload; likely tampering",
-      "reason"  -> reason
+      "companyNumber" -> companyNumber
     )
-    sendEvent(eventFor("SuspiciousActivity", detail, "Companies House - Suspicious Activity"))
+    sendEvent(
+      eventFor("companyInsolvencyResponse", detail, "GForms Companies House - Company Insolvency Information Response")
+    )
+  }
+
+  def failedCompanyInsolvencyResponse(errorCode: Int, errorMessage: String)(implicit
+    request: Request[?]
+  ): Future[Unit] = {
+    val detail = Map(
+      "errorCode" -> errorCode.toString,
+      "error"     -> errorMessage
+    )
+    sendEvent(
+      eventFor("companyInsolvencyResponse", detail, "GForms Companies House - Company Insolvency Information Response")
+    )
   }
 
   private def eventFor(
@@ -129,7 +149,12 @@ class CompaniesHouseAuditService(
   ) = {
     val hcTags = hc.toAuditTags(transactionName, request.path) ++ tagOverrides
     val hcDetails = hc.toAuditDetails() ++ details
-    DataEvent(auditType = auditType, tags = hcTags, detail = hcDetails, auditSource = "companies-house-api-proxy")
+    DataEvent(
+      auditType = auditType,
+      tags = hcTags,
+      detail = hcDetails,
+      auditSource = auditConnector.auditingConfig.auditSource
+    )
   }
 
   private def extendedEventFor(
@@ -141,7 +166,12 @@ class CompaniesHouseAuditService(
     request: Request[?]
   ) = {
     val hcTags = hc.toAuditTags(transactionName, request.path) ++ tagOverrides
-    ExtendedDataEvent(auditType = auditType, tags = hcTags, detail = details, auditSource = "companies-house-api-proxy")
+    ExtendedDataEvent(
+      auditType = auditType,
+      tags = hcTags,
+      detail = details,
+      auditSource = auditConnector.auditingConfig.auditSource
+    )
   }
 
   private def sendEvent(dataEvent: DataEvent) = {
