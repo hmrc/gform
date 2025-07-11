@@ -50,18 +50,20 @@ trait ITSpec
   )
 
   val settingsOverride: Map[String, String] = Map(
-    "auditing.enabled"                              -> "false",
-    "json.encryption.key"                           -> "fqpLDZ4sumDsekHkeEBlCA==",
-    "json.encryption.previousKeys"                  -> "",
-    "microservice.services.file-upload.port"        -> s"$wiremockPort",
-    "microservice.services.file-upload.path-prefix" -> "",
-    "microservice.services.gform-frontend.port"     -> s"$wiremockPort",
-    "proxy.username"                                -> "gform",
-    "proxy.password"                                -> "gform",
-    "proxy.host"                                    -> "outbound-proxy-vip",
-    "proxy.port"                                    -> "3128",
-    "proxy.protocol"                                -> "https",
-    "proxy.proxyRequiredForThisEnvironment"         -> "true"
+    "auditing.enabled"                                    -> "false",
+    "json.encryption.key"                                 -> "fqpLDZ4sumDsekHkeEBlCA==",
+    "json.encryption.previousKeys"                        -> "",
+    "microservice.services.file-upload.port"              -> s"$wiremockPort",
+    "microservice.services.file-upload.path-prefix"       -> "",
+    "microservice.services.gform-frontend.port"           -> s"$wiremockPort",
+    "microservice.services.companies-house-api.port"      -> s"$wiremockPort",
+    "microservice.services.companies-house-api.base-path" -> "",
+    "proxy.username"                                      -> "gform",
+    "proxy.password"                                      -> "gform",
+    "proxy.host"                                          -> "outbound-proxy-vip",
+    "proxy.port"                                          -> "3128",
+    "proxy.protocol"                                      -> "https",
+    "proxy.proxyRequiredForThisEnvironment"               -> "true"
   ) ++ mongoSettings
 
   override def fakeApplication(): Application = {

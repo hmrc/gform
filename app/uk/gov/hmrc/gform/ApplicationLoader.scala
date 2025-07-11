@@ -33,6 +33,7 @@ import uk.gov.hmrc.crypto.{ Decrypter, Encrypter, SymmetricCryptoFactory }
 import uk.gov.hmrc.gform.akka.AkkaModule
 import uk.gov.hmrc.gform.auditing.AuditingModule
 import uk.gov.hmrc.gform.builder.BuilderModule
+import uk.gov.hmrc.gform.companieshouse.CompaniesHouseModule
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.dblookup.DbLookupModule
 import uk.gov.hmrc.gform.des.DesModule
@@ -397,6 +398,12 @@ class ApplicationModule(context: Context)
       gformFrontendModule.gformFrontendConnector
     )
 
+  val companiesHouseModule = new CompaniesHouseModule(
+    configModule,
+    auditingModule,
+    wSHttpModule
+  )
+
   private val playComponentsModule = new PlayComponentsModule(
     playComponents,
     akkaModule,
@@ -425,7 +432,8 @@ class ApplicationModule(context: Context)
     shutterModule,
     handlebarsPayloadModule,
     historyModule,
-    retrievalModule
+    retrievalModule,
+    companiesHouseModule
   )
 
   override lazy val httpRequestHandler: HttpRequestHandler = playComponentsModule.httpRequestHandler

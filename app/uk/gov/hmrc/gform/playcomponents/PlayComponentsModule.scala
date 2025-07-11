@@ -25,6 +25,7 @@ import scala.concurrent.ExecutionContext
 import uk.gov.hmrc.gform.akka.AkkaModule
 import uk.gov.hmrc.gform.auditing.AuditingModule
 import uk.gov.hmrc.gform.builder.BuilderModule
+import uk.gov.hmrc.gform.companieshouse.CompaniesHouseModule
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.formstatistics.FormStatisticsModule
 import uk.gov.hmrc.gform.dblookup.DbLookupModule
@@ -80,7 +81,8 @@ class PlayComponentsModule(
   shutterModule: ShutterModule,
   handlebarsPayloadModule: HandlebarsTemplateModule,
   historyModule: HistoryModule,
-  retrievalModule: AuthRetrievalModule
+  retrievalModule: AuthRetrievalModule,
+  companiesHouseModule: CompaniesHouseModule
 )(implicit ec: ExecutionContext) {
   private val logger = LoggerFactory.getLogger(getClass)
 
@@ -113,7 +115,8 @@ class PlayComponentsModule(
     sdesModule.sdesController,
     sdesModule.destinationWorkItemController,
     historyModule.historyController,
-    retrievalModule.authRetrievalController
+    retrievalModule.authRetrievalController,
+    companiesHouseModule.companiesHouseController
   )
 
   private val healthController =
