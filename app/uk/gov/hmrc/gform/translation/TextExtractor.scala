@@ -438,8 +438,10 @@ object TextExtractor {
   val atlLimitField = List(Pure(DownField("field")), Pure(DownField("limit"))) ++ sections
   val atlPages = List(TraverseArray, Pure(DownField("pages"))) ++ sections
   val atlDefaultPage = List(Pure(DownField("defaultPage"))) ++ sections
+  val atlDeclarationPage = List(Pure(DownField("declarationSection"))) ++ sections
   val atlCyaPage = List(Pure(DownField("cyaPage"))) ++ sections
   val atlDefaultPageFields = List(TraverseArray, Pure(DownField("fields"))) ++ atlDefaultPage
+  val atlDeclarationPageFields = List(TraverseArray, Pure(DownField("fields"))) ++ atlDeclarationPage
   val atlPagesFields = List(TraverseArray, Pure(DownField("fields"))) ++ atlPages
   val tasksSections = List(TraverseArray, Pure(DownField("sections"))) ++ tasks
   val tasksFields = List(TraverseArray, Pure(DownField("fields"))) ++ tasksSections
@@ -448,13 +450,25 @@ object TextExtractor {
   val tasksDefaultPageFields = List(TraverseArray, Pure(DownField("fields"))) ++ tasksDefaultPage
   val tasksAtlLimitField = List(Pure(DownField("field")), Pure(DownField("limit"))) ++ tasksSections
   val tasksAtlPages = List(TraverseArray, Pure(DownField("pages"))) ++ tasksSections
+  val tasksAtlDeclarationPage = List(Pure(DownField("declarationSection"))) ++ tasksSections
   val tasksAtlPagesFields = List(TraverseArray, Pure(DownField("fields"))) ++ tasksAtlPages
+  val tasksAtlDeclarationPageFields = List(TraverseArray, Pure(DownField("fields"))) ++ tasksAtlDeclarationPage
   val authConfig = List(Pure(DownField("authConfig")))
   val configs = List(TraverseArray, Pure(DownField("configs"))) ++ authConfig
   val enrolmentSection = List(Pure(DownField("enrolmentSection"))) ++ authConfig
   val enrolmentSectionFields = List(TraverseArray, Pure(DownField("fields"))) ++ enrolmentSection
   val allFields =
-    List(fields, atlPagesFields, tasksFields, tasksAtlPagesFields, enrolmentSectionFields, decFields, groupFields)
+    List(
+      fields,
+      atlPagesFields,
+      tasksFields,
+      tasksAtlPagesFields,
+      tasksAtlDeclarationPageFields,
+      enrolmentSectionFields,
+      decFields,
+      groupFields,
+      atlDeclarationPageFields
+    )
   val allRevealingFields = allFields.map { fields =>
     List(TraverseArray, TraverseArray, Pure(DownField("revealingFields"))) ++ fields
   }
@@ -488,8 +502,10 @@ object TextExtractor {
       pathForSection(atlPages) ++
       pathForSection(tasksSections) ++
       pathForSection(atlDefaultPage) ++
+      pathForSection(atlDeclarationPage) ++
       pathForSection(tasksDefaultPage) ++
       pathForSection(tasksAtlPages) ++
+      pathForSection(tasksAtlDeclarationPage) ++
       allFields.flatMap(pathForField) ++
       allRevealingFields.flatMap(pathForField) ++
       pathForInfoOnlyField(ackFields) ++
