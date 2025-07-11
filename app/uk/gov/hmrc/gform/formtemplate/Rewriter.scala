@@ -82,8 +82,9 @@ trait Rewriter {
       formTemplate.formKind.allSections.foldLeft(fcLookupDeclaration) {
         case (acc, Section.NonRepeatingPage(page)) => acc ++ lookupFromPage(page.fields) ++ questionFcid(page)
         case (acc, Section.RepeatingPage(page, _)) => acc ++ lookupFromPage(page.fields) ++ questionFcid(page)
-        case (acc, Section.AddToList(_, _, _, _, _, _, _, _, pages, _, _, _, _, _, _, _, _, _, _, _, _, _)) =>
-          acc ++ pages.toList.flatMap(page => lookupFromPage(page.fields) ++ questionFcid(page))
+        case (acc, Section.AddToList(_, _, _, _, _, _, _, _, pages, _, _, _, _, _, _, _, _, _, _, _, _, _, maybeDec)) =>
+          acc ++ pages.toList.flatMap(page => lookupFromPage(page.fields) ++ questionFcid(page)) ++ maybeDec.toList
+            .flatMap(dec => lookupFromPage(dec.fields))
       }
 
     val validIfsDeclaration = formTemplate.destinations match {
@@ -96,7 +97,7 @@ trait Rewriter {
       formTemplate.formKind.allSections.flatMap {
         case Section.NonRepeatingPage(page) => page.fields.flatMap(f)
         case Section.RepeatingPage(page, _) => page.fields.flatMap(f)
-        case Section.AddToList(_, _, _, _, _, _, _, _, pages, _, _, _, _, _, _, _, _, _, _, _, _, _) =>
+        case Section.AddToList(_, _, _, _, _, _, _, _, pages, _, _, _, _, _, _, _, _, _, _, _, _, _, _) =>
           pages.toList.flatMap(page => page.fields.flatMap(f))
       }
 
@@ -173,9 +174,9 @@ trait Rewriter {
     }
 
     val pages: List[Page] = formTemplate.formKind.allSections.flatMap {
-      case Section.NonRepeatingPage(page)                                                          => List(page)
-      case Section.RepeatingPage(page, _)                                                          => List(page)
-      case Section.AddToList(_, _, _, _, _, _, _, _, pages, _, _, _, _, _, _, _, _, _, _, _, _, _) => pages.toList
+      case Section.NonRepeatingPage(page)                                                             => List(page)
+      case Section.RepeatingPage(page, _)                                                             => List(page)
+      case Section.AddToList(_, _, _, _, _, _, _, _, pages, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => pages.toList
     }
 
     val redirectsIncludeIfs: List[IncludeIf] = pages.flatMap(_.redirects).flatMap(_.toList.map(_.`if`))
@@ -217,13 +218,16 @@ trait Rewriter {
             _,
             cyaPage,
             fields,
-            _
+            _,
+            declarationPage
           ) =>
         includeIf.toList ++ pages.toList.flatMap(_.includeIf.toList) ++ fields.fold(List.empty[IncludeIf])(
           _.toList.flatMap(_.includeIf.toList)
         ) ++ cyaPage.fold(List.empty[IncludeIf])(
           _.fields.fold(List.empty[IncludeIf])(_.toList.flatMap(_.includeIf.toList))
-        ) ++ repeatsUntil.toList ++ repeatsWhile.toList
+        ) ++ repeatsUntil.toList ++ repeatsWhile.toList ++ declarationPage.fold(List.empty[IncludeIf])(dp =>
+          dp.includeIf.toList ++ dp.fields.flatMap(_.includeIf.toList)
+        )
     } ++ fieldsIncludeIfs ++ destinationsIncludeIfs ++ summarySectionIncludeIfs ++ choiceIncludeIfs ++ miniSummaryListIncludeIfs ++ redirectsIncludeIfs ++ confirmationRedirectsIncludeIfs ++ taskDeclarationSectionIncludeIfs ++ taskIncludeIfs
 
     def validate(

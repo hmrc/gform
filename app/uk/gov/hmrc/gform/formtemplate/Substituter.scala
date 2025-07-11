@@ -393,7 +393,8 @@ object Substituter {
         cyaPage = addToList.cyaPage(substitutions),
         fields = addToList.fields(substitutions),
         errorMessage = addToList.errorMessage(substitutions),
-        descriptionTotal = addToList.descriptionTotal(substitutions)
+        descriptionTotal = addToList.descriptionTotal(substitutions),
+        declarationSection = addToList.declarationSection(substitutions)
       )
     }
 
@@ -539,6 +540,7 @@ object Substituter {
   ): Substituter[A, DeclarationSection] = (substitutions, t) =>
     t.copy(
       title = t.title(substitutions),
+      caption = t.caption(substitutions),
       noPIITitle = t.noPIITitle(substitutions),
       description = t.description(substitutions),
       shortName = t.shortName(substitutions),
