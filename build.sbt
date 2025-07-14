@@ -14,6 +14,11 @@ ThisBuild / majorVersion := 0
 
 ThisBuild / scalaVersion := "2.13.16"
 
+ThisBuild / libraryDependencySchemes ++= Seq(
+  "org.scala-lang.modules" %% "scala-xml" % VersionScheme.Always
+)
+
+
 lazy val scoverageSettings = {
   import scoverage.ScoverageKeys
   Seq(
