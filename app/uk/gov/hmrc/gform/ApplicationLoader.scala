@@ -17,7 +17,7 @@
 package uk.gov.hmrc.gform
 
 import cats.instances.future._
-import org.mongodb.scala.model.Indexes.ascending
+import org.mongodb.scala.model.Indexes.{ ascending, compoundIndex }
 import org.mongodb.scala.model.{ IndexModel, IndexOptions }
 import org.slf4j.LoggerFactory
 import play.api.ApplicationLoader.Context
@@ -270,6 +270,12 @@ class ApplicationModule(context: Context)
           IndexOptions()
             .background(false)
             .name("formTemplateIdIdx")
+        ),
+        IndexModel(
+          compoundIndex(ascending("data.form.status"), ascending("modifiedDetails.lastUpdated")),
+          IndexOptions()
+            .background(false)
+            .name("statusLastUpdatedIdx")
         )
       )
       MongoUtils.ensureIndexes(this.collection, indexes, true)
