@@ -80,13 +80,23 @@ trait SectionGen {
   def declarationSectionGen: Gen[DeclarationSection] =
     for {
       title         <- smartStringGen
+      caption       <- Gen.option(smartStringGen)
       noPIITitle    <- Gen.option(smartStringGen)
       description   <- Gen.option(smartStringGen)
       shortName     <- Gen.option(smartStringGen)
       continueLabel <- Gen.option(smartStringGen)
       fields        <- PrimitiveGen.oneOrMoreGen(FormComponentGen.formComponentGen())
       includeIf     <- Gen.option(IncludeIfGen.includeIfGen)
-    } yield DeclarationSection(title, noPIITitle, description, shortName, continueLabel, fields.toList, includeIf)
+    } yield DeclarationSection(
+      title,
+      caption,
+      noPIITitle,
+      description,
+      shortName,
+      continueLabel,
+      fields.toList,
+      includeIf
+    )
 
   def checkYourAnswerPageGen: Gen[CheckYourAnswersPage] =
     for {

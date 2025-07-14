@@ -1659,7 +1659,7 @@ object FormTemplateValidator {
   def validateAddToListCYAPage(formTemplate: FormTemplate): ValidationResult = {
     def checkComponentType(field: FormComponent): ValidationResult = {
       val reason =
-        s"All fields in Check Your Answer page for AddToList must be Info or Table or MiniSummary type. Field Id, '${field.id}' is not an info field"
+        s"All fields in Check Your Answer page for AddToList must be Info or Table or MiniSummary type. Field Id, '${field.id}' is not an info field, table or mini summary."
       isViewOnlyComponent(field, formTemplate, reason)
     }
 
@@ -1670,6 +1670,33 @@ object FormTemplateValidator {
       .flatten
       .map(checkComponentType)
       .combineAll
+  }
+
+  def validateAddToListDeclarationSection(formTemplate: FormTemplate): ValidationResult = {
+    def checkComponentType(field: FormComponent): ValidationResult = {
+      val reason =
+        s"All fields in Declaration section for AddToList must be Info or Table or MiniSummary type. Field Id, '${field.id}' is not an info field, table or mini summary."
+      isViewOnlyComponent(field, formTemplate, reason)
+    }
+
+    def invalid(fcId: FormComponentId) = Invalid(
+      s"AddToList declaration section for '${fcId.value}' can only be defined when a CYA page exists."
+    )
+
+    val declarationCheckDetails: List[(FormComponentId, Option[CheckYourAnswersPage], Option[DeclarationSection])] =
+      formTemplate.formKind.allSections
+        .collect { case s: Section.AddToList => (s.addAnotherQuestion.id, s.cyaPage, s.declarationSection) }
+
+    val cyaResult = declarationCheckDetails.map {
+      case (fcId, maybeCya, maybeDeclaration) if maybeCya.isEmpty && maybeDeclaration.isDefined => invalid(fcId)
+      case _                                                                                    => Valid
+    }
+
+    val allowedComponentResult = declarationCheckDetails
+      .flatMap(_._3.fold(List.empty[FormComponent])(_.fields))
+      .map(checkComponentType)
+
+    (cyaResult ++ allowedComponentResult).combineAll
   }
 
   def validateDataRetrieve(formTemplate: FormTemplate, pages: List[Page]): ValidationResult = {

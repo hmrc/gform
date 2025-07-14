@@ -329,32 +329,7 @@
       }
     },
     "declarationSection": {
-      "type": "object",
-      "properties": {
-        "title": {
-          "$ref": "#/$defs/stringOrEnCyObject"
-        },
-        "shortName": {
-          "$ref": "#/$defs/stringOrEnCyObject"
-        },
-        "continueLabel": {
-          "$ref": "#/$defs/stringOrEnCyObject"
-        },
-        "includeIf": {
-          "type": "string"
-        },
-        "fields": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/fields"
-          }
-        }
-      },
-      "required": [
-        "title",
-        "fields"
-      ],
-      "additionalProperties": false
+      "$ref": "#/$defs/declarationSection"
     },
     "acknowledgementSection": {
       "type": "object",
@@ -524,6 +499,9 @@
         },
         "cyaPage": {
           "type": "object"
+        },
+        "declarationSection": {
+          "$ref": "#/$defs/declarationSection"
         },
         "repeatsUntil": {
           "type": "string"
@@ -1800,6 +1778,37 @@
           "pattern": "^\\$\\{.+\\}$"
         }
       ]
+    },
+    "declarationSection": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "$ref": "#/$defs/stringOrEnCyObject"
+        },
+        "caption": {
+          "$ref": "#/$defs/stringOrEnCyObject"
+        },
+        "shortName": {
+          "$ref": "#/$defs/stringOrEnCyObject"
+        },
+        "continueLabel": {
+          "$ref": "#/$defs/stringOrEnCyObject"
+        },
+        "includeIf": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/fields"
+          }
+        }
+      },
+      "required": [
+        "title",
+        "fields"
+      ],
+      "additionalProperties": false
     }
   }
 }
