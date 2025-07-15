@@ -19,10 +19,13 @@ package uk.gov.hmrc.gform.retrieval
 import uk.gov.hmrc.crypto.{ Decrypter, Encrypter }
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.form.FormService
+import uk.gov.hmrc.gform.formmetadata.FormMetadataAlgebra
 import uk.gov.hmrc.gform.mongo.MongoModule
+import uk.gov.hmrc.gform.save4later.FormPersistenceAlgebra
 import uk.gov.hmrc.mongo.CurrentTimestampSupport
 import uk.gov.hmrc.mongo.cache.CacheIdType.SimpleCacheId
 import uk.gov.hmrc.mongo.cache.MongoCacheRepository
+import uk.gov.hmrc.gform.emailmigration.EmailMigrationController
 
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{ ExecutionContext, Future }
@@ -31,7 +34,9 @@ class AuthRetrievalModule(
   mongoModule: MongoModule,
   configModule: ConfigModule,
   jsonCrypto: Encrypter with Decrypter,
-  formService: FormService[Future]
+  formService: FormService[Future],
+  formPersistence: FormPersistenceAlgebra[Future],
+  formMetadataService: FormMetadataAlgebra[Future]
 )(implicit
   ex: ExecutionContext
 ) {
@@ -51,4 +56,7 @@ class AuthRetrievalModule(
 
   val authRetrievalController: AuthRetrievalController =
     new AuthRetrievalController(authRetrievalService, configModule.controllerComponents)
+
+  val emailMigrationController: EmailMigrationController =
+    new EmailMigrationController(formPersistence, formMetadataService, configModule.controllerComponents)
 }

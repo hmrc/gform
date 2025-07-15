@@ -162,3 +162,4 @@ GET           /companieshouse/company/:companynumber                            
 GET           /companieshouse/company/:companynumber/officers                                           uk.gov.hmrc.gform.companieshouse.CompaniesHouseController.findCompanyOfficers(companynumber: String, surname: Option[String])
 GET           /companieshouse/company/:companynumber/insolvency                                         uk.gov.hmrc.gform.companieshouse.CompaniesHouseController.findCompanyInsolvency(companynumber: String)
 
+POST          /email-migration                                                                          uk.gov.hmrc.gform.emailmigration.EmailMigrationController.migrateEmail()

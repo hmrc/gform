@@ -85,7 +85,7 @@ class FormBundleSubmissionService[F[_]](
 
   private def isInAnAppropriateState(status: FormStatus): Boolean =
     status match {
-      case NeedsReview | Accepting | Returning | Accepted | Submitting | Submitted | Discarded | ManuallySubmitted =>
+      case NeedsReview | Accepting | Returning | Accepted | Submitting | Submitted =>
         true
       case _ => false
     }
