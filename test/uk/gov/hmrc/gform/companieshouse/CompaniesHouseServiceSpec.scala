@@ -31,7 +31,7 @@ class CompaniesHouseServiceSpec extends UnitSpec {
 
   "findCompanyOfficerBySurname" should {
     "Return an officers response with an empty Items list if no officers are returned" in new Setup {
-      val response = OfficersResponse(0, "", Nil, 0, "", Links(""), 0, 0, None)
+      val response = OfficersResponse(0, "", Nil, 0, "", Links(None), 0, 0, None)
 
       when(mockCompaniesHouseConnector.getCompanyOfficersPaged(any[String], any[String])(any[Int])(any[Request[_]]))
         .thenReturn(Future.successful(response))
@@ -62,7 +62,7 @@ class CompaniesHouseServiceSpec extends UnitSpec {
           None
         )
       )
-      val response = OfficersResponse(0, "", officers, 0, "", Links(""), 0, 0, None)
+      val response = OfficersResponse(0, "", officers, 0, "", Links(None), 0, 0, None)
 
       when(mockCompaniesHouseConnector.getCompanyOfficersPaged(any[String], any[String])(any[Int])(any[Request[_]]))
         .thenReturn(Future.successful(response))
@@ -94,7 +94,7 @@ class CompaniesHouseServiceSpec extends UnitSpec {
             Some(LocalDate.now)
           )
         )
-      val response = OfficersResponse(0, "", officers, 0, "", Links(""), 0, 0, None)
+      val response = OfficersResponse(0, "", officers, 0, "", Links(None), 0, 0, None)
 
       when(mockCompaniesHouseConnector.getCompanyOfficersPaged(any[String], any[String])(any[Int])(any[Request[_]]))
         .thenReturn(Future.successful(response))
@@ -125,7 +125,7 @@ class CompaniesHouseServiceSpec extends UnitSpec {
           None
         )
       )
-      val response = OfficersResponse(0, "", officers, 0, "", Links(""), 0, 0, None)
+      val response = OfficersResponse(0, "", officers, 0, "", Links(None), 0, 0, None)
 
       when(mockCompaniesHouseConnector.getCompanyOfficersPaged(any[String], any[String])(any[Int])(any[Request[_]]))
         .thenReturn(Future.successful(response))
@@ -173,8 +173,8 @@ class CompaniesHouseServiceSpec extends UnitSpec {
           None
         )
       )
-      val firstResponse = OfficersResponse(0, "", first100, 0, "", Links(""), 0, 0, Some(101))
-      val secondResponse = OfficersResponse(0, "", officer101, 0, "", Links(""), 0, 0, Some(101))
+      val firstResponse = OfficersResponse(0, "", first100, 0, "", Links(None), 0, 0, Some(101))
+      val secondResponse = OfficersResponse(0, "", officer101, 0, "", Links(None), 0, 0, Some(101))
 
       when(mockCompaniesHouseConnector.getCompanyOfficersPaged(any[String], any[String])(any[Int])(any[Request[_]]))
         .thenReturn(Future.successful(firstResponse))
