@@ -116,7 +116,8 @@ class PlayComponentsModule(
     sdesModule.destinationWorkItemController,
     historyModule.historyController,
     retrievalModule.authRetrievalController,
-    companiesHouseModule.companiesHouseController
+    companiesHouseModule.companiesHouseController,
+    retrievalModule.emailMigrationController
   )
 
   private val healthController =

@@ -325,7 +325,15 @@ class ApplicationModule(context: Context)
       materializer
     )
 
-  private val retrievalModule = new AuthRetrievalModule(mongoModule, configModule, jsonCrypto, formService)
+  private val retrievalModule =
+    new AuthRetrievalModule(
+      mongoModule,
+      configModule,
+      jsonCrypto,
+      formService,
+      formMongoCache,
+      formMetadaModule.formMetadataService
+    )
 
   private val dmsModule =
     new DmsModule(
