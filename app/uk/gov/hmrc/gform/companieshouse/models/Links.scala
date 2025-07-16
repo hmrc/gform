@@ -18,7 +18,7 @@ package uk.gov.hmrc.gform.companieshouse.models
 
 import play.api.libs.json.{ Json, OFormat }
 
-case class Links(self: String)
+case class Links(self: Option[String])
 
 object Links {
   implicit val format: OFormat[Links] = Json.format[Links]

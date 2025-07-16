@@ -102,7 +102,7 @@ class CompaniesHouseControllerSpec extends UnitSpec {
 
   "findCompanyOfficers" should {
     "return Ok and response body if find successful" in new Setup {
-      val response = OfficersResponse(0, "", Nil, 0, "", Links(""), 0, 0, None)
+      val response = OfficersResponse(0, "", Nil, 0, "", Links(Some("")), 0, 0, None)
 
       when(mockCompaniesHouseService.findCompanyOfficers(any[String])(any[Request[_]])) `thenReturn` Future.successful(
         response
@@ -192,7 +192,7 @@ class CompaniesHouseControllerSpec extends UnitSpec {
           None
         )
       )
-      val response = OfficersResponse(0, "", validOfficer, 0, "", Links(""), 0, 0, None)
+      val response = OfficersResponse(0, "", validOfficer, 0, "", Links(None), 0, 0, None)
 
       when(
         mockCompaniesHouseService.findCompanyOfficersBySurname(any[String], any[String])(any[Request[_]])
@@ -203,12 +203,12 @@ class CompaniesHouseControllerSpec extends UnitSpec {
         await(companiesHouseController.findCompanyOfficers(companyNumber, Some("someSurname"))(FakeRequest()))
       status(result) shouldBe Status.OK
       contentAsJson(result) shouldBe Json.parse(
-        """{"active_count":0,"etag":"","items":[{"address":{"address_line_1":"someAddress1","country":"someCounty","locality":"someLocality"},"appointed_on":"2020-06-22","links":{"officer":{"appointments":"someAppointment"}},"name":"VALID, name","officer_role":"someRole"}],"items_per_page":0,"kind":"","links":{"self":""},"resigned_count":0,"start_index":0}"""
+        """{"active_count":0,"etag":"","items":[{"address":{"address_line_1":"someAddress1","country":"someCounty","locality":"someLocality"},"appointed_on":"2020-06-22","links":{"officer":{"appointments":"someAppointment"}},"name":"VALID, name","officer_role":"someRole"}],"items_per_page":0,"kind":"","links":{},"resigned_count":0,"start_index":0}"""
       )
     }
 
     "return NotFound if the Items list is empty when searching by surname" in new Setup {
-      val response = OfficersResponse(0, "", Nil, 0, "", Links(""), 0, 0, None)
+      val response = OfficersResponse(0, "", Nil, 0, "", Links(None), 0, 0, None)
 
       when(
         mockCompaniesHouseService.findCompanyOfficersBySurname(any[String], any[String])(any[Request[_]])
