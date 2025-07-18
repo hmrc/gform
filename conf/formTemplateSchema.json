@@ -1556,7 +1556,8 @@
                 "type": "string",
                 "enum": [
                   "companyHouseProfile",
-                  "companyHouseActiveOfficers"
+                  "companyHouseActiveOfficers",
+                  "companyHouseInsolvency"
                 ]
               },
               "id": {
