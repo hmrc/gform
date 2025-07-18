@@ -21,6 +21,7 @@ import play.api.libs.json._
 import uk.gov.hmrc.gform.sharedmodel.SmartString
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.JsonUtils._
 import uk.gov.hmrc.gform.formtemplate.AcknowledgementSectionMaker
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.LayoutDisplayWidth.LayoutDisplayWidth
 
 sealed trait Section extends Product with Serializable {
   def title(): SmartString
@@ -72,7 +73,8 @@ object Section {
     cyaPage: Option[CheckYourAnswersPage] = None,
     fields: Option[NonEmptyList[FormComponent]] = None,
     pageIdToDisplayAfterRemove: Option[PageId] = None,
-    declarationSection: Option[DeclarationSection] = None
+    declarationSection: Option[DeclarationSection] = None,
+    displayWidth: Option[LayoutDisplayWidth]
   ) extends Section {
     val pageId: PageId = PageId(addAnotherQuestion.id.value)
     override lazy val expandedFormComponents: List[FormComponent] = pages.toList.flatMap(_.expandedFormComponents)

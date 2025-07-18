@@ -92,7 +92,8 @@ trait RewriterSupport {
     cyaPage = None,
     fields = None,
     pageIdToDisplayAfterRemove = None,
-    descriptionTotal = None
+    descriptionTotal = None,
+    displayWidth = None
   )
 
   def mkTaskListNonRepeatingPages(
