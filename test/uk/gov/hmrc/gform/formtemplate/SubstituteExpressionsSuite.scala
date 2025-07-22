@@ -250,6 +250,176 @@ class SubstituteExpressionsSuite extends FunSuite with FormTemplateSupport {
     assertEquals(substituted.formKind, formTemplateExpected.formKind)
   }
 
+  test("SubstituteExpressions should update includeIfs on MSL from pageId and taskId refs") {
+    val jsonStr =
+      """|{
+         |  "_id": "hidden-tasks-pages-summary-list",
+         |  "formName": "Name of service",
+         |  "description": "",
+         |  "version": 1,
+         |  "emailTemplateId": "eeitt_submission_confirmation",
+         |  "authConfig": {
+         |    "authModule": "anonymous"
+         |  },
+         |  "sections": [
+         |    {
+         |      "title": "Applicant details",
+         |      "tasks": [
+         |        {
+         |          "id": "task1",
+         |          "title": "Type of applicant",
+         |          "sections": [
+         |            {
+         |              "title": "Select what type of applicant you are",
+         |              "fields": [
+         |                {
+         |                  "id": "applicantType",
+         |                  "type": "choice",
+         |                  "choices": [
+         |                    "Limited Company",
+         |                    "Sole trader"
+         |                  ]
+         |                }
+         |              ]
+         |            },
+         |            {
+         |              "title": "What is your revenue?",
+         |              "fields": [
+         |                {
+         |                  "id": "revenue",
+         |                  "type": "text",
+         |                  "format": "sterling"
+         |                }
+         |              ]
+         |            }
+         |          ],
+         |          "summarySection": {
+         |            "title": "Check your answers",
+         |            "header": "",
+         |            "footer": ""
+         |          }
+         |        },
+         |        {
+         |          "id": "task2",
+         |          "title": "Limited company details",
+         |          "includeIf": "${applicantType contains 0}",
+         |          "sections": [
+         |            {
+         |              "title": "Select what type of applicant you are",
+         |              "fields": [
+         |                {
+         |                  "id": "companyName",
+         |                  "type": "text",
+         |                  "format": "text"
+         |                }
+         |              ]
+         |            },
+         |            {
+         |              "id": "profitAmount",
+         |              "title": "What is your profit?",
+         |              "includeIf": "${revenue > 100000}",
+         |              "fields": [
+         |                {
+         |                  "id": "profit",
+         |                  "type": "text",
+         |                  "format": "sterling"
+         |                }
+         |              ]
+         |            }
+         |          ],
+         |          "summarySection": {
+         |            "title": "Check your answers",
+         |            "header": "",
+         |            "footer": ""
+         |          }
+         |        }
+         |      ]
+         |    }
+         |  ],
+         |  "submitSection": {
+         |    "label": "Check and send to HMRC",
+         |    "taskLabel": "Submit"
+         |  },
+         |  "summarySection": {
+         |    "title": {
+         |      "en": "Check your answers",
+         |      "cy": "Gwiriwch eich atebion"
+         |    },
+         |    "fields": [
+         |      {
+         |        "id": "miniCya1",
+         |        "type": "miniSummaryList",
+         |        "label": "sdfsdf",
+         |        "rows": [
+         |          {
+         |            "key": "Limited company details",
+         |            "value": "${companyName}",
+         |            "taskId": "task2"
+         |          },
+         |          {
+         |            "key": "Profit",
+         |            "value": "'number2'",
+         |            "pageId": "profitAmount",
+         |            "includeIf": "${profit > 50000}"
+         |          }
+         |        ]
+         |      }
+         |    ],
+         |    "hideDefaultRows": true,
+         |    "displayWidth": "xl",
+         |    "header": "",
+         |    "footer": "Before you do this you can [print or save a PDF copy of your answers (opens in a new window or tab)](${link.printSummaryPdf})."
+         |  },
+         |  "acknowledgementSection": {
+         |    "fields": [
+         |      {
+         |        "id": "nextSteps",
+         |        "type": "info",
+         |        "label": "",
+         |        "infoText": "We have sent you a confirmation email.\n\n[Print or save a PDF copy of your form](${link.printAcknowledgementPdf})\n## What happens next",
+         |        "infoType": "noformat"
+         |      }
+         |    ]
+         |  },
+         |  "destinations": [
+         |    {
+         |      "id": "transitionToSubmitted",
+         |      "type": "stateTransition",
+         |      "requiredState": "Submitted"
+         |    }
+         |  ]
+         |}""".stripMargin
+
+    toFormTemplateAndSubstitutions(jsonStr) { (formTemplate, substitutions) =>
+      val res = substituteExpressions.substituteExpressions(formTemplate, substitutions)
+      val summarySection = res.summarySection
+      summarySection.fields.head.head.`type` match {
+        case MiniSummaryList(rows, _, _) =>
+          rows.foreach {
+            case MiniSummaryRow.ValueRow(_, _, includeIf, pageIdOpt, taskIdOpt) =>
+              (pageIdOpt, taskIdOpt) match {
+                case (Some(_), None) =>
+                  includeIf shouldBe Some(
+                    new IncludeIf(
+                      And(
+                        GreaterThan(FormCtx(FormComponentId("revenue")), Constant("100000")),
+                        GreaterThan(FormCtx(FormComponentId("profit")), Constant("50000"))
+                      )
+                    )
+                  )
+                case (None, Some(_)) =>
+                  includeIf shouldBe Some(
+                    new IncludeIf(Contains(FormCtx(FormComponentId("applicantType")), Constant("0")))
+                  )
+                case _ =>
+              }
+            case _ =>
+          }
+        case _ =>
+      }
+    }
+  }
+
   private def toFormTemplateAndSubstitutions[A](jsonStr: String)(f: (FormTemplate, ExprSubstitutions) => A) = {
     val maybeNormalisedJson = FormTemplatesControllerRequestHandler.normaliseJSON(Json.parse(jsonStr))
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,21 +24,21 @@ object ExprSubstituter extends Substituter[ExprSubstitutions, FormTemplate] {
 
   implicit val exprSubstituter: Substituter[ExprSubstitutions, Expr] =
     new Substituter[ExprSubstitutions, Expr] {
-      def substitute(substitutions: ExprSubstitutions, t: Expr): Expr = t match {
-        case Else(l, r)             => Else(substitute(substitutions, l), substitute(substitutions, r))
-        case Add(l, r)              => Add(substitute(substitutions, l), substitute(substitutions, r))
-        case Multiply(l, r)         => Multiply(substitute(substitutions, l), substitute(substitutions, r))
-        case Subtraction(l, r)      => Subtraction(substitute(substitutions, l), substitute(substitutions, r))
-        case Divide(l, r)           => Divide(substitute(substitutions, l), substitute(substitutions, r))
-        case HideZeroDecimals(l)    => HideZeroDecimals(substitute(substitutions, l))
-        case Period(l, r)           => Period(substitute(substitutions, l), substitute(substitutions, r))
-        case Between(l, r, m)       => Between(substitute(substitutions, l), substitute(substitutions, r), m)
-        case Sum(l)                 => Sum(substitute(substitutions, l))
-        case PeriodExt(p, pe)       => PeriodExt(substitute(substitutions, p), pe)
+      def substitute(substitutions: ExprSubstitutions, t: Expr, ft: Option[FormTemplate]): Expr = t match {
+        case Else(l, r)             => Else(substitute(substitutions, l, ft), substitute(substitutions, r, ft))
+        case Add(l, r)              => Add(substitute(substitutions, l, ft), substitute(substitutions, r, ft))
+        case Multiply(l, r)         => Multiply(substitute(substitutions, l, ft), substitute(substitutions, r, ft))
+        case Subtraction(l, r)      => Subtraction(substitute(substitutions, l, ft), substitute(substitutions, r, ft))
+        case Divide(l, r)           => Divide(substitute(substitutions, l, ft), substitute(substitutions, r, ft))
+        case HideZeroDecimals(l)    => HideZeroDecimals(substitute(substitutions, l, ft))
+        case Period(l, r)           => Period(substitute(substitutions, l, ft), substitute(substitutions, r, ft))
+        case Between(l, r, m)       => Between(substitute(substitutions, l, ft), substitute(substitutions, r, ft), m)
+        case Sum(l)                 => Sum(substitute(substitutions, l, ft))
+        case PeriodExt(p, pe)       => PeriodExt(substitute(substitutions, p, ft), pe)
         case DateCtx(dateExpr)      => DateCtx(dateExpr(substitutions))
         case DateFunction(dateFunc) => DateFunction(dateFunc(substitutions))
         case i @ IfElse(cond, l, r) =>
-          IfElse(cond(substitutions), substitute(substitutions, l), substitute(substitutions, r))
+          IfElse(cond(substitutions), substitute(substitutions, l, ft), substitute(substitutions, r, ft))
         case f @ FormCtx(formComponentId) =>
           // Replace FormComponentId with top level expression if one exists
           substitutions.expressions.getOrElse(ExpressionId(formComponentId.value), f)
@@ -59,31 +59,31 @@ object ExprSubstituter extends Substituter[ExprSubstitutions, FormTemplate] {
         case LookupColumn(_, _)              => t
         case CsvCountryCountCheck(_, _, _)   => t
         case Size(_, _)                      => t
-        case Typed(expr, tpe)                => Typed(substitute(substitutions, expr), tpe)
+        case Typed(expr, tpe)                => Typed(substitute(substitutions, expr, ft), tpe)
         case IndexOf(formComponentId, index) => t
         case IndexOfDataRetrieveCtx(_, _)    => t
         case NumberedList(_)                 => t
         case BulletedList(_)                 => t
-        case StringOps(expr, fn)             => StringOps(substitute(substitutions, expr), fn)
-        case Concat(exprs)                   => Concat(exprs.map(e => substitute(substitutions, e)))
+        case StringOps(expr, fn)             => StringOps(substitute(substitutions, expr, ft), fn)
+        case Concat(exprs)                   => Concat(exprs.map(e => substitute(substitutions, e, ft)))
         case CountryOfItmpAddress            => t
         case ChoicesRevealedField(_)         => t
         case ChoicesSelected(_)              => t
         case ChoicesAvailable(_)             => t
         case CountSelectedChoices(_)         => t
         case TaskStatus(_)                   => t
-        case LookupOps(expr, fn)             => LookupOps(substitute(substitutions, expr), fn)
+        case LookupOps(expr, fn)             => LookupOps(substitute(substitutions, expr, ft), fn)
       }
     }
 
-  implicit val dateProjectionSubstituter: Substituter[ExprSubstitutions, DateProjection] = (substitutions, t) =>
+  implicit val dateProjectionSubstituter: Substituter[ExprSubstitutions, DateProjection] = (substitutions, t, _) =>
     t match {
       case d @ DateProjection.Day(dateExpr)   => DateProjection.Day(dateExpr(substitutions))
       case d @ DateProjection.Month(dateExpr) => DateProjection.Month(dateExpr(substitutions))
       case d @ DateProjection.Year(dateExpr)  => DateProjection.Year(dateExpr(substitutions))
     }
 
-  implicit val dateExprSubstituter: Substituter[ExprSubstitutions, DateExpr] = (substitutions, t) => {
+  implicit val dateExprSubstituter: Substituter[ExprSubstitutions, DateExpr] = (substitutions, t, _) => {
     def aux(dExpr: DateExpr): DateExpr =
       dExpr match {
         case d @ DateFormCtxVar(FormCtx(formComponentId)) =>
@@ -116,38 +116,39 @@ object ExprSubstituter extends Substituter[ExprSubstitutions, FormTemplate] {
 
   implicit val booleanExprSubstituter: Substituter[ExprSubstitutions, BooleanExpr] =
     new Substituter[ExprSubstitutions, BooleanExpr] {
-      def substitute(substitutions: ExprSubstitutions, t: BooleanExpr): BooleanExpr = t match {
-        case Equals(l, r)                     => Equals(l(substitutions), r(substitutions))
-        case GreaterThan(l, r)                => GreaterThan(l(substitutions), r(substitutions))
-        case GreaterThanOrEquals(l, r)        => GreaterThanOrEquals(l(substitutions), r(substitutions))
-        case LessThan(l, r)                   => LessThan(l(substitutions), r(substitutions))
-        case LessThanOrEquals(l, r)           => LessThanOrEquals(l(substitutions), r(substitutions))
-        case Not(e)                           => Not(substitute(substitutions, e))
-        case Or(left, right)                  => Or(substitute(substitutions, left), substitute(substitutions, right))
-        case And(left, right)                 => And(substitute(substitutions, left), substitute(substitutions, right))
-        case IsTrue                           => IsTrue
-        case IsFalse                          => IsFalse
-        case Contains(multiValueField, value) => Contains(multiValueField, value(substitutions))
-        case In(value, dataSource)            => In(value(substitutions), dataSource)
-        case h @ HasAnswer(value, dataSource) => h
-        case MatchRegex(expr, regex)          => MatchRegex(expr(substitutions), regex)
-        case DateBefore(l, r)                 => DateBefore(l(substitutions), r(substitutions))
-        case DateAfter(l, r)                  => DateAfter(l(substitutions), r(substitutions))
-        case f @ FormPhase(value)             => f
-        case t @ TopLevelRef(id)              => t
-        case f @ First(_)                     => f
-        case l @ IsLogin(_)                   => l
-        case d @ DuplicateExists(_)           => d
-      }
+      def substitute(substitutions: ExprSubstitutions, t: BooleanExpr, ft: Option[FormTemplate]): BooleanExpr =
+        t match {
+          case Equals(l, r)                     => Equals(l(substitutions), r(substitutions))
+          case GreaterThan(l, r)                => GreaterThan(l(substitutions), r(substitutions))
+          case GreaterThanOrEquals(l, r)        => GreaterThanOrEquals(l(substitutions), r(substitutions))
+          case LessThan(l, r)                   => LessThan(l(substitutions), r(substitutions))
+          case LessThanOrEquals(l, r)           => LessThanOrEquals(l(substitutions), r(substitutions))
+          case Not(e)                           => Not(substitute(substitutions, e, ft))
+          case Or(left, right)                  => Or(substitute(substitutions, left, ft), substitute(substitutions, right, ft))
+          case And(left, right)                 => And(substitute(substitutions, left, ft), substitute(substitutions, right, ft))
+          case IsTrue                           => IsTrue
+          case IsFalse                          => IsFalse
+          case Contains(multiValueField, value) => Contains(multiValueField, value(substitutions))
+          case In(value, dataSource)            => In(value(substitutions), dataSource)
+          case h @ HasAnswer(value, dataSource) => h
+          case MatchRegex(expr, regex)          => MatchRegex(expr(substitutions), regex)
+          case DateBefore(l, r)                 => DateBefore(l(substitutions), r(substitutions))
+          case DateAfter(l, r)                  => DateAfter(l(substitutions), r(substitutions))
+          case f @ FormPhase(value)             => f
+          case t @ TopLevelRef(id)              => t
+          case f @ First(_)                     => f
+          case l @ IsLogin(_)                   => l
+          case d @ DuplicateExists(_)           => d
+        }
     }
 
-  def substitute(substitutions: ExprSubstitutions, t: FormTemplate): FormTemplate =
-    implicitly[Substituter[ExprSubstitutions, FormTemplate]].substitute(substitutions, t)
+  def substitute(substitutions: ExprSubstitutions, t: FormTemplate, ft: Option[FormTemplate]): FormTemplate =
+    implicitly[Substituter[ExprSubstitutions, FormTemplate]].substitute(substitutions, t, ft.orElse(Some(t)))
 }
 
 trait SubstituteExpressions {
 
   def substituteExpressions(formTemplate: FormTemplate, substitutions: ExprSubstitutions): FormTemplate =
-    ExprSubstituter.substitute(substitutions, formTemplate)
+    ExprSubstituter.substitute(substitutions, formTemplate, Some(formTemplate))
 
 }
