@@ -337,6 +337,88 @@ object DataRetrieveDefinitions {
       )
     )
 
+  val companyHouseInsolvency =
+    DataRetrieveDefinition(
+      DataRetrieve.Type("companyHouseInsolvency"),
+      Attr.FromArray(
+        List(
+          AttributeInstruction(
+            DataRetrieve.Attribute("caseType"),
+            ConstructAttribute.AsIs(Fetch(List("caseType")))
+          ),
+          AttributeInstruction(
+            DataRetrieve.Attribute("caseNumber"),
+            ConstructAttribute.AsIs(Fetch(List("caseNumber")))
+          ),
+          AttributeInstruction(
+            DataRetrieve.Attribute("name"),
+            ConstructAttribute.AsIs(Fetch(List("name")))
+          ),
+          AttributeInstruction(
+            DataRetrieve.Attribute("role"),
+            ConstructAttribute.AsIs(Fetch(List("role")))
+          ),
+          AttributeInstruction(
+            DataRetrieve.Attribute("address_line_1"),
+            ConstructAttribute.AsIs(Fetch(List("address", "address_line_1")))
+          ),
+          AttributeInstruction(
+            DataRetrieve.Attribute("address_line_2"),
+            ConstructAttribute.AsIs(Fetch(List("address", "address_line_2")))
+          ),
+          AttributeInstruction(
+            DataRetrieve.Attribute("locality"),
+            ConstructAttribute.AsIs(Fetch(List("address", "locality")))
+          ),
+          AttributeInstruction(
+            DataRetrieve.Attribute("region"),
+            ConstructAttribute.AsIs(Fetch(List("address", "region")))
+          ),
+          AttributeInstruction(
+            DataRetrieve.Attribute("postal_code"),
+            ConstructAttribute.AsIs(Fetch(List("address", "postal_code")))
+          ),
+          AttributeInstruction(
+            DataRetrieve.Attribute("country"),
+            ConstructAttribute.AsIs(Fetch(List("address", "country")))
+          ),
+          AttributeInstruction(
+            DataRetrieve.Attribute("primaryAddress"),
+            ConstructAttribute.Combine(
+              List(
+                DataRetrieve.Attribute("address_line_1") -> Fetch(List("address", "address_line_1")),
+                DataRetrieve.Attribute("address_line_2") -> Fetch(List("address", "address_line_2")),
+                DataRetrieve.Attribute("locality")       -> Fetch(List("address", "locality")),
+                DataRetrieve.Attribute("region")         -> Fetch(List("address", "region")),
+                DataRetrieve.Attribute("postal_code")    -> Fetch(List("address", "postal_code")),
+                DataRetrieve.Attribute("country")        -> Fetch(List("address", "country"))
+              )
+            )
+          ),
+          AttributeInstruction(
+            DataRetrieve.Attribute("appointedOn"),
+            ConstructAttribute.AsIs(Fetch(List("appointedOn")))
+          )
+        )
+      ),
+      List(
+        Parameter("companyNumber")
+      ),
+      Map(
+        DataRetrieve.Attribute("caseType")       -> DataRetrieve.AttrType.String,
+        DataRetrieve.Attribute("caseNumber")     -> DataRetrieve.AttrType.String,
+        DataRetrieve.Attribute("name")           -> DataRetrieve.AttrType.String,
+        DataRetrieve.Attribute("role")           -> DataRetrieve.AttrType.String,
+        DataRetrieve.Attribute("address_line_1") -> DataRetrieve.AttrType.String,
+        DataRetrieve.Attribute("address_line_1") -> DataRetrieve.AttrType.String,
+        DataRetrieve.Attribute("locality")       -> DataRetrieve.AttrType.String,
+        DataRetrieve.Attribute("region")         -> DataRetrieve.AttrType.String,
+        DataRetrieve.Attribute("postal_code")    -> DataRetrieve.AttrType.String,
+        DataRetrieve.Attribute("country")        -> DataRetrieve.AttrType.String,
+        DataRetrieve.Attribute("appointedOn")    -> DataRetrieve.AttrType.Date
+      )
+    )
+
   val ninoInsights = DataRetrieveDefinition(
     DataRetrieve.Type("ninoInsights"),
     Attr.FromObject(
@@ -565,6 +647,7 @@ object DataRetrieveDefinitions {
       personalBankAccountExistence,
       companyHouseProfile,
       companyHouseActiveOfficers,
+      companyHouseInsolvency,
       ninoInsights,
       bankAccountInsights,
       employments,
