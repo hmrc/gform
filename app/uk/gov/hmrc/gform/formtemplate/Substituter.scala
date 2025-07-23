@@ -383,7 +383,7 @@ object Substituter {
     ev2: Substituter[A, BooleanExpr]
   ): Substituter[A, FormComponent] = (substitutions, t, ft) =>
     t.copy(
-      `type` = implicitly[Substituter[A, ComponentType]].substitute(substitutions, t.`type`, ft),
+      `type` = t.`type`.applyWithTemplate(substitutions, ft),
       label = t.label(substitutions),
       helpText = t.helpText(substitutions),
       shortName = t.shortName(substitutions),
@@ -419,7 +419,7 @@ object Substituter {
       caption = t.caption(substitutions),
       includeIf = t.includeIf(substitutions),
       continueIf = t.continueIf(substitutions),
-      fields = implicitly[Substituter[A, List[FormComponent]]].substitute(substitutions, t.fields, ft),
+      fields = t.fields.applyWithTemplate(substitutions, ft),
       continueLabel = t.continueLabel(substitutions),
       instruction = t.instruction(substitutions),
       redirects = t.redirects(substitutions),
@@ -447,11 +447,9 @@ object Substituter {
     ev2: Substituter[A, BooleanExpr]
   ): Substituter[A, Section] = (substitutions, t, ft) =>
     t.fold[Section] { nonRepeatingPage =>
-      nonRepeatingPage.copy(page =
-        implicitly[Substituter[A, Page]].substitute(substitutions, nonRepeatingPage.page, ft)
-      )
+      nonRepeatingPage.copy(page = nonRepeatingPage.page.applyWithTemplate(substitutions, ft))
     } { repeatingPage =>
-      repeatingPage.copy(page = implicitly[Substituter[A, Page]].substitute(substitutions, repeatingPage.page, ft))
+      repeatingPage.copy(page = repeatingPage.page.applyWithTemplate(substitutions, ft))
     } { addToList =>
       addToList.copy(
         title = addToList.title(substitutions),
@@ -462,7 +460,7 @@ object Substituter {
         shortName = addToList.shortName(substitutions),
         summaryName = addToList.summaryName(substitutions),
         includeIf = addToList.includeIf(substitutions),
-        pages = implicitly[Substituter[A, NonEmptyList[Page]]].substitute(substitutions, addToList.pages, ft),
+        pages = addToList.pages.applyWithTemplate(substitutions, ft),
         repeatsUntil = addToList.repeatsUntil(substitutions),
         repeatsWhile = addToList.repeatsWhile(substitutions),
         repeaterContinueLabel = addToList.repeaterContinueLabel(substitutions),
@@ -470,9 +468,7 @@ object Substituter {
         instruction = addToList.instruction(substitutions),
         infoMessage = addToList.infoMessage(substitutions),
         defaultPage = addToList.defaultPage(substitutions),
-        cyaPage = addToList.cyaPage.map(cya =>
-          implicitly[Substituter[A, CheckYourAnswersPage]].substitute(substitutions, cya, ft)
-        ),
+        cyaPage = addToList.cyaPage.applyWithTemplate(substitutions, ft),
         fields = addToList.fields(substitutions),
         errorMessage = addToList.errorMessage(substitutions),
         descriptionTotal = addToList.descriptionTotal(substitutions),
