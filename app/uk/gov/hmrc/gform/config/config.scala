@@ -35,7 +35,8 @@ case class AppConfig(
   `upscan-confirmation-ttl`: FiniteDuration,
   restrictedFileExtensionList: List[String],
   `history-ttl`: FiniteDuration,
-  `translation-audit-ttl`: FiniteDuration
+  `translation-audit-ttl`: FiniteDuration,
+  `sensitive-data-access-log-ttl`: FiniteDuration
 ) {
 
   def restrictedFileExtensions: List[FileExtension] =

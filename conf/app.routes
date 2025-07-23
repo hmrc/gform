@@ -163,3 +163,6 @@ GET           /companieshouse/company/:companynumber/officers                   
 GET           /companieshouse/company/:companynumber/insolvency                                         uk.gov.hmrc.gform.companieshouse.CompaniesHouseController.findCompanyInsolvency(companynumber: String)
 
 POST          /email-migration                                                                          uk.gov.hmrc.gform.emailmigration.EmailMigrationController.migrateEmail()
+
+POST          /access-logs                                                                              uk.gov.hmrc.gform.log.DataAccessLogController.saveLog()
+GET           /access-logs/:page/:pageSize                                                              uk.gov.hmrc.gform.log.DataAccessLogController.getDataAccessLogs(page: Int, pageSize: Int)
