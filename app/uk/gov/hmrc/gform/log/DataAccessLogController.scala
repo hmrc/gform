@@ -17,7 +17,7 @@
 package uk.gov.hmrc.gform.log
 
 import play.api.libs.json.Json
-import play.api.mvc.ControllerComponents
+import play.api.mvc.{ Action, AnyContent, ControllerComponents }
 import uk.gov.hmrc.gform.controllers.BaseController
 
 import scala.concurrent.{ ExecutionContext, Future }
@@ -28,18 +28,19 @@ class DataAccessLogController(
 )(implicit ex: ExecutionContext)
     extends BaseController(cc) {
 
-  def getDataAccessLogs(page: Int, pageSize: Int) =
+  def getDataAccessLogs(page: Int, pageSize: Int): Action[AnyContent] =
     Action.async { _ =>
       dataAccessService
         .page(page, pageSize)
         .map(logs => Ok(Json.toJson(logs)))
     }
 
-  def saveLog() = Action.async(parse.json[DataAccessLog]) { request =>
+  def saveDataAccessLog(): Action[DataAccessLog] = Action.async(parse.json[DataAccessLog]) { request =>
     val log: DataAccessLog = request.body
-    dataAccessService.save(log).map { _ =>
-      NoContent
-    }
+    dataAccessService
+      .save(log)
+      .map { _ =>
+        NoContent
+      }
   }
-
 }

@@ -50,8 +50,6 @@ class DataAccessLogModule(
       true
     )
 
-  val logService: DataAccessAlgebra[Future] =
-    new DataAccessService(logRepo)
-
+  val logService: DataAccessAlgebra[Future] = new DataAccessService(logRepo)
   val logController: DataAccessLogController = new DataAccessLogController(controllerComponents, logService)
 }

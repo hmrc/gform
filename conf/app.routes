@@ -164,5 +164,5 @@ GET           /companieshouse/company/:companynumber/insolvency                 
 
 POST          /email-migration                                                                          uk.gov.hmrc.gform.emailmigration.EmailMigrationController.migrateEmail()
 
-POST          /access-logs                                                                              uk.gov.hmrc.gform.log.DataAccessLogController.saveLog()
+POST          /access-logs                                                                              uk.gov.hmrc.gform.log.DataAccessLogController.saveDataAccessLog()
 GET           /access-logs/:page/:pageSize                                                              uk.gov.hmrc.gform.log.DataAccessLogController.getDataAccessLogs(page: Int, pageSize: Int)
