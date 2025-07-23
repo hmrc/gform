@@ -140,17 +140,23 @@ object Substituter {
     ): Option[IncludeIf] = {
       def combineIncludeIf(a: IncludeIf, b: IncludeIf): IncludeIf =
         new IncludeIf(And(a.booleanExpr, b.booleanExpr))
-      def extractPageIncludeIf(pageId: PageId, section: Section): Option[IncludeIf] =
-        section.fold(page =>
-          page.page.id match {
-            case Some(id) if id == pageId => page.page.includeIf
-            case _                        => None
-          }
-        )(_ => None)(_ => None)
+
+      def extractPageIncludeIf(pageId: PageId, section: Section): Option[IncludeIf] = section match {
+        case Section.NonRepeatingPage(page) =>
+          page.id.filter(_ == pageId).flatMap(_ => page.includeIf)
+        case Section.RepeatingPage(rPage, _) =>
+          rPage.id.filter(_ == pageId).flatMap(_ => rPage.includeIf)
+        case Section.AddToList(_, _, _, _, _, _, _, _, pages, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) =>
+          pages.toList.collectFirst {
+            case page if page.id.contains(pageId) => page.includeIf
+          }.flatten
+      }
+
       def findPageIncludeIf(pageId: PageId, formTemplate: FormTemplate): Option[IncludeIf] =
         formTemplate.formKind.allSections
           .flatMap(extractPageIncludeIf(pageId, _))
           .headOption
+
       def extractTaskIncludeIf(taskId: TaskId, taskSection: TaskSection): List[Option[IncludeIf]] =
         taskSection.tasks.toList.map { task =>
           task.id match {
@@ -158,6 +164,7 @@ object Substituter {
             case _                        => None
           }
         }
+
       def findTaskIncludeIf(taskId: TaskId, formTemplate: FormTemplate): Option[IncludeIf] =
         formTemplate.formKind.fold(_ => None: Option[IncludeIf]) { taskList =>
           taskList.sections.toList
@@ -165,12 +172,14 @@ object Substituter {
             .find(_.isDefined)
             .flatten
         }
+
       def combineWithRow(foundIncludeIf: Option[IncludeIf]): Option[IncludeIf] =
         (foundIncludeIf, rowIncludeIf) match {
           case (Some(found), Some(row)) => Some(combineIncludeIf(found, row))
           case (found @ Some(_), None)  => found
           case (None, row)              => row
         }
+
       formTemplateOpt match {
         case None => rowIncludeIf
         case Some(formTemplate) =>
