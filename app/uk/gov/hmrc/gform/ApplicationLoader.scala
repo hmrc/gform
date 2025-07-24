@@ -51,6 +51,7 @@ import uk.gov.hmrc.gform.gformfrontend.GformFrontendModule
 import uk.gov.hmrc.gform.graphite.GraphiteModule
 import uk.gov.hmrc.gform.handlebarstemplate.{ HandlebarsSchemaAlgebra, HandlebarsSchemaService, HandlebarsTemplateAlgebra, HandlebarsTemplateModule, HandlebarsTemplateService }
 import uk.gov.hmrc.gform.history.HistoryModule
+import uk.gov.hmrc.gform.log.DataAccessLogModule
 import uk.gov.hmrc.gform.metrics.MetricsModule
 import uk.gov.hmrc.gform.mongo.MongoModule
 import uk.gov.hmrc.gform.notificationbanner.NotificationBannerModule
@@ -418,6 +419,12 @@ class ApplicationModule(context: Context)
     wSHttpModule
   )
 
+  val dataAccessLogModule = new DataAccessLogModule(
+    controllerComponents,
+    mongoModule,
+    configModule
+  )
+
   private val playComponentsModule = new PlayComponentsModule(
     playComponents,
     akkaModule,
@@ -447,7 +454,8 @@ class ApplicationModule(context: Context)
     handlebarsPayloadModule,
     historyModule,
     retrievalModule,
-    companiesHouseModule
+    companiesHouseModule,
+    dataAccessLogModule
   )
 
   override lazy val httpRequestHandler: HttpRequestHandler = playComponentsModule.httpRequestHandler
