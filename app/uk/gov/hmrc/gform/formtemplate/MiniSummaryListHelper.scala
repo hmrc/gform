@@ -116,9 +116,9 @@ object MiniSummaryListHelper {
 
     def handlePagesParentTask(pageIncludeIf: Option[IncludeIf], taskIncludeIf: Option[IncludeIf]): Option[IncludeIf] =
       (pageIncludeIf, taskIncludeIf) match {
-        case (Some(pageIf), Some(taskIf)) => Option(combineIncludeIf(pageIf, taskIf))
-        case (None, Some(taskIf))         => Option(taskIf)
-        case (Some(pageIf), None)         => Option(pageIf)
+        case (Some(pageIf), Some(taskIf)) => Some(combineIncludeIf(pageIf, taskIf))
+        case (None, Some(taskIf))         => Some(taskIf)
+        case (Some(pageIf), None)         => Some(pageIf)
         case _                            => None
       }
 
