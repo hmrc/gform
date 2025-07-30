@@ -121,6 +121,9 @@ object ExplicitExprType {
   case class Sterling(
     roundingMode: RoundingMode
   ) extends ExplicitExprType
+  case class WholeSterling(
+    roundingMode: RoundingMode
+  ) extends ExplicitExprType
   case class Number(
     fractionalDigits: Int,
     roundingMode: RoundingMode

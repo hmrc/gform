@@ -36,6 +36,11 @@ sealed trait Substitutions[K, V] {
         roundingMode <- (json \ "round").validateOpt[RoundingMode]
       } yield ExplicitExprType.Sterling(roundingMode.getOrElse(RoundingMode.Down))
     }
+    val wholeSterlingReads: Reads[ExplicitExprType.WholeSterling] = Reads { json =>
+      for {
+        roundingMode <- (json \ "round").validateOpt[RoundingMode]
+      } yield ExplicitExprType.WholeSterling(roundingMode.getOrElse(RoundingMode.Down))
+    }
     val numberReads: Reads[ExplicitExprType.Number] = Reads { json =>
       for {
         fractionalDigits <- (json \ "fractionalDigits").validateOpt[Int]
@@ -48,9 +53,10 @@ sealed trait Substitutions[K, V] {
 
     val exprTypeReads: Reads[ExplicitExprType] = ADTFormat.adtRead[ExplicitExprType](
       "type",
-      "text"     -> textReads,
-      "number"   -> numberReads,
-      "sterling" -> sterlingReads
+      "text"          -> textReads,
+      "number"        -> numberReads,
+      "sterling"      -> sterlingReads,
+      "wholeSterling" -> wholeSterlingReads
     )
 
     Reads { json =>
