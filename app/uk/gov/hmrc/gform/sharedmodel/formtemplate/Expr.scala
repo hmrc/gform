@@ -213,6 +213,7 @@ object DateProjection {
   case class Day(dateExpr: DateExpr) extends DateProjection
   case class Month(dateExpr: DateExpr) extends DateProjection
   case class Year(dateExpr: DateExpr) extends DateProjection
+  case class TaxYear(dateExpr: DateExpr) extends DateProjection
 
   implicit val format: OFormat[DateProjection] = derived.oformat()
 }

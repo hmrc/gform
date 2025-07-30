@@ -639,6 +639,11 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     )
   }
 
+  it should "parse form.startDate as DateCtx" in {
+    val result = ValueParser.parseAll(ValueParser.contextField, "form.startDate").get
+    result shouldBe DateCtx(DateValueExpr(FormStartDateExprValue))
+  }
+
   it should "parse TODAY as DateCtx" in {
     val result = ValueParser.parseAll(ValueParser.contextField, "TODAY").get
     result shouldBe DateCtx(DateValueExpr(TodayDateExprValue))
@@ -757,6 +762,20 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
           )
         )
       )
+    )
+  }
+
+  it should "parse tax year from form start date" in {
+    val res = ValueParser.validate("${taxYear(form.startDate)}")
+    res.toOption.value should be(
+      TextExpression(DateFunction(DateProjection.TaxYear(DateValueExpr(FormStartDateExprValue))))
+    )
+  }
+
+  it should "parse tax year from today's date" in {
+    val res = ValueParser.validate("${taxYear(TODAY)}")
+    res.toOption.value should be(
+      TextExpression(DateFunction(DateProjection.TaxYear(DateValueExpr(TodayDateExprValue))))
     )
   }
 

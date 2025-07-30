@@ -122,10 +122,14 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
 
   lazy val dateExprTODAY: Parser[DateExpr] = "TODAY" ^^^ DateValueExpr(TodayDateExprValue)
 
+  lazy val dateExprFormStart: Parser[DateExpr] = "form" ~ "." ~ "startDate" ^^ { _ =>
+    DateValueExpr(FormStartDateExprValue)
+  } | dateExprTODAY
+
   lazy val hmrcTaxPeriodExpr: Parser[DateExpr] =
     FormComponentId.unanchoredIdValidation ~ "." ~ hmrcTaxPeriodInfo ^^ { case value ~ _ ~ hmrcTaxPeriodInfo =>
       HmrcTaxPeriodCtx(FormCtx(FormComponentId(value)), hmrcTaxPeriodInfo)
-    } | dateExprTODAY
+    } | dateExprFormStart
 
   val dataRetrieveDateNames: Parser[String] =
     DataRetrieveDefinitions.dataRetrieveDateAttrs().map(literal).reduce(_ | _)
@@ -295,6 +299,9 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
     }
     | "year(" ~ dateExpr ~ ")" ^^ { case _ ~ dateExpr ~ _ =>
       DateFunction(DateProjection.Year(dateExpr))
+    }
+    | "taxYear(" ~ dateExpr ~ ")" ^^ { case _ ~ dateExpr ~ _ =>
+      DateFunction(DateProjection.TaxYear(dateExpr))
     }
     | (periodFun ~ "." ~ "sum|totalMonths|years|months|days".r ^^ {
       case _ ~ (dateExpr1: DateExpr) ~ _ ~ (dateExpr2: DateExpr) ~ _ ~ _ ~ prop =>

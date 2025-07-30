@@ -25,6 +25,8 @@ import play.api.libs.json._
 import uk.gov.hmrc.gform.sharedmodel.{ UserId, ValueClassFormat }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplateId, FormTemplateVersion, JsonUtils }
 
+import java.time.Instant
+
 case class Form(
   _id: FormId,
   envelopeId: EnvelopeId,
@@ -39,7 +41,8 @@ case class Form(
   thirdPartyData: ThirdPartyData,
   envelopeExpiryDate: Option[EnvelopeExpiryDate],
   componentIdToFileId: FormComponentIdToFileIdMapping,
-  taskIdTaskStatus: TaskIdTaskStatusMapping
+  taskIdTaskStatus: TaskIdTaskStatusMapping,
+  startDate: Instant
 )
 
 object Form {
@@ -47,6 +50,7 @@ object Form {
   private val componentIdToFileId = "componentIdToFileId"
   private val formTemplateVersion = "version"
   private val taskIdTaskStatus = "taskIdTaskStatus"
+  private val startDate = "startDate"
 
   val readVisitIndex: Reads[VisitIndex] = VisitIndex.format
 
@@ -79,6 +83,12 @@ object Form {
       .map(_.getOrElse(TaskIdTaskStatusMapping.empty))
       .orElse(JsonUtils.constReads(TaskIdTaskStatusMapping.empty))
 
+  val mongoInstantReadsWithFallback: Reads[Instant] =
+    Reads
+      .at[String](__ \ startDate \ "$date" \ "$numberLong")
+      .map(s => Instant.ofEpochMilli(s.toLong))
+      .orElse(Reads.pure(Instant.now))
+
   private val reads: Reads[Form] = (
     (FormId.format: Reads[FormId]) and
       EnvelopeId.format and
@@ -91,8 +101,14 @@ object Form {
       thirdPartyDataWithFallback and
       EnvelopeExpiryDate.optionFormat and
       componentIdToFileIdWithFallback and
-      taskIdTaskStatusWithFallback
+      taskIdTaskStatusWithFallback and
+      mongoInstantReadsWithFallback
   )(Form.apply _)
+
+  def mongoInstantStartDateWrites(o: Instant): JsObject =
+    Writes
+      .at[String](__ \ startDate \ "$date" \ "$numberLong")
+      .writes(o.toEpochMilli.toString)
 
   private val writes: OWrites[Form] = OWrites[Form](form =>
     FormId.format.writes(form._id) ++
@@ -106,7 +122,8 @@ object Form {
       Json.obj(thirdPartyData -> ThirdPartyData.format.writes(form.thirdPartyData)) ++
       EnvelopeExpiryDate.optionFormat.writes(form.envelopeExpiryDate) ++
       Json.obj(componentIdToFileId -> FormComponentIdToFileIdMapping.format.writes(form.componentIdToFileId)) ++
-      Json.obj(taskIdTaskStatus -> TaskIdTaskStatusMapping.format.writes(form.taskIdTaskStatus))
+      Json.obj(taskIdTaskStatus -> TaskIdTaskStatusMapping.format.writes(form.taskIdTaskStatus)) ++
+      mongoInstantStartDateWrites(form.startDate)
   )
 
   implicit val format: OFormat[Form] = OFormat[Form](reads, writes)

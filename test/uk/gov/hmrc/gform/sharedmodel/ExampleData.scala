@@ -30,7 +30,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.DestinationGen
 import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination
 import uk.gov.hmrc.gform.submission.{ DmsMetaData, Submission, SubmissionId }
 
-import java.time.LocalDateTime
+import java.time.{ Instant, LocalDateTime }
 
 object ExampleData extends ExampleData
 
@@ -619,7 +619,8 @@ trait ExampleForm { dependsOn: ExampleFormField with ExampleFormTemplate =>
       ThirdPartyData.empty,
       envelopeExpiryDate,
       FormComponentIdToFileIdMapping.empty,
-      TaskIdTaskStatusMapping.empty
+      TaskIdTaskStatusMapping.empty,
+      Instant.now
     )
 
 }
