@@ -443,6 +443,10 @@ object FormTemplateValidator {
         expr.referenceInfos.collect { case FormCtxExpr(path, formCtx) =>
           validateExpr(formCtx, path, "year")
         }
+      case DateFunctionExpr(path, DateProjection.TaxYear(expr)) =>
+        expr.referenceInfos.collect { case FormCtxExpr(path, formCtx) =>
+          validateExpr(formCtx, path, "taxYear")
+        }
     }
     Monoid.combineAll(validations.flatten)
   }

@@ -43,7 +43,8 @@ object EncryptedFormFormat {
         Json.obj(thirdPartyData -> jsonCrypto.encrypt(PlainText(Json.toJson(form.thirdPartyData).toString())).value) ++
         EnvelopeExpiryDate.optionFormat.writes(form.envelopeExpiryDate) ++
         Json.obj(componentIdToFileId -> FormComponentIdToFileIdMapping.format.writes(form.componentIdToFileId)) ++
-        Json.obj(taskIdTaskStatus -> TaskIdTaskStatusMapping.format.writes(form.taskIdTaskStatus))
+        Json.obj(taskIdTaskStatus -> TaskIdTaskStatusMapping.format.writes(form.taskIdTaskStatus)) ++
+        Form.mongoInstantStartDateWrites(form.startDate)
 
     private val readFormData: Reads[FormData] =
       (__ \ formData)
@@ -67,7 +68,8 @@ object EncryptedFormFormat {
         readThirdPartyData and
         EnvelopeExpiryDate.optionFormat and
         Form.componentIdToFileIdWithFallback and
-        Form.taskIdTaskStatusWithFallback
+        Form.taskIdTaskStatusWithFallback and
+        Form.mongoInstantReadsWithFallback
     )(Form.apply _)
 
     override def reads(json: JsValue): JsResult[Form] = {

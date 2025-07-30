@@ -16,8 +16,7 @@
 
 package uk.gov.hmrc.gform.services
 
-import java.time.LocalDateTime
-
+import java.time.{ Instant, LocalDateTime }
 import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.gform.sharedmodel.UserId
 import uk.gov.hmrc.gform.sharedmodel.form._
@@ -38,7 +37,8 @@ class FormServiceSpec extends PlaySpec {
     ThirdPartyData.empty,
     Some(EnvelopeExpiryDate(LocalDateTime.now.plusDays(1))),
     FormComponentIdToFileIdMapping.empty,
-    TaskIdTaskStatusMapping.empty
+    TaskIdTaskStatusMapping.empty,
+    Instant.now
   )
 
   val testFormSummary: Form = testFormInProgress.copy(status = Summary)
