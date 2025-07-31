@@ -76,8 +76,9 @@ class DesConnector(httpClient: HttpClientV2, baseUrl: String, desConfig: DesConn
 
     logger.info(s"Des registration, UTR: '$utr', ${loggingHelpers.cleanHeaderCarrierHeader(hc)}")
 
+    val url = s"$baseUrl${desConfig.basePath}/registration/organisation/utr/$utr"
     httpClient
-      .post(url"$baseUrl${desConfig.basePath}/registration/organisation/utr/$utr")
+      .post(url"$url")
       .withBody(Json.toJson(desRegistrationRequest))
       .setHeader(authHeaders)
       .execute[HttpResponse]
@@ -159,11 +160,13 @@ class DesConnector(httpClient: HttpClientV2, baseUrl: String, desConfig: DesConn
     httpClient.get(url"$url").setHeader(authHeaders).execute[JsValue]
   }
 
-  def testOnlyGet(url: String): Future[HttpResponse] =
+  def testOnlyGet(testUrl: String): Future[HttpResponse] = {
+    val url = s"$baseUrl${desConfig.basePath}/$testUrl"
     httpClient
-      .get(url"$baseUrl${desConfig.basePath}/$url")
+      .get(url"$url")
       .setHeader(authHeaders)
       .execute[HttpResponse]
+  }
 
   override def lookupAgentDetails(
     idType: String,
@@ -173,8 +176,9 @@ class DesConnector(httpClient: HttpClientV2, baseUrl: String, desConfig: DesConn
       s"Des agent-details called, ${loggingHelpers.cleanHeaderCarrierHeader(hc)}"
     )
 
+    val url = s"$baseUrl${desConfig.basePath}/registration/personal-details/$idType/$idNumber"
     httpClient
-      .get(url"$baseUrl${desConfig.basePath}/registration/personal-details/$idType/$idNumber")
+      .get(url"$url")
       .setHeader(authHeaders)
       .execute[HttpResponse]
       .map { httpResponse =>
