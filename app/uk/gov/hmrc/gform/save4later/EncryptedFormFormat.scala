@@ -23,6 +23,9 @@ import uk.gov.hmrc.crypto.{ Crypted, Decrypter, Encrypter, PlainText }
 import uk.gov.hmrc.gform.sharedmodel.UserId
 import uk.gov.hmrc.gform.sharedmodel.form._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplateId, FormTemplateVersion }
+import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats.Implicits
+
+import java.time.Instant
 
 object EncryptedFormFormat {
   def formatEncrypted(jsonCrypto: Encrypter with Decrypter): Format[Form] = new Format[Form] {
@@ -30,6 +33,9 @@ object EncryptedFormFormat {
     private val formData = "formData"
     private val thirdPartyData = "thirdPartyData"
     private val taskIdTaskStatus = "taskIdTaskStatus"
+    private val startDate = "startDate"
+
+    implicit val mongoInstantFormat: Format[Instant] = Implicits.jatInstantFormat
 
     override def writes(form: Form): JsValue =
       FormId.format.writes(form._id) ++
@@ -43,7 +49,8 @@ object EncryptedFormFormat {
         Json.obj(thirdPartyData -> jsonCrypto.encrypt(PlainText(Json.toJson(form.thirdPartyData).toString())).value) ++
         EnvelopeExpiryDate.optionFormat.writes(form.envelopeExpiryDate) ++
         Json.obj(componentIdToFileId -> FormComponentIdToFileIdMapping.format.writes(form.componentIdToFileId)) ++
-        Json.obj(taskIdTaskStatus -> TaskIdTaskStatusMapping.format.writes(form.taskIdTaskStatus))
+        Json.obj(taskIdTaskStatus -> TaskIdTaskStatusMapping.format.writes(form.taskIdTaskStatus)) ++
+        Json.obj(startDate -> form.startDate)
 
     private val readFormData: Reads[FormData] =
       (__ \ formData)
@@ -67,7 +74,8 @@ object EncryptedFormFormat {
         readThirdPartyData and
         EnvelopeExpiryDate.optionFormat and
         Form.componentIdToFileIdWithFallback and
-        Form.taskIdTaskStatusWithFallback
+        Form.taskIdTaskStatusWithFallback and
+        Form.startDateWithFallback
     )(Form.apply _)
 
     override def reads(json: JsValue): JsResult[Form] = {
