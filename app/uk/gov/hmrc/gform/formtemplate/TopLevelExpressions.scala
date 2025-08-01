@@ -197,6 +197,7 @@ object TopLevelExpressions {
         case ChoicesAvailable(_)           => e
         case CountSelectedChoices(_)       => e
         case TaskStatus(_)                 => e
+        case DisplayAsEntered(_)           => e
         case LookupOps(expr, fn)           => LookupOps(loop(expr), fn)
       }
     expressions.get(expressionId).fold(expressions) { expr =>

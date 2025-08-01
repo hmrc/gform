@@ -25,7 +25,7 @@ import uk.gov.hmrc.gform.Helpers.{ toLocalisedString, toSmartString }
 import uk.gov.hmrc.gform.core.parsers.ValueParser
 import uk.gov.hmrc.gform.core.{ Invalid, Opt, Valid, ValidationResult }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.PageLink
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AnyDate, BulletedList, Checkbox, Choice, ChoicesAvailable, ChoicesSelected, Constant, DataRetrieveCtx, Date, DateCtx, DateFormCtxVar, Dynamic, Equals, ExprWithPath, FormComponent, FormComponentId, FormComponentValidator, FormCtx, HideZeroDecimals, Horizontal, IfElse, IncludeIf, IndexOf, IndexOfDataRetrieveCtx, InformationMessage, Instruction, IsTrue, LeafExpr, LinkCtx, LookupColumn, Not, NumberedList, Offset, OptionData, OptionDataValue, Page, PageId, PostcodeLookup, Radio, Section, ShortText, StandardInfo, SummariseGroupAsGrid, TemplatePath, Text, ValidIf, Value, Vertical }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AnyDate, BulletedList, Checkbox, Choice, ChoicesAvailable, ChoicesSelected, Constant, DataRetrieveCtx, Date, DateCtx, DateFormCtxVar, DisplayAsEntered, Dynamic, Equals, ExprWithPath, FormComponent, FormComponentId, FormComponentValidator, FormCtx, HideZeroDecimals, Horizontal, IfElse, IncludeIf, IndexOf, IndexOfDataRetrieveCtx, InformationMessage, Instruction, IsTrue, LeafExpr, LinkCtx, LookupColumn, Not, NumberedList, Offset, OptionData, OptionDataValue, Page, PageId, PostcodeLookup, Radio, Section, ShortText, StandardInfo, SummariseGroupAsGrid, TemplatePath, Text, TextArea, TextWithRestrictions, ValidIf, Value, Vertical }
 import uk.gov.hmrc.gform.sharedmodel._
 
 class FormTemplateValidatorSpec
@@ -606,6 +606,56 @@ class FormTemplateValidatorSpec
           Invalid(
             "sections.fields.[id=info].infoText: dutyType is not AddToList ID or a checkbox component (choice) ID"
           )
+        ),
+        (
+          List(
+            mkSectionNonRepeatingPage(
+              name = "page1",
+              formComponents = List(
+                mkFormComponent(
+                  "shortText",
+                  Text(ShortText(1, 10), Value),
+                  false
+                ),
+                mkFormComponent(
+                  "info",
+                  InformationMessage(
+                    StandardInfo,
+                    SmartString(toLocalisedString("{0}"), List(DisplayAsEntered(FormComponentId("shortText"))))
+                  ),
+                  false
+                )
+              ),
+              pageId = Some(PageId("page1"))
+            )
+          ),
+          Invalid(
+            "sections.fields.[id=info].infoText: shortText is not a Multiline Text field (Text Area) id in the form"
+          )
+        ),
+        (
+          List(
+            mkSectionNonRepeatingPage(
+              name = "page1",
+              formComponents = List(
+                mkFormComponent(
+                  "textArea",
+                  TextArea(TextWithRestrictions(0, 1000), Value, dataThreshold = None),
+                  false
+                ),
+                mkFormComponent(
+                  "info",
+                  InformationMessage(
+                    StandardInfo,
+                    SmartString(toLocalisedString("{0}"), List(DisplayAsEntered(FormComponentId("textArea"))))
+                  ),
+                  false
+                )
+              ),
+              pageId = Some(PageId("page1"))
+            )
+          ),
+          Valid
         )
       )
       forAll(table) { (sections, expected) =>

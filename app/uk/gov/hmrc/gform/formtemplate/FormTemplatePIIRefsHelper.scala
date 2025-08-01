@@ -146,6 +146,7 @@ object FormTemplatePIIRefsHelper {
       case ChoicesAvailable(FormComponentId(value))           => List(value)
       case CountSelectedChoices(FormComponentId(value))       => List(value)
       case TaskStatus(TaskId(value))                          => List(value)
+      case DisplayAsEntered(FormComponentId(value))           => List(value)
       case LookupOps(exprs, _)                                => extractRefs(exprs)
     }
 

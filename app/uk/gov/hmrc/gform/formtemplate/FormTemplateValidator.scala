@@ -190,6 +190,10 @@ object FormTemplateValidator {
       fc.id
     }.toSet
 
+    val allTextAreaIds: Set[FormComponentId] = formTemplate.formComponents { case fc @ IsTextArea(_) =>
+      fc.id
+    }.toSet
+
     val allChoiceCheckboxIds: Set[FormComponentId] = formTemplate.formComponents {
       case fc @ IsChoice(choice: Choice) if choice.`type` === Checkbox =>
         fc.id
@@ -285,6 +289,8 @@ object FormTemplateValidator {
         Invalid(s"${path.path}: $formComponentId is not a Choice in the form")
       case ReferenceInfo.TaskStatusExpr(path, TaskStatus(taskId)) if !allTaskIds(taskId) =>
         Invalid(s"${path.path}: ${taskId.id} is not a Task id in the form")
+      case DisplayAsEnteredExpr(path, DisplayAsEntered(formComponentId)) if !allTextAreaIds(formComponentId) =>
+        Invalid(s"${path.path}: $formComponentId is not a Multiline Text field (Text Area) id in the form")
       case ReferenceInfo.LookupOpsExpr(path, LookupOps(FormCtx(formComponentId), _)) if !allFcIds(formComponentId) =>
         invalid(path, formComponentId)
       case _ => Valid
@@ -1306,6 +1312,7 @@ object FormTemplateValidator {
       case ChoicesRevealedField(_)      => Valid
       case ChoicesSelected(_)           => Valid
       case ChoicesAvailable(_)          => Valid
+      case DisplayAsEntered(_)          => Valid
       case CountSelectedChoices(_)      => Valid
       case TaskStatus(_)                => Valid
       case LookupOps(_, _)              => Valid
