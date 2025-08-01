@@ -400,6 +400,9 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
     | "taskStatus(" ~ TaskId.unanchoredIdValidation ~ ")" ^^ { case _ ~ value ~ _ =>
       TaskStatus(TaskId(value))
     }
+    | "displayAsEntered(" ~ FormComponentId.unanchoredIdValidation ~ ")" ^^ { case _ ~ value ~ _ =>
+      DisplayAsEntered(FormComponentId(value))
+    }
     | FormComponentId.unanchoredIdValidation ~ "[" ~ nonZeroPositiveInteger ~ "]" ^^ {
       case formComponentId ~ _ ~ index ~ _ =>
         IndexOf(
