@@ -17,85 +17,92 @@
 package uk.gov.hmrc.gform.sharedmodel.form
 
 import cats.data.NonEmptyList
-import java.time.LocalDate
-
-import java.time.LocalDateTime
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
-import play.api.libs.json._
 import play.api.libs.json.Writes.DefaultLocalDateTimeWrites
+import play.api.libs.json._
 import uk.gov.hmrc.gform.sharedmodel._
 import uk.gov.hmrc.gform.sharedmodel.email.EmailConfirmationCode
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.FormGen
 
+import java.time.temporal.ChronoUnit
+import java.time.{ Instant, LocalDate, LocalDateTime }
+
 class FormSpec extends AnyFlatSpec with Matchers with ScalaCheckDrivenPropertyChecks {
 
+  val nowInst = Instant.now.truncatedTo(ChronoUnit.MILLIS)
+
   val inputJson =
-    """|{
-       |  "_id" : "tax",
-       |  "envelopeId" : "envelopeId",
-       |  "userId" : "userId",
-       |  "formTemplateId" : "formTemplateId",
-       |  "fields" : [ {
-       |    "id" : "abc",
-       |    "value" : "abc"
-       |  } ],
-       |  "Submitted" : { },
-       |  "visitsIndex" : [ "n1", "n2", "n3" ],
-       |  "thirdPartyData" : {
-       |    "obligations" : {
-       |      "RetrievedObligations" : {
-       |        "obligation" : [ {
-       |          "id" : {
-       |            "recalculatedTaxPeriodKey" : {
-       |              "fcId" : "compId",
-       |              "hmrcTaxPeriod" : {
-       |                "idType" : {
-       |                  "idType" : "eeits"
-       |                },
-       |                "idNumber" : {
-       |                  "Value" : { }
-       |                },
-       |                "regimeType" : {
-       |                  "regimeType" : "ITSA"
-       |                }
-       |              }
-       |            },
-       |            "idNumberValue" : {
-       |              "value" : "123"
-       |            }
-       |          },
-       |          "obligation" : {
-       |            "obligations" : [ {
-       |              "obligationDetails" : [ {
-       |                "status" : "O",
-       |                "inboundCorrespondenceFromDate" : "2100-01-15",
-       |                "inboundCorrespondenceToDate" : "1900-10-28",
-       |                "inboundCorrespondenceDueDate" : "2061-01-25",
-       |                "periodKey" : "fxzaz"
-       |              } ]
-       |            } ]
-       |          }
-       |        } ]
-       |      }
-       |    },
-       |    "emailVerification" : {
-       |      "emailId" : {
-       |        "email" : "josef@hmrc.com",
-       |        "code" : "HPKHWB"
-       |      }
-       |    },
-       |    "queryParams" : {
-       |        "params" : { }
-       |    },
-       |    "booleanExprCache" : {
-       |        "mapping": { }
-       |    }
-       |  },
-       |  "ldt" : "2064-12-01T00:00:40"
-       |}""".stripMargin
+    s"""|{
+        |  "_id" : "tax",
+        |  "envelopeId" : "envelopeId",
+        |  "userId" : "userId",
+        |  "formTemplateId" : "formTemplateId",
+        |  "fields" : [ {
+        |    "id" : "abc",
+        |    "value" : "abc"
+        |  } ],
+        |  "Submitted" : { },
+        |  "visitsIndex" : [ "n1", "n2", "n3" ],
+        |  "thirdPartyData" : {
+        |    "obligations" : {
+        |      "RetrievedObligations" : {
+        |        "obligation" : [ {
+        |          "id" : {
+        |            "recalculatedTaxPeriodKey" : {
+        |              "fcId" : "compId",
+        |              "hmrcTaxPeriod" : {
+        |                "idType" : {
+        |                  "idType" : "eeits"
+        |                },
+        |                "idNumber" : {
+        |                  "Value" : { }
+        |                },
+        |                "regimeType" : {
+        |                  "regimeType" : "ITSA"
+        |                }
+        |              }
+        |            },
+        |            "idNumberValue" : {
+        |              "value" : "123"
+        |            }
+        |          },
+        |          "obligation" : {
+        |            "obligations" : [ {
+        |              "obligationDetails" : [ {
+        |                "status" : "O",
+        |                "inboundCorrespondenceFromDate" : "2100-01-15",
+        |                "inboundCorrespondenceToDate" : "1900-10-28",
+        |                "inboundCorrespondenceDueDate" : "2061-01-25",
+        |                "periodKey" : "fxzaz"
+        |              } ]
+        |            } ]
+        |          }
+        |        } ]
+        |      }
+        |    },
+        |    "emailVerification" : {
+        |      "emailId" : {
+        |        "email" : "josef@hmrc.com",
+        |        "code" : "HPKHWB"
+        |      }
+        |    },
+        |    "queryParams" : {
+        |        "params" : { }
+        |    },
+        |    "booleanExprCache" : {
+        |        "mapping": { }
+        |    }
+        |  },
+        |  "ldt" : "2064-12-01T00:00:40",
+        |  "startDate" : {
+        |    "$$date" : {
+        |      "$$numberLong" : "${nowInst.toEpochMilli.toString}"
+        |    }
+        |  }
+        |}""".stripMargin
 
   val exampleForm = Form(
     FormId("tax"),
@@ -165,7 +172,8 @@ class FormSpec extends AnyFlatSpec with Matchers with ScalaCheckDrivenPropertyCh
     ),
     Some(EnvelopeExpiryDate(LocalDateTime.of(2064, 12, 1, 0, 0, 40))),
     FormComponentIdToFileIdMapping.empty,
-    TaskIdTaskStatusMapping.empty
+    TaskIdTaskStatusMapping.empty,
+    nowInst
   )
 
   "Format for Form" should "read json" in {
@@ -210,7 +218,8 @@ class FormSpec extends AnyFlatSpec with Matchers with ScalaCheckDrivenPropertyCh
     ThirdPartyData.empty,
     Some(EnvelopeExpiryDate(LocalDateTime.now.plusDays(1))),
     FormComponentIdToFileIdMapping.empty,
-    TaskIdTaskStatusMapping.empty
+    TaskIdTaskStatusMapping.empty,
+    nowInst
   )
 
   "case class Form" should "be serialized into json" in {
@@ -238,7 +247,12 @@ class FormSpec extends AnyFlatSpec with Matchers with ScalaCheckDrivenPropertyCh
         "booleanExprCache"  -> Json.obj("mapping" -> Json.obj())
       ),
       "componentIdToFileId" -> Json.obj(),
-      "taskIdTaskStatus"    -> Json.obj()
+      "taskIdTaskStatus"    -> Json.obj(),
+      "startDate" -> Json.obj(
+        "$date" -> Json.obj(
+          "$numberLong" -> nowInst.toEpochMilli.toString
+        )
+      )
     )
     formJsObject shouldBe expectedFormJsObject
 
@@ -257,7 +271,12 @@ class FormSpec extends AnyFlatSpec with Matchers with ScalaCheckDrivenPropertyCh
           Json.obj("id" -> "startDate-year", "value" -> "2008")
         ),
       "visitsIndex" -> Json.arr(),
-      "InProgress"  -> Json.obj()
+      "InProgress"  -> Json.obj(),
+      "startDate" -> Json.obj(
+        "$date" -> Json.obj(
+          "$numberLong" -> nowInst.toEpochMilli.toString
+        )
+      )
     )
 
     val expectedForm = form.copy(visitsIndex = VisitIndex.empty(FormKind.Classic(Nil)), envelopeExpiryDate = None)

@@ -25,7 +25,7 @@ import uk.gov.hmrc.gform.Helpers.{ toLocalisedString, toSmartString }
 import uk.gov.hmrc.gform.core.parsers.ValueParser
 import uk.gov.hmrc.gform.core.{ Invalid, Opt, Valid, ValidationResult }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.PageLink
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AnyDate, BulletedList, Checkbox, Choice, ChoicesAvailable, ChoicesSelected, Constant, DataRetrieveCtx, Date, DateCtx, DateFormCtxVar, DisplayAsEntered, Dynamic, Equals, ExprWithPath, FormComponent, FormComponentId, FormComponentValidator, FormCtx, HideZeroDecimals, Horizontal, IfElse, IncludeIf, IndexOf, IndexOfDataRetrieveCtx, InformationMessage, Instruction, IsTrue, LeafExpr, LinkCtx, LookupColumn, Not, NumberedList, Offset, OptionData, OptionDataValue, Page, PageId, PostcodeLookup, Radio, Section, ShortText, StandardInfo, SummariseGroupAsGrid, TemplatePath, Text, TextArea, TextWithRestrictions, ValidIf, Value, Vertical }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AnyDate, BulletedList, Checkbox, Choice, ChoicesAvailable, ChoicesSelected, Constant, DataRetrieveCtx, Date, DateCtx, DateFormCtxVar, DateFunction, DateProjection, DateValueExpr, DisplayAsEntered, Dynamic, Equals, ExprWithPath, FormComponent, FormComponentId, FormComponentValidator, FormCtx, FormStartDateExprValue, HideZeroDecimals, Horizontal, IfElse, IncludeIf, IndexOf, IndexOfDataRetrieveCtx, InformationMessage, Instruction, IsTrue, LeafExpr, LinkCtx, LookupColumn, Not, NumberedList, Offset, OptionData, OptionDataValue, Page, PageId, PostcodeLookup, Radio, Section, ShortText, StandardInfo, SummariseGroupAsGrid, TemplatePath, Text, TextArea, TextWithRestrictions, ValidIf, Value, Vertical }
 import uk.gov.hmrc.gform.sharedmodel._
 
 class FormTemplateValidatorSpec
@@ -1594,6 +1594,116 @@ class FormTemplateValidatorSpec
         val formTemplate = mkFormTemplate(sections)
         val allExpressions: List[ExprWithPath] = LeafExpr(TemplatePath.root, formTemplate)
         FormTemplateValidator.validateNoPIITitleConstraints(formTemplate, allExpressions) shouldBe expected
+      }
+    }
+  }
+
+  "validateDateFunctionReferenceConstraints" should {
+    "validate and report non-date references from date functions" in {
+      val table = Table(
+        ("sections", "expected"),
+        (
+          List(
+            mkSectionNonRepeatingPage(
+              name = "page1",
+              formComponents = List(
+                mkFormComponent(
+                  "infoComp",
+                  InformationMessage(
+                    StandardInfo,
+                    SmartString(
+                      toLocalisedString("{0}"),
+                      List(DateFunction(DateProjection.TaxYear(DateValueExpr(FormStartDateExprValue))))
+                    )
+                  ),
+                  false
+                )
+              )
+            )
+          ),
+          Valid
+        ),
+        (
+          List(
+            mkSectionNonRepeatingPage(
+              name = "page1",
+              formComponents = List(
+                mkFormComponent(
+                  "notADateComponent",
+                  InformationMessage(
+                    StandardInfo,
+                    SmartString(toLocalisedString("{0}"), List(LinkCtx(PageLink(PageId("page1")))))
+                  ),
+                  false
+                )
+              )
+            ),
+            mkSectionNonRepeatingPage(
+              name = "page2",
+              formComponents = List(
+                mkFormComponent(
+                  "infoComp",
+                  InformationMessage(
+                    StandardInfo,
+                    SmartString(
+                      toLocalisedString("{0}"),
+                      List(
+                        DateFunction(
+                          DateProjection.TaxYear(DateFormCtxVar(FormCtx(FormComponentId("notADateComponent"))))
+                        )
+                      )
+                    )
+                  ),
+                  false
+                )
+              )
+            )
+          ),
+          Invalid(": Form component 'notADateComponent' used in taxYear function should be date type")
+        ),
+        (
+          List(
+            mkSectionNonRepeatingPage(
+              name = "page1",
+              formComponents = List(
+                mkFormComponent(
+                  "dateComp",
+                  Date(
+                    AnyDate,
+                    Offset(0),
+                    None
+                  ),
+                  false
+                )
+              )
+            ),
+            mkSectionNonRepeatingPage(
+              name = "page2",
+              formComponents = List(
+                mkFormComponent(
+                  "infoComp",
+                  InformationMessage(
+                    StandardInfo,
+                    SmartString(
+                      toLocalisedString("{0}"),
+                      List(DateFunction(DateProjection.TaxYear(DateFormCtxVar(FormCtx(FormComponentId("dateComp"))))))
+                    )
+                  ),
+                  false
+                )
+              )
+            )
+          ),
+          Valid
+        )
+      )
+      forAll(table) { (sections, expected) =>
+        val formTemplate = mkFormTemplate(sections)
+        val allExprs: List[ExprWithPath] = LeafExpr(TemplatePath.root, formTemplate)
+        FormTemplateValidator.validateDateFunctionReferenceConstraints(
+          formTemplate,
+          allExprs
+        ) shouldBe expected
       }
     }
   }

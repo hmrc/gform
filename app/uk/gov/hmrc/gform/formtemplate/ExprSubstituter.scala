@@ -79,9 +79,10 @@ object ExprSubstituter extends Substituter[ExprSubstitutions, FormTemplate] {
 
   implicit val dateProjectionSubstituter: Substituter[ExprSubstitutions, DateProjection] = (substitutions, t) =>
     t match {
-      case d @ DateProjection.Day(dateExpr)   => DateProjection.Day(dateExpr(substitutions))
-      case d @ DateProjection.Month(dateExpr) => DateProjection.Month(dateExpr(substitutions))
-      case d @ DateProjection.Year(dateExpr)  => DateProjection.Year(dateExpr(substitutions))
+      case DateProjection.Day(dateExpr)     => DateProjection.Day(dateExpr(substitutions))
+      case DateProjection.Month(dateExpr)   => DateProjection.Month(dateExpr(substitutions))
+      case DateProjection.Year(dateExpr)    => DateProjection.Year(dateExpr(substitutions))
+      case DateProjection.TaxYear(dateExpr) => DateProjection.TaxYear(dateExpr(substitutions))
     }
 
   implicit val dateExprSubstituter: Substituter[ExprSubstitutions, DateExpr] = (substitutions, t) => {

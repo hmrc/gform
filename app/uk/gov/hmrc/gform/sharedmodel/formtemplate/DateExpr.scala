@@ -79,6 +79,7 @@ object OffsetYMD {
 
 sealed trait DateExprValue
 case object TodayDateExprValue extends DateExprValue
+case object FormStartDateExprValue extends DateExprValue
 case class ExactDateExprValue(year: Int, month: Int, day: Int) extends DateExprValue
 
 object DateExprValue {

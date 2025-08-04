@@ -419,7 +419,7 @@ class TopLevelExpressionsSuite extends FunSuite {
           "type"  -> "sterling",
           "round" -> "HalfUp"
         ),
-        "taxYear" -> "concat('Business owes ', taxOwed, ' at rate of £', taxRate, ' in tax year ',  year(TODAY) + 1)"
+        "taxYear" -> "concat('Business owes ', taxOwed, ' at rate of £', taxRate, ' in tax year ',  taxYear(TODAY) + 1)"
       ),
       Map(
         ExpressionId("taxRate") -> Constant("100"),
@@ -431,7 +431,7 @@ class TopLevelExpressionsSuite extends FunSuite {
             Constant(" at rate of £"),
             Constant("100"),
             Constant(" in tax year "),
-            Add(DateFunction(DateProjection.Year(DateValueExpr(TodayDateExprValue))), Constant("1"))
+            Add(DateFunction(DateProjection.TaxYear(DateValueExpr(TodayDateExprValue))), Constant("1"))
           )
         )
       )
