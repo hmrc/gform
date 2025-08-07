@@ -715,6 +715,60 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
             ConstructAttribute.AsIs(Fetch(List("det", "agencyDetails", "agencyName")))
           ),
           AttributeInstruction(
+            DataRetrieve.Attribute("address_line_1"),
+            ConstructAttribute.Concat(
+              List(
+                Fetch(List("det", "agencyDetails", "agencyAddress", "UkAddress", "addressLine1")),
+                Fetch(List("det", "agencyDetails", "agencyAddress", "InternationalAddress", "addressLine1"))
+              )
+            )
+          ),
+          AttributeInstruction(
+            DataRetrieve.Attribute("address_line_2"),
+            ConstructAttribute.Concat(
+              List(
+                Fetch(List("det", "agencyDetails", "agencyAddress", "UkAddress", "addressLine2")),
+                Fetch(List("det", "agencyDetails", "agencyAddress", "InternationalAddress", "addressLine2"))
+              )
+            )
+          ),
+          AttributeInstruction(
+            DataRetrieve.Attribute("locality"),
+            ConstructAttribute.Concat(
+              List(
+                Fetch(List("det", "agencyDetails", "agencyAddress", "UkAddress", "addressLine3")),
+                Fetch(List("det", "agencyDetails", "agencyAddress", "InternationalAddress", "addressLine3"))
+              )
+            )
+          ),
+          AttributeInstruction(
+            DataRetrieve.Attribute("region"),
+            ConstructAttribute.Concat(
+              List(
+                Fetch(List("det", "agencyDetails", "agencyAddress", "UkAddress", "addressLine4")),
+                Fetch(List("det", "agencyDetails", "agencyAddress", "InternationalAddress", "addressLine4"))
+              )
+            )
+          ),
+          AttributeInstruction(
+            DataRetrieve.Attribute("postal_code"),
+            ConstructAttribute.Concat(
+              List(
+                Fetch(List("det", "agencyDetails", "agencyAddress", "UkAddress", "postalCode")),
+                Fetch(List("det", "agencyDetails", "agencyAddress", "InternationalAddress", "postalCode"))
+              )
+            )
+          ),
+          AttributeInstruction(
+            DataRetrieve.Attribute("country"),
+            ConstructAttribute.Concat(
+              List(
+                Fetch(List("det", "agencyDetails", "agencyAddress", "UkAddress", "countryCode")),
+                Fetch(List("det", "agencyDetails", "agencyAddress", "InternationalAddress", "countryCode"))
+              )
+            )
+          ),
+          AttributeInstruction(
             DataRetrieve.Attribute("agencyAddress"),
             ConstructAttribute.Concat(
               List(
