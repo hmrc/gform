@@ -1142,6 +1142,7 @@ object FormTemplateValidator {
     expr match {
       case AuthCtx(AuthInfo.ItmpAddress)                            => Valid
       case DataRetrieveCtx(_, Attribute("registeredOfficeAddress")) => Valid
+      case DataRetrieveCtx(_, Attribute("agencyAddress"))           => Valid
       case FormCtx(fcId) if addressIds.contains(fcId)               => Valid
       case _                                                        => Invalid("address value expression should contain either address component id or itmpAddress")
     }
@@ -1153,9 +1154,10 @@ object FormTemplateValidator {
       case fc @ IsOverseasAddress(_) => fc.id
     }
     expr match {
-      case AuthCtx(AuthInfo.ItmpAddress)              => Valid
-      case FormCtx(fcId) if addressIds.contains(fcId) => Valid
-      case _                                          => Invalid("address value expression should contain either overseas address component id or itmpAddress")
+      case AuthCtx(AuthInfo.ItmpAddress)                  => Valid
+      case DataRetrieveCtx(_, Attribute("agencyAddress")) => Valid
+      case FormCtx(fcId) if addressIds.contains(fcId)     => Valid
+      case _                                              => Invalid("address value expression should contain either overseas address component id or itmpAddress")
     }
   }
 
