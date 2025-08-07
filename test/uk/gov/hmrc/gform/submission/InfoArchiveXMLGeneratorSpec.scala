@@ -42,6 +42,7 @@ class InfoArchiveXMLGeneratorSpec extends Spec {
       nino             <- Gen.option(PrimitiveGen.nonEmptyAlphaNumStrGen)
       utr              <- Gen.option(PrimitiveGen.nonEmptyAlphaNumStrGen)
       postalCode       <- Gen.option(PrimitiveGen.nonEmptyAlphaNumStrGen)
+      pegaCaseId       <- Gen.option(PrimitiveGen.nonEmptyAlphaNumStrGen)
     } yield DestinationResult(
       destinationId,
       includeIf,
@@ -50,7 +51,8 @@ class InfoArchiveXMLGeneratorSpec extends Spec {
       paymentReference,
       nino,
       utr,
-      postalCode
+      postalCode,
+      pegaCaseId
     )
 
   "generatePdi" should "generate the correct XML for submission information package" in {

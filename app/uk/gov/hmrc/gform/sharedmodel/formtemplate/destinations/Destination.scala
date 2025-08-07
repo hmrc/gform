@@ -48,6 +48,10 @@ sealed trait DestinationWithPaymentReference extends Destination {
   def postalCode: Option[Expr]
 }
 
+sealed trait DestinationWithPegaCaseId extends Destination {
+  def caseId: Expr
+}
+
 sealed trait DestinationIncludeIf extends Product with Serializable
 
 object DestinationIncludeIf {
@@ -169,6 +173,13 @@ object Destination {
     personalisation: Map[NotifierPersonalisationFieldId, FormComponentId]
   ) extends Destination
 
+  case class PegaApi(
+    id: DestinationId,
+    includeIf: DestinationIncludeIf,
+    failOnError: Boolean,
+    caseId: Expr
+  ) extends Destination with DestinationWithPegaCaseId
+
   val typeDiscriminatorFieldName: String = "type"
   val hmrcDms: String = "hmrcDms"
   val dataStore: String = "hmrcIlluminate"
@@ -179,6 +190,7 @@ object Destination {
   val stateTransition: String = "stateTransition"
   val log: String = "log"
   val email: String = "email"
+  val pegaApi: String = "pegaApi"
 
   private implicit def nonEmptyListOfDestinationsFormat: OFormat[NonEmptyList[Destination]] =
     derived.oformat[NonEmptyList[Destination]]()
@@ -198,7 +210,8 @@ object Destination {
         composite              -> UploadableCompositeDestination.reads,
         stateTransition        -> UploadableStateTransitionDestination.reads,
         log                    -> UploadableLogDestination.reads,
-        email                  -> UploadableEmailDestination.reads
+        email                  -> UploadableEmailDestination.reads,
+        pegaApi                -> UploadablePegaApiDestination.reads
       )
     )
   }
@@ -213,7 +226,8 @@ object Destination {
             d.utr.map(u => ExprWithPath(path + "utr", u)).toList,
             d.postalCode.map(pc => ExprWithPath(path + "postalCode", pc)).toList
           ).flatten
-      case _ => Nil
+      case d: DestinationWithPegaCaseId => List(ExprWithPath(path + "caseId", d.caseId))
+      case _                            => Nil
     }
 }
 
@@ -513,6 +527,31 @@ object UploadableEmailDestination {
     private val d: Reads[UploadableEmailDestination] = derived.reads[UploadableEmailDestination]()
     override def reads(json: JsValue): JsResult[Destination.Email] =
       d.reads(json).flatMap(_.toEmailDestination.fold(JsError(_), JsSuccess(_)))
+  }
+}
+
+case class UploadablePegaApiDestination(
+  id: DestinationId,
+  includeIf: DestinationIncludeIf,
+  failOnError: Boolean,
+  caseId: TextExpression
+) {
+  private def toPegaApiDestination: Either[String, Destination.PegaApi] =
+    for {
+      cvii <- addErrorInfo(id, None, includeIf)
+    } yield Destination.PegaApi(
+      id,
+      cvii,
+      failOnError,
+      caseId.expr
+    )
+}
+
+object UploadablePegaApiDestination {
+  implicit val reads: Reads[Destination.PegaApi] = new Reads[Destination.PegaApi] {
+    private val d: Reads[UploadablePegaApiDestination] = derived.reads[UploadablePegaApiDestination]()
+    override def reads(json: JsValue): JsResult[Destination.PegaApi] =
+      d.reads(json).flatMap(_.toPegaApiDestination.fold(JsError(_), JsSuccess(_)))
   }
 }
 

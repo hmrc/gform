@@ -27,7 +27,8 @@ case class DestinationResult(
   paymentReference: Option[String],
   nino: Option[String],
   utr: Option[String],
-  postalCode: Option[String]
+  postalCode: Option[String],
+  pegaCaseId: Option[String]
 )
 
 object DestinationResult {

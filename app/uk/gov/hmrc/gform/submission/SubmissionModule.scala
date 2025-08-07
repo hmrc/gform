@@ -29,11 +29,12 @@ import uk.gov.hmrc.gform.submission.handlebars.HandlebarsHttpApiModule
 import uk.gov.hmrc.gform.time.TimeModule
 import uk.gov.hmrc.gform.core._
 import uk.gov.hmrc.gform.envelope.EnvelopeModule
+import uk.gov.hmrc.gform.hip.HipModule
 import uk.gov.hmrc.gform.notifier.NotifierModule
 import uk.gov.hmrc.gform.objectstore.ObjectStoreModule
 import uk.gov.hmrc.gform.repo.{ Repo, RepoAlgebra }
 import uk.gov.hmrc.gform.sdes.SdesModule
-import uk.gov.hmrc.gform.submission.destinations.{ DataStoreSubmitter, DestinationModule, DestinationSubmitter, DestinationsSubmitter, DestinationsSubmitterAlgebra, DmsSubmitter, InfoArchiveSubmitter, StateTransitionService }
+import uk.gov.hmrc.gform.submission.destinations.{ DataStoreSubmitter, DestinationModule, DestinationSubmitter, DestinationsSubmitter, DestinationsSubmitterAlgebra, DmsSubmitter, InfoArchiveSubmitter, PegaSubmitter, StateTransitionService }
 import uk.gov.hmrc.gform.submissionconsolidator.SubmissionConsolidatorModule
 
 import scala.concurrent.ExecutionContext
@@ -53,7 +54,8 @@ class SubmissionModule(
   envelopeModule: EnvelopeModule,
   objectStoreModule: ObjectStoreModule,
   sdesModule: SdesModule,
-  materializer: Materializer
+  materializer: Materializer,
+  hipModule: HipModule
 )(implicit ex: ExecutionContext) {
 
   //TODO: this should be replaced with save4later for submissions
@@ -93,6 +95,10 @@ class SubmissionModule(
     formModule.fOptFormService
   )
 
+  private val pegaSubmitter = new PegaSubmitter(
+    hipModule.getConnector
+  )
+
   private val stateTransitionService = new StateTransitionService(formModule.fOptFormService)
 
   private val realDestinationSubmitter = new DestinationSubmitter(
@@ -104,7 +110,8 @@ class SubmissionModule(
     submissionConsolidatorModule.submissionConsolidator,
     dataStoreSubmitter,
     infoArchiveSubmitter,
-    configModule.sdesConfig
+    configModule.sdesConfig,
+    pegaSubmitterAlgebra = pegaSubmitter
   )
 
   private val destinationsSubmitter: DestinationsSubmitterAlgebra[FOpt] = new DestinationsSubmitter(

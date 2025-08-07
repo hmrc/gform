@@ -50,6 +50,7 @@ import uk.gov.hmrc.gform.formtemplate.FormTemplateModule
 import uk.gov.hmrc.gform.gformfrontend.GformFrontendModule
 import uk.gov.hmrc.gform.graphite.GraphiteModule
 import uk.gov.hmrc.gform.handlebarstemplate.{ HandlebarsSchemaAlgebra, HandlebarsSchemaService, HandlebarsTemplateAlgebra, HandlebarsTemplateModule, HandlebarsTemplateService }
+import uk.gov.hmrc.gform.hip.HipModule
 import uk.gov.hmrc.gform.history.HistoryModule
 import uk.gov.hmrc.gform.log.DataAccessLogModule
 import uk.gov.hmrc.gform.metrics.MetricsModule
@@ -307,6 +308,8 @@ class ApplicationModule(context: Context)
 
   private val submissionConsolidatorModule = new SubmissionConsolidatorModule(wSHttpModule, formModule, configModule)
 
+  private val hipModule = new HipModule(configModule, wSHttpModule)
+
   private val submissionModule =
     new SubmissionModule(
       configModule,
@@ -323,7 +326,8 @@ class ApplicationModule(context: Context)
       envelopeModule,
       objectStoreModule,
       sdesModule,
-      materializer
+      materializer,
+      hipModule
     )
 
   private val retrievalModule =

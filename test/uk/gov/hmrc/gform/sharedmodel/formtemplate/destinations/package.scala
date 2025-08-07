@@ -142,6 +142,15 @@ package object destinations {
              |  },
              |  "${Destination.typeDiscriminatorFieldName}": "${Destination.email}"
              |}""".stripMargin
+    case pegaApi: Destination.PegaApi =>
+      import pegaApi._
+      s"""|{
+          |  "id": "${id.id}",
+          |  "includeIf":  "${getHandlebarValue(destination.includeIf)}",
+          |  ${optionalField("failOnError", Option(destination.failOnError), true)}
+          |  "caseId": ${TextExpression.format.writes(TextExpression(pegaApi.caseId))},
+          |  "${Destination.typeDiscriminatorFieldName}": "${Destination.pegaApi}"
+          |}""".stripMargin
   }
 
   def optionalField[T: Writes](fieldName: String, ot: Option[T]): String =

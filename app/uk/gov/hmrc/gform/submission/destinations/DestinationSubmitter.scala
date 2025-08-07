@@ -48,7 +48,8 @@ class DestinationSubmitter[M[_]](
   dataStore: DataStoreSubmitterAlgebra[M],
   infoArchive: InfoArchiveSubmitterAlgebra[M],
   sdesConfig: SdesConfig,
-  handlebarsTemplateProcessor: HandlebarsTemplateProcessor = RealHandlebarsTemplateProcessor
+  handlebarsTemplateProcessor: HandlebarsTemplateProcessor = RealHandlebarsTemplateProcessor,
+  pegaSubmitterAlgebra: PegaSubmitterAlgebra[M]
 )(implicit monadError: MonadError[M, Throwable], futureConverter: FutureConverter[M])
     extends DestinationSubmitterAlgebra[M] {
 
@@ -194,6 +195,23 @@ class DestinationSubmitter[M[_]](
         submitToEmail(d, submissionInfo, modelTree.value.structuredFormData, l).map(_ => None)
       case d: Destination.SubmissionConsolidator =>
         submitToSubmissionConsolidator(d, submissionInfo, accumulatedModel, modelTree, formData).map(_ => None)
+      case d: Destination.PegaApi =>
+        submitToPega(d, destinationEvaluation.evaluation.find(_.destinationId === d.id), submissionInfo).map(_ => None)
+    }
+
+  private def submitToPega(
+    d: Destination.PegaApi,
+    dr: Option[DestinationResult],
+    submissionInfo: DestinationSubmissionInfo
+  ): M[Unit] =
+    monadError.handleErrorWith(
+      pegaSubmitterAlgebra.getAndUpdateCase(d, dr, submissionInfo)
+    ) { msg =>
+      if (d.failOnError)
+        raiseDestinationError(submissionInfo.formId, d.id, msg)
+      else {
+        logInfoInMonad(submissionInfo.formId, d.id, "Failed execution but has 'failOnError' set to false. Ignoring.")
+      }
     }
 
   private def submitToSubmissionConsolidator(
