@@ -92,24 +92,33 @@ class HipConnector(http: HttpClientV2, baseUrl: String, hipConfig: HipConnectorC
     response.status match {
       case 200 =>
         response
-          .header("etag")
-          .fold(
-            throw new NotFoundException(s"eTag not found in response for Case ID: $caseId")
-          )(eTag => eTag)
+          .header("etag") match {
+          case Some(eTag) => eTag
+          case None =>
+            throw new InternalServerException(s"etag not found in Pega response for Case ID: $caseId")
+        }
       case 400 =>
-        throw new BadRequestException("Bad request response from Pega API")
-      case 404 =>
-        throw new NotFoundException(s"Case ID: $caseId not found")
+        logger.error(
+          s"Received bad request response from Pega API: ${response.body}"
+        )
+        throw new BadRequestException(s"Bad request response from Pega API for Case ID: $caseId")
       case 401 =>
         logger.error(
-          s"Received unauthorized response from Pega API. ${response.body}"
+          s"Received unauthorized response from Pega API: ${response.body}"
         )
         throw new UnauthorizedException("Unauthorized request to Pega API")
       case 403 =>
         logger.error(
-          s"Received forbidden response from Pega API. ${response.body}"
+          s"Received forbidden response from Pega API: ${response.body}"
         )
         throw new ForbiddenException("Forbidden request to Pega API")
+      case 404 =>
+        throw new NotFoundException(s"Pega API returned Case ID: $caseId not found")
+      case 500 =>
+        logger.error(
+          s"Received internal server error response from Pega API: ${response.body}"
+        )
+        throw new InternalServerException("Internal server error response from Pega API")
       case 503 =>
         val message = "Received service unavailable response from Pega API"
         logger.error(message)
