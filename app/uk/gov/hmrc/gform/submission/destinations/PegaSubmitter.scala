@@ -39,7 +39,7 @@ class PegaSubmitter(
         dr.pegaCaseId match {
           case Some(caseId) =>
             for {
-              eTag <- fromFutureA(hipConnectorAlgebra.getPegaCaseActionDetails(caseId, "pyChangeState"))
+              eTag <- fromFutureA(hipConnectorAlgebra.getPegaCaseActionDetails(caseId, "pyChangeStage"))
               _    <- fromFutureA(hipConnectorAlgebra.pegaChangeToNextStage(caseId, eTag))
             } yield ()
           case None =>
