@@ -71,6 +71,7 @@ object DestinationsValidator {
           case _: Destination.SubmissionConsolidator => Destination.submissionConsolidator
           case _: Destination.Log                    => Destination.log
           case _: Destination.Composite              => Destination.composite
+          case _: Destination.PegaApi                => Destination.pegaApi
         }
         .map { case (destinationType, destinations) => validateIncludeIfValues(destinationType, destinations) }
         .toList

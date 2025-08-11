@@ -531,6 +531,7 @@ object Substituter {
       case d: Destination.Email             => d.copy(includeIf = d.includeIf(substitutions))
       case d: Destination.HandlebarsHttpApi => d.copy(includeIf = d.includeIf(substitutions))
       case d: Destination.StateTransition   => d.copy(includeIf = d.includeIf(substitutions))
+      case d: Destination.PegaApi           => d.copy(caseId = d.caseId(substitutions), includeIf = d.includeIf(substitutions))
       case otherwise                        => otherwise
     }
 

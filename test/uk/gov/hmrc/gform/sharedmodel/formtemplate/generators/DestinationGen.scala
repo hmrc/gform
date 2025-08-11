@@ -237,8 +237,29 @@ trait DestinationGen {
       personalisation
     )
 
+  def pegaGen: Gen[Destination.PegaApi] =
+    for {
+      id          <- destinationIdGen
+      includeIf   <- includeIfGen()
+      failOnError <- PrimitiveGen.booleanGen
+      caseId      <- ExprGen.exprGen()
+    } yield Destination.PegaApi(
+      id,
+      includeIf,
+      failOnError,
+      caseId
+    )
+
   def singularDestinationGen: Gen[Destination] =
-    Gen.oneOf(hmrcDmsGen, handlebarsHttpApiGen, stateTransitionGen, logGen, emailGen, submissionConsolidatorGen)
+    Gen.oneOf(
+      hmrcDmsGen,
+      handlebarsHttpApiGen,
+      stateTransitionGen,
+      logGen,
+      emailGen,
+      submissionConsolidatorGen,
+      pegaGen
+    )
 
   def destinationGen: Gen[Destination] = Gen.frequency(10 -> singularDestinationGen, 1 -> compositeGen)
 

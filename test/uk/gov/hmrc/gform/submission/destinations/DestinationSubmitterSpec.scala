@@ -385,7 +385,7 @@ class DestinationSubmitterSpec
           None,
           LangADT.En,
           DestinationEvaluation(
-            List(DestinationResult(hmrcDms.id, None, Some(si.customerId), None, None, None, None, None))
+            List(DestinationResult(hmrcDms.id, None, Some(si.customerId), None, None, None, None, None, None))
           ),
           UserSession.empty
         ) shouldBe Right(None)
@@ -482,7 +482,7 @@ class DestinationSubmitterSpec
           None,
           LangADT.En,
           DestinationEvaluation(
-            List(DestinationResult(hmrcDms.id, None, Some(si.customerId), None, None, None, None, None))
+            List(DestinationResult(hmrcDms.id, None, Some(si.customerId), None, None, None, None, None, None))
           ),
           UserSession.empty
         ) shouldBe Right(None)
@@ -535,7 +535,7 @@ class DestinationSubmitterSpec
           None,
           LangADT.En,
           DestinationEvaluation(
-            List(DestinationResult(hmrcDms.id, None, Some(si.customerId), None, None, None, None, None))
+            List(DestinationResult(hmrcDms.id, None, Some(si.customerId), None, None, None, None, None, None))
           ),
           UserSession.empty
         )
@@ -597,6 +597,7 @@ class DestinationSubmitterSpec
                 submissionConsolidator.id,
                 None,
                 Some(submissionInfo.customerId),
+                None,
                 None,
                 None,
                 None,
@@ -711,6 +712,7 @@ class DestinationSubmitterSpec
                 None,
                 None,
                 None,
+                None,
                 None
               )
             )
@@ -767,6 +769,7 @@ class DestinationSubmitterSpec
                 submissionConsolidator.id,
                 None,
                 Some(submissionInfo.customerId),
+                None,
                 None,
                 None,
                 None,
@@ -980,6 +983,7 @@ class DestinationSubmitterSpec
     val submissionConsolidator = mock[SubmissionConsolidatorAlgebra[Possible]]
     val dataStoreSubmitter = mock[DataStoreSubmitterAlgebra[Possible]]
     val infoArchiveSubmitter = mock[InfoArchiveSubmitterAlgebra[Possible]]
+    val pegaSubmitter = mock[PegaSubmitterAlgebra[Possible]]
     val sdesRouting = SdesRouting("api-key", "information-type", "recipient-or-sender")
     val defaults = WelshDefaults("WLU-WCC-XDFSWelshLanguageService", "WLU")
     val sdesConfig =
@@ -995,7 +999,8 @@ class DestinationSubmitterSpec
         dataStoreSubmitter,
         infoArchiveSubmitter,
         sdesConfig,
-        handlebarsTemplateProcessor
+        handlebarsTemplateProcessor,
+        pegaSubmitter
       )
 
     SubmitterParts(
