@@ -16,19 +16,34 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
-import play.api.libs.json.{ Json, OFormat }
+import play.api.libs.json.{ JsError, JsSuccess, Json, OFormat, Reads }
 import cats.data.NonEmptyList
+import uk.gov.hmrc.gform.core.parsers.ValueParser
 
 final case class Confirmation(
   question: FormComponent,
-  redirects: Option[NonEmptyList[ConfirmationRedirect]]
+  redirects: Option[NonEmptyList[ConfirmationRedirect]],
+  fieldsConfirmed: Option[NonEmptyList[FormComponentId]],
+  expressionsConfirmed: Option[NonEmptyList[Expr]]
 )
 
 object Confirmation {
   import JsonUtils._
+  val exprReads: Reads[Expr] = Reads { json =>
+    Reads.of[String].reads(json).flatMap { expression =>
+      ValueParser
+        .validateWithParser(expression, ValueParser.expr)
+        .fold(unexpectedState => JsError(unexpectedState.error), JsSuccess(_))
+    }
+  }
+
+  implicit val exprFormat: OFormat[Expr] = OFormatWithTemplateReadFallback(exprReads)
   implicit val confirmationFormat: OFormat[Confirmation] = Json.format[Confirmation]
 
   implicit val leafExprs: LeafExpr[Confirmation] = (path: TemplatePath, t: Confirmation) =>
-    LeafExpr(path + "question", t.question) ++ LeafExpr(path + "redirects", t.redirects)
+    LeafExpr(path + "question", t.question) ++
+      LeafExpr(path + "redirects", t.redirects) ++
+      LeafExpr(path + "fieldsConfirmed", t.fieldsConfirmed) ++
+      LeafExpr(path + "expressionsConfirmed", t.expressionsConfirmed)
 
 }

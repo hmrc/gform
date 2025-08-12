@@ -24,7 +24,7 @@ trait ConfirmationGen {
     for {
       question  <- FormComponentGen.formComponentGen(1)
       redirects <- Gen.option(PrimitiveGen.oneOrMoreGen(ConfirmationRedirectGen.redirectGen))
-    } yield Confirmation(question, redirects)
+    } yield Confirmation(question, redirects, None, None)
 }
 
 object ConfirmationGen extends ConfirmationGen

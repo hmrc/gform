@@ -45,7 +45,8 @@ case class ThirdPartyData(
   selectedAddresses: Option[Map[FormComponentId, String]],
   enteredAddresses: Option[Map[FormComponentId, FormData]],
   confirmedAddresses: Option[Set[FormComponentId]],
-  itmpRetrievals: Option[ItmpRetrievals]
+  itmpRetrievals: Option[ItmpRetrievals],
+  confirmations: Option[Map[FormComponentId, List[String]]]
 ) {
 
   def reviewComments: Option[String] = reviewData.flatMap(_.get("caseworkerComment"))
@@ -59,6 +60,7 @@ object ThirdPartyData {
       QueryParams.empty,
       None,
       BooleanExprCache.empty,
+      None,
       None,
       None,
       None,
@@ -79,5 +81,8 @@ object ThirdPartyData {
     JsonUtils.formatMap(FormComponentId(_), _.value)
   implicit val formatFormComponentId: Format[FormComponentId] =
     implicitly[Format[String]].bimap(FormComponentId(_), _.value)
+  implicit val formatConfirmations: Format[Map[FormComponentId, List[String]]] =
+    JsonUtils.formatMap(FormComponentId(_), _.value)
+
   implicit val format: OFormat[ThirdPartyData] = Json.format
 }
