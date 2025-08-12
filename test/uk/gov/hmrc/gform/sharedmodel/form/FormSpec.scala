@@ -47,6 +47,12 @@ class FormSpec extends AnyFlatSpec with Matchers with ScalaCheckDrivenPropertyCh
         |  "Submitted" : { },
         |  "visitsIndex" : [ "n1", "n2", "n3" ],
         |  "thirdPartyData" : {
+        |    "confirmations": {
+        |      "confirmationQuestion": [
+        |        "123.00",
+        |        "456.00"
+        |      ]
+        |    },
         |    "obligations" : {
         |      "RetrievedObligations" : {
         |        "obligation" : [ {
@@ -168,7 +174,8 @@ class FormSpec extends AnyFlatSpec with Matchers with ScalaCheckDrivenPropertyCh
       None,
       None,
       None,
-      None
+      None,
+      Some(Map(FormComponentId("confirmationQuestion") -> List("123.00", "456.00")))
     ),
     Some(EnvelopeExpiryDate(LocalDateTime.of(2064, 12, 1, 0, 0, 40))),
     FormComponentIdToFileIdMapping.empty,

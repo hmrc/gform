@@ -522,7 +522,7 @@
           "type": "string"
         },
         "confirmation": {
-          "type": "object"
+          "$ref": "#/$defs/confirmation"
         },
         "instruction": {
           "type": "object"
@@ -1750,6 +1750,30 @@
           "required": [
             "method"
           ]
+        }
+      }
+    },
+    "confirmation": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "question": {
+          "$ref": "#/$defs/fields"
+        },
+        "fieldsConfirmed": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "expressionsConfirmed": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "redirects": {
+          "type": "array"
         }
       }
     },

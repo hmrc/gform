@@ -2033,6 +2033,12 @@ final case class ConfirmationPageValidation(
 ) {
   def addPageId(pageId: PageId) = this.copy(pageIds = pageIds + pageId)
   def validateConfirmation(confirmation: Confirmation) = {
+    val mandatoryFields =
+      if (!confirmation.fieldsConfirmed.isDefined && !confirmation.expressionsConfirmed.isDefined) {
+        Invalid(
+          s"Invalid confirmation: '${confirmation.question.id.value}'. One of 'fieldsConfirmed' or 'expressionsConfirmed' fields must be present."
+        )
+      } else Valid
     val confirmationPageIdValidations: List[ValidationResult] = confirmation.redirects.toList
       .flatMap(_.toList)
       .map(_.pageId)
@@ -2045,7 +2051,7 @@ final case class ConfirmationPageValidation(
           )
       )
     this.copy(
-      validationResult = confirmationPageIdValidations ++ validationResult
+      validationResult = mandatoryFields :: confirmationPageIdValidations ++ validationResult
     )
   }
 }
