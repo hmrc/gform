@@ -26,19 +26,21 @@
           "label": "I confirm that entered detail are correct",
           "format": "yesno"
         },
+        "expressionsConfirmed": [
+          "${auth.payenino}"
+        ],
         "redirects": [
-            {
-              "if": "${contentInfo = 0}",
-              "pageId": "bankAccountPage1"
-            },
-            {
-              "if": "${contentInfo = 1}",
-              "pageId": "bankAccountPage2"
-            }
-         ]
+          {
+            "if": "${contentInfo = 0}",
+            "pageId": "bankAccountPage1"
+          },
+          {
+            "if": "${contentInfo = 1}",
+            "pageId": "bankAccountPage2"
+          }
+        ]
       }
     }
-
   ],
   "acknowledgementSection": {
     "title": "",
