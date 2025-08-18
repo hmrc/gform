@@ -98,7 +98,11 @@ object Substituter {
     ev: Substituter[A, Expr],
     ev2: Substituter[A, BooleanExpr]
   ): Substituter[A, Confirmation] = (substitutions, t) =>
-    t.copy(question = t.question(substitutions), redirects = t.redirects(substitutions))
+    t.copy(
+      question = t.question(substitutions),
+      redirects = t.redirects(substitutions),
+      expressionsConfirmed = t.expressionsConfirmed(substitutions)
+    )
 
   implicit def optionDataSubstituter[A](implicit
     ev: Substituter[A, Expr],
