@@ -60,12 +60,10 @@ class HandlebarsHttpApiModule(
     val headers: Seq[(String, String)] = hc.extraHeaders ++ profileConfig.httpHeaders.map {
       case (k, checkToken(v)) => k -> getDynamicHeaderValue(v, envelopeId)
       case (k, v)             => k -> v
-    }.toSeq ++ Seq(
-      "Authorization" ->
-        profileConfig.authorization.fold(
-          hc.authorization.fold("")(_.value)
-        )(_.value)
-    )
+    }.toSeq ++
+      profileConfig.authorization
+        .orElse(hc.authorization)
+        .map(auth => "Authorization" -> auth.value)
 
     val builder = method match {
       case HttpMethod.GET  => wSHttpModule.httpClient.get(url"$fullUrl")
