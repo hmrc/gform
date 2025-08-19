@@ -57,10 +57,15 @@ class HandlebarsHttpApiModule(
     val profileConfig = configModule.DestinationsServicesConfig()(profile)
     val fullUrl = appendUriSegment(profileConfig.baseUrl, uri)
 
-    val headers: Seq[(String, String)] = (profileConfig.httpHeaders.map {
+    val headers: Seq[(String, String)] = hc.extraHeaders ++ profileConfig.httpHeaders.map {
       case (k, checkToken(v)) => k -> getDynamicHeaderValue(v, envelopeId)
       case (k, v)             => k -> v
-    } ++ profileConfig.authorization.map(auth => "Authorization" -> auth.value)).toSeq
+    }.toSeq ++ Seq(
+      "Authorization" ->
+        profileConfig.authorization.fold(
+          hc.authorization.fold("")(_.value)
+        )(_.value)
+    )
 
     val builder = method match {
       case HttpMethod.GET  => wSHttpModule.httpClient.get(url"$fullUrl")
