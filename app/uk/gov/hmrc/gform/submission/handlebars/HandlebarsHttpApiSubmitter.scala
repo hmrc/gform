@@ -38,7 +38,7 @@ trait HandlebarsHttpApiSubmitter {
 }
 
 class RealHandlebarsHttpApiSubmitter(
-  buildRequest: (ProfileName, EnvelopeId, String, HttpMethod) => RequestBuilder,
+  buildRequest: (ProfileName, EnvelopeId, String, HttpMethod, HeaderCarrier) => RequestBuilder,
   handlebarsTemplateProcessor: HandlebarsTemplateProcessor = RealHandlebarsTemplateProcessor
 )(implicit ec: ExecutionContext)
     extends HandlebarsHttpApiSubmitter {
@@ -59,7 +59,7 @@ class RealHandlebarsHttpApiSubmitter(
       FocussedHandlebarsModelTree(modelTree),
       TemplateType.Plain
     )
-    val requestBuilder = buildRequest(destination.profile, envelopeId, uri, destination.method)
+    val requestBuilder = buildRequest(destination.profile, envelopeId, uri, destination.method, hc)
 
     val contentType = destination.payloadType match {
       case TemplateType.JSON  => "application/json"
@@ -129,7 +129,7 @@ class RealHandlebarsHttpApiSubmitter(
 
     destination.method match {
       case HttpMethod.GET =>
-        buildRequest(destination.profile, envelopeId, uri, destination.method)
+        buildRequest(destination.profile, envelopeId, uri, destination.method, hc)
           .execute[HttpResponse]
 
       case HttpMethod.POST =>
