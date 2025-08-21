@@ -33,7 +33,6 @@ class HandlebarsHttpApiModule(
   configModule: ConfigModule
 )(implicit ec: ExecutionContext) {
 
-  implicit val hc: HeaderCarrier = new HeaderCarrier()
   private val checkToken: Regex = "^\\{(.*)}$".r
   private val dateFormat: Regex = "^dateFormat\\((.*)\\)$".r
 
@@ -52,8 +51,9 @@ class HandlebarsHttpApiModule(
     profile: ProfileName,
     envelopeId: EnvelopeId,
     uri: String,
-    method: HttpMethod
-  )(implicit hc: HeaderCarrier): RequestBuilder = {
+    method: HttpMethod,
+    hc: HeaderCarrier
+  ): RequestBuilder = {
     val profileConfig = configModule.DestinationsServicesConfig()(profile)
     val fullUrl = appendUriSegment(profileConfig.baseUrl, uri)
 
@@ -66,9 +66,9 @@ class HandlebarsHttpApiModule(
         .map(auth => "Authorization" -> auth.value)
 
     val builder = method match {
-      case HttpMethod.GET  => wSHttpModule.httpClient.get(url"$fullUrl")
-      case HttpMethod.POST => wSHttpModule.httpClient.post(url"$fullUrl")
-      case HttpMethod.PUT  => wSHttpModule.httpClient.put(url"$fullUrl")
+      case HttpMethod.GET  => wSHttpModule.httpClient.get(url"$fullUrl")(hc)
+      case HttpMethod.POST => wSHttpModule.httpClient.post(url"$fullUrl")(hc)
+      case HttpMethod.PUT  => wSHttpModule.httpClient.put(url"$fullUrl")(hc)
     }
 
     builder.setHeader(headers: _*)

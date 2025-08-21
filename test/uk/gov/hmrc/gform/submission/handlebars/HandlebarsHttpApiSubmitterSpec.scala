@@ -50,7 +50,7 @@ class HandlebarsHttpApiSubmitterSpec
     val expectedUri = "test-uri"
 
     val mockRequestBuilder = mock[RequestBuilder]
-    val buildRequest = mockFunction[ProfileName, EnvelopeId, String, HttpMethod, RequestBuilder]
+    val buildRequest = mockFunction[ProfileName, EnvelopeId, String, HttpMethod, HeaderCarrier, RequestBuilder]
     val handlebarsTemplateProcessor = mock[HandlebarsTemplateProcessor]
     val expectedResponse = mock[HttpResponse]
 
@@ -63,7 +63,7 @@ class HandlebarsHttpApiSubmitterSpec
       .anyNumberOfTimes()
 
     buildRequest
-      .expects(destination.profile, EnvelopeId("envId"), expectedUri, HttpMethod.GET)
+      .expects(destination.profile, EnvelopeId("envId"), expectedUri, HttpMethod.GET, hc)
       .returning(mockRequestBuilder)
       .anyNumberOfTimes()
 
@@ -89,7 +89,7 @@ class HandlebarsHttpApiSubmitterSpec
     val expectedBody = "processed-body"
 
     val mockRequestBuilder = mock[RequestBuilder]
-    val buildRequest = mockFunction[ProfileName, EnvelopeId, String, HttpMethod, RequestBuilder]
+    val buildRequest = mockFunction[ProfileName, EnvelopeId, String, HttpMethod, HeaderCarrier, RequestBuilder]
     val handlebarsTemplateProcessor = mock[HandlebarsTemplateProcessor]
     val expectedResponse = mock[HttpResponse]
 
@@ -105,7 +105,7 @@ class HandlebarsHttpApiSubmitterSpec
       .returning(expectedBody)
 
     buildRequest
-      .expects(destination.profile, EnvelopeId("envId"), expectedUri, HttpMethod.POST)
+      .expects(destination.profile, EnvelopeId("envId"), expectedUri, HttpMethod.POST, hc)
       .returning(mockRequestBuilder)
 
     (mockRequestBuilder
@@ -137,7 +137,7 @@ class HandlebarsHttpApiSubmitterSpec
     val expectedUri = "test-uri"
 
     val mockRequestBuilder = mock[RequestBuilder]
-    val buildRequest = mockFunction[ProfileName, EnvelopeId, String, HttpMethod, RequestBuilder]
+    val buildRequest = mockFunction[ProfileName, EnvelopeId, String, HttpMethod, HeaderCarrier, RequestBuilder]
     val handlebarsTemplateProcessor = mock[HandlebarsTemplateProcessor]
     val expectedResponse = mock[HttpResponse]
 
@@ -149,7 +149,7 @@ class HandlebarsHttpApiSubmitterSpec
       .returning(expectedUri)
 
     buildRequest
-      .expects(destination.profile, EnvelopeId("envId"), expectedUri, HttpMethod.POST)
+      .expects(destination.profile, EnvelopeId("envId"), expectedUri, HttpMethod.POST, hc)
       .returning(mockRequestBuilder)
 
     (mockRequestBuilder
@@ -183,7 +183,7 @@ class HandlebarsHttpApiSubmitterSpec
     val expectedBody = "processed-body"
 
     val mockRequestBuilder = mock[RequestBuilder]
-    val buildRequest = mockFunction[ProfileName, EnvelopeId, String, HttpMethod, RequestBuilder]
+    val buildRequest = mockFunction[ProfileName, EnvelopeId, String, HttpMethod, HeaderCarrier, RequestBuilder]
     val handlebarsTemplateProcessor = mock[HandlebarsTemplateProcessor]
     val expectedResponse = mock[HttpResponse]
 
@@ -199,7 +199,7 @@ class HandlebarsHttpApiSubmitterSpec
       .returning(expectedBody)
 
     buildRequest
-      .expects(destination.profile, EnvelopeId("envId"), expectedUri, HttpMethod.PUT)
+      .expects(destination.profile, EnvelopeId("envId"), expectedUri, HttpMethod.PUT, hc)
       .returning(mockRequestBuilder)
 
     (mockRequestBuilder
@@ -236,7 +236,7 @@ class HandlebarsHttpApiSubmitterSpec
     val expectedUri = "test-uri"
 
     val mockRequestBuilder = mock[RequestBuilder]
-    val buildRequest = mockFunction[ProfileName, EnvelopeId, String, HttpMethod, RequestBuilder]
+    val buildRequest = mockFunction[ProfileName, EnvelopeId, String, HttpMethod, HeaderCarrier, RequestBuilder]
     val handlebarsTemplateProcessor = mock[HandlebarsTemplateProcessor]
     val expectedResponse = mock[HttpResponse]
 
@@ -256,7 +256,7 @@ class HandlebarsHttpApiSubmitterSpec
       .returning("processed2")
 
     buildRequest
-      .expects(destination.profile, EnvelopeId("envId"), expectedUri, HttpMethod.POST)
+      .expects(destination.profile, EnvelopeId("envId"), expectedUri, HttpMethod.POST, hc)
       .returning(mockRequestBuilder)
       .once()
 
