@@ -58,7 +58,8 @@ trait FormTemplateSupport {
     formComponents: List[FormComponent],
     instruction: Option[Instruction] = None,
     pageId: Option[PageId] = None,
-    dataRetrieve: Option[DataRetrieve] = None
+    dataRetrieve: Option[DataRetrieve] = None,
+    confirmation: Option[Confirmation] = None
   ) = {
     val dataRetrieves = dataRetrieve.map(dr => NonEmptyList.of(dr))
     Section.NonRepeatingPage(
@@ -76,7 +77,7 @@ trait FormTemplateSupport {
         instruction,
         None,
         dataRetrieves,
-        None,
+        confirmation,
         None,
         None,
         None

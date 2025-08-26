@@ -137,9 +137,10 @@ class FormTemplateService(
         substitutedFormTemplate <- substituteDestinations(substitutedFormTemplateBooleanExprs)
         formTemplateWithPageHeadings = PageHeadingHelper.fillBlankPageHeadings(substitutedFormTemplate)
         formTemplateWithMslUpdated = MiniSummaryListHelper.updateAllMslIncludeIfs(formTemplateWithPageHeadings)
+        formTemplateConfirmationsUpdated = ConfirmationHelper(formTemplateWithMslUpdated).rewriteConfirmation()
         handlebarsSchemaIds <- handlebarsSchemaAlgebra.getAllIds
-        _                   <- verify(formTemplateWithMslUpdated, appConfig, handlebarsSchemaIds)(expressionsContext)
-        formTemplateUpdated <- rewrite(formTemplateWithMslUpdated)
+        _                   <- verify(formTemplateConfirmationsUpdated, appConfig, handlebarsSchemaIds)(expressionsContext)
+        formTemplateUpdated <- rewrite(formTemplateConfirmationsUpdated)
       } yield formTemplateUpdated
 
     def substituteDestinations(formTemplate: FormTemplate) = {
