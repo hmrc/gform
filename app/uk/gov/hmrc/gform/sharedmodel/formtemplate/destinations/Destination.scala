@@ -533,7 +533,7 @@ object UploadableEmailDestination {
 case class UploadablePegaApiDestination(
   id: DestinationId,
   includeIf: DestinationIncludeIf,
-  failOnError: Boolean,
+  failOnError: Option[Boolean],
   caseId: TextExpression
 ) {
   private def toPegaApiDestination: Either[String, Destination.PegaApi] =
@@ -542,7 +542,7 @@ case class UploadablePegaApiDestination(
     } yield Destination.PegaApi(
       id,
       cvii,
-      failOnError,
+      failOnError.getOrElse(true),
       caseId.expr
     )
 }
