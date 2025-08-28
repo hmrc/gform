@@ -24,7 +24,7 @@ import uk.gov.hmrc.gform.sharedmodel.dblookup.CollectionName
 sealed trait DataSource {
   def convertToString(): String = this match {
     case DataSource.SeissEligible     => DataSource.seiss
-    case DataSource.Mongo(collection) => DataSource.mongoPrefix + "." + collection
+    case DataSource.Mongo(collection) => DataSource.mongoPrefix + "." + collection.name
     case DataSource.Enrolment(serviceName, identifierName) =>
       DataSource.enrolmentPrefix + "." + serviceName.value + "." + identifierName.value
     case DataSource.DelegatedEnrolment(serviceName, identifierName) =>

@@ -1,0 +1,61 @@
+/*
+ * Copyright 2025 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package uk.gov.hmrc.gform.sharedmodel.formtemplate
+
+import munit.FunSuite
+import play.api.libs.json.Json
+import uk.gov.hmrc.gform.sharedmodel.dblookup.CollectionName
+import uk.gov.hmrc.gform.sharedmodel.form.{ QueryParams, ThirdPartyData }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.DataSource.Mongo
+import uk.gov.hmrc.gform.sharedmodel.{ BooleanExprCache, NotChecked }
+
+class ThirdPartyDataSuite extends FunSuite {
+  test("ThirdPartyData json serialise and de-serialise to same value") {
+    val booleanExprCache = BooleanExprCache(
+      Map.from(
+        Seq(
+          Mongo(CollectionName("name")) -> Map.from(Seq("value" -> true))
+        )
+      )
+    )
+
+    val oldThirdPartyData = ThirdPartyData(
+      NotChecked,
+      Map.empty,
+      QueryParams.empty,
+      None,
+      booleanExprCache,
+      None,
+      None,
+      None,
+      None,
+      None,
+      None,
+      None
+    )
+
+    val newThirdPartyData = Json
+      .parse(
+        Json.stringify(
+          Json.toJson(oldThirdPartyData)
+        )
+      )
+      .as[ThirdPartyData]
+
+    assertEquals(oldThirdPartyData, newThirdPartyData)
+  }
+}
