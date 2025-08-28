@@ -20,52 +20,52 @@ import cats.Order
 import cats.data.NonEmptyList
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Confirmation, Expr, FormComponentId, FormCtx, FormKind, FormTemplate, IsPostcodeLookup, Page, Section }
 
-/** 1. Assuming that "importerUkAddress" is postcodeLookup component modify
-  *
-  * "confirmation": {
-  *   "question": {
-  *     ...
-  *   },
-  *   "fieldsConfirmed": [
-  *     "importerUkAddress"
-  *   ]
-  * }
-  *
-  * to
-  *
-  * "confirmation": {
-  *   "question": {
-  *     ...
-  *   },
-  *   "expressionsConfirmed": [
-  *     "${importerUkAddress}"
-  *   ]
-  * }
-  *
-  * Note. Due to complexity of postcodeLookup we cannot utilise standard component confirmation logic.
-  *
-  * 2. Assuming that "firstName" is text component modify
-  *
-  * "confirmation": {
-  *   "question": {
-  *     ...
-  *   },
-  *   "expressionsConfirmed": [
-  *     "${firstName}"
-  *   ]
-  * }
-  *
-  * to
-  *
-  * "confirmation": {
-  *   "question": {
-  *     ...
-  *   },
-  *   "fieldsConfirmed": [
-  *     "firstName"
-  *   ]
-  * }
-  */
+/* 1. Assuming that "importerUkAddress" is postcodeLookup component modify
+ *
+ * "confirmation": {
+ *   "question": {
+ *     ...
+ *   },
+ *   "fieldsConfirmed": [
+ *     "importerUkAddress"
+ *   ]
+ * }
+ *
+ * to
+ *
+ * "confirmation": {
+ *   "question": {
+ *     ...
+ *   },
+ *   "expressionsConfirmed": [
+ *     "${importerUkAddress}"
+ *   ]
+ * }
+ *
+ * Note. Due to complexity of postcodeLookup we cannot utilise standard component confirmation logic.
+ *
+ * 2. Assuming that "firstName" is text component modify
+ *
+ * "confirmation": {
+ *   "question": {
+ *     ...
+ *   },
+ *   "expressionsConfirmed": [
+ *     "${firstName}"
+ *   ]
+ * }
+ *
+ * to
+ *
+ * "confirmation": {
+ *   "question": {
+ *     ...
+ *   },
+ *   "fieldsConfirmed": [
+ *     "firstName"
+ *   ]
+ * }
+ */
 class ConfirmationHelper(formTemplate: FormTemplate) {
 
   val isPostcodeLookup: Set[FormComponentId] = SectionHelper
