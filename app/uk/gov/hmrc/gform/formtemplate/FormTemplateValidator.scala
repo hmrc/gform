@@ -1844,15 +1844,26 @@ object FormTemplateValidator {
   def validateConfirmations(
     pages: List[Page]
   ): ValidationResult = {
+
+    val cantConfirmFields: Set[FormComponentId] = pages
+      .flatMap(_.allFormComponents)
+      .collect {
+        case fc @ IsInformationMessage(_) => fc.id
+        case fc @ IsTable(_)              => fc.id
+        case fc @ IsMiniSummaryList(_)    => fc.id
+      }
+      .toSet
+
     val confirmationRelatedData: List[(Option[PageId], Option[Confirmation])] = pages.map { page =>
       page.id -> page.confirmation
     }
 
-    val confirmationValidation = confirmationRelatedData.foldLeft(ConfirmationPageValidation(Set.empty, Nil)) {
-      case (acc, (Some(pageId), None))    => acc.addPageId(pageId)
-      case (acc, (_, Some(confirmation))) => acc.validateConfirmation(confirmation)
-      case (acc, (None, None))            => acc
-    }
+    val confirmationValidation =
+      confirmationRelatedData.foldLeft(ConfirmationPageValidation(Set.empty, cantConfirmFields, Nil)) {
+        case (acc, (Some(pageId), None))    => acc.addPageId(pageId)
+        case (acc, (_, Some(confirmation))) => acc.validateConfirmation(confirmation)
+        case (acc, (None, None))            => acc
+      }
 
     confirmationValidation.validationResult.combineAll
 
@@ -2029,14 +2040,17 @@ object IsEmailVerifiedBy {
 
 final case class ConfirmationPageValidation(
   pageIds: Set[PageId],
+  cantConfirmFields: Set[FormComponentId],
   validationResult: List[ValidationResult]
 ) {
   def addPageId(pageId: PageId) = this.copy(pageIds = pageIds + pageId)
   def validateConfirmation(confirmation: Confirmation) = {
+    val confirmationId = confirmation.question.id
+    val errorPrefix = s"Invalid confirmation: '${confirmationId.value}'."
     val mandatoryFields =
       if (!confirmation.fieldsConfirmed.isDefined && !confirmation.expressionsConfirmed.isDefined) {
         Invalid(
-          s"Invalid confirmation: '${confirmation.question.id.value}'. One of 'fieldsConfirmed' or 'expressionsConfirmed' fields must be present."
+          s"$errorPrefix One of 'fieldsConfirmed' or 'expressionsConfirmed' fields must be present."
         )
       } else Valid
     val confirmationPageIdValidations: List[ValidationResult] = confirmation.redirects.toList
@@ -2047,11 +2061,30 @@ final case class ConfirmationPageValidation(
           Valid
         else
           Invalid(
-            s"No confirmation pageId: ${pageId.id} found."
+            s"$errorPrefix No confirmation pageId: ${pageId.id} found."
           )
       )
+
+    val invalidFieldBeingConfirmed = confirmation.fieldsConfirmed.fold[List[ValidationResult]](List(Valid)) {
+      fieldsConfirmed =>
+        fieldsConfirmed.toList.map { fcId =>
+          if (cantConfirmFields(fcId)) {
+            Invalid(
+              s"$errorPrefix Cannot confirm field: '$fcId'. Components of types: info, miniSummaryList or table cannot be confirmed."
+            )
+          } else if (fcId === confirmationId) {
+            Invalid(
+              s"$errorPrefix Cannot confirm ourselves. Please remove '$confirmationId' from fieldsConfirmed"
+            )
+          } else {
+            Valid
+          }
+        }
+    }
+
     this.copy(
-      validationResult = mandatoryFields :: confirmationPageIdValidations ++ validationResult
+      validationResult =
+        mandatoryFields :: confirmationPageIdValidations ++ validationResult ++ invalidFieldBeingConfirmed
     )
   }
 }
