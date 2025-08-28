@@ -16,15 +16,15 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
+import munit.FunSuite
 import play.api.libs.json.Json
-import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.sharedmodel.dblookup.CollectionName
 import uk.gov.hmrc.gform.sharedmodel.form.{ QueryParams, ThirdPartyData }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.DataSource.Mongo
 import uk.gov.hmrc.gform.sharedmodel.{ BooleanExprCache, NotChecked }
 
-class ThirdPartyDataSpec extends Spec {
-  "ThirdPartyData" should "json serialise and de-serialise to same value" in {
+class ThirdPartyDataSuite extends FunSuite {
+  test("ThirdPartyData json serialise and de-serialise to same value") {
     val booleanExprCache = BooleanExprCache(
       Map.from(
         Seq(
@@ -56,6 +56,6 @@ class ThirdPartyDataSpec extends Spec {
       )
       .as[ThirdPartyData]
 
-    oldThirdPartyData shouldBe newThirdPartyData
+    assertEquals(oldThirdPartyData, newThirdPartyData)
   }
 }
