@@ -36,7 +36,7 @@ class PdfGeneratorService(environment: Environment) extends PdfGeneratorAlgebra[
       val w3cDom = new W3CDom().fromJsoup(Jsoup.parse(html))
       val builder = new PdfRendererBuilder()
       builder.useFastMode()
-      builder.usePdfUaAccessbility(true)
+      builder.usePdfUaAccessibility(true)
       builder.usePdfAConformance(PdfRendererBuilder.PdfAConformance.PDFA_3_U)
       builder.useFont(() => environment.classLoader.getResourceAsStream("pdf/fonts/arial.ttf"), "Arial")
       builder.withW3cDocument(w3cDom, null) //https://github.com/danfickle/openhtmltopdf/issues/341

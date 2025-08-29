@@ -17,7 +17,7 @@
 package uk.gov.hmrc.gform.dms
 
 import cats.instances.future._
-import org.apache.pdfbox.pdmodel.PDDocument
+import org.apache.pdfbox.Loader
 import play.api.mvc.ControllerComponents
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.fileupload.FileUploadModule
@@ -39,7 +39,7 @@ class DmsModule(
     new DmsSubmissionService(
       fileUploadModule.fileUploadService,
       pdfGeneratorModule.pdfGeneratorService,
-      PDDocument.load,
+      Loader.loadPDF,
       configModule.appConfig.formExpiryDays.longValue,
       isObjectStoreEnable
     )(Clock.systemDefaultZone, catsStdInstancesForFuture, ex)

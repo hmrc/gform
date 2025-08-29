@@ -17,6 +17,7 @@
 package uk.gov.hmrc.gform.submission
 
 import org.apache.commons.text.StringEscapeUtils
+import org.apache.pdfbox.Loader
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.json4s.native.JsonMethods
 import org.json4s.native.Printer.compact
@@ -98,7 +99,7 @@ object PdfAndXmlSummariesFactory {
       )
 
     private def createPdfSummary(pdf: Array[Byte]) = {
-      val pDDocument: PDDocument = PDDocument.load(pdf)
+      val pDDocument: PDDocument = Loader.loadPDF(pdf)
       try PdfSummary(numberOfPages = pDDocument.getNumberOfPages.toLong, pdfContent = pdf)
       finally pDDocument.close()
     }
