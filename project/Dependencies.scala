@@ -7,9 +7,9 @@ object Dependencies {
   lazy val appDependencies: Seq[ModuleID] = compile ++ test()
 
   val parsebackVersion = "0.3"
-  val handlebarsVersion = "4.2.1"
-  val hmrcMongoVersion = "2.6.0"
-  val bootstrapVersion = "9.14.0"
+  val handlebarsVersion = "4.3.1"
+  val hmrcMongoVersion = "2.7.0"
+  val bootstrapVersion = "9.19.0"
   val json4sVersion = "4.0.4"
   val circeVersion = "0.14.5"
 
@@ -24,13 +24,13 @@ object Dependencies {
     "com.dripower"                 %% "play-circe"                        % "3014.1",
     "org.typelevel"                %% "cats-core"                         % "2.9.0",
     "org.typelevel"                %% "case-insensitive"                  % "1.3.0",
-    "com.openhtmltopdf"             % "openhtmltopdf-pdfbox"              % "1.0.10",
+    "io.github.openhtmltopdf"       % "openhtmltopdf-pdfbox"              % "1.1.30",
     "com.chuusai"                  %% "shapeless"                         % "2.3.10",
     "org.scala-graph"              %% "graph-core"                        % "1.13.6",
     "com.github.jknack"             % "handlebars"                        % handlebarsVersion,
     "com.github.jknack"             % "handlebars-jackson2"               % handlebarsVersion,
     "com.softwaremill.quicklens"   %% "quicklens"                         % "1.9.1",
-    "uk.gov.service.notify"         % "notifications-java-client"         % "3.19.1-RELEASE",
+    "uk.gov.service.notify"         % "notifications-java-client"         % "5.2.1-RELEASE",
     "org.apache.commons"            % "commons-text"                      % "1.10.0",
     "uk.gov.hmrc.objectstore"      %% "object-store-client-play-30"       % "1.4.0",
     "io.circe"                     %% "circe-core"                        % circeVersion,
@@ -44,9 +44,9 @@ object Dependencies {
     "org.json4s"                   %% "json4s-xml"                        % json4sVersion,
     "com.fasterxml.jackson.module" %% "jackson-module-scala"              % "2.12.2",
     "io.github.samueleresca"       %% "pekko-quartz-scheduler"            % "1.2.0-pekko-1.0.x",
-    "org.apache.xmlgraphics"        % "fop"                               % "2.9",
+    "org.apache.xmlgraphics"        % "fop"                               % "2.11",
     "org.jsoup"                     % "jsoup"                             % "1.18.1",
-    "org.apache.poi"                % "poi-ooxml"                         % "5.2.4",
+    "org.apache.poi"                % "poi-ooxml"                         % "5.4.0",
     "org.bouncycastle"              % "bcprov-jdk18on"                    % "1.80",
     "org.bouncycastle"              % "bcpg-jdk18on"                      % "1.80",
     "org.bouncycastle"              % "bcpkix-jdk18on"                    % "1.80"
