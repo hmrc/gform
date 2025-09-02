@@ -2445,7 +2445,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
           "id": "testId",
           "label": "test label",
           "type": "text",
-          "displayInSummary": "true"
+          "displayInSummary": 123
         }
       """
 
@@ -2454,7 +2454,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val result = validateJson(jsonTemplate)
 
     val expectedResult = List(
-      "Error at ID <testId>: Property displayInSummary expected type [Boolean], found [String]"
+      "Error at ID <testId>: Property displayInSummary expected type Boolean or String"
     )
 
     runInvalidJsonTest(result, expectedResult)

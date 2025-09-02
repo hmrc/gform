@@ -19,7 +19,6 @@ package uk.gov.hmrc.gform.formtemplate
 import cats.data.NonEmptyList
 import munit.FunSuite
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.ContinueIf.Stop
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.Section.NonRepeatingPage
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.{ ExampleData, LangADT, LocalisedString, SmartString }
@@ -304,7 +303,7 @@ class RewriterSpec extends FunSuite with FormTemplateSupport with RewriterSuppor
       title = pageTitle1,
       fields = List(mkFormComponent("fc1", FileUpload(None, None), editable = true).copy(mandatory = true)),
       includeIf = falseIncludeIf,
-      continueIf = Some(Stop),
+      continueIf = Some(ContinueIf(IsFalse)),
       redirects = redirects
     )
 

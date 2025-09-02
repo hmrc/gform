@@ -460,7 +460,7 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
               Some(TaskId("taskId"))
             )
           ),
-          DisplayInSummary.No,
+          DisplayInSummary(IsFalse),
           Some(KeyDisplayWidth.M)
         ),
         SmartString(LocalisedString(Map(LangADT.En -> "summaryListLabel")), List()),
@@ -802,7 +802,7 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
                                                                  |}
                                                                  |""".stripMargin))
     formComponentMaker.optFieldValue().map(_.displayInSummary) shouldBe Right(
-      Some(false)
+      Some(DisplayInSummary(IsFalse))
     )
   }
 

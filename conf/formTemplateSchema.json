@@ -732,7 +732,14 @@
           "type": "boolean"
         },
         "displayInSummary": {
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
         },
         "choices": {
           "type": "array",

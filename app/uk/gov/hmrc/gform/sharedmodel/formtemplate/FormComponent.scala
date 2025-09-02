@@ -47,7 +47,7 @@ case class FormComponent(
   errorExample: Option[SmartString] = None,
   notPII: Boolean = false,
   extraLetterSpacing: Option[Boolean] = None,
-  displayInSummary: Option[Boolean] = None,
+  displayInSummary: Option[DisplayInSummary] = None,
   pageIdsToDisplayOnChange: Option[List[PageId]] = None
 ) {
   private def updateField(i: Int, fc: FormComponent): FormComponent =
