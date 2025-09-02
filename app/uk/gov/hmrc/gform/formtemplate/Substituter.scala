@@ -326,12 +326,9 @@ object Substituter {
   implicit def continueIfSubstituter[A](implicit
     ev: Substituter[A, BooleanExpr]
   ): Substituter[A, ContinueIf] = (substitutions, t) =>
-    t match {
-      case ContinueIf.Continue => ContinueIf.Continue
-      case ContinueIf.Stop     => ContinueIf.Stop
-      case ContinueIf.Conditional(booleanExpression) =>
-        ContinueIf.Conditional(booleanExpression(substitutions))
-    }
+    t.copy(
+      booleanExpression = t.booleanExpression(substitutions)
+    )
 
   implicit def pageSubstituter[A](implicit
     ev: Substituter[A, Expr],

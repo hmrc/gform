@@ -505,20 +505,6 @@ object MiniSummaryList {
   implicit val format: Format[MiniSummaryList] = derived.oformat()
 }
 
-sealed trait DisplayInSummary
-
-object DisplayInSummary {
-  case object Yes extends DisplayInSummary
-  case object No extends DisplayInSummary
-
-  private val templateReads: Reads[DisplayInSummary] = Reads {
-    case JsTrue  => JsSuccess(Yes)
-    case JsFalse => JsSuccess(No)
-    case invalid => JsError("displayInSummary needs to be 'true' or 'false', got " + invalid)
-  }
-  implicit val format: OFormat[DisplayInSummary] = OFormatWithTemplateReadFallback(templateReads)
-}
-
 case class TableValue(value: SmartString, cssClass: Option[String], colspan: Option[Int], rowspan: Option[Int])
 
 object TableValue {

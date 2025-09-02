@@ -415,9 +415,11 @@ object JsonSchemaErrorParser {
     schema: Json
   ): String = {
     val allSameErrors: List[ValidationError] = errors.filter(_.location === error.location)
-    if (allSameErrors.map(_.schemaLocation).exists(_.contains("#/$defs/stringOrEnCyObject"))) {
+    val allLocations = allSameErrors.map(_.schemaLocation)
+    if (allLocations.exists(_.contains("#/$defs/stringOrEnCyObject"))) {
       parseCustomTypeError(allSameErrors, json, error, constructEnCyTypeError)
-
+    } else if (allLocations.exists(_.contains("#/$defs/fields/properties/displayInSummary"))) {
+      parseCustomTypeError(allSameErrors, json, error, constructDisplayInSummaryError)
     } else if (!allSameErrors.map(_.schemaLocation.getOrElse("")).exists(_.contains("items/properties/"))) {
       val schemaLocationOrEmpty = allSameErrors.map(_.schemaLocation.getOrElse(""))
 
@@ -465,6 +467,14 @@ object JsonSchemaErrorParser {
 
     val errorMessage: String =
       s"Property $errorProperty expected type String or JSONObject with structure {en: String} or {en: String, cy: String}"
+    constructCustomErrorMessage(errorLocation, errorMessage)
+  }
+
+  private def constructDisplayInSummaryError(json: Json, error: ValidationError): String = {
+    val (errorProperty, errorLocation) = getTypeErrorPropertyAndLocation(error, json)
+
+    val errorMessage: String =
+      s"Property $errorProperty expected type Boolean or String"
     constructCustomErrorMessage(errorLocation, errorMessage)
   }
 

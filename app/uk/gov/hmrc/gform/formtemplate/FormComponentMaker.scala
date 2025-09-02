@@ -123,14 +123,14 @@ class FormComponentMaker(json: JsValue) {
   lazy val displayWidth: Option[String] = (json \ "displayWidth").asOpt[String]
   lazy val toUpperCase: UpperCaseBoolean = (json \ "toUpperCase").asOpt[UpperCaseBoolean].getOrElse(IsNotUpperCase)
   lazy val displayInSummary: DisplayInSummary =
-    (json \ "displayInSummary").asOpt[DisplayInSummary].getOrElse(DisplayInSummary.No)
+    (json \ "displayInSummary").asOpt[DisplayInSummary].getOrElse(DisplayInSummary(IsFalse))
   lazy val prefix: Option[SmartString] = (json \ "prefix").asOpt[SmartString]
   lazy val suffix: Option[SmartString] = (json \ "suffix").asOpt[SmartString]
   lazy val optPriority: Opt[Option[Priority]] = parse("priority", PriorityTypeParser.validate)
   lazy val roundingMode: RoundingMode = (json \ "round").asOpt[RoundingMode].getOrElse(RoundingMode.defaultRoundingMode)
   lazy val optMultivalue: Opt[Option[Boolean]] = toOpt((json \ "multivalue").validateOpt[Boolean], "/multivalue")
-  lazy val optDisplayInSummary: Opt[Option[Boolean]] =
-    toOpt((json \ "displayInSummary").validateOpt[Boolean], "/displayInSummary")
+  lazy val optDisplayInSummary: Opt[Option[DisplayInSummary]] =
+    toOpt((json \ "displayInSummary").validateOpt[DisplayInSummary], "/displayInSummary")
   lazy val optHideChoicesSelected: Opt[Option[Boolean]] =
     toOpt((json \ "hideChoicesSelected").validateOpt[Boolean], "/hideChoicesSelected")
   lazy val total: Option[String] = (json \ "total").asOpt[String]
@@ -407,7 +407,7 @@ class FormComponentMaker(json: JsValue) {
     labelSize: Option[LabelSize],
     notPII: Boolean,
     extraLetterSpacing: Option[Boolean],
-    displayInSummary: Option[Boolean],
+    displayInSummary: Option[DisplayInSummary],
     pageIdsToDisplayOnChange: Option[List[PageId]]
   ): FormComponent =
     FormComponent(

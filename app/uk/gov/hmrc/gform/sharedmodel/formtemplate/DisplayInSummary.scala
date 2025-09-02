@@ -19,21 +19,21 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate
 import play.api.libs.json._
 import uk.gov.hmrc.gform.core.parsers.BooleanExprParser
 
-final case class ContinueIf(booleanExpression: BooleanExpr) extends AnyVal
+final case class DisplayInSummary(booleanExpression: BooleanExpr) extends AnyVal
 
-object ContinueIf {
+object DisplayInSummary {
 
-  private val templateReads: Reads[ContinueIf] = Reads {
-    case JsTrue  => JsSuccess(ContinueIf(IsTrue))
-    case JsFalse => JsSuccess(ContinueIf(IsFalse))
+  private val templateReads: Reads[DisplayInSummary] = Reads {
+    case JsTrue  => JsSuccess(DisplayInSummary(IsTrue))
+    case JsFalse => JsSuccess(DisplayInSummary(IsFalse))
     case JsString(str) =>
       BooleanExprParser.validate(str) match {
         case Left(unexpectedState) => JsError(unexpectedState.error)
-        case Right(be)             => JsSuccess(ContinueIf(be))
+        case Right(be)             => JsSuccess(DisplayInSummary(be))
       }
     case otherwise =>
-      JsError(s"Invalid continueIf value. Expected 'true' or 'false', or expression '$${...}', got $otherwise")
+      JsError(s"Invalid displayInSummary value. Expected 'true' or 'false', or expression '$${...}', got $otherwise")
   }
 
-  implicit val format: OFormat[ContinueIf] = OFormatWithTemplateReadFallback(templateReads)
+  implicit val format: OFormat[DisplayInSummary] = OFormatWithTemplateReadFallback(templateReads)
 }
