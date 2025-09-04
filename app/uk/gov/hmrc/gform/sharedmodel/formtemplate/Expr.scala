@@ -102,6 +102,7 @@ final case class ChoicesRevealedField(formComponentId: FormComponentId) extends 
 final case class ChoicesSelected(formComponentId: FormComponentId) extends Expr
 final case class ChoicesAvailable(formComponentId: FormComponentId) extends Expr
 final case class CountSelectedChoices(formComponentId: FormComponentId) extends Expr
+final case class ChoicesCount(formComponentId: FormComponentId) extends Expr
 final case class TaskStatus(taskId: TaskId) extends Expr
 final case class DisplayAsEntered(formComponentId: FormComponentId) extends Expr
 

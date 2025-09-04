@@ -196,6 +196,7 @@ object TopLevelExpressions {
         case ChoicesSelected(_)            => e
         case ChoicesAvailable(_)           => e
         case CountSelectedChoices(_)       => e
+        case ChoicesCount(_)               => e
         case TaskStatus(_)                 => e
         case DisplayAsEntered(_)           => e
         case LookupOps(expr, fn)           => LookupOps(loop(expr), fn)

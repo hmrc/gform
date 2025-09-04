@@ -49,6 +49,7 @@ object ReferenceInfo {
   final case class ChoicesAvailableExpr(path: TemplatePath, choicesAvailable: ChoicesAvailable) extends ReferenceInfo
   final case class CountSelectedChoicesExpr(path: TemplatePath, countSelectedChoices: CountSelectedChoices)
       extends ReferenceInfo
+  final case class ChoicesCountExpr(path: TemplatePath, choicesCount: ChoicesCount) extends ReferenceInfo
   final case class TaskStatusExpr(path: TemplatePath, taskStatus: TaskStatus) extends ReferenceInfo
   final case class DisplayAsEnteredExpr(path: TemplatePath, displayAsEntered: DisplayAsEntered) extends ReferenceInfo
   final case class LookupOpsExpr(path: TemplatePath, lookupOps: LookupOps) extends ReferenceInfo
