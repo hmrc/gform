@@ -287,6 +287,8 @@ object FormTemplateValidator {
       case ReferenceInfo.ChoicesAvailableExpr(path, ChoicesAvailable(formComponentId))
           if !allChoiceIds(formComponentId) =>
         Invalid(s"${path.path}: $formComponentId is not a Choice in the form")
+      case ReferenceInfo.ChoicesCountExpr(path, ChoicesCount(formComponentId)) if !allChoiceIds(formComponentId) =>
+        Invalid(s"${path.path}: $formComponentId is not a Choice in the form")
       case ReferenceInfo.TaskStatusExpr(path, TaskStatus(taskId)) if !allTaskIds(taskId) =>
         Invalid(s"${path.path}: ${taskId.id} is not a Task id in the form")
       case DisplayAsEnteredExpr(path, DisplayAsEntered(formComponentId)) if !allTextAreaIds(formComponentId) =>
@@ -1320,6 +1322,7 @@ object FormTemplateValidator {
       case ChoicesAvailable(_)          => Valid
       case DisplayAsEntered(_)          => Valid
       case CountSelectedChoices(_)      => Valid
+      case ChoicesCount(_)              => Valid
       case TaskStatus(_)                => Valid
       case LookupOps(_, _)              => Valid
     }
