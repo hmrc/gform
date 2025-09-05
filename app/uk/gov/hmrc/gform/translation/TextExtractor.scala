@@ -391,7 +391,8 @@ object TextExtractor {
       List(Pure(DownField("summaryValue")), TraverseArray, Pure(DownField("choices"))) ++ root,
       List(TraverseArray, Pure(DownField("optionHelpText"))) ++ root,
       List(TraverseArray, Pure(DownField("hints"))) ++ root,
-      Pure(DownField("key")) :: miniSummaryList
+      Pure(DownField("key")) :: miniSummaryList,
+      Pure(DownField("value")) :: miniSummaryList
     )
   }
 
