@@ -404,6 +404,12 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
     | "choicesAvailable(" ~ FormComponentId.unanchoredIdValidation ~ ")" ^^ { case _ ~ value ~ _ =>
       ChoicesAvailable(FormComponentId(value))
     }
+    | "choicesCount(" ~ FormComponentId.unanchoredIdValidation ~ ")" ^^ { case _ ~ value ~ _ =>
+      ChoicesCount(FormComponentId(value))
+    }
+    | "totalChoicesSelected(" ~ FormComponentId.unanchoredIdValidation ~ ")" ^^ { case _ ~ value ~ _ =>
+      Subtraction(ChoicesCount(FormComponentId(value)), ChoicesAvailable(FormComponentId(value)))
+    }
     | "taskStatus(" ~ TaskId.unanchoredIdValidation ~ ")" ^^ { case _ ~ value ~ _ =>
       TaskStatus(TaskId(value))
     }
