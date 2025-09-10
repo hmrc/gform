@@ -169,6 +169,10 @@
       "description": "Defines whether the PTA Menu is displayed in the header",
       "type": "boolean"
     },
+    "serviceNavigationComponent": {
+      "description": "Defines whether the Service Navigation Component is used to display the form title",
+      "type": "boolean"
+    },
     "overrides": {
       "type": "object",
       "additionalProperties": false,
