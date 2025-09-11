@@ -194,7 +194,7 @@ object TopLevelExpressions {
         case CountryOfItmpAddress          => e
         case ChoicesRevealedField(_)       => e
         case ChoicesSelected(_)            => e
-        case ChoicesAvailable(_)           => e
+        case ChoicesAvailable(_, _)        => e
         case CountSelectedChoices(_)       => e
         case ChoicesCount(_)               => e
         case TaskStatus(_)                 => e

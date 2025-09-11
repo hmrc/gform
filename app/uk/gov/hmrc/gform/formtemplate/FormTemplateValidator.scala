@@ -284,7 +284,7 @@ object FormTemplateValidator {
       case ReferenceInfo.CountSelectedChoicesExpr(path, CountSelectedChoices(formComponentId))
           if !allChoiceIds(formComponentId) =>
         Invalid(s"${path.path}: $formComponentId is not a Choice in the form")
-      case ReferenceInfo.ChoicesAvailableExpr(path, ChoicesAvailable(formComponentId))
+      case ReferenceInfo.ChoicesAvailableExpr(path, ChoicesAvailable(formComponentId, _))
           if !allChoiceIds(formComponentId) =>
         Invalid(s"${path.path}: $formComponentId is not a Choice in the form")
       case ReferenceInfo.ChoicesCountExpr(path, ChoicesCount(formComponentId)) if !allChoiceIds(formComponentId) =>
@@ -1319,7 +1319,7 @@ object FormTemplateValidator {
       case CountryOfItmpAddress         => Valid
       case ChoicesRevealedField(_)      => Valid
       case ChoicesSelected(_)           => Valid
-      case ChoicesAvailable(_)          => Valid
+      case ChoicesAvailable(_, _)       => Valid
       case DisplayAsEntered(_)          => Valid
       case CountSelectedChoices(_)      => Valid
       case ChoicesCount(_)              => Valid
@@ -1576,9 +1576,9 @@ object FormTemplateValidator {
 
     def checkBooleanExpr(bExpr: BooleanExpr, invalid: Invalid): List[ValidationResult] =
       bExpr match {
-        case Not(Equals(ChoicesSelected(FormComponentId(value)), ChoicesAvailable(FormComponentId(_)))) =>
+        case Not(Equals(ChoicesSelected(FormComponentId(value)), ChoicesAvailable(FormComponentId(_), _))) =>
           if (areChoiceOptionsDataRetrievedBased(getChoiceById(value))) List(invalid) else List(Valid)
-        case Equals(ChoicesSelected(FormComponentId(value)), ChoicesAvailable(FormComponentId(_))) =>
+        case Equals(ChoicesSelected(FormComponentId(value)), ChoicesAvailable(FormComponentId(_), _)) =>
           if (areChoiceOptionsDataRetrievedBased(getChoiceById(value))) List(invalid) else List(Valid)
         case _ => List(Valid)
       }

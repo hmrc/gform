@@ -1395,7 +1395,7 @@ class FormTemplateValidatorSpec
                 IncludeIf(
                   Equals(
                     ChoicesSelected(FormComponentId("choiceDrOptions")),
-                    ChoicesAvailable(FormComponentId("choiceDrOptions"))
+                    ChoicesAvailable(FormComponentId("choiceDrOptions"), true)
                   )
                 )
               )
@@ -1421,7 +1421,7 @@ class FormTemplateValidatorSpec
                   Not(
                     Equals(
                       ChoicesSelected(FormComponentId("choiceDrOptions")),
-                      ChoicesAvailable(FormComponentId("choiceDrOptions"))
+                      ChoicesAvailable(FormComponentId("choiceDrOptions"), true)
                     )
                   )
                 )

@@ -67,7 +67,7 @@ object BooleanExprSubstituter extends Substituter[BooleanExprSubstitutions, Form
         case CountryOfItmpAddress          => t
         case ChoicesRevealedField(_)       => t
         case ChoicesSelected(_)            => t
-        case ChoicesAvailable(_)           => t
+        case ChoicesAvailable(_, _)        => t
         case CountSelectedChoices(_)       => t
         case ChoicesCount(_)               => t
         case TaskStatus(_)                 => t
