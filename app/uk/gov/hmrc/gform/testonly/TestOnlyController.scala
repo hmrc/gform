@@ -455,17 +455,20 @@ class TestOnlyController(
   def reloadTemplates(): Future[Unit] =
     for {
       formTemplateRaws <- testOnlyFormService.getAllFormTemplates()
-      _ <- formTemplateRaws.traverse { formTemplateRaw =>
-             handler
-               .handleRequest(formTemplateRaw)
-               .fold(
-                 err => throw new Exception(s"Unable to reload the form templates. Error, $err"),
-                 _ => {
-                   logger.info(s"reloading the form template. handler.handleRequest(${formTemplateRaw._id.value})")
-                   ()
-                 }
-               )
-           }
+      _ <- {
+        logger.info(s"Redeploying ${formTemplateRaws.size} form templates...")
+        formTemplateRaws.traverse { formTemplateRaw =>
+          handler
+            .handleRequest(formTemplateRaw)
+            .fold(
+              err => logger.error(s"Unable to redeploy form template '${formTemplateRaw._id.value}'. Error: $err"),
+              _ => {
+                logger.info(s"Successfully redeployed form template '${formTemplateRaw._id.value}'")
+                ()
+              }
+            )
+        }
+      }
     } yield ()
 }
 
