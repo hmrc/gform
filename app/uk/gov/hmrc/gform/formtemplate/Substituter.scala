@@ -86,6 +86,10 @@ object Substituter {
     ev: Substituter[A, BooleanExpr]
   ): Substituter[A, IncludeIf] = (substitutions, t) => t.copy(booleanExpr = t.booleanExpr(substitutions))
 
+  implicit def mandatorySubstituter[A](implicit
+    ev: Substituter[A, BooleanExpr]
+  ): Substituter[A, Mandatory] = (substitutions, t) => t.copy(booleanExpr = t.booleanExpr(substitutions))
+
   implicit def validIfSubstituter[A](implicit
     ev: Substituter[A, BooleanExpr]
   ): Substituter[A, ValidIf] = (substitutions, t) => t.copy(booleanExpr = t.booleanExpr(substitutions))
@@ -311,6 +315,7 @@ object Substituter {
     t.copy(
       `type` = t.`type`(substitutions),
       label = t.label(substitutions),
+      mandatory = t.mandatory(substitutions),
       helpText = t.helpText(substitutions),
       shortName = t.shortName(substitutions),
       includeIf = t.includeIf(substitutions),

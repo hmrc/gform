@@ -208,17 +208,17 @@ trait Verifier {
   private def mkOptional(fcs: List[FormComponent]): List[FormComponent] = fcs.map {
     case fc @ IsGroup(group) =>
       fc.copy(
-        mandatory = false,
+        mandatory = Mandatory.FALSE,
         `type` = group.copy(fields = mkOptional(group.fields))
       )
     case fc @ IsRevealingChoice(revealingChoice) =>
       fc.copy(
-        mandatory = false,
+        mandatory = Mandatory.FALSE,
         `type` = revealingChoice.copy(
           options = revealingChoice.options.map(rce => rce.copy(revealingFields = mkOptional(rce.revealingFields)))
         )
       )
-    case fc => fc.copy(mandatory = false)
+    case fc => fc.copy(mandatory = Mandatory.FALSE)
   }
 
 }
