@@ -39,7 +39,7 @@ class ComponentTypeSpec extends FunSuite {
                          |}""")
 
     val expected = OverseasAddress(
-      List(Mandatory.Line2, Mandatory.Postcode),
+      List(OverseasAddress.Configurable.Mandatory.Line2, OverseasAddress.Configurable.Mandatory.Postcode),
       List(Optional.City),
       true,
       None,
@@ -134,7 +134,7 @@ class ComponentTypeSpec extends FunSuite {
                          |}""")
 
     val expected = OverseasAddress(
-      List(Mandatory.Line2, Mandatory.Postcode),
+      List(OverseasAddress.Configurable.Mandatory.Line2, OverseasAddress.Configurable.Mandatory.Postcode),
       List(Optional.City),
       true,
       None,

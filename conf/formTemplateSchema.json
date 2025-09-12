@@ -786,7 +786,14 @@
           }
         },
         "mandatory": {
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
         },
         "hint": {
           "$ref": "#/$defs/stringOrEnCyObject"

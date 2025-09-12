@@ -24,8 +24,7 @@ import uk.gov.hmrc.gform.Helpers.toSmartString
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.sharedmodel._
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.OverseasAddress.Configurable._
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ DisplayInSummary, TextWithRestrictions, _ }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
 class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemplateSupport {
 
@@ -292,7 +291,7 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
         None,
         None,
         None,
-        true,
+        Mandatory.TRUE,
         true,
         true,
         false,
@@ -469,7 +468,7 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
         None,
         None,
         None,
-        true,
+        Mandatory.TRUE,
         true,
         true,
         false,
@@ -660,7 +659,7 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
         None,
         None,
         None,
-        true,
+        Mandatory.TRUE,
         true,
         true,
         false,
@@ -716,8 +715,8 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
                                                                  |""".stripMargin))
     val result = formComponentMaker.optFieldValue().map(_.`type`)
     val expected = OverseasAddress(
-      List(Mandatory.Line2, Mandatory.Postcode),
-      List(Optional.City),
+      List(OverseasAddress.Configurable.Mandatory.Line2, OverseasAddress.Configurable.Mandatory.Postcode),
+      List(OverseasAddress.Configurable.Optional.City),
       true,
       Some(FormCtx(FormComponentId("userAddress"))),
       true
@@ -739,8 +738,8 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
                                                                  |""".stripMargin))
     val result = formComponentMaker.optFieldValue().map(_.`type`)
     val expected = OverseasAddress(
-      List(Mandatory.Line2, Mandatory.Postcode),
-      List(Optional.City),
+      List(OverseasAddress.Configurable.Mandatory.Line2, OverseasAddress.Configurable.Mandatory.Postcode),
+      List(OverseasAddress.Configurable.Optional.City),
       true,
       Some(AuthCtx(AuthInfo.ItmpAddress)),
       true
@@ -873,7 +872,7 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
       None,
       None,
       None,
-      mandatory = true,
+      mandatory = Mandatory.TRUE,
       editable = true,
       submissible = true,
       derived = false,

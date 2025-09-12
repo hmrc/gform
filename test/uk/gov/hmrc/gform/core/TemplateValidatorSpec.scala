@@ -1101,7 +1101,7 @@ class TemplateValidatorSpec extends Spec {
       None,
       None,
       validIf,
-      true,
+      Mandatory.TRUE,
       false,
       true,
       false,
@@ -1120,7 +1120,7 @@ class TemplateValidatorSpec extends Spec {
       None,
       None,
       None,
-      true,
+      Mandatory.TRUE,
       false,
       true,
       false,
@@ -1139,7 +1139,7 @@ class TemplateValidatorSpec extends Spec {
       None,
       None,
       None,
-      true,
+      Mandatory.TRUE,
       false,
       true,
       false,
@@ -1158,7 +1158,7 @@ class TemplateValidatorSpec extends Spec {
       None,
       None,
       None,
-      true,
+      Mandatory.TRUE,
       true,
       true,
       false,
@@ -1242,7 +1242,7 @@ class TemplateValidatorSpec extends Spec {
   implicit class FormComponentOps(fc: FormComponent) {
     def isEditable: FormComponent = fc.copy(editable = true)
     def isNonEditable: FormComponent = fc.copy(editable = false)
-    def isMandatory: FormComponent = fc.copy(mandatory = true)
-    def isNotMandatory: FormComponent = fc.copy(mandatory = false)
+    def isMandatory: FormComponent = fc.copy(mandatory = Mandatory.TRUE)
+    def isNotMandatory: FormComponent = fc.copy(mandatory = Mandatory.FALSE)
   }
 }
