@@ -172,7 +172,7 @@ class JsonParseTestFormat extends Spec with TableDrivenPropertyChecks {
           None,
           None,
           None,
-          true,
+          Mandatory.True,
           true,
           true,
           false,

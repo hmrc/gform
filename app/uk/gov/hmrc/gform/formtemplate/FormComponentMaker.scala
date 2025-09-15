@@ -39,7 +39,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.KeyDisplayWidth.KeyDisplayWidt
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.DisplayInSummary
 
 case class MES(
-  mandatory: Boolean,
+  mandatory: Mandatory,
   editable: Boolean,
   submissible: Boolean,
   derived: Boolean,
@@ -108,7 +108,7 @@ class FormComponentMaker(json: JsValue) {
   lazy val optValidIf: Opt[Option[ValidIf]] = toOpt((json \ "validIf").validateOpt[ValidIf], "/validIf")
   lazy val optValidators: Opt[List[FormComponentValidator]] =
     toOpt((json \ "validators").validateOpt[List[FormComponentValidator]], "/validators").map(_.toList.flatten)
-  lazy val optMandatory: Opt[Option[Boolean]] = toOpt((json \ "mandatory").validateOpt[Boolean], "/mandatory")
+  lazy val optMandatory: Opt[Option[Mandatory]] = toOpt((json \ "mandatory").validateOpt[Mandatory], "/mandatory")
   lazy val optMandatoryLine2: Opt[Option[Boolean]] =
     toOpt((json \ "line2Mandatory").validateOpt[Boolean], "/line2Mandatory")
   lazy val optMandatoryCity: Opt[Option[Boolean]] =
@@ -446,18 +446,17 @@ class FormComponentMaker(json: JsValue) {
 
   private lazy val optMES: Opt[MES] = (submitMode, optMandatory, optMaybeValueExpr) match {
     // format: off
-    case IsThisAnInfoField()                                                            => MES(mandatory = true,  editable = false, submissible = false, derived = false).asRight
-    case (Some(IsStandard()) | None, Right(Some(true))  | Right(None),  _)              => MES(mandatory = true,  editable = true,  submissible = true,  derived = false).asRight
-    case (Some(IsReadOnly()),        Right(Some(true))  | Right(None),  _)              => MES(mandatory = true,  editable = false, submissible = true,  derived = false).asRight
-    case (Some(IsInfo()),            Right(Some(true))  | Right(None),  _)              => MES(mandatory = true,  editable = false, submissible = false, derived = false).asRight
-    case (Some(IsStandard()) | None, Right(Some(false)),         _)                     => MES(mandatory = false, editable = true,  submissible = true,  derived = false).asRight
-    case (Some(IsInfo()),            Right(Some(false)),         _)                     => MES(mandatory = false, editable = false, submissible = false, derived = false).asRight
-    case (Some(IsDerived()),         Right(Some(true))  | Right(None),  Right(Some(_))) => MES(mandatory = true,  editable = false, submissible = true,  derived = true).asRight
-    case (Some(IsDerived()),         Right(Some(false)),         Right(Some(_)))        => MES(mandatory = false, editable = false, submissible = true,  derived = true).asRight
-    case (Some(IsNonSubmissible()),  Right(Some(false)) | Right(None),  _)              => MES(mandatory = false, editable = true,  submissible = false, derived = false).asRight
-    case (Some(IsNonSubmissible()),  Right(Some(true))  | Right(None),  _)              => MES(mandatory = true,  editable = true,  submissible = false, derived = false).asRight
-    case (Some(IsSummaryInfoOnly()), Right(Some(true))  | Right(Some(false)) | Right(None), Right(Some(_))) =>
-      MES(mandatory = true,  editable = false, submissible = false, derived = false, onlyShowOnSummary = true).asRight
+    case IsThisAnInfoField()                                                                    => MES(mandatory = Mandatory.True,  editable = false, submissible = false, derived = false).asRight
+    case (Some(IsStandard()) | None, Right(Some(Mandatory(be))),                _)              => MES(mandatory = Mandatory(be),   editable = true,  submissible = true,  derived = false).asRight
+    case (Some(IsStandard()) | None, Right(None),                               _)              => MES(mandatory = Mandatory.True,  editable = true,  submissible = true,  derived = false).asRight
+    case (Some(IsReadOnly()),        Right(Some(Mandatory.True)) | Right(None), _)              => MES(mandatory = Mandatory.True,  editable = false, submissible = true,  derived = false).asRight
+    case (Some(IsInfo()),            Right(Some(Mandatory(be))),                _)              => MES(mandatory = Mandatory(be),   editable = false, submissible = false, derived = false).asRight
+    case (Some(IsInfo()),            Right(None),                               _)              => MES(mandatory = Mandatory.True,  editable = false, submissible = false, derived = false).asRight
+    case (Some(IsDerived()),         Right(Some(Mandatory(be))),                Right(Some(_))) => MES(mandatory = Mandatory(be),   editable = false, submissible = true,  derived = true).asRight
+    case (Some(IsDerived()),         Right(None),                               Right(Some(_))) => MES(mandatory = Mandatory.True,  editable = false, submissible = true,  derived = true).asRight
+    case (Some(IsNonSubmissible()),  Right(Some(Mandatory(be))),                _)              => MES(mandatory = Mandatory(be),   editable = true,  submissible = false, derived = false).asRight
+    case (Some(IsNonSubmissible()),  Right(None),                               _)              => MES(mandatory = Mandatory.False, editable = true,  submissible = false, derived = false).asRight
+    case (Some(IsSummaryInfoOnly()), Right(Some(Mandatory(_))) | Right(None),   Right(Some(_))) => MES(mandatory = Mandatory.True,  editable = false, submissible = false, derived = false, onlyShowOnSummary = true).asRight
     case otherwise =>
       UnexpectedState(
         s"Expected 'standard', 'summaryinfoonly', 'notsubmitted', 'readonly' or 'info' string or nothing for submitMode and expected 'true' or 'false' string or nothing for mandatory field value, got: $otherwise").asLeft
@@ -642,7 +641,7 @@ class FormComponentMaker(json: JsValue) {
         UnexpectedState(s"""repeatsMin in Group field cannot be a negative number""").asLeft
       case (_, repeatsMin) =>
         val fieldsMandatory =
-          if (repeatsMin.getOrElse(0) === 0) fields.map(field => field.copy(mandatory = false)) else fields
+          if (repeatsMin.getOrElse(0) === 0) fields.map(field => field.copy(mandatory = Mandatory.False)) else fields
         Group(fieldsMandatory, repMax, repMin, repeatLabel, repeatAddAnotherText).asRight
     }
 
@@ -972,7 +971,7 @@ class FormComponentMaker(json: JsValue) {
   }
 
   private final object IsThisAnInfoField {
-    def unapply(ignoredArgs: (Option[String], Opt[Option[Boolean]], Opt[Option[ValueExpr]])): Boolean =
+    def unapply(ignoredArgs: (Option[String], Opt[Option[Mandatory]], Opt[Option[ValueExpr]])): Boolean =
       `type`.contains(InfoRaw)
   }
 

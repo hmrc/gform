@@ -70,7 +70,7 @@ class FormatValidationSpec extends Spec {
         shortName = None,
         includeIf = None,
         validIf = None,
-        mandatory = true,
+        mandatory = Mandatory.True,
         editable = true,
         submissible = true,
         derived = false,

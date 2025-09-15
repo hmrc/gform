@@ -45,6 +45,7 @@ trait FormComponentGen {
   def shortNameGen: Gen[SmartString] =
     SmartStringGen.smartStringGen
   def errorMessageGen: Gen[SmartString] = SmartStringGen.smartStringGen
+  def mandatoryGen: Gen[Mandatory] = Gen.oneOf(Mandatory.True, Mandatory.False)
 
   def formComponentGen(maxDepth: Int = 3): Gen[FormComponent] =
     for {
@@ -56,7 +57,7 @@ trait FormComponentGen {
       shortName         <- Gen.option(shortNameGen)
       includeIf         <- Gen.option(IncludeIfGen.includeIfGen)
       validIf           <- Gen.option(ValidIfGen.validIfGen)
-      mandatory         <- PrimitiveGen.booleanGen
+      mandatory         <- mandatoryGen
       editable          <- PrimitiveGen.booleanGen
       submissable       <- PrimitiveGen.booleanGen
       derived           <- PrimitiveGen.booleanGen

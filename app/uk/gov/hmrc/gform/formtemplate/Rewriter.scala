@@ -511,8 +511,8 @@ trait Rewriter {
 
       def replaceFormComponent(formComponent: FormComponent): FormComponent = {
         val component = formComponent match {
-          case fc @ IsFileUpload(_) if disableUploads      => fc.copy(mandatory = false)
-          case fc @ IsMultiFileUpload(_) if disableUploads => fc.copy(mandatory = false)
+          case fc @ IsFileUpload(_) if disableUploads      => fc.copy(mandatory = Mandatory.False)
+          case fc @ IsMultiFileUpload(_) if disableUploads => fc.copy(mandatory = Mandatory.False)
           case otherwise                                   => otherwise
         }
 

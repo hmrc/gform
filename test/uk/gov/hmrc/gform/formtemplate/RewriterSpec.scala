@@ -301,7 +301,7 @@ class RewriterSpec extends FunSuite with FormTemplateSupport with RewriterSuppor
     val pageTitle1 = SmartString(localised = LocalisedString(m = Map(LangADT.En -> "English page title 1")), Nil)
     val page1 = simplePage.copy(
       title = pageTitle1,
-      fields = List(mkFormComponent("fc1", FileUpload(None, None), editable = true).copy(mandatory = true)),
+      fields = List(mkFormComponent("fc1", FileUpload(None, None), editable = true).copy(mandatory = Mandatory.True)),
       includeIf = falseIncludeIf,
       continueIf = Some(ContinueIf(IsFalse)),
       redirects = redirects
@@ -344,7 +344,7 @@ class RewriterSpec extends FunSuite with FormTemplateSupport with RewriterSuppor
       assertEquals(firstPage.includeIf, None)
       assertEquals(firstPage.continueIf, None)
       assertEquals(firstPage.redirects, None)
-      assertEquals(firstPage.fields.head.mandatory, false)
+      assertEquals(firstPage.fields.head.mandatory, Mandatory.False)
       assertEquals(secondPage.fields.head.includeIf, None)
       assertEquals(secondPage.fields.head.validIf, None)
       secondPage.fields.head.validators.map(validator => assertEquals(validator.validIf, ValidIf(IsTrue)))
