@@ -21,6 +21,9 @@ import uk.gov.hmrc.gform.sharedmodel.SmartString
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
 object AddToListExpressionHelper {
+
+  private case class UpdateContext(insideAtl: Boolean)
+
   def updateRequiredExpressionsInAtl(formTemplate: FormTemplate): FormTemplate = {
     val updateFormKind = formTemplate.formKind.fold[FormKind] { classic =>
       val sections = classic.sections.map(s => updateSection(s))
@@ -38,169 +41,172 @@ object AddToListExpressionHelper {
   }
 
   private def updateSection(section: Section): Section =
-    section.fold[Section](nonRepeatingPage =>
-      nonRepeatingPage.copy(page = updatePage(nonRepeatingPage.page, insideAtl = false))
-    )(_ => section)(addToList =>
+    section.fold[Section] { nonRepeatingPage =>
+      implicit val ctx: UpdateContext = UpdateContext(insideAtl = false)
+      nonRepeatingPage.copy(page = updatePage(nonRepeatingPage.page))
+    }(_ => section) { addToList =>
+      implicit val ctx: UpdateContext = UpdateContext(insideAtl = true)
       addToList.copy(
-        pages = addToList.pages.map(p => updatePage(p, insideAtl = true)),
+        pages = addToList.pages.map(p => updatePage(p)),
         fields = updateOptionalFields(addToList.fields)
       )
-    )
+    }
 
-  private def updatePage(page: Page, insideAtl: Boolean): Page = {
-    val fields = updateFields(page.fields, insideAtl)
+  private def updatePage(page: Page)(implicit ctx: UpdateContext): Page = {
+    val fields = updateFields(page.fields)
     page.copy(fields = fields)
   }
 
   private def updateOptionalFields(
     maybeFields: Option[NonEmptyList[FormComponent]]
-  ): Option[NonEmptyList[FormComponent]] =
+  ): Option[NonEmptyList[FormComponent]] = {
+    implicit val nonAtlCtx: UpdateContext = UpdateContext(insideAtl = false)
     maybeFields match {
-      case Some(nel) => NonEmptyList.fromList(updateFields(nel.toList, insideAtl = false))
+      case Some(nel) => NonEmptyList.fromList(updateFields(nel.toList)(nonAtlCtx))
       case None      => None
     }
+  }
 
   private def updateFields(
-    fields: List[FormComponent],
-    insideAtl: Boolean
-  ): List[FormComponent] =
+    fields: List[FormComponent]
+  )(implicit ctx: UpdateContext): List[FormComponent] =
     fields.map { field =>
       val updatedComponentType: ComponentType = field.`type` match {
         case PostcodeLookup(chooseAddressLabel, confirmAddressLabel, enterAddressLabel) =>
           PostcodeLookup(
-            updateOptionalSmartString(chooseAddressLabel, insideAtl),
-            updateOptionalSmartString(confirmAddressLabel, insideAtl),
-            updateOptionalSmartString(enterAddressLabel, insideAtl)
+            updateOptionalSmartString(chooseAddressLabel),
+            updateOptionalSmartString(confirmAddressLabel),
+            updateOptionalSmartString(enterAddressLabel)
           )
         case c @ Choice(_, _, _, _, hints, optionHelpText, _, _, _, _, _) =>
           c.copy(
-            hints = hints.map(nel => nel.map(ss => updateSmartString(ss, insideAtl))),
-            optionHelpText = optionHelpText.map(nel => nel.map(ss => updateSmartString(ss, insideAtl)))
+            hints = hints.map(nel => nel.map(ss => updateSmartString(ss))),
+            optionHelpText = optionHelpText.map(nel => nel.map(ss => updateSmartString(ss)))
           )
         case r @ RevealingChoice(options, _) =>
           r.copy(options =
             options.map(o =>
               o.copy(
-                revealingFields = updateFields(o.revealingFields, insideAtl),
-                hint = updateOptionalSmartString(o.hint, insideAtl)
+                revealingFields = updateFields(o.revealingFields),
+                hint = updateOptionalSmartString(o.hint)
               )
             )
           )
         case g @ Group(fields, _, _, repeatLabel, repeatAddAnotherText) =>
           g.copy(
-            fields = updateFields(fields, insideAtl = insideAtl),
-            repeatLabel = updateOptionalSmartString(repeatLabel, insideAtl),
-            repeatAddAnotherText = updateOptionalSmartString(repeatAddAnotherText, insideAtl)
+            fields = updateFields(fields),
+            repeatLabel = updateOptionalSmartString(repeatLabel),
+            repeatAddAnotherText = updateOptionalSmartString(repeatAddAnotherText)
           )
         case i @ InformationMessage(_, infoText, summaryValue) =>
           i.copy(
-            infoText = updateSmartString(infoText, insideAtl),
-            summaryValue = updateOptionalSmartString(summaryValue, insideAtl)
+            infoText = updateSmartString(infoText),
+            summaryValue = updateOptionalSmartString(summaryValue)
           )
         case m @ MultiFileUpload(_, _, hint, uploadAnotherLabel, continueText, _, _) =>
           m.copy(
-            hint = updateOptionalSmartString(hint, insideAtl),
-            uploadAnotherLabel = updateOptionalSmartString(uploadAnotherLabel, insideAtl),
-            continueText = updateOptionalSmartString(continueText, insideAtl)
+            hint = updateOptionalSmartString(hint),
+            uploadAnotherLabel = updateOptionalSmartString(uploadAnotherLabel),
+            continueText = updateOptionalSmartString(continueText)
           )
         case m @ MiniSummaryList(rows, _, _) =>
-          m.copy(rows = updateMslRows(rows, insideAtl))
+          m.copy(rows = updateMslRows(rows))
         case t @ TableComp(header, rows, summaryValue, _, _, _, _) =>
           t.copy(
-            header = header.map(h => h.copy(label = updateSmartString(h.label, insideAtl))),
+            header = header.map(h => h.copy(label = updateSmartString(h.label))),
             rows = rows.map(r =>
               r.copy(
-                values = r.values.map(v => v.copy(value = updateSmartString(v.value, insideAtl))),
-                includeIf = updateOptionalIncludeIf(r.includeIf, insideAtl)
+                values = r.values.map(v => v.copy(value = updateSmartString(v.value))),
+                includeIf = updateOptionalIncludeIf(r.includeIf)
               )
             ),
-            summaryValue = updateSmartString(summaryValue, insideAtl)
+            summaryValue = updateSmartString(summaryValue)
           )
         case _ => field.`type`
       }
       field.copy(
         `type` = updatedComponentType,
-        label = updateSmartString(field.label, insideAtl),
-        helpText = updateOptionalSmartString(field.helpText, insideAtl),
-        shortName = updateOptionalSmartString(field.shortName, insideAtl),
-        errorMessage = updateOptionalSmartString(field.errorMessage, insideAtl),
-        errorShortName = updateOptionalSmartString(field.errorShortName, insideAtl),
-        errorShortNameStart = updateOptionalSmartString(field.errorShortNameStart, insideAtl),
-        errorExample = updateOptionalSmartString(field.errorExample, insideAtl),
-        includeIf = updateOptionalIncludeIf(field.includeIf, insideAtl)
+        label = updateSmartString(field.label),
+        helpText = updateOptionalSmartString(field.helpText),
+        shortName = updateOptionalSmartString(field.shortName),
+        errorMessage = updateOptionalSmartString(field.errorMessage),
+        errorShortName = updateOptionalSmartString(field.errorShortName),
+        errorShortNameStart = updateOptionalSmartString(field.errorShortNameStart),
+        errorExample = updateOptionalSmartString(field.errorExample),
+        includeIf = updateOptionalIncludeIf(field.includeIf)
       )
     }
 
   private def updateMslRows(
-    mslRows: List[MiniSummaryRow],
-    insideAtl: Boolean
-  ): List[MiniSummaryRow] =
+    mslRows: List[MiniSummaryRow]
+  )(implicit ctx: UpdateContext): List[MiniSummaryRow] =
     mslRows.map {
       case r @ MiniSummaryRow.ValueRow(key, mslValue, includeIf, _, _) =>
         val updatedValue = mslValue match {
-          case MiniSummaryListValue.AnyExpr(expr)    => MiniSummaryListValue.AnyExpr(loopExpr(expr, insideAtl))
+          case MiniSummaryListValue.AnyExpr(expr)    => MiniSummaryListValue.AnyExpr(loopExpr(expr))
           case v @ MiniSummaryListValue.Reference(_) => v
         }
         r.copy(
-          key = updateOptionalSmartString(key, insideAtl),
+          key = updateOptionalSmartString(key),
           value = updatedValue,
-          includeIf = updateOptionalIncludeIf(includeIf, insideAtl)
+          includeIf = updateOptionalIncludeIf(includeIf)
         )
       case r @ MiniSummaryRow.SmartStringRow(key, ss, includeIf, _, _) =>
         r.copy(
-          key = updateOptionalSmartString(key, insideAtl),
-          value = updateSmartString(ss, insideAtl),
-          includeIf = updateOptionalIncludeIf(includeIf, insideAtl)
+          key = updateOptionalSmartString(key),
+          value = updateSmartString(ss),
+          includeIf = updateOptionalIncludeIf(includeIf)
         )
       case h @ MiniSummaryRow.HeaderRow(ss) =>
-        h.copy(header = updateSmartString(ss, insideAtl))
+        h.copy(header = updateSmartString(ss))
       case MiniSummaryRow.ATLRow(atlId, includeIf, rows) =>
         MiniSummaryRow.ATLRow(
           atlId,
-          updateOptionalIncludeIf(includeIf, insideAtl),
-          updateMslRows(rows, insideAtl = insideAtl)
+          updateOptionalIncludeIf(includeIf),
+          updateMslRows(rows)
         )
     }
 
   private def updateOptionalSmartString(
-    maybeSmartString: Option[SmartString],
-    insideAtl: Boolean
-  ): Option[SmartString] =
+    maybeSmartString: Option[SmartString]
+  )(implicit ctx: UpdateContext): Option[SmartString] =
     maybeSmartString match {
-      case Some(ss) => Some(updateSmartString(ss, insideAtl))
+      case Some(ss) => Some(updateSmartString(ss))
       case None     => None
     }
 
-  private def updateSmartString(smartString: SmartString, insideAtl: Boolean): SmartString =
-    smartString.updateInterpolations(expr => loopExpr(expr, insideAtl))
+  private def updateSmartString(smartString: SmartString)(implicit ctx: UpdateContext): SmartString =
+    smartString.updateInterpolations(expr => loopExpr(expr))
 
-  private def updateOptionalIncludeIf(maybeIncludeIf: Option[IncludeIf], insideAtl: Boolean): Option[IncludeIf] =
+  private def updateOptionalIncludeIf(
+    maybeIncludeIf: Option[IncludeIf]
+  )(implicit ctx: UpdateContext): Option[IncludeIf] =
     maybeIncludeIf match {
-      case Some(includeIf) => Some(updateIncludeIf(includeIf, insideAtl))
+      case Some(includeIf) => Some(updateIncludeIf(includeIf))
       case None            => None
     }
 
-  private def updateIncludeIf(includeIf: IncludeIf, insideAtl: Boolean): IncludeIf = {
+  private def updateIncludeIf(includeIf: IncludeIf)(implicit ctx: UpdateContext): IncludeIf = {
     def loop(booleanExpr: BooleanExpr): BooleanExpr =
       booleanExpr match {
-        case Equals(left, right)      => Equals(loopExpr(left, insideAtl), loopExpr(right, insideAtl))
-        case GreaterThan(left, right) => GreaterThan(loopExpr(left, insideAtl), loopExpr(right, insideAtl))
+        case Equals(left, right)      => Equals(loopExpr(left), loopExpr(right))
+        case GreaterThan(left, right) => GreaterThan(loopExpr(left), loopExpr(right))
         case GreaterThanOrEquals(left, right) =>
-          GreaterThanOrEquals(loopExpr(left, insideAtl), loopExpr(right, insideAtl))
-        case LessThan(left, right)            => LessThan(loopExpr(left, insideAtl), loopExpr(right, insideAtl))
-        case LessThanOrEquals(left, right)    => LessThanOrEquals(loopExpr(left, insideAtl), loopExpr(right, insideAtl))
+          GreaterThanOrEquals(loopExpr(left), loopExpr(right))
+        case LessThan(left, right)            => LessThan(loopExpr(left), loopExpr(right))
+        case LessThanOrEquals(left, right)    => LessThanOrEquals(loopExpr(left), loopExpr(right))
         case Not(e)                           => loop(e)
         case Or(left, right)                  => Or(loop(left), loop(right))
         case And(left, right)                 => And(loop(left), loop(right))
-        case Contains(multiValueField, value) => Contains(multiValueField, loopExpr(value, insideAtl))
-        case In(value, dataSource)            => In(loopExpr(value, insideAtl), dataSource)
-        case MatchRegex(expr, regex)          => MatchRegex(loopExpr(expr, insideAtl), regex)
+        case Contains(multiValueField, value) => Contains(multiValueField, loopExpr(value))
+        case In(value, dataSource)            => In(loopExpr(value), dataSource)
+        case MatchRegex(expr, regex)          => MatchRegex(loopExpr(expr), regex)
         case _                                => booleanExpr
       }
     IncludeIf(loop(includeIf.booleanExpr))
   }
 
-  private def loopExpr(expr: Expr, insideAtl: Boolean): Expr = {
+  private def loopExpr(expr: Expr)(implicit ctx: UpdateContext): Expr = {
     def loop(expr: Expr): Expr =
       expr match {
         case Add(field1, field2)          => Add(loop(field1), loop(field2))
@@ -212,10 +218,9 @@ object AddToListExpressionHelper {
         case Else(field1, field2)         => Else(loop(field1), loop(field2))
         case Sum(field1)                  => Sum(loop(field1))
         case Typed(expr, tpe)             => Typed(loop(expr), tpe)
-        //Expressions updated depending on inside/outside ATL follow
-        case ChoicesAvailable(formComponentId, _) => ChoicesAvailable(formComponentId, insideAtl)
-
-        //Other non-impacted exprs require no-op
+        //Expressions updated depending on inside/outside ATL - Start
+        case ChoicesAvailable(formComponentId, _) => ChoicesAvailable(formComponentId, ctx.insideAtl)
+        //Expressions updated depending on inside/outside ATL - End
         case _ => expr
       }
     loop(expr)
