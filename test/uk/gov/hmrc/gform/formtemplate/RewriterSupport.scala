@@ -53,7 +53,7 @@ trait RewriterSupport {
     shortName = None,
     includeIf = None,
     validIf = None,
-    mandatory = Mandatory.TRUE,
+    mandatory = Mandatory.True,
     editable = true,
     submissible = true,
     derived = true,

@@ -22,12 +22,12 @@ import uk.gov.hmrc.gform.core.parsers.BooleanExprParser
 final case class Mandatory(booleanExpr: BooleanExpr) extends AnyVal
 
 object Mandatory {
-  val TRUE: Mandatory = Mandatory(IsTrue)
-  val FALSE: Mandatory = Mandatory(IsFalse)
+  val True: Mandatory = Mandatory(IsTrue)
+  val False: Mandatory = Mandatory(IsFalse)
 
   private val templateReads: Reads[Mandatory] = Reads {
-    case JsTrue  => JsSuccess(TRUE)
-    case JsFalse => JsSuccess(FALSE)
+    case JsTrue  => JsSuccess(True)
+    case JsFalse => JsSuccess(False)
     case JsString(str) =>
       BooleanExprParser.validate(str) match {
         case Left(unexpectedState) => JsError(unexpectedState.error)

@@ -45,7 +45,7 @@ trait FormComponentGen {
   def shortNameGen: Gen[SmartString] =
     SmartStringGen.smartStringGen
   def errorMessageGen: Gen[SmartString] = SmartStringGen.smartStringGen
-  def mandatoryGen: Gen[Mandatory] = Gen.oneOf(Mandatory.TRUE, Mandatory.FALSE)
+  def mandatoryGen: Gen[Mandatory] = Gen.oneOf(Mandatory.True, Mandatory.False)
 
   def formComponentGen(maxDepth: Int = 3): Gen[FormComponent] =
     for {
