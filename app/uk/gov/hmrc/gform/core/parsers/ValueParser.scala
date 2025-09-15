@@ -402,7 +402,7 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
       ChoicesSelected(FormComponentId(value))
     }
     | "choicesAvailable(" ~ FormComponentId.unanchoredIdValidation ~ ")" ^^ { case _ ~ value ~ _ =>
-      ChoicesAvailable(FormComponentId(value), insideAtl = true)
+      ChoicesAvailable(FormComponentId(value), insideAtl = false)
     }
     | "choicesCount(" ~ FormComponentId.unanchoredIdValidation ~ ")" ^^ { case _ ~ value ~ _ =>
       ChoicesCount(FormComponentId(value))
@@ -650,7 +650,7 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
         Not(DuplicateExists((expr +: exprs).map(field => FormCtx(FormComponentId(field)))))
     }
     | "noMoreChoices(" ~ FormComponentId.unanchoredIdValidation ~ ")" ^^ { case _ ~ value ~ _ =>
-      Equals(ChoicesSelected(FormComponentId(value)), ChoicesAvailable(FormComponentId(value), insideAtl = true))
+      Equals(ChoicesAvailable(FormComponentId(value), insideAtl = false), Constant("0"))
     }
     | "auth" ~ "." ~ loginInfo ^^ { case _ ~ _ ~ loginInfo =>
       IsLogin(loginInfo)

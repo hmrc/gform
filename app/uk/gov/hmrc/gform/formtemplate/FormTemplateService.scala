@@ -137,7 +137,10 @@ class FormTemplateService(
         substitutedFormTemplate <- substituteDestinations(substitutedFormTemplateBooleanExprs)
         formTemplateWithPageHeadings = PageHeadingHelper.fillBlankPageHeadings(substitutedFormTemplate)
         formTemplateWithMslUpdated = MiniSummaryListHelper.updateAllMslIncludeIfs(formTemplateWithPageHeadings)
-        formTemplateConfirmationsUpdated = ConfirmationHelper(formTemplateWithMslUpdated).rewriteConfirmation()
+        formTemplateWithAtlExpressionsUpdated =
+          AddToListExpressionHelper.updateRequiredExpressionsInAtl(formTemplateWithMslUpdated)
+        formTemplateConfirmationsUpdated =
+          ConfirmationHelper(formTemplateWithAtlExpressionsUpdated).rewriteConfirmation()
         handlebarsSchemaIds <- handlebarsSchemaAlgebra.getAllIds
         _                   <- verify(formTemplateConfirmationsUpdated, appConfig, handlebarsSchemaIds)(expressionsContext)
         formTemplateUpdated <- rewrite(formTemplateConfirmationsUpdated)
