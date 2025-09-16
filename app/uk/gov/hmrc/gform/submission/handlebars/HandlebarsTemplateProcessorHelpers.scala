@@ -747,9 +747,8 @@ class HandlebarsTemplateProcessorHelpers(
     v match {
       case null                     => NullString
       case s: Handlebars.SafeString => s
-      case s: CharSequence =>
-        new Handlebars.SafeString(s.toString.replaceAll("""\\""", """\\\\""").replaceAll(""""""", """\\""""))
-      case u => u.toString
+      case s: CharSequence          => s.toString.replaceAll("""\\""", """\\\\""").replaceAll(""""""", """\\"""")
+      case u                        => u.toString
     }
 
   private def isNullAsBoolean(v: Any) = NullString.isNull(v)
