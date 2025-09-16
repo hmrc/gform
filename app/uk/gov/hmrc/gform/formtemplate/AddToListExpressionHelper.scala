@@ -219,7 +219,7 @@ object AddToListExpressionHelper {
         case Sum(field1)                  => Sum(loop(field1))
         case Typed(expr, tpe)             => Typed(loop(expr), tpe)
         //Expressions updated depending on inside/outside ATL - Start
-        case ChoicesAvailable(formComponentId, _) => ChoicesAvailable(formComponentId, ctx.insideAtl)
+        case ChoicesAvailable(formComponentId, _) => ChoicesAvailable(formComponentId, Some(ctx.insideAtl))
         //Expressions updated depending on inside/outside ATL - End
         case _ => expr
       }

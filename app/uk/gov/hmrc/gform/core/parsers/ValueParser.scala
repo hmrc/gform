@@ -402,13 +402,13 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
       ChoicesSelected(FormComponentId(value))
     }
     | "choicesAvailable(" ~ FormComponentId.unanchoredIdValidation ~ ")" ^^ { case _ ~ value ~ _ =>
-      ChoicesAvailable(FormComponentId(value), insideAtl = false)
+      ChoicesAvailable(FormComponentId(value), None)
     }
     | "choicesCount(" ~ FormComponentId.unanchoredIdValidation ~ ")" ^^ { case _ ~ value ~ _ =>
       ChoicesCount(FormComponentId(value))
     }
     | "totalChoicesSelected(" ~ FormComponentId.unanchoredIdValidation ~ ")" ^^ { case _ ~ value ~ _ =>
-      Subtraction(ChoicesCount(FormComponentId(value)), ChoicesAvailable(FormComponentId(value), insideAtl = false))
+      Subtraction(ChoicesCount(FormComponentId(value)), ChoicesAvailable(FormComponentId(value), None))
     }
     | "taskStatus(" ~ TaskId.unanchoredIdValidation ~ ")" ^^ { case _ ~ value ~ _ =>
       TaskStatus(TaskId(value))
@@ -650,7 +650,7 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
         Not(DuplicateExists((expr +: exprs).map(field => FormCtx(FormComponentId(field)))))
     }
     | "noMoreChoices(" ~ FormComponentId.unanchoredIdValidation ~ ")" ^^ { case _ ~ value ~ _ =>
-      Equals(ChoicesAvailable(FormComponentId(value), insideAtl = false), Constant("0"))
+      Equals(ChoicesAvailable(FormComponentId(value), None), Constant("0"))
     }
     | "auth" ~ "." ~ loginInfo ^^ { case _ ~ _ ~ loginInfo =>
       IsLogin(loginInfo)

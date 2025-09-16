@@ -1,7 +1,23 @@
+/*
+ * Copyright 2025 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package uk.gov.hmrc.gform.formtemplate
 
 import munit.FunSuite
-import play.api.libs.json.{JsError, JsSuccess, Json}
+import play.api.libs.json.{ JsError, JsSuccess, Json }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
 class AddToListExpressionHelperSuite extends FunSuite with FormTemplateSupport {
@@ -148,33 +164,48 @@ class AddToListExpressionHelperSuite extends FunSuite with FormTemplateSupport {
     val ft = toFormTemplate(jsonStr)
     val res = AddToListExpressionHelper.updateRequiredExpressionsInAtl(ft)
     res.formKind.allSections.foreach(s =>
-      s.fold(_ => None)(_ => None)(atl => {
+      s.fold(_ => None)(_ => None) { atl =>
         atl.fields.get.map {
-          case f@IsInformationMessage(info) =>
+          case f @ IsInformationMessage(info) =>
             if (f.id.value == "taxYearSelectedInfo2") {
-              //TEST - insideAtl should be false
-              f.includeIf.get.booleanExpr shouldBe Equals(ChoicesAvailable(FormComponentId("taxYear"), insideAtl = false), Constant("0"))
+              //TEST - insideAtl should be false as this is repeater page
+              f.includeIf.get.booleanExpr shouldBe Equals(
+                ChoicesAvailable(FormComponentId("taxYear"), Some(false)),
+                Constant("0")
+              )
               None
             } else {
-              //TEST - insideAtl should be false
-              info.infoText.internals.head.interpolations.head shouldBe Subtraction(ChoicesCount(FormComponentId("taxYear")), ChoicesAvailable(FormComponentId("taxYear"), insideAtl = false))
+              //TEST - insideAtl should be false as this is repeater page
+              info.infoText.internals.head.interpolations.head shouldBe Subtraction(
+                ChoicesCount(FormComponentId("taxYear")),
+                ChoicesAvailable(FormComponentId("taxYear"), Some(false))
+              )
               None
             }
           case _ => None
         }
         atl.pages.map(p =>
           p.fields.map {
-            case f@IsInformationMessage(info) =>
-              if(f.id.value == "taxYearSelectedInfo3") {
-                //TESTS - insideAtl should be true
-                f.includeIf.get.booleanExpr shouldBe GreaterThan(Subtraction(ChoicesCount(FormComponentId("taxYear")), ChoicesAvailable(FormComponentId("taxYear"), insideAtl = true)), Constant("0"))
-                info.infoText.internals.head.interpolations.head shouldBe Subtraction(ChoicesCount(FormComponentId("taxYear")), ChoicesAvailable(FormComponentId("taxYear"), insideAtl = true))
+            case f @ IsInformationMessage(info) =>
+              if (f.id.value == "taxYearSelectedInfo3") {
+                //TESTS - insideAtl should be true as this is child page of ATL
+                f.includeIf.get.booleanExpr shouldBe GreaterThan(
+                  Subtraction(
+                    ChoicesCount(FormComponentId("taxYear")),
+                    ChoicesAvailable(FormComponentId("taxYear"), Some(true))
+                  ),
+                  Constant("0")
+                )
+                info.infoText.internals.head.interpolations.head shouldBe Subtraction(
+                  ChoicesCount(FormComponentId("taxYear")),
+                  ChoicesAvailable(FormComponentId("taxYear"), Some(true))
+                )
               }
             case _ => None
           }
         )
         None
-      })
+      }
     )
   }
 
