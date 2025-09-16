@@ -19,7 +19,7 @@ package uk.gov.hmrc.gform.submission.handlebars
 import com.fasterxml.jackson.databind.JsonNode
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.sharedmodel.form.FormId
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ HandlebarsTemplateProcessorModel, JsonNodes, SingleQuoteReplacementLexer, TemplateType }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ HandlebarsTemplateProcessorModel, JsonNodes, TemplateType }
 import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
 import uk.gov.hmrc.gform.sharedmodel.{ PdfContent, SubmissionRef }
 
@@ -38,20 +38,6 @@ class HandlebarsTemplateProcessorSpec extends Spec {
       """{"name" : "handlebars"}""",
       TemplateType.XML
     ) shouldBe "<foo>I am a handlebars template</foo>"
-  }
-
-  it must "work with more complex XML" in {
-    SingleQuoteReplacementLexer(
-      "<foo>I am a {{match ^('0') => '<AdoptionCounselling>Yes</AdoptionCounselling>'; ('1') => '<AdoptionAdvice>Yes</AdoptionAdvice>';^ name}} template</foo>"
-    ) match {
-      case Left(err) => fail(err)
-      case Right(template) =>
-        processJson(
-          template,
-          """{"name" : "0"}""",
-          TemplateType.XML
-        ) shouldBe "<foo>I am a <AdoptionCounselling>Yes</AdoptionCounselling> template</foo>"
-    }
   }
 
   it must "work with plain text" in {
