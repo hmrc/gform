@@ -178,12 +178,20 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
     process("{{either2 null null}}") shouldBe "null"
   }
 
-  it must "escape backslashes in the output" in {
-    process(s"{{either2 ${quote("""hello \ world""")} null}}") shouldBe """hello \\ world"""
+  it must "not escape backslashes in the output if not JSON" in {
+    process(s"{{either2 ${quote("""hello \ world""")} null}}") shouldBe """hello \ world"""
   }
 
-  it must "escape double quotes in the output" in {
-    process(s"{{either2 ${quote("""hello " world""")} null}}") shouldBe """hello \" world"""
+  it must "not escape double quotes in the output if not JSON" in {
+    process(s"{{either2 ${quote("""hello " world""")} null}}") shouldBe """hello " world"""
+  }
+
+  it must "escape backslashes in the output when JSON specified" in {
+    process(s"{{either2 ${quote("""hello \ world""")} null}}", Some(TemplateType.JSON)) shouldBe """hello \\ world"""
+  }
+
+  it must "escape double quotes in the output when JSON specified" in {
+    process(s"{{either2 ${quote("""hello " world""")} null}}", Some(TemplateType.JSON)) shouldBe """hello \" world"""
   }
 
   "isSuccessCode" must "return true for all codes that begin with '2'" in {
@@ -657,7 +665,8 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
     FormStatus.all.foreach { status =>
       process(
         """{{isSigned}}""",
-        DestinationsProcessorModelAlgebra.createFormStatus(status)
+        DestinationsProcessorModelAlgebra.createFormStatus(status),
+        None
       ) shouldBe (status == Signed).toString
     }
   }
@@ -666,7 +675,8 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
     FormStatus.all.foreach { status =>
       process(
         """{{isAccepted}}""",
-        DestinationsProcessorModelAlgebra.createFormStatus(status)
+        DestinationsProcessorModelAlgebra.createFormStatus(status),
+        None
       ) shouldBe (status == Accepted).toString
     }
   }
@@ -675,7 +685,8 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
     FormStatus.all.foreach { status =>
       process(
         """{{isAccepting}}""",
-        DestinationsProcessorModelAlgebra.createFormStatus(status)
+        DestinationsProcessorModelAlgebra.createFormStatus(status),
+        None
       ) shouldBe (status == Accepting).toString
     }
   }
@@ -684,7 +695,8 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
     FormStatus.all.foreach { status =>
       process(
         """{{isReturning}}""",
-        DestinationsProcessorModelAlgebra.createFormStatus(status)
+        DestinationsProcessorModelAlgebra.createFormStatus(status),
+        None
       ) shouldBe (status == Returning).toString
     }
   }
@@ -852,7 +864,8 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
 
         process(
           s"""I am the {{foo}}. {{importBySubmissionReference "${childSubmissionReference.value}" "${destination.id.id}"}}""",
-          FocussedHandlebarsModelTree(tree)
+          FocussedHandlebarsModelTree(tree),
+          None
         ) shouldBe "I am the parent. I am the child."
       }
     }
@@ -880,14 +893,19 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
           StructuredFormValue.ObjectStructure(Nil),
           model
         )
-      )
+      ),
+      None
     )
   }
 
-  private def process(functionCall: String): String =
-    process(functionCall, HandlebarsTemplateProcessorModel.empty)
+  private def process(functionCall: String, maybeTemplateType: Option[TemplateType] = None): String =
+    process(functionCall, HandlebarsTemplateProcessorModel.empty, maybeTemplateType)
 
-  private def process(functionCall: String, model: HandlebarsTemplateProcessorModel): String =
+  private def process(
+    functionCall: String,
+    model: HandlebarsTemplateProcessorModel,
+    maybeTemplateType: Option[TemplateType]
+  ): String =
     process(
       functionCall,
       FocussedHandlebarsModelTree(
@@ -900,14 +918,19 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
           StructuredFormValue.ObjectStructure(Nil),
           model
         )
-      )
+      ),
+      maybeTemplateType
     )
 
-  private def process(functionCall: String, tree: FocussedHandlebarsModelTree): String =
+  private def process(
+    functionCall: String,
+    tree: FocussedHandlebarsModelTree,
+    maybeTemplateType: Option[TemplateType]
+  ): String =
     RealHandlebarsTemplateProcessor(
       functionCall,
       HandlebarsTemplateProcessorModel.empty,
       tree,
-      TemplateType.Plain
+      maybeTemplateType.getOrElse(TemplateType.Plain)
     )
 }

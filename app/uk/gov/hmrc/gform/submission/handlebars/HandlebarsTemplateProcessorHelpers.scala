@@ -747,7 +747,6 @@ class HandlebarsTemplateProcessorHelpers(
     v match {
       case null                     => NullString
       case s: Handlebars.SafeString => s
-      case s: CharSequence          => s.toString.replaceAll("""\\""", """\\\\""").replaceAll(""""""", """\\"""")
       case u                        => u.toString
     }
 
