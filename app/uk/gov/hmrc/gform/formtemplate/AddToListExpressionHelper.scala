@@ -220,6 +220,10 @@ object AddToListExpressionHelper {
         case Typed(expr, tpe)             => Typed(loop(expr), tpe)
         //Expressions updated depending on inside/outside ATL - Start
         case ChoicesAvailable(formComponentId, _) => ChoicesAvailable(formComponentId, Some(ctx.insideAtl))
+        case NumberedListChoicesSelected(formComponentId, _) =>
+          NumberedListChoicesSelected(formComponentId, Some(ctx.insideAtl))
+        case BulletedListChoicesSelected(formComponentId, _) =>
+          BulletedListChoicesSelected(formComponentId, Some(ctx.insideAtl))
         //Expressions updated depending on inside/outside ATL - End
         case _ => expr
       }

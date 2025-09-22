@@ -42,39 +42,41 @@ object ExprSubstituter extends Substituter[ExprSubstitutions, FormTemplate] {
         case f @ FormCtx(formComponentId) =>
           // Replace FormComponentId with top level expression if one exists
           substitutions.expressions.getOrElse(ExpressionId(formComponentId.value), f)
-        case AddressLens(_, _)               => t
-        case AuthCtx(_)                      => t
-        case Constant(_)                     => t
-        case Count(_)                        => t
-        case Index(_)                        => t
-        case FormTemplateCtx(_)              => t
-        case LangCtx                         => t
-        case LinkCtx(_)                      => t
-        case ParamCtx(_)                     => t
-        case PeriodValue(_)                  => t
-        case UserCtx(_)                      => t
-        case Value                           => t
-        case DataRetrieveCtx(_, _)           => t
-        case DataRetrieveCount(_)            => t
-        case LookupColumn(_, _)              => t
-        case CsvCountryCountCheck(_, _, _)   => t
-        case Size(_, _)                      => t
-        case Typed(expr, tpe)                => Typed(substitute(substitutions, expr), tpe)
-        case IndexOf(formComponentId, index) => t
-        case IndexOfDataRetrieveCtx(_, _)    => t
-        case NumberedList(_)                 => t
-        case BulletedList(_)                 => t
-        case StringOps(expr, fn)             => StringOps(substitute(substitutions, expr), fn)
-        case Concat(exprs)                   => Concat(exprs.map(e => substitute(substitutions, e)))
-        case CountryOfItmpAddress            => t
-        case ChoicesRevealedField(_)         => t
-        case ChoicesSelected(_)              => t
-        case ChoicesAvailable(_, _)          => t
-        case CountSelectedChoices(_)         => t
-        case ChoicesCount(_)                 => t
-        case TaskStatus(_)                   => t
-        case DisplayAsEntered(_)             => t
-        case LookupOps(expr, fn)             => LookupOps(substitute(substitutions, expr), fn)
+        case AddressLens(_, _)                 => t
+        case AuthCtx(_)                        => t
+        case Constant(_)                       => t
+        case Count(_)                          => t
+        case Index(_)                          => t
+        case FormTemplateCtx(_)                => t
+        case LangCtx                           => t
+        case LinkCtx(_)                        => t
+        case ParamCtx(_)                       => t
+        case PeriodValue(_)                    => t
+        case UserCtx(_)                        => t
+        case Value                             => t
+        case DataRetrieveCtx(_, _)             => t
+        case DataRetrieveCount(_)              => t
+        case LookupColumn(_, _)                => t
+        case CsvCountryCountCheck(_, _, _)     => t
+        case Size(_, _)                        => t
+        case Typed(expr, tpe)                  => Typed(substitute(substitutions, expr), tpe)
+        case IndexOf(formComponentId, index)   => t
+        case IndexOfDataRetrieveCtx(_, _)      => t
+        case NumberedList(_)                   => t
+        case BulletedList(_)                   => t
+        case NumberedListChoicesSelected(_, _) => t
+        case BulletedListChoicesSelected(_, _) => t
+        case StringOps(expr, fn)               => StringOps(substitute(substitutions, expr), fn)
+        case Concat(exprs)                     => Concat(exprs.map(e => substitute(substitutions, e)))
+        case CountryOfItmpAddress              => t
+        case ChoicesRevealedField(_)           => t
+        case ChoicesSelected(_)                => t
+        case ChoicesAvailable(_, _)            => t
+        case CountSelectedChoices(_)           => t
+        case ChoicesCount(_)                   => t
+        case TaskStatus(_)                     => t
+        case DisplayAsEntered(_)               => t
+        case LookupOps(expr, fn)               => LookupOps(substitute(substitutions, expr), fn)
       }
     }
 
