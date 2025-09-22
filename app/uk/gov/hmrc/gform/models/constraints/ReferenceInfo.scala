@@ -42,6 +42,14 @@ object ReferenceInfo {
   final case class IndexOfExpr(path: TemplatePath, indexOf: IndexOf) extends ReferenceInfo
   final case class NumberedListExpr(path: TemplatePath, numberedList: NumberedList) extends ReferenceInfo
   final case class BulletedListExpr(path: TemplatePath, numberedList: BulletedList) extends ReferenceInfo
+  final case class NumberedListChoicesSelectedExpr(
+    path: TemplatePath,
+    numberedListChoicesSelected: NumberedListChoicesSelected
+  ) extends ReferenceInfo
+  final case class BulletedListChoicesSelectedExpr(
+    path: TemplatePath,
+    bulletedListChoicesSelected: BulletedListChoicesSelected
+  ) extends ReferenceInfo
   final case class StringOpsExpr(path: TemplatePath, stringOps: StringOps) extends ReferenceInfo
   final case class ChoicesRevealedFieldExpr(path: TemplatePath, choicesRevealedField: ChoicesRevealedField)
       extends ReferenceInfo

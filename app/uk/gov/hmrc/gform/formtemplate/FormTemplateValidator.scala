@@ -266,6 +266,24 @@ object FormTemplateValidator {
         Invalid(
           s"${path.path}: $formComponentId is not AddToList ID or a checkbox component (choice or Revealing Choice) ID"
         )
+      case BulletedListChoicesSelectedExpr(path, BulletedListChoicesSelected(formComponentId, _))
+          if !SectionHelper
+            .addToListFormComponents(formTemplate.formKind.allSections)
+            .map(_.id)
+            .contains(formComponentId) && !allChoiceCheckboxIds
+            .contains(formComponentId) =>
+        Invalid(
+          s"${path.path}: $formComponentId is not AddToList ID or a checkbox choice component ID"
+        )
+      case NumberedListChoicesSelectedExpr(path, NumberedListChoicesSelected(formComponentId, _))
+          if !SectionHelper
+            .addToListFormComponents(formTemplate.formKind.allSections)
+            .map(_.id)
+            .contains(formComponentId) && !allChoiceCheckboxIds
+            .contains(formComponentId) =>
+        Invalid(
+          s"${path.path}: $formComponentId is not AddToList ID or a checkbox choice component ID"
+        )
       case ReferenceInfo.StringOpsExpr(path, StringOps(FormCtx(formComponentId), _)) if !allFcIds(formComponentId) =>
         invalid(path, formComponentId)
       case ReferenceInfo.ChoicesRevealedFieldExpr(path, ChoicesRevealedField(formComponentId))
@@ -1308,23 +1326,25 @@ object FormTemplateValidator {
           .map(_.id)
           .contains(value)
           .validationResult(s"$value is not AddToList Id")
-      case Size(value, _)               => validate(FormCtx(value), sections)
-      case Typed(expr, tpe)             => validate(expr, sections)
-      case IndexOf(formComponentId, _)  => validate(FormCtx(formComponentId), sections)
-      case IndexOfDataRetrieveCtx(_, _) => Valid
-      case NumberedList(_)              => Valid
-      case BulletedList(_)              => Valid
-      case StringOps(_, _)              => Valid
-      case Concat(exprs)                => Monoid.combineAll(exprs.map(e => validate(e, sections)))
-      case CountryOfItmpAddress         => Valid
-      case ChoicesRevealedField(_)      => Valid
-      case ChoicesSelected(_)           => Valid
-      case ChoicesAvailable(_, _)       => Valid
-      case DisplayAsEntered(_)          => Valid
-      case CountSelectedChoices(_)      => Valid
-      case ChoicesCount(_)              => Valid
-      case TaskStatus(_)                => Valid
-      case LookupOps(_, _)              => Valid
+      case Size(value, _)                    => validate(FormCtx(value), sections)
+      case Typed(expr, tpe)                  => validate(expr, sections)
+      case IndexOf(formComponentId, _)       => validate(FormCtx(formComponentId), sections)
+      case IndexOfDataRetrieveCtx(_, _)      => Valid
+      case NumberedList(_)                   => Valid
+      case BulletedList(_)                   => Valid
+      case NumberedListChoicesSelected(_, _) => Valid
+      case BulletedListChoicesSelected(_, _) => Valid
+      case StringOps(_, _)                   => Valid
+      case Concat(exprs)                     => Monoid.combineAll(exprs.map(e => validate(e, sections)))
+      case CountryOfItmpAddress              => Valid
+      case ChoicesRevealedField(_)           => Valid
+      case ChoicesSelected(_)                => Valid
+      case ChoicesAvailable(_, _)            => Valid
+      case DisplayAsEntered(_)               => Valid
+      case CountSelectedChoices(_)           => Valid
+      case ChoicesCount(_)                   => Valid
+      case TaskStatus(_)                     => Valid
+      case LookupOps(_, _)                   => Valid
     }
   }
 

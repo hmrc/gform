@@ -80,6 +80,8 @@ final case class ExprWithPath(path: TemplatePath, expr: Expr) {
     case IndexOfDataRetrieveCtx(ctx, _)                => ReferenceInfo.DataRetrieveCtxExpr(path, ctx) :: Nil
     case n @ NumberedList(_)                           => ReferenceInfo.NumberedListExpr(path, n) :: Nil
     case b @ BulletedList(_)                           => ReferenceInfo.BulletedListExpr(path, b) :: Nil
+    case n @ NumberedListChoicesSelected(_, _)         => ReferenceInfo.NumberedListChoicesSelectedExpr(path, n) :: Nil
+    case b @ BulletedListChoicesSelected(_, _)         => ReferenceInfo.BulletedListChoicesSelectedExpr(path, b) :: Nil
     case s @ StringOps(expr, _)                        => ReferenceInfo.StringOpsExpr(path, s) :: toReferenceInfo(expr)
     case Concat(exprs)                                 => toReferenceInfo(exprs: _*)
     case CountryOfItmpAddress                          => Nil
