@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.gform.submission.destinations
 
+import cats.implicits.catsSyntaxEq
+
 import java.time.Instant
 import cats.instances.future._
 import org.slf4j.LoggerFactory
@@ -63,14 +65,17 @@ class DmsSubmitter(
     for {
       form         <- formService.get(formId)
       formTemplate <- formTemplateService.get(form.formTemplateId)
-      updatedDms = l match {
-                     case LangADT.En => hmrcDms
-                     case LangADT.Cy =>
-                       hmrcDms.copy(
-                         classificationType = welshDefaults.classificationType,
-                         businessArea = welshDefaults.businessArea
-                       )
-                   }
+      updatedDms = {
+        val isWelshOnly: Boolean = formTemplate.languages.languages === Set(LangADT.Cy)
+        l match {
+          case LangADT.Cy if !isWelshOnly =>
+            hmrcDms.copy(
+              classificationType = welshDefaults.classificationType,
+              businessArea = welshDefaults.businessArea
+            )
+          case _ => hmrcDms
+        }
+      }
       summaries <-
         fromFutureA(
           PdfAndXmlSummariesFactory

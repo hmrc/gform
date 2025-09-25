@@ -38,15 +38,12 @@ trait Verifier {
     val formComponents: List[FormComponent] = pages.flatMap(_.fields) ++ formTemplate.destinations.allFormComponents
     val componentTypes: List[ComponentType] = formComponents.map(_.`type`)
 
-    val languages = formTemplate.languages
-
     val allExpressions: List[ExprWithPath] = LeafExpr(TemplatePath.root, formTemplate)
 
     val expressionIds: List[ExpressionId] = expressionsContext.expressions.keys.toList
 
     for {
       _ <- fromOptA(FormTemplateValidator.validateLowercaseIds(formTemplate).toEither)
-      _ <- fromOptA(FormTemplateValidator.validateLanguages(languages).toEither)
       _ <- fromOptA(FormTemplateValidator.validateChoiceHelpText(pages).toEither)
       _ <- fromOptA(FormTemplateValidator.validateChoiceHints(pages).toEither)
       _ <- fromOptA(FormTemplateValidator.validateChoiceDividerPositionLowerBound(pages).toEither)
