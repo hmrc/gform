@@ -531,6 +531,9 @@
         "instruction": {
           "type": "object"
         },
+        "specimenNote": {
+          "type": "string"
+        },
         "note": {
           "anyOf": [
             {
