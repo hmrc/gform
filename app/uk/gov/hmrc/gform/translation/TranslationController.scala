@@ -24,7 +24,7 @@ import java.time.format.DateTimeFormatter
 import java.util.Locale
 import java.util.zip.{ ZipEntry, ZipOutputStream }
 import play.api.libs.Files.TemporaryFile
-import play.api.libs.json.{ JsObject, Json }
+import play.api.libs.json.{ JsArray, JsObject, JsString, JsValue, Json }
 import org.apache.pekko.stream.scaladsl.StreamConverters
 import play.api.mvc.{ Action, AnyContent, ControllerComponents, Result }
 
@@ -80,16 +80,18 @@ class TranslationController(
 
   def generateTranslatebleXlsx(
     formTemplateId: FormTemplateId
-  ): Action[AnyContent] = generateXlsx(formTemplateId, TextExtractor.generateTranslatableRows)
+  ): Action[AnyContent] = generateXlsx(formTemplateId, TextExtractor.generateTranslatableRows, englishOnly = false)
 
   def generateBriefTranslatebleXlsx(
-    formTemplateId: FormTemplateId
+    formTemplateId: FormTemplateId,
+    allEnglish: Boolean
   ): Action[AnyContent] = generateXlsx(
     formTemplateId,
     (s: String) =>
       ("en", "cy") :: TextExtractor
         .generateBriefTranslatableRows(s)
-        .map(textTotransalate => (textTotransalate.en, ""))
+        .map(textTotransalate => (textTotransalate.en, "")),
+    allEnglish
   )
 
   def generateInternalCsv(
@@ -143,12 +145,36 @@ class TranslationController(
         )
     }
 
+  private def removeWelshTranslations(json: JsValue): JsValue = {
+    def removeWelshFromString(text: String): String =
+      // Rewrites
+      // "email": "if 1 = 1 then 'foo' | 'foo-cy' else 'bar'|'bar-cy'"
+      // into
+      // "email": "if 1 = 1 then 'foo' else 'bar'"
+      text.replaceAll("('[^']*')\\s*\\|\\s*'[^']*'", "$1")
+
+    json match {
+      case JsString(value) => JsString(removeWelshFromString(value))
+      case JsArray(values) => JsArray(values.map(removeWelshTranslations))
+      case JsObject(fields) =>
+        JsObject(
+          fields
+            .filterNot(_._1 == "cy")
+            .map { case (key, value) => key -> removeWelshTranslations(value) }
+        )
+      case other => other
+    }
+  }
+
   private def generateXlsx(
     formTemplateId: FormTemplateId,
-    generate: String => List[(String, String)]
+    generate: String => List[(String, String)],
+    englishOnly: Boolean
   ): Action[AnyContent] =
     withFormTemplate(formTemplateId) { json =>
-      val jsonAsString = Json.prettyPrint(json.value)
+      val jsonAsString =
+        if (englishOnly) Json.prettyPrint(removeWelshTranslations(json.value))
+        else Json.prettyPrint(json.value)
       Ok.chunked(StreamConverters.fromInputStream(() => generateXlsx(TextExtractor.escapeRows(generate(jsonAsString)))))
         .withHeaders(
           CONTENT_TYPE        -> "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
