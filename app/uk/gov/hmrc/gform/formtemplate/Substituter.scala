@@ -400,7 +400,8 @@ object Substituter {
         fields = addToList.fields(substitutions),
         errorMessage = addToList.errorMessage(substitutions),
         descriptionTotal = addToList.descriptionTotal(substitutions),
-        declarationSection = addToList.declarationSection(substitutions)
+        declarationSection = addToList.declarationSection(substitutions),
+        removePageContent = addToList.removePageContent(substitutions)
       )
     }
 

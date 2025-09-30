@@ -355,7 +355,8 @@ trait FormTemplateSupport {
       None,
       defaultPage,
       pageIdToDisplayAfterRemove = pageIdToDisplayAfterRemove,
-      displayWidth = None
+      displayWidth = None,
+      removePageContent = None
     )
 
   def mkInfoMessageComponent(

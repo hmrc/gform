@@ -128,7 +128,7 @@ object MiniSummaryListHelper {
           page.id.filter(_ == pageId).flatMap(_ => handlePagesParentTask(page.includeIf, taskIncludeIf))
         case Section.RepeatingPage(rPage, _) =>
           rPage.id.filter(_ == pageId).flatMap(_ => handlePagesParentTask(rPage.includeIf, taskIncludeIf))
-        case Section.AddToList(_, _, _, _, _, _, _, _, pages, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) =>
+        case Section.AddToList(_, _, _, _, _, _, _, _, pages, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) =>
           pages.toList.collectFirst {
             case page if page.id.contains(pageId) => handlePagesParentTask(page.includeIf, taskIncludeIf)
           }.flatten
