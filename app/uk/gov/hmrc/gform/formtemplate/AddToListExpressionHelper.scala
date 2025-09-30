@@ -195,7 +195,7 @@ object AddToListExpressionHelper {
           GreaterThanOrEquals(loopExpr(left), loopExpr(right))
         case LessThan(left, right)            => LessThan(loopExpr(left), loopExpr(right))
         case LessThanOrEquals(left, right)    => LessThanOrEquals(loopExpr(left), loopExpr(right))
-        case Not(e)                           => loop(e)
+        case Not(e)                           => Not(loop(e))
         case Or(left, right)                  => Or(loop(left), loop(right))
         case And(left, right)                 => And(loop(left), loop(right))
         case Contains(multiValueField, value) => Contains(multiValueField, loopExpr(value))
