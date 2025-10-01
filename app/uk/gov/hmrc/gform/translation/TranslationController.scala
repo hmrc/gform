@@ -80,7 +80,7 @@ class TranslationController(
 
   def generateTranslatebleXlsx(
     formTemplateId: FormTemplateId
-  ): Action[AnyContent] = generateXlsx(formTemplateId, TextExtractor.generateTranslatableRows, englishOnly = false)
+  ): Action[AnyContent] = generateXlsx(formTemplateId, TextExtractor.generateTranslatableRows, allEnglish = false)
 
   def generateBriefTranslatebleXlsx(
     formTemplateId: FormTemplateId,
@@ -169,11 +169,11 @@ class TranslationController(
   private def generateXlsx(
     formTemplateId: FormTemplateId,
     generate: String => List[(String, String)],
-    englishOnly: Boolean
+    allEnglish: Boolean
   ): Action[AnyContent] =
     withFormTemplate(formTemplateId) { json =>
       val jsonAsString =
-        if (englishOnly) Json.prettyPrint(removeWelshTranslations(json.value))
+        if (allEnglish) Json.prettyPrint(removeWelshTranslations(json.value))
         else Json.prettyPrint(json.value)
       Ok.chunked(StreamConverters.fromInputStream(() => generateXlsx(TextExtractor.escapeRows(generate(jsonAsString)))))
         .withHeaders(
