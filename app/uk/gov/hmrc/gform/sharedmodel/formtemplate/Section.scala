@@ -74,7 +74,8 @@ object Section {
     fields: Option[NonEmptyList[FormComponent]] = None,
     pageIdToDisplayAfterRemove: Option[PageId] = None,
     declarationSection: Option[DeclarationSection] = None,
-    displayWidth: Option[LayoutDisplayWidth]
+    displayWidth: Option[LayoutDisplayWidth],
+    removePageContent: Option[SmartString]
   ) extends Section {
     val pageId: PageId = PageId(addAnotherQuestion.id.value)
     override lazy val expandedFormComponents: List[FormComponent] = pages.toList.flatMap(_.expandedFormComponents)
@@ -108,7 +109,8 @@ object Section {
           LeafExpr(path + "fields", a.fields) ++
           LeafExpr(path + "errorMessage", a.infoMessage) ++
           LeafExpr(path + "descriptionTotal", a.descriptionTotal) ++
-          LeafExpr(path + "declarationSection", a.declarationSection)
+          LeafExpr(path + "declarationSection", a.declarationSection) ++
+          LeafExpr(path + "removePageContent", a.removePageContent)
     }
 }
 

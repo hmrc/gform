@@ -1088,7 +1088,8 @@ class TemplateValidatorSpec extends Spec {
       None,
       cyaPage = maybeCya,
       declarationSection = maybeDeclaration,
-      displayWidth = None
+      displayWidth = None,
+      removePageContent = None
     )
 
   private def mkFormComponent(name: String, expr: Expr, validIf: Option[ValidIf] = None) =

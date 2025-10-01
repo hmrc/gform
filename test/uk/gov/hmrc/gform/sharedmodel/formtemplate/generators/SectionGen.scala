@@ -196,6 +196,7 @@ trait SectionGen {
       maybePageId           <- Gen.option(PageIdGen.pageIdGen)
       cyaPage               <- Gen.option(checkYourAnswerPageGen)
       descriptionTotal      <- smartStringGen
+      removePageContent     <- Gen.option(smartStringGen)
     } yield Section
       .AddToList(
         title,
@@ -218,7 +219,8 @@ trait SectionGen {
         pageIdToDisplayAfterRemove = maybePageId,
         cyaPage = cyaPage,
         descriptionTotal = Some(AtlDescription.KeyValueBased(descriptionTotal, descriptionTotal)),
-        displayWidth = None
+        displayWidth = None,
+        removePageContent = removePageContent
       )
 
   def sectionGen: Gen[Section] = Gen.oneOf(nonRepeatingPageSectionGen, repeatingPageSectionGen, addToListSectionGen)

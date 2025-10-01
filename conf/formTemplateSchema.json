@@ -498,6 +498,9 @@
         "addAnotherQuestion": {
           "type": "object"
         },
+        "removePageContent": {
+          "$ref": "#/$defs/stringOrEnCyObject"
+        },
         "defaultPage": {
           "type": "object"
         },
