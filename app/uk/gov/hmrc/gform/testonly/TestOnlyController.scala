@@ -393,23 +393,11 @@ class TestOnlyController(
       testOnlyFormService.saveForm(saveRequest).map(saveReply => Ok(Json.toJson(saveReply)))
     }
 
-  def restoreForm(snapshotId: String) = Action.async { _ =>
+  def restoreForm(snapshotId: String, useOriginalTemplate: Boolean) = Action.async { _ =>
     implicit val hc: HeaderCarrier = HeaderCarrier()
     testOnlyFormService
-      .restoreForm(SnapshotId(snapshotId))
+      .restoreForm(SnapshotId(snapshotId), useOriginalTemplate)
       .map(snapshot => Ok(Json.toJson(snapshot)))
-  }
-
-  def restoreFormWithAccessCode(snapshotId: String, accessCode: String) = Action.async { _ =>
-    implicit val hc: HeaderCarrier = HeaderCarrier()
-    testOnlyFormService
-      .restoreFormWithAccessCode(SnapshotId(snapshotId), accessCode)
-      .map(snapshot => Ok(Json.toJson(snapshot)))
-  }
-
-  def restoreSnapshotTemplate() = Action.async(parse.json) { request =>
-    val snapshotId = request.body.as[SnapshotId]
-    testOnlyFormService.restoreSnapshotTemplate(snapshotId).map(_ => Ok)
   }
 
   def getSnapshots() =
@@ -430,11 +418,11 @@ class TestOnlyController(
       testOnlyFormService.updateSnapshot(updateRequest).map(saveReply => Ok(Json.toJson(saveReply)))
     }
 
-  def updateFormData() =
+  def loadSnapshotData() =
     Action.async(parse.json[UpdateFormDataRequest]) { request =>
       implicit val hc: HeaderCarrier = HeaderCarrier()
       val updateRequest: UpdateFormDataRequest = request.body
-      testOnlyFormService.updateFormData(updateRequest).map(saveReply => Ok(Json.toJson(saveReply)))
+      testOnlyFormService.loadSnapshotData(updateRequest).map(form => Ok(Json.toJson(form)))
     }
 
   def deleteSnapshot(snapshotId: SnapshotId) = Action.async { _ =>
