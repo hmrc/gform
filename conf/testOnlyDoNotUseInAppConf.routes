@@ -40,10 +40,8 @@ GET           /gform/test-only/getFromDes/*path                                 
 
 POST          /gform/test-only/save-form                                              uk.gov.hmrc.gform.testonly.TestOnlyController.saveForm()
 POST          /gform/test-only/update-snapshot                                        uk.gov.hmrc.gform.testonly.TestOnlyController.updateSnapshot()
-POST          /gform/test-only/update-form-data                                       uk.gov.hmrc.gform.testonly.TestOnlyController.updateFormData()
-GET           /gform/test-only/restore-form/:snapshotId                               uk.gov.hmrc.gform.testonly.TestOnlyController.restoreForm(snapshotId: String)
-GET           /gform/test-only/restore-form/:snapshotId/:accessCode                   uk.gov.hmrc.gform.testonly.TestOnlyController.restoreFormWithAccessCode(snapshotId: String, accessCode: String)
-PUT           /gform/test-only/restore-snapshot-template                              uk.gov.hmrc.gform.testonly.TestOnlyController.restoreSnapshotTemplate()
+POST          /gform/test-only/snapshot-load-data                                     uk.gov.hmrc.gform.testonly.TestOnlyController.loadSnapshotData()
+GET           /gform/test-only/restore-form/:snapshotId/:useOriginalTemplate          uk.gov.hmrc.gform.testonly.TestOnlyController.restoreForm(snapshotId: String, useOriginalTemplate: Boolean)
 POST          /gform/test-only/snapshots                                              uk.gov.hmrc.gform.testonly.TestOnlyController.getSnapshots()
 GET           /gform/test-only/snapshot-data/:snapshotId                              uk.gov.hmrc.gform.testonly.TestOnlyController.getSnapshotData(snapshotId: SnapshotId)
 DELETE        /gform/test-only/snapshot/:snapshotId                                   uk.gov.hmrc.gform.testonly.TestOnlyController.deleteSnapshot(snapshotId: SnapshotId)

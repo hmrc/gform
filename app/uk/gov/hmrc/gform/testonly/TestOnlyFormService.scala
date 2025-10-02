@@ -16,12 +16,13 @@
 
 package uk.gov.hmrc.gform.testonly
 
-import play.api.mvc.Results
 import play.api.libs.json._
+import play.api.mvc.Results
+import uk.gov.hmrc.gform.sharedmodel.form.Form
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplateRaw, FormTemplateRawId }
 import uk.gov.hmrc.gform.formtemplate.{ FormTemplateService, RequestHandlerAlg }
-import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId, FormId, FormIdData }
+import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId, FormIdData }
 import uk.gov.hmrc.gform.save4later.FormMongoCache
 import uk.gov.hmrc.gform.core.FOpt
 import uk.gov.hmrc.gform.BuildInfo
@@ -32,7 +33,6 @@ import cats.implicits._
 import uk.gov.hmrc.gform.envelope.EnvelopeAlgebra
 import uk.gov.hmrc.gform.formmetadata.FormMetadataAlgebra
 import uk.gov.hmrc.gform.objectstore.{ ObjectStoreAlgebra, ObjectStoreService }
-import uk.gov.hmrc.gform.sharedmodel.AccessCode
 
 class TestOnlyFormService(
   snapshotMongoCache: SnapshotMongoCache,
@@ -88,7 +88,8 @@ class TestOnlyFormService(
                        saveRequest.description,
                        GformVersion(BuildInfo.version),
                        saveRequest.gformFrontendVersion,
-                       saveRequest.ggFormData
+                       saveRequest.ggFormData,
+                       saveRequest.accessCode
                      )
           _ <- snapshotMongoCache.put(snapshot.snapshotId, snapshot)
           _ <- restoreSnapshotTemplate(snapshot.snapshotId)
@@ -98,7 +99,7 @@ class TestOnlyFormService(
   def getFormTemplateRaw(formTemplateId: FormTemplateRawId): Future[FormTemplateRaw] =
     formTemplateService.get(formTemplateId)
 
-  def restoreSnapshotTemplate(snapshotId: SnapshotId): Future[Unit] =
+  private def restoreSnapshotTemplate(snapshotId: SnapshotId): Future[Unit] =
     snapshotMongoCache.find(snapshotId).flatMap {
       case Some(snapshot) =>
         requestHandler
@@ -108,37 +109,41 @@ class TestOnlyFormService(
       case None => throw new Exception(s"We could not find snapshot item with id: $snapshotId")
     }
 
-  def restoreForm(snapshotId: SnapshotId)(implicit
+  def restoreForm(snapshotId: SnapshotId, useOriginalTemplate: Boolean)(implicit
     hc: HeaderCarrier
-  ): Future[SnapshotOverview] =
-    doRestoreForm(snapshotId, None)
-
-  def restoreFormWithAccessCode(snapshotId: SnapshotId, accessCode: String)(implicit
-    hc: HeaderCarrier
-  ): Future[SnapshotOverview] =
-    doRestoreForm(snapshotId, Some(accessCode))
+  ): Future[RestoredSnapshot] =
+    doRestoreForm(snapshotId, useOriginalTemplate)
 
   private def doRestoreForm(
     snapshotId: SnapshotId,
-    maybeAccessCode: Option[String]
-  )(implicit hc: HeaderCarrier): Future[SnapshotOverview] =
+    useOriginalTemplate: Boolean
+  )(implicit hc: HeaderCarrier): Future[RestoredSnapshot] =
     snapshotMongoCache.find(snapshotId).flatMap {
       case Some(snapshot) =>
-        formMongoCache.find(FormId(snapshot.originalForm._id.value)).flatMap {
-          case Some(form) =>
-            val newForm = snapshot.toSnapshotForm(snapshot.snapshotTemplateId, form, maybeAccessCode)
-            val formIdData = maybeAccessCode match {
-              case Some(accessCode) =>
-                FormIdData.WithAccessCode(form.userId, snapshot.snapshotTemplateId, AccessCode(accessCode))
-              case None => FormIdData.Plain(form.userId, snapshot.snapshotTemplateId)
-            }
-            for {
-              _ <- formMongoCache.upsert(newForm)
-              _ <- formMetadataAlgebra.upsert(formIdData)
-            } yield SnapshotOverview(snapshot, withData = true)
-          case None =>
-            Future.failed(new Exception(s"We could not find form item with id: ${snapshot.originalForm._id.value}"))
+        val form = snapshot.originalForm
+        val formTemplateId =
+          if (useOriginalTemplate) form.formTemplateId else snapshot.snapshotTemplateId
+
+        val formIdData = snapshot.accessCode match {
+          case Some(accessCode) =>
+            FormIdData.WithAccessCode(form.userId, formTemplateId, accessCode)
+          case None => FormIdData.Plain(form.userId, formTemplateId)
         }
+
+        val newForm = snapshot.toSnapshotForm(formTemplateId, form, formIdData)
+
+        for {
+          _ <- formMongoCache.upsert(newForm)
+          _ <- formMetadataAlgebra.upsert(formIdData)
+          _ <- if (useOriginalTemplate)
+                 requestHandler.handleRequest(snapshot.toSnapshotTemplate()).value
+               else Future.successful(())
+        } yield RestoredSnapshot(
+          formIdData,
+          formTemplateId,
+          snapshot.accessCode,
+          snapshot.ggFormData
+        )
       case None =>
         Future.failed(new Exception(s"We could not find snapshot item with id: $snapshotId"))
     }
@@ -171,7 +176,7 @@ class TestOnlyFormService(
       case None           => throw new Exception(s"We could not find snapshot item with id: $snapshotId")
     }
 
-  def updateFormData(request: UpdateFormDataRequest)(implicit hc: HeaderCarrier): Future[SaveReply] =
+  def loadSnapshotData(request: UpdateFormDataRequest)(implicit hc: HeaderCarrier): Future[Form] =
     formMongoCache
       .find(request.formId)
       .flatMap {
@@ -187,10 +192,10 @@ class TestOnlyFormService(
               taskIdTaskStatus = snapshot.originalForm.taskIdTaskStatus
             )
           )
-        case None => throw new Exception(s"We could not find snapshot item with id: $request.snapshotId")
+        case None => throw new Exception(s"We could not find form item with id: ${request.formId}")
       }
       .flatMap { updatedForm =>
-        formMongoCache.upsert(updatedForm).map(_ => SaveReply(request.formId))
+        formMongoCache.upsert(updatedForm).map(_ => updatedForm)
       }
 
   def deleteSnapshot(snapshotId: SnapshotId): Future[Unit] =

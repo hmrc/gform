@@ -21,11 +21,22 @@ import julienrf.json.derived
 import play.api.libs.json.Reads._
 import play.api.libs.json._
 import uk.gov.hmrc.gform.sharedmodel.AccessCode
-import uk.gov.hmrc.gform.sharedmodel.form.Form
+import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormIdData }
 import uk.gov.hmrc.gform.sharedmodel.form.FormData
 import uk.gov.hmrc.gform.sharedmodel.form.FormId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateRaw
+
+final case class RestoredSnapshot(
+  formIdData: FormIdData,
+  formTemplateId: FormTemplateId,
+  accessCode: Option[AccessCode],
+  ggFormData: Option[GovernmentGatewayFormData]
+)
+
+object RestoredSnapshot {
+  implicit val format: OFormat[RestoredSnapshot] = derived.oformat()
+}
 
 case class SnapshotOverview(
   templateId: FormTemplateId,
@@ -36,7 +47,8 @@ case class SnapshotOverview(
   gformVersion: GformVersion,
   gformFrontendVersion: GformFrontendVersion,
   formData: Option[FormData],
-  ggFormData: Option[GovernmentGatewayFormData]
+  ggFormData: Option[GovernmentGatewayFormData],
+  accessCode: Option[AccessCode]
 )
 
 object SnapshotOverview {
@@ -51,7 +63,8 @@ object SnapshotOverview {
       snapshot.gformVersion,
       snapshot.gformFrontendVersion,
       if (withData) Some(snapshot.originalForm.formData) else None,
-      if (withData) snapshot.ggFormData else None
+      if (withData) snapshot.ggFormData else None,
+      snapshot.accessCode
     )
 
   implicit val writes: OWrites[SnapshotOverview] = derived.owrites()
@@ -61,19 +74,12 @@ case class SaveRequest(
   formId: FormId,
   description: Description,
   gformFrontendVersion: GformFrontendVersion,
-  ggFormData: Option[GovernmentGatewayFormData]
+  ggFormData: Option[GovernmentGatewayFormData],
+  accessCode: Option[AccessCode]
 )
 
 object SaveRequest {
   implicit val format: OFormat[SaveRequest] = derived.oformat()
-}
-
-case class SaveReply(
-  formId: FormId
-)
-
-object SaveReply {
-  implicit val format: OFormat[SaveReply] = derived.oformat()
 }
 
 case class UpdateSnapshotRequest(
@@ -126,21 +132,18 @@ case class Snapshot(
   gformFrontendVersion: GformFrontendVersion,
   snapshotTemplateId: FormTemplateId,
   createdAt: Instant,
-  ggFormData: Option[GovernmentGatewayFormData]
+  ggFormData: Option[GovernmentGatewayFormData],
+  accessCode: Option[AccessCode]
 ) {
   def toSnapshotForm(
     formTemplateId: FormTemplateId,
     currentForm: Form,
-    maybeAccessCode: Option[String]
+    currentId: FormIdData
   ): Form = {
     val currentUserId = currentForm.userId
-    val currentId = maybeAccessCode match {
-      case Some(accessCode) => FormId.fromAccessCode(currentForm.userId, formTemplateId, AccessCode(accessCode))
-      case _                => FormId(currentForm.userId, formTemplateId)
-    }
 
     originalForm.copy(
-      _id = currentId,
+      _id = currentId.toFormId,
       userId = currentUserId,
       formTemplateId = formTemplateId
     )
@@ -161,7 +164,8 @@ object Snapshot {
     description: Description,
     gformVersion: GformVersion,
     gformFrontendVersion: GformFrontendVersion,
-    governmentGatewayFormData: Option[GovernmentGatewayFormData]
+    governmentGatewayFormData: Option[GovernmentGatewayFormData],
+    accessCode: Option[AccessCode]
   ): Snapshot = {
     // add prefix to the template id for both saved form and template
     val snapshotId = SnapshotId(java.util.UUID.randomUUID().toString)
@@ -176,7 +180,8 @@ object Snapshot {
       gformFrontendVersion,
       snapshotTemplateId,
       Instant.now,
-      governmentGatewayFormData
+      governmentGatewayFormData,
+      accessCode
     )
   }
 
