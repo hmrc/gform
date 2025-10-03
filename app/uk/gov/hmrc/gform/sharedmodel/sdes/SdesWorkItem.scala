@@ -27,7 +27,8 @@ final case class SdesWorkItem(
   envelopeId: EnvelopeId,
   formTemplateId: FormTemplateId,
   submissionRef: SubmissionRef,
-  destination: SdesDestination
+  destination: SdesDestination,
+  filePrefix: Option[String]
 )
 
 object SdesWorkItem {

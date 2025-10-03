@@ -148,6 +148,7 @@ trait DestinationGen {
         None,
         None,
         validateHandlebarPayload,
+        None,
         None
       )
 

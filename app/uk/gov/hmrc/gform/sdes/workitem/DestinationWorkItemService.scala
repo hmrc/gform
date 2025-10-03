@@ -37,7 +37,8 @@ trait DestinationWorkItemAlgebra[F[_]] {
     envelopeId: EnvelopeId,
     formTemplateId: FormTemplateId,
     submissionRef: SubmissionRef,
-    destination: SdesDestination
+    destination: SdesDestination,
+    filePrefix: Option[String]
   ): F[Unit]
 
   def search(
@@ -67,7 +68,8 @@ class DestinationWorkItemService(
     envelopeId: EnvelopeId,
     formTemplateId: FormTemplateId,
     submissionRef: SubmissionRef,
-    sdesDestination: SdesDestination
+    sdesDestination: SdesDestination,
+    filePrefix: Option[String]
   ): Future[Unit] = {
     val correlationId = UUID.randomUUID().toString
     val sdesWorkItem =
@@ -76,7 +78,8 @@ class DestinationWorkItemService(
         envelopeId,
         formTemplateId,
         submissionRef,
-        sdesDestination
+        sdesDestination,
+        filePrefix
       )
     sdesDestination match {
       case SdesDestination.Dms => dmsWorkItemRepo.pushNew(sdesWorkItem).void

@@ -50,10 +50,13 @@ class SdesRenotifyService(
                                                             val byteStringFuture: Future[ByteString] =
                                                               obj.content.runFold(ByteString.empty)(_ ++ _)
 
+                                                            val fileNameWithPrefix =
+                                                              s"${submission.filePrefix.getOrElse("")}$fileName"
+
                                                             byteStringFuture.flatMap { concatenatedByteString =>
                                                               objectStoreAlgebra.uploadFileWithDir(
                                                                 paths.ephemeral,
-                                                                fileName,
+                                                                fileNameWithPrefix,
                                                                 concatenatedByteString,
                                                                 ContentType.`application/json`
                                                               )

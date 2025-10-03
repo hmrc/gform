@@ -106,7 +106,8 @@ class InfoArchiveSubmitter(
              ByteString(sip),
              ContentType.`application/xml`
            )
-      _ <- destinationWorkItemAlgebra.pushWorkItem(envelopeId, formTemplateId, submission.submissionRef, InfoArchive)
+      _ <-
+        destinationWorkItemAlgebra.pushWorkItem(envelopeId, formTemplateId, submission.submissionRef, InfoArchive, None)
       _ <- formService.updateFormStatus(submissionInfo.formId, Submitted)
     } yield ()
   }

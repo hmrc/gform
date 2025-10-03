@@ -55,7 +55,8 @@ trait SdesAlgebra[F[_]] {
     envelopeId: EnvelopeId,
     formTemplateId: FormTemplateId,
     submissionRef: SubmissionRef,
-    destination: SdesDestination
+    destination: SdesDestination,
+    filePrefix: Option[String]
   )(implicit
     hc: HeaderCarrier
   ): F[HttpResponse]
@@ -111,16 +112,24 @@ class SdesService(
     envelopeId: EnvelopeId,
     formTemplateId: FormTemplateId,
     submissionRef: SubmissionRef,
-    destination: SdesDestination
+    destination: SdesDestination,
+    filePrefix: Option[String]
   )(implicit
     hc: HeaderCarrier
   ): Future[HttpResponse] = {
     val sdesSubmission =
-      SdesSubmission.createSdesSubmission(correlationId, envelopeId, formTemplateId, submissionRef, destination)
+      SdesSubmission.createSdesSubmission(
+        correlationId,
+        envelopeId,
+        formTemplateId,
+        submissionRef,
+        destination,
+        filePrefix
+      )
     val sdesRouting = sdesSubmission.sdesDestination.sdesRouting(sdesConfig)
 
     for {
-      objSummary <- prepareFileForNotification(envelopeId, destination)
+      objSummary <- prepareFileForNotification(envelopeId, destination, filePrefix)
       notifyRequest = createNotifyRequest(objSummary, correlationId, sdesRouting)
       sdesHistory =
         SdesHistory.create(
@@ -408,7 +417,11 @@ class SdesService(
   private def isLocked(submission: SdesSubmission): Boolean =
     submission.lockedAt.exists(_.isAfter(Instant.now().minusMillis(sdesConfig.lockTTL)))
 
-  private def prepareFileForNotification(envelopeId: EnvelopeId, destination: SdesDestination)(implicit
+  private def prepareFileForNotification(
+    envelopeId: EnvelopeId,
+    destination: SdesDestination,
+    filePrefix: Option[String]
+  )(implicit
     hc: HeaderCarrier
   ): Future[ObjectSummaryWithMd5] = {
     val paths = destination.objectStorePaths(envelopeId)
@@ -422,10 +435,12 @@ class SdesService(
                             val byteStringFuture: Future[ByteString] =
                               obj.content.runFold(ByteString.empty)(_ ++ _)
 
+                            val fileNameWithPrefix = s"${filePrefix.getOrElse("")}$fileName"
+
                             byteStringFuture.flatMap { concatenatedByteString =>
                               objectStoreAlgebra.uploadFileWithDir(
                                 paths.ephemeral,
-                                fileName,
+                                fileNameWithPrefix,
                                 concatenatedByteString,
                                 ContentType.`application/json`
                               )
@@ -433,7 +448,7 @@ class SdesService(
                           case None =>
                             Future.failed(
                               new Exception(
-                                s"File ${envelopeId.value}.json not found in the object store."
+                                s"File $fileName not found in the object store."
                               )
                             )
                         }
@@ -451,7 +466,11 @@ class SdesService(
       result <- sdesSubmission match {
                   case Some(submission) =>
                     for {
-                      _   <- prepareFileForNotification(submission.envelopeId, submission.sdesDestination)
+                      _ <- prepareFileForNotification(
+                             submission.envelopeId,
+                             submission.sdesDestination,
+                             submission.filePrefix
+                           )
                       res <- createWorkItem(submission)
                     } yield res
                   case None =>
@@ -468,7 +487,8 @@ class SdesService(
              sdesSubmission.envelopeId,
              sdesSubmission.formTemplateId,
              sdesSubmission.submissionRef,
-             sdesDestination
+             sdesDestination,
+             None
            )
       _ <-
         saveSdesSubmission(

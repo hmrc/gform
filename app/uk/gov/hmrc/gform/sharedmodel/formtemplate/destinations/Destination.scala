@@ -107,7 +107,8 @@ object Destination {
     convertSingleQuotes: Option[Boolean],
     payload: Option[String],
     validateHandlebarPayload: Boolean,
-    jsonSchema: Option[JsValue]
+    jsonSchema: Option[JsValue],
+    filePrefix: Option[String]
   ) extends Destination with DestinationWithTaxpayerId
 
   case class InfoArchive(
@@ -312,7 +313,8 @@ case class UploadableDataStoreDestination(
   formDataPayload: Boolean,
   routing: SdesDestination,
   validateHandlebarPayload: Option[Boolean],
-  jsonSchema: Option[JsValue]
+  jsonSchema: Option[JsValue],
+  filePrefix: Option[String]
 ) {
   private def toDataStoreDestination: Either[String, Destination.DataStore] =
     for {
@@ -332,7 +334,8 @@ case class UploadableDataStoreDestination(
       convertSingleQuotes,
       None,
       validateHandlebarPayload.getOrElse(false),
-      jsonSchema
+      jsonSchema,
+      filePrefix
     )
 }
 

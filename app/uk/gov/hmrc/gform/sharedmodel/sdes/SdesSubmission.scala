@@ -41,7 +41,8 @@ final case class SdesSubmission(
   lastUpdated: Option[Instant] = None,
   destination: Option[SdesDestination],
   isAlerted: Option[Boolean] = None,
-  lockedAt: Option[Instant] = None
+  lockedAt: Option[Instant] = None,
+  filePrefix: Option[String] = None
 ) {
   val sdesDestination: SdesDestination = destination.getOrElse(SdesDestination.Dms)
 }
@@ -52,7 +53,8 @@ object SdesSubmission {
     envelopeId: EnvelopeId,
     formTemplateId: FormTemplateId,
     submissionRef: SubmissionRef,
-    destination: SdesDestination
+    destination: SdesDestination,
+    filePrefix: Option[String]
   ) =
     SdesSubmission(
       correlationId,
@@ -60,7 +62,8 @@ object SdesSubmission {
       formTemplateId,
       submissionRef,
       status = FileReady,
-      destination = Some(destination)
+      destination = Some(destination),
+      filePrefix = filePrefix
     )
 
   implicit val formatUUID: Format[UUID] =

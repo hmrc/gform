@@ -47,7 +47,8 @@ class DmsQueueService(
         workItem.envelopeId,
         workItem.formTemplateId,
         workItem.submissionRef,
-        Dms
+        Dms,
+        workItem.filePrefix
       )
       .void(ec)
   }
