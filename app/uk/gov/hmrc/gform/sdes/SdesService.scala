@@ -488,7 +488,7 @@ class SdesService(
              sdesSubmission.formTemplateId,
              sdesSubmission.submissionRef,
              sdesDestination,
-             None
+             sdesSubmission.filePrefix
            )
       _ <-
         saveSdesSubmission(
