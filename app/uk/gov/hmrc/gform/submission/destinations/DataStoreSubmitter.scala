@@ -173,7 +173,8 @@ class DataStoreSubmitter(
     submissionInfo: DestinationSubmissionInfo,
     payload: String,
     dataStoreRouting: SdesRouting,
-    destination: SdesDestination
+    destination: SdesDestination,
+    filePrefix: Option[String]
   ): FOpt[Unit] = {
     implicit val hc = new HeaderCarrier
 
@@ -193,7 +194,8 @@ class DataStoreSubmitter(
              submission.envelopeId,
              submission.dmsMetaData.formTemplateId,
              submission.submissionRef,
-             destination
+             destination,
+             filePrefix
            )
     } yield ()
   }

@@ -86,7 +86,7 @@ class DmsSubmitter(
       _        <- objectStoreAlgebra.submitEnvelope(submission, summaries, updatedDms, formTemplate._id)
       _ <-
         destinationWorkItemAlgebra
-          .pushWorkItem(submission.envelopeId, form.formTemplateId, submission.submissionRef, Dms)
+          .pushWorkItem(submission.envelopeId, form.formTemplateId, submission.submissionRef, Dms, None)
       envelopeDetails <-
         success(
           Envelope(envelope.files.map(f => File(FileId(f.fileId), FileStatus.Available, f.fileName, f.length)))

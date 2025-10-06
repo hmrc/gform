@@ -29,7 +29,8 @@ trait DataStoreSubmitterAlgebra[F[_]] {
     submissionInfo: DestinationSubmissionInfo,
     payload: String,
     dataStoreRouting: SdesRouting,
-    destination: SdesDestination
+    destination: SdesDestination,
+    filePrefix: Option[String]
   ): F[Unit]
 
   def generatePayload(

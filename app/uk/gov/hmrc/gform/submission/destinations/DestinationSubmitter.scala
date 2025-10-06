@@ -338,7 +338,8 @@ class DestinationSubmitter[M[_]](
             submissionInfo,
             payload,
             dataStoreRouting,
-            d.routing
+            d.routing,
+            d.filePrefix
           )
         ) { msg =>
           if (d.failOnError)

@@ -162,7 +162,13 @@ class FileUploadService(
       _ <- uploadMetadataXmlF
       _ <-
         if (objectStore)
-          destinationWorkItemAlgebra.pushWorkItem(submission.envelopeId, formTemplateId, submission.submissionRef, Dms)
+          destinationWorkItemAlgebra.pushWorkItem(
+            submission.envelopeId,
+            formTemplateId,
+            submission.submissionRef,
+            Dms,
+            None
+          )
         else fileUploadConnector.routeEnvelope(RouteEnvelopeRequest(submission.envelopeId, "dfs", "DMS"))
     } yield ()
   }
