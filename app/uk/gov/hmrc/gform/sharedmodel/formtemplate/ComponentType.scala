@@ -233,7 +233,8 @@ object OptionData {
     includeIf: Option[IncludeIf],
     dynamic: Option[Dynamic],
     value: OptionDataValue,
-    summaryValue: Option[SmartString]
+    summaryValue: Option[SmartString],
+    keyWord: Option[String] = None
   ) extends OptionData
 
   private val templateReads: Reads[OptionData] = {
@@ -263,7 +264,7 @@ object OptionData {
           LeafExpr(path + "includeIf", includeIf) ++
           LeafExpr(path + "dynamic", dynamic) ++
           LeafExpr(path + "summaryValue", summaryValue)
-      case OptionData.ValueBased(label, hint, includeIf, dynamic, value, summaryValue) =>
+      case OptionData.ValueBased(label, hint, includeIf, dynamic, value, summaryValue, keyWord) =>
         LeafExpr(path + "label", label) ++
           LeafExpr(path + "hint", hint) ++
           LeafExpr(path + "includeIf", includeIf) ++

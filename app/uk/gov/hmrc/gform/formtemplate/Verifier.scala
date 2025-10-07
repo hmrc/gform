@@ -46,6 +46,8 @@ trait Verifier {
       _ <- fromOptA(FormTemplateValidator.validateLowercaseIds(formTemplate).toEither)
       _ <- fromOptA(FormTemplateValidator.validateChoiceHelpText(pages).toEither)
       _ <- fromOptA(FormTemplateValidator.validateChoiceHints(pages).toEither)
+      _ <- fromOptA(FormTemplateValidator.validateTypeAheadChoices(pages).toEither)
+      _ <- fromOptA(FormTemplateValidator.validateTypeAheadKeyWordUsage(pages).toEither)
       _ <- fromOptA(FormTemplateValidator.validateChoiceDividerPositionLowerBound(pages).toEither)
       _ <- fromOptA(FormTemplateValidator.validateChoiceDividerPositionUpperBound(pages).toEither)
       _ <- fromOptA(FormTemplateValidator.validateChoiceDividerPositionValue(pages).toEither)
@@ -193,8 +195,8 @@ trait Verifier {
 
   private def removeIncludeIfFromOptionData(optionData: OptionData) =
     optionData match {
-      case i @ OptionData.IndexBased(_, _, _, _, _)    => i.copy(includeIf = None)
-      case i @ OptionData.ValueBased(_, _, _, _, _, _) => i.copy(includeIf = None)
+      case i @ OptionData.IndexBased(_, _, _, _, _)       => i.copy(includeIf = None)
+      case i @ OptionData.ValueBased(_, _, _, _, _, _, _) => i.copy(includeIf = None)
     }
 
   private def mkComponentsOptional(page: Page): Page =

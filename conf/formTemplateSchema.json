@@ -778,6 +778,9 @@
                   },
                   "includeIf": {
                     "type": "string"
+                  },
+                  "keyWord": {
+                    "type": "string"
                   }
                 },
                 "required": [

@@ -113,7 +113,8 @@ class FormComponentSpec2 extends Spec {
           NonEmptyList.of(
             OptionData
               .ValueBased(toSmartString("Yes", "Iawn"), None, None, None, OptionDataValue.StringBased("foo"), None),
-            OptionData.ValueBased(toSmartString("No", "Na"), None, None, None, OptionDataValue.StringBased("bar"), None)
+            OptionData
+              .ValueBased(toSmartString("No", "Na"), None, None, None, OptionDataValue.StringBased("bar"), None, None)
           ),
           Vertical,
           List.empty[Int],
@@ -166,8 +167,9 @@ class FormComponentSpec2 extends Spec {
         Choice(
           Radio,
           NonEmptyList.of(
-            OptionData.ValueBased(toSmartString("Yes"), None, None, None, OptionDataValue.StringBased("foo"), None),
-            OptionData.ValueBased(toSmartString("No"), None, None, None, OptionDataValue.StringBased("bar"), None)
+            OptionData
+              .ValueBased(toSmartString("Yes"), None, None, None, OptionDataValue.StringBased("foo"), None, None),
+            OptionData.ValueBased(toSmartString("No"), None, None, None, OptionDataValue.StringBased("bar"), None, None)
           ),
           Vertical,
           List.empty[Int],
@@ -227,9 +229,10 @@ class FormComponentSpec2 extends Spec {
               None,
               None,
               OptionDataValue.StringBased("foo"),
-              Option(toSmartString("Yes in summary"))
+              Option(toSmartString("Yes in summary")),
+              None
             ),
-            OptionData.ValueBased(toSmartString("No"), None, None, None, OptionDataValue.StringBased("bar"), None)
+            OptionData.ValueBased(toSmartString("No"), None, None, None, OptionDataValue.StringBased("bar"), None, None)
           ),
           Vertical,
           List.empty[Int],
