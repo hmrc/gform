@@ -129,6 +129,7 @@ class FormComponentMaker(json: JsValue) {
   lazy val optPriority: Opt[Option[Priority]] = parse("priority", PriorityTypeParser.validate)
   lazy val roundingMode: RoundingMode = (json \ "round").asOpt[RoundingMode].getOrElse(RoundingMode.defaultRoundingMode)
   lazy val optMultivalue: Opt[Option[Boolean]] = toOpt((json \ "multivalue").validateOpt[Boolean], "/multivalue")
+  lazy val optTypeAhead: Opt[Option[Boolean]] = toOpt((json \ "typeAhead").validateOpt[Boolean], "/typeAhead")
   lazy val optDisplayInSummary: Opt[Option[DisplayInSummary]] =
     toOpt((json \ "displayInSummary").validateOpt[DisplayInSummary], "/displayInSummary")
   lazy val optHideChoicesSelected: Opt[Option[Boolean]] =
@@ -661,23 +662,32 @@ class FormComponentMaker(json: JsValue) {
       maybeValueExpr           <- optMaybeValueExpr
       choices                  <- choicesOpt
       multivalue               <- optMultivalue
+      typeAhead                <- optTypeAhead
       maybeHideChoicesSelected <- optHideChoicesSelected
       hideChoicesSelected = maybeHideChoicesSelected.getOrElse(false)
-      oChoice: Opt[Choice] = (maybeFormatExpr, choices, multivalue, maybeValueExpr) match {
+      oChoice: Opt[Choice] = (maybeFormatExpr, choices, multivalue, maybeValueExpr, typeAhead) match {
                                // format: off
-        case (IsOrientation(VerticalOrientation),   Some(x :: xs), IsMultivalue(MultivalueYes), Selections(selections)) => Choice(Checkbox, NonEmptyList(x, xs),          Vertical,   selections, optionHints, optionHelpText, dividerPositon, dividerText, noneChoice, noneChoiceError, hideChoicesSelected).asRight
-        case (IsOrientation(VerticalOrientation),   Some(x :: xs), IsMultivalue(MultivalueNo),  Selections(selections)) => Choice(Radio,    NonEmptyList(x, xs),          Vertical,   selections, optionHints, optionHelpText, dividerPositon, dividerText, noneChoice, noneChoiceError, hideChoicesSelected).asRight
-        case (IsOrientation(HorizontalOrientation), Some(x :: xs), IsMultivalue(MultivalueYes), Selections(selections)) => Choice(Checkbox, NonEmptyList(x, xs),          Horizontal, selections, optionHints, optionHelpText, dividerPositon, dividerText, noneChoice, noneChoiceError, hideChoicesSelected).asRight
-        case (IsOrientation(HorizontalOrientation), Some(x :: xs), IsMultivalue(MultivalueNo),  Selections(selections)) => Choice(Radio,    NonEmptyList(x, xs),          Horizontal, selections, optionHints, optionHelpText, dividerPositon, dividerText, noneChoice, noneChoiceError, hideChoicesSelected).asRight
-        case (IsOrientation(YesNoOrientation),      None,          IsMultivalue(MultivalueNo),  Selections(selections)) => Choice(YesNo,    yesNo, Horizontal, selections, optionHints, optionHelpText, dividerPositon, dividerText, noneChoice, noneChoiceError, hideChoicesSelected).asRight
-        case (IsOrientation(YesNoOrientation),      _,             _,                           Selections(selections)) => Choice(YesNo,    yesNo, Horizontal, selections, optionHints, optionHelpText, dividerPositon, dividerText, noneChoice, noneChoiceError, hideChoicesSelected).asRight
+        case (_,   Some(x :: xs), _, Selections(selections), IsTypeAhead(TypeAheadYes))                                                           => Choice(TypeAhead, NonEmptyList(x, xs),          Vertical,   selections, optionHints, optionHelpText, dividerPositon, dividerText, noneChoice, noneChoiceError, hideChoicesSelected).asRight
+        case (IsOrientation(VerticalOrientation),   Some(x :: xs), IsMultivalue(MultivalueYes), Selections(selections), IsTypeAhead(TypeAheadNo)) => Choice(Checkbox,  NonEmptyList(x, xs),          Vertical,   selections, optionHints, optionHelpText, dividerPositon, dividerText, noneChoice, noneChoiceError, hideChoicesSelected).asRight
+        case (IsOrientation(VerticalOrientation),   Some(x :: xs), IsMultivalue(MultivalueNo),  Selections(selections), IsTypeAhead(TypeAheadNo)) => Choice(Radio,     NonEmptyList(x, xs),          Vertical,   selections, optionHints, optionHelpText, dividerPositon, dividerText, noneChoice, noneChoiceError, hideChoicesSelected).asRight
+        case (IsOrientation(HorizontalOrientation), Some(x :: xs), IsMultivalue(MultivalueYes), Selections(selections), IsTypeAhead(TypeAheadNo)) => Choice(Checkbox,  NonEmptyList(x, xs),          Horizontal, selections, optionHints, optionHelpText, dividerPositon, dividerText, noneChoice, noneChoiceError, hideChoicesSelected).asRight
+        case (IsOrientation(HorizontalOrientation), Some(x :: xs), IsMultivalue(MultivalueNo),  Selections(selections), IsTypeAhead(TypeAheadNo)) => Choice(Radio,     NonEmptyList(x, xs),          Horizontal, selections, optionHints, optionHelpText, dividerPositon, dividerText, noneChoice, noneChoiceError, hideChoicesSelected).asRight
+        case (IsOrientation(YesNoOrientation),      None,          IsMultivalue(MultivalueNo),  Selections(selections), IsTypeAhead(TypeAheadNo)) => Choice(YesNo,    yesNo, Horizontal, selections, optionHints, optionHelpText, dividerPositon, dividerText, noneChoice, noneChoiceError, hideChoicesSelected).asRight
+        case (IsOrientation(YesNoOrientation),      _,             _,                           Selections(selections), IsTypeAhead(TypeAheadNo)) => Choice(YesNo,    yesNo, Horizontal, selections, optionHints, optionHelpText, dividerPositon, dividerText, noneChoice, noneChoiceError, hideChoicesSelected).asRight
         // format: on
-                               case (invalidFormat, invalidChoices, invalidMultivalue, invalidValue) =>
+                               case (
+                                     invalidFormat,
+                                     invalidChoices,
+                                     invalidMultivalue,
+                                     invalidValue,
+                                     invalidTypeAhead
+                                   ) =>
                                  UnexpectedState(
                                    s"""|Unsupported combination of 'format, choices, multivalue and value':
                                        |Format     : $invalidFormat
                                        |Choices    : $invalidChoices
                                        |Multivalue : $invalidMultivalue
+                                       |Multivalue : $invalidTypeAhead
                                        |Value      : $invalidValue
                                        |optionHints: $optionHints
                                        |optionHelpText: $optionHelpText
@@ -913,6 +923,20 @@ class FormComponentMaker(json: JsValue) {
       multivalue match {
         case Some(false) | None => Some(MultivalueNo)
         case Some(true)         => Some(MultivalueYes)
+        case _                  => None
+      }
+  }
+
+  private sealed trait TypeAhead
+
+  private final case object TypeAheadYes extends TypeAhead
+  private final case object TypeAheadNo extends TypeAhead
+
+  private final object IsTypeAhead {
+    def unapply(typeAhead: Option[Boolean]): Option[TypeAhead] =
+      typeAhead match {
+        case Some(false) | None => Some(TypeAheadNo)
+        case Some(true)         => Some(TypeAheadYes)
         case _                  => None
       }
   }

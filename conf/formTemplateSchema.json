@@ -838,6 +838,9 @@
         "multivalue": {
           "type": "boolean"
         },
+        "typeAhead": {
+          "type": "boolean"
+        },
         "hideChoicesSelected": {
           "type": "boolean"
         },
@@ -1101,6 +1104,16 @@
           "properties": {
             "type": {
               "pattern": "^(choice|revealingChoice)$"
+            }
+          }
+        },
+        "typeAhead": {
+          "required": [
+            "type"
+          ],
+          "properties": {
+            "type": {
+              "pattern": "^(choice)$"
             }
           }
         },
