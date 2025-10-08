@@ -234,7 +234,7 @@ object OptionData {
     dynamic: Option[Dynamic],
     value: OptionDataValue,
     summaryValue: Option[SmartString],
-    keyWord: Option[String] = None
+    keyWord: Option[SmartString]
   ) extends OptionData
 
   private val templateReads: Reads[OptionData] = {
@@ -270,7 +270,8 @@ object OptionData {
           LeafExpr(path + "includeIf", includeIf) ++
           LeafExpr(path + "dynamic", dynamic) ++
           LeafExpr(path + "value", value) ++
-          LeafExpr(path + "summaryValue", summaryValue)
+          LeafExpr(path + "summaryValue", summaryValue) ++
+          LeafExpr(path + "keyWord", keyWord)
     }
 }
 

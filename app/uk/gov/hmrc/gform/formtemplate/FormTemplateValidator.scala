@@ -1117,13 +1117,11 @@ object FormTemplateValidator {
     def checkTypeAheadConstraints(choice: Choice): Boolean =
       choice.`type` match {
         case TypeAhead =>
-          // TypeAhead choices must have ValueBased options only
           val hasIndexBasedOptions = choice.options.exists {
             case _: OptionData.IndexBased => true
             case _: OptionData.ValueBased => false
           }
 
-          // TypeAhead choices cannot use Dynamic property
           val hasDynamicOptions = choice.options.exists {
             case OptionData.ValueBased(_, _, _, Some(_), _, _, _) => true
             case _                                                => false
@@ -1173,7 +1171,7 @@ object FormTemplateValidator {
     def detailedError(choice: Choice): String = {
       val invalidOptions = choice.options.collect {
         case OptionData.ValueBased(label, _, _, _, _, _, Some(keyWord)) if choice.`type` != TypeAhead =>
-          s"'${label.defaultRawValue(LangADT.En)}' (keyWord: $keyWord)"
+          s"'${label.defaultRawValue(LangADT.En)}' (keyWord: ${keyWord.defaultRawValue(LangADT.En)})"
       }
       if (invalidOptions.nonEmpty) {
         s"keyWord property can only be used with TypeAhead choices. Found in options: ${invalidOptions.mkString(", ")}"

@@ -1852,7 +1852,7 @@ class FormTemplateValidatorSpec
                 None,
                 OptionDataValue.StringBased("value1"),
                 None,
-                Some("keyword1")
+                Some(toSmartString("keyword1"))
               )
             ),
             Vertical,
@@ -1906,7 +1906,7 @@ class FormTemplateValidatorSpec
                 None,
                 OptionDataValue.StringBased("value1"),
                 None,
-                Some("keyword1")
+                Some(toSmartString("keyword1"))
               )
             ),
             Vertical,
@@ -1935,7 +1935,7 @@ class FormTemplateValidatorSpec
                 None,
                 OptionDataValue.StringBased("value1"),
                 None,
-                Some("keyword1")
+                Some(toSmartString("keyword1"))
               )
             ),
             Vertical,
