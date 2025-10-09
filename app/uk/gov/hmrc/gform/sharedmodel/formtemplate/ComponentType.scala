@@ -233,7 +233,8 @@ object OptionData {
     includeIf: Option[IncludeIf],
     dynamic: Option[Dynamic],
     value: OptionDataValue,
-    summaryValue: Option[SmartString]
+    summaryValue: Option[SmartString],
+    keyWord: Option[SmartString]
   ) extends OptionData
 
   private val templateReads: Reads[OptionData] = {
@@ -263,13 +264,14 @@ object OptionData {
           LeafExpr(path + "includeIf", includeIf) ++
           LeafExpr(path + "dynamic", dynamic) ++
           LeafExpr(path + "summaryValue", summaryValue)
-      case OptionData.ValueBased(label, hint, includeIf, dynamic, value, summaryValue) =>
+      case OptionData.ValueBased(label, hint, includeIf, dynamic, value, summaryValue, keyWord) =>
         LeafExpr(path + "label", label) ++
           LeafExpr(path + "hint", hint) ++
           LeafExpr(path + "includeIf", includeIf) ++
           LeafExpr(path + "dynamic", dynamic) ++
           LeafExpr(path + "value", value) ++
-          LeafExpr(path + "summaryValue", summaryValue)
+          LeafExpr(path + "summaryValue", summaryValue) ++
+          LeafExpr(path + "keyWord", keyWord)
     }
 }
 
@@ -322,6 +324,7 @@ sealed trait ChoiceType
 final case object Radio extends ChoiceType
 final case object Checkbox extends ChoiceType
 final case object YesNo extends ChoiceType
+final case object TypeAhead extends ChoiceType
 
 object ChoiceType {
   implicit val format: OFormat[ChoiceType] = derived.oformat()

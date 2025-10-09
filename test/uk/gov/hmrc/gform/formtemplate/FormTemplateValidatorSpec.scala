@@ -25,7 +25,7 @@ import uk.gov.hmrc.gform.Helpers.{ toLocalisedString, toSmartString }
 import uk.gov.hmrc.gform.core.parsers.ValueParser
 import uk.gov.hmrc.gform.core.{ Invalid, Opt, Valid, ValidationResult }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.PageLink
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AnyDate, BulletedList, Checkbox, Choice, ChoicesAvailable, ChoicesSelected, Constant, DataRetrieveCtx, Date, DateCtx, DateFormCtxVar, DateFunction, DateProjection, DateValueExpr, DisplayAsEntered, Dynamic, Equals, ExprWithPath, FormComponent, FormComponentId, FormComponentValidator, FormCtx, FormStartDateExprValue, HideZeroDecimals, Horizontal, IfElse, IncludeIf, IndexOf, IndexOfDataRetrieveCtx, InformationMessage, Instruction, IsTrue, LeafExpr, LinkCtx, LookupColumn, Mandatory, Not, NumberedList, Offset, OptionData, OptionDataValue, Page, PageId, PostcodeLookup, Radio, Section, ShortText, StandardInfo, SummariseGroupAsGrid, TemplatePath, Text, TextArea, TextWithRestrictions, ValidIf, Value, Vertical }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AnyDate, BulletedList, Checkbox, Choice, ChoicesAvailable, ChoicesSelected, Constant, DataRetrieveCtx, Date, DateCtx, DateFormCtxVar, DateFunction, DateProjection, DateValueExpr, DisplayAsEntered, Dynamic, Equals, ExprWithPath, FormComponent, FormComponentId, FormComponentValidator, FormCtx, FormStartDateExprValue, HideZeroDecimals, Horizontal, IfElse, IncludeIf, IndexOf, IndexOfDataRetrieveCtx, InformationMessage, Instruction, IsTrue, LeafExpr, LinkCtx, LookupColumn, Mandatory, Not, NumberedList, Offset, OptionData, OptionDataValue, Page, PageId, PostcodeLookup, Radio, Section, ShortText, StandardInfo, SummariseGroupAsGrid, TemplatePath, Text, TextArea, TextWithRestrictions, TypeAhead, ValidIf, Value, Vertical }
 import uk.gov.hmrc.gform.sharedmodel._
 
 class FormTemplateValidatorSpec
@@ -1708,6 +1708,305 @@ class FormTemplateValidatorSpec
     }
   }
 
+  "validateTypeAheadChoices" should {
+    "validate TypeAhead choice constraints" in {
+      val table = Table(
+        ("choice", "expectedResult"),
+        // Valid TypeAhead with ValueBased options only
+        (
+          Choice(
+            TypeAhead,
+            NonEmptyList.of(
+              OptionData.ValueBased(
+                toSmartString("Option 1"),
+                None,
+                None,
+                None,
+                OptionDataValue.StringBased("value1"),
+                None,
+                None
+              )
+            ),
+            Vertical,
+            List.empty,
+            None,
+            None,
+            None,
+            LocalisedString(Map()),
+            None,
+            None,
+            false
+          ),
+          Valid
+        ),
+        // Invalid TypeAhead with IndexBased options
+        (
+          Choice(
+            TypeAhead,
+            NonEmptyList.of(
+              OptionData.IndexBased(toSmartString("Option 1"), None, None, None, None)
+            ),
+            Vertical,
+            List.empty,
+            None,
+            None,
+            None,
+            LocalisedString(Map()),
+            None,
+            None,
+            false
+          ),
+          Invalid(
+            "TypeAhead choice validation failed: dutyType. TypeAhead choices must use ValueBased options only"
+          )
+        ),
+        // Invalid TypeAhead with Dynamic property
+        (
+          Choice(
+            TypeAhead,
+            NonEmptyList.of(
+              OptionData.ValueBased(
+                toSmartString("Option 1"),
+                None,
+                None,
+                Some(Dynamic.ATLBased(FormComponentId("someId"))),
+                OptionDataValue.StringBased("value1"),
+                None,
+                None
+              )
+            ),
+            Vertical,
+            List.empty,
+            None,
+            None,
+            None,
+            LocalisedString(Map()),
+            None,
+            None,
+            false
+          ),
+          Invalid(
+            "TypeAhead choice validation failed: dutyType. TypeAhead choices cannot use dynamic options"
+          )
+        ),
+        // Valid non-TypeAhead choice (should pass validation)
+        (
+          Choice(
+            Radio,
+            NonEmptyList.of(
+              OptionData.IndexBased(toSmartString("Option 1"), None, None, None, None)
+            ),
+            Vertical,
+            List.empty,
+            None,
+            None,
+            None,
+            LocalisedString(Map()),
+            None,
+            None,
+            false
+          ),
+          Valid
+        )
+      )
+
+      forAll(table) { (choice, expectedResult) =>
+        val formComponent = FormComponent(
+          FormComponentId("dutyType"),
+          choice,
+          toSmartString("Select option"),
+          false,
+          None,
+          None,
+          None,
+          validIf = None,
+          mandatory = Mandatory.True,
+          editable = true,
+          submissible = true,
+          derived = false,
+          onlyShowOnSummary = false,
+          None,
+          None
+        )
+        val sections = List(mkSectionNonRepeatingPage(formComponents = List(formComponent)))
+        val pages = SectionHelper.pages(sections)
+        val result = FormTemplateValidator.validateTypeAheadChoices(pages)
+        result shouldBe expectedResult
+      }
+    }
+  }
+
+  "validateTypeAheadKeyWordUsage" should {
+    "validate keyWord usage constraints" in {
+      val table = Table(
+        ("choice", "expectedResult"),
+        // Valid TypeAhead with keyWord
+        (
+          Choice(
+            TypeAhead,
+            NonEmptyList.of(
+              OptionData.ValueBased(
+                toSmartString("Option 1"),
+                None,
+                None,
+                None,
+                OptionDataValue.StringBased("value1"),
+                None,
+                Some(toSmartString("keyword1"))
+              )
+            ),
+            Vertical,
+            List.empty,
+            None,
+            None,
+            None,
+            LocalisedString(Map()),
+            None,
+            None,
+            false
+          ),
+          Valid
+        ),
+        // Valid TypeAhead without keyWord
+        (
+          Choice(
+            TypeAhead,
+            NonEmptyList.of(
+              OptionData.ValueBased(
+                toSmartString("Option 1"),
+                None,
+                None,
+                None,
+                OptionDataValue.StringBased("value1"),
+                None,
+                None
+              )
+            ),
+            Vertical,
+            List.empty,
+            None,
+            None,
+            None,
+            LocalisedString(Map()),
+            None,
+            None,
+            false
+          ),
+          Valid
+        ),
+        // Invalid non-TypeAhead with keyWord
+        (
+          Choice(
+            Radio,
+            NonEmptyList.of(
+              OptionData.ValueBased(
+                toSmartString("Option 1"),
+                None,
+                None,
+                None,
+                OptionDataValue.StringBased("value1"),
+                None,
+                Some(toSmartString("keyword1"))
+              )
+            ),
+            Vertical,
+            List.empty,
+            None,
+            None,
+            None,
+            LocalisedString(Map()),
+            None,
+            None,
+            false
+          ),
+          Invalid(
+            "keyWord property can only be used with TypeAhead choices: dutyType. keyWord property can only be used with TypeAhead choices. Found in options: 'Option 1' (keyWord: keyword1)"
+          )
+        ),
+        // Invalid Checkbox with keyWord
+        (
+          Choice(
+            Checkbox,
+            NonEmptyList.of(
+              OptionData.ValueBased(
+                toSmartString("Option 1"),
+                None,
+                None,
+                None,
+                OptionDataValue.StringBased("value1"),
+                None,
+                Some(toSmartString("keyword1"))
+              )
+            ),
+            Vertical,
+            List.empty,
+            None,
+            None,
+            None,
+            LocalisedString(Map()),
+            None,
+            None,
+            false
+          ),
+          Invalid(
+            "keyWord property can only be used with TypeAhead choices: dutyType. keyWord property can only be used with TypeAhead choices. Found in options: 'Option 1' (keyWord: keyword1)"
+          )
+        ),
+        // Valid non-TypeAhead without keyWord
+        (
+          Choice(
+            Radio,
+            NonEmptyList.of(
+              OptionData.ValueBased(
+                toSmartString("Option 1"),
+                None,
+                None,
+                None,
+                OptionDataValue.StringBased("value1"),
+                None,
+                None
+              )
+            ),
+            Vertical,
+            List.empty,
+            None,
+            None,
+            None,
+            LocalisedString(Map()),
+            None,
+            None,
+            false
+          ),
+          Valid
+        )
+      )
+
+      forAll(table) { (choice, expectedResult) =>
+        val formComponent = FormComponent(
+          FormComponentId("dutyType"),
+          choice,
+          toSmartString("Select option"),
+          false,
+          None,
+          None,
+          None,
+          validIf = None,
+          mandatory = Mandatory.True,
+          editable = true,
+          submissible = true,
+          derived = false,
+          onlyShowOnSummary = false,
+          None,
+          None
+        )
+        val sections = List(mkSectionNonRepeatingPage(formComponents = List(formComponent)))
+        val pages = SectionHelper.pages(sections)
+        val result = FormTemplateValidator.validateTypeAheadKeyWordUsage(pages)
+        result shouldBe expectedResult
+      }
+    }
+  }
+
   def mkHmrcTaxRatesDataRetrieve(
     id: String,
     codeOpt: Option[String] = None,
@@ -1739,8 +2038,17 @@ class FormTemplateValidatorSpec
         if (isCheckbox) Checkbox else Radio,
         NonEmptyList.of(
           OptionData
-            .ValueBased(toSmartString("Yes", "Iawn"), None, None, None, OptionDataValue.StringBased(stringValue), None),
-          OptionData.ValueBased(toSmartString("No", "Na"), None, None, None, OptionDataValue.StringBased("bar"), None)
+            .ValueBased(
+              toSmartString("Yes", "Iawn"),
+              None,
+              None,
+              None,
+              OptionDataValue.StringBased(stringValue),
+              None,
+              None
+            ),
+          OptionData
+            .ValueBased(toSmartString("No", "Na"), None, None, None, OptionDataValue.StringBased("bar"), None, None)
         ),
         if (isCheckbox) Vertical else Horizontal,
         List.empty[Int],
@@ -1813,7 +2121,8 @@ class FormTemplateValidatorSpec
             )
           )
         ),
-        summaryValue = None
+        summaryValue = None,
+        keyWord = None
       )
     )
 }

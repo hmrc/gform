@@ -635,6 +635,7 @@ object BuilderSupport {
         Property("noneChoice", PropertyBehaviour.PurgeWhenEmpty),
         Property("noneChoiceError", PropertyBehaviour.PurgeWhenEmpty),
         Property("multivalue", PropertyBehaviour.PurgeWhenEmpty),
+        Property("typeAhead", PropertyBehaviour.PurgeWhenEmpty),
         Property("choices", PropertyBehaviour.Choices),
         Property("revealingFields", PropertyBehaviour.PurgeWhenEmpty),
         Property("cityMandatory", PropertyBehaviour.PurgeWhenEmpty),
