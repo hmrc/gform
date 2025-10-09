@@ -112,7 +112,15 @@ class FormComponentSpec2 extends Spec {
           Radio,
           NonEmptyList.of(
             OptionData
-              .ValueBased(toSmartString("Yes", "Iawn"), None, None, None, OptionDataValue.StringBased("foo"), None),
+              .ValueBased(
+                toSmartString("Yes", "Iawn"),
+                None,
+                None,
+                None,
+                OptionDataValue.StringBased("foo"),
+                None,
+                None
+              ),
             OptionData
               .ValueBased(toSmartString("No", "Na"), None, None, None, OptionDataValue.StringBased("bar"), None, None)
           ),
