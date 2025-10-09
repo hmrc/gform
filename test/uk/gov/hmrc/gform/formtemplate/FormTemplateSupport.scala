@@ -363,12 +363,13 @@ trait FormTemplateSupport {
     id: String,
     infoText: String,
     summaryValue: Option[SmartString] = None,
-    label: SmartString = SmartString(LocalisedString(Map()), List())
+    label: SmartString = SmartString(LocalisedString(Map()), List()),
+    infoType: Option[InfoType] = None
   ): FormComponent =
     FormComponent(
       FormComponentId(id),
       InformationMessage(
-        NoFormat,
+        infoType.getOrElse(NoFormat),
         toSmartString(infoText),
         summaryValue
       ),

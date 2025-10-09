@@ -387,6 +387,8 @@ case object BannerInfo extends InfoType
 
 case object NoFormat extends InfoType
 
+case object PdfLink extends InfoType
+
 object InfoType {
   implicit val format: OFormat[InfoType] = derived.oformat()
 }

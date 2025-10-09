@@ -1132,7 +1132,7 @@ object FormTemplateValidator {
     case Group(fvs, _, _, _, _)                     => validate(fvs.map(_.`type`), formTemplate)
     case FileUpload(_, _)                           => Valid
     case mf @ MultiFileUpload(_, _, _, _, _, _, _)  => validateMultiFileUpload(mf)
-    case InformationMessage(_, _, _)                => Valid
+    case InformationMessage(_, _, _)                => validateInformationMessages(formTemplate)
     case Time(_, _)                                 => Valid
     case OverseasAddress(_, _, _, Some(expr), _, _) => validateOverseasAddressValue(expr, formTemplate)
     case OverseasAddress(_, _, _, _, _, _)          => Valid
@@ -1140,6 +1140,19 @@ object FormTemplateValidator {
     case MiniSummaryList(ls, _, _)                  => validateMiniSummaryList(ls, formTemplate)
     case t: TableComp                               => TableCompValidator.validateTableComp(t)
     case Button(_, _, _, _)                         => Valid
+  }
+
+  private def pdfLinkNotAllowed(fc: FormComponent) =
+    s"Field '${fc.id}' is a PdfLink info field. These are only valid in the form's acknowledgement section."
+
+  private def validateInformationMessages(formTemplate: FormTemplate): ValidationResult = {
+    val pages = SectionHelper.pages(formTemplate.formKind.allSections)
+    pages
+      .flatMap(_.fields.map {
+        case fc @ IsInformationMessage(InformationMessage(PdfLink, _, _)) => Invalid(pdfLinkNotAllowed(fc))
+        case _                                                            => Valid
+      })
+      .combineAll
   }
 
   private def validateMultiFileUpload(upload: MultiFileUpload) =
@@ -1645,14 +1658,17 @@ object FormTemplateValidator {
     def checkComponentType(summarySection: SummarySection) =
       if (summarySection.hideDefaultRows.getOrElse(false)) {
         summarySection.fields.fold(List.empty[ValidationResult])(fields =>
-          fields.toList.map(f => isViewOnlyComponent(f, formTemplate, reasonHideAllRows(f)))
+          fields.toList.map {
+            case fc @ IsInformationMessage(i) if i.infoType == PdfLink => Invalid(pdfLinkNotAllowed(fc))
+            case fc                                                    => isViewOnlyComponent(fc, formTemplate, reasonHideAllRows(fc))
+          }
         )
-
       } else {
         summarySection.fields.fold(List.empty[ValidationResult])(fields =>
           fields.toList.map {
-            case IsInformationMessage(_) => Valid
-            case fc                      => Invalid(reason(fc))
+            case fc @ IsInformationMessage(i) if i.infoType == PdfLink => Invalid(pdfLinkNotAllowed(fc))
+            case IsInformationMessage(_)                               => Valid
+            case fc                                                    => Invalid(reason(fc))
           }
         )
       }
@@ -1692,7 +1708,11 @@ object FormTemplateValidator {
     def checkComponentType(field: FormComponent): ValidationResult = {
       val reason =
         s"All fields in Check Your Answer page for AddToList must be Info or Table or MiniSummary type. Field Id, '${field.id}' is not an info field, table or mini summary."
-      isViewOnlyComponent(field, formTemplate, reason)
+
+      field match {
+        case IsInformationMessage(InformationMessage(PdfLink, _, _)) => Invalid(pdfLinkNotAllowed(field))
+        case _                                                       => isViewOnlyComponent(field, formTemplate, reason)
+      }
     }
 
     formTemplate.formKind.allSections
@@ -1708,7 +1728,11 @@ object FormTemplateValidator {
     def checkComponentType(field: FormComponent): ValidationResult = {
       val reason =
         s"All fields in Declaration section for AddToList must be Info or Table or MiniSummary type. Field Id, '${field.id}' is not an info field, table or mini summary."
-      isViewOnlyComponent(field, formTemplate, reason)
+
+      field match {
+        case IsInformationMessage(InformationMessage(PdfLink, _, _)) => Invalid(pdfLinkNotAllowed(field))
+        case _                                                       => isViewOnlyComponent(field, formTemplate, reason)
+      }
     }
 
     def invalid(fcId: FormComponentId) = Invalid(
@@ -1948,7 +1972,12 @@ object FormTemplateValidator {
             Seq(Invalid(s"""A destinationSection requires a summarySection in a task list."""))
           else
             task.declarationSection
-              .map(ds => ds.fields.map(fc => isViewOnlyComponent(fc, formTemplate, reason(fc))))
+              .map(ds =>
+                ds.fields.map {
+                  case fc @ IsInformationMessage(InformationMessage(PdfLink, _, _)) => Invalid(pdfLinkNotAllowed(fc))
+                  case fc                                                           => isViewOnlyComponent(fc, formTemplate, reason(fc))
+                }
+              )
               .combineAll
         }
       }.combineAll
