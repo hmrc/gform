@@ -913,7 +913,8 @@
             "noformat",
             "long",
             "important",
-            "banner"
+            "banner",
+            "pdflink"
           ]
         },
         "excludeFromPdf": {

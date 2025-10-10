@@ -999,6 +999,50 @@ class TemplateValidatorSpec extends Spec {
     )
   }
 
+  "TemplateValidator.validate" should "disallow PdfLink info messages in form pages" in {
+    val table = Table(
+      ("fields", "expected"),
+      (
+        List(
+          mkFormComponent("info1", InformationMessage(NoFormat, toSmartString("text"), None)),
+          mkFormComponent("aDate", Date(AnyDate, Offset(0), None))
+        ),
+        Valid
+      ),
+      (
+        List(
+          mkFormComponent("info1", InformationMessage(PdfLink, toSmartString("text"), None)),
+          mkFormComponent("aDate", Date(AnyDate, Offset(0), None))
+        ),
+        Invalid("Field 'info1' is a PdfLink info field. These are only valid in the form's acknowledgement section.")
+      )
+    )
+    forAll(table) { (components, expected) =>
+      val newFormTemplate = mkFormTemplate(components)
+      val componentTypes: List[ComponentType] = components.map(_.`type`)
+      FormTemplateValidator.validate(componentTypes, newFormTemplate) shouldBe expected
+    }
+  }
+
+  "TemplateValidator.validateSummarySection" should "disallow PdfLink info messages in summary section" in {
+    val table = Table(
+      ("summaryField", "expected"),
+      (
+        mkFormComponent("info1", InformationMessage(NoFormat, toSmartString("text"), None)),
+        Valid
+      ),
+      (
+        mkFormComponent("info1", InformationMessage(PdfLink, toSmartString("text"), None)),
+        Invalid("Field 'info1' is a PdfLink info field. These are only valid in the form's acknowledgement section.")
+      )
+    )
+    forAll(table) { (summaryField, expected) =>
+      val newFormTemplate =
+        formTemplate.copy(summarySection = summarySection.copy(fields = Some(NonEmptyList.of(summaryField))))
+      FormTemplateValidator.validateSummarySection(newFormTemplate) shouldBe expected
+    }
+  }
+
   private def mkDate(
     year: Year,
     month: Month,

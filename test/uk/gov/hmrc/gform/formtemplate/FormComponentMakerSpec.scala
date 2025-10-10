@@ -94,6 +94,26 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
     )
   }
 
+  it should "parse info component with pdflink infoType" in {
+    val formComponentMaker = new FormComponentMaker(Json.parse("""
+                                                                 |{
+                                                                 |   "id": "id1",
+                                                                 |   "type": "info",
+                                                                 |   "infoText": "Some text",
+                                                                 |   "infoType": "pdflink"
+                                                                 |}
+                                                                 |""".stripMargin))
+    val result = formComponentMaker.optFieldValue()
+
+    result shouldBe Right(
+      mkInfoMessageComponent(
+        "id1",
+        "Some text",
+        infoType = Some(PdfLink)
+      )
+    )
+  }
+
   "textOpt" should "parse text component" in {
     val formComponentMaker = new FormComponentMaker(Json.parse("""
                                                                  |{
