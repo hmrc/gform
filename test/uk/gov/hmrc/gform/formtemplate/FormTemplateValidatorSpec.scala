@@ -20,12 +20,13 @@ import cats.data.NonEmptyList
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.TableDrivenPropertyChecks
 import org.scalatest.wordspec.AnyWordSpecLike
-import play.api.libs.json.{ JsError, JsSuccess, Json }
-import uk.gov.hmrc.gform.Helpers.{ toLocalisedString, toSmartString }
+import play.api.libs.json.{JsError, JsSuccess, Json}
+import uk.gov.hmrc.gform.Helpers.{toLocalisedString, toSmartString}
 import uk.gov.hmrc.gform.core.parsers.ValueParser
-import uk.gov.hmrc.gform.core.{ Invalid, Opt, Valid, ValidationResult }
+import uk.gov.hmrc.gform.core.{Invalid, Opt, Valid, ValidationResult}
+import uk.gov.hmrc.gform.sharedmodel.DataRetrieve.Attribute
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.PageLink
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AnyDate, BulletedList, Checkbox, Choice, ChoicesAvailable, ChoicesSelected, Constant, DataRetrieveCtx, Date, DateCtx, DateFormCtxVar, DateFunction, DateProjection, DateValueExpr, DisplayAsEntered, Dynamic, Equals, ExprWithPath, FormComponent, FormComponentId, FormComponentValidator, FormCtx, FormStartDateExprValue, HideZeroDecimals, Horizontal, IfElse, IncludeIf, IndexOf, IndexOfDataRetrieveCtx, InformationMessage, Instruction, IsTrue, LeafExpr, LinkCtx, LookupColumn, Mandatory, Not, NumberedList, Offset, OptionData, OptionDataValue, Page, PageId, PostcodeLookup, Radio, Section, ShortText, StandardInfo, SummariseGroupAsGrid, TemplatePath, Text, TextArea, TextWithRestrictions, TypeAhead, ValidIf, Value, Vertical }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{AnyDate, BulletedList, Checkbox, Choice, ChoicesAvailable, ChoicesSelected, Constant, DataRetrieveCtx, Date, DateCtx, DateFormCtxVar, DateFunction, DateProjection, DateValueExpr, DisplayAsEntered, Dynamic, Equals, ExprWithPath, FormComponent, FormComponentId, FormComponentValidator, FormCtx, FormStartDateExprValue, FormTemplate, HideZeroDecimals, Horizontal, IfElse, IncludeIf, IndexOf, IndexOfDataRetrieveCtx, InformationMessage, Instruction, IsTrue, LeafExpr, LinkCtx, LookupColumn, Mandatory, Not, NumberedList, Offset, OptionData, OptionDataValue, Page, PageId, PostcodeLookup, Radio, Section, ShortText, StandardInfo, SummariseGroupAsGrid, TemplatePath, Text, TextArea, TextWithRestrictions, TypeAhead, ValidIf, Value, Vertical}
 import uk.gov.hmrc.gform.sharedmodel._
 
 class FormTemplateValidatorSpec
@@ -1508,6 +1509,84 @@ class FormTemplateValidatorSpec
     }
   }
 
+  "validateDataRetrieveCtx" should {
+    "validate that dataRetrieve contexts only reference valid dataRetrieves and attributes" in {
+      val drId = DataRetrieveId("personalBankDetails")
+
+      val table = Table(
+        ("formComponent", "dataRetrieve", "expectedResult"),
+        (
+          mkFormComponent(
+            "fcId",
+            Text(ShortText.default, DataRetrieveCtx(drId, Attribute("accountExists"))),
+            toSmartString("label")
+          ),
+          mkPersonalBankAccountExistenceDataRetrieve(drId.value, None),
+          Valid
+        ),
+        (
+          mkFormComponent(
+            "fcId",
+            Text(ShortText.default, DataRetrieveCtx(drId, Attribute("failedCount"))),
+            toSmartString("label")
+          ),
+          mkPersonalBankAccountExistenceDataRetrieve(drId.value, None),
+          Invalid(
+            s"Data retrieve expression at path TemplatePath(sections.fields.[id=fcId].value), with id '${drId.value}', refers to special attribute 'failedCount', which may only be used if also specifying 'failureCountResetMinutes' on the dataRetrieve."
+          )
+        ),
+        (
+          mkFormComponent(
+            "fcId",
+            Text(ShortText.default, DataRetrieveCtx(drId, Attribute("failedCount"))),
+            toSmartString("label")
+          ),
+          mkPersonalBankAccountExistenceDataRetrieve(drId.value, Some(1440)),
+          Valid
+        ),
+        (
+          mkFormComponent(
+            "fcId",
+            Text(ShortText.default, DataRetrieveCtx(drId, Attribute("somethingElse"))),
+            toSmartString("label")
+          ),
+          mkPersonalBankAccountExistenceDataRetrieve(drId.value, None),
+          Invalid(
+            s"Data retrieve expression at path TemplatePath(sections.fields.[id=fcId].value), with id '${drId.value}', refers to non-existent attribute 'somethingElse'. Valid attributes are: accountNumberIsWellFormatted, accountExists, nameMatches, accountName, nonStandardAccountDetailsRequiredForBacs, sortCodeIsPresentOnEISCD, sortCodeSupportsDirectDebit, sortCodeSupportsDirectCredit, sortCodeBankName, iban"
+          )
+        ),
+        (
+          mkFormComponent(
+            "fcId",
+            Text(ShortText.default, DataRetrieveCtx(DataRetrieveId("invalidDrId"), Attribute("somethingElse"))),
+            toSmartString("label")
+          ),
+          mkPersonalBankAccountExistenceDataRetrieve(drId.value, None),
+          Invalid(
+            "Data retrieve expression at path TemplatePath(sections.fields.[id=fcId].value) refers to non-existent id invalidDrId"
+          )
+        )
+      )
+
+      forAll(table) { (formComponent, dataRetrieve, expectedResult) =>
+        val section = mkSectionNonRepeatingPage(
+          name = "Page 1",
+          formComponents = List(formComponent),
+          instruction = None,
+          pageId = None,
+          dataRetrieve = dataRetrieve
+        )
+        val sections: List[Section] = List(section)
+        val formTemplate: FormTemplate = mkFormTemplate(sections)
+        val allExpressions: List[ExprWithPath] = LeafExpr(TemplatePath.root, formTemplate)
+        val pages: List[Page] = SectionHelper.pages(sections)
+        val result: ValidationResult =
+          FormTemplateValidator.validateDataRetrieveCtx(formTemplate, pages, allExpressions)
+        result shouldBe expectedResult
+      }
+    }
+  }
+
   "validateNoPIITitleConstraints" should {
     "validate that no PII fields are used in titles" in {
       val pageWithPiiField = mkSectionNonRepeatingPage(
@@ -2023,6 +2102,30 @@ class FormTemplateValidatorSpec
          |    "regime": "$${'VATFRS'}",
          |    "code": "$code",
          |    "date": "$date"
+         |  }
+         |}
+         |""".stripMargin
+
+    val dr: Opt[DataRetrieve] = DataRetrieveDefinitions.read(Json.parse(dataRetrieve))
+    dr.fold(e => JsError(e.error), r => JsSuccess(r)).asOpt
+  }
+
+  def mkPersonalBankAccountExistenceDataRetrieve(
+    id: String,
+    maybeFailureReset: Option[Int] = None
+  ): Option[DataRetrieve] = {
+    val failureReset = maybeFailureReset.fold("")(i => s""""failureCountResetMinutes": $i,""")
+    val dataRetrieve =
+      s"""
+         |{
+         |  "type": "personalBankAccountExistence",
+         |  "id": "$id",
+         |  $failureReset
+         |  "parameters": {
+         |    "sortCode": "$${sortCodePersonal}",
+         |    "accountNumber": "$${accountNumberPersonal}",
+         |    "firstName": "$${accountFirstName}",
+         |    "lastName": "$${accountLastName}"
          |  }
          |}
          |""".stripMargin

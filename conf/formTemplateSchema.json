@@ -1555,6 +1555,9 @@
               "if": {
                 "type": "string"
               },
+              "failureCountResetMinutes": {
+                "type": "integer"
+              },
               "parameters": {
                 "type": "object",
                 "properties": {
