@@ -316,11 +316,12 @@ object FormTemplatesControllerRequestHandler {
         val enField = getDownField("en", json)
         val cyField = getDownField("cy", json)
         val SummaryValueField = getDownField("summaryValue", json)
+        val keyWordField = getDownField("keyWord", json)
 
         val labelField: JsObject = Json.obj("label" -> (enField ++ cyField))
 
         val newJson: JsObject =
-          includeIfField ++ valueField ++ hintField ++ dynamicField ++ labelField ++ SummaryValueField
+          includeIfField ++ valueField ++ hintField ++ dynamicField ++ labelField ++ SummaryValueField ++ keyWordField
 
         JsSuccess(newJson)
 

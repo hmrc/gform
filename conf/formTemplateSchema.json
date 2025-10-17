@@ -781,6 +781,9 @@
                   },
                   "includeIf": {
                     "type": "string"
+                  },
+                  "keyWord": {
+                    "type": "string"
                   }
                 },
                 "required": [
@@ -839,6 +842,9 @@
           "type": "boolean"
         },
         "multivalue": {
+          "type": "boolean"
+        },
+        "typeAhead": {
           "type": "boolean"
         },
         "hideChoicesSelected": {
@@ -1105,6 +1111,16 @@
           "properties": {
             "type": {
               "pattern": "^(choice|revealingChoice)$"
+            }
+          }
+        },
+        "typeAhead": {
+          "required": [
+            "type"
+          ],
+          "properties": {
+            "type": {
+              "pattern": "^(choice)$"
             }
           }
         },
