@@ -1927,15 +1927,17 @@ object FormTemplateValidator {
       maybeDataRetrieve.fold[ValidationResult](
         Invalid(s"Data retrieve expression at path ${r.path} refers to non-existent id ${r.dataRetrieveCtx.id.value}")
       ) { d =>
-        val validAttributes = d.attributes.attributes :++ d.failureCountResetMinutes.fold(List.empty[Attribute])(_ =>
-          DataRetrieve.reservedAttributes
-        )
+        val validAttributes =
+          d.attributes.attributes :++ ((d.maxFailedAttempts, d.failureCountResetMinutes) match {
+            case (Some(_), Some(_)) => DataRetrieve.reservedAttributes
+            case _                  => List.empty[Attribute]
+          })
 
         validAttributes
           .contains(r.dataRetrieveCtx.attribute)
           .validationResult {
             if (DataRetrieve.reservedAttributes.contains(r.dataRetrieveCtx.attribute))
-              s"Data retrieve expression at path ${r.path}, with id '${r.dataRetrieveCtx.id.value}', refers to special attribute '${r.dataRetrieveCtx.attribute.name}', which may only be used if also specifying 'failureCountResetMinutes' on the dataRetrieve."
+              s"Data retrieve expression at path ${r.path}, with id '${r.dataRetrieveCtx.id.value}', refers to special attribute '${r.dataRetrieveCtx.attribute.name}', which may only be used if also specifying 'maxFailedAttempts' and 'failureCountResetMinutes' on the dataRetrieve."
             else {
               val validAttributesStr = validAttributes.map(_.name).mkString(", ")
               s"Data retrieve expression at path ${r.path}, with id '${r.dataRetrieveCtx.id.value}', refers to non-existent attribute '${r.dataRetrieveCtx.attribute.name}'. Valid attributes are: $validAttributesStr"

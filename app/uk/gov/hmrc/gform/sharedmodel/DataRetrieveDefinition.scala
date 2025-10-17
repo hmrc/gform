@@ -739,6 +739,7 @@ object DataRetrieveDefinitions {
             .map(expr => ParamExpr(parameter, expr))
         }
       `if`                <- DataRetrieve.optOption[IncludeIf](json, "if")
+      maxFailedAttempts   <- DataRetrieve.optOption[Int](json, "maxFailedAttempts")
       failureResetMinutes <- DataRetrieve.optOption[Int](json, "failureCountResetMinutes")
     } yield DataRetrieve(
       tpe = typeValue,
@@ -747,6 +748,7 @@ object DataRetrieveDefinitions {
       attrTypeMapping = definition.attrTypeMapping,
       params = params,
       `if` = `if`,
+      maxFailedAttempts = maxFailedAttempts,
       failureCountResetMinutes = failureResetMinutes
     )
 

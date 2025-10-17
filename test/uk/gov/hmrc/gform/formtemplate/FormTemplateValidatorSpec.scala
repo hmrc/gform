@@ -1532,7 +1532,7 @@ class FormTemplateValidatorSpec
           ),
           mkPersonalBankAccountExistenceDataRetrieve(drId.value, None),
           Invalid(
-            s"Data retrieve expression at path TemplatePath(sections.fields.[id=fcId].value), with id '${drId.value}', refers to special attribute 'failedCount', which may only be used if also specifying 'failureCountResetMinutes' on the dataRetrieve."
+            s"Data retrieve expression at path TemplatePath(sections.fields.[id=fcId].value), with id '${drId.value}', refers to special attribute 'failedCount', which may only be used if also specifying 'maxFailedAttempts' and 'failureCountResetMinutes' on the dataRetrieve."
           )
         ),
         (
@@ -2114,12 +2114,14 @@ class FormTemplateValidatorSpec
     id: String,
     maybeFailureReset: Option[Int] = None
   ): Option[DataRetrieve] = {
+    val maxFailedAttempts = maybeFailureReset.fold("")(i => s""""maxFailedAttempts": 3,""")
     val failureReset = maybeFailureReset.fold("")(i => s""""failureCountResetMinutes": $i,""")
     val dataRetrieve =
       s"""
          |{
          |  "type": "personalBankAccountExistence",
          |  "id": "$id",
+         |  $maxFailedAttempts
          |  $failureReset
          |  "parameters": {
          |    "sortCode": "$${sortCodePersonal}",

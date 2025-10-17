@@ -87,6 +87,7 @@ case class DataRetrieve(
   attrTypeMapping: Map[DataRetrieve.Attribute, DataRetrieve.AttrType],
   params: List[DataRetrieve.ParamExpr],
   `if`: Option[IncludeIf],
+  maxFailedAttempts: Option[Int],
   failureCountResetMinutes: Option[Int]
 )
 
@@ -132,10 +133,11 @@ object DataRetrieve {
   }
 
   val failureCountAttribute: Attribute = Attribute("failedCount")
+  val failureIsBlockedAttribute: Attribute = Attribute("isBlocked")
   val failureResetTimeAttribute: Attribute = Attribute("unblockTime")
   val failureResetDateAttribute: Attribute = Attribute("unblockDate")
   val reservedAttributes: List[Attribute] =
-    List(failureCountAttribute, failureResetTimeAttribute, failureResetDateAttribute)
+    List(failureCountAttribute, failureIsBlockedAttribute, failureResetTimeAttribute, failureResetDateAttribute)
 
   object Attribute {
 
@@ -203,6 +205,7 @@ case class DataRetrieveResult(
   data: RetrieveDataType,
   requestParams: JsValue,
   failureCount: Option[Int],
+  failureMaxAttempts: Option[Int],
   failureCountResetTime: Option[LocalDateTime]
 )
 
