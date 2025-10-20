@@ -1841,6 +1841,20 @@ object FormTemplateValidator {
     )
   }
 
+  def validateDataRetrieveBlockAttributes(formTemplate: FormTemplate, pages: List[Page]): ValidationResult = {
+    val pageDataRetrieves = pages.flatMap(_.dataRetrieves())
+    val allDataRetrieves = formTemplate.dataRetrieve.fold(pageDataRetrieves)(drs => pageDataRetrieves ++ drs.toList)
+
+    val invalid = allDataRetrieves.collect {
+      case DataRetrieve(_, id, _, _, _, _, Some(_), None) => id
+      case DataRetrieve(_, id, _, _, _, _, None, Some(_)) => id
+    }
+
+    invalid.isEmpty.validationResult(
+      s"You must define both 'maxFailedAttempts' and 'failureCountResetMinutes', or neither of them in: ${invalid.sortBy(_.value).map(_.value).mkString(", ")}"
+    )
+  }
+
   def validatePagesToRevisit(sections: List[Section]): ValidationResult = {
     val allFields: List[(FormComponent, Int)] = indexedFields(sections)
     val pagesWithId: Map[PageId, Int] = SectionHelper
