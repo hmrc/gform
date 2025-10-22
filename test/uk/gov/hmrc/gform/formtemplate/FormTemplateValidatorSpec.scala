@@ -24,8 +24,9 @@ import play.api.libs.json.{ JsError, JsSuccess, Json }
 import uk.gov.hmrc.gform.Helpers.{ toLocalisedString, toSmartString }
 import uk.gov.hmrc.gform.core.parsers.ValueParser
 import uk.gov.hmrc.gform.core.{ Invalid, Opt, Valid, ValidationResult }
+import uk.gov.hmrc.gform.sharedmodel.DataRetrieve.Attribute
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.PageLink
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AnyDate, BulletedList, Checkbox, Choice, ChoicesAvailable, ChoicesSelected, Constant, DataRetrieveCtx, Date, DateCtx, DateFormCtxVar, DateFunction, DateProjection, DateValueExpr, DisplayAsEntered, Dynamic, Equals, ExprWithPath, FormComponent, FormComponentId, FormComponentValidator, FormCtx, FormStartDateExprValue, HideZeroDecimals, Horizontal, IfElse, IncludeIf, IndexOf, IndexOfDataRetrieveCtx, InformationMessage, Instruction, IsTrue, LeafExpr, LinkCtx, LookupColumn, Mandatory, Not, NumberedList, Offset, OptionData, OptionDataValue, Page, PageId, PostcodeLookup, Radio, Section, ShortText, StandardInfo, SummariseGroupAsGrid, TemplatePath, Text, TextArea, TextWithRestrictions, TypeAhead, ValidIf, Value, Vertical }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AnyDate, BulletedList, Checkbox, Choice, ChoicesAvailable, ChoicesSelected, Constant, DataRetrieveCtx, Date, DateCtx, DateFormCtxVar, DateFunction, DateProjection, DateValueExpr, DisplayAsEntered, Dynamic, Equals, ExprWithPath, FormComponent, FormComponentId, FormComponentValidator, FormCtx, FormStartDateExprValue, FormTemplate, HideZeroDecimals, Horizontal, IfElse, IncludeIf, IndexOf, IndexOfDataRetrieveCtx, InformationMessage, Instruction, IsTrue, LeafExpr, LinkCtx, LookupColumn, Mandatory, Not, NumberedList, Offset, OptionData, OptionDataValue, Page, PageId, PostcodeLookup, Radio, Section, ShortText, StandardInfo, SummariseGroupAsGrid, TemplatePath, Text, TextArea, TextWithRestrictions, TypeAhead, ValidIf, Value, Vertical }
 import uk.gov.hmrc.gform.sharedmodel._
 
 class FormTemplateValidatorSpec
@@ -1508,6 +1509,135 @@ class FormTemplateValidatorSpec
     }
   }
 
+  "validateDataRetrieveCtx" should {
+    "validate that dataRetrieve contexts only reference valid dataRetrieves and attributes" in {
+      val drId = DataRetrieveId("personalBankDetails")
+
+      val table = Table(
+        ("formComponent", "dataRetrieve", "expectedResult"),
+        (
+          mkFormComponent(
+            "fcId",
+            Text(ShortText.default, DataRetrieveCtx(drId, Attribute("accountExists"))),
+            toSmartString("label")
+          ),
+          mkPersonalBankAccountExistenceDataRetrieve(drId.value, None, None),
+          Valid
+        ),
+        (
+          mkFormComponent(
+            "fcId",
+            Text(ShortText.default, DataRetrieveCtx(drId, Attribute("failedCount"))),
+            toSmartString("label")
+          ),
+          mkPersonalBankAccountExistenceDataRetrieve(drId.value, None, None),
+          Invalid(
+            s"Data retrieve expression at path TemplatePath(sections.fields.[id=fcId].value), with id '${drId.value}', refers to special attribute 'failedCount', which may only be used if also specifying 'maxFailedAttempts' and 'failureCountResetMinutes' on the dataRetrieve."
+          )
+        ),
+        (
+          mkFormComponent(
+            "fcId",
+            Text(ShortText.default, DataRetrieveCtx(drId, Attribute("failedCount"))),
+            toSmartString("label")
+          ),
+          mkPersonalBankAccountExistenceDataRetrieve(drId.value, Some(3), Some(1440)),
+          Valid
+        ),
+        (
+          mkFormComponent(
+            "fcId",
+            Text(ShortText.default, DataRetrieveCtx(drId, Attribute("somethingElse"))),
+            toSmartString("label")
+          ),
+          mkPersonalBankAccountExistenceDataRetrieve(drId.value, None, None),
+          Invalid(
+            s"Data retrieve expression at path TemplatePath(sections.fields.[id=fcId].value), with id '${drId.value}', refers to non-existent attribute 'somethingElse'. Valid attributes are: accountNumberIsWellFormatted, accountExists, nameMatches, accountName, nonStandardAccountDetailsRequiredForBacs, sortCodeIsPresentOnEISCD, sortCodeSupportsDirectDebit, sortCodeSupportsDirectCredit, sortCodeBankName, iban"
+          )
+        ),
+        (
+          mkFormComponent(
+            "fcId",
+            Text(ShortText.default, DataRetrieveCtx(DataRetrieveId("invalidDrId"), Attribute("somethingElse"))),
+            toSmartString("label")
+          ),
+          mkPersonalBankAccountExistenceDataRetrieve(drId.value, None, None),
+          Invalid(
+            "Data retrieve expression at path TemplatePath(sections.fields.[id=fcId].value) refers to non-existent id invalidDrId"
+          )
+        )
+      )
+
+      forAll(table) { (formComponent, dataRetrieve, expectedResult) =>
+        val section = mkSectionNonRepeatingPage(
+          name = "Page 1",
+          formComponents = List(formComponent),
+          instruction = None,
+          pageId = None,
+          dataRetrieve = dataRetrieve
+        )
+        val sections: List[Section] = List(section)
+        val formTemplate: FormTemplate = mkFormTemplate(sections)
+        val allExpressions: List[ExprWithPath] = LeafExpr(TemplatePath.root, formTemplate)
+        val pages: List[Page] = SectionHelper.pages(sections)
+        val result: ValidationResult =
+          FormTemplateValidator.validateDataRetrieveCtx(formTemplate, pages, allExpressions)
+        result shouldBe expectedResult
+      }
+    }
+  }
+
+  "validateDataRetrieveBlockAttributes" should {
+    "validate that dataRetrieves include both block attribute or neither" in {
+      val drId = DataRetrieveId("personalBankDetails")
+
+      val table = Table(
+        ("dataRetrieve", "expectedResult"),
+        (
+          mkPersonalBankAccountExistenceDataRetrieve(drId.value, None, None),
+          Valid
+        ),
+        (
+          mkPersonalBankAccountExistenceDataRetrieve(drId.value, Some(3), Some(1440)),
+          Valid
+        ),
+        (
+          mkPersonalBankAccountExistenceDataRetrieve(drId.value, None, Some(1440)),
+          Invalid(
+            s"You must define both 'maxFailedAttempts' and 'failureCountResetMinutes', or neither of them in: ${drId.value}"
+          )
+        ),
+        (
+          mkPersonalBankAccountExistenceDataRetrieve(drId.value, Some(3), None),
+          Invalid(
+            s"You must define both 'maxFailedAttempts' and 'failureCountResetMinutes', or neither of them in: ${drId.value}"
+          )
+        )
+      )
+
+      forAll(table) { (dataRetrieve, expectedResult) =>
+        val formComponent = mkFormComponent(
+          "fcId",
+          Text(ShortText.default, DataRetrieveCtx(drId, Attribute("accountExists"))),
+          toSmartString("label")
+        )
+        val section = mkSectionNonRepeatingPage(
+          name = "Page 1",
+          formComponents = List(formComponent),
+          instruction = None,
+          pageId = None,
+          dataRetrieve = dataRetrieve
+        )
+        val sections: List[Section] = List(section)
+        val formTemplate: FormTemplate = mkFormTemplate(sections)
+        val pages: List[Page] = SectionHelper.pages(sections)
+        val result: ValidationResult =
+          FormTemplateValidator.validateDataRetrieveBlockAttributes(formTemplate, pages)
+        result shouldBe expectedResult
+      }
+    }
+  }
+
   "validateNoPIITitleConstraints" should {
     "validate that no PII fields are used in titles" in {
       val pageWithPiiField = mkSectionNonRepeatingPage(
@@ -2023,6 +2153,33 @@ class FormTemplateValidatorSpec
          |    "regime": "$${'VATFRS'}",
          |    "code": "$code",
          |    "date": "$date"
+         |  }
+         |}
+         |""".stripMargin
+
+    val dr: Opt[DataRetrieve] = DataRetrieveDefinitions.read(Json.parse(dataRetrieve))
+    dr.fold(e => JsError(e.error), r => JsSuccess(r)).asOpt
+  }
+
+  def mkPersonalBankAccountExistenceDataRetrieve(
+    id: String,
+    maybeMaxFailed: Option[Int] = None,
+    maybeFailureReset: Option[Int] = None
+  ): Option[DataRetrieve] = {
+    val maxFailedAttempts = maybeMaxFailed.fold("")(i => s""""maxFailedAttempts": $i,""")
+    val failureReset = maybeFailureReset.fold("")(i => s""""failureCountResetMinutes": $i,""")
+    val dataRetrieve =
+      s"""
+         |{
+         |  "type": "personalBankAccountExistence",
+         |  "id": "$id",
+         |  $maxFailedAttempts
+         |  $failureReset
+         |  "parameters": {
+         |    "sortCode": "$${sortCodePersonal}",
+         |    "accountNumber": "$${accountNumberPersonal}",
+         |    "firstName": "$${accountFirstName}",
+         |    "lastName": "$${accountLastName}"
          |  }
          |}
          |""".stripMargin

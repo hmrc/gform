@@ -78,6 +78,8 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
           FormCtx(FormComponentId("accountNumberExpr"))
         )
       ),
+      None,
+      None,
       None
     )
   }
@@ -88,6 +90,8 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
                |{
                |  "type": "businessBankAccountExistence",
                |  "id": "businessBankAccount",
+               |  "maxFailedAttempts": 3,
+               |  "failureCountResetMinutes": 1440,
                |  "parameters": {
                |    "sortCode": "${sortCode}",
                |    "accountNumber": "${accountNumber}",
@@ -153,7 +157,9 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
           FormCtx(FormComponentId("companyName"))
         )
       ),
-      None
+      None,
+      Some(3),
+      Some(1440)
     )
   }
 
@@ -299,6 +305,8 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
           FormCtx(FormComponentId("companyNumber"))
         )
       ),
+      None,
+      None,
       None
     )
   }
@@ -344,6 +352,8 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
           FormCtx(FormComponentId("companyNumber"))
         )
       ),
+      None,
+      None,
       None
     )
   }
@@ -442,6 +452,8 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
           FormCtx(FormComponentId("companyNumber"))
         )
       ),
+      None,
+      None,
       None
     )
   }
@@ -473,6 +485,8 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
           FormCtx(FormComponentId("nino"))
         )
       ),
+      None,
+      None,
       None
     )
   }
@@ -510,6 +524,8 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
           FormCtx(FormComponentId("accountNumber"))
         )
       ),
+      None,
+      None,
       None
     )
   }
@@ -548,7 +564,9 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
           FormCtx(FormComponentId("accountNumber"))
         )
       ),
-      Some(IncludeIf(IsTrue))
+      Some(IncludeIf(IsTrue)),
+      None,
+      None
     )
   }
 
@@ -558,6 +576,8 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
                |{
                |  "type": "personalBankAccountExistence",
                |  "id": "personalBankDetails",
+               |  "maxFailedAttempts": 3,
+               |  "failureCountResetMinutes": 1440,
                |  "parameters": {
                |    "sortCode": "${sortCode}",
                |    "accountNumber": "${accNumber}",
@@ -629,7 +649,9 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
           FormCtx(FormComponentId("lastName"))
         )
       ),
-      None
+      None,
+      Some(3),
+      Some(1440)
     )
   }
 
@@ -690,6 +712,8 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
             FormCtx(FormComponentId("utr"))
           )
       ),
+      None,
+      None,
       None
     )
   }
@@ -804,6 +828,8 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
             FormCtx(FormComponentId("agentReferenceNumber"))
           )
       ),
+      None,
+      None,
       None
     )
   }
@@ -887,6 +913,8 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
             FormCtx(FormComponentId("userDate"))
           )
       ),
+      None,
+      None,
       None
     )
   }
@@ -937,6 +965,8 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
           FormCtx(FormComponentId("vrn"))
         )
       ),
+      None,
+      None,
       None
     )
   }
@@ -972,6 +1002,8 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
           FormCtx(FormComponentId("payeRef"))
         )
       ),
+      None,
+      None,
       None
     )
   }

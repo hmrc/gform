@@ -25,6 +25,8 @@ import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Expr, IncludeIf, JsonUtils, LeafExpr, OFormatWithTemplateReadFallback, TemplatePath }
 
+import java.time.LocalDateTime
+
 final case class Fetch(path: List[String]) extends AnyVal
 
 object Fetch {
@@ -84,7 +86,9 @@ case class DataRetrieve(
   attributes: Attr,
   attrTypeMapping: Map[DataRetrieve.Attribute, DataRetrieve.AttrType],
   params: List[DataRetrieve.ParamExpr],
-  `if`: Option[IncludeIf]
+  `if`: Option[IncludeIf],
+  maxFailedAttempts: Option[Int],
+  failureCountResetMinutes: Option[Int]
 )
 
 object DataRetrieve {
@@ -127,6 +131,13 @@ object DataRetrieve {
   object Type {
     implicit val format: OFormat[Type] = derived.oformat()
   }
+
+  val failureCountAttribute: Attribute = Attribute("failedCount")
+  val failureIsBlockedAttribute: Attribute = Attribute("isBlocked")
+  val failureResetTimeAttribute: Attribute = Attribute("unblockTime")
+  val failureResetDateAttribute: Attribute = Attribute("unblockDate")
+  val reservedAttributes: List[Attribute] =
+    List(failureCountAttribute, failureIsBlockedAttribute, failureResetTimeAttribute, failureResetDateAttribute)
 
   object Attribute {
 
@@ -189,7 +200,14 @@ object RetrieveDataType {
   case class ListType(data: List[Map[DataRetrieve.Attribute, String]]) extends RetrieveDataType
 }
 
-case class DataRetrieveResult(id: DataRetrieveId, data: RetrieveDataType, requestParams: JsValue)
+case class DataRetrieveResult(
+  id: DataRetrieveId,
+  data: RetrieveDataType,
+  requestParams: JsValue,
+  failureCount: Option[Int],
+  failureMaxAttempts: Option[Int],
+  failureCountResetTime: Option[LocalDateTime]
+)
 
 object DataRetrieveResult {
   implicit val dataRetrieveSuccessDataFormat: Format[Map[DataRetrieve.Attribute, String]] =

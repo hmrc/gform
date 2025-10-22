@@ -738,14 +738,18 @@ object DataRetrieveDefinitions {
             }
             .map(expr => ParamExpr(parameter, expr))
         }
-      `if` <- DataRetrieve.optOption[IncludeIf](json, "if")
+      `if`                <- DataRetrieve.optOption[IncludeIf](json, "if")
+      maxFailedAttempts   <- DataRetrieve.optOption[Int](json, "maxFailedAttempts")
+      failureResetMinutes <- DataRetrieve.optOption[Int](json, "failureCountResetMinutes")
     } yield DataRetrieve(
       tpe = typeValue,
       id = idValue,
       attributes = definition.attributes,
       attrTypeMapping = definition.attrTypeMapping,
       params = params,
-      `if` = `if`
+      `if` = `if`,
+      maxFailedAttempts = maxFailedAttempts,
+      failureCountResetMinutes = failureResetMinutes
     )
 
 }

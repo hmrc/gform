@@ -1555,6 +1555,12 @@
               "if": {
                 "type": "string"
               },
+              "failureCountResetMinutes": {
+                "type": "integer"
+              },
+              "maxFailedAttempts": {
+                "type": "integer"
+              },
               "parameters": {
                 "type": "object",
                 "properties": {

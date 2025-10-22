@@ -251,6 +251,7 @@ object LifeCycleStatus {
   def apply(from: FormStatus, to: FormStatus): Option[FormStatus] = (from, to) match {
     case (f, t) if t === f                                 => Some(to)
     case (InProgress, _)                                   => Some(to)
+    case (DeleteBlocked, InProgress)                       => Some(to)
     case (NeedsReview, Accepting | Returning | Submitting) => Some(to)
     case (Accepting, Accepted)                             => Some(to)
     case (Returning, InProgress)                           => Some(to)
