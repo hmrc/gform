@@ -34,14 +34,15 @@ case class Replacement(from: String, to: String)
 sealed trait TextType {
   def content: String
   def parent: Node
+  def path: Option[String]
 }
 
 object TextType {
-  final case class OwnText(textNode: TextNode, parent: Node) extends TextType {
+  final case class OwnText(textNode: TextNode, parent: Node, path: Option[String]) extends TextType {
     val content = textNode.getWholeText().replaceAll("\u00a0", "&nbsp;")
   }
 
-  final case class InlineElement(element: Element) extends TextType {
+  final case class InlineElement(element: Element, path: Option[String]) extends TextType {
     val replacements: List[Replacement] = element.nodeStream.toScala(List).drop(1).flatMap { node =>
       node.cast[TextNode].flatMap { textNode =>
         val from = textNode.outerHtml() // This contains escaped ampersand like in R&amp;D
@@ -61,18 +62,19 @@ object TextType {
   final case class CompoundNode(textTypes: NonEmptyList[TextType]) extends TextType {
     val content = textTypes
       .map {
-        case ot @ OwnText(_, _)    => ot.content
-        case ie @ InlineElement(_) => ie.content
-        case cn @ CompoundNode(_)  => cn.content
+        case ot @ OwnText(_, _, _)    => ot.content
+        case ie @ InlineElement(_, _) => ie.content
+        case cn @ CompoundNode(_)     => cn.content
       }
       .toList
       .mkString("")
       .trim()
     val parent = textTypes.head.parent
+    val path = textTypes.head.path
   }
 }
 
-final case class EnTextToTranslate(en: String)
+final case class EnTextToTranslate(en: String, path: Option[String])
 
 final case class EnFromSpreadsheet(value: String)
 final case class CyFromSpreadsheet(value: String)
@@ -305,11 +307,11 @@ object ExtractAndTranslate {
     }
 
     val translateTexts: List[EnTextToTranslate] =
-      nodes
-        .map(_.content)
-        .flatMap(en => markdownBreakdown(en, lookup))
-        .filterNot(nonTranslatable)
-        .map(en => EnTextToTranslate(en))
+      nodes.flatMap { node =>
+        val breakdown = markdownBreakdown(node.content, lookup)
+          .filterNot(nonTranslatable)
+        breakdown.map(en => EnTextToTranslate(en, node.path))
+      }
 
     def isTranslateable(spreadsheet: Spreadsheet): Boolean =
       translateTexts.forall(enTextToTranslate => spreadsheet.contains(enTextToTranslate.en))
@@ -318,7 +320,7 @@ object ExtractAndTranslate {
       nodes.foreach { node =>
         spreadsheet.get(node, lookup).foreach { cyFromSpreadsheet =>
           node match {
-            case ot @ TextType.OwnText(textNode, parentNode) =>
+            case ot @ TextType.OwnText(textNode, parentNode, path) =>
               if (parentNode.nameIs("body")) {
                 textNode.text(cyFromSpreadsheet.value)
               } else {
@@ -331,7 +333,7 @@ object ExtractAndTranslate {
                   }
                 }
               }
-            case TextType.InlineElement(element) =>
+            case TextType.InlineElement(element, path) =>
               if (isSingleInlineElement(element, 0).isDefined) {
                 element.html(cyFromSpreadsheet.value)
               } else {
@@ -340,24 +342,25 @@ object ExtractAndTranslate {
               }
             case TextType.CompoundNode(textTypes) =>
               val maybeHead = textTypes.toList.dropWhile {
-                case TextType.OwnText(textNode, _)   => textNode.isBlank
-                case TextType.InlineElement(element) => false
-                case TextType.CompoundNode(_)        => false
+                case TextType.OwnText(textNode, _, path)   => textNode.isBlank
+                case TextType.InlineElement(element, path) => false
+                case TextType.CompoundNode(_)              => false
               }.headOption
 
               maybeHead.foreach {
-                case TextType.OwnText(textNode, _)   => textNode.before(cyFromSpreadsheet.value)
-                case TextType.InlineElement(element) => element.before(cyFromSpreadsheet.value)
-                case TextType.CompoundNode(_)        => // Do nothing
+                case TextType.OwnText(textNode, _, path)   => textNode.before(cyFromSpreadsheet.value)
+                case TextType.InlineElement(element, path) => element.before(cyFromSpreadsheet.value)
+                case TextType.CompoundNode(_)              => // Do nothing
               }
               textTypes.head.parent.cast[Element].foreach { element =>
                 element.nodeStream.toScala(List).drop(1).foreach { child =>
                   textTypes.toList.foreach {
-                    case TextType.OwnText(textNode, _) if child == textNode && !textNode.isBlank() => child.remove()
-                    case TextType.InlineElement(element) if child == element                       => child.remove()
-                    case TextType.OwnText(_, _)                                                    => // Do nothing
-                    case TextType.InlineElement(_)                                                 => // Do nothing
-                    case TextType.CompoundNode(_)                                                  => // Do nothing
+                    case TextType.OwnText(textNode, _, path) if child == textNode && !textNode.isBlank() =>
+                      child.remove()
+                    case TextType.InlineElement(element, path) if child == element => child.remove()
+                    case TextType.OwnText(_, _, path)                              => // Do nothing
+                    case TextType.InlineElement(_, path)                           => // Do nothing
+                    case TextType.CompoundNode(_)                                  => // Do nothing
                   }
                 }
               }
@@ -389,7 +392,7 @@ object ExtractAndTranslate {
     }
   }
 
-  def apply(rawEnglish: String): ExtractAndTranslate = {
+  def apply(rawEnglish: String, path: Option[String]): ExtractAndTranslate = {
     val (english, lookup) = ExprMasker.mask(rawEnglish)
 
     val document: Document = Jsoup.parseBodyFragment(english)
@@ -409,9 +412,9 @@ object ExtractAndTranslate {
       if (elementIsBlock) {
         treeNodes
       } else if (parentIsBlock && elementIsInline) {
-        TextType.InlineElement(maybeElement.get) :: treeNodes
+        TextType.InlineElement(maybeElement.get, path) :: treeNodes
       } else if (parentIsBlock && nodeIsText) {
-        TextType.OwnText(maybeText.get, parent) :: treeNodes
+        TextType.OwnText(maybeText.get, parent, path) :: treeNodes
       } else {
         treeNodes
       }
