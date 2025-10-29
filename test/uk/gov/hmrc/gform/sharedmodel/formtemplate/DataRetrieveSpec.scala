@@ -20,6 +20,7 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import play.api.libs.json.{ JsError, JsPath, Json, JsonValidationError }
 import uk.gov.hmrc.gform.sharedmodel._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.AuthInfo.PayeNino
 
 class DataRetrieveSpec extends AnyFlatSpec with Matchers {
 
@@ -911,6 +912,70 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
           .ParamExpr(
             DataRetrieve.Parameter("date", List(), DataRetrieve.ParamType.Date),
             FormCtx(FormComponentId("userDate"))
+          )
+      ),
+      None,
+      None,
+      None
+    )
+  }
+
+  it should "parse json as niRefundClaim with" in {
+    Json
+      .parse("""
+               |{
+               |  "type": "niRefundClaim",
+               |  "id": "refundDetails",
+               |  "parameters": {
+               |    "nino": "${auth.payenino}",
+               |    "claimReference": "${claimReferenceNumber}"
+               |  }
+               |}
+               |""".stripMargin)
+      .as[DataRetrieve] shouldBe DataRetrieve(
+      DataRetrieve.Type("niRefundClaim"),
+      DataRetrieveId("refundDetails"),
+      Attr.FromObject(
+        List(
+          AttributeInstruction(
+            DataRetrieve.Attribute("refundType"),
+            ConstructAttribute.AsIs(Fetch(List("RefundDetails", "refundType")))
+          ),
+          AttributeInstruction(
+            DataRetrieve.Attribute("taxYear"),
+            ConstructAttribute.AsIs(Fetch(List("RefundDetails", "taxYear")))
+          ),
+          AttributeInstruction(
+            DataRetrieve.Attribute("class2ContributionWeeks"),
+            ConstructAttribute.AsIs(Fetch(List("RefundDetails", "class2ContributionWeeks")))
+          ),
+          AttributeInstruction(
+            DataRetrieve.Attribute("class3ContributionWeeks"),
+            ConstructAttribute.AsIs(Fetch(List("RefundDetails", "class3ContributionWeeks")))
+          ),
+          AttributeInstruction(
+            DataRetrieve.Attribute("weeksOfCredits"),
+            ConstructAttribute.AsIs(Fetch(List("RefundDetails", "weeksOfCredits")))
+          )
+        )
+      ),
+      Map(
+        DataRetrieve.Attribute("refundType")              -> DataRetrieve.AttrType.String,
+        DataRetrieve.Attribute("taxYear")                 -> DataRetrieve.AttrType.String,
+        DataRetrieve.Attribute("class2ContributionWeeks") -> DataRetrieve.AttrType.Number,
+        DataRetrieve.Attribute("class3ContributionWeeks") -> DataRetrieve.AttrType.Number,
+        DataRetrieve.Attribute("weeksOfCredits")          -> DataRetrieve.AttrType.Number
+      ),
+      List(
+        DataRetrieve
+          .ParamExpr(
+            DataRetrieve.Parameter("nino", List(), DataRetrieve.ParamType.String),
+            AuthCtx(PayeNino)
+          ),
+        DataRetrieve
+          .ParamExpr(
+            DataRetrieve.Parameter("claimReference", List(), DataRetrieve.ParamType.String),
+            FormCtx(FormComponentId("claimReferenceNumber"))
           )
       ),
       None,

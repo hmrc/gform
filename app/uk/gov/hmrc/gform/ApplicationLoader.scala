@@ -459,7 +459,8 @@ class ApplicationModule(context: Context)
     historyModule,
     retrievalModule,
     companiesHouseModule,
-    dataAccessLogModule
+    dataAccessLogModule,
+    hipModule
   )
 
   override lazy val httpRequestHandler: HttpRequestHandler = playComponentsModule.httpRequestHandler

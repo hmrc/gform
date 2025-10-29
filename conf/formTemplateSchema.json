@@ -1742,6 +1742,44 @@
               "parameters"
             ],
             "additionalProperties": false
+          },
+          {
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "niRefundClaim"
+                ]
+              },
+              "id": {
+                "type": "string"
+              },
+              "if": {
+                "type": "string"
+              },
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "nino": {
+                    "type": "string"
+                  },
+                  "claimReference": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "nino",
+                  "claimReference"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "type",
+              "id",
+              "parameters"
+            ],
+            "additionalProperties": false
           }
         ]
       }

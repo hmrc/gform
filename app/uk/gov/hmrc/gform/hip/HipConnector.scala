@@ -21,6 +21,9 @@ import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.config.HipConnectorConfig
 import uk.gov.hmrc.http.{ BadRequestException, ForbiddenException, HeaderCarrier, HttpReadsEither, HttpReadsHttpResponse, HttpResponse, InternalServerException, LowPriorityHttpReadsJson, NotFoundException, ServiceUnavailableException, StringContextOps, UnauthorizedException }
 import play.api.http.HeaderNames.AUTHORIZATION
+import play.api.http.Status._
+import play.api.libs.json.JsValue
+import uk.gov.hmrc.gform.sharedmodel.sdes.CorrelationId
 import uk.gov.hmrc.http.client.HttpClientV2
 
 import scala.concurrent.{ ExecutionContext, Future }
@@ -35,6 +38,11 @@ trait HipAlgebra[F[_]] {
     caseId: String,
     eTag: String
   ): F[String]
+  def validateNIClaimReference(
+    nino: String,
+    claimReference: String,
+    correlationId: CorrelationId
+  ): F[JsValue]
 }
 
 class HipConnector(http: HttpClientV2, baseUrl: String, hipConfig: HipConnectorConfig)(implicit ec: ExecutionContext)
@@ -88,44 +96,99 @@ class HipConnector(http: HttpClientV2, baseUrl: String, hipConfig: HipConnectorC
       .map(r => handlePegaResponse(r, caseId))
   }
 
+  def validateNIClaimReference(
+    nino: String,
+    claimReference: String,
+    correlationId: CorrelationId
+  ): Future[JsValue] = {
+    logger.info(
+      s"validateNIClaimReference called for reference '$claimReference', ${loggingHelpers.cleanHeaderCarrierHeader(hc)}"
+    )
+
+    val url = s"$baseUrl${hipConfig.basePath}/ni/person/$nino/national-insurance/claim/refund/$claimReference"
+
+    http
+      .get(url"$url")
+      .setHeader(authHeaders: _*)
+      .setHeader("correlationId" -> correlationId.value)
+      .execute[HttpResponse]
+      .map(response => handleNIClaimResponse(response, claimReference))
+  }
+
   private def handlePegaResponse(response: HttpResponse, caseId: String): String =
     response.status match {
-      case 200 =>
+      case OK =>
         response
           .header("etag") match {
           case Some(eTag) => eTag
           case None =>
             throw new InternalServerException(s"etag not found in Pega response for Case ID: $caseId")
         }
-      case 400 =>
+      case BAD_REQUEST =>
         logger.error(
           s"Received bad request response from Pega API: ${response.body}"
         )
         throw new BadRequestException(s"Bad request response from Pega API for Case ID: $caseId")
-      case 401 =>
+      case UNAUTHORIZED =>
         logger.error(
           s"Received unauthorized response from Pega API: ${response.body}"
         )
         throw new UnauthorizedException("Unauthorized request to Pega API")
-      case 403 =>
+      case FORBIDDEN =>
         logger.error(
           s"Received forbidden response from Pega API: ${response.body}"
         )
         throw new ForbiddenException("Forbidden request to Pega API")
-      case 404 =>
+      case NOT_FOUND =>
         throw new NotFoundException(s"Pega API returned Case ID: $caseId not found")
-      case 500 =>
+      case INTERNAL_SERVER_ERROR =>
         logger.error(
           s"Received internal server error response from Pega API: ${response.body}"
         )
         throw new InternalServerException("Internal server error response from Pega API")
-      case 503 =>
+      case SERVICE_UNAVAILABLE =>
         val message = "Received service unavailable response from Pega API"
         logger.error(message)
         throw new ServiceUnavailableException(message)
       case status =>
         logger.error(s"Received unexpected status $status from Pega API. ${response.body}")
         throw new InternalServerException("Unexpected response code from Pega API")
+    }
+
+  private def handleNIClaimResponse(response: HttpResponse, claimReference: String): JsValue =
+    response.status match {
+      case OK => response.json
+      case BAD_REQUEST =>
+        logger.error(
+          s"Received bad request response from Validate NI Claim Reference: ${response.body}"
+        )
+        throw new BadRequestException(
+          s"Received bad request response from Validate NI Claim Reference for reference: $claimReference"
+        )
+      case UNAUTHORIZED =>
+        logger.error(
+          s"Received unauthorized response from Validate NI Claim Reference: ${response.body}"
+        )
+        throw new UnauthorizedException("Unauthorized request to Validate NI Claim Reference")
+      case FORBIDDEN =>
+        logger.error(
+          s"Received forbidden response from Validate NI Claim Reference: ${response.body}"
+        )
+        throw new ForbiddenException("Forbidden request to Validate NI Claim Reference")
+      case NOT_FOUND =>
+        throw new NotFoundException(s"Validate NI Claim Reference returned reference: $claimReference not found")
+      case INTERNAL_SERVER_ERROR =>
+        logger.error(
+          s"Received internal server error response from Validate NI Claim Reference: ${response.body}"
+        )
+        throw new InternalServerException("Internal server error response from Validate NI Claim Reference")
+      case SERVICE_UNAVAILABLE =>
+        val message = "Received service unavailable response from Validate NI Claim Reference"
+        logger.error(message)
+        throw new ServiceUnavailableException(message)
+      case status =>
+        logger.error(s"Received unexpected status $status from Validate NI Claim Reference. ${response.body}")
+        throw new InternalServerException("Unexpected response code from Validate NI Claim Reference")
     }
 
 }
