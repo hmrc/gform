@@ -103,15 +103,21 @@ object Translator {
   }
 
   def eliminateDeepTraverse(steps: List[ReductionInProgress]): List[List[Instruction]] = {
-    val (nextSteps, instructions) = steps.foldRight((List.empty[ReductionInProgress], List.empty[Instruction])) {
-      case (step, (forReduction, instructions)) =>
-        step match {
-          case Wrapper(instruction) => (step :: forReduction, instruction :: instructions)
-          case DeepTraverse(arraySize) if arraySize > 1 =>
-            (DeepTraverse(arraySize - 1) :: Wrapper(Pure(MoveRight)) :: forReduction, instructions)
-          case DeepTraverse(arraySize) => (forReduction, instructions)
-        }
+
+    val nextStepsMutable = scala.collection.mutable.ListBuffer[ReductionInProgress]()
+    val instructionsMutable = scala.collection.mutable.ListBuffer[Instruction]()
+
+    steps.collect {
+      case step @ Wrapper(instruction) =>
+        nextStepsMutable.addOne(step)
+        instructionsMutable.addOne(instruction)
+      case step @ DeepTraverse(arraySize) if arraySize > 1 =>
+        nextStepsMutable.addOne(Wrapper(Pure(MoveRight)))
+        nextStepsMutable.addOne(DeepTraverse(arraySize - 1))
     }
+
+    val nextSteps = nextStepsMutable.reverse.toList
+    val instructions = instructionsMutable.reverse.toList
 
     val unresolved = nextSteps.exists {
       case DeepTraverse(_) => true
@@ -272,36 +278,34 @@ class Translator(json: Json, paths: List[List[Instruction]], val topLevelExprDat
         }.root
       }
 
-  private def smartStringsRows(cursors: List[HCursor => ACursor]): List[Row] =
+  private def smartStringsRows(cursors: List[HCursor => ACursor]): List[Row] = {
+    val rows = scala.collection.mutable.ListBuffer[Row]()
     cursors
-      .foldLeft(List.empty[Row]) { case (rows, f) =>
+      .foreach { f =>
         val aCursor = f(json.hcursor)
         val attemptLang = aCursor.as[Lang]
         val attemptString = aCursor.as[String]
         val path = CursorOp.opsToPath(aCursor.history)
         attemptString
           .map { en =>
-            Row(path, en, "") :: rows
+            rows.addOne(Row(path, en, ""))
           }
           .orElse(attemptLang.map { lang =>
-            Row(path, lang.en, lang.cy) :: rows
+            rows.addOne(Row(path, lang.en, lang.cy))
           })
-          .toOption
-          .getOrElse(rows)
-          .sortBy(_.path)
-
       }
-      .distinct
+    rows.view.distinct.toList
+  }
 
   val fetchRows: List[Row] = smartStringsRows(smartStringCursors) ++ topLevelExprData.toRows
 
-  val rowsForTranslation: List[TranslatedRow] = fetchRows
+  lazy val rowsForTranslation: List[TranslatedRow] = fetchRows
     .filterNot(row => ExtractAndTranslate(row.en, Some(row.path)).translateTexts.isEmpty)
     .map(row => TranslatedRow(row.en, row.cy))
     .distinct
     .sortBy(_.en)
 
-  val untranslatedRowsForTranslation: List[EnTextToTranslate] = {
+  lazy val untranslatedRowsForTranslation: List[EnTextToTranslate] = {
 
     def consolidatePaths(list: List[EnTextToTranslate]) = {
       val map = scala.collection.mutable.Map[String, scala.collection.mutable.Set[String]]()
