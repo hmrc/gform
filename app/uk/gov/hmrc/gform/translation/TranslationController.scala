@@ -183,7 +183,6 @@ class TranslationController(
       val sheet = workBook.createSheet("translations")
       sheet.setColumnWidth(0, 100 * 256)
       sheet.setColumnWidth(1, 100 * 256)
-      sheet.autoSizeColumn(2)
       val style = workBook.createCellStyle()
       style.setWrapText(true)
 
@@ -197,6 +196,7 @@ class TranslationController(
       }
 
       rows.zipWithIndex.foreach { case (values, idx) => processRow(values, idx) }
+      sheet.autoSizeColumn(2)
 
       val byteArrayOutputStream = new ByteArrayOutputStream()
       workBook.write(byteArrayOutputStream)

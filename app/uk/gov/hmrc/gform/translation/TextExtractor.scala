@@ -301,11 +301,28 @@ class Translator(json: Json, paths: List[List[Instruction]], val topLevelExprDat
     .distinct
     .sortBy(_.en)
 
-  val untranslatedRowsForTranslation: List[EnTextToTranslate] = fetchRows
-    .filterNot(row => row.cy.trim.nonEmpty) // Do not send to translation what has a welsh in json
-    .flatMap(row => ExtractAndTranslate(row.en, Some(row.path)).translateTexts)
-    .distinct
-    .sortBy(_.en)
+  val untranslatedRowsForTranslation: List[EnTextToTranslate] = {
+
+    def consolidatePaths(list: List[EnTextToTranslate]) = {
+      val map = scala.collection.mutable.Map[String, scala.collection.mutable.Set[String]]()
+      list.foreach { entry =>
+        map.get(entry.en) match {
+          case Some(value) =>
+            value.addAll(entry.path)
+          case None =>
+            map.addOne(entry.en -> scala.collection.mutable.Set.from(entry.path))
+        }
+      }
+      map.view.map { case (key, value) => EnTextToTranslate(key, value.toSeq.sorted) }.toList
+    }
+
+    consolidatePaths(
+      fetchRows
+        .filterNot(row => row.cy.trim.nonEmpty) // Do not send to translation what has a welsh in json
+        .flatMap(row => ExtractAndTranslate(row.en, Some(row.path)).translateTexts)
+    ).distinct
+      .sortBy(_.en)
+  }
 
   def translateJson(
     expressionRows: List[Row]
@@ -633,6 +650,7 @@ object TextExtractor {
         translator.fetchRows
           .sortBy(_.en)
           .map(row => List(row.en, row.cy))
+      println(rows)
       List("en", "cy") :: rows
     }
 
@@ -671,9 +689,10 @@ object TextExtractor {
             ""
         }
       }
-
       List("en", "cy", "section") :: translator.untranslatedRowsForTranslation
-        .map(textToTranslate => List(textToTranslate.en, "", textToTranslate.path.map(pathToSection).getOrElse("")))
+        .map(textToTranslate =>
+          List(textToTranslate.en, "", textToTranslate.path.map(pathToSection).toSet.mkString("; "))
+        )
     }
 
   def debug(source: String): String =

@@ -74,7 +74,7 @@ object TextType {
   }
 }
 
-final case class EnTextToTranslate(en: String, path: Option[String])
+final case class EnTextToTranslate(en: String, path: Seq[String])
 
 final case class EnFromSpreadsheet(value: String)
 final case class CyFromSpreadsheet(value: String)
@@ -310,7 +310,7 @@ object ExtractAndTranslate {
       nodes.flatMap { node =>
         val breakdown = markdownBreakdown(node.content, lookup)
           .filterNot(nonTranslatable)
-        breakdown.map(en => EnTextToTranslate(en, node.path))
+        breakdown.map(en => EnTextToTranslate(en, node.path.toSeq))
       }
 
     def isTranslateable(spreadsheet: Spreadsheet): Boolean =
