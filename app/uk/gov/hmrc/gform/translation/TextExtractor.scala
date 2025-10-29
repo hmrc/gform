@@ -320,7 +320,8 @@ class Translator(json: Json, paths: List[List[Instruction]], val topLevelExprDat
       fetchRows
         .filterNot(row => row.cy.trim.nonEmpty) // Do not send to translation what has a welsh in json
         .flatMap(row => ExtractAndTranslate(row.en, Some(row.path)).translateTexts)
-    ).distinct
+        .distinct
+    )
       .sortBy(_.en)
   }
 
@@ -649,9 +650,8 @@ object TextExtractor {
       val rows =
         translator.fetchRows
           .sortBy(_.en)
-          .map(row => List(row.en, row.cy))
-      println(rows)
-      List("en", "cy") :: rows
+          .map(row => List(row.path, row.en, row.cy))
+      List("path", "en", "cy") :: rows
     }
 
   def generateTranslatableCvsFromString: (String, BufferedOutputStream) => Unit =
