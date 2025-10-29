@@ -649,7 +649,7 @@ object TextExtractor {
     generateCsvFromRows(_, _) { translator =>
       val rows =
         translator.fetchRows
-          .sortBy(_.en)
+          .sortBy(_.path)
           .map(row => List(row.path, row.en, row.cy))
       List("path", "en", "cy") :: rows
     }
