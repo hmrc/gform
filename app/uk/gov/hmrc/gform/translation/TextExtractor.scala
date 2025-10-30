@@ -116,8 +116,8 @@ object Translator {
         nextStepsMutable.addOne(DeepTraverse(arraySize - 1))
     }
 
-    val nextSteps = nextStepsMutable.reverse.toList
-    val instructions = instructionsMutable.reverse.toList
+    val nextSteps = nextStepsMutable.toList
+    val instructions = instructionsMutable.toList
 
     val unresolved = nextSteps.exists {
       case DeepTraverse(_) => true
