@@ -693,6 +693,45 @@ object DataRetrieveDefinitions {
     )
   )
 
+  val niRefundClaim = DataRetrieveDefinition(
+    DataRetrieve.Type("niRefundClaim"),
+    Attr.FromObject(
+      List(
+        AttributeInstruction(
+          DataRetrieve.Attribute("refundType"),
+          ConstructAttribute.AsIs(Fetch(List("RefundDetails", "refundType")))
+        ),
+        AttributeInstruction(
+          DataRetrieve.Attribute("taxYear"),
+          ConstructAttribute.AsIs(Fetch(List("RefundDetails", "taxYear")))
+        ),
+        AttributeInstruction(
+          DataRetrieve.Attribute("class2ContributionWeeks"),
+          ConstructAttribute.AsIs(Fetch(List("RefundDetails", "class2ContributionWeeks")))
+        ),
+        AttributeInstruction(
+          DataRetrieve.Attribute("class3ContributionWeeks"),
+          ConstructAttribute.AsIs(Fetch(List("RefundDetails", "class3ContributionWeeks")))
+        ),
+        AttributeInstruction(
+          DataRetrieve.Attribute("weeksOfCredits"),
+          ConstructAttribute.AsIs(Fetch(List("RefundDetails", "weeksOfCredits")))
+        )
+      )
+    ),
+    List(
+      Parameter("nino"),
+      Parameter("claimReference")
+    ),
+    Map(
+      DataRetrieve.Attribute("refundType")              -> DataRetrieve.AttrType.String,
+      DataRetrieve.Attribute("taxYear")                 -> DataRetrieve.AttrType.String,
+      DataRetrieve.Attribute("class2ContributionWeeks") -> DataRetrieve.AttrType.Number,
+      DataRetrieve.Attribute("class3ContributionWeeks") -> DataRetrieve.AttrType.Number,
+      DataRetrieve.Attribute("weeksOfCredits")          -> DataRetrieve.AttrType.Number
+    )
+  )
+
   private val staticDefinitions = DataRetrieveDefinitions(
     List(
       validateBankDetails,
@@ -709,7 +748,8 @@ object DataRetrieveDefinitions {
       agentDetails,
       hmrcTaxRates,
       delegatedAgentAuthVat,
-      delegatedAgentAuthPaye
+      delegatedAgentAuthPaye,
+      niRefundClaim
     )
   )
 

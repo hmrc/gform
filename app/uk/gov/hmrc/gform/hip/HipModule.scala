@@ -30,5 +30,8 @@ class HipModule(
   private val hipConnector: HipAlgebra[Future] =
     new HipConnector(wSHttpModule.httpClient, configModule.serviceConfig.baseUrl("hip"), hipConfig)
 
+  private val hipService: HipServiceAlgebra[Future] = new HipService(hipConnector)
+  val hipController = new HipController(hipService, configModule.controllerComponents)
+
   def getConnector: HipAlgebra[Future] = hipConnector
 }
