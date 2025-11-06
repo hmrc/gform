@@ -39,7 +39,6 @@ import uk.gov.hmrc.gform.dblookup.DbLookupModule
 import uk.gov.hmrc.gform.des.DesModule
 import uk.gov.hmrc.gform.dms.DmsModule
 import uk.gov.hmrc.gform.email.EmailModule
-import uk.gov.hmrc.gform.employments.EmploymentsModule
 import uk.gov.hmrc.gform.envelope.EnvelopeModule
 import uk.gov.hmrc.gform.fileupload.FileUploadModule
 import uk.gov.hmrc.gform.form.FormModule
@@ -348,7 +347,6 @@ class ApplicationModule(context: Context)
       controllerComponents
     )
   private val obligationModule = new ObligationModule(wSHttpModule, configModule)
-  private val employmentsModule = new EmploymentsModule(wSHttpModule, configModule)
 
   private val snapshotsMongoCache = createMongoCacheRepository(
     "snapshots",
@@ -442,7 +440,6 @@ class ApplicationModule(context: Context)
     validationModule,
     dmsModule,
     obligationModule,
-    employmentsModule,
     emailModule,
     dbLookupModule,
     upscanModule,

@@ -77,8 +77,6 @@ POST          /dms/submit-with-attachments                                      
 
 POST          /obligation/tax-period                                                                    uk.gov.hmrc.gform.obligation.ObligationController.getAllTaxPeriods()
 
-GET           /des-employments/:nino/:taxYear                                                           uk.gov.hmrc.gform.employments.EmploymentsController.getEmployments(nino: String, taxYear: Int)
-
 POST          /email                                                                                    uk.gov.hmrc.gform.email.EmailCodeVerificationController.sendEmail()
 
 GET           /dblookup/:id/:collectionName                                                             uk.gov.hmrc.gform.dblookup.DbLookupController.exists(id: DbLookupId, collectionName: CollectionName)
@@ -163,6 +161,7 @@ GET           /companieshouse/company/:companynumber/officers                   
 GET           /companieshouse/company/:companynumber/insolvency                                         uk.gov.hmrc.gform.companieshouse.CompaniesHouseController.findCompanyInsolvency(companynumber: String)
 
 GET           /hip/ni-claim-validation/:nino/:claimReference                                            uk.gov.hmrc.gform.hip.HipController.validateNiClaimReference(nino: String, claimReference: String)
+GET           /hip/ni-employments/:nino/:taxYear                                                        uk.gov.hmrc.gform.hip.HipController.getEmployments(nino: String, taxYear: Int)
 
 POST          /email-migration                                                                          uk.gov.hmrc.gform.emailmigration.EmailMigrationController.migrateEmail()
 

@@ -43,6 +43,11 @@ trait HipAlgebra[F[_]] {
     claimReference: String,
     correlationId: CorrelationId
   ): F[JsValue]
+  def getEmployments(
+    nino: String,
+    taxYear: Int,
+    correlationId: CorrelationId
+  ): F[JsValue]
 }
 
 class HipConnector(http: HttpClientV2, baseUrl: String, hipConfig: HipConnectorConfig)(implicit ec: ExecutionContext)
@@ -112,7 +117,27 @@ class HipConnector(http: HttpClientV2, baseUrl: String, hipConfig: HipConnectorC
       .setHeader(authHeaders: _*)
       .setHeader("correlationId" -> correlationId.value)
       .execute[HttpResponse]
-      .map(response => handleNIClaimResponse(response, claimReference))
+      .map(response =>
+        handleGenericResponse(response, s"validateNIClaimReference, correlationId: ${correlationId.value}")
+      )
+  }
+
+  def getEmployments(
+    nino: String,
+    taxYear: Int,
+    correlationId: CorrelationId
+  ): Future[JsValue] = {
+    logger.info(
+      s"getEmployments for taxYear $taxYear called, ${loggingHelpers.cleanHeaderCarrierHeader(hc)}"
+    )
+    val url = s"$baseUrl${hipConfig.basePath}/ni/employment/employee/$nino/employment-summary/tax-year/$taxYear"
+
+    http
+      .get(url"$url")
+      .setHeader(authHeaders: _*)
+      .setHeader("correlationId" -> correlationId.value)
+      .execute[HttpResponse]
+      .map(response => handleGenericResponse(response, s"getEmployments, correlationId: ${correlationId.value}"))
   }
 
   private def handlePegaResponse(response: HttpResponse, caseId: String): String =
@@ -155,40 +180,40 @@ class HipConnector(http: HttpClientV2, baseUrl: String, hipConfig: HipConnectorC
         throw new InternalServerException("Unexpected response code from Pega API")
     }
 
-  private def handleNIClaimResponse(response: HttpResponse, claimReference: String): JsValue =
+  private def handleGenericResponse(response: HttpResponse, identifier: String): JsValue =
     response.status match {
       case OK => response.json
       case BAD_REQUEST =>
         logger.error(
-          s"Received bad request response from Validate NI Claim Reference: ${response.body}"
+          s"Received bad request response from $identifier: ${response.body}"
         )
         throw new BadRequestException(
-          s"Received bad request response from Validate NI Claim Reference for reference: $claimReference"
+          s"Received bad request response from $identifier"
         )
       case UNAUTHORIZED =>
         logger.error(
-          s"Received unauthorized response from Validate NI Claim Reference: ${response.body}"
+          s"Received unauthorized response from $identifier: ${response.body}"
         )
-        throw new UnauthorizedException("Unauthorized request to Validate NI Claim Reference")
+        throw new UnauthorizedException(s"Unauthorized request to $identifier")
       case FORBIDDEN =>
         logger.error(
-          s"Received forbidden response from Validate NI Claim Reference: ${response.body}"
+          s"Received forbidden response from $identifier: ${response.body}"
         )
-        throw new ForbiddenException("Forbidden request to Validate NI Claim Reference")
+        throw new ForbiddenException(s"Forbidden request to $identifier")
       case NOT_FOUND =>
-        throw new NotFoundException(s"Validate NI Claim Reference returned reference: $claimReference not found")
+        throw new NotFoundException(s"$identifier not found")
       case INTERNAL_SERVER_ERROR =>
         logger.error(
-          s"Received internal server error response from Validate NI Claim Reference: ${response.body}"
+          s"Received internal server error response from $identifier: ${response.body}"
         )
-        throw new InternalServerException("Internal server error response from Validate NI Claim Reference")
+        throw new InternalServerException(s"Internal server error response from $identifier")
       case SERVICE_UNAVAILABLE =>
-        val message = "Received service unavailable response from Validate NI Claim Reference"
+        val message = s"Received service unavailable response from $identifier"
         logger.error(message)
         throw new ServiceUnavailableException(message)
       case status =>
-        logger.error(s"Received unexpected status $status from Validate NI Claim Reference. ${response.body}")
-        throw new InternalServerException("Unexpected response code from Validate NI Claim Reference")
+        logger.error(s"Received unexpected status $status from $identifier. ${response.body}")
+        throw new InternalServerException(s"Unexpected response code from $identifier")
     }
 
 }
