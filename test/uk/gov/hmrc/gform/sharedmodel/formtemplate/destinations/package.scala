@@ -151,6 +151,22 @@ package object destinations {
           |  "caseId": ${TextExpression.format.writes(TextExpression(pegaApi.caseId))},
           |  "${Destination.typeDiscriminatorFieldName}": "${Destination.pegaApi}"
           |}""".stripMargin
+    case niRefundClaimApi: Destination.NiRefundClaimApi =>
+      import niRefundClaimApi._
+      s"""|{
+          |  "id": "${id.id}",
+          |  "includeIf":  "${getHandlebarValue(destination.includeIf)}",
+          |  ${optionalField("failOnError", Option(destination.failOnError), true)}
+          |  "bankAccountName": ${TextExpression.format.writes(TextExpression(niRefundClaimApi.bankAccountName))},
+          |  "sortCode": ${TextExpression.format.writes(TextExpression(niRefundClaimApi.sortCode))},
+          |  "accountNumber": ${TextExpression.format.writes(TextExpression(niRefundClaimApi.accountNumber))},
+          |   ${optionalField("rollNumber", rollNumber.map(u => TextExpression.format.writes(TextExpression(u))))}
+          |  "refundClaimReference": ${TextExpression.format.writes(
+        TextExpression(niRefundClaimApi.refundClaimReference)
+      )},
+          |  "nino": ${TextExpression.format.writes(TextExpression(niRefundClaimApi.nino))},
+          |  "${Destination.typeDiscriminatorFieldName}": "${Destination.niRefundClaimApi}"
+          |}""".stripMargin
   }
 
   def optionalField[T: Writes](fieldName: String, ot: Option[T]): String =

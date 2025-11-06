@@ -539,7 +539,17 @@ object Substituter {
       case d: Destination.HandlebarsHttpApi => d.copy(includeIf = d.includeIf(substitutions))
       case d: Destination.StateTransition   => d.copy(includeIf = d.includeIf(substitutions))
       case d: Destination.PegaApi           => d.copy(caseId = d.caseId(substitutions), includeIf = d.includeIf(substitutions))
-      case otherwise                        => otherwise
+      case d: Destination.NiRefundClaimApi =>
+        d.copy(
+          includeIf = d.includeIf(substitutions),
+          nino = d.nino(substitutions),
+          bankAccountName = d.bankAccountName(substitutions),
+          sortCode = d.sortCode(substitutions),
+          accountNumber = d.accountNumber(substitutions),
+          rollNumber = d.rollNumber(substitutions),
+          refundClaimReference = d.refundClaimReference(substitutions)
+        )
+      case otherwise => otherwise
     }
 
   implicit def declarationSectionSubstituter[A](implicit

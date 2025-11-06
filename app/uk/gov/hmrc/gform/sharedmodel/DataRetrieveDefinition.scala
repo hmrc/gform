@@ -725,7 +725,7 @@ object DataRetrieveDefinitions {
     ),
     Map(
       DataRetrieve.Attribute("refundType")              -> DataRetrieve.AttrType.String,
-      DataRetrieve.Attribute("taxYear")                 -> DataRetrieve.AttrType.String,
+      DataRetrieve.Attribute("taxYear")                 -> DataRetrieve.AttrType.Number,
       DataRetrieve.Attribute("class2ContributionWeeks") -> DataRetrieve.AttrType.Number,
       DataRetrieve.Attribute("class3ContributionWeeks") -> DataRetrieve.AttrType.Number,
       DataRetrieve.Attribute("weeksOfCredits")          -> DataRetrieve.AttrType.Number

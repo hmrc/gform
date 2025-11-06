@@ -34,15 +34,20 @@ class InfoArchiveXMLGeneratorSpec extends Spec {
 
   private val destinationResultGen: Gen[DestinationResult] =
     for {
-      destinationId    <- PrimitiveGen.nonEmptyAlphaNumStrGen.map(DestinationId(_))
-      includeIf        <- Gen.option(PrimitiveGen.booleanGen)
-      customerId       <- Gen.option(PrimitiveGen.nonEmptyAlphaNumStrGen)
-      taxpayerId       <- Gen.option(PrimitiveGen.nonEmptyAlphaNumStrGen)
-      paymentReference <- Gen.option(PrimitiveGen.nonEmptyAlphaNumStrGen)
-      nino             <- Gen.option(PrimitiveGen.nonEmptyAlphaNumStrGen)
-      utr              <- Gen.option(PrimitiveGen.nonEmptyAlphaNumStrGen)
-      postalCode       <- Gen.option(PrimitiveGen.nonEmptyAlphaNumStrGen)
-      pegaCaseId       <- Gen.option(PrimitiveGen.nonEmptyAlphaNumStrGen)
+      destinationId        <- PrimitiveGen.nonEmptyAlphaNumStrGen.map(DestinationId(_))
+      includeIf            <- Gen.option(PrimitiveGen.booleanGen)
+      customerId           <- Gen.option(PrimitiveGen.nonEmptyAlphaNumStrGen)
+      taxpayerId           <- Gen.option(PrimitiveGen.nonEmptyAlphaNumStrGen)
+      paymentReference     <- Gen.option(PrimitiveGen.nonEmptyAlphaNumStrGen)
+      nino                 <- Gen.option(PrimitiveGen.nonEmptyAlphaNumStrGen)
+      utr                  <- Gen.option(PrimitiveGen.nonEmptyAlphaNumStrGen)
+      postalCode           <- Gen.option(PrimitiveGen.nonEmptyAlphaNumStrGen)
+      pegaCaseId           <- Gen.option(PrimitiveGen.nonEmptyAlphaNumStrGen)
+      bankAccountName      <- Gen.option(PrimitiveGen.nonEmptyAlphaNumStrGen)
+      sortCode             <- Gen.option(PrimitiveGen.nonEmptyAlphaNumStrGen)
+      accountNumber        <- Gen.option(PrimitiveGen.nonEmptyAlphaNumStrGen)
+      rollNumber           <- Gen.option(PrimitiveGen.nonEmptyAlphaNumStrGen)
+      refundClaimReference <- Gen.option(PrimitiveGen.nonEmptyAlphaNumStrGen)
     } yield DestinationResult(
       destinationId,
       includeIf,
@@ -52,7 +57,12 @@ class InfoArchiveXMLGeneratorSpec extends Spec {
       nino,
       utr,
       postalCode,
-      pegaCaseId
+      pegaCaseId,
+      bankAccountName,
+      sortCode,
+      accountNumber,
+      rollNumber,
+      refundClaimReference
     )
 
   "generatePdi" should "generate the correct XML for submission information package" in {
