@@ -42,29 +42,39 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
         List(
           AttributeInstruction(
             DataRetrieve.Attribute("isValid"),
-            ConstructAttribute.AsIs(Fetch(List("accountNumberIsWellFormatted")))
+            ConstructAttribute.AsIs(Fetch(List("accountNumberIsWellFormatted"))),
+            Some(AllowedValues(List("yes", "no", "indeterminate"), AllowedValueType.JsStringType))
           ),
           AttributeInstruction(
             DataRetrieve.Attribute("sortCodeIsPresentOnEISCD"),
-            ConstructAttribute.AsIs(Fetch(List("sortCodeIsPresentOnEISCD")))
+            ConstructAttribute.AsIs(Fetch(List("sortCodeIsPresentOnEISCD"))),
+            Some(AllowedValues(List("yes", "no", "error"), AllowedValueType.JsStringType))
           ),
           AttributeInstruction(
             DataRetrieve.Attribute("sortCodeBankName"),
-            ConstructAttribute.AsIs(Fetch(List("sortCodeBankName")))
+            ConstructAttribute.AsIs(Fetch(List("sortCodeBankName"))),
+            Some(AllowedValues(List("*"), AllowedValueType.AnyValue))
           ),
           AttributeInstruction(
             DataRetrieve.Attribute("nonStandardAccountDetailsRequiredForBacs"),
-            ConstructAttribute.AsIs(Fetch(List("nonStandardAccountDetailsRequiredForBacs")))
+            ConstructAttribute.AsIs(Fetch(List("nonStandardAccountDetailsRequiredForBacs"))),
+            Some(AllowedValues(List("yes", "no", "inapplicable"), AllowedValueType.JsStringType))
           ),
           AttributeInstruction(
             DataRetrieve.Attribute("sortCodeSupportsDirectDebit"),
-            ConstructAttribute.AsIs(Fetch(List("sortCodeSupportsDirectDebit")))
+            ConstructAttribute.AsIs(Fetch(List("sortCodeSupportsDirectDebit"))),
+            Some(AllowedValues(List("yes", "no", "error"), AllowedValueType.JsStringType))
           ),
           AttributeInstruction(
             DataRetrieve.Attribute("sortCodeSupportsDirectCredit"),
-            ConstructAttribute.AsIs(Fetch(List("sortCodeSupportsDirectCredit")))
+            ConstructAttribute.AsIs(Fetch(List("sortCodeSupportsDirectCredit"))),
+            Some(AllowedValues(List("yes", "no", "error"), AllowedValueType.JsStringType))
           ),
-          AttributeInstruction(DataRetrieve.Attribute("iban"), ConstructAttribute.AsIs(Fetch(List("iban"))))
+          AttributeInstruction(
+            DataRetrieve.Attribute("iban"),
+            ConstructAttribute.AsIs(Fetch(List("iban"))),
+            Some(AllowedValues(List("*"), AllowedValueType.AnyValue))
+          )
         )
       ),
       Map(),
@@ -106,39 +116,55 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
         List(
           AttributeInstruction(
             DataRetrieve.Attribute("accountNumberIsWellFormatted"),
-            ConstructAttribute.AsIs(Fetch(List("accountNumberIsWellFormatted")))
+            ConstructAttribute.AsIs(Fetch(List("accountNumberIsWellFormatted"))),
+            Some(AllowedValues(List("yes", "no", "indeterminate"), AllowedValueType.JsStringType))
           ),
           AttributeInstruction(
             DataRetrieve.Attribute("sortCodeIsPresentOnEISCD"),
-            ConstructAttribute.AsIs(Fetch(List("sortCodeIsPresentOnEISCD")))
+            ConstructAttribute.AsIs(Fetch(List("sortCodeIsPresentOnEISCD"))),
+            Some(AllowedValues(List("yes", "no", "error"), AllowedValueType.JsStringType))
           ),
           AttributeInstruction(
             DataRetrieve.Attribute("sortCodeBankName"),
-            ConstructAttribute.AsIs(Fetch(List("sortCodeBankName")))
+            ConstructAttribute.AsIs(Fetch(List("sortCodeBankName"))),
+            Some(AllowedValues(List("*"), AllowedValueType.AnyValue))
           ),
           AttributeInstruction(
             DataRetrieve.Attribute("nonStandardAccountDetailsRequiredForBacs"),
-            ConstructAttribute.AsIs(Fetch(List("nonStandardAccountDetailsRequiredForBacs")))
+            ConstructAttribute.AsIs(Fetch(List("nonStandardAccountDetailsRequiredForBacs"))),
+            Some(AllowedValues(List("yes", "no", "inapplicable"), AllowedValueType.JsStringType))
           ),
           AttributeInstruction(
             DataRetrieve.Attribute("accountExists"),
-            ConstructAttribute.AsIs(Fetch(List("accountExists")))
+            ConstructAttribute.AsIs(Fetch(List("accountExists"))),
+            Some(
+              AllowedValues(List("yes", "no", "inapplicable", "indeterminate", "error"), AllowedValueType.JsStringType)
+            )
           ),
           AttributeInstruction(
             DataRetrieve.Attribute("nameMatches"),
-            ConstructAttribute.AsIs(Fetch(List("nameMatches")))
+            ConstructAttribute.AsIs(Fetch(List("nameMatches"))),
+            Some(
+              AllowedValues(
+                List("yes", "partial", "no", "inapplicable", "indeterminate", "error"),
+                AllowedValueType.JsStringType
+              )
+            )
           ),
           AttributeInstruction(
             DataRetrieve.Attribute("sortCodeSupportsDirectDebit"),
-            ConstructAttribute.AsIs(Fetch(List("sortCodeSupportsDirectDebit")))
+            ConstructAttribute.AsIs(Fetch(List("sortCodeSupportsDirectDebit"))),
+            Some(AllowedValues(List("yes", "no", "error"), AllowedValueType.JsStringType))
           ),
           AttributeInstruction(
             DataRetrieve.Attribute("sortCodeSupportsDirectCredit"),
-            ConstructAttribute.AsIs(Fetch(List("sortCodeSupportsDirectCredit")))
+            ConstructAttribute.AsIs(Fetch(List("sortCodeSupportsDirectCredit"))),
+            Some(AllowedValues(List("yes", "no", "error"), AllowedValueType.JsStringType))
           ),
           AttributeInstruction(
             DataRetrieve.Attribute("accountName"),
-            ConstructAttribute.AsIs(Fetch(List("accountName")))
+            ConstructAttribute.AsIs(Fetch(List("accountName"))),
+            Some(AllowedValues(List("*"), AllowedValueType.AnyValue))
           )
         )
       ),
@@ -593,41 +619,61 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
         List(
           AttributeInstruction(
             DataRetrieve.Attribute("accountNumberIsWellFormatted"),
-            ConstructAttribute.AsIs(Fetch(List("accountNumberIsWellFormatted")))
+            ConstructAttribute.AsIs(Fetch(List("accountNumberIsWellFormatted"))),
+            Some(AllowedValues(List("yes", "no", "indeterminate"), AllowedValueType.JsStringType))
           ),
           AttributeInstruction(
             DataRetrieve.Attribute("accountExists"),
-            ConstructAttribute.AsIs(Fetch(List("accountExists")))
+            ConstructAttribute.AsIs(Fetch(List("accountExists"))),
+            Some(
+              AllowedValues(List("yes", "no", "inapplicable", "indeterminate", "error"), AllowedValueType.JsStringType)
+            )
           ),
           AttributeInstruction(
             DataRetrieve.Attribute("nameMatches"),
-            ConstructAttribute.AsIs(Fetch(List("nameMatches")))
+            ConstructAttribute.AsIs(Fetch(List("nameMatches"))),
+            Some(
+              AllowedValues(
+                List("yes", "partial", "no", "inapplicable", "indeterminate", "error"),
+                AllowedValueType.JsStringType
+              )
+            )
           ),
           AttributeInstruction(
             DataRetrieve.Attribute("accountName"),
-            ConstructAttribute.AsIs(Fetch(List("accountName")))
+            ConstructAttribute.AsIs(Fetch(List("accountName"))),
+            Some(AllowedValues(List("*"), AllowedValueType.AnyValue))
           ),
           AttributeInstruction(
             DataRetrieve.Attribute("nonStandardAccountDetailsRequiredForBacs"),
-            ConstructAttribute.AsIs(Fetch(List("nonStandardAccountDetailsRequiredForBacs")))
+            ConstructAttribute.AsIs(Fetch(List("nonStandardAccountDetailsRequiredForBacs"))),
+            Some(AllowedValues(List("yes", "no", "inapplicable"), AllowedValueType.JsStringType))
           ),
           AttributeInstruction(
             DataRetrieve.Attribute("sortCodeIsPresentOnEISCD"),
-            ConstructAttribute.AsIs(Fetch(List("sortCodeIsPresentOnEISCD")))
+            ConstructAttribute.AsIs(Fetch(List("sortCodeIsPresentOnEISCD"))),
+            Some(AllowedValues(List("yes", "no", "error"), AllowedValueType.JsStringType))
           ),
           AttributeInstruction(
             DataRetrieve.Attribute("sortCodeSupportsDirectDebit"),
-            ConstructAttribute.AsIs(Fetch(List("sortCodeSupportsDirectDebit")))
+            ConstructAttribute.AsIs(Fetch(List("sortCodeSupportsDirectDebit"))),
+            Some(AllowedValues(List("yes", "no", "error"), AllowedValueType.JsStringType))
           ),
           AttributeInstruction(
             DataRetrieve.Attribute("sortCodeSupportsDirectCredit"),
-            ConstructAttribute.AsIs(Fetch(List("sortCodeSupportsDirectCredit")))
+            ConstructAttribute.AsIs(Fetch(List("sortCodeSupportsDirectCredit"))),
+            Some(AllowedValues(List("yes", "no", "error"), AllowedValueType.JsStringType))
           ),
           AttributeInstruction(
             DataRetrieve.Attribute("sortCodeBankName"),
-            ConstructAttribute.AsIs(Fetch(List("sortCodeBankName")))
+            ConstructAttribute.AsIs(Fetch(List("sortCodeBankName"))),
+            Some(AllowedValues(List("*"), AllowedValueType.AnyValue))
           ),
-          AttributeInstruction(DataRetrieve.Attribute("iban"), ConstructAttribute.AsIs(Fetch(List("iban"))))
+          AttributeInstruction(
+            DataRetrieve.Attribute("iban"),
+            ConstructAttribute.AsIs(Fetch(List("iban"))),
+            Some(AllowedValues(List("*"), AllowedValueType.AnyValue))
+          )
         )
       ),
       Map(),
