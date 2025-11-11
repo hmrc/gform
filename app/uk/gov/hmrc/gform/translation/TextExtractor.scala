@@ -22,8 +22,12 @@ import io.circe._
 import io.circe.syntax._
 import io.circe.CursorOp._
 import io.circe.parser._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.SectionNumber.{ Classic, TaskList }
+
 import java.io.{ BufferedOutputStream, BufferedReader, StringReader }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.Constant
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Constant, Coordinates, FormTemplate, Section, TaskNumber, TaskSectionNumber, TemplateSectionIndex }
+
+import scala.util.Try
 
 case class Lang(en: String, cy: String)
 
@@ -672,9 +676,37 @@ object TextExtractor {
       prepareTranslatebleRows(translator.rowsForTranslation)
     }
 
-  def generateBriefTranslatableRows(source: String): List[List[String]] =
+  private sealed trait SectionType
+  private final object ClassicNormal extends SectionType
+  private final object ClassicRepeating extends SectionType
+  private final object ClassicAddToList extends SectionType
+
+  private case class PathIndex(normalIndex: Int, taskIndex: Option[Int], taskSectionIndex: Option[Int])
+
+  def generateBriefTranslatableRows(source: String, formTemplate: FormTemplate): List[List[String]] =
     withTranslator(source).fold(List.empty[List[String]]) { translator =>
-      def pathToSection(path: String): String = {
+      def sectionToSectionType(section: Section) = section match {
+        case _: Section.NonRepeatingPage => ClassicNormal
+        case _: Section.RepeatingPage    => ClassicRepeating
+        case _: Section.AddToList        => ClassicAddToList
+      }
+
+      val pathIndexToSectionType =
+        formTemplate.formKind.fold { classic =>
+          classic.sections.zipWithIndex.map { case (section, sectionIndex) =>
+            PathIndex(sectionIndex, None, None) -> sectionToSectionType(section)
+          }
+        } { taskList =>
+          taskList.sections.toList.zipWithIndex.flatMap { case (taskSection, sectionIndex) =>
+            taskSection.tasks.toList.zipWithIndex.flatMap { case (task, taskIndex) =>
+              task.sections.toList.zipWithIndex.map { case (section, taskSectionIndex) =>
+                PathIndex(sectionIndex, Some(taskIndex), Some(taskSectionIndex)) -> sectionToSectionType(section)
+              }
+            }
+          }
+        }.toMap
+
+      def getPathIndex(path: String): Option[PathIndex] = {
         val sectionPattern = raw"\.sections\[(\d+)\]".r
         val taskPattern = raw"\.tasks\[(\d+)\]".r
 
@@ -685,18 +717,91 @@ object TextExtractor {
         (sectionIndices, taskIndices) match {
           // expecting something like outer section, task, nested section
           case (outer :: nested :: Nil, task :: Nil) =>
-            s"$outer,$task,n$nested"
+            Some(PathIndex(outer.toInt, Some(task.toInt), Some(nested.toInt)))
+          case (outer :: Nil, task :: Nil) =>
+            Some(PathIndex(outer.toInt, Some(task.toInt), None))
           case (List(outer), Nil) =>
-            s"n$outer"
+            Some(PathIndex(outer.toInt, None, None))
           // fallback for unexpected cases
           case _ =>
-            ""
+            None
         }
       }
-      List("en", "cy", "section") :: translator.untranslatedRowsForTranslation
-        .map(textToTranslate =>
-          List(textToTranslate.en, "", textToTranslate.path.map(pathToSection).toSet.mkString("; "))
-        )
+
+      def getPageNumberFromPath(path: String) =
+        path
+          .split("\\.pages\\[")
+          .lastOption
+          .flatMap(_.split("]").headOption)
+          .flatMap(num => Try(num.toInt).toOption)
+
+      def containAnyOf(str: String, segments: Seq[String]) =
+        segments.exists { segment =>
+          str.contains(segment)
+        }
+
+      val summarySectionPaths = Seq(".summarySection", ".summaryDescription", ".summaryName")
+
+      def pathToSectionNumber(path: String) = {
+        val index = getPathIndex(path)
+        val sectionType = index.flatMap(pathIndexToSectionType.get)
+        val pageNumber = getPageNumberFromPath(path)
+
+        def getClassic(normalIndex: Int, sectionType: SectionType) = {
+          val index = TemplateSectionIndex(normalIndex)
+          sectionType match {
+            case ClassicNormal    => Some(Classic.NormalPage(index))
+            case ClassicRepeating => Some(Classic.RepeatedPage(index, 0))
+            case ClassicAddToList =>
+              pageNumber match {
+                case Some(pageNumber)                             => Some(Classic.AddToListPage.Page(index, 1, pageNumber))
+                case None if path.contains(".defaultPage")        => Some(Classic.AddToListPage.DefaultPage(index))
+                case None if path.contains(".cyaPage")            => Some(Classic.AddToListPage.CyaPage(index, 1))
+                case None if path.contains(".addAnotherQuestion") => Some(Classic.AddToListPage.RepeaterPage(index, 1))
+                case None if path.contains(".declarationSection") =>
+                  Some(Classic.AddToListPage.DeclarationPage(index, 1))
+                case _ => None
+              }
+          }
+        }
+
+        index -> sectionType match {
+          case (Some(PathIndex(normalIndex, None, None)), Some(sectionType)) =>
+            getClassic(normalIndex, sectionType)
+          case (Some(PathIndex(normalIndex, Some(taskIndex), Some(taskSectionIndex))), Some(sectionType)) =>
+            getClassic(taskSectionIndex, sectionType).map { classic =>
+              val coordinates = Coordinates(TaskSectionNumber(normalIndex), TaskNumber(taskIndex))
+              TaskList(coordinates, classic)
+            }
+          case (Some(PathIndex(normalIndex, Some(taskIndex), taskSectionIndex)), None)
+              if !containAnyOf(path, summarySectionPaths) =>
+            Some(Classic.AddToListPage.Page(TemplateSectionIndex(normalIndex), 1, 1))
+          case (Some(PathIndex(normalIndex, None, None)), None) if !containAnyOf(path, summarySectionPaths) =>
+            Some(Classic.NormalPage(TemplateSectionIndex(normalIndex)))
+          case _ => None
+        }
+      }
+
+      def sectionText(paths: Seq[String]) =
+        paths
+          .map { path =>
+            path -> pathToSectionNumber(path)
+          }
+          .collect {
+            case (path, Some(sectionNumber))                              => "screenshot-" + sectionNumber.value + ".png"
+            case (path, None) if path.contains("formName")                => "any"
+            case (path, None) if path.contains(".submitSection")          => "submit section"
+            case (path, None) if path.contains(".acknowledgementSection") => "acknowledgement section"
+            case (path, None) if containAnyOf(path, summarySectionPaths)  => "summary section"
+            case (path, _)                                                => s"[not resolved, path: $path]"
+          }
+          .toSet
+          .toList
+          .sorted
+          .mkString("; ")
+
+      List("en", "cy", "screenshot") :: translator.untranslatedRowsForTranslation
+        .map(textToTranslate => List(textToTranslate.en, "", sectionText(textToTranslate.path)))
     }
 
   def debug(source: String): String =
