@@ -37,6 +37,7 @@ import uk.gov.hmrc.gform.envelope.EnvelopeModule
 import uk.gov.hmrc.gform.form.FormModule
 import uk.gov.hmrc.gform.formtemplate.FormTemplateModule
 import uk.gov.hmrc.gform.handlebarstemplate.HandlebarsTemplateModule
+import uk.gov.hmrc.gform.hip.HipModule
 import uk.gov.hmrc.gform.history.HistoryModule
 import uk.gov.hmrc.gform.log.DataAccessLogModule
 import uk.gov.hmrc.gform.metrics.MetricsModule
@@ -84,7 +85,8 @@ class PlayComponentsModule(
   historyModule: HistoryModule,
   retrievalModule: AuthRetrievalModule,
   companiesHouseModule: CompaniesHouseModule,
-  logModule: DataAccessLogModule
+  logModule: DataAccessLogModule,
+  hipModule: HipModule
 )(implicit ec: ExecutionContext) {
   private val logger = LoggerFactory.getLogger(getClass)
 
@@ -119,6 +121,7 @@ class PlayComponentsModule(
     historyModule.historyController,
     retrievalModule.authRetrievalController,
     companiesHouseModule.companiesHouseController,
+    hipModule.hipController,
     retrievalModule.emailMigrationController,
     logModule.logController
   )

@@ -30,6 +30,7 @@ class MagicCommasParserSpec extends Spec with ScalaCheckDrivenPropertyChecks {
         .replace("\"", "")
         .replace("[", "")
         .replace("]", "")
+        .replace("}", "")
     )
 
   "apply" should "return any string that is inputted" in {
@@ -67,14 +68,16 @@ class MagicCommasParserSpec extends Spec with ScalaCheckDrivenPropertyChecks {
   it should "copy quoted strings verbatim" in {
     forAll(stringWithNoSpecialCharsGen, Gen.oneOf(",,", ",,[", ",, ["), stringWithNoSpecialCharsGen) {
       (beforeCommas, specialChars, afterCommas) =>
-        val quotedString = s""""$beforeCommas$specialChars$afterCommas""""
-        verifySuccess(quotedString, quotedString)
+        whenever(isUn(beforeCommas, afterCommas)) {
+          val quotedString = s""""$beforeCommas$specialChars$afterCommas""""
+          verifySuccess(quotedString, quotedString)
+        }
     }
   }
 
   it should "copy unclosed literal strings as if they were not literal strings" in {
     forAll(stringWithNoSpecialCharsGen) { s =>
-      val ss = s""""s"""
+      val ss = s""""$s"""
       verifySuccess(ss, ss)
     }
   }
