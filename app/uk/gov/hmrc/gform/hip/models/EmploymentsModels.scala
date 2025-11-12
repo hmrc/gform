@@ -21,8 +21,7 @@ import play.api.libs.json.OFormat
 
 case class Employment(
   payeSchemeOperatorName: String,
-  payeNumber: String,
-  taxDistrictNumber: String,
+  employerReference: String,
   employmentSequenceNumber: Int,
   worksNumber: String,
   directorIdentifier: Boolean
@@ -34,9 +33,8 @@ object Employment {
 
 case class NIEmployments(
   taxYear: Int,
-  identifier: String,
-  individualsEmploymentDetails: List[Employment],
-  moreDataCallbackURL: String
+  nationalInsuranceNumber: String,
+  individualsEmploymentDetails: List[Employment]
 )
 
 object NIEmployments {

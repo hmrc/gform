@@ -55,16 +55,16 @@ class HipService(
     val transformed: List[JsObject] = result.validate[NIEmployments] match {
       case JsSuccess(niEmployments, _) =>
         niEmployments.individualsEmploymentDetails.map { employment =>
-          val payeNumber = Try(EmpRef.fromIdentifiers(employment.payeNumber)) match {
-            case Failure(_)   => employment.payeNumber
-            case Success(ref) => ref.taxOfficeReference
+          val (payeNumber, taxDistrictNumber) = Try(EmpRef.fromIdentifiers(employment.employerReference)) match {
+            case Failure(_)   => (employment.employerReference, employment.employerReference)
+            case Success(ref) => (ref.taxOfficeReference, ref.taxOfficeNumber)
           }
 
           Json.obj(
             "employerName"      -> JsString(employment.payeSchemeOperatorName),
             "sequenceNumber"    -> JsNumber(employment.employmentSequenceNumber),
             "worksNumber"       -> JsString(employment.worksNumber),
-            "taxDistrictNumber" -> JsString(employment.taxDistrictNumber),
+            "taxDistrictNumber" -> JsString(taxDistrictNumber),
             "payeNumber"        -> JsString(payeNumber),
             "director"          -> JsBoolean(employment.directorIdentifier)
           )

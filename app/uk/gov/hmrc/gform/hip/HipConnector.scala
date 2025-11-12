@@ -55,10 +55,10 @@ trait HipAlgebra[F[_]] {
     correlationId: String
   ): F[JsValue]
   def getEmployments(
-                      nino: String,
-                      taxYear: Int,
-                      correlationId: CorrelationId
-                    ): F[JsValue]
+    nino: String,
+    taxYear: Int,
+    correlationId: CorrelationId
+  ): F[JsValue]
 }
 
 class HipConnector(http: HttpClientV2, baseUrl: String, hipConfig: HipConnectorConfig)(implicit ec: ExecutionContext)
@@ -201,14 +201,14 @@ class HipConnector(http: HttpClientV2, baseUrl: String, hipConfig: HipConnectorC
   }
 
   def getEmployments(
-                      nino: String,
-                      taxYear: Int,
-                      correlationId: CorrelationId
-                    ): Future[JsValue] = {
+    nino: String,
+    taxYear: Int,
+    correlationId: CorrelationId
+  ): Future[JsValue] = {
     logger.info(
       s"getEmployments for taxYear $taxYear called, ${loggingHelpers.cleanHeaderCarrierHeader(hc)}"
     )
-    val url = s"$baseUrl${hipConfig.basePath}/ni/employment/employee/$nino/employment-summary/tax-year/$taxYear"
+    val url = s"$baseUrl${hipConfig.basePath}/paye/employment/employee/$nino/tax-year/$taxYear/employment-details"
 
     http
       .get(url"$url")
