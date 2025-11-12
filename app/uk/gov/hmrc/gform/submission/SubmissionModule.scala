@@ -34,7 +34,7 @@ import uk.gov.hmrc.gform.notifier.NotifierModule
 import uk.gov.hmrc.gform.objectstore.ObjectStoreModule
 import uk.gov.hmrc.gform.repo.{ Repo, RepoAlgebra }
 import uk.gov.hmrc.gform.sdes.SdesModule
-import uk.gov.hmrc.gform.submission.destinations.{ DataStoreSubmitter, DestinationModule, DestinationSubmitter, DestinationsSubmitter, DestinationsSubmitterAlgebra, DmsSubmitter, InfoArchiveSubmitter, PegaSubmitter, StateTransitionService }
+import uk.gov.hmrc.gform.submission.destinations.{ DataStoreSubmitter, DestinationModule, DestinationSubmitter, DestinationsSubmitter, DestinationsSubmitterAlgebra, DmsSubmitter, InfoArchiveSubmitter, NiRefundSubmitter, PegaSubmitter, StateTransitionService }
 import uk.gov.hmrc.gform.submissionconsolidator.SubmissionConsolidatorModule
 
 import scala.concurrent.ExecutionContext
@@ -99,6 +99,10 @@ class SubmissionModule(
     hipModule.getConnector
   )
 
+  private val niRefundSubmitter = new NiRefundSubmitter(
+    hipModule.getConnector
+  )
+
   private val stateTransitionService = new StateTransitionService(formModule.fOptFormService)
 
   private val realDestinationSubmitter = new DestinationSubmitter(
@@ -111,7 +115,8 @@ class SubmissionModule(
     dataStoreSubmitter,
     infoArchiveSubmitter,
     configModule.sdesConfig,
-    pegaSubmitterAlgebra = pegaSubmitter
+    pegaSubmitterAlgebra = pegaSubmitter,
+    niRefundSubmitterAlgebra = niRefundSubmitter
   )
 
   private val destinationsSubmitter: DestinationsSubmitterAlgebra[FOpt] = new DestinationsSubmitter(

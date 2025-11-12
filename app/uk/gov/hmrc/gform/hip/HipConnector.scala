@@ -22,7 +22,7 @@ import uk.gov.hmrc.gform.config.HipConnectorConfig
 import uk.gov.hmrc.http.{ BadRequestException, ForbiddenException, HeaderCarrier, HttpReadsEither, HttpReadsHttpResponse, HttpResponse, InternalServerException, LowPriorityHttpReadsJson, NotFoundException, ServiceUnavailableException, StringContextOps, UnauthorizedException }
 import play.api.http.HeaderNames.AUTHORIZATION
 import play.api.http.Status._
-import play.api.libs.json.JsValue
+import play.api.libs.json.{ JsObject, JsValue, Json }
 import uk.gov.hmrc.gform.sharedmodel.sdes.CorrelationId
 import uk.gov.hmrc.http.client.HttpClientV2
 
@@ -32,16 +32,27 @@ trait HipAlgebra[F[_]] {
 
   def getPegaCaseActionDetails(
     caseId: String,
-    actionId: String
+    actionId: String,
+    correlationId: String
   ): F[String]
   def pegaChangeToNextStage(
     caseId: String,
-    eTag: String
+    eTag: String,
+    correlationId: String
   ): F[String]
   def validateNIClaimReference(
     nino: String,
     claimReference: String,
     correlationId: CorrelationId
+  ): F[JsValue]
+  def niClaimUpdateBankDetails(
+    nino: String,
+    bankAccountName: String,
+    sortCode: String,
+    accountNumber: String,
+    rollNumber: Option[String],
+    refundClaimReference: String,
+    correlationId: String
   ): F[JsValue]
 }
 
@@ -50,10 +61,20 @@ class HipConnector(http: HttpClientV2, baseUrl: String, hipConfig: HipConnectorC
 
   private val logger = LoggerFactory.getLogger(getClass)
 
+  private object Headers {
+    val CorrelationId = "correlationId"
+    val GovUkOriginatorId = "gov-uk-originator-id"
+    val OriginChannel = "x-origin-channel"
+    val IfMatch = "if-match"
+  }
+
+  private object Values {
+    val WebChannel = "Web"
+  }
+
   private implicit val hc: HeaderCarrier = HeaderCarrier(
     extraHeaders = Seq(
-      "correlationId"        -> hipConfig.correlationId,
-      "gov-uk-originator-id" -> hipConfig.originatorId
+      Headers.GovUkOriginatorId -> hipConfig.originatorId
     )
   )
 
@@ -61,39 +82,73 @@ class HipConnector(http: HttpClientV2, baseUrl: String, hipConfig: HipConnectorC
     s"Basic ${hipConfig.authorizationToken}"
 
   private val authHeaders: Seq[(String, String)] = Seq(
-    AUTHORIZATION -> s"$authorization"
+    AUTHORIZATION -> authorization
   )
 
-  def getPegaCaseActionDetails(caseId: String, actionId: String): Future[String] = {
-    logger.info(
-      s"getPegaCaseActionDetails called, ${loggingHelpers.cleanHeaderCarrierHeader(hc)}"
-    )
-    val url =
-      s"$baseUrl${hipConfig.basePath}/pega/prweb/api/application/v2/cases/$caseId/actions/$actionId"
+  private def buildPegaUrl(path: String): String =
+    s"$baseUrl${hipConfig.basePath}/pega/prweb/api/application/v2/$path"
+
+  private def buildNiUrl(path: String): String =
+    s"$baseUrl${hipConfig.basePath}/ni/$path"
+
+  private def handleResponse[T](
+    response: HttpResponse,
+    apiName: String,
+    identifier: String,
+    successHandler: HttpResponse => T
+  ): T =
+    response.status match {
+      case OK => successHandler(response)
+      case BAD_REQUEST =>
+        logger.error(s"Received bad request response from $apiName: ${response.body}")
+        throw new BadRequestException(s"Bad request response from $apiName for identifier: $identifier")
+      case UNAUTHORIZED =>
+        logger.error(s"Received unauthorized response from $apiName: ${response.body}")
+        throw new UnauthorizedException(s"Unauthorized request to $apiName")
+      case FORBIDDEN =>
+        logger.error(s"Received forbidden response from $apiName: ${response.body}")
+        throw new ForbiddenException(s"Forbidden request to $apiName")
+      case NOT_FOUND =>
+        throw new NotFoundException(s"$apiName returned identifier: $identifier not found")
+      case INTERNAL_SERVER_ERROR =>
+        logger.error(s"Received internal server error response from $apiName: ${response.body}")
+        throw new InternalServerException(s"Internal server error response from $apiName")
+      case SERVICE_UNAVAILABLE =>
+        val message = s"Received service unavailable response from $apiName"
+        logger.error(message)
+        throw new ServiceUnavailableException(message)
+      case status =>
+        logger.error(s"Received unexpected status $status from $apiName. ${response.body}")
+        throw new InternalServerException(s"Unexpected response code from $apiName")
+    }
+
+  def getPegaCaseActionDetails(caseId: String, actionId: String, correlationId: String): Future[String] = {
+    logger.info(s"getPegaCaseActionDetails called, ${loggingHelpers.cleanHeaderCarrierHeader(hc)}")
+
+    val url = buildPegaUrl(s"cases/$caseId/actions/$actionId")
 
     http
       .get(url"$url")
       .setHeader(authHeaders: _*)
-      .setHeader(("x-origin-channel", "Web"))
+      .setHeader((Headers.OriginChannel, Values.WebChannel))
+      .setHeader(Headers.CorrelationId -> correlationId)
       .execute[HttpResponse]
-      .map(r => handlePegaResponse(r, caseId))
+      .map(response => handleResponse(response, "Pega API", caseId, extractEtag(_, caseId)))
   }
 
-  def pegaChangeToNextStage(caseId: String, eTag: String): Future[String] = {
-    logger.info(
-      s"pegaChangeToNextStage called, ${loggingHelpers.cleanHeaderCarrierHeader(hc)}"
-    )
+  def pegaChangeToNextStage(caseId: String, eTag: String, correlationId: String): Future[String] = {
+    logger.info(s"pegaChangeToNextStage called, ${loggingHelpers.cleanHeaderCarrierHeader(hc)}")
 
-    val url =
-      s"$baseUrl${hipConfig.basePath}/pega/prweb/api/application/v2/cases/$caseId/stages/next?viewType=none&cleanupProcesses=false"
+    val url = buildPegaUrl(s"cases/$caseId/stages/next?viewType=none&cleanupProcesses=false")
 
     http
       .post(url"$url")
       .setHeader(authHeaders: _*)
-      .setHeader(("x-origin-channel", "Web"))
-      .setHeader(("if-match", eTag))
+      .setHeader((Headers.OriginChannel, Values.WebChannel))
+      .setHeader(Headers.CorrelationId -> correlationId)
+      .setHeader((Headers.IfMatch, eTag))
       .execute[HttpResponse]
-      .map(r => handlePegaResponse(r, caseId))
+      .map(response => handleResponse(response, "Pega API", caseId, extractEtag(_, caseId)))
   }
 
   def validateNIClaimReference(
@@ -105,90 +160,61 @@ class HipConnector(http: HttpClientV2, baseUrl: String, hipConfig: HipConnectorC
       s"validateNIClaimReference called for reference '$claimReference', ${loggingHelpers.cleanHeaderCarrierHeader(hc)}"
     )
 
-    val url = s"$baseUrl${hipConfig.basePath}/ni/person/$nino/national-insurance/claim/refund/$claimReference"
+    val url = buildNiUrl(s"person/$nino/national-insurance/claim/refund/$claimReference")
 
     http
       .get(url"$url")
       .setHeader(authHeaders: _*)
-      .setHeader("correlationId" -> correlationId.value)
+      .setHeader(Headers.CorrelationId -> correlationId.value)
       .execute[HttpResponse]
-      .map(response => handleNIClaimResponse(response, claimReference))
+      .map(response => handleResponse(response, "Validate NI Claim Reference", claimReference, _.json))
   }
 
-  private def handlePegaResponse(response: HttpResponse, caseId: String): String =
-    response.status match {
-      case OK =>
-        response
-          .header("etag") match {
-          case Some(eTag) => eTag
-          case None =>
-            throw new InternalServerException(s"etag not found in Pega response for Case ID: $caseId")
-        }
-      case BAD_REQUEST =>
-        logger.error(
-          s"Received bad request response from Pega API: ${response.body}"
-        )
-        throw new BadRequestException(s"Bad request response from Pega API for Case ID: $caseId")
-      case UNAUTHORIZED =>
-        logger.error(
-          s"Received unauthorized response from Pega API: ${response.body}"
-        )
-        throw new UnauthorizedException("Unauthorized request to Pega API")
-      case FORBIDDEN =>
-        logger.error(
-          s"Received forbidden response from Pega API: ${response.body}"
-        )
-        throw new ForbiddenException("Forbidden request to Pega API")
-      case NOT_FOUND =>
-        throw new NotFoundException(s"Pega API returned Case ID: $caseId not found")
-      case INTERNAL_SERVER_ERROR =>
-        logger.error(
-          s"Received internal server error response from Pega API: ${response.body}"
-        )
-        throw new InternalServerException("Internal server error response from Pega API")
-      case SERVICE_UNAVAILABLE =>
-        val message = "Received service unavailable response from Pega API"
-        logger.error(message)
-        throw new ServiceUnavailableException(message)
-      case status =>
-        logger.error(s"Received unexpected status $status from Pega API. ${response.body}")
-        throw new InternalServerException("Unexpected response code from Pega API")
-    }
+  def niClaimUpdateBankDetails(
+    nino: String,
+    bankAccountName: String,
+    sortCode: String,
+    accountNumber: String,
+    rollNumber: Option[String],
+    refundClaimReference: String,
+    correlationId: String
+  ): Future[JsValue] = {
+    logger.info(
+      s"niClaimUpdateBankDetails called for reference '$refundClaimReference', ${loggingHelpers.cleanHeaderCarrierHeader(hc)}"
+    )
 
-  private def handleNIClaimResponse(response: HttpResponse, claimReference: String): JsValue =
-    response.status match {
-      case OK => response.json
-      case BAD_REQUEST =>
-        logger.error(
-          s"Received bad request response from Validate NI Claim Reference: ${response.body}"
-        )
-        throw new BadRequestException(
-          s"Received bad request response from Validate NI Claim Reference for reference: $claimReference"
-        )
-      case UNAUTHORIZED =>
-        logger.error(
-          s"Received unauthorized response from Validate NI Claim Reference: ${response.body}"
-        )
-        throw new UnauthorizedException("Unauthorized request to Validate NI Claim Reference")
-      case FORBIDDEN =>
-        logger.error(
-          s"Received forbidden response from Validate NI Claim Reference: ${response.body}"
-        )
-        throw new ForbiddenException("Forbidden request to Validate NI Claim Reference")
-      case NOT_FOUND =>
-        throw new NotFoundException(s"Validate NI Claim Reference returned reference: $claimReference not found")
-      case INTERNAL_SERVER_ERROR =>
-        logger.error(
-          s"Received internal server error response from Validate NI Claim Reference: ${response.body}"
-        )
-        throw new InternalServerException("Internal server error response from Validate NI Claim Reference")
-      case SERVICE_UNAVAILABLE =>
-        val message = "Received service unavailable response from Validate NI Claim Reference"
-        logger.error(message)
-        throw new ServiceUnavailableException(message)
-      case status =>
-        logger.error(s"Received unexpected status $status from Validate NI Claim Reference. ${response.body}")
-        throw new InternalServerException("Unexpected response code from Validate NI Claim Reference")
-    }
+    val url = buildNiUrl(s"contributions/$nino/claim/refund/$refundClaimReference/bank-details")
+    val body = buildBankDetailsBody(bankAccountName, sortCode, accountNumber, rollNumber)
 
+    http
+      .put(url"$url")
+      .setHeader(authHeaders: _*)
+      .setHeader(Headers.CorrelationId -> correlationId)
+      .withBody(body)
+      .execute[HttpResponse]
+      .map(response => handleResponse(response, "NI Claim Refund (Update Bank Details)", refundClaimReference, _.json))
+  }
+
+  private def extractEtag(response: HttpResponse, caseId: String): String =
+    response
+      .header("etag")
+      .getOrElse(
+        throw new InternalServerException(s"etag not found in Pega response for Case ID: $caseId")
+      )
+
+  private def buildBankDetailsBody(
+    bankAccountName: String,
+    sortCode: String,
+    accountNumber: String,
+    rollNumber: Option[String]
+  ): JsValue = {
+    val rollNumberJson: JsObject = rollNumber.filter(_.nonEmpty).fold(Json.obj())(r => Json.obj("rollNumber" -> r))
+    Json.obj(
+      "refundClaimBankDetails" -> (Json.obj(
+        "bankAccountName" -> bankAccountName,
+        "sortCode"        -> sortCode,
+        "accountNumber"   -> accountNumber
+      ) ++ rollNumberJson)
+    )
+  }
 }

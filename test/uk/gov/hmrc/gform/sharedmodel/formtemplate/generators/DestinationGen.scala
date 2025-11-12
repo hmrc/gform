@@ -251,6 +251,29 @@ trait DestinationGen {
       caseId
     )
 
+  def niRefundGen: Gen[Destination.NiRefundClaimApi] =
+    for {
+      id                   <- destinationIdGen
+      includeIf            <- includeIfGen()
+      failOnError          <- PrimitiveGen.booleanGen
+      bankAccountName      <- ExprGen.exprGen()
+      sortCode             <- ExprGen.exprGen()
+      accountNumber        <- ExprGen.exprGen()
+      rollNumber           <- Gen.option(ExprGen.exprGen())
+      refundClaimReference <- ExprGen.exprGen()
+      nino                 <- ExprGen.exprGen()
+    } yield Destination.NiRefundClaimApi(
+      id,
+      includeIf,
+      failOnError,
+      bankAccountName,
+      sortCode,
+      accountNumber,
+      rollNumber,
+      refundClaimReference,
+      nino
+    )
+
   def singularDestinationGen: Gen[Destination] =
     Gen.oneOf(
       hmrcDmsGen,
@@ -259,7 +282,8 @@ trait DestinationGen {
       logGen,
       emailGen,
       submissionConsolidatorGen,
-      pegaGen
+      pegaGen,
+      niRefundGen
     )
 
   def destinationGen: Gen[Destination] = Gen.frequency(10 -> singularDestinationGen, 1 -> compositeGen)
