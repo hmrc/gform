@@ -213,7 +213,7 @@ class HipConnector(http: HttpClientV2, baseUrl: String, hipConfig: HipConnectorC
     http
       .get(url"$url")
       .setHeader(authHeaders: _*)
-      .setHeader("correlationId" -> correlationId.value)
+      .setHeader(Headers.CorrelationId -> correlationId.value)
       .execute[HttpResponse]
       .map(response => handleResponse(response, "Get Employments", correlationId.value, _.json))
   }
