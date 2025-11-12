@@ -34,13 +34,14 @@ class PegaSubmitter(
     submissionInfo: DestinationSubmissionInfo
   ): FOpt[Unit] = {
     val formId = submissionInfo.formId.value
+    val correlationId = submissionInfo.submission.envelopeId.value
     maybeDesRes match {
       case Some(dr) =>
         dr.pegaCaseId match {
           case Some(caseId) =>
             for {
-              eTag <- fromFutureA(hipConnectorAlgebra.getPegaCaseActionDetails(caseId, "pyChangeStage"))
-              _    <- fromFutureA(hipConnectorAlgebra.pegaChangeToNextStage(caseId, eTag))
+              eTag <- fromFutureA(hipConnectorAlgebra.getPegaCaseActionDetails(caseId, "pyChangeStage", correlationId))
+              _    <- fromFutureA(hipConnectorAlgebra.pegaChangeToNextStage(caseId, eTag, correlationId))
             } yield ()
           case None =>
             throw new IllegalArgumentException(

@@ -52,6 +52,15 @@ sealed trait DestinationWithPegaCaseId extends Destination {
   def caseId: Expr
 }
 
+sealed trait DestinationWithNiRefundClaimBankDetails extends Destination {
+  def bankAccountName: Expr
+  def sortCode: Expr
+  def accountNumber: Expr
+  def rollNumber: Option[Expr]
+  def refundClaimReference: Expr
+  def nino: Expr
+}
+
 sealed trait DestinationIncludeIf extends Product with Serializable
 
 object DestinationIncludeIf {
@@ -181,6 +190,18 @@ object Destination {
     caseId: Expr
   ) extends Destination with DestinationWithPegaCaseId
 
+  case class NiRefundClaimApi(
+    id: DestinationId,
+    includeIf: DestinationIncludeIf,
+    failOnError: Boolean,
+    bankAccountName: Expr,
+    sortCode: Expr,
+    accountNumber: Expr,
+    rollNumber: Option[Expr],
+    refundClaimReference: Expr,
+    nino: Expr
+  ) extends Destination with DestinationWithNiRefundClaimBankDetails
+
   val typeDiscriminatorFieldName: String = "type"
   val hmrcDms: String = "hmrcDms"
   val dataStore: String = "hmrcIlluminate"
@@ -192,6 +213,7 @@ object Destination {
   val log: String = "log"
   val email: String = "email"
   val pegaApi: String = "pegaApi"
+  val niRefundClaimApi: String = "niRefundClaimApi"
 
   private implicit def nonEmptyListOfDestinationsFormat: OFormat[NonEmptyList[Destination]] =
     derived.oformat[NonEmptyList[Destination]]()
@@ -212,7 +234,8 @@ object Destination {
         stateTransition        -> UploadableStateTransitionDestination.reads,
         log                    -> UploadableLogDestination.reads,
         email                  -> UploadableEmailDestination.reads,
-        pegaApi                -> UploadablePegaApiDestination.reads
+        pegaApi                -> UploadablePegaApiDestination.reads,
+        niRefundClaimApi       -> UploadableNiRefundClaimApiDestination.reads
       )
     )
   }
@@ -555,6 +578,41 @@ object UploadablePegaApiDestination {
     private val d: Reads[UploadablePegaApiDestination] = derived.reads[UploadablePegaApiDestination]()
     override def reads(json: JsValue): JsResult[Destination.PegaApi] =
       d.reads(json).flatMap(_.toPegaApiDestination.fold(JsError(_), JsSuccess(_)))
+  }
+}
+
+case class UploadableNiRefundClaimApiDestination(
+  id: DestinationId,
+  includeIf: DestinationIncludeIf,
+  failOnError: Option[Boolean],
+  bankAccountName: TextExpression,
+  sortCode: TextExpression,
+  accountNumber: TextExpression,
+  rollNumber: Option[TextExpression],
+  refundClaimReference: TextExpression,
+  nino: TextExpression
+) {
+  private def toNiRefundClaimApiDestination: Either[String, Destination.NiRefundClaimApi] =
+    for {
+      cvii <- addErrorInfo(id, None, includeIf)
+    } yield Destination.NiRefundClaimApi(
+      id,
+      cvii,
+      failOnError.getOrElse(true),
+      bankAccountName.expr,
+      sortCode.expr,
+      accountNumber.expr,
+      rollNumber.map(_.expr),
+      refundClaimReference.expr,
+      nino.expr
+    )
+}
+
+object UploadableNiRefundClaimApiDestination {
+  implicit val reads: Reads[Destination.NiRefundClaimApi] = new Reads[Destination.NiRefundClaimApi] {
+    private val d: Reads[UploadableNiRefundClaimApiDestination] = derived.reads[UploadableNiRefundClaimApiDestination]()
+    override def reads(json: JsValue): JsResult[Destination.NiRefundClaimApi] =
+      d.reads(json).flatMap(_.toNiRefundClaimApiDestination.fold(JsError(_), JsSuccess(_)))
   }
 }
 

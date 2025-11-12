@@ -26,7 +26,7 @@ import uk.gov.hmrc.gform.sharedmodel.{ DataRetrieve, SmartString }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationIncludeIf, Destinations }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationIncludeIf.IncludeIfValue
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.{ DataStore, Email, HandlebarsHttpApi, HmrcDms, InfoArchive, Log, PegaApi, StateTransition, SubmissionConsolidator }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.{ DataStore, Email, HandlebarsHttpApi, HmrcDms, InfoArchive, Log, NiRefundClaimApi, PegaApi, StateTransition, SubmissionConsolidator }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DestinationList
 
 trait Rewriter {
@@ -122,6 +122,7 @@ trait Rewriter {
           case DataStore(_, _, IncludeIfValue(includeIf), _, _, _, _, _, _, _, _, _, _, _, _, _) => includeIf
           case InfoArchive(_, IncludeIfValue(includeIf), _, _, _, _, _, _)                       => includeIf
           case PegaApi(_, IncludeIfValue(includeIf), _, _)                                       => includeIf
+          case NiRefundClaimApi(_, IncludeIfValue(includeIf), _, _, _, _, _, _, _)               => includeIf
         }
       case _ => Nil
     }
@@ -573,6 +574,7 @@ trait Rewriter {
           case d: DataStore              => d.copy(includeIf = replaceDesIncludeIf(d.includeIf))
           case i: InfoArchive            => i.copy(includeIf = replaceDesIncludeIf(i.includeIf))
           case p: PegaApi                => p.copy(includeIf = replaceDesIncludeIf(p.includeIf))
+          case n: NiRefundClaimApi       => n.copy(includeIf = replaceDesIncludeIf(n.includeIf))
         }
 
       def replaceDesIncludeIf(desIncludeIfValue: DestinationIncludeIf) = desIncludeIfValue match {
