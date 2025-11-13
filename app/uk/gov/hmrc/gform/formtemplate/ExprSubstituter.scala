@@ -89,34 +89,36 @@ object ExprSubstituter extends Substituter[ExprSubstitutions, FormTemplate] {
     }
 
   implicit val dateExprSubstituter: Substituter[ExprSubstitutions, DateExpr] = (substitutions, t) => {
-    def aux(dExpr: DateExpr): DateExpr =
+    def loop(dExpr: DateExpr): DateExpr =
       dExpr match {
         case d @ DateFormCtxVar(FormCtx(formComponentId)) =>
           substitutions.expressions.get(ExpressionId(formComponentId.value)) match {
             case Some(DateCtx(dateExpr))                   => dateExpr
             case Some(ctx @ FormCtx(_))                    => DateFormCtxVar(ctx)
-            case Some(IfElse(c, DateCtx(f1), DateCtx(f2))) => DateIfElse(c, aux(f1), aux(f2))
+            case Some(IfElse(c, DateCtx(f1), DateCtx(f2))) => DateIfElse(c, loop(f1), loop(f2))
             case here                                      => d
           }
         case d @ HmrcTaxPeriodCtx(FormCtx(fcId), _) =>
           substitutions.expressions.get(ExpressionId(fcId.value)) match {
             case Some(DateCtx(dateExpr))                   => dateExpr
             case Some(ctx @ FormCtx(_))                    => DateFormCtxVar(ctx)
-            case Some(IfElse(c, DateCtx(f1), DateCtx(f2))) => DateIfElse(c, aux(f1), aux(f2))
+            case Some(IfElse(c, DateCtx(f1), DateCtx(f2))) => DateIfElse(c, loop(f1), loop(f2))
             case here                                      => d
           }
         case d @ DataRetrieveDateCtx(_, _) => d
         case d @ DateValueExpr(_)          => d
         case DateExprWithOffset(dExpr, offset) =>
-          aux(dExpr) match {
+          loop(dExpr) match {
             case DateExprWithOffset(expr, innerOffset) => DateExprWithOffset(expr, innerOffset + offset)
             case other                                 => DateExprWithOffset(other, offset)
           }
-        case DateIfElse(cond, field1, field2) => DateIfElse(cond, aux(field1), aux(field2))
-        case DateOrElse(field1, field2)       => DateOrElse(aux(field1), aux(field2))
+        case DateIfElse(cond, field1, field2) => DateIfElse(cond, loop(field1), loop(field2))
+        case DateOrElse(field1, field2)       => DateOrElse(loop(field1), loop(field2))
         case DateConstructExpr(dm, year)      => DateConstructExpr(dm, year(substitutions))
+        case EarliestOf(exprs)                => EarliestOf(exprs.map(loop))
+        case LatestOf(exprs)                  => LatestOf(exprs.map(loop))
       }
-    aux(t)
+    loop(t)
   }
 
   implicit val booleanExprSubstituter: Substituter[ExprSubstitutions, BooleanExpr] =

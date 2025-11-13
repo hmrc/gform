@@ -125,6 +125,8 @@ object TopLevelExpressions {
         case DateIfElse(cond, field1, field2) => DateIfElse(cond, loopDateExpr(field1), loopDateExpr(field2))
         case DateOrElse(dExpr1, dExpr2)       => DateOrElse(loopDateExpr(dExpr1), loopDateExpr(dExpr2))
         case DateConstructExpr(dm, year)      => DateConstructExpr(dm, loop(year))
+        case EarliestOf(exprs)                => EarliestOf(exprs.map(loopDateExpr))
+        case LatestOf(exprs)                  => LatestOf(exprs.map(loopDateExpr))
       }
 
     def loopBooleanExpr(t: BooleanExpr): BooleanExpr = t match {
