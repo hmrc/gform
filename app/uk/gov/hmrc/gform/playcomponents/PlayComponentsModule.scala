@@ -54,6 +54,7 @@ import uk.gov.hmrc.play.bootstrap.backend.filters.BackendMdcFilter
 import uk.gov.hmrc.play.bootstrap.filters.{ CacheControlConfig, CacheControlFilter, DefaultLoggingFilter }
 import uk.gov.hmrc.play.health.HealthController
 import uk.gov.hmrc.gform.shutter.ShutterModule
+import uk.gov.hmrc.gform.uk.gov.hmrc.gform.screenshottool.ScreenshotController
 
 class PlayComponentsModule(
   playComponents: PlayComponents,
@@ -86,7 +87,8 @@ class PlayComponentsModule(
   retrievalModule: AuthRetrievalModule,
   companiesHouseModule: CompaniesHouseModule,
   logModule: DataAccessLogModule,
-  hipModule: HipModule
+  hipModule: HipModule,
+  screenshotController: ScreenshotController
 )(implicit ec: ExecutionContext) {
   private val logger = LoggerFactory.getLogger(getClass)
 
@@ -123,7 +125,8 @@ class PlayComponentsModule(
     companiesHouseModule.companiesHouseController,
     hipModule.hipController,
     retrievalModule.emailMigrationController,
-    logModule.logController
+    logModule.logController,
+    screenshotController
   )
 
   private val healthController =

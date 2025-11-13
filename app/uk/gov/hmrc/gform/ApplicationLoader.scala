@@ -429,6 +429,8 @@ class ApplicationModule(context: Context)
     configModule
   )
 
+  private val screenshotController = new ScreenshotController(controllerComponents, configModule)
+
   private val playComponentsModule = new PlayComponentsModule(
     playComponents,
     akkaModule,
@@ -460,7 +462,8 @@ class ApplicationModule(context: Context)
     retrievalModule,
     companiesHouseModule,
     dataAccessLogModule,
-    hipModule
+    hipModule,
+    screenshotController
   )
 
   override lazy val httpRequestHandler: HttpRequestHandler = playComponentsModule.httpRequestHandler

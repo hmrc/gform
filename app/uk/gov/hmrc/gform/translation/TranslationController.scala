@@ -88,8 +88,10 @@ class TranslationController(
 
   def generateBriefTranslatebleXlsx(
     formTemplateId: FormTemplateId,
-    allEnglish: Boolean
-  ): Action[AnyContent] = generateXlsx(formTemplateId, TextExtractor.generateBriefTranslatableRows, allEnglish)
+    allEnglish: Boolean,
+    debug: Option[Boolean]
+  ): Action[AnyContent] =
+    generateXlsx(formTemplateId, TextExtractor.generateBriefTranslatableRows(_, _, debug.getOrElse(false)), allEnglish)
 
   def generateInternalCsv(
     formTemplateId: FormTemplateId

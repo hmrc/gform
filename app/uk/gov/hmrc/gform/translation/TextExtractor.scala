@@ -298,7 +298,7 @@ class Translator(json: Json, paths: List[List[Instruction]], val topLevelExprDat
             rows.addOne(Row(path, lang.en, lang.cy))
           })
       }
-    rows.view.distinct.toList
+    rows.view.distinct.toList.sortBy(_.path)
   }
 
   val fetchRows: List[Row] = smartStringsRows(smartStringCursors) ++ topLevelExprData.toRows
@@ -683,7 +683,7 @@ object TextExtractor {
 
   private case class PathIndex(normalIndex: Int, taskIndex: Option[Int], taskSectionIndex: Option[Int])
 
-  def generateBriefTranslatableRows(source: String, formTemplate: FormTemplate): List[List[String]] =
+  def generateBriefTranslatableRows(source: String, formTemplate: FormTemplate, isDebug: Boolean): List[List[String]] =
     withTranslator(source).fold(List.empty[List[String]]) { translator =>
       def sectionToSectionType(section: Section) = section match {
         case _: Section.NonRepeatingPage => ClassicNormal
@@ -789,11 +789,11 @@ object TextExtractor {
           }
           .collect {
             case (path, Some(sectionNumber))                              => "screenshot-" + sectionNumber.value + ".png"
-            case (path, None) if path.contains("formName")                => "any"
+            case (path, None) if path.contains(".formName")               => "any"
             case (path, None) if path.contains(".submitSection")          => "submit section"
             case (path, None) if path.contains(".acknowledgementSection") => "acknowledgement section"
             case (path, None) if containAnyOf(path, summarySectionPaths)  => "summary section"
-            case (path, _)                                                => s"[not resolved, path: $path]"
+            case (path, _) if isDebug                                     => s"[not resolved, path: $path]"
           }
           .toSet
           .toList
