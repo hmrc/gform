@@ -167,10 +167,10 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
   lazy val dataRetrieveDate: Parser[DateExpr] = dataRetrieveDateOffset | dataRetrieveDateExpr
 
   lazy val dateExpr: Parser[DateExpr] =
-    dateExprTODAYOffset | dataRetrieveDateExpr | formCtxFieldDateWithOffset | dateExprExactQuoted | formCtxFieldDate
+    dateExprTODAYOffset | dataRetrieveDateExpr | formCtxFieldDateWithOffset | dateExprExactQuoted | earliestOf | formCtxFieldDate
 
   lazy val dateExprWithoutFormCtxFieldDate: Parser[DateExpr] =
-    dateExprTODAYOffset | dataRetrieveDateExpr | formCtxFieldDateWithOffset | dateExprExactQuoted
+    dateExprTODAYOffset | dataRetrieveDateExpr | formCtxFieldDateWithOffset | dateExprExactQuoted | earliestOf
 
   lazy val dataSourceParse: Parser[DataSource] = (
     "service" ~ "." ~ "seiss" ^^ { _ =>
@@ -452,6 +452,14 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
   } | FormComponentId.unanchoredIdValidation ^^ { fn =>
     DateFormCtxVar(FormCtx(FormComponentId(fn)))
   }
+
+  lazy val earliestOf: Parser[DateExpr] =
+    "earliestOf(" ~ dateExpr ~ (("," ~> dateExpr) *) ~ ")" ^^ { case _ ~ expr ~ exprs ~ _ =>
+      EarliestOf(expr +: exprs)
+    } |
+      "latestOf(" ~ dateExpr ~ (("," ~> dateExpr) *) ~ ")" ^^ { case _ ~ expr ~ exprs ~ _ =>
+        LatestOf(expr +: exprs)
+      }
 
   lazy val _expr1: PackratParser[Expr] = "if" ~> p4 ~ "then" ~ _expr1 ~ "else" ~ _expr1 ^^ {
     case cond ~ _ ~ expr1 ~ _ ~ expr2 => IfElse(cond, expr1, expr2)

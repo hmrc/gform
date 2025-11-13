@@ -150,7 +150,7 @@ object FormTemplatePIIRefsHelper {
       case ChoicesCount(FormComponentId(value))                   => List(value)
       case TaskStatus(TaskId(value))                              => List(value)
       case DisplayAsEntered(FormComponentId(value))               => List(value)
-      case LookupOps(exprs, _)                                    => extractRefs(exprs)
+      case LookupOps(expr, _)                                     => extractRefs(expr)
     }
 
   implicit class JsLookupResultOps(result: JsLookupResult) {
