@@ -28,7 +28,12 @@ case class DestinationResult(
   nino: Option[String],
   utr: Option[String],
   postalCode: Option[String],
-  pegaCaseId: Option[String]
+  pegaCaseId: Option[String],
+  bankAccountName: Option[String],
+  sortCode: Option[String],
+  accountNumber: Option[String],
+  rollNumber: Option[String],
+  refundClaimReference: Option[String]
 )
 
 object DestinationResult {
