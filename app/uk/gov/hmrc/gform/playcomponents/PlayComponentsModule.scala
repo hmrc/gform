@@ -45,6 +45,7 @@ import uk.gov.hmrc.gform.notificationbanner.NotificationBannerModule
 import uk.gov.hmrc.gform.objectstore.ObjectStoreModule
 import uk.gov.hmrc.gform.obligation.ObligationModule
 import uk.gov.hmrc.gform.retrieval.AuthRetrievalModule
+import uk.gov.hmrc.gform.screenshottool.ScreenshotController
 import uk.gov.hmrc.gform.sdes.SdesModule
 import uk.gov.hmrc.gform.submission.SubmissionModule
 import uk.gov.hmrc.gform.testonly.TestOnlyModule
@@ -54,7 +55,6 @@ import uk.gov.hmrc.play.bootstrap.backend.filters.BackendMdcFilter
 import uk.gov.hmrc.play.bootstrap.filters.{ CacheControlConfig, CacheControlFilter, DefaultLoggingFilter }
 import uk.gov.hmrc.play.health.HealthController
 import uk.gov.hmrc.gform.shutter.ShutterModule
-import uk.gov.hmrc.gform.uk.gov.hmrc.gform.screenshottool.ScreenshotController
 
 class PlayComponentsModule(
   playComponents: PlayComponents,

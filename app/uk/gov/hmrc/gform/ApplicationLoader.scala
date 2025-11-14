@@ -68,6 +68,7 @@ import uk.gov.hmrc.gform.repo.Repo
 import uk.gov.hmrc.gform.retrieval.AuthRetrievalModule
 import uk.gov.hmrc.gform.save4later.FormMongoCache
 import uk.gov.hmrc.gform.scheduler.SchedulerModule
+import uk.gov.hmrc.gform.screenshottool.ScreenshotController
 import uk.gov.hmrc.gform.sdes.SdesModule
 import uk.gov.hmrc.gform.sharedmodel.{ HandlebarsSchema, HandlebarsTemplate }
 import uk.gov.hmrc.gform.shutter.ShutterModule
@@ -429,7 +430,7 @@ class ApplicationModule(context: Context)
     configModule
   )
 
-  private val screenshotController = new ScreenshotController(controllerComponents, configModule)
+  private val screenshotController = new ScreenshotController(controllerComponents, configModule.appConfig)
 
   private val playComponentsModule = new PlayComponentsModule(
     playComponents,

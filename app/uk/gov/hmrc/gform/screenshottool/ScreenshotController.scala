@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.uk.gov.hmrc.gform.screenshottool
+package uk.gov.hmrc.gform.screenshottool
 
 import play.api.mvc.{ Action, AnyContent, ControllerComponents }
 import uk.gov.hmrc.gform.config.AppConfig

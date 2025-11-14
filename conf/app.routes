@@ -169,4 +169,4 @@ POST          /email-migration                                                  
 POST          /access-logs                                                                              uk.gov.hmrc.gform.log.DataAccessLogController.saveDataAccessLog()
 GET           /access-logs/:page/:pageSize                                                              uk.gov.hmrc.gform.log.DataAccessLogController.getDataAccessLogs(page: Int, pageSize: Int)
 
-GET           /screenshot-tool/version/latest                                                           uk.gov.hmrc.gform.uk.gov.hmrc.gform.screenshottool.ScreenshotController.latestVersion
+GET           /screenshot-tool/version/latest                                                           uk.gov.hmrc.gform.screenshottool.ScreenshotController.latestVersion
