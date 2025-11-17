@@ -36,7 +36,8 @@ case class AppConfig(
   restrictedFileExtensionList: List[String],
   `history-ttl`: FiniteDuration,
   `translation-audit-ttl`: FiniteDuration,
-  `sensitive-data-access-log-ttl`: FiniteDuration
+  `sensitive-data-access-log-ttl`: FiniteDuration,
+  screenshotToolLatestVersion: String
 ) {
 
   def restrictedFileExtensions: List[FileExtension] =

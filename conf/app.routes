@@ -103,7 +103,7 @@ GET           /object-store/info-archive/envelopes/:envelopeId                  
 GET           /translation/:formTemplateId                                                              uk.gov.hmrc.gform.translation.TranslationController.generateTranslatebleCsv(formTemplateId: FormTemplateId)
 GET           /translation/:formTemplateId/brief                                                        uk.gov.hmrc.gform.translation.TranslationController.generateBriefTranslatebleCsv(formTemplateId: FormTemplateId)
 GET           /translation-excel/:formTemplateId                                                        uk.gov.hmrc.gform.translation.TranslationController.generateTranslatebleXlsx(formTemplateId: FormTemplateId)
-GET           /translation-excel/:formTemplateId/brief                                                  uk.gov.hmrc.gform.translation.TranslationController.generateBriefTranslatebleXlsx(formTemplateId: FormTemplateId, allEnglish: Boolean)
+GET           /translation-excel/:formTemplateId/brief                                                  uk.gov.hmrc.gform.translation.TranslationController.generateBriefTranslatebleXlsx(formTemplateId: FormTemplateId, allEnglish: Boolean, debug: Option[Boolean])
 GET           /translation/:formTemplateId/internal                                                     uk.gov.hmrc.gform.translation.TranslationController.generateInternalCsv(formTemplateId: FormTemplateId)
 GET           /translation/:formTemplateId/debug                                                        uk.gov.hmrc.gform.translation.TranslationController.translateCsvDebug(formTemplateId: FormTemplateId)
 GET           /translation/:formTemplateId/breakdown                                                    uk.gov.hmrc.gform.translation.TranslationController.textBreakdown(formTemplateId: FormTemplateId)
@@ -167,3 +167,5 @@ POST          /email-migration                                                  
 
 POST          /access-logs                                                                              uk.gov.hmrc.gform.log.DataAccessLogController.saveDataAccessLog()
 GET           /access-logs/:page/:pageSize                                                              uk.gov.hmrc.gform.log.DataAccessLogController.getDataAccessLogs(page: Int, pageSize: Int)
+
+GET           /screenshot-tool/version/latest                                                           uk.gov.hmrc.gform.screenshottool.ScreenshotController.latestVersion
