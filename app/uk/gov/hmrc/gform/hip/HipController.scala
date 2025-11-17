@@ -34,20 +34,37 @@ class HipController(
   private val logger = LoggerFactory.getLogger(getClass)
 
   def validateNiClaimReference(nino: String, claimReference: String): Action[AnyContent] =
-    Action.async { request =>
-      val maybeCorrelationId = request.headers.get("correlationId").map(CorrelationId(_))
-
-      maybeCorrelationId.fold[Future[Result]] {
-        logger.error(s"No correlationId header provided in call to validate NI claim reference '$claimReference'")
-        BadRequest.pure[Future]
-      } { correlationId =>
+    Action.async { implicit request =>
+      withCorrelationId("validateNiClaimReference") { correlationId =>
         hipService
           .validateNIClaimReference(nino, claimReference, correlationId)
           .asOkJson
-          .recover {
-            case e: HttpException => Status(e.responseCode)
-            case _                => ServiceUnavailable
-          }
+          .recover(standardErrors)
       }
     }
+
+  def getEmployments(nino: String, taxYear: Int): Action[AnyContent] =
+    Action.async { implicit request =>
+      withCorrelationId("getEmployments") { correlationId =>
+        hipService
+          .getEmployments(nino, taxYear, correlationId)
+          .asOkJson
+          .recover(standardErrors)
+      }
+    }
+
+  private def withCorrelationId(
+    identifier: String
+  )(f: CorrelationId => Future[Result])(implicit request: Request[AnyContent]): Future[Result] = {
+    val maybeCorrelationId: Option[CorrelationId] = request.headers.get("correlationId").map(CorrelationId(_))
+    maybeCorrelationId.fold[Future[Result]] {
+      logger.error(s"No correlationId header provided in call to $identifier")
+      BadRequest.pure[Future]
+    }(f(_))
+  }
+
+  private def standardErrors: PartialFunction[Throwable, Result] = {
+    case e: HttpException => Status(e.responseCode)
+    case _                => ServiceUnavailable
+  }
 }
