@@ -21,7 +21,6 @@ import play.api.libs.json._
 import uk.gov.hmrc.domain.EmpRef
 import uk.gov.hmrc.gform.hip.models.NIEmployments
 import uk.gov.hmrc.gform.sharedmodel.sdes.CorrelationId
-import uk.gov.hmrc.http.InternalServerException
 
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.util.{ Failure, Success, Try }
@@ -70,9 +69,9 @@ class HipService(
           )
         }
       case JsError(err) =>
-        val msg = s"Unable to transform employments data; $err"
-        logger.error(msg)
-        throw new InternalServerException(msg)
+        logger.error(s"Unable to transform employments data; $err")
+        // If the HIP employments API returns 200 but transformation fails - return empty
+        List(Json.obj())
     }
 
     Json.toJson(transformed)
