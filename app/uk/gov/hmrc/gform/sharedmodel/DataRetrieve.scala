@@ -47,9 +47,29 @@ object ConstructAttribute {
   implicit val format: OFormat[ConstructAttribute] = derived.oformat()
 }
 
+sealed trait AllowedValueType extends Product with Serializable
+
+object AllowedValueType {
+  case object JsStringType extends AllowedValueType
+  case object JsNumberType extends AllowedValueType
+  case object JsBooleanType extends AllowedValueType
+  case object AnyValueType extends AllowedValueType
+
+  implicit val format: OFormat[AllowedValueType] = derived.oformat()
+}
+
+final case class AllowedValues(values: List[String], valueType: AllowedValueType, isRequired: Boolean)
+
+object AllowedValues {
+  implicit val format: OFormat[AllowedValues] = derived.oformat()
+}
+
 final case class AttributeInstruction(
   attribute: DataRetrieve.Attribute,
-  from: ConstructAttribute
+  from: ConstructAttribute,
+  allowedValues: Option[AllowedValues] = Some(
+    AllowedValues(List("*"), AllowedValueType.AnyValueType, isRequired = false)
+  )
 )
 
 object AttributeInstruction {
