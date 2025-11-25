@@ -32,7 +32,7 @@ import scala.concurrent.ExecutionContext
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.formtemplate.{ FormTemplateService, FormTemplatesControllerRequestHandler }
 import uk.gov.hmrc.gform.history.HistoryService
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplateId, FormTemplateRaw, FormTemplateRawId }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplate, FormTemplateId, FormTemplateRaw, FormTemplateRawId }
 import org.apache.poi.ss.usermodel.{ Cell, CellType }
 import org.apache.poi.xssf.usermodel._
 import uk.gov.hmrc.gform.gformfrontend.GformFrontendConnector
@@ -80,34 +80,35 @@ class TranslationController(
 
   def generateTranslatebleXlsx(
     formTemplateId: FormTemplateId
-  ): Action[AnyContent] = generateXlsx(formTemplateId, TextExtractor.generateTranslatableRows, allEnglish = false)
+  ): Action[AnyContent] = generateXlsx(
+    formTemplateId,
+    (json, formTemplate) => TextExtractor.generateTranslatableRows(json),
+    allEnglish = false
+  )
 
   def generateBriefTranslatebleXlsx(
     formTemplateId: FormTemplateId,
-    allEnglish: Boolean
-  ): Action[AnyContent] = generateXlsx(
-    formTemplateId,
-    (s: String) =>
-      ("en", "cy") :: TextExtractor
-        .generateBriefTranslatableRows(s)
-        .map(textTotransalate => (textTotransalate.en, "")),
-    allEnglish
-  )
+    allEnglish: Boolean,
+    debug: Option[Boolean]
+  ): Action[AnyContent] =
+    generateXlsx(formTemplateId, TextExtractor.generateBriefTranslatableRows(_, _, debug.getOrElse(false)), allEnglish)
 
   def generateInternalCsv(
     formTemplateId: FormTemplateId
-  ): Action[AnyContent] = generateCsv(formTemplateId, TextExtractor.generateCvsFromString)
+  ): Action[AnyContent] = generateCsv(formTemplateId, TextExtractor.generateCsvInternal)
 
   def textBreakdown(formTemplateId: FormTemplateId): Action[AnyContent] =
-    withFormTemplate(formTemplateId) { json =>
-      val jsonAsString = Json.prettyPrint(json.value)
-      val translatableRows: List[TranslatedRow] = TextExtractor.generateTranslatableRows(jsonAsString).map {
-        case (en, cy) => TranslatedRow(en, cy)
-      }
+    withFormTemplateRaw(formTemplateId) { formTemplateRaw =>
+      val jsonAsString = Json.prettyPrint(formTemplateRaw.value)
+      val translatableRows: List[TranslatedRow] =
+        TextExtractor.generateTranslatableRows(jsonAsString).map {
+          case List(en, cy) => TranslatedRow(en, cy)
+          case _            => throw new RuntimeException("Wrong number of columns")
+        }
 
       val enTextBreakdowns: List[EnTextBreakdown] = translatableRows.flatMap { translatableRow =>
         val breakdown: List[EnTextToTranslate] =
-          ExtractAndTranslate(translatableRow.en).translateTexts
+          ExtractAndTranslate(translatableRow.en, None).translateTexts
 
         if (breakdown.size > 1) {
           Some(
@@ -122,7 +123,7 @@ class TranslationController(
       Ok(Json.toJson(EnTextBreakdowns(enTextBreakdowns)))
     }
 
-  private def withFormTemplate(formTemplateId: FormTemplateId)(
+  private def withFormTemplateRaw(formTemplateId: FormTemplateId)(
     f: FormTemplateRaw => Result
   ): Action[AnyContent] =
     Action.async { _ =>
@@ -131,11 +132,23 @@ class TranslationController(
         .map(f)
     }
 
+  private def withFormTemplateRawAndFormTemplate(
+    formTemplateId: FormTemplateId
+  )(f: (FormTemplateRaw, FormTemplate) => Result): Action[AnyContent] =
+    Action.async { _ =>
+      for {
+        formTemplateRaw <- formTemplateService
+                             .get(FormTemplateRawId(formTemplateId.value))
+        formTemplate <- formTemplateService
+                          .get(FormTemplateId(formTemplateId.value))
+      } yield f(formTemplateRaw, formTemplate)
+    }
+
   private def generateCsv(
     formTemplateId: FormTemplateId,
     generate: (String, BufferedOutputStream) => Unit
   ): Action[AnyContent] =
-    withFormTemplate(formTemplateId) { json =>
+    withFormTemplateRaw(formTemplateId) { json =>
       val jsonAsString = Json.prettyPrint(json.value)
       Ok
         .chunked(StreamConverters.fromInputStream(() => fileByteData(jsonAsString, generate)))
@@ -168,41 +181,43 @@ class TranslationController(
 
   private def generateXlsx(
     formTemplateId: FormTemplateId,
-    generate: String => List[(String, String)],
+    generate: (String, FormTemplate) => List[List[String]],
     allEnglish: Boolean
   ): Action[AnyContent] =
-    withFormTemplate(formTemplateId) { json =>
+    withFormTemplateRawAndFormTemplate(formTemplateId) { case (formTemplateRaw, formTemplate) =>
       val jsonAsString =
-        if (allEnglish) Json.prettyPrint(removeWelshTranslations(json.value))
-        else Json.prettyPrint(json.value)
-      Ok.chunked(StreamConverters.fromInputStream(() => generateXlsx(TextExtractor.escapeRows(generate(jsonAsString)))))
-        .withHeaders(
-          CONTENT_TYPE        -> "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-          CONTENT_DISPOSITION -> s"""attachment; filename="${formTemplateId.value}.xlsx""""
+        if (allEnglish) Json.prettyPrint(removeWelshTranslations(formTemplateRaw.value))
+        else Json.prettyPrint(formTemplateRaw.value)
+      Ok.chunked(
+        StreamConverters.fromInputStream(() =>
+          generateXlsx(TextExtractor.escapeString(generate(jsonAsString, formTemplate)))
         )
+      ).withHeaders(
+        CONTENT_TYPE        -> "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        CONTENT_DISPOSITION -> s"""attachment; filename="${formTemplateId.value}.xlsx""""
+      )
     }
 
-  def generateXlsx(rows: List[(String, String)]) = {
+  def generateXlsx(rows: List[List[String]]) = {
     val workbookTry = Try {
       val workBook = new XSSFWorkbook()
       val sheet = workBook.createSheet("translations")
       sheet.setColumnWidth(0, 100 * 256)
       sheet.setColumnWidth(1, 100 * 256)
+      sheet.setColumnWidth(2, 100 * 256)
       val style = workBook.createCellStyle()
       style.setWrapText(true)
 
-      def processRow(en: String, cy: String, rowNumber: Int): Unit = {
+      def processRow(rowValues: List[String], rowNumber: Int): Unit = {
         val row = sheet.createRow(rowNumber)
-        List(en, cy).zipWithIndex.foreach { case (value, idx) =>
+        rowValues.zipWithIndex.foreach { case (value, idx) =>
           val cell = row.createCell(idx)
           cell.setCellStyle(style)
           cell.setCellValue(value)
         }
       }
 
-      rows.zipWithIndex.foreach { case ((en, cy), idx) =>
-        processRow(en, cy, idx)
-      }
+      rows.zipWithIndex.foreach { case (values, idx) => processRow(values, idx) }
 
       val byteArrayOutputStream = new ByteArrayOutputStream()
       workBook.write(byteArrayOutputStream)

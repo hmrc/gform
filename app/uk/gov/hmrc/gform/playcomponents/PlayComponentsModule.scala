@@ -44,6 +44,7 @@ import uk.gov.hmrc.gform.notificationbanner.NotificationBannerModule
 import uk.gov.hmrc.gform.objectstore.ObjectStoreModule
 import uk.gov.hmrc.gform.obligation.ObligationModule
 import uk.gov.hmrc.gform.retrieval.AuthRetrievalModule
+import uk.gov.hmrc.gform.screenshottool.ScreenshotController
 import uk.gov.hmrc.gform.sdes.SdesModule
 import uk.gov.hmrc.gform.submission.SubmissionModule
 import uk.gov.hmrc.gform.testonly.TestOnlyModule
@@ -84,7 +85,8 @@ class PlayComponentsModule(
   retrievalModule: AuthRetrievalModule,
   companiesHouseModule: CompaniesHouseModule,
   logModule: DataAccessLogModule,
-  hipModule: HipModule
+  hipModule: HipModule,
+  screenshotController: ScreenshotController
 )(implicit ec: ExecutionContext) {
   private val logger = LoggerFactory.getLogger(getClass)
 
@@ -120,7 +122,8 @@ class PlayComponentsModule(
     companiesHouseModule.companiesHouseController,
     hipModule.hipController,
     retrievalModule.emailMigrationController,
-    logModule.logController
+    logModule.logController,
+    screenshotController
   )
 
   private val healthController =
