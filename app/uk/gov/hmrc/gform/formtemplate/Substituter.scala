@@ -239,7 +239,7 @@ object Substituter {
           hints(substitutions),
           optionHelpText(substitutions),
           dividerPositon,
-          dividerText,
+          dividerText(substitutions),
           noneChoice,
           noneChoiceError,
           hideChoicesSelected

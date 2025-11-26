@@ -18,6 +18,7 @@ package uk.gov.hmrc.gform.formtemplate
 
 import cats.data.NonEmptyList
 import munit.FunSuite
+import uk.gov.hmrc.gform.Helpers.toSmartString
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.Section.NonRepeatingPage
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
@@ -26,6 +27,8 @@ import uk.gov.hmrc.gform.sharedmodel.{ ExampleData, LangADT, LocalisedString, Sm
 import scala.concurrent.Future
 
 class RewriterSpec extends FunSuite with FormTemplateSupport with RewriterSupport {
+
+  private val divider = toSmartString("or", "neu")
 
   val rewriter = new Rewriter {}
 
@@ -39,7 +42,7 @@ class RewriterSpec extends FunSuite with FormTemplateSupport with RewriterSuppor
       None,
       None,
       None,
-      LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
+      divider,
       None,
       None,
       false
@@ -104,7 +107,7 @@ class RewriterSpec extends FunSuite with FormTemplateSupport with RewriterSuppor
         None,
         None,
         None,
-        LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
+        divider,
         None,
         None,
         false

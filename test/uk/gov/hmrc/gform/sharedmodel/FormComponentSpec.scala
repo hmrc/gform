@@ -40,6 +40,8 @@ class FormComponentSpec extends Spec {
       .of("Natural gas", "Other gas")
       .map(l => OptionData.IndexBased(toSmartString(l), None, None, None, None))
 
+  private val divider = toSmartString("or", "neu")
+
   "FieldValue json object" should "parse as Text if it not include 'type' field" in {
     val fieldValue = toFieldValue("""|{
          |  "id": "regNum",
@@ -471,7 +473,7 @@ class FormComponentSpec extends Spec {
           None,
           None,
           None,
-          LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
+          divider,
           None,
           None,
           false
@@ -734,7 +736,7 @@ class FormComponentSpec extends Spec {
           None,
           None,
           None,
-          LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
+          divider,
           None,
           None,
           false
@@ -782,7 +784,7 @@ class FormComponentSpec extends Spec {
           None,
           None,
           None,
-          LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
+          divider,
           None,
           None,
           false
@@ -831,7 +833,7 @@ class FormComponentSpec extends Spec {
           None,
           None,
           None,
-          LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
+          divider,
           None,
           None,
           false
@@ -880,7 +882,7 @@ class FormComponentSpec extends Spec {
           None,
           None,
           None,
-          LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
+          divider,
           None,
           None,
           false
@@ -928,7 +930,7 @@ class FormComponentSpec extends Spec {
           None,
           None,
           None,
-          LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
+          divider,
           None,
           None,
           false
@@ -977,7 +979,7 @@ class FormComponentSpec extends Spec {
           None,
           None,
           None,
-          LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
+          divider,
           None,
           None,
           false
@@ -1026,7 +1028,7 @@ class FormComponentSpec extends Spec {
           None,
           None,
           None,
-          LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
+          divider,
           None,
           None,
           false
@@ -1066,7 +1068,7 @@ class FormComponentSpec extends Spec {
           None,
           None,
           None,
-          LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
+          divider,
           None,
           None,
           false
@@ -1107,7 +1109,7 @@ class FormComponentSpec extends Spec {
           None,
           None,
           None,
-          LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
+          divider,
           None,
           None,
           false
@@ -1148,7 +1150,7 @@ class FormComponentSpec extends Spec {
           None,
           None,
           None,
-          LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
+          divider,
           None,
           None,
           false
@@ -1196,7 +1198,7 @@ class FormComponentSpec extends Spec {
           None,
           None,
           None,
-          LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
+          divider,
           None,
           None,
           false
@@ -1236,7 +1238,7 @@ class FormComponentSpec extends Spec {
           None,
           None,
           None,
-          LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
+          divider,
           None,
           None,
           false
@@ -1692,7 +1694,7 @@ class FormComponentSpec extends Spec {
           None,
           None,
           None,
-          LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
+          divider,
           None,
           None,
           false

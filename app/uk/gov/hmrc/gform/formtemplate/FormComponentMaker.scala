@@ -226,9 +226,9 @@ class FormComponentMaker(json: JsValue) {
       case _                => Option.empty[DividerPosition]
     }
 
-  lazy val dividerText: LocalisedString = (json \ "dividerText")
-    .asOpt[LocalisedString]
-    .getOrElse(LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")))
+  lazy val dividerText: SmartString = (json \ "dividerText")
+    .asOpt[SmartString]
+    .getOrElse(SmartString(LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")), List.empty[Expr]))
   lazy val noneChoice: Option[NoneChoice] = (json \ "noneChoice").asOpt[NoneChoice]
   lazy val noneChoiceError: Option[LocalisedString] = (json \ "noneChoiceError").asOpt[LocalisedString]
 

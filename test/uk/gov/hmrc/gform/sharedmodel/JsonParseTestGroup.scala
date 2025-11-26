@@ -24,6 +24,8 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
 class JsonParseTestGroup extends Spec {
 
+  private val divider = toSmartString("or", "neu")
+
   "A raw group" should "parse" in {
 
     val jsonStr =
@@ -74,7 +76,7 @@ class JsonParseTestGroup extends Spec {
                 None,
                 None,
                 None,
-                LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
+                divider,
                 None,
                 None,
                 false
@@ -170,7 +172,7 @@ class JsonParseTestGroup extends Spec {
                 None,
                 None,
                 None,
-                LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
+                divider,
                 None,
                 None,
                 false
