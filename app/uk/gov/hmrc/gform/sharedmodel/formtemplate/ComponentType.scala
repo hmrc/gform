@@ -314,7 +314,7 @@ case class Choice(
   hints: Option[NonEmptyList[SmartString]],
   optionHelpText: Option[NonEmptyList[SmartString]],
   dividerPosition: Option[DividerPosition],
-  dividerText: LocalisedString,
+  dividerText: SmartString,
   noneChoice: Option[NoneChoice],
   noneChoiceError: Option[LocalisedString],
   hideChoicesSelected: Boolean

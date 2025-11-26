@@ -25,12 +25,16 @@ import uk.gov.hmrc.gform.Helpers.{ toLocalisedString, toSmartString }
 import uk.gov.hmrc.gform.core.parsers.ValueParser
 import uk.gov.hmrc.gform.core.{ Invalid, Opt, Valid, ValidationResult }
 import uk.gov.hmrc.gform.sharedmodel.DataRetrieve.Attribute
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.Expr
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.PageLink
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AnyDate, BulletedList, Checkbox, Choice, ChoicesAvailable, ChoicesSelected, Constant, DataRetrieveCtx, Date, DateCtx, DateFormCtxVar, DateFunction, DateProjection, DateValueExpr, DisplayAsEntered, Dynamic, Equals, ExprWithPath, FormComponent, FormComponentId, FormComponentValidator, FormCtx, FormStartDateExprValue, FormTemplate, HideZeroDecimals, Horizontal, IfElse, IncludeIf, IndexOf, IndexOfDataRetrieveCtx, InformationMessage, Instruction, IsTrue, LeafExpr, LinkCtx, LookupColumn, Mandatory, Not, NumberedList, Offset, OptionData, OptionDataValue, Page, PageId, PostcodeLookup, Radio, Section, ShortText, StandardInfo, SummariseGroupAsGrid, TemplatePath, Text, TextArea, TextWithRestrictions, TypeAhead, ValidIf, Value, Vertical }
 import uk.gov.hmrc.gform.sharedmodel._
 
 class FormTemplateValidatorSpec
     extends AnyWordSpecLike with Matchers with FormTemplateSupport with TableDrivenPropertyChecks {
+
+  private val divider = toSmartString("or", "neu")
+  private val noDivider = SmartString(LocalisedString(Map()), List.empty[Expr])
 
   "validate - for DateCtx" when {
     "expression refers to existing Form field" should {
@@ -1222,7 +1226,7 @@ class FormTemplateValidatorSpec
                   None,
                   None,
                   None,
-                  LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
+                  divider,
                   None,
                   None,
                   false
@@ -1256,7 +1260,7 @@ class FormTemplateValidatorSpec
                   None,
                   None,
                   None,
-                  LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
+                  divider,
                   None,
                   None,
                   false
@@ -1311,7 +1315,7 @@ class FormTemplateValidatorSpec
                   None,
                   None,
                   None,
-                  LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
+                  divider,
                   None,
                   None,
                   false
@@ -1343,7 +1347,7 @@ class FormTemplateValidatorSpec
                   None,
                   None,
                   None,
-                  LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
+                  divider,
                   None,
                   None,
                   false
@@ -1862,7 +1866,7 @@ class FormTemplateValidatorSpec
             None,
             None,
             None,
-            LocalisedString(Map()),
+            noDivider,
             None,
             None,
             false
@@ -1881,7 +1885,7 @@ class FormTemplateValidatorSpec
             None,
             None,
             None,
-            LocalisedString(Map()),
+            noDivider,
             None,
             None,
             false
@@ -1910,7 +1914,7 @@ class FormTemplateValidatorSpec
             None,
             None,
             None,
-            LocalisedString(Map()),
+            noDivider,
             None,
             None,
             false
@@ -1931,7 +1935,7 @@ class FormTemplateValidatorSpec
             None,
             None,
             None,
-            LocalisedString(Map()),
+            noDivider,
             None,
             None,
             false
@@ -1990,7 +1994,7 @@ class FormTemplateValidatorSpec
             None,
             None,
             None,
-            LocalisedString(Map()),
+            noDivider,
             None,
             None,
             false
@@ -2017,7 +2021,7 @@ class FormTemplateValidatorSpec
             None,
             None,
             None,
-            LocalisedString(Map()),
+            noDivider,
             None,
             None,
             false
@@ -2044,7 +2048,7 @@ class FormTemplateValidatorSpec
             None,
             None,
             None,
-            LocalisedString(Map()),
+            noDivider,
             None,
             None,
             false
@@ -2073,7 +2077,7 @@ class FormTemplateValidatorSpec
             None,
             None,
             None,
-            LocalisedString(Map()),
+            noDivider,
             None,
             None,
             false
@@ -2102,7 +2106,7 @@ class FormTemplateValidatorSpec
             None,
             None,
             None,
-            LocalisedString(Map()),
+            noDivider,
             None,
             None,
             false
@@ -2212,7 +2216,7 @@ class FormTemplateValidatorSpec
         None,
         None,
         None,
-        LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
+        divider,
         None,
         None,
         false
@@ -2243,7 +2247,7 @@ class FormTemplateValidatorSpec
         None,
         None,
         None,
-        LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
+        divider,
         None,
         None,
         true
