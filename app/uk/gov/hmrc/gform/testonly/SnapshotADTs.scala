@@ -17,10 +17,11 @@
 package uk.gov.hmrc.gform.testonly
 
 import java.time.{ Instant, LocalDateTime }
+import java.util.UUID
 import julienrf.json.derived
 import play.api.libs.json.Reads._
 import play.api.libs.json._
-import uk.gov.hmrc.gform.sharedmodel.AccessCode
+import uk.gov.hmrc.gform.sharedmodel.{ AccessCode, UserId }
 import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormIdData }
 import uk.gov.hmrc.gform.sharedmodel.form.FormData
 import uk.gov.hmrc.gform.sharedmodel.form.FormId
@@ -139,14 +140,40 @@ case class Snapshot(
     formTemplateId: FormTemplateId,
     currentForm: Form,
     currentId: FormIdData
-  ): Form = {
+  ): (Form, FormIdData) = {
     val currentUserId = currentForm.userId
 
-    originalForm.copy(
+    val form = originalForm.copy(
       _id = currentId.toFormId,
       userId = currentUserId,
       formTemplateId = formTemplateId
     )
+
+    (form, currentId)
+  }
+
+  def toSnapshotNewForm(
+    formTemplateId: FormTemplateId,
+    currentForm: Form,
+    currentId: FormIdData
+  ): (Form, FormIdData) = {
+    val originalUserId = currentForm.userId.value
+    val uniqueUserId = originalUserId + "-" + UUID.randomUUID().toString
+    val formId = FormId(currentId.toFormId.value.replace(originalUserId, uniqueUserId))
+    val userId = UserId(uniqueUserId)
+
+    val form = originalForm.copy(
+      _id = formId,
+      userId = userId,
+      formTemplateId = formTemplateId
+    )
+
+    val newFormIdData = currentId match {
+      case FormIdData.Plain(_, formTemplateId) => FormIdData.Plain(userId, formTemplateId)
+      case FormIdData.WithAccessCode(_, formTemplateId, accessCode) =>
+        FormIdData.WithAccessCode(userId, formTemplateId, accessCode)
+    }
+    (form, newFormIdData)
   }
 
   def toSnapshotTemplate(): FormTemplateRaw =
@@ -168,7 +195,7 @@ object Snapshot {
     accessCode: Option[AccessCode]
   ): Snapshot = {
     // add prefix to the template id for both saved form and template
-    val snapshotId = SnapshotId(java.util.UUID.randomUUID().toString)
+    val snapshotId = SnapshotId(UUID.randomUUID().toString)
     val prefix = snapshotId.value.split("-").head
     val snapshotTemplateId = FormTemplateId(s"${prefix}_${originalForm.formTemplateId.value}")
     Snapshot(
