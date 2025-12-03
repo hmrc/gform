@@ -792,6 +792,14 @@ object BuilderSupport {
   private def modifyOverridesData(json: Json, overrides: Json): Json = {
     val history = List(DownField("overrides"))
 
+    val jsonObj = json.asObject.getOrElse(throw new RuntimeException("Template json is not an object"))
+
+    val jsonWithOverrides = if (!jsonObj.contains("overrides")) {
+      jsonObj.add("overrides", JsonObject.empty.toJson).toJson
+    } else {
+      json
+    }
+
     val propertyList = List(
       Property("disableUploads", PropertyBehaviour.PurgeWhenEmpty),
       Property("disableValidIfs", PropertyBehaviour.PurgeWhenEmpty),
@@ -800,7 +808,7 @@ object BuilderSupport {
       Property("disableRedirects", PropertyBehaviour.PurgeWhenEmpty)
     )
 
-    updateJsonByPropertyList(propertyList, json, overrides, history)
+    updateJsonByPropertyList(propertyList, jsonWithOverrides, overrides, history)
   }
 
   private def updateFormComponentWithHistory(
