@@ -24,7 +24,7 @@ import io.circe.Json
 import play.api.libs.circe.Circe
 import play.api.libs.json.{ JsError, JsObject, JsString, JsSuccess }
 import play.api.libs.json.{ Json => PlayJson }
-import play.api.mvc.{ ControllerComponents, Result, Results }
+import play.api.mvc.{ Action, ControllerComponents, Result, Results }
 
 import scala.concurrent.Future
 import uk.gov.hmrc.gform.controllers.BaseController
@@ -789,6 +789,20 @@ object BuilderSupport {
     updateFormComponentWithHistory(json, formComponentId, formComponentData, historySuffix)
   }
 
+  private def modifyOverridesData(json: Json, overrides: Json): Json = {
+    val history = List(DownField("overrides"))
+
+    val propertyList = List(
+      Property("disableUploads", PropertyBehaviour.PurgeWhenEmpty),
+      Property("disableValidIfs", PropertyBehaviour.PurgeWhenEmpty),
+      Property("disableIncludeIfs", PropertyBehaviour.PurgeWhenEmpty),
+      Property("disableContinueIfs", PropertyBehaviour.PurgeWhenEmpty),
+      Property("disableRedirects", PropertyBehaviour.PurgeWhenEmpty)
+    )
+
+    updateJsonByPropertyList(propertyList, json, overrides, history)
+  }
+
   private def updateFormComponentWithHistory(
     json: Json,
     formComponentId: FormComponentId,
@@ -972,6 +986,14 @@ object BuilderSupport {
   ): Either[BuilderError, FormTemplateRaw] =
     modifyJson(formTemplateRaw)(
       modifyAcknowledgementFormComponentData(_, formComponentId, sectionData)
+    )
+
+  def updateOverrides(
+    formTemplateRaw: FormTemplateRaw,
+    overrides: Json
+  ): Either[BuilderError, FormTemplateRaw] =
+    modifyJson(formTemplateRaw)(
+      modifyOverridesData(_, overrides)
     )
 }
 
@@ -1201,6 +1223,15 @@ class BuilderController(
             )
       } yield (formTemplateRaw, Results.Ok(formTemplateRaw.value))
     }
+
+  def updateOverrides(formTemplateRaw: FormTemplateRawId): Action[Json] = updateAction(formTemplateRaw) {
+    (formTemplateRaw, requestBody) =>
+      BuilderSupport
+        .updateOverrides(formTemplateRaw, requestBody)
+        .map { formTemplateRaw =>
+          (formTemplateRaw, Results.Ok(formTemplateRaw.value))
+        }
+  }
 
   def updateBatch(formTemplateRawId: FormTemplateRawId) =
     updateAction(formTemplateRawId) { (formTemplateRaw, requestBody) =>
