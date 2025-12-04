@@ -140,7 +140,7 @@ case class Snapshot(
     formTemplateId: FormTemplateId,
     currentForm: Form,
     currentId: FormIdData
-  ): (Form, FormIdData) = {
+  ): (Form, FormIdData, Option[GovernmentGatewayFormData]) = {
     val currentUserId = currentForm.userId
 
     val form = originalForm.copy(
@@ -149,16 +149,17 @@ case class Snapshot(
       formTemplateId = formTemplateId
     )
 
-    (form, currentId)
+    (form, currentId, ggFormData)
   }
 
   def toSnapshotNewForm(
     formTemplateId: FormTemplateId,
     currentForm: Form,
     currentId: FormIdData
-  ): (Form, FormIdData) = {
+  ): (Form, FormIdData, Option[GovernmentGatewayFormData]) = {
+    val uuid = UUID.randomUUID()
     val originalUserId = currentForm.userId.value
-    val uniqueUserId = originalUserId + "-" + UUID.randomUUID().toString
+    val uniqueUserId = originalUserId + "-" + uuid.toString
     val formId = FormId(currentId.toFormId.value.replace(originalUserId, uniqueUserId))
     val userId = UserId(uniqueUserId)
 
@@ -173,7 +174,15 @@ case class Snapshot(
       case FormIdData.WithAccessCode(_, formTemplateId, accessCode) =>
         FormIdData.WithAccessCode(userId, formTemplateId, accessCode)
     }
-    (form, newFormIdData)
+
+    val governmentGatewayFormData: Option[GovernmentGatewayFormData] = ggFormData.map { ggfd =>
+      ggfd.copy(
+        groupIdentifier = ggfd.groupIdentifier.map(groupIdentifier => userId.value),
+        credId = ggfd.credId + "-" + uuid.toString
+      )
+    }
+
+    (form, newFormIdData, governmentGatewayFormData)
   }
 
   def toSnapshotTemplate(): FormTemplateRaw =
