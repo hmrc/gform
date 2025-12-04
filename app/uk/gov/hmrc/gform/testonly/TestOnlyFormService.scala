@@ -130,7 +130,7 @@ class TestOnlyFormService(
           case None => FormIdData.Plain(form.userId, formTemplateId)
         }
 
-        val (newForm, newFormIdData) =
+        val (newForm, newFormIdData, governmentGatewayFormData) =
           if (useOriginalTemplate)
             snapshot.toSnapshotForm(formTemplateId, form, formIdData)
           else
@@ -146,7 +146,7 @@ class TestOnlyFormService(
           newFormIdData,
           formTemplateId,
           snapshot.accessCode,
-          snapshot.ggFormData
+          governmentGatewayFormData
         )
       case None =>
         Future.failed(new Exception(s"We could not find snapshot item with id: $snapshotId"))
