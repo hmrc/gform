@@ -79,6 +79,7 @@ class JsonParseTestGroup extends Spec {
                 divider,
                 None,
                 None,
+                false,
                 false
               ),
               toSmartString("clabel"),
@@ -175,6 +176,7 @@ class JsonParseTestGroup extends Spec {
                 divider,
                 None,
                 None,
+                false,
                 false
               ),
               toSmartString("clabel"),

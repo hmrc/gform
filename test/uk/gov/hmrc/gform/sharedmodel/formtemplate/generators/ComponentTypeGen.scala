@@ -93,6 +93,7 @@ trait ComponentTypeGen {
       divider,
       None,
       None,
+      false,
       false
     )
 

@@ -45,6 +45,7 @@ class RewriterSpec extends FunSuite with FormTemplateSupport with RewriterSuppor
       divider,
       None,
       None,
+      false,
       false
     )
 
@@ -110,6 +111,7 @@ class RewriterSpec extends FunSuite with FormTemplateSupport with RewriterSuppor
         divider,
         None,
         None,
+        false,
         false
       )
 

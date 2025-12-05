@@ -823,6 +823,7 @@ class TemplateValidatorSpec extends Spec {
           divider,
           None,
           None,
+          false,
           false
         )
       )
@@ -868,6 +869,7 @@ class TemplateValidatorSpec extends Spec {
           divider,
           None,
           None,
+          false,
           false
         )
       )
@@ -905,6 +907,7 @@ class TemplateValidatorSpec extends Spec {
           divider,
           None,
           None,
+          false,
           false
         )
       )
@@ -937,6 +940,7 @@ class TemplateValidatorSpec extends Spec {
           divider,
           None,
           None,
+          false,
           false
         )
       )
@@ -977,6 +981,7 @@ class TemplateValidatorSpec extends Spec {
           divider,
           None,
           None,
+          false,
           false
         )
       )
