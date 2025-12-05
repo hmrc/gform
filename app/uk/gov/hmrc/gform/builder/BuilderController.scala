@@ -24,7 +24,7 @@ import io.circe.Json
 import play.api.libs.circe.Circe
 import play.api.libs.json.{ JsError, JsObject, JsString, JsSuccess }
 import play.api.libs.json.{ Json => PlayJson }
-import play.api.mvc.{ ControllerComponents, Result, Results }
+import play.api.mvc.{ Action, ControllerComponents, Result, Results }
 
 import scala.concurrent.Future
 import uk.gov.hmrc.gform.controllers.BaseController
@@ -789,6 +789,49 @@ object BuilderSupport {
     updateFormComponentWithHistory(json, formComponentId, formComponentData, historySuffix)
   }
 
+  /** Replaces "overrides" field of template json with provided "overrides" json.
+    * @param json templateJson
+    * @param overrides Example: { "overrides": { "disableUploads": true }}
+    * @return templateJson with new overrides object.
+    *         Only disable* fields that are true are expected to be received from frontend.
+    *         If output "overrides" object is empty. It is removed entirely.
+    */
+  def modifyOverridesData(json: Json, overrides: Json): Json = {
+
+    val propertyNames = List(
+      "disableUploads",
+      "disableValidIfs",
+      "disableIncludeIfs",
+      "disableContinueIfs",
+      "disableRedirects"
+    )
+
+    val overridesAreEmpty = overrides === Json.obj()
+
+    if (overridesAreEmpty) {
+      updateJsonByPropertyList(
+        Property("overrides", PropertyBehaviour.PurgeWhenEmpty) :: Nil,
+        json,
+        Json.obj("overrides" := ""), // Empty overrides will be removed
+        List()
+      )
+    } else {
+      val allOverrides = Json
+        .fromFields(
+          propertyNames.map(_ := "") // Empty properties will be removed
+        )
+        .deepMerge(overrides)
+
+      val propertyList = propertyNames
+        .map(propertyName => Property(propertyName, PropertyBehaviour.PurgeWhenEmpty))
+
+      val jsonWithOverrides = Json.obj("overrides" -> Json.obj()).deepMerge(json)
+
+      val history = List(DownField("overrides"))
+      updateJsonByPropertyList(propertyList, jsonWithOverrides, allOverrides, history)
+    }
+  }
+
   private def updateFormComponentWithHistory(
     json: Json,
     formComponentId: FormComponentId,
@@ -972,6 +1015,14 @@ object BuilderSupport {
   ): Either[BuilderError, FormTemplateRaw] =
     modifyJson(formTemplateRaw)(
       modifyAcknowledgementFormComponentData(_, formComponentId, sectionData)
+    )
+
+  def updateOverrides(
+    formTemplateRaw: FormTemplateRaw,
+    overrides: Json
+  ): Either[BuilderError, FormTemplateRaw] =
+    modifyJson(formTemplateRaw)(
+      modifyOverridesData(_, overrides)
     )
 }
 
@@ -1201,6 +1252,15 @@ class BuilderController(
             )
       } yield (formTemplateRaw, Results.Ok(formTemplateRaw.value))
     }
+
+  def updateOverrides(formTemplateRaw: FormTemplateRawId): Action[Json] = updateAction(formTemplateRaw) {
+    (formTemplateRaw, requestBody) =>
+      BuilderSupport
+        .updateOverrides(formTemplateRaw, requestBody)
+        .map { formTemplateRaw =>
+          (formTemplateRaw, Results.Ok(formTemplateRaw.value))
+        }
+  }
 
   def updateBatch(formTemplateRawId: FormTemplateRawId) =
     updateAction(formTemplateRawId) { (formTemplateRaw, requestBody) =>
