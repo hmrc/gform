@@ -130,19 +130,23 @@ class TestOnlyFormService(
           case None => FormIdData.Plain(form.userId, formTemplateId)
         }
 
-        val newForm = snapshot.toSnapshotForm(formTemplateId, form, formIdData)
+        val (newForm, newFormIdData, governmentGatewayFormData) =
+          if (useOriginalTemplate)
+            snapshot.toSnapshotForm(formTemplateId, form, formIdData)
+          else
+            snapshot.toSnapshotNewForm(formTemplateId, form, formIdData)
 
         for {
           _ <- formMongoCache.upsert(newForm)
-          _ <- formMetadataAlgebra.upsert(formIdData)
+          _ <- formMetadataAlgebra.upsert(newFormIdData)
           _ <- if (useOriginalTemplate)
                  requestHandler.handleRequest(snapshot.toSnapshotTemplate()).value
                else Future.successful(())
         } yield RestoredSnapshot(
-          formIdData,
+          newFormIdData,
           formTemplateId,
           snapshot.accessCode,
-          snapshot.ggFormData
+          governmentGatewayFormData
         )
       case None =>
         Future.failed(new Exception(s"We could not find snapshot item with id: $snapshotId"))
