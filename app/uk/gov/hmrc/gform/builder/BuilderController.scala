@@ -789,26 +789,71 @@ object BuilderSupport {
     updateFormComponentWithHistory(json, formComponentId, formComponentData, historySuffix)
   }
 
+  /**
+   * Replaces "overrides" field of template json with provided "overrides" json.
+   * @param json templateJson
+   * @param overrides Example: { "overrides": { "disableUploads": true }}
+   * @return templateJson with new overrides object.
+   *         All disable* fields that are false will not be included in output json.
+   *         If output "overrides" object is empty. It is removed entirely.
+   */
   private def modifyOverridesData(json: Json, overrides: Json): Json = {
-    val history = List(DownField("overrides"))
+    val overridesKey = "overrides"
+
+    val history = List(DownField(overridesKey))
 
     val jsonObj = json.asObject.getOrElse(throw new RuntimeException("Template json is not an object"))
 
-    val jsonWithOverrides = if (!jsonObj.contains("overrides")) {
-      jsonObj.add("overrides", JsonObject.empty.toJson).toJson
+    val jsonWithOverrides = if (!jsonObj.contains(overridesKey)) {
+      jsonObj.add(overridesKey, JsonObject.empty.toJson).toJson
     } else {
       json
     }
 
-    val propertyList = List(
-      Property("disableUploads", PropertyBehaviour.PurgeWhenEmpty),
-      Property("disableValidIfs", PropertyBehaviour.PurgeWhenEmpty),
-      Property("disableIncludeIfs", PropertyBehaviour.PurgeWhenEmpty),
-      Property("disableContinueIfs", PropertyBehaviour.PurgeWhenEmpty),
-      Property("disableRedirects", PropertyBehaviour.PurgeWhenEmpty)
+    val propertyNames = List(
+      "disableUploads",
+      "disableValidIfs",
+      "disableIncludeIfs",
+      "disableContinueIfs",
+      "disableRedirects"
     )
 
-    updateJsonByPropertyList(propertyList, jsonWithOverrides, overrides, history)
+    val propertyList = propertyNames
+      .map(propertyName => Property(propertyName, PropertyBehaviour.PurgeWhenEmpty))
+
+    val updatedJson = updateJsonByPropertyList(propertyList, jsonWithOverrides, overrides, history)
+
+    val overridesHistory = updatedJson.hcursor.replay(history)
+
+    val propertyFinalValues = propertyNames.map { propertyName =>
+      overridesHistory.getOrElse[Boolean](propertyName)(false) match {
+        case Left(value)  => throw new RuntimeException(value)
+        case Right(value) => propertyName -> value
+      }
+    }
+
+    val updatedJsonObject = updatedJson.asObject
+      .getOrElse(throw new RuntimeException("updated json is not an object"))
+
+    if (propertyFinalValues.forall(_._2 == false)) {
+      updatedJsonObject.remove(overridesKey).toJson
+    } else {
+      val falseValueProperties = propertyFinalValues.collect { case (propertyName, false) => propertyName }
+
+      val overridesObject = overridesHistory.focus
+        .flatMap(_.asObject)
+        .getOrElse(throw new RuntimeException("Overrides object is not available"))
+
+      val newOverridesObject = falseValueProperties
+        .foldLeft(overridesObject) { case (overridesObject, propertyName) =>
+          overridesObject.remove(propertyName)
+        }
+        .toJson
+
+      updatedJsonObject
+        .add(overridesKey, newOverridesObject)
+        .toJson
+    }
   }
 
   private def updateFormComponentWithHistory(
