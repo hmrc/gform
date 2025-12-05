@@ -789,26 +789,19 @@ object BuilderSupport {
     updateFormComponentWithHistory(json, formComponentId, formComponentData, historySuffix)
   }
 
-  /**
-   * Replaces "overrides" field of template json with provided "overrides" json.
-   * @param json templateJson
-   * @param overrides Example: { "overrides": { "disableUploads": true }}
-   * @return templateJson with new overrides object.
-   *         All disable* fields that are false will not be included in output json.
-   *         If output "overrides" object is empty. It is removed entirely.
-   */
+  /** Replaces "overrides" field of template json with provided "overrides" json.
+    * @param json templateJson
+    * @param overrides Example: { "overrides": { "disableUploads": true }}
+    * @return templateJson with new overrides object.
+    *         All disable* fields that are false will not be included in output json.
+    *         If output "overrides" object is empty. It is removed entirely.
+    */
   private def modifyOverridesData(json: Json, overrides: Json): Json = {
     val overridesKey = "overrides"
 
     val history = List(DownField(overridesKey))
 
-    val jsonObj = json.asObject.getOrElse(throw new RuntimeException("Template json is not an object"))
-
-    val jsonWithOverrides = if (!jsonObj.contains(overridesKey)) {
-      jsonObj.add(overridesKey, JsonObject.empty.toJson).toJson
-    } else {
-      json
-    }
+    val jsonWithOverrides = Json.obj("overrides" -> Json.obj()).deepMerge(json)
 
     val propertyNames = List(
       "disableUploads",
