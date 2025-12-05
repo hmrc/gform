@@ -793,15 +793,10 @@ object BuilderSupport {
     * @param json templateJson
     * @param overrides Example: { "overrides": { "disableUploads": true }}
     * @return templateJson with new overrides object.
-    *         All disable* fields that are false will not be included in output json.
+    *         Only disable* fields that are true are expected to be received from frontend.
     *         If output "overrides" object is empty. It is removed entirely.
     */
-  private def modifyOverridesData(json: Json, overrides: Json): Json = {
-    val overridesKey = "overrides"
-
-    val history = List(DownField(overridesKey))
-
-    val jsonWithOverrides = Json.obj("overrides" -> Json.obj()).deepMerge(json)
+  def modifyOverridesData(json: Json, overrides: Json): Json = {
 
     val propertyNames = List(
       "disableUploads",
@@ -811,41 +806,29 @@ object BuilderSupport {
       "disableRedirects"
     )
 
-    val propertyList = propertyNames
-      .map(propertyName => Property(propertyName, PropertyBehaviour.PurgeWhenEmpty))
+    val overridesAreEmpty = overrides === Json.obj()
 
-    val updatedJson = updateJsonByPropertyList(propertyList, jsonWithOverrides, overrides, history)
-
-    val overridesHistory = updatedJson.hcursor.replay(history)
-
-    val propertyFinalValues = propertyNames.map { propertyName =>
-      overridesHistory.getOrElse[Boolean](propertyName)(false) match {
-        case Left(value)  => throw new RuntimeException(value)
-        case Right(value) => propertyName -> value
-      }
-    }
-
-    val updatedJsonObject = updatedJson.asObject
-      .getOrElse(throw new RuntimeException("updated json is not an object"))
-
-    if (propertyFinalValues.forall(_._2 == false)) {
-      updatedJsonObject.remove(overridesKey).toJson
+    if (overridesAreEmpty) {
+      updateJsonByPropertyList(
+        Property("overrides", PropertyBehaviour.PurgeWhenEmpty) :: Nil,
+        json,
+        Json.obj("overrides" := ""), // Empty overrides will be removed
+        List()
+      )
     } else {
-      val falseValueProperties = propertyFinalValues.collect { case (propertyName, false) => propertyName }
+      val allOverrides = Json
+        .fromFields(
+          propertyNames.map(_ := "") // Empty properties will be removed
+        )
+        .deepMerge(overrides)
 
-      val overridesObject = overridesHistory.focus
-        .flatMap(_.asObject)
-        .getOrElse(throw new RuntimeException("Overrides object is not available"))
+      val propertyList = propertyNames
+        .map(propertyName => Property(propertyName, PropertyBehaviour.PurgeWhenEmpty))
 
-      val newOverridesObject = falseValueProperties
-        .foldLeft(overridesObject) { case (overridesObject, propertyName) =>
-          overridesObject.remove(propertyName)
-        }
-        .toJson
+      val jsonWithOverrides = Json.obj("overrides" -> Json.obj()).deepMerge(json)
 
-      updatedJsonObject
-        .add(overridesKey, newOverridesObject)
-        .toJson
+      val history = List(DownField("overrides"))
+      updateJsonByPropertyList(propertyList, jsonWithOverrides, allOverrides, history)
     }
   }
 

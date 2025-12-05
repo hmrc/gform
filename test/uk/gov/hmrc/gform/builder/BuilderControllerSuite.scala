@@ -3074,4 +3074,44 @@ class BuilderControllerSuite extends FunSuite {
       formWithTaskListSectionNoDeclarationJson
     )
   }
+
+  test("overrides - only incoming overrides should be stored") {
+    val json = Json.obj(
+      "foo" := "bar",
+      "overrides" := Json.obj(
+        "disableValidIfs" := true
+      )
+    )
+    val overrides = Json.obj("disableUploads" := true)
+
+    val result = BuilderSupport.modifyOverridesData(json, overrides)
+
+    val expected = Json.obj(
+      "foo" := "bar",
+      "overrides" := Json.obj(
+        "disableUploads" := true
+      )
+    )
+
+    assertEquals(result.spaces2, expected.spaces2)
+  }
+
+  test("overrides - when there are no incoming overrides remove 'overrides' fields") {
+    val json = Json.obj(
+      "foo" := "bar",
+      "overrides" := Json.obj(
+        "disableUploads" := true
+      )
+    )
+
+    val overrides = Json.obj() // No incoming overrides
+
+    val result = BuilderSupport.modifyOverridesData(json, overrides)
+
+    val expected = Json.obj(
+      "foo" := "bar"
+    )
+
+    assertEquals(result.spaces2, expected.spaces2)
+  }
 }
