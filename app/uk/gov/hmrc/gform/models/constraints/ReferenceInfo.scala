@@ -40,6 +40,7 @@ object ReferenceInfo {
   final case class CsvCountryCountCheckExpr(path: TemplatePath, csvCountryCountCheck: CsvCountryCountCheck)
       extends ReferenceInfo
   final case class IndexOfExpr(path: TemplatePath, indexOf: IndexOf) extends ReferenceInfo
+  final case class IndexOfInChoiceExpr(path: TemplatePath, indexOfInChoice: IndexOfInChoice) extends ReferenceInfo
   final case class NumberedListExpr(path: TemplatePath, numberedList: NumberedList) extends ReferenceInfo
   final case class BulletedListExpr(path: TemplatePath, numberedList: BulletedList) extends ReferenceInfo
   final case class NumberedListChoicesSelectedExpr(

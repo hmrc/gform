@@ -205,7 +205,8 @@ final case class LookupColumn(formComponentId: FormComponentId, column: String) 
 final case class LookupOps(expr: Expr, lookupFnc: LookupFnc) extends Expr
 final case class CsvCountryCountCheck(formComponentId: FormComponentId, column: String, value: String) extends Expr
 final case class IndexOf(formComponentId: FormComponentId, index: Int) extends Expr
-final case class IndexOfDataRetrieveCtx(ctx: DataRetrieveCtx, index: Int) extends Expr
+final case class IndexOfInChoice(value: OptionDataValue, formComponentId: FormComponentId) extends Expr
+final case class IndexOfDataRetrieveCtx(ctx: DataRetrieveCtx, expr: Expr) extends Expr
 final case object CountryOfItmpAddress extends Expr
 
 sealed trait DateProjection extends Product with Serializable {

@@ -1589,7 +1589,10 @@ class FormTemplateValidatorSpec
             "fcId",
             Text(
               ShortText.default,
-              IndexOfDataRetrieveCtx(DataRetrieveCtx(DataRetrieveId("invalidDrId"), Attribute("somethingElse")), 1)
+              IndexOfDataRetrieveCtx(
+                DataRetrieveCtx(DataRetrieveId("invalidDrId"), Attribute("somethingElse")),
+                Constant("1")
+              )
             ),
             toSmartString("label")
           ),
@@ -2306,7 +2309,7 @@ class FormTemplateValidatorSpec
           Dynamic.DataRetrieveBased(
             IndexOfDataRetrieveCtx(
               DataRetrieveCtx(DataRetrieveId("dataRetrieveId"), DataRetrieve.Attribute("employerName")),
-              0
+              Constant("0")
             )
           )
         ),
