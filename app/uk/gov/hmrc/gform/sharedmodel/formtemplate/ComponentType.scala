@@ -199,7 +199,7 @@ object Dynamic {
     parsed match {
       case Right(TextExpression(FormCtx(fcId))) => Reads.pure(Dynamic.ATLBased(fcId))
       case Right(TextExpression(drc @ DataRetrieveCtx(_, _))) =>
-        Reads.pure(Dynamic.DataRetrieveBased(IndexOfDataRetrieveCtx(drc, 0)))
+        Reads.pure(Dynamic.DataRetrieveBased(IndexOfDataRetrieveCtx(drc, Constant("0"))))
       case _ => Reads.failed("Wrong expression used in dynamic: " + d)
     }
   }

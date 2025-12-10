@@ -77,7 +77,8 @@ final case class ExprWithPath(path: TemplatePath, expr: Expr) {
     case s @ Size(_, _)                                => ReferenceInfo.SizeExpr(path, s) :: Nil
     case Typed(expr, tpe)                              => toReferenceInfo(expr)
     case s @ IndexOf(_, _)                             => ReferenceInfo.IndexOfExpr(path, s) :: Nil
-    case IndexOfDataRetrieveCtx(ctx, _)                => ReferenceInfo.DataRetrieveCtxExpr(path, ctx) :: Nil
+    case s @ IndexOfInChoice(_, _)                     => ReferenceInfo.IndexOfInChoiceExpr(path, s) :: Nil
+    case IndexOfDataRetrieveCtx(ctx, expr)             => ReferenceInfo.DataRetrieveCtxExpr(path, ctx) :: toReferenceInfo(expr)
     case n @ NumberedList(_)                           => ReferenceInfo.NumberedListExpr(path, n) :: Nil
     case b @ BulletedList(_)                           => ReferenceInfo.BulletedListExpr(path, b) :: Nil
     case n @ NumberedListChoicesSelected(_, _)         => ReferenceInfo.NumberedListChoicesSelectedExpr(path, n) :: Nil

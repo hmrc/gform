@@ -61,7 +61,8 @@ object ExprSubstituter extends Substituter[ExprSubstitutions, FormTemplate] {
         case Size(_, _)                        => t
         case Typed(expr, tpe)                  => Typed(substitute(substitutions, expr), tpe)
         case IndexOf(formComponentId, index)   => t
-        case IndexOfDataRetrieveCtx(_, _)      => t
+        case IndexOfInChoice(_, _)             => t
+        case IndexOfDataRetrieveCtx(ctx, expr) => IndexOfDataRetrieveCtx(ctx, substitute(substitutions, expr))
         case NumberedList(_)                   => t
         case BulletedList(_)                   => t
         case NumberedListChoicesSelected(_, _) => t

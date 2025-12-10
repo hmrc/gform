@@ -135,6 +135,7 @@ object FormTemplatePIIRefsHelper {
       case Size(FormComponentId(value), _)                        => List(value)
       case Typed(expr, tpe)                                       => extractRefs(expr)
       case IndexOf(FormComponentId(value), _)                     => List(value)
+      case IndexOfInChoice(_, FormComponentId(value))             => List(value)
       case IndexOfDataRetrieveCtx(_, _)                           => Nil
       case NumberedList(FormComponentId(value))                   => List(value)
       case BulletedList(FormComponentId(value))                   => List(value)
