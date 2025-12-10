@@ -57,7 +57,8 @@ class MetadataXmlSpec extends Spec {
       Some(InstructionPdfFields.Ordered),
       None,
       None,
-      TemplateType.XML
+      TemplateType.XML,
+      None
     )
 
     val expected =
