@@ -1229,6 +1229,7 @@ class FormTemplateValidatorSpec
                   divider,
                   None,
                   None,
+                  false,
                   false
                 ),
                 false
@@ -1263,6 +1264,7 @@ class FormTemplateValidatorSpec
                   divider,
                   None,
                   None,
+                  false,
                   false
                 ),
                 false
@@ -1318,6 +1320,7 @@ class FormTemplateValidatorSpec
                   divider,
                   None,
                   None,
+                  false,
                   false
                 ),
                 false
@@ -1350,6 +1353,7 @@ class FormTemplateValidatorSpec
                   divider,
                   None,
                   None,
+                  false,
                   false
                 ),
                 false
@@ -1897,6 +1901,7 @@ class FormTemplateValidatorSpec
             noDivider,
             None,
             None,
+            false,
             false
           ),
           Valid
@@ -1916,6 +1921,7 @@ class FormTemplateValidatorSpec
             noDivider,
             None,
             None,
+            false,
             false
           ),
           Invalid(
@@ -1945,6 +1951,7 @@ class FormTemplateValidatorSpec
             noDivider,
             None,
             None,
+            false,
             false
           ),
           Invalid(
@@ -1966,6 +1973,7 @@ class FormTemplateValidatorSpec
             noDivider,
             None,
             None,
+            false,
             false
           ),
           Valid
@@ -2025,6 +2033,7 @@ class FormTemplateValidatorSpec
             noDivider,
             None,
             None,
+            false,
             false
           ),
           Valid
@@ -2052,6 +2061,7 @@ class FormTemplateValidatorSpec
             noDivider,
             None,
             None,
+            false,
             false
           ),
           Valid
@@ -2079,6 +2089,7 @@ class FormTemplateValidatorSpec
             noDivider,
             None,
             None,
+            false,
             false
           ),
           Invalid(
@@ -2108,6 +2119,7 @@ class FormTemplateValidatorSpec
             noDivider,
             None,
             None,
+            false,
             false
           ),
           Invalid(
@@ -2137,6 +2149,7 @@ class FormTemplateValidatorSpec
             noDivider,
             None,
             None,
+            false,
             false
           ),
           Valid
@@ -2247,6 +2260,7 @@ class FormTemplateValidatorSpec
         divider,
         None,
         None,
+        false,
         false
       ),
       toSmartString("Select the tax type"),
@@ -2278,7 +2292,8 @@ class FormTemplateValidatorSpec
         divider,
         None,
         None,
-        true
+        true,
+        false
       ),
       toSmartString("Nothing"),
       false,
