@@ -249,7 +249,8 @@ class FormTemplatesIT extends ITSpec with FormTemplateSample with BeforeAndAfter
         None,
         None,
         None,
-        TemplateType.XML
+        TemplateType.XML,
+        None
       )
     )
     destinationList.acknowledgementSection shouldBe AcknowledgementSection(
