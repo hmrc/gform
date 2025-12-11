@@ -112,7 +112,8 @@ object DmsSubmissionService {
       None,
       None,
       None,
-      TemplateType.XML
+      TemplateType.XML,
+      None
     )
 
   def createSubmission(

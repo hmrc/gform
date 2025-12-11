@@ -98,7 +98,8 @@ object Destination {
     instructionPdfFields: Option[InstructionPdfFields],
     convertSingleQuotes: Option[Boolean],
     payload: Option[String],
-    payloadType: TemplateType
+    payloadType: TemplateType,
+    submissionPrefix: Option[String]
   ) extends Destination with DestinationWithCustomerId
 
   case class DataStore(
@@ -267,7 +268,8 @@ case class UploadableHmrcDmsDestination(
   dataOutputFormat: Option[DataOutputFormat],
   formdataXml: Option[Boolean],
   closedStatus: Option[Boolean],
-  instructionPdfFields: Option[InstructionPdfFields] = None
+  instructionPdfFields: Option[InstructionPdfFields] = None,
+  submissionPrefix: Option[String] = None
 ) {
 
   def toHmrcDmsDestination: Either[String, Destination.HmrcDms] =
@@ -287,7 +289,8 @@ case class UploadableHmrcDmsDestination(
       instructionPdfFields,
       convertSingleQuotes,
       None,
-      TemplateType.XML
+      TemplateType.XML,
+      submissionPrefix
     )
 }
 

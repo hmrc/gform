@@ -190,7 +190,7 @@ class FileUploadService(
     hc: HeaderCarrier
   ): Future[Unit] =
     if (objectStore) {
-      objectStoreService.uploadFile(envelopeId, fileId, fileName, content, contentType).void
+      objectStoreService.uploadFile(envelopeId, fileId, fileName, content, contentType, None).void
     } else {
       fileUploadFrontendConnector
         .upload(envelopeId, fileId, fileName, content, contentType)
