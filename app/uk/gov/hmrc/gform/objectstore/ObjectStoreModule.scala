@@ -95,17 +95,20 @@ class ObjectStoreModule(
     override def createEnvelope(formTemplateId: FormTemplateId): FOpt[EnvelopeId] =
       fromFutureA(objectStoreService.createEnvelope(formTemplateId))
 
-    override def getFileBytes(envelopeId: EnvelopeId, fileName: String)(implicit hc: HeaderCarrier): FOpt[ByteString] =
-      fromFutureA(objectStoreService.getFileBytes(envelopeId, fileName))
+    override def getFileBytes(envelopeId: EnvelopeId, fileName: String, maybeSubDirectory: Option[String])(implicit
+      hc: HeaderCarrier
+    ): FOpt[ByteString] =
+      fromFutureA(objectStoreService.getFileBytes(envelopeId, fileName, maybeSubDirectory))
 
     override def uploadFile(
       envelopeId: EnvelopeId,
       fileId: FileId,
       fileName: String,
       content: ByteString,
-      contentType: ContentType
+      contentType: ContentType,
+      maybeSubDirectory: Option[String]
     )(implicit hc: HeaderCarrier): FOpt[ObjectSummaryWithMd5] =
-      fromFutureA(objectStoreService.uploadFile(envelopeId, fileId, fileName, content, contentType))
+      fromFutureA(objectStoreService.uploadFile(envelopeId, fileId, fileName, content, contentType, maybeSubDirectory))
 
     override def getEnvelope(envelopeId: EnvelopeId): FOpt[EnvelopeData] =
       fromFutureA(objectStoreService.getEnvelope(envelopeId))

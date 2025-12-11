@@ -39,14 +39,17 @@ trait ObjectStoreAlgebra[F[_]] {
 
   def createEnvelope(formTemplateId: FormTemplateId): F[EnvelopeId]
 
-  def getFileBytes(envelopeId: EnvelopeId, fileName: String)(implicit hc: HeaderCarrier): F[ByteString]
+  def getFileBytes(envelopeId: EnvelopeId, fileName: String, maybeSubDirectory: Option[String])(implicit
+    hc: HeaderCarrier
+  ): F[ByteString]
 
   def uploadFile(
     envelopeId: EnvelopeId,
     fileId: FileId,
     fileName: String,
     content: ByteString,
-    contentType: ContentType
+    contentType: ContentType,
+    maybeSubDirectory: Option[String]
   )(implicit hc: HeaderCarrier): F[ObjectSummaryWithMd5]
 
   def uploadFileWithDir(directory: Path.Directory, fileName: String, content: ByteString, contentType: ContentType)(
@@ -66,7 +69,7 @@ trait ObjectStoreAlgebra[F[_]] {
     applicativeM: Applicative[F]
   ): F[List[UploadedFile]] =
     envelope.files.traverse[F, UploadedFile] { file: EnvelopeFile =>
-      getFileBytes(envelopeId, file.fileName)
+      getFileBytes(envelopeId, file.fileName, file.subDirectory)
         .map { bytes =>
           objectstore.UploadedFile(
             File(FileId(file.fileId), FileStatus.Available, file.fileName, file.length),

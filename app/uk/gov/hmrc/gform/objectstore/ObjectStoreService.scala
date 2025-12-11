@@ -63,15 +63,18 @@ class ObjectStoreService(
     } yield newEnvelope._id
   }
 
-  override def getFileBytes(envelopeId: EnvelopeId, fileName: String)(implicit hc: HeaderCarrier): Future[ByteString] =
-    objectStoreConnector.getFileBytes(envelopeId, fileName)
+  override def getFileBytes(envelopeId: EnvelopeId, fileName: String, maybeSubDirectory: Option[String])(implicit
+    hc: HeaderCarrier
+  ): Future[ByteString] =
+    objectStoreConnector.getFileBytes(envelopeId, fileName, maybeSubDirectory)
 
   override def uploadFile(
     envelopeId: EnvelopeId,
     fileId: FileId,
     fileName: String,
     content: ByteString,
-    contentType: ContentType
+    contentType: ContentType,
+    maybeSubDirectory: Option[String]
   )(implicit hc: HeaderCarrier): Future[ObjectSummaryWithMd5] = {
     logger.info(
       s"uploading file: envelopeId - '${envelopeId.value}', fileId - '${fileId.value}', fileName - '$fileName"
@@ -83,13 +86,14 @@ class ObjectStoreService(
              .find(_.fileId === fileId.value)
              .traverse { file =>
                logger.info(s"removing existing file: envelopeId - '$envelopeId', fileName - '${file.fileName}'")
-               objectStoreConnector.deleteFile(envelopeId, file.fileName)
+               objectStoreConnector.deleteFile(envelopeId, file.fileName, maybeSubDirectory)
              }
       res <- objectStoreConnector.uploadFile(
                envelopeId,
                fileName,
                content,
-               Some(contentType.value)
+               Some(contentType.value),
+               maybeSubDirectory
              )
       _ <- {
         val newFiles =
@@ -100,7 +104,8 @@ class ObjectStoreService(
               FileStatus.Available,
               contentType,
               res.contentLength,
-              Map.empty[String, List[String]]
+              Map.empty[String, List[String]],
+              maybeSubDirectory
             )
         envelopeService.save(envelopeData.copy(files = newFiles))
       }
@@ -131,7 +136,7 @@ class ObjectStoreService(
                logger.info(
                  s"deleting file: envelopeId - '${envelopeId.value}', fileId - '${fileId.value}', fileName - $fileName"
                )
-               objectStoreConnector.deleteFile(envelopeId, fileName)
+               objectStoreConnector.deleteFile(envelopeId, fileName, None) // TODO: <-- CHECK THIS
              case None => Future.failed(new RuntimeException(s"FileId ${fileId.value} not found in mongo"))
            }
       newEnvelope = envelope.copy(files = envelope.files.filterNot(_.fileId === fileId.value))
@@ -210,7 +215,7 @@ class ObjectStoreService(
              .find(_.fileId === fileId.value)
              .traverse { file =>
                logger.info(s"removing existing file: envelopeId - '$envelopeId', fileName - '${file.fileName}'")
-               objectStoreConnector.deleteFile(envelopeId, file.fileName)
+               objectStoreConnector.deleteFile(envelopeId, file.fileName, None) // TODO: <-- CHECK THIS
              }
       res <- objectStoreConnector.uploadFromUrl(from, envelopeId, fileName)
       _ <- {
@@ -222,7 +227,8 @@ class ObjectStoreService(
               FileStatus.Available,
               contentType,
               res.contentLength,
-              Map.empty[String, List[String]]
+              Map.empty[String, List[String]],
+              None
             )
         envelopeService.save(envelopeData.copy(files = newFiles))
       }
@@ -240,11 +246,13 @@ class ObjectStoreService(
     val date = timeProvider.localDateTime().format(DateTimeFormatter.ofPattern("yyyyMMdd"))
     val fileNamePrefix = s"${submission.submissionRef.withoutHyphens}-$date"
 
+    val fileIdPrefix = hmrcDms.submissionPrefix.fold("")(prefix => s"$prefix-")
+
     def uploadPfdF: Future[Unit] = {
       val (fileId, fileNameSuffix) = {
         if (hmrcDms.instructionPdfFields.isDefined)
-          (customerSummaryPdf, "customerSummary")
-        else (pdf, "iform")
+          (customerSummaryPdf.prefix(fileIdPrefix), "customerSummary")
+        else (pdf.prefix(fileIdPrefix), "iform")
       }
 
       uploadFile(
@@ -252,7 +260,8 @@ class ObjectStoreService(
         fileId,
         s"$fileNamePrefix-$fileNameSuffix.pdf",
         ByteString(summaries.pdfSummary.pdfContent),
-        ContentType.`application/pdf`
+        ContentType.`application/pdf`,
+        hmrcDms.submissionPrefix
       ).void
     }
 
@@ -260,10 +269,11 @@ class ObjectStoreService(
       summaries.instructionPdfSummary.fold(Future.successful(())) { iPdf =>
         uploadFile(
           submission.envelopeId,
-          pdf,
+          pdf.prefix(fileIdPrefix),
           s"$fileNamePrefix-iform.pdf",
           ByteString(iPdf.pdfContent),
-          ContentType.`application/pdf`
+          ContentType.`application/pdf`,
+          hmrcDms.submissionPrefix
         ).void
       }
 
@@ -272,10 +282,11 @@ class ObjectStoreService(
         .map(elem =>
           uploadFile(
             submission.envelopeId,
-            formdataXml,
+            formdataXml.prefix(fileIdPrefix),
             s"$fileNamePrefix-formdata.xml",
             ByteString(elem.getBytes),
-            ContentType.`application/xml`
+            ContentType.`application/xml`,
+            hmrcDms.submissionPrefix
           ).void
         )
         .getOrElse(Future.successful(()))
@@ -292,10 +303,11 @@ class ObjectStoreService(
         )
       uploadFile(
         submission.envelopeId,
-        xml,
+        xml.prefix(fileIdPrefix),
         s"$fileNamePrefix-metadata.xml",
         ByteString(metadataXml.getBytes),
-        ContentType.`application/xml`
+        ContentType.`application/xml`,
+        hmrcDms.submissionPrefix
       ).void
     }
 
@@ -304,10 +316,11 @@ class ObjectStoreService(
         val roboticsFileExtension = summaries.roboticsFileExtension.map(_.toLowerCase).getOrElse("xml")
         uploadFile(
           submission.envelopeId,
-          roboticsFileId(roboticsFileExtension),
+          roboticsFileId(roboticsFileExtension).prefix(fileIdPrefix),
           hmrcDms.roboticsFileName(fileNamePrefix, roboticsFileExtension),
           ByteString(elem.getBytes),
-          getContentType(roboticsFileExtension)
+          getContentType(roboticsFileExtension),
+          hmrcDms.submissionPrefix
         ).void
       case _ => Future.successful(())
     }
