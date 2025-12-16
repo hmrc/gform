@@ -27,9 +27,17 @@ object MetadataXml {
 
   val xmlDec = """<?xml version="1.0" encoding="UTF-8" standalone="no"?>"""
 
-  private def createMetadata(submission: Submission, noOfPages: Long, attachmentCount: Int, hmrcDms: HmrcDms): Elem = {
+  private def createMetadata(
+    submission: Submission,
+    noOfPages: Long,
+    attachmentCount: Int,
+    hmrcDms: HmrcDms,
+    attachmentNames: Seq[String]
+  ): Elem = {
 
     val backscan = hmrcDms.backscan.map(backscan => createAttribute("backscan", backscan)).toList
+
+    val attachmentNameAttributes = attachmentNames.map(name => createAttribute("attachment_name", name))
 
     val attributes = List(
       createAttribute("hmrc_time_of_receipt", submission.submittedDate),
@@ -44,7 +52,7 @@ object MetadataXml {
       createAttribute("classification_type", hmrcDms.classificationType),
       createAttribute("business_area", hmrcDms.businessArea),
       createAttribute("attachment_count", attachmentCount)
-    ) ++ backscan
+    ) ++ attachmentNameAttributes ++ backscan
 
     <metadata></metadata>.copy(child = attributes)
   }
@@ -75,7 +83,7 @@ object MetadataXml {
     val body =
       List(
         createHeader(submission.submissionRef, reconciliationId),
-        createMetadata(submission, noOfPages, attachmentCount, hmrcDms)
+        createMetadata(submission, noOfPages, attachmentCount, hmrcDms, attachmentNames)
       )
 
     trim(createDocument(body))
