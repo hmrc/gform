@@ -56,7 +56,8 @@ trait SdesAlgebra[F[_]] {
     formTemplateId: FormTemplateId,
     submissionRef: SubmissionRef,
     destination: SdesDestination,
-    filePrefix: Option[String]
+    filePrefix: Option[String],
+    submissionPrefix: Option[String]
   )(implicit
     hc: HeaderCarrier
   ): F[HttpResponse]
@@ -113,7 +114,8 @@ class SdesService(
     formTemplateId: FormTemplateId,
     submissionRef: SubmissionRef,
     destination: SdesDestination,
-    filePrefix: Option[String]
+    filePrefix: Option[String],
+    submissionPrefix: Option[String]
   )(implicit
     hc: HeaderCarrier
   ): Future[HttpResponse] = {
@@ -124,12 +126,13 @@ class SdesService(
         formTemplateId,
         submissionRef,
         destination,
-        filePrefix
+        filePrefix,
+        submissionPrefix
       )
     val sdesRouting = sdesSubmission.sdesDestination.sdesRouting(sdesConfig)
 
     for {
-      objSummary <- prepareFileForNotification(envelopeId, destination, filePrefix)
+      objSummary <- prepareFileForNotification(envelopeId, destination, filePrefix, submissionPrefix)
       notifyRequest = createNotifyRequest(objSummary, correlationId, sdesRouting)
       sdesHistory =
         SdesHistory.create(
@@ -420,11 +423,12 @@ class SdesService(
   private def prepareFileForNotification(
     envelopeId: EnvelopeId,
     destination: SdesDestination,
-    filePrefix: Option[String]
+    filePrefix: Option[String],
+    submissionPrefix: Option[String]
   )(implicit
     hc: HeaderCarrier
   ): Future[ObjectSummaryWithMd5] = {
-    val paths = destination.objectStorePaths(envelopeId)
+    val paths = destination.objectStorePaths(envelopeId, submissionPrefix)
     destination match {
       case SdesDestination.DataStore | SdesDestination.DataStoreLegacy | SdesDestination.HmrcIlluminate =>
         val fileName = s"${envelopeId.value}.json"
@@ -469,7 +473,8 @@ class SdesService(
                       _ <- prepareFileForNotification(
                              submission.envelopeId,
                              submission.sdesDestination,
-                             submission.filePrefix
+                             submission.filePrefix,
+                             submission.submissionPrefix
                            )
                       res <- createWorkItem(submission)
                     } yield res
@@ -488,7 +493,8 @@ class SdesService(
              sdesSubmission.formTemplateId,
              sdesSubmission.submissionRef,
              sdesDestination,
-             sdesSubmission.filePrefix
+             sdesSubmission.filePrefix,
+             sdesSubmission.submissionPrefix
            )
       _ <-
         saveSdesSubmission(

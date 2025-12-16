@@ -16,9 +16,10 @@
 
 package uk.gov.hmrc.gform.formtemplate
 
+import cats.Monoid
 import cats.implicits._
 import cats.data.NonEmptyList
-import uk.gov.hmrc.gform.core.ValidationResult.BooleanToValidationResultSyntax
+import uk.gov.hmrc.gform.core.ValidationResult.{ BooleanToValidationResultSyntax, validationResultMonoid }
 import uk.gov.hmrc.gform.core.{ Invalid, Valid, ValidationResult }
 import uk.gov.hmrc.gform.sharedmodel.HandlebarsSchemaId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationIncludeIf.{ HandlebarValue, IncludeIfValue }
@@ -40,6 +41,34 @@ object DestinationsValidator {
       val destinationIds = extractIds(destinationList.destinations)
       val duplicates = destinationIds.toList.groupBy(identity).collect { case (dId, List(_, _, _*)) => dId }.toSet
       duplicates.isEmpty.validationResult(someDestinationIdsAreUsedMoreThanOnce(duplicates))
+  }
+
+  def validateSubmissionPrefix(destinations: Destinations): ValidationResult = destinations match {
+    case destinationList: Destinations.DestinationList =>
+      val dmsList = destinationList.destinations.collect { case d: Destination.HmrcDms => d }
+
+      val hasSubmissionPrefix = dmsList.exists(_.submissionPrefix.isDefined)
+      val hasNoSubmissionPrefix = dmsList.exists(_.submissionPrefix.isEmpty)
+      val allPrefixes = dmsList.map(_.submissionPrefix.getOrElse(""))
+
+      val uniqueCheck = if (hasSubmissionPrefix && allPrefixes.size != allPrefixes.toSet.size) {
+        Invalid(
+          s"hmrcDms destinations must all have a unique submissionPrefix."
+        )
+      } else {
+        Valid
+      }
+
+      val allOrNone = if (hasSubmissionPrefix && hasNoSubmissionPrefix) {
+        Invalid(
+          s"hmrcDms destinations must all have submissionPrefix or all not have submissionPrefix. It cannot be mix of both."
+        )
+      } else {
+        Valid
+      }
+
+      Monoid[ValidationResult].combineAll(List(uniqueCheck, allOrNone))
+    case _ => Valid
   }
 
   def validateDestinationIncludeIfs(destinations: Destinations): ValidationResult = destinations match {

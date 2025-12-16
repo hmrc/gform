@@ -167,6 +167,7 @@ class FileUploadService(
             formTemplateId,
             submission.submissionRef,
             Dms,
+            None,
             None
           )
         else fileUploadConnector.routeEnvelope(RouteEnvelopeRequest(submission.envelopeId, "dfs", "DMS"))

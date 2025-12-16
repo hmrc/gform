@@ -83,8 +83,7 @@ class ObjectStoreConnector(
       .flatMap {
         case Some(o) =>
           for {
-            content <- o.content.asString
-            res     <- Future.successful(ByteString(content.getBytes()))
+            res <- o.content.runFold(ByteString.empty)(_ ++ _)
           } yield res
         case _ =>
           Future.failed(
@@ -99,15 +98,15 @@ class ObjectStoreConnector(
       path = directory(envelopeId.value, maybeSubDir).file(fileName)
     )
 
-  def deleteFiles(envelopeId: EnvelopeId, fileNames: List[String])(implicit
+  def deleteFiles(envelopeId: EnvelopeId, fileNames: List[(String, Option[String])])(implicit
     hc: HeaderCarrier
   ): Future[Unit] =
     Future
-      .traverse(fileNames)(fileName =>
+      .traverse(fileNames) { case (fileName, maybeSubDirectory) =>
         objectStoreClient.deleteObject(
-          path = directory(envelopeId.value, None).file(fileName) // TODO: <-- CHECK THIS
+          path = directory(envelopeId.value, maybeSubDirectory).file(fileName)
         )
-      )
+      }
       .void
 
   def deleteFile(directory: Path.Directory, fileName: String)(implicit

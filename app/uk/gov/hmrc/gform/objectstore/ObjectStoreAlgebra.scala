@@ -111,7 +111,8 @@ trait ObjectStoreAlgebra[F[_]] {
     submission: Submission,
     summaries: PdfAndXmlSummaries,
     hmrcDms: HmrcDms,
-    formTemplateId: FormTemplateId
+    formTemplateId: FormTemplateId,
+    preExistingEnvelope: EnvelopeData
   )(implicit hc: HeaderCarrier): F[Unit]
 
   def zipAndEncrypt(envelopeId: EnvelopeId, objectStorePaths: ObjectStorePaths)(implicit

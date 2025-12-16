@@ -17,12 +17,12 @@
 package uk.gov.hmrc.gform.objectstore
 
 import cats.implicits.toFunctorOps
+import cats.syntax.eq._
+import cats.syntax.traverse._
 import org.apache.pekko.NotUsed
 import org.apache.pekko.stream.Materializer
 import org.apache.pekko.stream.scaladsl.Source
 import org.apache.pekko.util.ByteString
-import cats.syntax.eq._
-import cats.syntax.traverse._
 import org.slf4j.LoggerFactory
 import uk.gov.hmrc.gform.envelope.EnvelopeAlgebra
 import uk.gov.hmrc.gform.objectstore.ObjectStoreService.FileIds._
@@ -154,7 +154,7 @@ class ObjectStoreService(
                  s"deleting file: envelopeId - '${envelopeId.value}', fileId - '${file.fileId}', fileName - ${file.fileName}"
                )
              }
-             objectStoreConnector.deleteFiles(envelopeId, files.map(_.fileName))
+             objectStoreConnector.deleteFiles(envelopeId, files.map(f => (f.fileName, f.subDirectory)))
            } else {
              val foundFileIds = files.map(_.fileId)
              Future.failed(
@@ -239,14 +239,38 @@ class ObjectStoreService(
     submission: Submission,
     summaries: PdfAndXmlSummaries,
     hmrcDms: HmrcDms,
-    formTemplateId: FormTemplateId
+    formTemplateId: FormTemplateId,
+    preExistingEnvelope: EnvelopeData
   )(implicit hc: HeaderCarrier): Future[Unit] = {
     logger.debug(s"env-id submit: ${submission.envelopeId}")
     val timeProvider = new TimeProvider
     val date = timeProvider.localDateTime().format(DateTimeFormatter.ofPattern("yyyyMMdd"))
     val fileNamePrefix = s"${submission.submissionRef.withoutHyphens}-$date"
 
-    val fileIdPrefix = hmrcDms.submissionPrefix.fold("")(prefix => s"$prefix-")
+    val fileIdPrefix = hmrcDms.submissionPrefix.fold("")(prefix => s"${prefix}_")
+
+    def duplicateUserFilesF: Future[Unit] =
+      hmrcDms.submissionPrefix
+        .map { _ =>
+          // Duplicate all files at the root level (user uploaded files) into the subdirectory
+          preExistingEnvelope.files
+            .filter(_.subDirectory.isEmpty)
+            .traverse { file =>
+              for {
+                content <- objectStoreConnector.getFileBytes(submission.envelopeId, file.fileName, None)
+                summary <- uploadFile(
+                             submission.envelopeId,
+                             FileId(file.fileId).prefix(fileIdPrefix),
+                             file.fileName,
+                             content,
+                             file.contentType,
+                             hmrcDms.submissionPrefix
+                           )
+              } yield summary
+            }
+            .map(_ => ())
+        }
+        .getOrElse(Future.successful(()))
 
     def uploadPfdF: Future[Unit] = {
       val (fileId, fileNameSuffix) = {
@@ -326,6 +350,7 @@ class ObjectStoreService(
     }
 
     for {
+      _ <- duplicateUserFilesF
       _ <- uploadPfdF
       _ <- uploadInstructionPdfF
       _ <- uploadFormDataF
