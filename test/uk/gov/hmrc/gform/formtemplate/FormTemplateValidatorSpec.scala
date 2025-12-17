@@ -1229,6 +1229,7 @@ class FormTemplateValidatorSpec
                   divider,
                   None,
                   None,
+                  false,
                   false
                 ),
                 false
@@ -1263,6 +1264,7 @@ class FormTemplateValidatorSpec
                   divider,
                   None,
                   None,
+                  false,
                   false
                 ),
                 false
@@ -1318,6 +1320,7 @@ class FormTemplateValidatorSpec
                   divider,
                   None,
                   None,
+                  false,
                   false
                 ),
                 false
@@ -1350,6 +1353,7 @@ class FormTemplateValidatorSpec
                   divider,
                   None,
                   None,
+                  false,
                   false
                 ),
                 false
@@ -1589,7 +1593,10 @@ class FormTemplateValidatorSpec
             "fcId",
             Text(
               ShortText.default,
-              IndexOfDataRetrieveCtx(DataRetrieveCtx(DataRetrieveId("invalidDrId"), Attribute("somethingElse")), 1)
+              IndexOfDataRetrieveCtx(
+                DataRetrieveCtx(DataRetrieveId("invalidDrId"), Attribute("somethingElse")),
+                Constant("1")
+              )
             ),
             toSmartString("label")
           ),
@@ -1897,6 +1904,7 @@ class FormTemplateValidatorSpec
             noDivider,
             None,
             None,
+            false,
             false
           ),
           Valid
@@ -1916,6 +1924,7 @@ class FormTemplateValidatorSpec
             noDivider,
             None,
             None,
+            false,
             false
           ),
           Invalid(
@@ -1945,6 +1954,7 @@ class FormTemplateValidatorSpec
             noDivider,
             None,
             None,
+            false,
             false
           ),
           Invalid(
@@ -1966,6 +1976,7 @@ class FormTemplateValidatorSpec
             noDivider,
             None,
             None,
+            false,
             false
           ),
           Valid
@@ -2025,6 +2036,7 @@ class FormTemplateValidatorSpec
             noDivider,
             None,
             None,
+            false,
             false
           ),
           Valid
@@ -2052,6 +2064,7 @@ class FormTemplateValidatorSpec
             noDivider,
             None,
             None,
+            false,
             false
           ),
           Valid
@@ -2079,6 +2092,7 @@ class FormTemplateValidatorSpec
             noDivider,
             None,
             None,
+            false,
             false
           ),
           Invalid(
@@ -2108,6 +2122,7 @@ class FormTemplateValidatorSpec
             noDivider,
             None,
             None,
+            false,
             false
           ),
           Invalid(
@@ -2137,6 +2152,7 @@ class FormTemplateValidatorSpec
             noDivider,
             None,
             None,
+            false,
             false
           ),
           Valid
@@ -2247,6 +2263,7 @@ class FormTemplateValidatorSpec
         divider,
         None,
         None,
+        false,
         false
       ),
       toSmartString("Select the tax type"),
@@ -2278,7 +2295,8 @@ class FormTemplateValidatorSpec
         divider,
         None,
         None,
-        true
+        true,
+        false
       ),
       toSmartString("Nothing"),
       false,
@@ -2306,7 +2324,7 @@ class FormTemplateValidatorSpec
           Dynamic.DataRetrieveBased(
             IndexOfDataRetrieveCtx(
               DataRetrieveCtx(DataRetrieveId("dataRetrieveId"), DataRetrieve.Attribute("employerName")),
-              0
+              Constant("0")
             )
           )
         ),

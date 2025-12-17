@@ -71,7 +71,7 @@ class HipService(
       case JsError(err) =>
         logger.error(s"Unable to transform employments data; $err")
         // If the HIP employments API returns 200 but transformation fails - return empty
-        List(Json.obj())
+        List.empty[JsObject]
     }
 
     Json.toJson(transformed)

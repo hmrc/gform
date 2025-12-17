@@ -143,6 +143,11 @@ object DataRetrieveDefinitions {
           DataRetrieve.Attribute("accountName"),
           ConstructAttribute.AsIs(Fetch(List("accountName"))),
           Some(AllowedValues(List("*"), AllowedValueType.AnyValueType, isRequired = false))
+        ),
+        AttributeInstruction(
+          DataRetrieve.Attribute("iban"),
+          ConstructAttribute.AsIs(Fetch(List("iban"))),
+          Some(AllowedValues(List("*"), AllowedValueType.AnyValueType, isRequired = false))
         )
       )
     ),

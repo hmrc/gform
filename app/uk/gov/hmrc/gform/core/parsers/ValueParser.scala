@@ -242,11 +242,11 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
     | FormComponentId.unanchoredIdValidation ~ "." ~ addressDetail ^^ { case value ~ _ ~ addressDetail =>
       AddressLens(FormComponentId(value), addressDetail)
     }
-    | "dataRetrieve" ~ "." ~ DataRetrieveId.unanchoredIdValidation ~ "." ~ DataRetrieve.Attribute.unanchoredIdValidation ~ "[" ~ nonZeroPositiveInteger ~ "]" ^^ {
-      case _ ~ _ ~ dataRetrieveId ~ _ ~ dataRetrieveAttribute ~ _ ~ index ~ _ =>
+    | "dataRetrieve" ~ "." ~ DataRetrieveId.unanchoredIdValidation ~ "." ~ DataRetrieve.Attribute.unanchoredIdValidation ~ "[" ~ _expr1 ~ "]" ^^ {
+      case _ ~ _ ~ dataRetrieveId ~ _ ~ dataRetrieveAttribute ~ _ ~ expr ~ _ =>
         IndexOfDataRetrieveCtx(
           DataRetrieveCtx(DataRetrieveId(dataRetrieveId), DataRetrieve.Attribute(dataRetrieveAttribute)),
-          index - 1
+          expr
         )
     }
     | dataRetrieveDate.map(
@@ -421,6 +421,10 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
     }
     | "displayAsEntered(" ~ FormComponentId.unanchoredIdValidation ~ ")" ^^ { case _ ~ value ~ _ =>
       DisplayAsEntered(FormComponentId(value))
+    }
+    | "indexOf(" ~ formatParserAlphabeticOnly ~ "in" ~ FormComponentId.unanchoredIdValidation ~ ")" ^^ {
+      case _ ~ choiceData ~ _ ~ value ~ _ =>
+        IndexOfInChoice(OptionDataValue.StringBased(choiceData), FormComponentId(value))
     }
     | FormComponentId.unanchoredIdValidation ~ "[" ~ nonZeroPositiveInteger ~ "]" ^^ {
       case formComponentId ~ _ ~ index ~ _ =>

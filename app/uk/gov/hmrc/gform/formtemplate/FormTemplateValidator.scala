@@ -195,6 +195,14 @@ object FormTemplateValidator {
         fc.id
     }.toSet
 
+    val allDynamicRadioValues: Map[FormComponentId, Set[String]] = formTemplate.formComponents {
+      case fc @ IsChoice(choice: Choice) if choice.`type` === Radio =>
+        val dynamicValues = choice.options.collect {
+          case OptionData.ValueBased(_, _, _, Some(dynamic), OptionDataValue.StringBased(value), _, _) => value
+        }
+        fc.id -> dynamicValues.toSet
+    }.toMap
+
     val allRevealingChoiceCheckboxIds: Set[FormComponentId] = formTemplate.formComponents {
       case fc @ IsRevealingChoice(rChoice: RevealingChoice) if rChoice.multiValue === true =>
         fc.id
@@ -239,6 +247,29 @@ object FormTemplateValidator {
         invalid(path, formComponentId)
       case ReferenceInfo.IndexOfExpr(path, IndexOf(formComponentId, _)) if !allFcIds(formComponentId) =>
         invalid(path, formComponentId)
+      case ReferenceInfo.IndexOfInChoiceExpr(path, IndexOfInChoice(optionDataValue, formComponentId)) =>
+        if (!allFcIds(formComponentId)) {
+          invalid(path, formComponentId)
+        } else {
+          optionDataValue match {
+            case OptionDataValue.StringBased(value) =>
+              allDynamicRadioValues.get(formComponentId) match {
+                case None =>
+                  Invalid(
+                    s"${path.path}: '$formComponentId' has no dynamic values. '$formComponentId' needs to be radio with 'dynamic' field in order to check which '$value' is selected"
+                  )
+                case Some(values) =>
+                  if (values(value)) Valid
+                  else
+                    Invalid(
+                      s"${path.path}: '$formComponentId' has no dynamic value '$value'. Available values are: ${values.mkString(", ")}"
+                    )
+              }
+            case OptionDataValue.ExprBased(_) => // ExprBased is never constructed in parser
+              Invalid(s"${path.path}: $formComponentId can't used expr based value")
+          }
+        }
+
       case ReferenceInfo.NumberedListExpr(path, NumberedList(formComponentId))
           if !SectionHelper
             .addToListFormComponents(formTemplate.formKind.allSections)
@@ -1195,14 +1226,14 @@ object FormTemplateValidator {
 
   @nowarn
   def validate(componentType: ComponentType, formTemplate: FormTemplate): ValidationResult = componentType match {
-    case HasExpr(SingleExpr(expr))               => validate(expr, formTemplate.formKind.allSections)
-    case HasExpr(MultipleExpr(fields))           => Valid
-    case Date(_, _, _)                           => Valid
-    case CalendarDate                            => Valid
-    case TaxPeriodDate                           => Valid
-    case Address(_, _, _, Some(expr))            => validateAddressValue(expr, formTemplate)
-    case Address(_, _, _, _)                     => Valid
-    case Choice(_, _, _, _, _, _, _, _, _, _, _) => Valid
+    case HasExpr(SingleExpr(expr))                  => validate(expr, formTemplate.formKind.allSections)
+    case HasExpr(MultipleExpr(fields))              => Valid
+    case Date(_, _, _)                              => Valid
+    case CalendarDate                               => Valid
+    case TaxPeriodDate                              => Valid
+    case Address(_, _, _, Some(expr))               => validateAddressValue(expr, formTemplate)
+    case Address(_, _, _, _)                        => Valid
+    case Choice(_, _, _, _, _, _, _, _, _, _, _, _) => Valid
     case RevealingChoice(revealingChoiceElements, _) =>
       validate(revealingChoiceElements.toList.flatMap(_.revealingFields.map(_.`type`)), formTemplate)
     case HmrcTaxPeriod(_, _, _)                     => Valid
@@ -1412,25 +1443,26 @@ object FormTemplateValidator {
           .map(_.id)
           .contains(value)
           .validationResult(s"$value is not AddToList Id")
-      case Size(value, _)                    => validate(FormCtx(value), sections)
-      case Typed(expr, tpe)                  => validate(expr, sections)
-      case IndexOf(formComponentId, _)       => validate(FormCtx(formComponentId), sections)
-      case IndexOfDataRetrieveCtx(_, _)      => Valid
-      case NumberedList(_)                   => Valid
-      case BulletedList(_)                   => Valid
-      case NumberedListChoicesSelected(_, _) => Valid
-      case BulletedListChoicesSelected(_, _) => Valid
-      case StringOps(_, _)                   => Valid
-      case Concat(exprs)                     => Monoid.combineAll(exprs.map(e => validate(e, sections)))
-      case CountryOfItmpAddress              => Valid
-      case ChoicesRevealedField(_)           => Valid
-      case ChoicesSelected(_)                => Valid
-      case ChoicesAvailable(_, _)            => Valid
-      case DisplayAsEntered(_)               => Valid
-      case CountSelectedChoices(_)           => Valid
-      case ChoicesCount(_)                   => Valid
-      case TaskStatus(_)                     => Valid
-      case LookupOps(_, _)                   => Valid
+      case Size(value, _)                      => validate(FormCtx(value), sections)
+      case Typed(expr, tpe)                    => validate(expr, sections)
+      case IndexOf(formComponentId, _)         => validate(FormCtx(formComponentId), sections)
+      case IndexOfInChoice(_, formComponentId) => validate(FormCtx(formComponentId), sections)
+      case IndexOfDataRetrieveCtx(_, _)        => Valid
+      case NumberedList(_)                     => Valid
+      case BulletedList(_)                     => Valid
+      case NumberedListChoicesSelected(_, _)   => Valid
+      case BulletedListChoicesSelected(_, _)   => Valid
+      case StringOps(_, _)                     => Valid
+      case Concat(exprs)                       => Monoid.combineAll(exprs.map(e => validate(e, sections)))
+      case CountryOfItmpAddress                => Valid
+      case ChoicesRevealedField(_)             => Valid
+      case ChoicesSelected(_)                  => Valid
+      case ChoicesAvailable(_, _)              => Valid
+      case DisplayAsEntered(_)                 => Valid
+      case CountSelectedChoices(_)             => Valid
+      case ChoicesCount(_)                     => Valid
+      case TaskStatus(_)                       => Valid
+      case LookupOps(_, _)                     => Valid
     }
   }
 
