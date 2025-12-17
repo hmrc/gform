@@ -86,7 +86,7 @@ class ObjectStoreService(
              .find(_.fileId === fileId.value)
              .traverse { file =>
                logger.info(s"removing existing file: envelopeId - '$envelopeId', fileName - '${file.fileName}'")
-               objectStoreConnector.deleteFile(envelopeId, file.fileName, maybeSubDirectory)
+               objectStoreConnector.deleteFile(envelopeId, file.fileName, file.subDirectory)
              }
       res <- objectStoreConnector.uploadFile(
                envelopeId,
@@ -130,13 +130,13 @@ class ObjectStoreService(
   override def deleteFile(envelopeId: EnvelopeId, fileId: FileId)(implicit hc: HeaderCarrier): Future[Unit] =
     for {
       envelope <- getEnvelope(envelopeId)
-      maybeFileName = envelope.files.find(_.fileId === fileId.value).map(_.fileName)
+      maybeFileName = envelope.files.find(_.fileId === fileId.value).map(f => (f.fileName, f.subDirectory))
       _ <- maybeFileName match {
-             case Some(fileName) =>
+             case Some((fileName, maybeSubDirectory)) =>
                logger.info(
                  s"deleting file: envelopeId - '${envelopeId.value}', fileId - '${fileId.value}', fileName - $fileName"
                )
-               objectStoreConnector.deleteFile(envelopeId, fileName, None) // TODO: <-- CHECK THIS
+               objectStoreConnector.deleteFile(envelopeId, fileName, maybeSubDirectory)
              case None => Future.failed(new RuntimeException(s"FileId ${fileId.value} not found in mongo"))
            }
       newEnvelope = envelope.copy(files = envelope.files.filterNot(_.fileId === fileId.value))
@@ -215,7 +215,7 @@ class ObjectStoreService(
              .find(_.fileId === fileId.value)
              .traverse { file =>
                logger.info(s"removing existing file: envelopeId - '$envelopeId', fileName - '${file.fileName}'")
-               objectStoreConnector.deleteFile(envelopeId, file.fileName, None) // TODO: <-- CHECK THIS
+               objectStoreConnector.deleteFile(envelopeId, file.fileName, file.subDirectory)
              }
       res <- objectStoreConnector.uploadFromUrl(from, envelopeId, fileName)
       _ <- {
@@ -270,7 +270,7 @@ class ObjectStoreService(
             }
             .map(_ => ())
         }
-        .getOrElse(Future.successful(()))
+        .getOrElse(Future.unit)
 
     def uploadPfdF: Future[Unit] = {
       val (fileId, fileNameSuffix) = {
@@ -313,7 +313,7 @@ class ObjectStoreService(
             hmrcDms.submissionPrefix
           ).void
         )
-        .getOrElse(Future.successful(()))
+        .getOrElse(Future.unit)
 
     def uploadMetadataXmlF: Future[Unit] = {
       val reconciliationId = ReconciliationId.create(submission.submissionRef)
@@ -346,7 +346,7 @@ class ObjectStoreService(
           getContentType(roboticsFileExtension),
           hmrcDms.submissionPrefix
         ).void
-      case _ => Future.successful(())
+      case _ => Future.unit
     }
 
     for {

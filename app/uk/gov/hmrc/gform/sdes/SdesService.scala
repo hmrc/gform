@@ -267,9 +267,15 @@ class SdesService(
                   val envelope = envelopeAlgebra.get(sdesSubmission.envelopeId)
                   envelope.map(e =>
                     (
-                      e.files.count(f => f.fileId =!= ObjectStoreService.FileIds.dataStore.value),
-                      e.files.count(f => !ObjectStoreService.FileIds.generatedFileIds.map(_.value).contains(f.fileId)),
-                      e.files.map(_.length).sum
+                      e.files.count(f =>
+                        f.fileId =!= ObjectStoreService.FileIds.dataStore.value && f.subDirectory === sdesSubmission.submissionPrefix
+                      ),
+                      e.files.count(f =>
+                        !ObjectStoreService.FileIds.generatedFileIds
+                          .map(_.value)
+                          .contains(f.fileId) && f.subDirectory.isEmpty
+                      ),
+                      e.files.filter(_.subDirectory === sdesSubmission.submissionPrefix).map(_.length).sum
                     )
                   )
                 case _ => Future.successful((1, 0, 0L))
@@ -362,12 +368,14 @@ class SdesService(
             Future.failed(new RuntimeException(s"Correlation Id: $correlationID is locked"))
           } else {
             val envelopeId = submission.envelopeId
+            val withSubmissionPrefix = submission.submissionPrefix.fold("")(p => s", with submission prefix: $p")
             logger.info(
-              s"Received callback for envelopeId: ${envelopeId.value}, destination: ${submission.destination.getOrElse("dms")}"
+              s"Received callback for envelopeId: ${envelopeId.value}$withSubmissionPrefix, destination: ${submission.destination
+                .getOrElse("dms")}"
             )
             if (submission.status === Replaced) {
               logger.error(
-                s"Received callback for a replaced submission: correlation id: $correlationID, envelope id ${envelopeId.value}, destination: ${submission.destination
+                s"Received callback for a replaced submission: correlation id: $correlationID, envelope id ${envelopeId.value}$withSubmissionPrefix, destination: ${submission.destination
                   .getOrElse("dms")}"
               )
               Future.failed(new IllegalStateException(s"Correlation ID [$correlationID] has already been replaced"))
@@ -409,7 +417,7 @@ class SdesService(
   private def deleteFiles(submission: SdesSubmission, fileName: String)(implicit hc: HeaderCarrier): Future[Unit] = {
     val sdesDestination = submission.sdesDestination
     val envelopeId = submission.envelopeId
-    val paths = sdesDestination.objectStorePaths(envelopeId)
+    val paths = sdesDestination.objectStorePaths(envelopeId, submission.submissionPrefix)
     sdesDestination match {
       case SdesDestination.DataStore | SdesDestination.DataStoreLegacy | SdesDestination.HmrcIlluminate =>
         objectStoreAlgebra.deleteFile(paths.ephemeral, fileName)
