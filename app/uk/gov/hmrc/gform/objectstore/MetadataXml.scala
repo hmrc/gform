@@ -31,7 +31,7 @@ object MetadataXml {
 
     val backscan = hmrcDms.backscan.map(backscan => createAttribute("backscan", backscan)).toList
 
-    val roboticsAsAttachmentCountOffset = if (hmrcDms.roboticsAsAttachment.getOrElse(false)) 0 else 1
+    val roboticsAsAttachmentCountOffset = if (hmrcDms.roboticsAsAttachment.getOrElse(false)) 1 else 0
 
     val attributes = List(
       createAttribute("hmrc_time_of_receipt", submission.submittedDate),
