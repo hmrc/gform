@@ -98,8 +98,16 @@ object Destination {
     instructionPdfFields: Option[InstructionPdfFields],
     convertSingleQuotes: Option[Boolean],
     payload: Option[String],
-    payloadType: TemplateType
-  ) extends Destination with DestinationWithCustomerId
+    payloadType: TemplateType,
+    roboticsAsAttachment: Option[Boolean]
+  ) extends Destination with DestinationWithCustomerId {
+    def roboticsFileName(fileNamePrefix: String, roboticsFileExtension: String): String =
+      if (roboticsAsAttachment.getOrElse(false)) {
+        s"$fileNamePrefix." + roboticsFileExtension
+      } else {
+        s"$fileNamePrefix-robotic." + roboticsFileExtension
+      }
+  }
 
   case class DataStore(
     id: DestinationId,
@@ -267,7 +275,8 @@ case class UploadableHmrcDmsDestination(
   dataOutputFormat: Option[DataOutputFormat],
   formdataXml: Option[Boolean],
   closedStatus: Option[Boolean],
-  instructionPdfFields: Option[InstructionPdfFields] = None
+  instructionPdfFields: Option[InstructionPdfFields] = None,
+  roboticsAsAttachment: Option[Boolean]
 ) {
 
   def toHmrcDmsDestination: Either[String, Destination.HmrcDms] =
@@ -287,7 +296,8 @@ case class UploadableHmrcDmsDestination(
       instructionPdfFields,
       convertSingleQuotes,
       None,
-      TemplateType.XML
+      TemplateType.XML,
+      roboticsAsAttachment
     )
 }
 
