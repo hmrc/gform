@@ -462,6 +462,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
             None,
             None,
             TemplateType.XML,
+            None,
             None
           )
         ),

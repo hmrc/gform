@@ -66,6 +66,7 @@ trait DestinationGen {
         None,
         None,
         TemplateType.XML,
+        None,
         None
       )
 
