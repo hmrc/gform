@@ -126,4 +126,21 @@ object DestinationsValidator {
     case c: Destination.Composite => c.id :: extractIds(c.destinations)
     case _                        => NonEmptyList.of(destination.id)
   }
+
+  def validateRoboticsAsAttachment(destinations: Destinations): ValidationResult =
+    destinations match {
+      case Destinations.DestinationList(destinations, _, _) =>
+        destinations.map {
+          case destination: Destination.HmrcDms =>
+            destination.roboticsAsAttachment -> destination.dataOutputFormat match {
+              case (Some(true), None) =>
+                Invalid(
+                  s"""The destination '${destination.id.id}' is not valid. Once the property 'roboticsAsAttachment' is set to true, the 'dataOutputFormat' property must exist. Example: "dataOutputFormat": "xml" """
+                )
+              case _ => Valid
+            }
+          case _ => Valid
+        }.combineAll
+      case _ => Valid
+    }
 }

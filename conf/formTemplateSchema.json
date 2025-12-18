@@ -408,34 +408,7 @@
       "additionalProperties": false
     },
     "destinations": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "dataOutputFormat": {
-            "type": "string"
-          },
-          "roboticsAsAttachment": {
-            "type": "boolean"
-          }
-        },
-        "oneOf": [
-          {
-            "not": {
-              "properties": {
-                "roboticsAsAttachment": { "enum": [true] }
-              },
-              "required": ["roboticsAsAttachment"]
-            }
-          },
-          {
-            "properties": {
-              "roboticsAsAttachment": { "enum": [true] }
-            },
-            "required": ["roboticsAsAttachment", "dataOutputFormat"]
-          }
-        ]
-      }
+      "type": "array"
     }
   },
   "required": [
