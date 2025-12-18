@@ -40,9 +40,9 @@ class ObjectStoreController(controllerComponents: ControllerComponents, objectSt
     objectStoreAlgebra.deleteFiles(envelopeId, request.body).asNoContent
   }
 
-  def downloadDmsFiles(envelopeId: EnvelopeId) = Action.async { implicit request =>
-    val paths = SdesDestination.Dms.objectStorePaths(envelopeId)
-    val fileName = s"${envelopeId.value}.zip"
+  def downloadDmsFiles(envelopeId: EnvelopeId, prefix: Option[String]) = Action.async { implicit request =>
+    val paths = SdesDestination.Dms.objectStorePaths(envelopeId, prefix)
+    val fileName = s"${prefix.getOrElse("")}${envelopeId.value}.zip"
     for {
       _            <- objectStoreAlgebra.zipFiles(envelopeId, paths)
       objectSource <- objectStoreAlgebra.getZipFile(envelopeId, paths)
