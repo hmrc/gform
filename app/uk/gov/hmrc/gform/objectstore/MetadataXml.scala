@@ -31,6 +31,8 @@ object MetadataXml {
 
     val backscan = hmrcDms.backscan.map(backscan => createAttribute("backscan", backscan)).toList
 
+    val roboticsAsAttachmentCountOffset = if (hmrcDms.roboticsAsAttachment.getOrElse(false)) 1 else 0
+
     val attributes = List(
       createAttribute("hmrc_time_of_receipt", submission.submittedDate),
       createAttribute("time_xml_created", submission.submittedDate),
@@ -43,7 +45,7 @@ object MetadataXml {
       createAttribute("cas_key", "AUDIT_SERVICE"), // We are not using CAS
       createAttribute("classification_type", hmrcDms.classificationType),
       createAttribute("business_area", hmrcDms.businessArea),
-      createAttribute("attachment_count", attachmentCount)
+      createAttribute("attachment_count", attachmentCount + roboticsAsAttachmentCountOffset)
     ) ++ backscan
 
     <metadata></metadata>.copy(child = attributes)

@@ -850,6 +850,9 @@
         "hideChoicesSelected": {
           "type": "boolean"
         },
+        "noDuplicates": {
+          "type": "boolean"
+        },
         "suffix": {
           "$ref": "#/$defs/stringOrEnCyObject"
         },

@@ -134,6 +134,8 @@ class FormComponentMaker(json: JsValue) {
     toOpt((json \ "displayInSummary").validateOpt[DisplayInSummary], "/displayInSummary")
   lazy val optHideChoicesSelected: Opt[Option[Boolean]] =
     toOpt((json \ "hideChoicesSelected").validateOpt[Boolean], "/hideChoicesSelected")
+  lazy val optNoDuplicates: Opt[Option[Boolean]] =
+    toOpt((json \ "noDuplicates").validateOpt[Boolean], "/noDuplicates")
   lazy val total: Option[String] = (json \ "total").asOpt[String]
   lazy val optInternational: Opt[Option[Boolean]] =
     toOpt((json \ "international").validateOpt[Boolean], "/international")
@@ -226,9 +228,9 @@ class FormComponentMaker(json: JsValue) {
       case _                => Option.empty[DividerPosition]
     }
 
-  lazy val dividerText: LocalisedString = (json \ "dividerText")
-    .asOpt[LocalisedString]
-    .getOrElse(LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")))
+  lazy val dividerText: SmartString = (json \ "dividerText")
+    .asOpt[SmartString]
+    .getOrElse(SmartString(LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")), List.empty[Expr]))
   lazy val noneChoice: Option[NoneChoice] = (json \ "noneChoice").asOpt[NoneChoice]
   lazy val noneChoiceError: Option[LocalisedString] = (json \ "noneChoiceError").asOpt[LocalisedString]
 
@@ -664,16 +666,18 @@ class FormComponentMaker(json: JsValue) {
       multivalue               <- optMultivalue
       typeAhead                <- optTypeAhead
       maybeHideChoicesSelected <- optHideChoicesSelected
+      maybeNoDuplicates        <- optNoDuplicates
       hideChoicesSelected = maybeHideChoicesSelected.getOrElse(false)
+      noDuplicates = maybeNoDuplicates.getOrElse(false)
       oChoice: Opt[Choice] = (maybeFormatExpr, choices, multivalue, maybeValueExpr, typeAhead) match {
                                // format: off
-        case (_,                                    Some(x :: xs), _,                           Selections(selections), IsTypeAhead(TypeAheadYes)) => Choice(TypeAhead, NonEmptyList(x, xs),          Vertical,   selections, optionHints, optionHelpText, dividerPositon, dividerText, noneChoice, noneChoiceError, hideChoicesSelected).asRight
-        case (IsOrientation(VerticalOrientation),   Some(x :: xs), IsMultivalue(MultivalueYes), Selections(selections), IsTypeAhead(TypeAheadNo))  => Choice(Checkbox,  NonEmptyList(x, xs),          Vertical,   selections, optionHints, optionHelpText, dividerPositon, dividerText, noneChoice, noneChoiceError, hideChoicesSelected).asRight
-        case (IsOrientation(VerticalOrientation),   Some(x :: xs), IsMultivalue(MultivalueNo),  Selections(selections), IsTypeAhead(TypeAheadNo))  => Choice(Radio,     NonEmptyList(x, xs),          Vertical,   selections, optionHints, optionHelpText, dividerPositon, dividerText, noneChoice, noneChoiceError, hideChoicesSelected).asRight
-        case (IsOrientation(HorizontalOrientation), Some(x :: xs), IsMultivalue(MultivalueYes), Selections(selections), IsTypeAhead(TypeAheadNo))  => Choice(Checkbox,  NonEmptyList(x, xs),          Horizontal, selections, optionHints, optionHelpText, dividerPositon, dividerText, noneChoice, noneChoiceError, hideChoicesSelected).asRight
-        case (IsOrientation(HorizontalOrientation), Some(x :: xs), IsMultivalue(MultivalueNo),  Selections(selections), IsTypeAhead(TypeAheadNo))  => Choice(Radio,     NonEmptyList(x, xs),          Horizontal, selections, optionHints, optionHelpText, dividerPositon, dividerText, noneChoice, noneChoiceError, hideChoicesSelected).asRight
-        case (IsOrientation(YesNoOrientation),      None,          IsMultivalue(MultivalueNo),  Selections(selections), IsTypeAhead(TypeAheadNo))  => Choice(YesNo,    yesNo, Horizontal, selections, optionHints, optionHelpText, dividerPositon, dividerText, noneChoice, noneChoiceError, hideChoicesSelected).asRight
-        case (IsOrientation(YesNoOrientation),      _,             _,                           Selections(selections), IsTypeAhead(TypeAheadNo))  => Choice(YesNo,    yesNo, Horizontal, selections, optionHints, optionHelpText, dividerPositon, dividerText, noneChoice, noneChoiceError, hideChoicesSelected).asRight
+        case (_,                                    Some(x :: xs), _,                           Selections(selections), IsTypeAhead(TypeAheadYes)) => Choice(TypeAhead, NonEmptyList(x, xs),          Vertical,   selections, optionHints, optionHelpText, dividerPositon, dividerText, noneChoice, noneChoiceError, hideChoicesSelected, noDuplicates).asRight
+        case (IsOrientation(VerticalOrientation),   Some(x :: xs), IsMultivalue(MultivalueYes), Selections(selections), IsTypeAhead(TypeAheadNo))  => Choice(Checkbox,  NonEmptyList(x, xs),          Vertical,   selections, optionHints, optionHelpText, dividerPositon, dividerText, noneChoice, noneChoiceError, hideChoicesSelected, noDuplicates).asRight
+        case (IsOrientation(VerticalOrientation),   Some(x :: xs), IsMultivalue(MultivalueNo),  Selections(selections), IsTypeAhead(TypeAheadNo))  => Choice(Radio,     NonEmptyList(x, xs),          Vertical,   selections, optionHints, optionHelpText, dividerPositon, dividerText, noneChoice, noneChoiceError, hideChoicesSelected, noDuplicates).asRight
+        case (IsOrientation(HorizontalOrientation), Some(x :: xs), IsMultivalue(MultivalueYes), Selections(selections), IsTypeAhead(TypeAheadNo))  => Choice(Checkbox,  NonEmptyList(x, xs),          Horizontal, selections, optionHints, optionHelpText, dividerPositon, dividerText, noneChoice, noneChoiceError, hideChoicesSelected, noDuplicates).asRight
+        case (IsOrientation(HorizontalOrientation), Some(x :: xs), IsMultivalue(MultivalueNo),  Selections(selections), IsTypeAhead(TypeAheadNo))  => Choice(Radio,     NonEmptyList(x, xs),          Horizontal, selections, optionHints, optionHelpText, dividerPositon, dividerText, noneChoice, noneChoiceError, hideChoicesSelected, noDuplicates).asRight
+        case (IsOrientation(YesNoOrientation),      None,          IsMultivalue(MultivalueNo),  Selections(selections), IsTypeAhead(TypeAheadNo))  => Choice(YesNo,    yesNo, Horizontal, selections, optionHints, optionHelpText, dividerPositon, dividerText, noneChoice, noneChoiceError, hideChoicesSelected, noDuplicates).asRight
+        case (IsOrientation(YesNoOrientation),      _,             _,                           Selections(selections), IsTypeAhead(TypeAheadNo))  => Choice(YesNo,    yesNo, Horizontal, selections, optionHints, optionHelpText, dividerPositon, dividerText, noneChoice, noneChoiceError, hideChoicesSelected, noDuplicates).asRight
         // format: on
                                case (
                                      invalidFormat,

@@ -54,6 +54,11 @@ trait HipAlgebra[F[_]] {
     refundClaimReference: String,
     correlationId: String
   ): F[JsValue]
+  def getEmployments(
+    nino: String,
+    taxYear: Int,
+    correlationId: CorrelationId
+  ): F[JsValue]
 }
 
 class HipConnector(http: HttpClientV2, baseUrl: String, hipConfig: HipConnectorConfig)(implicit ec: ExecutionContext)
@@ -193,6 +198,24 @@ class HipConnector(http: HttpClientV2, baseUrl: String, hipConfig: HipConnectorC
       .withBody(body)
       .execute[HttpResponse]
       .map(response => handleResponse(response, "NI Claim Refund (Update Bank Details)", refundClaimReference, _.json))
+  }
+
+  def getEmployments(
+    nino: String,
+    taxYear: Int,
+    correlationId: CorrelationId
+  ): Future[JsValue] = {
+    logger.info(
+      s"getEmployments for taxYear $taxYear called, ${loggingHelpers.cleanHeaderCarrierHeader(hc)}"
+    )
+    val url = s"$baseUrl${hipConfig.basePath}/paye/employment/employee/$nino/tax-year/$taxYear/employment-details"
+
+    http
+      .get(url"$url")
+      .setHeader(authHeaders: _*)
+      .setHeader(Headers.CorrelationId -> correlationId.value)
+      .execute[HttpResponse]
+      .map(response => handleResponse(response, "Get Employments", correlationId.value, _.json))
   }
 
   private def extractEtag(response: HttpResponse, caseId: String): String =

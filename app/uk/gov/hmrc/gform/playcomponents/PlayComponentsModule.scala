@@ -32,7 +32,6 @@ import uk.gov.hmrc.gform.dblookup.DbLookupModule
 import uk.gov.hmrc.gform.des.DesModule
 import uk.gov.hmrc.gform.dms.DmsModule
 import uk.gov.hmrc.gform.email.EmailModule
-import uk.gov.hmrc.gform.employments.EmploymentsModule
 import uk.gov.hmrc.gform.envelope.EnvelopeModule
 import uk.gov.hmrc.gform.form.FormModule
 import uk.gov.hmrc.gform.formtemplate.FormTemplateModule
@@ -69,7 +68,6 @@ class PlayComponentsModule(
   desModule: DesModule,
   dmsModule: DmsModule,
   obligationModule: ObligationModule,
-  employmentsModule: EmploymentsModule,
   emailModule: EmailModule,
   dbLookupModule: DbLookupModule,
   upscanModule: UpscanModule,
@@ -106,7 +104,6 @@ class PlayComponentsModule(
     desModule.desController,
     dmsModule.dmsSubmissionController,
     obligationModule.obligationController,
-    employmentsModule.employmentsController,
     emailModule.emailCodeVerificationController,
     dbLookupModule.dbLookupController,
     upscanModule.upscanController,

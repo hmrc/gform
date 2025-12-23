@@ -24,6 +24,8 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
 class FormComponentSpec2 extends Spec {
 
+  private val divider = toSmartString("or", "neu")
+
   "FieldValue json object" should "parse 'choice' type as Radio with Vertical orientation if 'multivalue=no & format=vertical' is provided" in {
     val fieldValue = toFieldValue("""|{
          |  "type": "choice",
@@ -56,9 +58,10 @@ class FormComponentSpec2 extends Spec {
           None,
           None,
           None,
-          LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
+          divider,
           None,
           None,
+          false,
           false
         ),
         toSmartString("Select the tax type"),
@@ -129,9 +132,10 @@ class FormComponentSpec2 extends Spec {
           None,
           None,
           None,
-          LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
+          divider,
           None,
           None,
+          false,
           false
         ),
         toSmartString("Select the tax type"),
@@ -184,10 +188,11 @@ class FormComponentSpec2 extends Spec {
           None,
           None,
           None,
-          LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
+          divider,
           None,
           None,
-          true
+          true,
+          false
         ),
         toSmartString("Select the tax type"),
         false,
@@ -247,10 +252,11 @@ class FormComponentSpec2 extends Spec {
           None,
           None,
           None,
-          LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
+          divider,
           None,
           None,
-          true
+          true,
+          false
         ),
         toSmartString("Select the tax type"),
         false,

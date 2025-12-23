@@ -305,7 +305,7 @@ class ObjectStoreService(
         uploadFile(
           submission.envelopeId,
           roboticsFileId(roboticsFileExtension),
-          s"$fileNamePrefix-robotic." + roboticsFileExtension,
+          hmrcDms.roboticsFileName(fileNamePrefix, roboticsFileExtension),
           ByteString(elem.getBytes),
           getContentType(roboticsFileExtension)
         ).void

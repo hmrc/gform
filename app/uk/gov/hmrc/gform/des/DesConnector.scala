@@ -43,11 +43,6 @@ trait DesAlgebra[F[_]] {
 
   def lookupTaxPeriod(idType: String, idNumber: String, regimeType: String): F[ServiceCallResponse[Obligation]]
 
-  def lookupEmployment(
-    nino: String,
-    taxYear: Int
-  ): F[JsValue]
-
   def lookupAgentDetails(
     idType: String,
     idNumber: String
@@ -145,19 +140,6 @@ class DesConnector(httpClient: HttpClientV2, baseUrl: String, desConfig: DesConn
           logger.error("Unknown problem when calling des obligation-data", other)
           CannotRetrieveResponse
       }
-  }
-
-  def lookupEmployment(
-    nino: String,
-    taxYear: Int
-  ): Future[JsValue] = {
-    logger.info(
-      s"Des employments called, ${loggingHelpers.cleanHeaderCarrierHeader(hc)}"
-    )
-
-    val url = s"$baseUrl${desConfig.basePath}/individuals/$nino/employment/$taxYear"
-
-    httpClient.get(url"$url").setHeader(authHeaders).execute[JsValue]
   }
 
   def testOnlyGet(testUrl: String): Future[HttpResponse] = {

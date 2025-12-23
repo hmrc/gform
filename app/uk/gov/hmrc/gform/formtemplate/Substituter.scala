@@ -229,7 +229,8 @@ object Substituter {
             dividerText,
             noneChoice,
             noneChoiceError,
-            hideChoicesSelected
+            hideChoicesSelected,
+            noDuplicates
           ) =>
         Choice(
           tpe,
@@ -239,10 +240,11 @@ object Substituter {
           hints(substitutions),
           optionHelpText(substitutions),
           dividerPositon,
-          dividerText,
+          dividerText(substitutions),
           noneChoice,
           noneChoiceError,
-          hideChoicesSelected
+          hideChoicesSelected,
+          noDuplicates
         )
 
       case RevealingChoice(options, multiValue) =>

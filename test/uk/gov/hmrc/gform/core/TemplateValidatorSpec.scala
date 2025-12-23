@@ -31,7 +31,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.FormComponentGen._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.PrimitiveGen._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.SectionGen._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators._
-import uk.gov.hmrc.gform.sharedmodel.{ LangADT, LocalisedString, SmartString }
+import uk.gov.hmrc.gform.sharedmodel.SmartString
 
 class TemplateValidatorSpec extends Spec {
   private def setAllFieldIds(page: Page, id: FormComponentId): Page =
@@ -43,6 +43,8 @@ class TemplateValidatorSpec extends Spec {
       case s: Section.RepeatingPage    => s.copy(page = setAllFieldIds(s.page, id))
       case s: Section.AddToList        => s.copy(pages = s.pages.map(setAllFieldIds(_, id)))
     }
+
+  private val divider = toSmartString("or", "neu")
 
   "Section.validate" should "validate unique FieldIds" in {
     import ScalaCheckDrivenPropertyChecks._
@@ -818,9 +820,10 @@ class TemplateValidatorSpec extends Spec {
           None,
           None,
           None,
-          LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
+          divider,
           None,
           None,
+          false,
           false
         )
       )
@@ -863,9 +866,10 @@ class TemplateValidatorSpec extends Spec {
           None,
           None,
           None,
-          LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
+          divider,
           None,
           None,
+          false,
           false
         )
       )
@@ -900,9 +904,10 @@ class TemplateValidatorSpec extends Spec {
           None,
           None,
           None,
-          LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
+          divider,
           None,
           None,
+          false,
           false
         )
       )
@@ -932,9 +937,10 @@ class TemplateValidatorSpec extends Spec {
           None,
           None,
           None,
-          LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
+          divider,
           None,
           None,
+          false,
           false
         )
       )
@@ -972,9 +978,10 @@ class TemplateValidatorSpec extends Spec {
           None,
           None,
           None,
-          LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
+          divider,
           None,
           None,
+          false,
           false
         )
       )

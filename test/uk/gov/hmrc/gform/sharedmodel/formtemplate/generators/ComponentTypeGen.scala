@@ -19,8 +19,8 @@ import cats.data.NonEmptyList
 import java.time.LocalTime
 
 import org.scalacheck.Gen
+import uk.gov.hmrc.gform.Helpers.toSmartString
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.DisplayWidth.DisplayWidth
-import uk.gov.hmrc.gform.sharedmodel.{ LangADT, LocalisedString }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
 trait ComponentTypeGen {
@@ -72,6 +72,8 @@ trait ComponentTypeGen {
       PrimitiveGen.oneOrMoreGen(optionDataValueBasedGen)
     )
 
+  private val divider = toSmartString("or", "neu")
+
   def choiceGen: Gen[Choice] =
     for {
       tpe         <- choiceTypeGen
@@ -88,9 +90,10 @@ trait ComponentTypeGen {
       hints,
       helpText,
       None,
-      LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
+      divider,
       None,
       None,
+      false,
       false
     )
 

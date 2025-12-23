@@ -113,7 +113,7 @@ trait Rewriter {
         dl.acknowledgementSection.fields.flatMap(_.includeIf) ++ dl.declarationSection.fold(List.empty[IncludeIf])(
           section => section.includeIf.fold(List.empty[IncludeIf])(List(_)) ++ section.fields.flatMap(_.includeIf)
         ) ++ dl.destinations.toList.collect {
-          case HmrcDms(_, _, _, _, _, IncludeIfValue(includeIf), _, _, _, _, _, _, _, _)         => includeIf
+          case HmrcDms(_, _, _, _, _, IncludeIfValue(includeIf), _, _, _, _, _, _, _, _, _)      => includeIf
           case HandlebarsHttpApi(_, _, _, _, _, _, IncludeIfValue(includeIf), _, _, _)           => includeIf
           case Destination.Composite(_, IncludeIfValue(includeIf), _)                            => includeIf
           case StateTransition(_, _, IncludeIfValue(includeIf), _)                               => includeIf
@@ -316,9 +316,9 @@ trait Rewriter {
         fcLookup
           .get(formComponentId)
           .fold[Either[UnexpectedState, BooleanExpr]](missingFormComponentId(formComponentId)) {
-            case Choice(_, options, _, _, _, _, _, _, _, _, _) if isDynamic(options) =>
+            case Choice(_, options, _, _, _, _, _, _, _, _, _, _) if isDynamic(options) =>
               invalidDynamicUsage(formComponentId, exprString)
-            case Choice(_, options, _, _, _, _, _, _, _, _, _) =>
+            case Choice(_, options, _, _, _, _, _, _, _, _, _, _) =>
               val possibleValues = options.collect {
                 case OptionData.ValueBased(_, _, _, _, OptionDataValue.StringBased(value), _, _) =>
                   value
@@ -379,9 +379,9 @@ trait Rewriter {
         fcLookup
           .get(formComponentId)
           .fold[Either[UnexpectedState, BooleanExpr]](missingFormComponentId(formComponentId)) {
-            case Choice(_, options, _, _, _, _, _, _, _, _, _) if isDynamic(options) =>
+            case Choice(_, options, _, _, _, _, _, _, _, _, _, _) if isDynamic(options) =>
               invalidDynamicUsage(formComponentId, exprString)
-            case Choice(Radio | YesNo, options, _, _, _, _, _, _, _, _, _) =>
+            case Choice(Radio | YesNo, options, _, _, _, _, _, _, _, _, _, _) =>
               val possibleValues = options.collect {
                 case OptionData.ValueBased(_, _, _, _, OptionDataValue.StringBased(value), _, _) =>
                   value
@@ -400,8 +400,8 @@ trait Rewriter {
                 "Choice"
               ).map(_ => rewriter)
 
-            case Choice(Checkbox, _, _, _, _, _, _, _, _, _, _) => invalidUsage("choice")
-            case RevealingChoice(_, true)                       => invalidUsage("revealing choice")
+            case Choice(Checkbox, _, _, _, _, _, _, _, _, _, _, _) => invalidUsage("choice")
+            case RevealingChoice(_, true)                          => invalidUsage("revealing choice")
             case RevealingChoice(options, false) =>
               val possibleValues = options
                 .map(_.choice)
