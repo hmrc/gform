@@ -758,6 +758,8 @@ object TextExtractor {
                 case None if path.contains(".defaultPage")        => Some(Classic.AddToListPage.DefaultPage(index))
                 case None if path.contains(".cyaPage")            => Some(Classic.AddToListPage.CyaPage(index, 1))
                 case None if path.contains(".addAnotherQuestion") => Some(Classic.AddToListPage.RepeaterPage(index, 1))
+                case None if path.contains(".title")              => Some(Classic.AddToListPage.RepeaterPage(index, 1))
+                case None if path.contains(".caption")            => Some(Classic.AddToListPage.RepeaterPage(index, 1))
                 case None if path.contains(".declarationSection") =>
                   Some(Classic.AddToListPage.DeclarationPage(index, 1))
                 case _ => None
