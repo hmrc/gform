@@ -29,7 +29,7 @@ object ObjectStorePaths {
     val permanent: Path.Directory =
       Path.Directory(s"envelopes/${envelopeId.value}${submissionPrefix.fold("")(prefix => s"/$prefix")}")
     val ephemeral: Path.Directory = Path.Directory("sdes")
-    val zipFilePrefix: String = submissionPrefix.fold("")(prefix => s"$prefix")
+    val zipFilePrefix: String = submissionPrefix.getOrElse("")
   }
 
   def hmrcIlluminatePaths(envelopeId: EnvelopeId) = new ObjectStorePaths {

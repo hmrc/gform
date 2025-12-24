@@ -91,11 +91,11 @@ class ObjectStoreConnector(
           )
       }
 
-  def deleteFile(envelopeId: EnvelopeId, fileName: String, maybeSubDir: Option[String])(implicit
+  def deleteFile(envelopeId: EnvelopeId, fileName: String, maybeSubDirectory: Option[String])(implicit
     hc: HeaderCarrier
   ): Future[Unit] =
     objectStoreClient.deleteObject(
-      path = directory(envelopeId.value, maybeSubDir).file(fileName)
+      path = directory(envelopeId.value, maybeSubDirectory).file(fileName)
     )
 
   def deleteFiles(envelopeId: EnvelopeId, fileNames: List[(String, Option[String])])(implicit
