@@ -73,8 +73,14 @@ class FormTemplatesController(
 
   def validateHtml() = Action.async(parse.tolerantText) { implicit request =>
     val templateString: String = request.body
-    val translatableRows: List[(String, String)] = TextExtractor.generateTranslatableRows(templateString)
-    val maybeInvalidHtmlError = HtmlValidator.validate(translatableRows)
+    val translatableRows: List[List[String]] = TextExtractor.generateTranslatableRows(templateString)
+
+    val maybeInvalidHtmlError = HtmlValidator.validate(
+      translatableRows.map {
+        case en :: cy :: rest => (en, cy)
+        case _                => throw new RuntimeException("en or cy column is missing")
+      }
+    )
 
     maybeInvalidHtmlError match {
       case Some(invalidHtmlError) => BadRequest(invalidHtmlError.asJson).pure[Future]
