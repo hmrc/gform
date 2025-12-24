@@ -250,6 +250,7 @@ class FormTemplatesIT extends ITSpec with FormTemplateSample with BeforeAndAfter
         None,
         None,
         TemplateType.XML,
+        None,
         None
       )
     )

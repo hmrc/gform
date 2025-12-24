@@ -40,9 +40,9 @@ class ObjectStoreController(controllerComponents: ControllerComponents, objectSt
     objectStoreAlgebra.deleteFiles(envelopeId, request.body).asNoContent
   }
 
-  def downloadDmsFiles(envelopeId: EnvelopeId) = Action.async { implicit request =>
-    val paths = SdesDestination.Dms.objectStorePaths(envelopeId)
-    val fileName = s"${envelopeId.value}.zip"
+  def downloadDmsFiles(envelopeId: EnvelopeId, prefix: Option[String]) = Action.async { implicit request =>
+    val paths = SdesDestination.Dms.objectStorePaths(envelopeId, prefix)
+    val fileName = s"${prefix.getOrElse("")}${envelopeId.value}.zip"
     for {
       _            <- objectStoreAlgebra.zipFiles(envelopeId, paths)
       objectSource <- objectStoreAlgebra.getZipFile(envelopeId, paths)
@@ -61,17 +61,17 @@ class ObjectStoreController(controllerComponents: ControllerComponents, objectSt
   }
 
   def downloadDataStoreFile(envelopeId: EnvelopeId) = Action.async { implicit request =>
-    val paths = SdesDestination.DataStore.objectStorePaths(envelopeId)
+    val paths = SdesDestination.DataStore.objectStorePaths(envelopeId, None)
     downloadJsonFile(paths, envelopeId)
   }
 
   def downloadHmrcIlluminateFile(envelopeId: EnvelopeId) = Action.async { implicit request =>
-    val paths = SdesDestination.HmrcIlluminate.objectStorePaths(envelopeId)
+    val paths = SdesDestination.HmrcIlluminate.objectStorePaths(envelopeId, None)
     downloadJsonFile(paths, envelopeId)
   }
 
   def downloadInfoArchiveFiles(envelopeId: EnvelopeId) = Action.async { implicit request =>
-    val paths = SdesDestination.InfoArchive.objectStorePaths(envelopeId)
+    val paths = SdesDestination.InfoArchive.objectStorePaths(envelopeId, None)
     val fileName = s"${paths.zipFilePrefix}${envelopeId.value}.zip"
     for {
       _            <- objectStoreAlgebra.zipFiles(envelopeId, paths)

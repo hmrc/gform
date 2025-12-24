@@ -47,7 +47,8 @@ class InfoArchiveQueueService(
         workItem.formTemplateId,
         workItem.submissionRef,
         workItem.destination,
-        workItem.filePrefix
+        workItem.filePrefix,
+        workItem.submissionPrefix
       )
       .void(ec)
   }

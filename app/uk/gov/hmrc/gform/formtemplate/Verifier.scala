@@ -118,6 +118,7 @@ trait Verifier {
       _ <- fromOptA(DestinationsValidator.validateUniqueDestinationIds(formTemplate.destinations).toEither)
       _ <- fromOptA(DestinationsValidator.validateNoGroupInDeclaration(formTemplate.destinations).toEither)
       _ <- fromOptA(DestinationsValidator.validateDestinationIncludeIfs(formTemplate.destinations).toEither)
+      _ <- fromOptA(DestinationsValidator.validateSubmissionPrefix(formTemplate.destinations).toEither)
       _ <- fromOptA(
              DestinationsValidator
                .validateHandlebarSchemaCheck(formTemplate._id, formTemplate.destinations, handlebarsSchemaIds)

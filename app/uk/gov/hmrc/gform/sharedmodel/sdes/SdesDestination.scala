@@ -32,12 +32,12 @@ sealed trait SdesDestination extends Product with Serializable {
     case SdesDestination.InfoArchive     => sdesConfig.infoArchive
   }
 
-  def objectStorePaths(envelopeId: EnvelopeId): ObjectStorePaths =
+  def objectStorePaths(envelopeId: EnvelopeId, submissionPrefix: Option[String]): ObjectStorePaths =
     this match {
       case SdesDestination.HmrcIlluminate  => ObjectStorePaths.hmrcIlluminatePaths(envelopeId)
       case SdesDestination.DataStore       => ObjectStorePaths.dataStorePaths(envelopeId)
       case SdesDestination.DataStoreLegacy => ObjectStorePaths.dataStorePaths(envelopeId)
-      case SdesDestination.Dms             => ObjectStorePaths.dmsPaths(envelopeId)
+      case SdesDestination.Dms             => ObjectStorePaths.dmsPaths(envelopeId, submissionPrefix)
       case SdesDestination.InfoArchive     => ObjectStorePaths.infoArchivePaths(envelopeId)
     }
 }

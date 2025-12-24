@@ -45,7 +45,8 @@ case class SdesSubmissionData(
   numberOfFiles: Int,
   uploadCount: Int,
   size: Long,
-  destination: SdesDestination
+  destination: SdesDestination,
+  submissionPrefix: Option[String]
 )
 
 object SdesSubmissionData {
@@ -63,7 +64,8 @@ object SdesSubmissionData {
       numberOfFiles,
       uploadCount,
       size,
-      sdesSubmission.destination.getOrElse(Dms)
+      sdesSubmission.destination.getOrElse(Dms),
+      sdesSubmission.submissionPrefix
     )
 
   implicit val correlationIdFormat: Format[CorrelationId] = CorrelationId.vformat

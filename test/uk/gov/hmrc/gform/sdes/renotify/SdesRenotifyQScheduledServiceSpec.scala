@@ -82,7 +82,8 @@ class SdesRenotifyQScheduledServiceSpec extends AnyFlatSpec with MockMongoLockRe
       numberOfFiles = 1,
       uploadCount = 1,
       size = 3000,
-      destination = Dms
+      destination = Dms,
+      submissionPrefix = None
     )
 
     val renotifyScheduledService = new SdesRenotifyQScheduledService(

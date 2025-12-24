@@ -185,12 +185,21 @@ class SdesModule(
       formTemplateId: FormTemplateId,
       submissionRef: SubmissionRef,
       destination: SdesDestination,
-      filePrefix: Option[String]
+      filePrefix: Option[String],
+      submissionPrefix: Option[String]
     )(implicit
       hc: HeaderCarrier
     ): FOpt[HttpResponse] =
       fromFutureA(
-        sdesService.notifySDES(correlationId, envelopeId, formTemplateId, submissionRef, destination, filePrefix)
+        sdesService.notifySDES(
+          correlationId,
+          envelopeId,
+          formTemplateId,
+          submissionRef,
+          destination,
+          filePrefix,
+          submissionPrefix
+        )
       )
 
     override def renotifySDES(sdesSubmission: SdesSubmission, objWithSummary: ObjectSummaryWithMd5)(implicit
@@ -245,10 +254,12 @@ class SdesModule(
       formTemplateId: FormTemplateId,
       submissionRef: SubmissionRef,
       destination: SdesDestination,
-      filePrefix: Option[String]
+      filePrefix: Option[String],
+      submissionPrefix: Option[String]
     ): FOpt[Unit] =
       fromFutureA(
-        destinationWorkItemService.pushWorkItem(envelopeId, formTemplateId, submissionRef, destination, filePrefix)
+        destinationWorkItemService
+          .pushWorkItem(envelopeId, formTemplateId, submissionRef, destination, filePrefix, submissionPrefix)
       )
 
     override def search(
