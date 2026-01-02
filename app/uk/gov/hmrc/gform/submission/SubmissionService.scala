@@ -28,6 +28,7 @@ import uk.gov.hmrc.gform.formredirect.{ FormRedirect, FormRedirectService }
 import uk.gov.hmrc.gform.formtemplate.FormTemplateAlgebra
 import uk.gov.hmrc.gform.repo.Repo
 import uk.gov.hmrc.gform.sharedmodel.form._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DmsDestinationResponse
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplate, FormTemplateId }
 import uk.gov.hmrc.gform.sharedmodel.{ SubmissionData, SubmissionRef }
 import uk.gov.hmrc.gform.submission.destinations.{ DestinationSubmissionInfo, DestinationsProcessorModelAlgebra, DestinationsSubmitterAlgebra }
@@ -70,7 +71,7 @@ class SubmissionService(
     submissionData: SubmissionData
   )(implicit
     hc: HeaderCarrier
-  ): FOpt[Unit] =
+  ): FOpt[List[DmsDestinationResponse]] =
     for {
       form              <- formAlgebra.get(formIdData)
       maybeFormRedirect <- fromFutureA(formRedirectService.find(formIdData.formTemplateId))
@@ -79,7 +80,7 @@ class SubmissionService(
       submission        <- findSubmission(SubmissionId(formIdData.toFormId, form.envelopeId))
       submissionInfo = DestinationSubmissionInfo(customerId, submission)
       modelTree <- createModelTreeForSingleFormSubmission(form, formTemplate, submissionData, submission.submissionRef)
-      _ <-
+      destinationResponses <-
         destinationsSubmitter
           .send(
             submissionInfo,
@@ -99,7 +100,9 @@ class SubmissionService(
                )
              )
            )
-    } yield ()
+    } yield destinationResponses
+      .getOrElse(List.empty)
+      .collect { case d: DmsDestinationResponse => d }
 
   /* When FormTemplateId has a new current version, but user started journey with old FormTemplateId version, we need to migrate
    * user data to the old FormTemplateId. This migration process (which happened elsewhere) is leaving current version data

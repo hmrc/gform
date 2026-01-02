@@ -31,7 +31,7 @@ trait DestinationsSubmitterAlgebra[M[_]] {
     l: LangADT,
     destinationEvaluation: DestinationEvaluation,
     userSession: UserSession
-  )(implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]]
+  )(implicit hc: HeaderCarrier): M[Option[List[DestinationResponse]]]
 
   def submitToList(
     destinations: NonEmptyList[Destination],
@@ -42,5 +42,5 @@ trait DestinationsSubmitterAlgebra[M[_]] {
     l: LangADT,
     destinationEvaluation: DestinationEvaluation,
     userSession: UserSession
-  )(implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]]
+  )(implicit hc: HeaderCarrier): M[Option[List[DestinationResponse]]]
 }

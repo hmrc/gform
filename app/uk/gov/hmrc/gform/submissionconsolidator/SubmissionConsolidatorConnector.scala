@@ -17,6 +17,7 @@
 package uk.gov.hmrc.gform.submissionconsolidator
 
 import play.api.libs.json.Json
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationResponse
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpReads, HttpResponse, StringContextOps }
 
@@ -27,13 +28,13 @@ class SubmissionConsolidatorConnector(httpClient: HttpClientV2, baseUrl: String)
 
   private val headers = Seq("Content-Type" -> "application/json")
 
-  implicit val reads: HttpReads[Either[String, Unit]] = (_: String, _: String, response: HttpResponse) =>
+  implicit val reads: HttpReads[Either[String, DestinationResponse]] = (_: String, _: String, response: HttpResponse) =>
     response.status match {
-      case 200 => Right(())
+      case 200 => Right(DestinationResponse.NoResponse)
       case _   => Left(Try(Json.parse(response.body).as[SCError].formatted).getOrElse(response.body))
     }
 
-  def sendForm(scForm: SCForm)(implicit headerCarrier: HeaderCarrier): Future[Either[String, Unit]] =
+  def sendForm(scForm: SCForm)(implicit headerCarrier: HeaderCarrier): Future[Either[String, DestinationResponse]] =
     httpClient
       .post(url"$baseUrl/submission-consolidator/form")
       .withBody(Json.toJson(scForm))

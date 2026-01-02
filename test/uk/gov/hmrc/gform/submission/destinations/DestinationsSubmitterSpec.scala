@@ -27,8 +27,7 @@ import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.sharedmodel.{ DestinationEvaluation, FrontEndSubmissionVariables, LangADT, PdfContent, SubmissionRef, UserSession }
 import uk.gov.hmrc.gform.sharedmodel.form.FormData
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, Destinations, HandlebarsDestinationResponse, HandlebarsTemplateProcessorModel }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationResponse, Destinations, HandlebarsDestinationResponse, HandlebarsTemplateProcessorModel }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.{ DestinationGen, DestinationsGen }
 import uk.gov.hmrc.gform.sharedmodel.generators.{ PdfDataGen, StructuredFormValueGen }
 import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
@@ -211,7 +210,7 @@ class DestinationsSubmitterSpec
       submissionInfo: DestinationSubmissionInfo,
       accumulatedModel: HandlebarsTemplateProcessorModel,
       modelInTree: HandlebarsTemplateProcessorModel,
-      response: Option[HandlebarsDestinationResponse],
+      response: Option[DestinationResponse],
       formData: FormData,
       destinationEvaluation: DestinationEvaluation
     ): SubmitterParts[F] = {
@@ -247,25 +246,25 @@ class DestinationsSubmitterSpec
       this
     }
 
-    def expectSubmitToDms(
-      destination: HmrcDms,
-      submissionInfo: DestinationSubmissionInfo,
-      accumulatedModel: HandlebarsTemplateProcessorModel,
-      modelTree: HandlebarsModelTree,
-      l: LangADT
-    ): SubmitterParts[F] = {
-      (destinationSubmitter
-        .submitToDms(
-          _: DestinationSubmissionInfo,
-          _: HandlebarsTemplateProcessorModel,
-          _: HandlebarsModelTree,
-          _: HmrcDms,
-          _: LangADT
-        )(_: HeaderCarrier))
-        .expects(submissionInfo, accumulatedModel, modelTree, destination, l, hc)
-        .returning(().pure)
-      this
-    }
+//    def expectSubmitToDms(
+//      destination: HmrcDms,
+//      submissionInfo: DestinationSubmissionInfo,
+//      accumulatedModel: HandlebarsTemplateProcessorModel,
+//      modelTree: HandlebarsModelTree,
+//      l: LangADT
+//    ): SubmitterParts[F] = {
+//      (destinationSubmitter
+//        .submitToDms(
+//          _: DestinationSubmissionInfo,
+//          _: HandlebarsTemplateProcessorModel,
+//          _: HandlebarsModelTree,
+//          _: HmrcDms,
+//          _: LangADT
+//        )(_: HeaderCarrier))
+//        .expects(submissionInfo, accumulatedModel, modelTree, destination, l, hc)
+//        .returning(().pure)
+//      this
+//    }
   }
 
   private def createSubmitter[M[_]: Monad](): SubmitterParts[M] = {

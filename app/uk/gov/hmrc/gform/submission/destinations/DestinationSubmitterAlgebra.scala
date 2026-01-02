@@ -36,7 +36,7 @@ trait DestinationSubmitterAlgebra[M[_]] {
     l: LangADT,
     destinationEvaluation: DestinationEvaluation,
     userSession: UserSession
-  )(implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]]
+  )(implicit hc: HeaderCarrier): M[Option[DestinationResponse]]
 
   def submitToDms(
     submissionInfo: DestinationSubmissionInfo,
@@ -44,7 +44,7 @@ trait DestinationSubmitterAlgebra[M[_]] {
     modelTree: HandlebarsModelTree,
     hmrcDms: HmrcDms,
     l: LangADT
-  )(implicit hc: HeaderCarrier): M[Unit]
+  )(implicit hc: HeaderCarrier): M[DestinationResponse]
 }
 
 object DestinationSubmitterAlgebra {

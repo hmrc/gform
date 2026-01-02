@@ -38,7 +38,7 @@ class DestinationsSubmitter[M[_]: Monad](destinationSubmitter: DestinationSubmit
     l: LangADT,
     destinationEvaluation: DestinationEvaluation,
     userSession: UserSession
-  )(implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]] =
+  )(implicit hc: HeaderCarrier): M[Option[List[DestinationResponse]]] =
     modelTree.value.formTemplate.destinations match {
       case list: Destinations.DestinationList =>
         submitToList(
@@ -52,7 +52,7 @@ class DestinationsSubmitter[M[_]: Monad](destinationSubmitter: DestinationSubmit
           userSession
         )
 
-      case _ => Option.empty[HandlebarsDestinationResponse].pure[M]
+      case _ => Option.empty[List[DestinationResponse]].pure[M]
     }
 
   def submitToList(
@@ -64,15 +64,16 @@ class DestinationsSubmitter[M[_]: Monad](destinationSubmitter: DestinationSubmit
     l: LangADT,
     destinationEvaluation: DestinationEvaluation,
     userSession: UserSession
-  )(implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]] = {
+  )(implicit hc: HeaderCarrier): M[Option[List[DestinationResponse]]] = {
     case class TailRecParameter(
       remainingDestinations: List[Destination],
-      accumulatedModel: HandlebarsTemplateProcessorModel
+      accumulatedModel: HandlebarsTemplateProcessorModel,
+      accumulatedResponses: List[DestinationResponse]
     )
 
-    TailRecParameter(destinations.toList, accumulatedModel).tailRecM {
-      case TailRecParameter(Nil, _) => Option.empty[HandlebarsDestinationResponse].asRight[TailRecParameter].pure[M]
-      case TailRecParameter(head :: rest, updatedAccumulatedModel) =>
+    TailRecParameter(destinations.toList, accumulatedModel, Nil).tailRecM {
+      case TailRecParameter(Nil, _, responses) => Option(responses).asRight[TailRecParameter].pure[M]
+      case TailRecParameter(head :: rest, updatedAccumulatedModel, updatedResponseList) =>
         destinationSubmitter
           .submitIfIncludeIf(
             head,
@@ -89,8 +90,11 @@ class DestinationsSubmitter[M[_]: Monad](destinationSubmitter: DestinationSubmit
             TailRecParameter(
               rest,
               submitterResult.fold(updatedAccumulatedModel) {
-                DestinationsProcessorModelAlgebra.createDestinationResponse(_) + updatedAccumulatedModel
-              }
+                case h: HandlebarsDestinationResponse =>
+                  DestinationsProcessorModelAlgebra.createDestinationResponse(h) + updatedAccumulatedModel
+                case _ => updatedAccumulatedModel
+              },
+              submitterResult.fold(updatedResponseList)(_ +: updatedResponseList)
             ).asLeft
           )
     }

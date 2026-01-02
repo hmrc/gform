@@ -23,7 +23,7 @@ import play.api.libs.json.{ JsObject, Json }
 import scala.util.Try
 import uk.gov.hmrc.gform.core.FOpt
 import uk.gov.hmrc.gform.sdes.SdesRouting
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DestinationId, HandlebarsTemplateProcessorModel, TemplateType }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DestinationId, DestinationResponse, HandlebarsTemplateProcessorModel, TemplateType }
 import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination
 import uk.gov.hmrc.gform.sharedmodel.{ DataStoreMetaData, LangADT, UserSession }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.DataStore
@@ -175,7 +175,7 @@ class DataStoreSubmitter(
     dataStoreRouting: SdesRouting,
     destination: SdesDestination,
     filePrefix: Option[String]
-  ): FOpt[Unit] = {
+  ): FOpt[DestinationResponse] = {
     implicit val hc = new HeaderCarrier
 
     val submission = submissionInfo.submission
@@ -198,6 +198,6 @@ class DataStoreSubmitter(
              filePrefix,
              None
            )
-    } yield ()
+    } yield DestinationResponse.NoResponse
   }
 }
