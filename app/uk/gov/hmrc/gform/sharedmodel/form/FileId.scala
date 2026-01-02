@@ -19,7 +19,9 @@ package uk.gov.hmrc.gform.sharedmodel.form
 import play.api.libs.json.OFormat
 import uk.gov.hmrc.gform.sharedmodel.ValueClassFormat
 
-final case class FileId(value: String) extends AnyVal
+final case class FileId(value: String) extends AnyVal {
+  def prefix(prefix: String) = new FileId(prefix + value)
+}
 
 object FileId {
 

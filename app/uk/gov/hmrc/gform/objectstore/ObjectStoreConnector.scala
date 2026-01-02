@@ -37,20 +37,23 @@ class ObjectStoreConnector(
 
   private val zipExtension = ".zip"
 
-  private def directory(folderName: String): Path.Directory =
-    Path.Directory(s"envelopes/$folderName")
+  private def directory(folderName: String, maybeSubDirectory: Option[String]): Path.Directory = {
+    val subDir = maybeSubDirectory.fold("")(sd => s"/$sd")
+    Path.Directory(s"envelopes/$folderName$subDir")
+  }
 
   def uploadFile(
     envelopeId: EnvelopeId,
     fileName: String,
     content: ByteString,
-    contentType: Option[String]
+    contentType: Option[String],
+    maybeSubDirectory: Option[String]
   )(implicit
     hc: HeaderCarrier
   ): Future[ObjectSummaryWithMd5] =
     objectStoreClient
       .putObject(
-        path = directory(envelopeId.value).file(fileName),
+        path = directory(envelopeId.value, maybeSubDirectory).file(fileName),
         content = toSource(content),
         contentType = contentType
       )
@@ -70,39 +73,40 @@ class ObjectStoreConnector(
   ): Future[Option[client.Object[Source[ByteString, NotUsed]]]] =
     objectStoreClient.getObject(directory.file(fileName))
 
-  def getFileBytes(envelopeId: EnvelopeId, fileName: String)(implicit
+  def getFileBytes(envelopeId: EnvelopeId, fileName: String, maybeSubDirectory: Option[String])(implicit
     hc: HeaderCarrier
   ): Future[ByteString] =
     objectStoreClient
       .getObject[Source[ByteString, NotUsed]](
-        path = directory(envelopeId.value).file(fileName)
+        path = directory(envelopeId.value, maybeSubDirectory).file(fileName)
       )
       .flatMap {
         case Some(o) =>
           for {
-            content <- o.content.asString
-            res     <- Future.successful(ByteString(content.getBytes()))
+            res <- o.content.runFold(ByteString.empty)(_ ++ _)
           } yield res
         case _ =>
-          Future.failed(new RuntimeException(s"File $fileName not found in path: ${directory(envelopeId.value)}"))
+          Future.failed(
+            new RuntimeException(s"File $fileName not found in path: ${directory(envelopeId.value, maybeSubDirectory)}")
+          )
       }
 
-  def deleteFile(envelopeId: EnvelopeId, fileName: String)(implicit
+  def deleteFile(envelopeId: EnvelopeId, fileName: String, maybeSubDirectory: Option[String])(implicit
     hc: HeaderCarrier
   ): Future[Unit] =
     objectStoreClient.deleteObject(
-      path = directory(envelopeId.value).file(fileName)
+      path = directory(envelopeId.value, maybeSubDirectory).file(fileName)
     )
 
-  def deleteFiles(envelopeId: EnvelopeId, fileNames: List[String])(implicit
+  def deleteFiles(envelopeId: EnvelopeId, fileNames: List[(String, Option[String])])(implicit
     hc: HeaderCarrier
   ): Future[Unit] =
     Future
-      .traverse(fileNames)(fileName =>
+      .traverse(fileNames) { case (fileName, maybeSubDirectory) =>
         objectStoreClient.deleteObject(
-          path = directory(envelopeId.value).file(fileName)
+          path = directory(envelopeId.value, maybeSubDirectory).file(fileName)
         )
-      )
+      }
       .void
 
   def deleteFile(directory: Path.Directory, fileName: String)(implicit
@@ -138,5 +142,5 @@ class ObjectStoreConnector(
   def uploadFromUrl(from: java.net.URL, envelopeId: EnvelopeId, fileName: String)(implicit
     hc: HeaderCarrier
   ): Future[ObjectSummaryWithMd5] =
-    objectStoreClient.uploadFromUrl(from, to = directory(envelopeId.value).file(fileName))
+    objectStoreClient.uploadFromUrl(from, to = directory(envelopeId.value, None).file(fileName))
 }

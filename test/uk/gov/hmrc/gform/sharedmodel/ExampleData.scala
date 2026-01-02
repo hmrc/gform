@@ -55,6 +55,7 @@ trait ExampleAuthConfig extends DestinationGen {
     None,
     None,
     TemplateType.XML,
+    None,
     None
   )
 

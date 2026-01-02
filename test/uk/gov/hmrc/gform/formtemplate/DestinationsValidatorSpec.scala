@@ -18,6 +18,7 @@ package uk.gov.hmrc.gform.formtemplate
 
 import cats.data.NonEmptyList
 import cats.syntax.eq._
+import org.scalatest.prop.Tables.Table
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.core.{ Invalid, Valid }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations
@@ -135,5 +136,49 @@ class DestinationsValidatorSpec extends Spec with ScalaCheckDrivenPropertyChecks
     DestinationsValidator.validateDestinationIncludeIfs(destinationList.copy(destinations = destinations)) should be(
       Valid
     )
+  }
+
+  "validateSubmissionPrefix" should "validate submission prefixes correctly" in {
+    val table = Table(
+      ("destinations", "expected"),
+      (
+        NonEmptyList.of(
+          hmrcDms.copy(submissionPrefix = Some("P1")),
+          hmrcDms,
+          hmrcDms.copy(submissionPrefix = Some("P2"))
+        ),
+        Invalid(
+          "hmrcDms destinations must all have submissionPrefix or all not have submissionPrefix. It cannot be mix of both."
+        )
+      ),
+      (
+        NonEmptyList.of(
+          hmrcDms.copy(submissionPrefix = Some("P1")),
+          hmrcDms.copy(submissionPrefix = Some("P2")),
+          hmrcDms.copy(submissionPrefix = Some("P1"))
+        ),
+        Invalid("hmrcDms destinations must all have a unique submissionPrefix.")
+      ),
+      (
+        NonEmptyList.of(
+          hmrcDms.copy(submissionPrefix = Some("P1")),
+          hmrcDms.copy(submissionPrefix = Some("P2")),
+          hmrcDms.copy(submissionPrefix = Some("P3"))
+        ),
+        Valid
+      ),
+      (
+        NonEmptyList.of(
+          hmrcDms,
+          hmrcDms
+        ),
+        Valid
+      )
+    )
+
+    org.scalatest.prop.TableDrivenPropertyChecks.forAll(table) { (destinations, expected) =>
+      val result = DestinationsValidator.validateSubmissionPrefix(destinationList.copy(destinations = destinations))
+      result should be(expected)
+    }
   }
 }

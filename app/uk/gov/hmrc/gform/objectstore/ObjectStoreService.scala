@@ -17,12 +17,12 @@
 package uk.gov.hmrc.gform.objectstore
 
 import cats.implicits.toFunctorOps
+import cats.syntax.eq._
+import cats.syntax.traverse._
 import org.apache.pekko.NotUsed
 import org.apache.pekko.stream.Materializer
 import org.apache.pekko.stream.scaladsl.Source
 import org.apache.pekko.util.ByteString
-import cats.syntax.eq._
-import cats.syntax.traverse._
 import org.slf4j.LoggerFactory
 import uk.gov.hmrc.gform.envelope.EnvelopeAlgebra
 import uk.gov.hmrc.gform.objectstore.ObjectStoreService.FileIds._
@@ -63,15 +63,18 @@ class ObjectStoreService(
     } yield newEnvelope._id
   }
 
-  override def getFileBytes(envelopeId: EnvelopeId, fileName: String)(implicit hc: HeaderCarrier): Future[ByteString] =
-    objectStoreConnector.getFileBytes(envelopeId, fileName)
+  override def getFileBytes(envelopeId: EnvelopeId, fileName: String, maybeSubDirectory: Option[String])(implicit
+    hc: HeaderCarrier
+  ): Future[ByteString] =
+    objectStoreConnector.getFileBytes(envelopeId, fileName, maybeSubDirectory)
 
   override def uploadFile(
     envelopeId: EnvelopeId,
     fileId: FileId,
     fileName: String,
     content: ByteString,
-    contentType: ContentType
+    contentType: ContentType,
+    maybeSubDirectory: Option[String]
   )(implicit hc: HeaderCarrier): Future[ObjectSummaryWithMd5] = {
     logger.info(
       s"uploading file: envelopeId - '${envelopeId.value}', fileId - '${fileId.value}', fileName - '$fileName"
@@ -83,13 +86,14 @@ class ObjectStoreService(
              .find(_.fileId === fileId.value)
              .traverse { file =>
                logger.info(s"removing existing file: envelopeId - '$envelopeId', fileName - '${file.fileName}'")
-               objectStoreConnector.deleteFile(envelopeId, file.fileName)
+               objectStoreConnector.deleteFile(envelopeId, file.fileName, file.subDirectory)
              }
       res <- objectStoreConnector.uploadFile(
                envelopeId,
                fileName,
                content,
-               Some(contentType.value)
+               Some(contentType.value),
+               maybeSubDirectory
              )
       _ <- {
         val newFiles =
@@ -100,7 +104,8 @@ class ObjectStoreService(
               FileStatus.Available,
               contentType,
               res.contentLength,
-              Map.empty[String, List[String]]
+              Map.empty[String, List[String]],
+              maybeSubDirectory
             )
         envelopeService.save(envelopeData.copy(files = newFiles))
       }
@@ -125,13 +130,13 @@ class ObjectStoreService(
   override def deleteFile(envelopeId: EnvelopeId, fileId: FileId)(implicit hc: HeaderCarrier): Future[Unit] =
     for {
       envelope <- getEnvelope(envelopeId)
-      maybeFileName = envelope.files.find(_.fileId === fileId.value).map(_.fileName)
+      maybeFileName = envelope.files.find(_.fileId === fileId.value).map(f => (f.fileName, f.subDirectory))
       _ <- maybeFileName match {
-             case Some(fileName) =>
+             case Some((fileName, maybeSubDirectory)) =>
                logger.info(
                  s"deleting file: envelopeId - '${envelopeId.value}', fileId - '${fileId.value}', fileName - $fileName"
                )
-               objectStoreConnector.deleteFile(envelopeId, fileName)
+               objectStoreConnector.deleteFile(envelopeId, fileName, maybeSubDirectory)
              case None => Future.failed(new RuntimeException(s"FileId ${fileId.value} not found in mongo"))
            }
       newEnvelope = envelope.copy(files = envelope.files.filterNot(_.fileId === fileId.value))
@@ -149,7 +154,7 @@ class ObjectStoreService(
                  s"deleting file: envelopeId - '${envelopeId.value}', fileId - '${file.fileId}', fileName - ${file.fileName}"
                )
              }
-             objectStoreConnector.deleteFiles(envelopeId, files.map(_.fileName))
+             objectStoreConnector.deleteFiles(envelopeId, files.map(f => (f.fileName, f.subDirectory)))
            } else {
              val foundFileIds = files.map(_.fileId)
              Future.failed(
@@ -210,7 +215,7 @@ class ObjectStoreService(
              .find(_.fileId === fileId.value)
              .traverse { file =>
                logger.info(s"removing existing file: envelopeId - '$envelopeId', fileName - '${file.fileName}'")
-               objectStoreConnector.deleteFile(envelopeId, file.fileName)
+               objectStoreConnector.deleteFile(envelopeId, file.fileName, file.subDirectory)
              }
       res <- objectStoreConnector.uploadFromUrl(from, envelopeId, fileName)
       _ <- {
@@ -222,7 +227,8 @@ class ObjectStoreService(
               FileStatus.Available,
               contentType,
               res.contentLength,
-              Map.empty[String, List[String]]
+              Map.empty[String, List[String]],
+              None
             )
         envelopeService.save(envelopeData.copy(files = newFiles))
       }
@@ -233,18 +239,44 @@ class ObjectStoreService(
     submission: Submission,
     summaries: PdfAndXmlSummaries,
     hmrcDms: HmrcDms,
-    formTemplateId: FormTemplateId
+    formTemplateId: FormTemplateId,
+    preExistingEnvelope: EnvelopeData
   )(implicit hc: HeaderCarrier): Future[Unit] = {
     logger.debug(s"env-id submit: ${submission.envelopeId}")
     val timeProvider = new TimeProvider
     val date = timeProvider.localDateTime().format(DateTimeFormatter.ofPattern("yyyyMMdd"))
     val fileNamePrefix = s"${submission.submissionRef.withoutHyphens}-$date"
 
+    val fileIdPrefix = hmrcDms.submissionPrefix.fold("")(prefix => s"${prefix}_")
+
+    def duplicateUserFilesF: Future[Unit] =
+      hmrcDms.submissionPrefix
+        .map { _ =>
+          // Duplicate all files at the root level (user uploaded files) into the subdirectory
+          preExistingEnvelope.files
+            .filter(_.subDirectory.isEmpty)
+            .traverse { file =>
+              for {
+                content <- objectStoreConnector.getFileBytes(submission.envelopeId, file.fileName, None)
+                summary <- uploadFile(
+                             submission.envelopeId,
+                             FileId(file.fileId).prefix(fileIdPrefix),
+                             file.fileName,
+                             content,
+                             file.contentType,
+                             hmrcDms.submissionPrefix
+                           )
+              } yield summary
+            }
+            .map(_ => ())
+        }
+        .getOrElse(Future.unit)
+
     def uploadPfdF: Future[Unit] = {
       val (fileId, fileNameSuffix) = {
         if (hmrcDms.instructionPdfFields.isDefined)
-          (customerSummaryPdf, "customerSummary")
-        else (pdf, "iform")
+          (customerSummaryPdf.prefix(fileIdPrefix), "customerSummary")
+        else (pdf.prefix(fileIdPrefix), "iform")
       }
 
       uploadFile(
@@ -252,7 +284,8 @@ class ObjectStoreService(
         fileId,
         s"$fileNamePrefix-$fileNameSuffix.pdf",
         ByteString(summaries.pdfSummary.pdfContent),
-        ContentType.`application/pdf`
+        ContentType.`application/pdf`,
+        hmrcDms.submissionPrefix
       ).void
     }
 
@@ -260,10 +293,11 @@ class ObjectStoreService(
       summaries.instructionPdfSummary.fold(Future.successful(())) { iPdf =>
         uploadFile(
           submission.envelopeId,
-          pdf,
+          pdf.prefix(fileIdPrefix),
           s"$fileNamePrefix-iform.pdf",
           ByteString(iPdf.pdfContent),
-          ContentType.`application/pdf`
+          ContentType.`application/pdf`,
+          hmrcDms.submissionPrefix
         ).void
       }
 
@@ -272,13 +306,14 @@ class ObjectStoreService(
         .map(elem =>
           uploadFile(
             submission.envelopeId,
-            formdataXml,
+            formdataXml.prefix(fileIdPrefix),
             s"$fileNamePrefix-formdata.xml",
             ByteString(elem.getBytes),
-            ContentType.`application/xml`
+            ContentType.`application/xml`,
+            hmrcDms.submissionPrefix
           ).void
         )
-        .getOrElse(Future.successful(()))
+        .getOrElse(Future.unit)
 
     def uploadMetadataXmlF: Future[Unit] = {
       val reconciliationId = ReconciliationId.create(submission.submissionRef)
@@ -292,10 +327,11 @@ class ObjectStoreService(
         )
       uploadFile(
         submission.envelopeId,
-        xml,
+        xml.prefix(fileIdPrefix),
         s"$fileNamePrefix-metadata.xml",
         ByteString(metadataXml.getBytes),
-        ContentType.`application/xml`
+        ContentType.`application/xml`,
+        hmrcDms.submissionPrefix
       ).void
     }
 
@@ -304,15 +340,17 @@ class ObjectStoreService(
         val roboticsFileExtension = summaries.roboticsFileExtension.map(_.toLowerCase).getOrElse("xml")
         uploadFile(
           submission.envelopeId,
-          roboticsFileId(roboticsFileExtension),
+          roboticsFileId(roboticsFileExtension).prefix(fileIdPrefix),
           hmrcDms.roboticsFileName(fileNamePrefix, roboticsFileExtension),
           ByteString(elem.getBytes),
-          getContentType(roboticsFileExtension)
+          getContentType(roboticsFileExtension),
+          hmrcDms.submissionPrefix
         ).void
-      case _ => Future.successful(())
+      case _ => Future.unit
     }
 
     for {
+      _ <- duplicateUserFilesF
       _ <- uploadPfdF
       _ <- uploadInstructionPdfF
       _ <- uploadFormDataF

@@ -99,7 +99,8 @@ object Destination {
     convertSingleQuotes: Option[Boolean],
     payload: Option[String],
     payloadType: TemplateType,
-    roboticsAsAttachment: Option[Boolean]
+    roboticsAsAttachment: Option[Boolean],
+    submissionPrefix: Option[String]
   ) extends Destination with DestinationWithCustomerId {
     def roboticsFileName(fileNamePrefix: String, roboticsFileExtension: String): String =
       if (roboticsAsAttachment.getOrElse(false)) {
@@ -276,7 +277,8 @@ case class UploadableHmrcDmsDestination(
   formdataXml: Option[Boolean],
   closedStatus: Option[Boolean],
   instructionPdfFields: Option[InstructionPdfFields] = None,
-  roboticsAsAttachment: Option[Boolean]
+  roboticsAsAttachment: Option[Boolean],
+  submissionPrefix: Option[String] = None
 ) {
 
   def toHmrcDmsDestination: Either[String, Destination.HmrcDms] =
@@ -297,7 +299,8 @@ case class UploadableHmrcDmsDestination(
       convertSingleQuotes,
       None,
       TemplateType.XML,
-      roboticsAsAttachment
+      roboticsAsAttachment,
+      submissionPrefix
     )
 }
 
