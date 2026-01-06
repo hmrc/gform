@@ -65,6 +65,9 @@ class DestinationSubmitterSpec
       case _                 => ""
     }
 
+  def dmsResponse(hmrcDms: HmrcDms) =
+    DmsDestinationResponse(hmrcDms.dmsFormId, hmrcDms.classificationType, hmrcDms.businessArea, 5)
+
   "A Destination.HandlebarsHttpApi" should "be sent to the HandlebarsHttpApiSubmitter when includeIf is evaluated to true" in {
     forAll(
       submissionInfoGen,
@@ -341,9 +344,7 @@ class DestinationSubmitterSpec
           LangADT.En,
           DestinationEvaluation.empty,
           UserSession.empty
-        ) shouldBe Right(
-        Some(DmsDestinationResponse(hmrcDms.dmsFormId, hmrcDms.classificationType, hmrcDms.businessArea, 5))
-      )
+        ) shouldBe Right(Some(dmsResponse(hmrcDms)))
     }
   }
 
@@ -407,9 +408,7 @@ class DestinationSubmitterSpec
             )
           ),
           UserSession.empty
-        ) shouldBe Right(
-        Some(DmsDestinationResponse(hmrcDms.dmsFormId, hmrcDms.classificationType, hmrcDms.businessArea, 5))
-      )
+        ) shouldBe Right(Some(dmsResponse(hmrcDms)))
     }
   }
 
@@ -886,7 +885,7 @@ class DestinationSubmitterSpec
         )(_: HeaderCarrier))
         .expects(si, accumulatedModel, modelTree, hmrcDms, l, hc)
         .returning(
-          F.pure(DmsDestinationResponse(hmrcDms.dmsFormId, hmrcDms.classificationType, hmrcDms.businessArea, 5))
+          F.pure(dmsResponse(hmrcDms))
         )
       this
     }

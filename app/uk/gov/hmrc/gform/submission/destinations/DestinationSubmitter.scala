@@ -187,23 +187,8 @@ class DestinationSubmitter[M[_]](
           l
         ).map(Some(_))
       case d: Destination.HandlebarsHttpApi => submitToHandlebars(d, accumulatedModel, modelTree, submissionInfo)
-      case d: Destination.Composite =>
-        submitter
-          .submitToList(
-            d.destinations,
-            submissionInfo,
-            accumulatedModel,
-            modelTree,
-            formData,
-            l,
-            destinationEvaluation,
-            userSession
-          )
-          .map(
-            _.map(_.head)
-          ) // TODO: <-- What to do about this? (maybe remove composite as an option - it is not used by any forms)
-      case d: Destination.StateTransition => stateTransitionAlgebra(d, submissionInfo.formId).map(_ => None)
-      case d: Destination.Log             => log(d, accumulatedModel, modelTree).map(_ => None)
+      case d: Destination.StateTransition   => stateTransitionAlgebra(d, submissionInfo.formId).map(_ => None)
+      case d: Destination.Log               => log(d, accumulatedModel, modelTree).map(_ => None)
       case d: Destination.Email =>
         submitToEmail(d, submissionInfo, modelTree.value.structuredFormData, l).map(Some(_))
       case d: Destination.SubmissionConsolidator =>

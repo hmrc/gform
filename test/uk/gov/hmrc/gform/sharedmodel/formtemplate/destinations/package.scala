@@ -23,17 +23,6 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationInclud
 
 package object destinations {
   def createUploadableJson(destination: Destination): String = destination match {
-    case composite: Destination.Composite =>
-      import composite._
-      s"""|{
-          |  "id": "${id.id}",
-          |  "includeIf":  "${getHandlebarValue(destination.includeIf)}",
-          |  "${Destination.typeDiscriminatorFieldName}": "${Destination.composite}",
-          |  "destinations": [
-          ${composite.destinations.map(createUploadableJson).toList.mkString(",\n|")}
-          |  ]
-          |}""".stripMargin
-
     case stateTransition: Destination.StateTransition =>
       import stateTransition._
       s"""|{
