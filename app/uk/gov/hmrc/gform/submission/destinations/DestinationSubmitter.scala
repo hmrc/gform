@@ -70,7 +70,7 @@ class DestinationSubmitter[M[_]](
     l: LangADT,
     destinationEvaluation: DestinationEvaluation,
     userSession: UserSession
-  )(implicit hc: HeaderCarrier): M[Option[DestinationResponse]] =
+  )(implicit hc: HeaderCarrier): M[DestinationResponse] =
     monadError.pure(
       DestinationSubmitterAlgebra
         .isIncludeIf(destination, accumulatedModel, modelTree, handlebarsTemplateProcessor, destinationEvaluation)
@@ -101,7 +101,10 @@ class DestinationSubmitter[M[_]](
             )
           _ <- audit(
                  destination,
-                 result.collect { case hdr: HandlebarsDestinationResponse => hdr.status },
+                 result match {
+                   case hdr: HandlebarsDestinationResponse => Some(hdr.status)
+                   case _                                  => None
+                 },
                  None,
                  submissionInfo,
                  modelTree
@@ -110,7 +113,7 @@ class DestinationSubmitter[M[_]](
       else
         for {
           _      <- logInfoInMonad(submissionInfo.formId, destination.id, "Not included")
-          result <- Option.empty[DestinationResponse].pure
+          result <- DestinationResponse.NoResponse.pure
         } yield result
 
     }
@@ -157,7 +160,7 @@ class DestinationSubmitter[M[_]](
     l: LangADT,
     destinationEvaluation: DestinationEvaluation,
     userSession: UserSession
-  )(implicit hc: HeaderCarrier): M[Option[DestinationResponse]] =
+  )(implicit hc: HeaderCarrier): M[DestinationResponse] =
     destination match {
       case d: Destination.HmrcDms =>
         submitToDms(
@@ -166,7 +169,7 @@ class DestinationSubmitter[M[_]](
           modelTree,
           d,
           l
-        ).map(Some(_))
+        )
       case d: Destination.DataStore =>
         submitToDataStore(
           submissionInfo,
@@ -177,7 +180,7 @@ class DestinationSubmitter[M[_]](
           destinationEvaluation.evaluation.find(_.destinationId === d.id),
           accumulatedModel,
           modelTree
-        ).map(Some(_))
+        )
       case d: Destination.InfoArchive =>
         submitToInfoArchive(
           submissionInfo,
@@ -185,23 +188,23 @@ class DestinationSubmitter[M[_]](
           destinationEvaluation.evaluation.find(_.destinationId === d.id),
           d,
           l
-        ).map(Some(_))
+        )
       case d: Destination.HandlebarsHttpApi => submitToHandlebars(d, accumulatedModel, modelTree, submissionInfo)
-      case d: Destination.StateTransition   => stateTransitionAlgebra(d, submissionInfo.formId).map(_ => None)
-      case d: Destination.Log               => log(d, accumulatedModel, modelTree).map(_ => None)
+      case d: Destination.StateTransition =>
+        stateTransitionAlgebra(d, submissionInfo.formId).map(_ => DestinationResponse.NoResponse)
+      case d: Destination.Log => log(d, accumulatedModel, modelTree).map(_ => DestinationResponse.NoResponse)
       case d: Destination.Email =>
-        submitToEmail(d, submissionInfo, modelTree.value.structuredFormData, l).map(Some(_))
+        submitToEmail(d, submissionInfo, modelTree.value.structuredFormData, l)
       case d: Destination.SubmissionConsolidator =>
-        submitToSubmissionConsolidator(d, submissionInfo, accumulatedModel, modelTree, formData).map(Some(_))
+        submitToSubmissionConsolidator(d, submissionInfo, accumulatedModel, modelTree, formData)
       case d: Destination.PegaApi =>
         submitToPega(d, destinationEvaluation.evaluation.find(_.destinationId === d.id), submissionInfo)
-          .map(Some(_))
       case d: Destination.NiRefundClaimApi =>
         submitToNiRefunds(
           d,
           destinationEvaluation.evaluation.find(_.destinationId === d.id),
           submissionInfo
-        ).map(Some(_))
+        )
     }
 
   private def submitToPega(
@@ -395,7 +398,7 @@ class DestinationSubmitter[M[_]](
     accumulatedModel: HandlebarsTemplateProcessorModel,
     modelTree: HandlebarsModelTree,
     submissionInfo: DestinationSubmissionInfo
-  )(implicit hc: HeaderCarrier): M[Option[DestinationResponse]] =
+  )(implicit hc: HeaderCarrier): M[DestinationResponse] =
     liftToM(handlebars(d, accumulatedModel, modelTree, submissionInfo))
       .flatMap { response =>
         if (response.isSuccess)
@@ -411,7 +414,6 @@ class DestinationSubmitter[M[_]](
             createSuccessResponse(d, response)
         }
       }
-      .map(Option(_))
 
   private def createFailureResponse(
     destination: Destination.HandlebarsHttpApi,

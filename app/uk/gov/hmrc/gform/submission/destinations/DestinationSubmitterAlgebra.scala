@@ -36,7 +36,7 @@ trait DestinationSubmitterAlgebra[M[_]] {
     l: LangADT,
     destinationEvaluation: DestinationEvaluation,
     userSession: UserSession
-  )(implicit hc: HeaderCarrier): M[Option[DestinationResponse]]
+  )(implicit hc: HeaderCarrier): M[DestinationResponse]
 
   def submitToDms(
     submissionInfo: DestinationSubmissionInfo,

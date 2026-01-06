@@ -89,12 +89,12 @@ class DestinationsSubmitter[M[_]: Monad](destinationSubmitter: DestinationSubmit
           .map(submitterResult =>
             TailRecParameter(
               rest,
-              submitterResult.fold(updatedAccumulatedModel) {
+              submitterResult match {
                 case h: HandlebarsDestinationResponse =>
                   DestinationsProcessorModelAlgebra.createDestinationResponse(h) + updatedAccumulatedModel
                 case _ => updatedAccumulatedModel
               },
-              submitterResult.fold(updatedResponseList)(_ +: updatedResponseList)
+              submitterResult +: updatedResponseList
             ).asLeft
           )
     }

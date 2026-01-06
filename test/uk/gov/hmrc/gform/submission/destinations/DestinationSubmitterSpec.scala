@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.gform.submission.destinations
 
-import cats.syntax.option._
 import cats.{ Applicative, MonadError }
 import org.scalacheck.Gen
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
@@ -124,7 +123,7 @@ class DestinationSubmitterSpec
           LangADT.En,
           DestinationEvaluation.empty,
           UserSession.empty
-        ) shouldBe Right(HandlebarsDestinationResponse(handlebarsHttpApi, httpResponse).some)
+        ) shouldBe Right(HandlebarsDestinationResponse(handlebarsHttpApi, httpResponse))
     }
   }
 
@@ -166,7 +165,7 @@ class DestinationSubmitterSpec
           LangADT.En,
           DestinationEvaluation.empty,
           UserSession.empty
-        ) shouldBe Right(None)
+        ) shouldBe Right(DestinationResponse.NoResponse)
     }
   }
 
@@ -228,7 +227,7 @@ class DestinationSubmitterSpec
           LangADT.En,
           DestinationEvaluation.empty,
           UserSession.empty
-        ) shouldBe Right(HandlebarsDestinationResponse(handlebarsHttpApi, httpResponse).some)
+        ) shouldBe Right(HandlebarsDestinationResponse(handlebarsHttpApi, httpResponse))
     }
   }
 
@@ -253,7 +252,7 @@ class DestinationSubmitterSpec
         None,
         structuredFormData
       )
-      val result: Possible[Option[DestinationResponse]] = createSubmitter
+      val result: Possible[DestinationResponse] = createSubmitter
         .expectHandlebarsSubmission(
           handlebarsHttpApi,
           HandlebarsTemplateProcessorModel.empty,
@@ -344,7 +343,7 @@ class DestinationSubmitterSpec
           LangADT.En,
           DestinationEvaluation.empty,
           UserSession.empty
-        ) shouldBe Right(Some(dmsResponse(hmrcDms)))
+        ) shouldBe Right(dmsResponse(hmrcDms))
     }
   }
 
@@ -408,7 +407,7 @@ class DestinationSubmitterSpec
             )
           ),
           UserSession.empty
-        ) shouldBe Right(Some(dmsResponse(hmrcDms)))
+        ) shouldBe Right(dmsResponse(hmrcDms))
     }
   }
 
@@ -451,7 +450,7 @@ class DestinationSubmitterSpec
           LangADT.En,
           DestinationEvaluation.empty,
           UserSession.empty
-        ) shouldBe Right(None)
+        ) shouldBe Right(DestinationResponse.NoResponse)
     }
   }
 
@@ -522,7 +521,7 @@ class DestinationSubmitterSpec
             )
           ),
           UserSession.empty
-        ) shouldBe Right(Some(DestinationResponse.NoResponse))
+        ) shouldBe Right(DestinationResponse.NoResponse)
     }
   }
 
@@ -547,7 +546,7 @@ class DestinationSubmitterSpec
           structuredFormData
         )
 
-      val res: Possible[Option[DestinationResponse]] = createSubmitter
+      val res: Possible[DestinationResponse] = createSubmitter
         .expectHmrcDmsSubmissionFailure(
           si,
           HandlebarsTemplateProcessorModel.empty,
@@ -666,7 +665,7 @@ class DestinationSubmitterSpec
             )
           ),
           UserSession.empty
-        ) shouldBe Right(Some(DestinationResponse.NoResponse))
+        ) shouldBe Right(DestinationResponse.NoResponse)
     }
   }
 
@@ -705,7 +704,7 @@ class DestinationSubmitterSpec
           LangADT.En,
           DestinationEvaluation.empty,
           UserSession.empty
-        ) shouldBe Right(None)
+        ) shouldBe Right(DestinationResponse.NoResponse)
     }
   }
 
@@ -782,7 +781,7 @@ class DestinationSubmitterSpec
             )
           ),
           UserSession.empty
-        ) shouldBe Right(Some(DestinationResponse.NoResponse))
+        ) shouldBe Right(DestinationResponse.NoResponse)
     }
   }
 

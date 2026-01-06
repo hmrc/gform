@@ -54,7 +54,7 @@ class DestinationsSubmitterSpec
             submissionInfo,
             HandlebarsTemplateProcessorModel.empty,
             destinationModel,
-            None,
+            DestinationResponse.NoResponse,
             formData,
             DestinationEvaluation.empty
           )
@@ -110,7 +110,7 @@ class DestinationsSubmitterSpec
           submissionInfo,
           HandlebarsTemplateProcessorModel.empty,
           initialModel,
-          Option(response1Model),
+          response1Model,
           formData,
           DestinationEvaluation.empty
         )
@@ -119,7 +119,7 @@ class DestinationsSubmitterSpec
           submissionInfo,
           accumulatedModel1,
           initialModel,
-          Option(response2Model),
+          response2Model,
           formData,
           DestinationEvaluation.empty
         )
@@ -210,7 +210,7 @@ class DestinationsSubmitterSpec
       submissionInfo: DestinationSubmissionInfo,
       accumulatedModel: HandlebarsTemplateProcessorModel,
       modelInTree: HandlebarsTemplateProcessorModel,
-      response: Option[DestinationResponse],
+      response: DestinationResponse,
       formData: FormData,
       destinationEvaluation: DestinationEvaluation
     ): SubmitterParts[F] = {
