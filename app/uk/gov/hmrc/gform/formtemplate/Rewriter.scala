@@ -115,7 +115,6 @@ trait Rewriter {
         ) ++ dl.destinations.toList.collect {
           case HmrcDms(_, _, _, _, _, IncludeIfValue(includeIf), _, _, _, _, _, _, _, _, _, _)   => includeIf
           case HandlebarsHttpApi(_, _, _, _, _, _, IncludeIfValue(includeIf), _, _, _)           => includeIf
-          case Destination.Composite(_, IncludeIfValue(includeIf), _)                            => includeIf
           case StateTransition(_, _, IncludeIfValue(includeIf), _)                               => includeIf
           case SubmissionConsolidator(_, _, _, _, IncludeIfValue(includeIf), _)                  => includeIf
           case Email(_, _, IncludeIfValue(includeIf), _, _, _)                                   => includeIf
@@ -565,7 +564,6 @@ trait Rewriter {
       def replaceDestination(destination: Destination) =
         destination match {
           case h: HmrcDms                => h.copy(includeIf = replaceDesIncludeIf(h.includeIf))
-          case c: Destination.Composite  => c.copy(includeIf = replaceDesIncludeIf(c.includeIf))
           case e: Email                  => e.copy(includeIf = replaceDesIncludeIf(e.includeIf))
           case h: HandlebarsHttpApi      => h.copy(includeIf = replaceDesIncludeIf(h.includeIf))
           case l: Log                    => l

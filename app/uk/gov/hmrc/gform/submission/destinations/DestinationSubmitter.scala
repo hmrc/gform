@@ -34,6 +34,7 @@ import uk.gov.hmrc.gform.submissionconsolidator.SubmissionConsolidatorAlgebra
 import uk.gov.hmrc.gform.wshttp.HttpResponseSyntax
 import uk.gov.hmrc.gform.core.FOpt
 import uk.gov.hmrc.gform.core.fromFutureA
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.HandlebarsDestinationResponse
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 
 import scala.concurrent.{ ExecutionContext, Future }
@@ -69,7 +70,7 @@ class DestinationSubmitter[M[_]](
     l: LangADT,
     destinationEvaluation: DestinationEvaluation,
     userSession: UserSession
-  )(implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]] =
+  )(implicit hc: HeaderCarrier): M[DestinationResponse] =
     monadError.pure(
       DestinationSubmitterAlgebra
         .isIncludeIf(destination, accumulatedModel, modelTree, handlebarsTemplateProcessor, destinationEvaluation)
@@ -98,12 +99,21 @@ class DestinationSubmitter[M[_]](
               destinationEvaluation,
               userSession
             )
-          _ <- audit(destination, result.map(_.status), None, submissionInfo, modelTree)
+          _ <- audit(
+                 destination,
+                 result match {
+                   case hdr: HandlebarsDestinationResponse => Some(hdr.status)
+                   case _                                  => None
+                 },
+                 None,
+                 submissionInfo,
+                 modelTree
+               )
         } yield result
       else
         for {
           _      <- logInfoInMonad(submissionInfo.formId, destination.id, "Not included")
-          result <- Option.empty[HandlebarsDestinationResponse].pure
+          result <- DestinationResponse.NoResponse.pure
         } yield result
 
     }
@@ -128,14 +138,16 @@ class DestinationSubmitter[M[_]](
       )
     )
 
-  private def logInfoInMonad(formId: FormId, destinationId: DestinationId, msg: String): M[Unit] =
+  private def logInfoInMonad(formId: FormId, destinationId: DestinationId, msg: String): M[DestinationResponse] =
     monadError.pure {
       logger.info(genericLogMessage(formId, destinationId, msg))
+      DestinationResponse.NoResponse
     }
 
-  private def logErrorInMonad(formId: FormId, destinationId: DestinationId, msg: String): M[Unit] =
+  private def logErrorInMonad(formId: FormId, destinationId: DestinationId, msg: String): M[DestinationResponse] =
     monadError.pure {
       logger.error(genericLogMessage(formId, destinationId, msg))
+      DestinationResponse.NoResponse
     }
 
   private def submit(
@@ -148,7 +160,7 @@ class DestinationSubmitter[M[_]](
     l: LangADT,
     destinationEvaluation: DestinationEvaluation,
     userSession: UserSession
-  )(implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]] =
+  )(implicit hc: HeaderCarrier): M[DestinationResponse] =
     destination match {
       case d: Destination.HmrcDms =>
         submitToDms(
@@ -157,7 +169,7 @@ class DestinationSubmitter[M[_]](
           modelTree,
           d,
           l
-        ).map(_ => None)
+        )
       case d: Destination.DataStore =>
         submitToDataStore(
           submissionInfo,
@@ -168,7 +180,7 @@ class DestinationSubmitter[M[_]](
           destinationEvaluation.evaluation.find(_.destinationId === d.id),
           accumulatedModel,
           modelTree
-        ).map(_ => None)
+        )
       case d: Destination.InfoArchive =>
         submitToInfoArchive(
           submissionInfo,
@@ -176,42 +188,30 @@ class DestinationSubmitter[M[_]](
           destinationEvaluation.evaluation.find(_.destinationId === d.id),
           d,
           l
-        ).map(_ => None)
+        )
       case d: Destination.HandlebarsHttpApi => submitToHandlebars(d, accumulatedModel, modelTree, submissionInfo)
-      case d: Destination.Composite =>
-        submitter
-          .submitToList(
-            d.destinations,
-            submissionInfo,
-            accumulatedModel,
-            modelTree,
-            formData,
-            l,
-            destinationEvaluation,
-            userSession
-          )
-      case d: Destination.StateTransition => stateTransitionAlgebra(d, submissionInfo.formId).map(_ => None)
-      case d: Destination.Log             => log(d, accumulatedModel, modelTree).map(_ => None)
+      case d: Destination.StateTransition =>
+        stateTransitionAlgebra(d, submissionInfo.formId).map(_ => DestinationResponse.NoResponse)
+      case d: Destination.Log => log(d, accumulatedModel, modelTree).map(_ => DestinationResponse.NoResponse)
       case d: Destination.Email =>
-        submitToEmail(d, submissionInfo, modelTree.value.structuredFormData, l).map(_ => None)
+        submitToEmail(d, submissionInfo, modelTree.value.structuredFormData, l)
       case d: Destination.SubmissionConsolidator =>
-        submitToSubmissionConsolidator(d, submissionInfo, accumulatedModel, modelTree, formData).map(_ => None)
+        submitToSubmissionConsolidator(d, submissionInfo, accumulatedModel, modelTree, formData)
       case d: Destination.PegaApi =>
         submitToPega(d, destinationEvaluation.evaluation.find(_.destinationId === d.id), submissionInfo)
-          .map(_ => None)
       case d: Destination.NiRefundClaimApi =>
         submitToNiRefunds(
           d,
           destinationEvaluation.evaluation.find(_.destinationId === d.id),
           submissionInfo
-        ).map(_ => None)
+        )
     }
 
   private def submitToPega(
     d: Destination.PegaApi,
     dr: Option[DestinationResult],
     submissionInfo: DestinationSubmissionInfo
-  ): M[Unit] =
+  ): M[DestinationResponse] =
     monadError.handleErrorWith(
       pegaSubmitterAlgebra.getAndUpdateCase(d, dr, submissionInfo)
     ) { msg =>
@@ -226,7 +226,7 @@ class DestinationSubmitter[M[_]](
     d: Destination.NiRefundClaimApi,
     dr: Option[DestinationResult],
     submissionInfo: DestinationSubmissionInfo
-  ): M[Unit] =
+  ): M[DestinationResponse] =
     monadError.handleErrorWith(
       niRefundSubmitterAlgebra.submitBankDetails(d, dr, submissionInfo)
     ) { msg =>
@@ -243,7 +243,7 @@ class DestinationSubmitter[M[_]](
     accumulatedModel: HandlebarsTemplateProcessorModel,
     modelTree: HandlebarsModelTree,
     formData: Option[FormData]
-  )(implicit hc: HeaderCarrier): M[Unit] =
+  )(implicit hc: HeaderCarrier): M[DestinationResponse] =
     monadError.handleErrorWith(
       submissionConsolidator.submit(d, submissionInfo, accumulatedModel, modelTree, formData)
     ) { msg =>
@@ -259,7 +259,7 @@ class DestinationSubmitter[M[_]](
     submissionInfo: DestinationSubmissionInfo,
     structuredFormData: StructuredFormValue.ObjectStructure,
     l: LangADT
-  ): M[Unit] =
+  ): M[DestinationResponse] =
     d.emailVerifierService match {
       case notify @ EmailVerifierService.Notify(_, _) =>
         submitToNotify(notify, d, submissionInfo, structuredFormData, l)
@@ -277,7 +277,7 @@ class DestinationSubmitter[M[_]](
     submissionInfo: DestinationSubmissionInfo,
     structuredFormData: StructuredFormValue.ObjectStructure,
     l: LangADT
-  ): M[Unit] =
+  ): M[DestinationResponse] =
     monadError.handleErrorWith(
       NotifierEmailBuilder(notify.notifierTemplateId(l), d, structuredFormData) >>=
         notifier.email
@@ -313,7 +313,7 @@ class DestinationSubmitter[M[_]](
     modelTree: HandlebarsModelTree,
     d: Destination.HmrcDms,
     l: LangADT
-  )(implicit hc: HeaderCarrier): M[Unit] =
+  )(implicit hc: HeaderCarrier): M[DestinationResponse] =
     monadError.handleErrorWith(dms(submissionInfo, accumulatedModel, modelTree, d, l)) { msg =>
       if (d.failOnError)
         raiseDestinationError(submissionInfo.formId, d.id, msg)
@@ -331,7 +331,7 @@ class DestinationSubmitter[M[_]](
     destinationResult: Option[DestinationResult],
     accumulatedModel: HandlebarsTemplateProcessorModel,
     modelTree: HandlebarsModelTree
-  ): M[Unit] = {
+  ): M[DestinationResponse] = {
     val payload = dataStore.generatePayload(
       submissionInfo,
       structuredFormData,
@@ -384,7 +384,7 @@ class DestinationSubmitter[M[_]](
     destinationResult: Option[DestinationResult],
     d: Destination.InfoArchive,
     l: LangADT
-  )(implicit hc: HeaderCarrier): M[Unit] =
+  )(implicit hc: HeaderCarrier): M[DestinationResponse] =
     monadError.handleErrorWith(infoArchive(submissionInfo, modelTree, destinationResult, d, l)) { msg =>
       if (d.failOnError)
         raiseDestinationError(submissionInfo.formId, d.id, msg)
@@ -398,7 +398,7 @@ class DestinationSubmitter[M[_]](
     accumulatedModel: HandlebarsTemplateProcessorModel,
     modelTree: HandlebarsModelTree,
     submissionInfo: DestinationSubmissionInfo
-  )(implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]] =
+  )(implicit hc: HeaderCarrier): M[DestinationResponse] =
     liftToM(handlebars(d, accumulatedModel, modelTree, submissionInfo))
       .flatMap { response =>
         if (response.isSuccess)
@@ -414,14 +414,13 @@ class DestinationSubmitter[M[_]](
             createSuccessResponse(d, response)
         }
       }
-      .map(Option(_))
 
   private def createFailureResponse(
     destination: Destination.HandlebarsHttpApi,
     response: HttpResponse,
     submissionInfo: DestinationSubmissionInfo,
     modelTree: HandlebarsModelTree
-  )(implicit hc: HeaderCarrier): M[HandlebarsDestinationResponse] =
+  )(implicit hc: HeaderCarrier): M[DestinationResponse] =
     audit(destination, Some(response.status), Some(response.body), submissionInfo, modelTree) >>
       raiseDestinationError(
         submissionInfo.formId,
@@ -432,7 +431,7 @@ class DestinationSubmitter[M[_]](
   private def createSuccessResponse(
     d: Destination.HandlebarsHttpApi,
     response: HttpResponse
-  ): M[HandlebarsDestinationResponse] =
+  ): M[DestinationResponse] =
     monadError.pure(HandlebarsDestinationResponse(d, response))
 
   private def replaceStringsWithLengths(json: JsValue): JsValue = json match {

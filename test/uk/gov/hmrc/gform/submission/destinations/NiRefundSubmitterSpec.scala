@@ -25,7 +25,7 @@ import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.hip.HipAlgebra
 import uk.gov.hmrc.gform.sharedmodel.DestinationResult
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FormId }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationId }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationId, DestinationResponse }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationIncludeIf.HandlebarValue
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponentId, FormCtx, FormTemplateId }
 import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
@@ -129,7 +129,7 @@ class NiRefundSubmitterSpec extends AnyWordSpecLike with Matchers with MockFacto
       )
 
       whenReady(result.value) { either =>
-        either shouldBe Right(())
+        either shouldBe Right(DestinationResponse.NoResponse)
       }
     }
 
@@ -157,7 +157,7 @@ class NiRefundSubmitterSpec extends AnyWordSpecLike with Matchers with MockFacto
       )
 
       whenReady(result.value) { either =>
-        either shouldBe Right(())
+        either shouldBe Right(DestinationResponse.NoResponse)
       }
     }
 

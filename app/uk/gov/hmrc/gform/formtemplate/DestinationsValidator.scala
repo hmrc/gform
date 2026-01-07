@@ -99,7 +99,6 @@ object DestinationsValidator {
           case _: Destination.StateTransition        => Destination.stateTransition
           case _: Destination.SubmissionConsolidator => Destination.submissionConsolidator
           case _: Destination.Log                    => Destination.log
-          case _: Destination.Composite              => Destination.composite
           case _: Destination.PegaApi                => Destination.pegaApi
           case _: Destination.NiRefundClaimApi       => Destination.niRefundClaimApi
         }
@@ -151,10 +150,7 @@ object DestinationsValidator {
   private def extractIds(destinations: NonEmptyList[Destination]): NonEmptyList[DestinationId] =
     destinations.flatMap(extractIds)
 
-  def extractIds(destination: Destination): NonEmptyList[DestinationId] = destination match {
-    case c: Destination.Composite => c.id :: extractIds(c.destinations)
-    case _                        => NonEmptyList.of(destination.id)
-  }
+  def extractIds(destination: Destination): NonEmptyList[DestinationId] = NonEmptyList.of(destination.id)
 
   def validateRoboticsAsAttachment(destinations: Destinations): ValidationResult =
     destinations match {

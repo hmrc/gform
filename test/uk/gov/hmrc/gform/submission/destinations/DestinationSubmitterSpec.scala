@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.gform.submission.destinations
 
-import cats.syntax.option._
 import cats.{ Applicative, MonadError }
 import org.scalacheck.Gen
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
@@ -64,6 +63,9 @@ class DestinationSubmitterSpec
       case HandlebarValue(s) => s
       case _                 => ""
     }
+
+  def dmsResponse(hmrcDms: HmrcDms) =
+    DmsDestinationResponse(hmrcDms.dmsFormId, hmrcDms.classificationType, hmrcDms.businessArea, 5)
 
   "A Destination.HandlebarsHttpApi" should "be sent to the HandlebarsHttpApiSubmitter when includeIf is evaluated to true" in {
     forAll(
@@ -121,7 +123,7 @@ class DestinationSubmitterSpec
           LangADT.En,
           DestinationEvaluation.empty,
           UserSession.empty
-        ) shouldBe Right(HandlebarsDestinationResponse(handlebarsHttpApi, httpResponse).some)
+        ) shouldBe Right(HandlebarsDestinationResponse(handlebarsHttpApi, httpResponse))
     }
   }
 
@@ -163,7 +165,7 @@ class DestinationSubmitterSpec
           LangADT.En,
           DestinationEvaluation.empty,
           UserSession.empty
-        ) shouldBe Right(None)
+        ) shouldBe Right(DestinationResponse.NoResponse)
     }
   }
 
@@ -225,7 +227,7 @@ class DestinationSubmitterSpec
           LangADT.En,
           DestinationEvaluation.empty,
           UserSession.empty
-        ) shouldBe Right(HandlebarsDestinationResponse(handlebarsHttpApi, httpResponse).some)
+        ) shouldBe Right(HandlebarsDestinationResponse(handlebarsHttpApi, httpResponse))
     }
   }
 
@@ -250,7 +252,7 @@ class DestinationSubmitterSpec
         None,
         structuredFormData
       )
-      val result: Possible[Option[HandlebarsDestinationResponse]] = createSubmitter
+      val result: Possible[DestinationResponse] = createSubmitter
         .expectHandlebarsSubmission(
           handlebarsHttpApi,
           HandlebarsTemplateProcessorModel.empty,
@@ -341,7 +343,7 @@ class DestinationSubmitterSpec
           LangADT.En,
           DestinationEvaluation.empty,
           UserSession.empty
-        ) shouldBe Right(None)
+        ) shouldBe Right(dmsResponse(hmrcDms))
     }
   }
 
@@ -405,11 +407,11 @@ class DestinationSubmitterSpec
             )
           ),
           UserSession.empty
-        ) shouldBe Right(None)
+        ) shouldBe Right(dmsResponse(hmrcDms))
     }
   }
 
-  it should "be sent to the DmsSubmitter when includeIf is false" in {
+  it should "NOT be sent to the DmsSubmitter when includeIf is false" in {
     forAll(
       submissionInfoGen,
       hmrcDmsGen,
@@ -448,7 +450,7 @@ class DestinationSubmitterSpec
           LangADT.En,
           DestinationEvaluation.empty,
           UserSession.empty
-        ) shouldBe Right(None)
+        ) shouldBe Right(DestinationResponse.NoResponse)
     }
   }
 
@@ -519,7 +521,7 @@ class DestinationSubmitterSpec
             )
           ),
           UserSession.empty
-        ) shouldBe Right(None)
+        ) shouldBe Right(DestinationResponse.NoResponse)
     }
   }
 
@@ -544,7 +546,7 @@ class DestinationSubmitterSpec
           structuredFormData
         )
 
-      val res: Possible[Option[HandlebarsDestinationResponse]] = createSubmitter
+      val res: Possible[DestinationResponse] = createSubmitter
         .expectHmrcDmsSubmissionFailure(
           si,
           HandlebarsTemplateProcessorModel.empty,
@@ -663,7 +665,7 @@ class DestinationSubmitterSpec
             )
           ),
           UserSession.empty
-        ) shouldBe Right(None)
+        ) shouldBe Right(DestinationResponse.NoResponse)
     }
   }
 
@@ -702,7 +704,7 @@ class DestinationSubmitterSpec
           LangADT.En,
           DestinationEvaluation.empty,
           UserSession.empty
-        ) shouldBe Right(None)
+        ) shouldBe Right(DestinationResponse.NoResponse)
     }
   }
 
@@ -779,7 +781,7 @@ class DestinationSubmitterSpec
             )
           ),
           UserSession.empty
-        ) shouldBe Right(None)
+        ) shouldBe Right(DestinationResponse.NoResponse)
     }
   }
 
@@ -881,7 +883,9 @@ class DestinationSubmitterSpec
           _: LangADT
         )(_: HeaderCarrier))
         .expects(si, accumulatedModel, modelTree, hmrcDms, l, hc)
-        .returning(F.pure(()))
+        .returning(
+          F.pure(dmsResponse(hmrcDms))
+        )
       this
     }
 
@@ -924,7 +928,7 @@ class DestinationSubmitterSpec
           _: LangADT
         )(_: HeaderCarrier))
         .expects(si, modelTree, result, infoArchive, l, hc)
-        .returning(F.pure(()))
+        .returning(F.pure(DestinationResponse.NoResponse))
       this
     }
 
@@ -946,7 +950,7 @@ class DestinationSubmitterSpec
           )(_: HeaderCarrier)
         )
         .expects(destination, submissionInfo, accumulatedModel, model, Some(formData), hc)
-        .returning(F.pure(()))
+        .returning(F.pure(DestinationResponse.NoResponse))
       this
     }
 

@@ -533,8 +533,6 @@ object Substituter {
           utr = d.utr(substitutions),
           postalCode = d.postalCode(substitutions)
         )
-      case d: Destination.Composite =>
-        d.copy(destinations = d.destinations(substitutions), includeIf = d.includeIf(substitutions))
       case d: Destination.SubmissionConsolidator =>
         d.copy(customerId = d.customerId(substitutions), includeIf = d.includeIf(substitutions))
       case d: Destination.Email             => d.copy(includeIf = d.includeIf(substitutions))
