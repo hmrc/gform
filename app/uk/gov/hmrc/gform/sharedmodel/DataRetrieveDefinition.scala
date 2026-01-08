@@ -568,7 +568,14 @@ object DataRetrieveDefinitions {
       List(
         AttributeInstruction(
           DataRetrieve.Attribute("authorised"),
-          ConstructAttribute.AsIs(Fetch(List("authorised")))
+          ConstructAttribute.AsIs(Fetch(List("authorised"))),
+          Some(
+            AllowedValues(
+              List("true", "false"),
+              AllowedValueType.JsStringType,
+              isRequired = true
+            )
+          )
         )
       )
     ),
@@ -586,7 +593,14 @@ object DataRetrieveDefinitions {
       List(
         AttributeInstruction(
           DataRetrieve.Attribute("authorised"),
-          ConstructAttribute.AsIs(Fetch(List("authorised")))
+          ConstructAttribute.AsIs(Fetch(List("authorised"))),
+          Some(
+            AllowedValues(
+              List("true", "false"),
+              AllowedValueType.JsStringType,
+              isRequired = true
+            )
+          )
         )
       )
     ),
@@ -818,7 +832,7 @@ object DataRetrieveDefinitions {
     )
   )
 
-  private val staticDefinitions = DataRetrieveDefinitions(
+  val staticDefinitions = DataRetrieveDefinitions(
     List(
       validateBankDetails,
       businessBankAccountExistence,

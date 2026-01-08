@@ -141,6 +141,44 @@ class TestOnlyController(
         }
     }
 
+  def getDataRetrieveDefinitions(): Action[AnyContent] =
+    Action.async { _ =>
+      import uk.gov.hmrc.gform.sharedmodel.DataRetrieveDefinitions._
+
+      def examples(dataRetrieveId: String, attr: AttributeInstruction, isList: Boolean): List[String] = {
+        val withIndex = if (isList) "[n]" else ""
+        val attrRef = "${" + s"dataRetrieve.$dataRetrieveId.${attr.attribute.name}$withIndex"
+        attr.allowedValues.fold(List(attrRef + "}")) { allowed =>
+          val valuesWithoutAsterisk = allowed.values.filter(_ != "*")
+          if (valuesWithoutAsterisk.isEmpty) List(attrRef + "}")
+          else allowed.values.map(v => s"$attrRef = '$v'}")
+        }
+      }
+
+      val dataRetrieveDescriptions = staticDefinitions.definitions.map { definition =>
+        val dataRetrieveId = s"${definition.tpe.name}Id"
+
+        val parameterMap = definition.parameters.map { parm =>
+          parm.name -> ("${" + s"${parm.name}Value" + "}")
+        }.toMap
+
+        val json = Json.obj(
+          "type"       -> definition.tpe.name,
+          "id"         -> dataRetrieveId,
+          "parameters" -> Json.toJson(parameterMap)
+        )
+
+        val attrExamples = definition.attributes match {
+          case Attr.FromObject(insts) => insts.flatMap(a => examples(dataRetrieveId, a, false))
+          case Attr.FromArray(insts)  => insts.flatMap(a => examples(dataRetrieveId, a, true))
+        }
+
+        DataRetrieveDescription(definition.tpe.name, json, attrExamples)
+      }
+
+      Ok(Json.toJson(dataRetrieveDescriptions)).pure[Future]
+    }
+
   def getFromDes(url: String): Action[AnyContent] =
     Action.async { request =>
       val urlWithQueryString = url + Option(request.rawQueryString)
