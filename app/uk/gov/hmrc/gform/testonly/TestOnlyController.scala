@@ -159,7 +159,7 @@ class TestOnlyController(
         val dataRetrieveId = s"${definition.tpe.name}Id"
 
         val parameterMap = definition.parameters.map { parm =>
-          parm.name -> ("${" + s"${parm.name}Value" + "}")
+          parm.name -> ("${" + s"${parm.name}ValueExpr" + "}")
         }.toMap
 
         val json = Json.obj(
@@ -168,12 +168,17 @@ class TestOnlyController(
           "parameters" -> Json.toJson(parameterMap)
         )
 
+        val isArrayResult = definition.attributes match {
+          case Attr.FromObject(_) => false
+          case Attr.FromArray(_)  => true
+        }
+
         val attrExamples = definition.attributes match {
           case Attr.FromObject(insts) => insts.flatMap(a => examples(dataRetrieveId, a, false))
           case Attr.FromArray(insts)  => insts.flatMap(a => examples(dataRetrieveId, a, true))
         }
 
-        DataRetrieveDescription(definition.tpe.name, json, attrExamples)
+        DataRetrieveDescription(definition.tpe.name, json, attrExamples, definition.documentationUrl, isArrayResult)
       }
 
       Ok(Json.toJson(dataRetrieveDescriptions)).pure[Future]

@@ -19,7 +19,13 @@ package uk.gov.hmrc.gform.testonly
 import julienrf.json.derived
 import play.api.libs.json.{ JsObject, OFormat }
 
-case class DataRetrieveDescription(tpe: String, exampleJson: JsObject, attributeReferences: List[String])
+case class DataRetrieveDescription(
+  tpe: String,
+  exampleJson: JsObject,
+  attributeReferences: List[String],
+  documentationUrl: Option[String],
+  isArrayResult: Boolean
+)
 
 object DataRetrieveDescription {
   implicit val format: OFormat[DataRetrieveDescription] = derived.oformat()
