@@ -159,7 +159,7 @@ class TestOnlyController(
         val dataRetrieveId = s"${definition.tpe.name}Id"
 
         val parameterMap = definition.parameters.map { parm =>
-          parm.name -> ("${" + s"${parm.name}ValueExpr" + "}")
+          parm.name -> ("${" + s"${parm.name}Expr" + "}")
         }.toMap
 
         val json = Json.obj(
