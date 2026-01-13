@@ -31,7 +31,8 @@ final case class DataRetrieveDefinition(
   tpe: DataRetrieve.Type,
   attributes: Attr,
   parameters: List[DataRetrieve.Parameter],
-  attrTypeMapping: Map[DataRetrieve.Attribute, DataRetrieve.AttrType] = Map.empty
+  attrTypeMapping: Map[DataRetrieve.Attribute, DataRetrieve.AttrType],
+  documentationUrl: Option[String]
 )
 
 object DataRetrieveDefinitions {
@@ -80,7 +81,9 @@ object DataRetrieveDefinitions {
     List(
       Parameter("sortCode", List("account")),
       Parameter("accountNumber", List("account"))
-    )
+    ),
+    Map.empty,
+    Some("https://github.com/hmrc/bank-account-reputation/blob/main/docs/eiscd/v3/validateBankDetails.md")
   )
 
   val businessBankAccountExistence = DataRetrieveDefinition(
@@ -155,7 +158,9 @@ object DataRetrieveDefinitions {
       Parameter("sortCode", List("account")),
       Parameter("accountNumber", List("account")),
       Parameter("companyName", List("business"))
-    )
+    ),
+    Map.empty,
+    Some("https://github.com/hmrc/bank-account-reputation/blob/main/public/api/conf/1.0/docs/business/verify.md")
   )
 
   private val personalBankAccountExistenceWithName = DataRetrieveDefinition(
@@ -230,7 +235,9 @@ object DataRetrieveDefinitions {
       Parameter("sortCode", List("account")),
       Parameter("accountNumber", List("account")),
       Parameter("name", List("subject"))
-    )
+    ),
+    Map.empty,
+    Some("https://github.com/hmrc/bank-account-reputation/blob/main/public/api/conf/1.0/docs/personal/verify.md")
   )
 
   val personalBankAccountExistence = DataRetrieveDefinition(
@@ -306,7 +313,9 @@ object DataRetrieveDefinitions {
       Parameter("accountNumber", List("account")),
       Parameter("firstName", List("subject")),
       Parameter("lastName", List("subject"))
-    )
+    ),
+    Map.empty,
+    Some("https://github.com/hmrc/bank-account-reputation/blob/main/public/api/conf/1.0/docs/personal/verify.md")
   )
 
   val companyHouseProfile =
@@ -391,6 +400,9 @@ object DataRetrieveDefinitions {
       ),
       Map(
         DataRetrieve.Attribute("dateOfCreation") -> DataRetrieve.AttrType.Date
+      ),
+      Some(
+        "https://developer-specs.company-information.service.gov.uk/companies-house-public-data-api/reference/company-profile/company-profile"
       )
     )
 
@@ -420,6 +432,9 @@ object DataRetrieveDefinitions {
         DataRetrieve.Attribute("activeDirectors")   -> DataRetrieve.AttrType.Number,
         DataRetrieve.Attribute("activeSecretaries") -> DataRetrieve.AttrType.Number,
         DataRetrieve.Attribute("activeLlpMembers")  -> DataRetrieve.AttrType.Number
+      ),
+      Some(
+        "https://developer-specs.company-information.service.gov.uk/companies-house-public-data-api/reference/officers/list"
       )
     )
 
@@ -502,6 +517,9 @@ object DataRetrieveDefinitions {
         DataRetrieve.Attribute("postal_code")    -> DataRetrieve.AttrType.String,
         DataRetrieve.Attribute("country")        -> DataRetrieve.AttrType.String,
         DataRetrieve.Attribute("appointedOn")    -> DataRetrieve.AttrType.Date
+      ),
+      Some(
+        "https://developer-specs.company-information.service.gov.uk/companies-house-public-data-api/reference/insolvency/get"
       )
     )
 
@@ -519,7 +537,8 @@ object DataRetrieveDefinitions {
     List(
       Parameter("nino")
     ),
-    Map(DataRetrieve.Attribute("riskScore") -> DataRetrieve.AttrType.Number)
+    Map(DataRetrieve.Attribute("riskScore") -> DataRetrieve.AttrType.Number),
+    Some("https://github.com/hmrc/nino-gateway/blob/main/public/api/conf/1.0/docs/insights.md")
   )
 
   val hmrcTaxRates = DataRetrieveDefinition(
@@ -559,7 +578,8 @@ object DataRetrieveDefinitions {
       DataRetrieve.Attribute("rate")      -> DataRetrieve.AttrType.Number,
       DataRetrieve.Attribute("startDate") -> DataRetrieve.AttrType.Date,
       DataRetrieve.Attribute("endDate")   -> DataRetrieve.AttrType.Date
-    )
+    ),
+    Some("https://github.com/hmrc/gform-frontend/blob/main/conf/lookup/HMRCTaxRates.csv")
   )
 
   val delegatedAgentAuthVat = DataRetrieveDefinition(
@@ -568,7 +588,14 @@ object DataRetrieveDefinitions {
       List(
         AttributeInstruction(
           DataRetrieve.Attribute("authorised"),
-          ConstructAttribute.AsIs(Fetch(List("authorised")))
+          ConstructAttribute.AsIs(Fetch(List("authorised"))),
+          Some(
+            AllowedValues(
+              List("true", "false"),
+              AllowedValueType.JsStringType,
+              isRequired = true
+            )
+          )
         )
       )
     ),
@@ -577,6 +604,9 @@ object DataRetrieveDefinitions {
     ),
     Map(
       DataRetrieve.Attribute("authorised") -> DataRetrieve.AttrType.String
+    ),
+    Some(
+      "https://github.com/hmrc/agent-access-control?tab=readme-ov-file#get-agent-access-controlmtd-vat-authagentagentcodeclientvrn"
     )
   )
 
@@ -586,7 +616,14 @@ object DataRetrieveDefinitions {
       List(
         AttributeInstruction(
           DataRetrieve.Attribute("authorised"),
-          ConstructAttribute.AsIs(Fetch(List("authorised")))
+          ConstructAttribute.AsIs(Fetch(List("authorised"))),
+          Some(
+            AllowedValues(
+              List("true", "false"),
+              AllowedValueType.JsStringType,
+              isRequired = true
+            )
+          )
         )
       )
     ),
@@ -595,6 +632,9 @@ object DataRetrieveDefinitions {
     ),
     Map(
       DataRetrieve.Attribute("authorised") -> DataRetrieve.AttrType.String
+    ),
+    Some(
+      "https://github.com/hmrc/agent-access-control?tab=readme-ov-file#get-agent-access-controlepaye-authagentagentcodeclientempref"
     )
   )
 
@@ -613,7 +653,8 @@ object DataRetrieveDefinitions {
       Parameter("sortCode"),
       Parameter("accountNumber")
     ),
-    Map(DataRetrieve.Attribute("riskScore") -> DataRetrieve.AttrType.Number)
+    Map(DataRetrieve.Attribute("riskScore") -> DataRetrieve.AttrType.Number),
+    Some("https://github.com/hmrc/bank-account-gateway/blob/main/public/api/conf/1.0/docs/insights/insights.md")
   )
 
   val employments = DataRetrieveDefinition(
@@ -644,7 +685,8 @@ object DataRetrieveDefinitions {
       Parameter("nino"),
       Parameter("taxYear", List.empty[String], DataRetrieve.ParamType.String)
     ),
-    Map(DataRetrieve.Attribute("sequenceNumber") -> DataRetrieve.AttrType.Number)
+    Map(DataRetrieve.Attribute("sequenceNumber") -> DataRetrieve.AttrType.Number),
+    Some("https://admin.tax.service.gov.uk/integration-hub/apis/details/17eeaf42-11ba-44a9-92bb-8ceaf68d260d#details")
   )
 
   val hmrcRosmRegistrationCheck = DataRetrieveDefinition(
@@ -681,7 +723,9 @@ object DataRetrieveDefinitions {
     List(
       Parameter("regime"),
       Parameter("utr")
-    )
+    ),
+    Map.empty,
+    None
   )
 
   val agentDetails = DataRetrieveDefinition(
@@ -776,7 +820,9 @@ object DataRetrieveDefinitions {
     ),
     List(
       Parameter("agentReferenceNumber")
-    )
+    ),
+    Map.empty,
+    None
   )
 
   val niRefundClaim = DataRetrieveDefinition(
@@ -815,10 +861,11 @@ object DataRetrieveDefinitions {
       DataRetrieve.Attribute("class2ContributionWeeks") -> DataRetrieve.AttrType.Number,
       DataRetrieve.Attribute("class3ContributionWeeks") -> DataRetrieve.AttrType.Number,
       DataRetrieve.Attribute("weeksOfCredits")          -> DataRetrieve.AttrType.Number
-    )
+    ),
+    None
   )
 
-  private val staticDefinitions = DataRetrieveDefinitions(
+  val staticDefinitions = DataRetrieveDefinitions(
     List(
       validateBankDetails,
       businessBankAccountExistence,
