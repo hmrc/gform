@@ -86,10 +86,9 @@ object Form {
       .map(_.getOrElse(TaskIdTaskStatusMapping.empty))
       .orElse(JsonUtils.constReads(TaskIdTaskStatusMapping.empty))
 
-  val startDateWithFallback: Reads[Instant] =
+  val startDateReads: Reads[Instant] =
     (__ \ startDate)
       .read[Instant]
-      .orElse(Reads.pure(Instant.now))
 
   private val reads: Reads[Form] = (
     (FormId.format: Reads[FormId]) and
@@ -104,7 +103,7 @@ object Form {
       EnvelopeExpiryDate.optionFormat and
       componentIdToFileIdWithFallback and
       taskIdTaskStatusWithFallback and
-      startDateWithFallback
+      startDateReads
   )(Form.apply _)
 
   private val writes: OWrites[Form] = OWrites[Form](form =>
