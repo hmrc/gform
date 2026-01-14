@@ -75,7 +75,7 @@ object EncryptedFormFormat {
         EnvelopeExpiryDate.optionFormat and
         Form.componentIdToFileIdWithFallback and
         Form.taskIdTaskStatusWithFallback and
-        Form.startDateWithFallback
+        Form.startDateReads
     )(Form.apply _)
 
     override def reads(json: JsValue): JsResult[Form] = {
