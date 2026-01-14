@@ -36,7 +36,8 @@ case class EnvelopeFile(
   status: FileStatus,
   contentType: ContentType,
   length: Long,
-  metadata: Map[String, List[String]]
+  metadata: Map[String, List[String]],
+  subDirectory: Option[String]
 )
 
 object EnvelopeFile {
@@ -46,7 +47,8 @@ object EnvelopeFile {
       (JsPath \ "status").write[FileStatus] and
       (JsPath \ "contentType").write[ContentType] and
       (JsPath \ "length").write[Long] and
-      (JsPath \ "metadata").write[Map[String, List[String]]])(unlift(EnvelopeFile.unapply))
+      (JsPath \ "metadata").write[Map[String, List[String]]] and
+      (JsPath \ "subDirectory").writeNullable[String])(unlift(EnvelopeFile.unapply))
 
   private val fileReads: Reads[EnvelopeFile] = (
     (JsPath \ "id").read[String] and
@@ -54,7 +56,8 @@ object EnvelopeFile {
       (JsPath \ "status").read[FileStatus] and
       (JsPath \ "contentType").read[ContentType] and
       (JsPath \ "length").read[Long] and
-      (JsPath \ "metadata").read[Map[String, List[String]]]
+      (JsPath \ "metadata").read[Map[String, List[String]]] and
+      (JsPath \ "subDirectory").readNullable[String]
   )(EnvelopeFile.apply _)
 
   implicit val fileFormat: Format[EnvelopeFile] = Format[EnvelopeFile](fileReads, fileWrites)

@@ -16,10 +16,28 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations
 
-import play.api.libs.json.{ JsNull, JsValue }
+import julienrf.json.derived
+import play.api.libs.json.{ Format, JsNull, JsValue }
 import uk.gov.hmrc.http.HttpResponse
 
-case class HandlebarsDestinationResponse(id: DestinationId, status: Int, json: JsValue)
+sealed trait DestinationResponse
+
+object DestinationResponse {
+  case object NoResponse extends DestinationResponse
+}
+
+case class DmsDestinationResponse(
+  dmsFormId: String,
+  classificationType: String,
+  businessArea: String,
+  dataItemCount: Int
+) extends DestinationResponse
+
+object DmsDestinationResponse {
+  implicit val format: Format[DmsDestinationResponse] = derived.oformat()
+}
+
+case class HandlebarsDestinationResponse(id: DestinationId, status: Int, json: JsValue) extends DestinationResponse
 
 object HandlebarsDestinationResponse {
   def apply(destination: Destination.HandlebarsHttpApi, response: HttpResponse): HandlebarsDestinationResponse =

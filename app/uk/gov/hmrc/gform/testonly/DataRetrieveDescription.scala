@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,19 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.sharedmodel.form
+package uk.gov.hmrc.gform.testonly
 
-import play.api.libs.json.OFormat
-import uk.gov.hmrc.gform.sharedmodel.ValueClassFormat
+import julienrf.json.derived
+import play.api.libs.json.{ JsObject, OFormat }
 
-final case class FileId(value: String) extends AnyVal {
-  def prefix(prefix: String) = new FileId(prefix + value)
-}
+case class DataRetrieveDescription(
+  tpe: String,
+  exampleJson: JsObject,
+  attributeReferences: List[String],
+  documentationUrl: Option[String],
+  isArrayResult: Boolean
+)
 
-object FileId {
-
-  implicit val format: OFormat[FileId] = ValueClassFormat.oformat("fileId", FileId.apply, _.value)
+object DataRetrieveDescription {
+  implicit val format: OFormat[DataRetrieveDescription] = derived.oformat()
 }

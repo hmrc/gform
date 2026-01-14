@@ -711,7 +711,6 @@ class HandlebarsTemplateProcessorHelpers(
     def findInList(list: List[Destination]): Option[Destination.HandlebarsHttpApi] = list match {
       case Nil                                                               => None
       case (d: Destination.HandlebarsHttpApi) :: _ if destinationId === d.id => Some(d)
-      case (c: Destination.Composite) :: rest                                => findInList(rest ::: c.destinations.toList)
       case _ :: rest                                                         => findInList(rest)
     }
 

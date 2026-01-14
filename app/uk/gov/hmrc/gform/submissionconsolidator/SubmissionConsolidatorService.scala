@@ -17,7 +17,6 @@
 package uk.gov.hmrc.gform.submissionconsolidator
 
 import java.time.format.DateTimeFormatter
-
 import cats.data.EitherT
 import cats.implicits._
 import play.api.libs.json.Json
@@ -26,7 +25,7 @@ import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.form.FormAlgebra
 import uk.gov.hmrc.gform.sharedmodel.form.{ FormData, FormField, Submitted }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormComponentId
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, HandlebarsTemplateProcessorModel, TemplateType }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationResponse, HandlebarsTemplateProcessorModel, TemplateType }
 import uk.gov.hmrc.gform.submission.destinations.DestinationSubmissionInfo
 import uk.gov.hmrc.gform.submission.handlebars.{ FocussedHandlebarsModelTree, HandlebarsModelTree, HandlebarsTemplateProcessor }
 import uk.gov.hmrc.http.HeaderCarrier
@@ -41,7 +40,7 @@ trait SubmissionConsolidatorAlgebra[F[_]] {
     accumulatedModel: HandlebarsTemplateProcessorModel,
     modelTree: HandlebarsModelTree,
     formData: Option[FormData]
-  )(implicit headerCarrier: HeaderCarrier): F[Unit]
+  )(implicit headerCarrier: HeaderCarrier): F[DestinationResponse]
 }
 
 class SubmissionConsolidatorService(
@@ -59,7 +58,7 @@ class SubmissionConsolidatorService(
     accumulatedModel: HandlebarsTemplateProcessorModel,
     modelTree: HandlebarsModelTree,
     formData: Option[FormData]
-  )(implicit headerCarrier: HeaderCarrier): FOpt[Unit] =
+  )(implicit headerCarrier: HeaderCarrier): FOpt[DestinationResponse] =
     for {
       scForm         <- buildSCForm(destination, submissionInfo, formData, accumulatedModel, modelTree)
       sendFormResult <- EitherT(submissionConsolidatorConnector.sendForm(scForm)).leftMap(UnexpectedState)

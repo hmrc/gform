@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.gform.notifier
 
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationResponse
+
 trait NotifierAlgebra[F[_]] {
-  def email(details: NotifierEmail): F[Unit]
+  def email(details: NotifierEmail): F[DestinationResponse]
 }

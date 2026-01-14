@@ -32,7 +32,8 @@ import uk.gov.hmrc.gform.sdes.workitem.DestinationWorkItemAlgebra
 import uk.gov.hmrc.gform.sharedmodel.LangADT
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId, Submitted }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.HandlebarsTemplateProcessorModel
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DmsDestinationResponse
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DestinationResponse, HandlebarsTemplateProcessorModel }
 import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination.Dms
 import uk.gov.hmrc.gform.submission.PdfAndXmlSummariesFactory
 import uk.gov.hmrc.gform.submission.handlebars.HandlebarsModelTree
@@ -59,7 +60,7 @@ class DmsSubmitter(
     modelTree: HandlebarsModelTree,
     hmrcDms: HmrcDms,
     l: LangADT
-  )(implicit hc: HeaderCarrier): FOpt[Unit] = {
+  )(implicit hc: HeaderCarrier): FOpt[DestinationResponse] = {
     import submissionInfo._
     implicit val now: Instant = Instant.now()
     for {
@@ -83,17 +84,29 @@ class DmsSubmitter(
             .apply(form, formTemplate, accumulatedModel, modelTree, customerId, submission.submissionRef, updatedDms, l)
         )
       envelope <- envelopeAlgebra.get(submission.envelopeId)
-      _        <- objectStoreAlgebra.submitEnvelope(submission, summaries, updatedDms, formTemplate._id)
+      _        <- objectStoreAlgebra.submitEnvelope(submission, summaries, updatedDms, formTemplate._id, envelope)
       _ <-
         destinationWorkItemAlgebra
-          .pushWorkItem(submission.envelopeId, form.formTemplateId, submission.submissionRef, Dms, None)
+          .pushWorkItem(
+            submission.envelopeId,
+            form.formTemplateId,
+            submission.submissionRef,
+            Dms,
+            None,
+            hmrcDms.submissionPrefix
+          )
       envelopeDetails <-
         success(
           Envelope(envelope.files.map(f => File(FileId(f.fileId), FileStatus.Available, f.fileName, f.length)))
         )
       _ <- success(logFileSizeBreach(submission.envelopeId, envelopeDetails.files))
       _ <- formService.updateFormStatus(submissionInfo.formId, Submitted)
-    } yield ()
+    } yield DmsDestinationResponse(
+      updatedDms.dmsFormId,
+      updatedDms.classificationType,
+      updatedDms.businessArea,
+      modelTree.value.structuredFormData.fields.length
+    )
   }
 
   /** This log line is used in alert-config, to trigger a pager duty alert when files sizes exceeds the threshold

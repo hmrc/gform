@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,19 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.sharedmodel.form
+package uk.gov.hmrc.gform.screenshottool
 
-import play.api.libs.json.OFormat
-import uk.gov.hmrc.gform.sharedmodel.ValueClassFormat
+import play.api.mvc.{ Action, AnyContent, ControllerComponents }
+import uk.gov.hmrc.gform.config.AppConfig
+import uk.gov.hmrc.gform.controllers.BaseController
 
-final case class FileId(value: String) extends AnyVal {
-  def prefix(prefix: String) = new FileId(prefix + value)
-}
+import javax.inject.Singleton
+import scala.concurrent.ExecutionContext
 
-object FileId {
-
-  implicit val format: OFormat[FileId] = ValueClassFormat.oformat("fileId", FileId.apply, _.value)
+@Singleton
+class ScreenshotController(cc: ControllerComponents, config: AppConfig)(implicit ec: ExecutionContext)
+    extends BaseController(cc) {
+  def latestVersion: Action[AnyContent] = Action { _ =>
+    Ok(config.screenshotToolLatestVersion)
+  }
 }

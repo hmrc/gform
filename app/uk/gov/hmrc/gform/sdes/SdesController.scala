@@ -45,8 +45,7 @@ class SdesController(
     sdesAlgebra.findSdesSubmissionByEnvelopeId(envelopeId).map {
       case Nil =>
         Ok(s"Not found. There are no data in mongo db collection 'sdesSubmission' for envelopeId: ${envelopeId.value}.")
-      case s :: Nil => Ok(Json.toJson(s))
-      case xs       => Ok(Json.toJson(xs))
+      case xs => Ok(Json.toJson(xs))
     }
   }
 

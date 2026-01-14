@@ -21,7 +21,7 @@ import uk.gov.hmrc.gform.core.{ FOpt, fromFutureA, fromOptA }
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.hip.HipAlgebra
 import uk.gov.hmrc.gform.sharedmodel.DestinationResult
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationId }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationId, DestinationResponse }
 
 import scala.concurrent.{ ExecutionContext, Future }
 
@@ -36,14 +36,14 @@ class NiRefundSubmitter(
     d: Destination.NiRefundClaimApi,
     maybeDesRes: Option[DestinationResult],
     submissionInfo: DestinationSubmissionInfo
-  ): FOpt[Unit] = {
+  ): FOpt[DestinationResponse] = {
     val formId = submissionInfo.formId.value
 
     for {
       destinationResult <- validateDestinationResult(maybeDesRes, d.id, formId)
       bankDetails       <- extractBankDetails(destinationResult, d.id, formId)
       _                 <- submitToHip(bankDetails, submissionInfo.submission.envelopeId.value)
-    } yield ()
+    } yield DestinationResponse.NoResponse
   }
 
   private def validateDestinationResult(

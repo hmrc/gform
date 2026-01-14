@@ -453,7 +453,7 @@ class ExtractAndTranslateSuite extends FunSuite {
     )
   ).zipWithIndex.foreach { case ((english, expectedBreakdown), index) =>
     test(s"html extraction ${index + 1}") {
-      val translateTexts = ExtractAndTranslate(english.stripMargin).translateTexts.map(_.en)
+      val translateTexts = ExtractAndTranslate(english.stripMargin, None).translateTexts.map(_.en)
       assertEquals(translateTexts, expectedBreakdown)
     }
   }
@@ -871,7 +871,7 @@ class ExtractAndTranslateSuite extends FunSuite {
   ).zipWithIndex.foreach { case ((spreadsheetData, english, expectedWelsh), index) =>
     val spreadsheet = Spreadsheet(spreadsheetData)
     test(s"html translation ${index + 1}") {
-      val translateTexts = ExtractAndTranslate(english.stripMargin).translate(spreadsheet)
+      val translateTexts = ExtractAndTranslate(english.stripMargin, None).translate(spreadsheet)
       assertEquals(translateTexts, expectedWelsh.stripMargin)
     }
   }

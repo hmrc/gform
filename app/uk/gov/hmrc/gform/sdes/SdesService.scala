@@ -56,7 +56,8 @@ trait SdesAlgebra[F[_]] {
     formTemplateId: FormTemplateId,
     submissionRef: SubmissionRef,
     destination: SdesDestination,
-    filePrefix: Option[String]
+    filePrefix: Option[String],
+    submissionPrefix: Option[String]
   )(implicit
     hc: HeaderCarrier
   ): F[HttpResponse]
@@ -113,7 +114,8 @@ class SdesService(
     formTemplateId: FormTemplateId,
     submissionRef: SubmissionRef,
     destination: SdesDestination,
-    filePrefix: Option[String]
+    filePrefix: Option[String],
+    submissionPrefix: Option[String]
   )(implicit
     hc: HeaderCarrier
   ): Future[HttpResponse] = {
@@ -124,12 +126,13 @@ class SdesService(
         formTemplateId,
         submissionRef,
         destination,
-        filePrefix
+        filePrefix,
+        submissionPrefix
       )
     val sdesRouting = sdesSubmission.sdesDestination.sdesRouting(sdesConfig)
 
     for {
-      objSummary <- prepareFileForNotification(envelopeId, destination, filePrefix)
+      objSummary <- prepareFileForNotification(envelopeId, destination, filePrefix, submissionPrefix)
       notifyRequest = createNotifyRequest(objSummary, correlationId, sdesRouting)
       sdesHistory =
         SdesHistory.create(
@@ -264,9 +267,15 @@ class SdesService(
                   val envelope = envelopeAlgebra.get(sdesSubmission.envelopeId)
                   envelope.map(e =>
                     (
-                      e.files.count(f => f.fileId =!= ObjectStoreService.FileIds.dataStore.value),
-                      e.files.count(f => !ObjectStoreService.FileIds.generatedFileIds.map(_.value).contains(f.fileId)),
-                      e.files.map(_.length).sum
+                      e.files.count(f =>
+                        f.fileId =!= ObjectStoreService.FileIds.dataStore.value && f.subDirectory === sdesSubmission.submissionPrefix
+                      ),
+                      e.files.count(f =>
+                        !ObjectStoreService.FileIds.generatedFileIds
+                          .map(_.value)
+                          .contains(f.fileId) && f.subDirectory.isEmpty
+                      ),
+                      e.files.filter(_.subDirectory === sdesSubmission.submissionPrefix).map(_.length).sum
                     )
                   )
                 case _ => Future.successful((1, 0, 0L))
@@ -359,12 +368,14 @@ class SdesService(
             Future.failed(new RuntimeException(s"Correlation Id: $correlationID is locked"))
           } else {
             val envelopeId = submission.envelopeId
+            val withSubmissionPrefix = submission.submissionPrefix.fold("")(p => s", with submission prefix: $p")
             logger.info(
-              s"Received callback for envelopeId: ${envelopeId.value}, destination: ${submission.destination.getOrElse("dms")}"
+              s"Received callback for envelopeId: ${envelopeId.value}$withSubmissionPrefix, destination: ${submission.destination
+                .getOrElse("dms")}"
             )
             if (submission.status === Replaced) {
               logger.error(
-                s"Received callback for a replaced submission: correlation id: $correlationID, envelope id ${envelopeId.value}, destination: ${submission.destination
+                s"Received callback for a replaced submission: correlation id: $correlationID, envelope id ${envelopeId.value}$withSubmissionPrefix, destination: ${submission.destination
                   .getOrElse("dms")}"
               )
               Future.failed(new IllegalStateException(s"Correlation ID [$correlationID] has already been replaced"))
@@ -406,7 +417,7 @@ class SdesService(
   private def deleteFiles(submission: SdesSubmission, fileName: String)(implicit hc: HeaderCarrier): Future[Unit] = {
     val sdesDestination = submission.sdesDestination
     val envelopeId = submission.envelopeId
-    val paths = sdesDestination.objectStorePaths(envelopeId)
+    val paths = sdesDestination.objectStorePaths(envelopeId, submission.submissionPrefix)
     sdesDestination match {
       case SdesDestination.DataStore | SdesDestination.DataStoreLegacy | SdesDestination.HmrcIlluminate =>
         objectStoreAlgebra.deleteFile(paths.ephemeral, fileName)
@@ -420,11 +431,12 @@ class SdesService(
   private def prepareFileForNotification(
     envelopeId: EnvelopeId,
     destination: SdesDestination,
-    filePrefix: Option[String]
+    filePrefix: Option[String],
+    submissionPrefix: Option[String]
   )(implicit
     hc: HeaderCarrier
   ): Future[ObjectSummaryWithMd5] = {
-    val paths = destination.objectStorePaths(envelopeId)
+    val paths = destination.objectStorePaths(envelopeId, submissionPrefix)
     destination match {
       case SdesDestination.DataStore | SdesDestination.DataStoreLegacy | SdesDestination.HmrcIlluminate =>
         val fileName = s"${envelopeId.value}.json"
@@ -469,7 +481,8 @@ class SdesService(
                       _ <- prepareFileForNotification(
                              submission.envelopeId,
                              submission.sdesDestination,
-                             submission.filePrefix
+                             submission.filePrefix,
+                             submission.submissionPrefix
                            )
                       res <- createWorkItem(submission)
                     } yield res
@@ -488,7 +501,8 @@ class SdesService(
              sdesSubmission.formTemplateId,
              sdesSubmission.submissionRef,
              sdesDestination,
-             sdesSubmission.filePrefix
+             sdesSubmission.filePrefix,
+             sdesSubmission.submissionPrefix
            )
       _ <-
         saveSdesSubmission(

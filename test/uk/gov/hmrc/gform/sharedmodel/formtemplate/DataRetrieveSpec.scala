@@ -171,6 +171,11 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
             DataRetrieve.Attribute("accountName"),
             ConstructAttribute.AsIs(Fetch(List("accountName"))),
             Some(AllowedValues(List("*"), AllowedValueType.AnyValueType, isRequired = false))
+          ),
+          AttributeInstruction(
+            DataRetrieve.Attribute("iban"),
+            ConstructAttribute.AsIs(Fetch(List("iban"))),
+            Some(AllowedValues(List("*"), AllowedValueType.AnyValueType, isRequired = false))
           )
         )
       ),
@@ -1073,7 +1078,8 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
         List(
           AttributeInstruction(
             DataRetrieve.Attribute("authorised"),
-            ConstructAttribute.AsIs(Fetch(List("authorised")))
+            ConstructAttribute.AsIs(Fetch(List("authorised"))),
+            Some(AllowedValues(List("true", "false"), AllowedValueType.JsStringType, isRequired = true))
           )
         )
       ),
@@ -1110,7 +1116,8 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
         List(
           AttributeInstruction(
             DataRetrieve.Attribute("authorised"),
-            ConstructAttribute.AsIs(Fetch(List("authorised")))
+            ConstructAttribute.AsIs(Fetch(List("authorised"))),
+            Some(AllowedValues(List("true", "false"), AllowedValueType.JsStringType, isRequired = true))
           )
         )
       ),

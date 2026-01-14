@@ -27,7 +27,7 @@ import uk.gov.hmrc.gform.sdes.workitem.DestinationWorkItemAlgebra
 import uk.gov.hmrc.gform.sharedmodel.{ DestinationResult, LangADT }
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 import uk.gov.hmrc.gform.sharedmodel.form.Submitted
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationResponse }
 import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination.InfoArchive
 import uk.gov.hmrc.gform.submission.{ InfoArchiveXMLGenerator, PdfAndXmlSummariesFactory }
 import uk.gov.hmrc.gform.submission.handlebars.HandlebarsModelTree
@@ -55,7 +55,7 @@ class InfoArchiveSubmitter(
     destinationResult: Option[DestinationResult],
     d: Destination.InfoArchive,
     l: LangADT
-  )(implicit hc: HeaderCarrier): FOpt[Unit] = {
+  )(implicit hc: HeaderCarrier): FOpt[DestinationResponse] = {
     import submissionInfo._
 
     val pdiFileName = "eas_pdi" //Preservation Description Information
@@ -107,9 +107,16 @@ class InfoArchiveSubmitter(
              ContentType.`application/xml`
            )
       _ <-
-        destinationWorkItemAlgebra.pushWorkItem(envelopeId, formTemplateId, submission.submissionRef, InfoArchive, None)
+        destinationWorkItemAlgebra.pushWorkItem(
+          envelopeId,
+          formTemplateId,
+          submission.submissionRef,
+          InfoArchive,
+          None,
+          None
+        )
       _ <- formService.updateFormStatus(submissionInfo.formId, Submitted)
-    } yield ()
+    } yield DestinationResponse.NoResponse
   }
 
   private def calcHash(content: Array[Byte]) = {

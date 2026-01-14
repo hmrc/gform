@@ -54,31 +54,28 @@ class RepoDestinationAuditer(
     submissionReference: SubmissionRef,
     template: FormTemplate,
     model: HandlebarsTemplateProcessorModel
-  )(implicit hc: HeaderCarrier): FOpt[Unit] = destination match {
-    case _: Destination.Composite => ().pure[FOpt]
-    case _ =>
-      for {
-        form          <- formAlgebra.get(formId)
-        summaryHtmlId <- findOrInsertSummaryHtml(summaryHtml)
-        _ <- apply(
-               DestinationAudit(
-                 formId,
-                 form.formTemplateId,
-                 destination.id,
-                 getDestinationType(destination),
-                 handlebarsDestinationResponseStatusCode,
-                 handlebarsDestinationResponseErrorBody,
-                 form.status,
-                 form.userId,
-                 getCaseworkerUsername(form.formData),
-                 getParentFormSubmissionRef(template, model),
-                 form.thirdPartyData.reviewData.getOrElse(Map.empty),
-                 submissionReference,
-                 summaryHtmlId
-               )
+  )(implicit hc: HeaderCarrier): FOpt[Unit] =
+    for {
+      form          <- formAlgebra.get(formId)
+      summaryHtmlId <- findOrInsertSummaryHtml(summaryHtml)
+      _ <- apply(
+             DestinationAudit(
+               formId,
+               form.formTemplateId,
+               destination.id,
+               getDestinationType(destination),
+               handlebarsDestinationResponseStatusCode,
+               handlebarsDestinationResponseErrorBody,
+               form.status,
+               form.userId,
+               getCaseworkerUsername(form.formData),
+               getParentFormSubmissionRef(template, model),
+               form.thirdPartyData.reviewData.getOrElse(Map.empty),
+               submissionReference,
+               summaryHtmlId
              )
-      } yield ()
-  }
+           )
+    } yield ()
 
   private def apply(audit: DestinationAudit): FOpt[Unit] =
     success(logger.info(s"Destination audit: ${DestinationAudit.format.writes(audit)}")) >>
@@ -172,7 +169,6 @@ class RepoDestinationAuditer(
     case _: Destination.HmrcDms           => Destination.hmrcDms
     case _: Destination.DataStore         => Destination.dataStore
     case _: Destination.InfoArchive       => Destination.infoArchive
-    case _: Destination.Composite         => Destination.composite
     case _: Destination.StateTransition   => Destination.stateTransition
     case d: Destination.HandlebarsHttpApi => s"${Destination.handlebarsHttpApi}.${d.profile.name}"
     case _                                => "Unknown"

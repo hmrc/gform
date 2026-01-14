@@ -22,8 +22,12 @@ import io.circe._
 import io.circe.syntax._
 import io.circe.CursorOp._
 import io.circe.parser._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.SectionNumber.{ Classic, TaskList }
+
 import java.io.{ BufferedOutputStream, BufferedReader, StringReader }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.Constant
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Constant, Coordinates, FormTemplate, Section, TaskNumber, TaskSectionNumber, TemplateSectionIndex }
+
+import scala.util.Try
 
 case class Lang(en: String, cy: String)
 
@@ -103,15 +107,21 @@ object Translator {
   }
 
   def eliminateDeepTraverse(steps: List[ReductionInProgress]): List[List[Instruction]] = {
-    val (nextSteps, instructions) = steps.foldRight((List.empty[ReductionInProgress], List.empty[Instruction])) {
-      case (step, (forReduction, instructions)) =>
-        step match {
-          case Wrapper(instruction) => (step :: forReduction, instruction :: instructions)
-          case DeepTraverse(arraySize) if arraySize > 1 =>
-            (DeepTraverse(arraySize - 1) :: Wrapper(Pure(MoveRight)) :: forReduction, instructions)
-          case DeepTraverse(arraySize) => (forReduction, instructions)
-        }
+
+    val nextStepsMutable = scala.collection.mutable.ListBuffer[ReductionInProgress]()
+    val instructionsMutable = scala.collection.mutable.ListBuffer[Instruction]()
+
+    steps.collect {
+      case step @ Wrapper(instruction) =>
+        nextStepsMutable.addOne(step)
+        instructionsMutable.addOne(instruction)
+      case step @ DeepTraverse(arraySize) if arraySize > 1 =>
+        nextStepsMutable.addOne(Wrapper(Pure(MoveRight)))
+        nextStepsMutable.addOne(DeepTraverse(arraySize - 1))
     }
+
+    val nextSteps = nextStepsMutable.toList
+    val instructions = instructionsMutable.toList
 
     val unresolved = nextSteps.exists {
       case DeepTraverse(_) => true
@@ -272,40 +282,56 @@ class Translator(json: Json, paths: List[List[Instruction]], val topLevelExprDat
         }.root
       }
 
-  private def smartStringsRows(cursors: List[HCursor => ACursor]): List[Row] =
+  private def smartStringsRows(cursors: List[HCursor => ACursor]): List[Row] = {
+    val rows = scala.collection.mutable.ListBuffer[Row]()
     cursors
-      .foldLeft(List.empty[Row]) { case (rows, f) =>
+      .foreach { f =>
         val aCursor = f(json.hcursor)
         val attemptLang = aCursor.as[Lang]
         val attemptString = aCursor.as[String]
         val path = CursorOp.opsToPath(aCursor.history)
         attemptString
           .map { en =>
-            Row(path, en, "") :: rows
+            rows.addOne(Row(path, en, ""))
           }
           .orElse(attemptLang.map { lang =>
-            Row(path, lang.en, lang.cy) :: rows
+            rows.addOne(Row(path, lang.en, lang.cy))
           })
-          .toOption
-          .getOrElse(rows)
-          .sortBy(_.path)
-
       }
-      .distinct
+    rows.view.distinct.toList.sortBy(_.path)
+  }
 
   val fetchRows: List[Row] = smartStringsRows(smartStringCursors) ++ topLevelExprData.toRows
 
-  val rowsForTranslation: List[TranslatedRow] = fetchRows
-    .filterNot(row => ExtractAndTranslate(row.en).translateTexts.isEmpty)
+  lazy val rowsForTranslation: List[TranslatedRow] = fetchRows
+    .filterNot(row => ExtractAndTranslate(row.en, Some(row.path)).translateTexts.isEmpty)
     .map(row => TranslatedRow(row.en, row.cy))
     .distinct
     .sortBy(_.en)
 
-  val untranslatedRowsForTranslation: List[EnTextToTranslate] = fetchRows
-    .filterNot(row => row.cy.trim.nonEmpty) // Do not send to translation what has a welsh in json
-    .flatMap(row => ExtractAndTranslate(row.en).translateTexts)
-    .distinct
-    .sortBy(_.en)
+  lazy val untranslatedRowsForTranslation: List[EnTextToTranslate] = {
+
+    def consolidatePaths(list: List[EnTextToTranslate]) = {
+      val map = scala.collection.mutable.Map[String, scala.collection.mutable.Set[String]]()
+      list.foreach { entry =>
+        map.get(entry.en) match {
+          case Some(value) =>
+            value.addAll(entry.path)
+          case None =>
+            map.addOne(entry.en -> scala.collection.mutable.Set.from(entry.path))
+        }
+      }
+      map.view.map { case (key, value) => EnTextToTranslate(key, value.toSeq.sorted) }.toList
+    }
+
+    consolidatePaths(
+      fetchRows
+        .filterNot(row => row.cy.trim.nonEmpty) // Do not send to translation what has a welsh in json
+        .flatMap(row => ExtractAndTranslate(row.en, Some(row.path)).translateTexts)
+        .distinct
+    )
+      .sortBy(_.en)
+  }
 
   def translateJson(
     expressionRows: List[Row]
@@ -524,48 +550,15 @@ object TextExtractor {
       pathForEmailAuth(authConfig) ++
       pathForEmailAuth(configs)
 
-  private def prepareRows(rows: List[Row]): List[List[String]] = {
-    val rowsString: List[List[String]] = rows.sortBy(_.path).map { row =>
-      List(row.path, row.en, row.cy)
-    }
-    List("path", "en", "cy") :: escapeString(rowsString)
-  }
-
-  private def prepareTranslatebleRows(rows: List[TranslatedRow]): List[(String, String)] = {
-    val rowsString: List[(String, String)] = rows.sortBy(_.en).map { row =>
-      (row.en, row.cy)
-    }
-    ("en", "cy") :: rowsString
-  }
-
-  private def writeCvsToOutputStream(rows: List[Row], bos: BufferedOutputStream): Unit = {
+  private def writeCvsToOutputStream(rows: List[List[String]], bos: BufferedOutputStream): Unit = {
     val writer = CSVWriter.open(bos)
-    writer.writeAll(prepareRows(rows))
+    writer.writeAll(rows)
     writer.close()
   }
 
   def escape(s: String): String = s.replace("\n", "\\n")
 
   def escapeString(row: List[List[String]]): List[List[String]] = row.map(_.map(escape))
-
-  def escapeRows(rows: List[(String, String)]): List[(String, String)] = rows.map { case (en, cy) =>
-    (escape(en), escape(cy))
-  }
-
-  private def writeTranslatableCvsToOutputStream(rows: List[TranslatedRow], bos: BufferedOutputStream): Unit = {
-    val writer = CSVWriter.open(bos)
-    writer.writeAll(escapeRows(prepareTranslatebleRows(rows)).map { case (en, cy) => List(en, cy) })
-    writer.close()
-  }
-
-  private def writeEnTextToTranslateCvsToOutputStream(
-    rows: List[EnTextToTranslate],
-    bos: BufferedOutputStream
-  ): Unit = {
-    val writer = CSVWriter.open(bos)
-    writer.writeAll(TextExtractor.escapeString(rows.sortBy(_.en).map(en => List(en.en))))
-    writer.close()
-  }
 
   private def readRows(reader: CSVReader): Spreadsheet = {
     val rows = reader.all().map {
@@ -595,7 +588,7 @@ object TextExtractor {
   ): (List[MissingRow], List[Row]) = {
     val isTopLevelExpression: Set[String] = topLevelExprData.paths
     rows.foldLeft((List.empty[MissingRow], List.empty[Row])) { case ((missingRows, rows), row) =>
-      val extractAndTranslate: ExtractAndTranslate = ExtractAndTranslate(row.en)
+      val extractAndTranslate: ExtractAndTranslate = ExtractAndTranslate(row.en, Some(row.path))
 
       if (extractAndTranslate.isTranslateable(spreadsheet)) {
         val welshTranslation: String = extractAndTranslate.translate(spreadsheet)
@@ -638,38 +631,183 @@ object TextExtractor {
     (translatedJson.spaces2.replaceAll(" :", ":"), stats)
   }
 
-  def generateCvsFromString(source: String, bos: BufferedOutputStream): Unit =
-    parse(source).toOption.fold(()) { json =>
-      val rows = Translator(json, gformPaths).fetchRows
-      writeCvsToOutputStream(rows, bos)
+  private def withTranslator(source: String) =
+    parse(source).toOption.map { json =>
+      Translator(json, gformPaths)
     }
 
-  def generateTranslatableCvsFromString(source: String, bos: BufferedOutputStream): Unit =
-    parse(source).toOption.fold(()) { json =>
-      val rows = Translator(json, gformPaths).rowsForTranslation
-      writeTranslatableCvsToOutputStream(rows, bos)
+  private def generateCsvFromRows(source: String, bos: BufferedOutputStream)(
+    translatorToRows: Translator => List[List[String]]
+  ): Unit =
+    withTranslator(source).fold(()) { translator =>
+      writeCvsToOutputStream(
+        escapeString(translatorToRows(translator)),
+        bos
+      )
     }
 
-  def generateBriefTranslatableCvsFromString(source: String, bos: BufferedOutputStream): Unit =
-    parse(source).toOption.fold(()) { json =>
-      val rows = Translator(json, gformPaths).untranslatedRowsForTranslation
-      writeEnTextToTranslateCvsToOutputStream(rows, bos)
+  private def prepareTranslatebleRows(rows: List[TranslatedRow]): List[List[String]] = {
+    val rowsString = rows.sortBy(_.en).map { row =>
+      List(row.en, row.cy)
+    }
+    List("en", "cy") :: rowsString
+  }
+
+  def generateCsvInternal: (String, BufferedOutputStream) => Unit =
+    generateCsvFromRows(_, _) { translator =>
+      val rows =
+        translator.fetchRows
+          .sortBy(_.path)
+          .map(row => List(row.path, row.en, row.cy))
+      List("path", "en", "cy") :: rows
     }
 
-  def generateTranslatableRows(source: String): List[(String, String)] =
-    parse(source).toOption.fold(List.empty[(String, String)]) { json =>
-      val rows = Translator(json, gformPaths).rowsForTranslation
-      prepareTranslatebleRows(rows)
+  def generateTranslatableCvsFromString: (String, BufferedOutputStream) => Unit =
+    generateCsvFromRows(_, _)(translator => prepareTranslatebleRows(translator.rowsForTranslation))
+
+  def generateBriefTranslatableCvsFromString: (String, BufferedOutputStream) => Unit =
+    generateCsvFromRows(_, _) { translator =>
+      translator.untranslatedRowsForTranslation
+        .map(en => List(en.en))
     }
 
-  def generateBriefTranslatableRows(source: String): List[EnTextToTranslate] =
-    parse(source).toOption.fold(List.empty[EnTextToTranslate]) { json =>
-      Translator(json, gformPaths).untranslatedRowsForTranslation
+  def generateTranslatableRows(source: String): List[List[String]] =
+    withTranslator(source).fold(List.empty[List[String]]) { translator =>
+      prepareTranslatebleRows(translator.rowsForTranslation)
+    }
+
+  private sealed trait SectionType
+  private final object ClassicNormal extends SectionType
+  private final object ClassicRepeating extends SectionType
+  private final object ClassicAddToList extends SectionType
+
+  private case class PathIndex(normalIndex: Int, taskIndex: Option[Int], taskSectionIndex: Option[Int])
+
+  def generateBriefTranslatableRows(source: String, formTemplate: FormTemplate, isDebug: Boolean): List[List[String]] =
+    withTranslator(source).fold(List.empty[List[String]]) { translator =>
+      def sectionToSectionType(section: Section) = section match {
+        case _: Section.NonRepeatingPage => ClassicNormal
+        case _: Section.RepeatingPage    => ClassicRepeating
+        case _: Section.AddToList        => ClassicAddToList
+      }
+
+      val pathIndexToSectionType =
+        formTemplate.formKind.fold { classic =>
+          classic.sections.zipWithIndex.map { case (section, sectionIndex) =>
+            PathIndex(sectionIndex, None, None) -> sectionToSectionType(section)
+          }
+        } { taskList =>
+          taskList.sections.toList.zipWithIndex.flatMap { case (taskSection, sectionIndex) =>
+            taskSection.tasks.toList.zipWithIndex.flatMap { case (task, taskIndex) =>
+              task.sections.toList.zipWithIndex.map { case (section, taskSectionIndex) =>
+                PathIndex(sectionIndex, Some(taskIndex), Some(taskSectionIndex)) -> sectionToSectionType(section)
+              }
+            }
+          }
+        }.toMap
+
+      def getPathIndex(path: String): Option[PathIndex] = {
+        val sectionPattern = raw"\.sections\[(\d+)\]".r
+        val taskPattern = raw"\.tasks\[(\d+)\]".r
+
+        // Find all .sections[n] indices
+        val sectionIndices = sectionPattern.findAllMatchIn(path).map(_.group(1)).toList
+        val taskIndices = taskPattern.findAllMatchIn(path).map(_.group(1)).toList
+
+        (sectionIndices, taskIndices) match {
+          // expecting something like outer section, task, nested section
+          case (outer :: nested :: Nil, task :: Nil) =>
+            Some(PathIndex(outer.toInt, Some(task.toInt), Some(nested.toInt)))
+          case (outer :: Nil, task :: Nil) =>
+            Some(PathIndex(outer.toInt, Some(task.toInt), None))
+          case (List(outer), Nil) =>
+            Some(PathIndex(outer.toInt, None, None))
+          // fallback for unexpected cases
+          case _ =>
+            None
+        }
+      }
+
+      def getPageNumberFromPath(path: String) =
+        path
+          .split("\\.pages\\[")
+          .lastOption
+          .flatMap(_.split("]").headOption)
+          .flatMap(num => Try(num.toInt).toOption)
+
+      def containAnyOf(str: String, segments: Seq[String]) =
+        segments.exists { segment =>
+          str.contains(segment)
+        }
+
+      val summarySectionPaths = Seq(".summarySection", ".summaryDescription", ".summaryName")
+
+      def pathToSectionNumber(path: String) = {
+        val index = getPathIndex(path)
+        val sectionType = index.flatMap(pathIndexToSectionType.get)
+        val pageNumber = getPageNumberFromPath(path)
+
+        def getClassic(normalIndex: Int, sectionType: SectionType) = {
+          val index = TemplateSectionIndex(normalIndex)
+          sectionType match {
+            case ClassicNormal    => Some(Classic.NormalPage(index))
+            case ClassicRepeating => Some(Classic.RepeatedPage(index, 0))
+            case ClassicAddToList =>
+              pageNumber match {
+                case Some(pageNumber)                             => Some(Classic.AddToListPage.Page(index, 1, pageNumber))
+                case None if path.contains(".defaultPage")        => Some(Classic.AddToListPage.DefaultPage(index))
+                case None if path.contains(".cyaPage")            => Some(Classic.AddToListPage.CyaPage(index, 1))
+                case None if path.contains(".addAnotherQuestion") => Some(Classic.AddToListPage.RepeaterPage(index, 1))
+                case None if path.contains(".title")              => Some(Classic.AddToListPage.RepeaterPage(index, 1))
+                case None if path.contains(".caption")            => Some(Classic.AddToListPage.RepeaterPage(index, 1))
+                case None if path.contains(".declarationSection") =>
+                  Some(Classic.AddToListPage.DeclarationPage(index, 1))
+                case _ => None
+              }
+          }
+        }
+
+        index -> sectionType match {
+          case (Some(PathIndex(normalIndex, None, None)), Some(sectionType)) =>
+            getClassic(normalIndex, sectionType)
+          case (Some(PathIndex(normalIndex, Some(taskIndex), Some(taskSectionIndex))), Some(sectionType)) =>
+            getClassic(taskSectionIndex, sectionType).map { classic =>
+              val coordinates = Coordinates(TaskSectionNumber(normalIndex), TaskNumber(taskIndex))
+              TaskList(coordinates, classic)
+            }
+          case (Some(PathIndex(normalIndex, Some(taskIndex), taskSectionIndex)), None)
+              if !containAnyOf(path, summarySectionPaths) =>
+            Some(Classic.AddToListPage.Page(TemplateSectionIndex(normalIndex), 1, 1))
+          case (Some(PathIndex(normalIndex, None, None)), None) if !containAnyOf(path, summarySectionPaths) =>
+            Some(Classic.NormalPage(TemplateSectionIndex(normalIndex)))
+          case _ => None
+        }
+      }
+
+      def sectionText(paths: Seq[String]) =
+        paths
+          .map { path =>
+            path -> pathToSectionNumber(path)
+          }
+          .collect {
+            case (path, Some(sectionNumber))                              => "screenshot-" + sectionNumber.value + ".png"
+            case (path, None) if path.contains(".formName")               => "any"
+            case (path, None) if path.contains(".submitSection")          => "submit section"
+            case (path, None) if path.contains(".acknowledgementSection") => "acknowledgement section"
+            case (path, None) if containAnyOf(path, summarySectionPaths)  => "summary section"
+            case (path, _) if isDebug                                     => s"[not resolved, path: $path]"
+          }
+          .toSet
+          .toList
+          .sorted
+          .mkString("; ")
+
+      List("en", "cy", "screenshot") :: translator.untranslatedRowsForTranslation
+        .map(textToTranslate => List(textToTranslate.en, "", sectionText(textToTranslate.path)))
     }
 
   def debug(source: String): String =
-    parse(source).toOption.fold("") { json =>
-      val translator = Translator(json, gformPaths)
+    withTranslator(source).fold("") { translator =>
       translator.translateJsonDebug.spaces2
     }
 

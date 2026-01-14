@@ -37,7 +37,7 @@ class SdesRenotifyService(
       result <- sdesSubmission match {
                   case Some(submission) =>
                     val sdesDestination = submission.sdesDestination
-                    val paths = sdesDestination.objectStorePaths(submission.envelopeId)
+                    val paths = sdesDestination.objectStorePaths(submission.envelopeId, submission.submissionPrefix)
                     for {
                       objSummary <- sdesDestination match {
                                       case SdesDestination.DataStore | SdesDestination.DataStoreLegacy |

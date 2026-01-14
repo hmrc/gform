@@ -28,8 +28,8 @@ import uk.gov.hmrc.gform.submission._
 import scala.xml.{ Elem, Utility }
 
 class MetadataXmlSpec extends Spec {
-  "metadata.xml" should "be generated" in {
 
+  private def generateXml(hmrcDms: HmrcDms) = {
     val dmsMetaData = DmsMetaData(formTemplateId = FormTemplateId("some-form-type-id"), "TESTID")
 
     val submission = Submission(
@@ -43,22 +43,7 @@ class MetadataXmlSpec extends Spec {
 
     val pdfSummary = PdfSummary(numberOfPages = 10L, pdfContent = Array.empty[Byte])
 
-    val hmrcDms = HmrcDms(
-      DestinationId("TestHmrcDmsId"),
-      "some-id",
-      Constant("TestHmrcDmsCustomerId"),
-      "some-classification-type",
-      "some-business-area",
-      DestinationIncludeIf.HandlebarValue(""),
-      true,
-      Some(DataOutputFormat.XML),
-      true,
-      Some(true),
-      Some(InstructionPdfFields.Ordered),
-      None,
-      None,
-      TemplateType.XML
-    )
+    val expectedAttachmentCount = if (hmrcDms.roboticsAsAttachment.getOrElse(false)) 3 else 2
 
     val expected =
       <documents xmlns="http://govtalk.gov.uk/hmrc/gis/content/1">
@@ -154,7 +139,7 @@ class MetadataXmlSpec extends Spec {
               <attribute_name>attachment_count</attribute_name>
               <attribute_type>int</attribute_type>
               <attribute_values>
-                <attribute_value>2</attribute_value>
+                <attribute_value>{expectedAttachmentCount.toString}</attribute_value>
               </attribute_values>
             </attribute>
             <attribute>
@@ -178,6 +163,53 @@ class MetadataXmlSpec extends Spec {
       )
 
     metadataXml should equal(Utility.trim(expected).asInstanceOf[Elem])(after being streamlined[Elem])
+  }
 
+  "metadata.xml" should "be generated" in {
+
+    generateXml(
+      HmrcDms(
+        DestinationId("TestHmrcDmsId"),
+        "some-id",
+        Constant("TestHmrcDmsCustomerId"),
+        "some-classification-type",
+        "some-business-area",
+        DestinationIncludeIf.HandlebarValue(""),
+        true,
+        Some(DataOutputFormat.XML),
+        true,
+        Some(true),
+        Some(InstructionPdfFields.Ordered),
+        None,
+        None,
+        TemplateType.XML,
+        None,
+        None
+      )
+    )
+
+  }
+
+  "metadata.xml attachment_count" should "be incremented by 1 if roboticsAsAttachment is true" in {
+    generateXml(
+      HmrcDms(
+        DestinationId("TestHmrcDmsId"),
+        "some-id",
+        Constant("TestHmrcDmsCustomerId"),
+        "some-classification-type",
+        "some-business-area",
+        DestinationIncludeIf.HandlebarValue(""),
+        true,
+        Some(DataOutputFormat.XML),
+        true,
+        Some(true),
+        Some(InstructionPdfFields.Ordered),
+        None,
+        None,
+        TemplateType.XML,
+        Some(true),
+        None
+      )
+    )
   }
 }

@@ -18,6 +18,7 @@ package uk.gov.hmrc.gform.submission.destinations
 
 import uk.gov.hmrc.gform.sharedmodel.{ DestinationResult, LangADT }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.InfoArchive
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationResponse
 import uk.gov.hmrc.gform.submission.handlebars.HandlebarsModelTree
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -28,5 +29,5 @@ trait InfoArchiveSubmitterAlgebra[F[_]] {
     destinationResult: Option[DestinationResult],
     d: InfoArchive,
     l: LangADT
-  )(implicit hc: HeaderCarrier): F[Unit]
+  )(implicit hc: HeaderCarrier): F[DestinationResponse]
 }

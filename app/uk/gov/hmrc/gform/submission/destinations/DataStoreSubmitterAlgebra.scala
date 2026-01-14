@@ -17,7 +17,7 @@
 package uk.gov.hmrc.gform.submission.destinations
 
 import uk.gov.hmrc.gform.sdes.SdesRouting
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.HandlebarsTemplateProcessorModel
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DestinationResponse, HandlebarsTemplateProcessorModel }
 import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination
 import uk.gov.hmrc.gform.sharedmodel.{ LangADT, UserSession }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.DataStore
@@ -31,7 +31,7 @@ trait DataStoreSubmitterAlgebra[F[_]] {
     dataStoreRouting: SdesRouting,
     destination: SdesDestination,
     filePrefix: Option[String]
-  ): F[Unit]
+  ): F[DestinationResponse]
 
   def generatePayload(
     submissionInfo: DestinationSubmissionInfo,

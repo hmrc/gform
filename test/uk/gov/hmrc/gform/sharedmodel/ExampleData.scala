@@ -54,7 +54,9 @@ trait ExampleAuthConfig extends DestinationGen {
     Some(InstructionPdfFields.Ordered),
     None,
     None,
-    TemplateType.XML
+    TemplateType.XML,
+    None,
+    None
   )
 
   val dataStore = DataStore(

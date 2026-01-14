@@ -95,7 +95,7 @@ GET           /formStatistics/:formTemplateId/details                           
 GET           /envelopes/:envelopeId                                                                    uk.gov.hmrc.gform.envelope.EnvelopeController.getEnvelope(envelopeId: EnvelopeId)
 DELETE        /envelopes/:envelopeId/files/:fileId                                                      uk.gov.hmrc.gform.objectstore.ObjectStoreController.deleteFile(envelopeId: EnvelopeId, fileId: FileId)
 POST          /envelopes/:envelopeId/files                                                              uk.gov.hmrc.gform.objectstore.ObjectStoreController.deleteFiles(envelopeId: EnvelopeId)
-GET           /object-store/dms/envelopes/:envelopeId                                                   uk.gov.hmrc.gform.objectstore.ObjectStoreController.downloadDmsFiles(envelopeId: EnvelopeId)
+GET           /object-store/dms/envelopes/:envelopeId                                                   uk.gov.hmrc.gform.objectstore.ObjectStoreController.downloadDmsFiles(envelopeId: EnvelopeId, prefix: Option[String] ?= None)
 GET           /object-store/data-store/envelopes/:envelopeId                                            uk.gov.hmrc.gform.objectstore.ObjectStoreController.downloadDataStoreFile(envelopeId: EnvelopeId)
 GET           /object-store/hmrc-illuminate/envelopes/:envelopeId                                       uk.gov.hmrc.gform.objectstore.ObjectStoreController.downloadHmrcIlluminateFile(envelopeId: EnvelopeId)
 GET           /object-store/info-archive/envelopes/:envelopeId                                          uk.gov.hmrc.gform.objectstore.ObjectStoreController.downloadInfoArchiveFiles(envelopeId: EnvelopeId)
@@ -103,7 +103,7 @@ GET           /object-store/info-archive/envelopes/:envelopeId                  
 GET           /translation/:formTemplateId                                                              uk.gov.hmrc.gform.translation.TranslationController.generateTranslatebleCsv(formTemplateId: FormTemplateId)
 GET           /translation/:formTemplateId/brief                                                        uk.gov.hmrc.gform.translation.TranslationController.generateBriefTranslatebleCsv(formTemplateId: FormTemplateId)
 GET           /translation-excel/:formTemplateId                                                        uk.gov.hmrc.gform.translation.TranslationController.generateTranslatebleXlsx(formTemplateId: FormTemplateId)
-GET           /translation-excel/:formTemplateId/brief                                                  uk.gov.hmrc.gform.translation.TranslationController.generateBriefTranslatebleXlsx(formTemplateId: FormTemplateId, allEnglish: Boolean)
+GET           /translation-excel/:formTemplateId/brief                                                  uk.gov.hmrc.gform.translation.TranslationController.generateBriefTranslatebleXlsx(formTemplateId: FormTemplateId, allEnglish: Boolean, debug: Option[Boolean])
 GET           /translation/:formTemplateId/internal                                                     uk.gov.hmrc.gform.translation.TranslationController.generateInternalCsv(formTemplateId: FormTemplateId)
 GET           /translation/:formTemplateId/debug                                                        uk.gov.hmrc.gform.translation.TranslationController.translateCsvDebug(formTemplateId: FormTemplateId)
 GET           /translation/:formTemplateId/breakdown                                                    uk.gov.hmrc.gform.translation.TranslationController.textBreakdown(formTemplateId: FormTemplateId)
@@ -167,3 +167,5 @@ POST          /email-migration                                                  
 
 POST          /access-logs                                                                              uk.gov.hmrc.gform.log.DataAccessLogController.saveDataAccessLog()
 GET           /access-logs/:page/:pageSize                                                              uk.gov.hmrc.gform.log.DataAccessLogController.getDataAccessLogs(page: Int, pageSize: Int)
+
+GET           /screenshot-tool/version/latest                                                           uk.gov.hmrc.gform.screenshottool.ScreenshotController.latestVersion

@@ -24,8 +24,6 @@ import uk.gov.hmrc.gform.sharedmodel.EmailVerifierService
 import uk.gov.hmrc.gform.sharedmodel.email.LocalisedEmailTemplateId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import UploadableConditioning._
-import cats.data.NonEmptyList
-import JsonUtils.nelFormat
 import uk.gov.hmrc.gform.core.parsers.BooleanExprParser
 import uk.gov.hmrc.gform.sharedmodel.form.{ FormId, FormStatus }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationIncludeIf.{ HandlebarValue, IncludeIfValue }
@@ -98,8 +96,17 @@ object Destination {
     instructionPdfFields: Option[InstructionPdfFields],
     convertSingleQuotes: Option[Boolean],
     payload: Option[String],
-    payloadType: TemplateType
-  ) extends Destination with DestinationWithCustomerId
+    payloadType: TemplateType,
+    roboticsAsAttachment: Option[Boolean],
+    submissionPrefix: Option[String]
+  ) extends Destination with DestinationWithCustomerId {
+    def roboticsFileName(fileNamePrefix: String, roboticsFileExtension: String): String =
+      if (roboticsAsAttachment.getOrElse(false)) {
+        s"$fileNamePrefix." + roboticsFileExtension
+      } else {
+        s"$fileNamePrefix-robotic." + roboticsFileExtension
+      }
+  }
 
   case class DataStore(
     id: DestinationId,
@@ -143,11 +150,6 @@ object Destination {
     multiRequestPayload: Boolean,
     convertSingleQuotes: Option[Boolean]
   ) extends Destination
-
-  case class Composite(id: DestinationId, includeIf: DestinationIncludeIf, destinations: NonEmptyList[Destination])
-      extends Destination {
-    val failOnError: Boolean = false
-  }
 
   case class StateTransition(
     id: DestinationId,
@@ -208,15 +210,11 @@ object Destination {
   val infoArchive: String = "hmrcInfoArchive"
   val submissionConsolidator: String = "submissionConsolidator"
   val handlebarsHttpApi: String = "handlebarsHttpApi"
-  val composite: String = "composite"
   val stateTransition: String = "stateTransition"
   val log: String = "log"
   val email: String = "email"
   val pegaApi: String = "pegaApi"
   val niRefundClaimApi: String = "niRefundClaimApi"
-
-  private implicit def nonEmptyListOfDestinationsFormat: OFormat[NonEmptyList[Destination]] =
-    derived.oformat[NonEmptyList[Destination]]()
 
   implicit def format: OFormat[Destination] = {
     implicit val personalisationReads =
@@ -230,7 +228,6 @@ object Destination {
         infoArchive            -> UploadableInfoArchiveDestination.reads,
         submissionConsolidator -> UploadableSubmissionConsolidator.reads,
         handlebarsHttpApi      -> UploadableHandlebarsHttpApiDestination.reads,
-        composite              -> UploadableCompositeDestination.reads,
         stateTransition        -> UploadableStateTransitionDestination.reads,
         log                    -> UploadableLogDestination.reads,
         email                  -> UploadableEmailDestination.reads,
@@ -267,7 +264,9 @@ case class UploadableHmrcDmsDestination(
   dataOutputFormat: Option[DataOutputFormat],
   formdataXml: Option[Boolean],
   closedStatus: Option[Boolean],
-  instructionPdfFields: Option[InstructionPdfFields] = None
+  instructionPdfFields: Option[InstructionPdfFields] = None,
+  roboticsAsAttachment: Option[Boolean],
+  submissionPrefix: Option[String] = None
 ) {
 
   def toHmrcDmsDestination: Either[String, Destination.HmrcDms] =
@@ -287,7 +286,9 @@ case class UploadableHmrcDmsDestination(
       instructionPdfFields,
       convertSingleQuotes,
       None,
-      TemplateType.XML
+      TemplateType.XML,
+      roboticsAsAttachment,
+      submissionPrefix
     )
 }
 
@@ -410,30 +411,6 @@ object UploadableSubmissionConsolidator {
     private val d: Reads[UploadableSubmissionConsolidator] = derived.reads[UploadableSubmissionConsolidator]()
     override def reads(json: JsValue): JsResult[Destination.SubmissionConsolidator] =
       d.reads(json).flatMap(_.toSubmissionConsolidatorDestination.fold(JsError(_), JsSuccess(_)))
-  }
-}
-
-case class UploadableCompositeDestination(
-  id: DestinationId,
-  convertSingleQuotes: Option[Boolean],
-  includeIf: DestinationIncludeIf,
-  destinations: NonEmptyList[Destination]
-) {
-  private def toCompositeDestination: Either[String, Destination.Composite] =
-    for {
-      cvii <- addErrorInfo(id, convertSingleQuotes, includeIf)
-    } yield Destination.Composite(
-      id,
-      cvii,
-      destinations
-    )
-}
-
-object UploadableCompositeDestination {
-  implicit val reads: Reads[Destination.Composite] = new Reads[Destination.Composite] {
-    private val d: Reads[UploadableCompositeDestination] = derived.reads[UploadableCompositeDestination]()
-    override def reads(json: JsValue): JsResult[Destination.Composite] =
-      d.reads(json).flatMap(_.toCompositeDestination.fold(JsError(_), JsSuccess(_)))
   }
 }
 

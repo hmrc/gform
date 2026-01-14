@@ -29,7 +29,7 @@ import uk.gov.hmrc.gform.form.FormAlgebra
 import uk.gov.hmrc.gform.sharedmodel.PdfContent
 import uk.gov.hmrc.gform.sharedmodel.form._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.SubmissionConsolidator
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, HandlebarsTemplateProcessorModel, JsonNodes }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationResponse, HandlebarsTemplateProcessorModel, JsonNodes }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.DestinationGen.submissionConsolidatorGen
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.FormGen._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.FormTemplateGen._
@@ -87,7 +87,7 @@ class SubmissionConsolidatorServiceSpec
           (mockSubmissionConsolidatorConnector
             .sendForm(_: SCForm)(_: HeaderCarrier))
             .expects(expectedAPIForm(destinationSubmissionInfo, submissionConsolidator, expectedScFormFields), hc)
-            .returns(Future.successful(Right(())))
+            .returns(Future.successful(Right(DestinationResponse.NoResponse)))
           (mockFormService
             .updateFormStatus(_: FormId, _: FormStatus)(_: HeaderCarrier))
             .expects(destinationSubmissionInfo.formId, Submitted, hc)
@@ -96,7 +96,7 @@ class SubmissionConsolidatorServiceSpec
             .submit(submissionConsolidator, destinationSubmissionInfo, model, modelTree, Some(formData))
             .value
 
-          future.futureValue shouldBe Right(())
+          future.futureValue shouldBe Right(DestinationResponse.NoResponse)
         }
       }
 
@@ -107,7 +107,7 @@ class SubmissionConsolidatorServiceSpec
           (mockSubmissionConsolidatorConnector
             .sendForm(_: SCForm)(_: HeaderCarrier))
             .expects(expectedAPIForm(destinationSubmissionInfo, submissionConsolidator), hc)
-            .returns(Future.successful(Right(())))
+            .returns(Future.successful(Right(DestinationResponse.NoResponse)))
           (mockFormService
             .updateFormStatus(_: FormId, _: FormStatus)(_: HeaderCarrier))
             .expects(destinationSubmissionInfo.formId, Submitted, hc)
@@ -122,7 +122,7 @@ class SubmissionConsolidatorServiceSpec
             )
             .value
 
-          future.futureValue shouldBe Right(())
+          future.futureValue shouldBe Right(DestinationResponse.NoResponse)
         }
       }
     }
@@ -144,7 +144,7 @@ class SubmissionConsolidatorServiceSpec
           (mockSubmissionConsolidatorConnector
             .sendForm(_: SCForm)(_: HeaderCarrier))
             .expects(expectedAPIForm(destinationSubmissionInfo, destination, expectedSCFormFields), hc)
-            .returns(Future.successful(Right(())))
+            .returns(Future.successful(Right(DestinationResponse.NoResponse)))
           (mockFormService
             .updateFormStatus(_: FormId, _: FormStatus)(_: HeaderCarrier))
             .expects(destinationSubmissionInfo.formId, Submitted, hc)
@@ -153,7 +153,7 @@ class SubmissionConsolidatorServiceSpec
             .submit(destination, destinationSubmissionInfo, model, modelTree, Some(formData))
             .value
 
-          future.futureValue shouldBe Right(())
+          future.futureValue shouldBe Right(DestinationResponse.NoResponse)
         }
       }
 
@@ -168,7 +168,7 @@ class SubmissionConsolidatorServiceSpec
           (mockSubmissionConsolidatorConnector
             .sendForm(_: SCForm)(_: HeaderCarrier))
             .expects(expectedAPIForm(destinationSubmissionInfo, destination), hc)
-            .returns(Future.successful(Right(())))
+            .returns(Future.successful(Right(DestinationResponse.NoResponse)))
           (mockFormService
             .updateFormStatus(_: FormId, _: FormStatus)(_: HeaderCarrier))
             .expects(destinationSubmissionInfo.formId, Submitted, hc)
@@ -177,7 +177,7 @@ class SubmissionConsolidatorServiceSpec
             .submit(destination, destinationSubmissionInfo, model, modelTree, Some(formData))
             .value
 
-          future.futureValue shouldBe Right(())
+          future.futureValue shouldBe Right(DestinationResponse.NoResponse)
         }
       }
     }
@@ -190,7 +190,7 @@ class SubmissionConsolidatorServiceSpec
           (mockSubmissionConsolidatorConnector
             .sendForm(_: SCForm)(_: HeaderCarrier))
             .expects(*, *)
-            .returns(Future.successful(Right(())))
+            .returns(Future.successful(Right(DestinationResponse.NoResponse)))
             .never()
 
           val future = submissionConsolidatorService

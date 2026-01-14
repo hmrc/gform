@@ -54,7 +54,7 @@ class SubmissionController(controllerComponents: ControllerComponents, submissio
           customerIdHeader,
           body
         )
-        .fold(unexpectedState => BadRequest(unexpectedState.error), _ => NoContent)
+        .fold(unexpectedState => BadRequest(unexpectedState.error), responses => Ok(Json.toJson(responses)))
     }
 
   def submissionDetailsPlain(

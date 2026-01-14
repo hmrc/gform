@@ -18,7 +18,7 @@ package uk.gov.hmrc.gform.submission.destinations
 
 import uk.gov.hmrc.gform.sharedmodel.LangADT
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.HandlebarsTemplateProcessorModel
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DestinationResponse, HandlebarsTemplateProcessorModel }
 import uk.gov.hmrc.gform.submission.handlebars.HandlebarsModelTree
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -29,5 +29,5 @@ trait DmsSubmitterAlgebra[F[_]] {
     modelTree: HandlebarsModelTree,
     hmrcDms: HmrcDms,
     l: LangADT
-  )(implicit hc: HeaderCarrier): F[Unit]
+  )(implicit hc: HeaderCarrier): F[DestinationResponse]
 }
