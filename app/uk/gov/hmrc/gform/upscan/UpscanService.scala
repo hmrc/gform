@@ -20,7 +20,8 @@ import java.time.Instant
 import scala.concurrent.Future
 
 class UpscanService(
-  upscanRepository: UpscanRepository
+  upscanRepository: UpscanRepository,
+  upscanDuplicateCheckRepository: UpscanDuplicateCheckRepository
 ) extends UpscanAlgebra[Future] {
   def confirm(upscanCallbackSuccess: UpscanCallback.Success): Future[UpscanConfirmation] =
     upscanRepository.upsert(
@@ -53,5 +54,17 @@ class UpscanService(
 
   def deleteReference(upscanReference: UpscanReference): Future[Unit] =
     upscanRepository.delete(upscanReference)
+
+  def confirmReceipt(reference: UpscanReference, status: UpscanFileStatus): Future[UpscanDuplicateCheck] =
+    upscanDuplicateCheckRepository.upsert(
+      UpscanDuplicateCheck(
+        reference,
+        status,
+        Instant.now()
+      )
+    )
+
+  def checkForDuplicate(upscanReference: UpscanReference): Future[Option[UpscanDuplicateCheck]] =
+    upscanDuplicateCheckRepository.find(upscanReference)
 
 }
