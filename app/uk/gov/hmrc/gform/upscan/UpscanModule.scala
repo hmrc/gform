@@ -38,11 +38,9 @@ class UpscanModule(
   ec: ExecutionContext
 ) {
   private val upscanRepository = new UpscanRepository(appConfig, mongoModule.mongoComponent)
-  private val upscanDuplicateCheckRepository = new UpscanDuplicateCheckRepository(appConfig, mongoModule.mongoComponent)
 
   val upscanService: UpscanService = new UpscanService(
-    upscanRepository,
-    upscanDuplicateCheckRepository
+    upscanRepository
   )
 
   val upscanController: UpscanController =

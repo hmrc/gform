@@ -33,7 +33,6 @@ case class AppConfig(
   formMaxAttachments: Int,
   formMaxAttachmentTotalSizeMB: Int,
   `upscan-confirmation-ttl`: FiniteDuration,
-  `upscan-duplicate-check-ttl`: FiniteDuration,
   restrictedFileExtensionList: List[String],
   `history-ttl`: FiniteDuration,
   `translation-audit-ttl`: FiniteDuration,

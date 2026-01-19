@@ -262,18 +262,17 @@ class UpscanController(
     }
 
   private def handleDuplicateCheck(callback: UpscanCallback)(fn: UpscanCallback => Future[Result]): Future[Result] = {
-    val (upscanReference, fileStatus) = callback match {
-      case success: UpscanCallback.Success => (success.reference, success.fileStatus)
-      case failure: UpscanCallback.Failure => (failure.reference, failure.fileStatus)
+    val upscanReference: UpscanReference = callback match {
+      case success: UpscanCallback.Success => success.reference
+      case failure: UpscanCallback.Failure => failure.reference
     }
 
     upscanService.checkForDuplicate(upscanReference).flatMap { maybeDuplicate =>
       maybeDuplicate.fold {
-        upscanService.confirmReceipt(upscanReference, fileStatus).flatMap(_ => fn(callback))
-      } { duplicate =>
+        upscanService.confirmReceipt(upscanReference).flatMap(_ => fn(callback))
+      } { _ =>
         logger.warn(
-          "Upscan callback - ignoring notify message as duplicate detected: upscan " +
-            s"reference '${upscanReference.value}', original status '${duplicate.status}', latest status '$fileStatus'"
+          s"Upscan callback - ignoring notify message as duplicate detected: $upscanReference"
         )
         NoContent.pure[Future]
       }

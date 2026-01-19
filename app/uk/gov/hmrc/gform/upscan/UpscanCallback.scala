@@ -62,23 +62,30 @@ sealed trait UpscanFileStatus
 object UpscanFileStatus {
   case object Ready extends UpscanFileStatus
   case object Failed extends UpscanFileStatus
+  case object Processing extends UpscanFileStatus
+
+  final val ready = "ready"
+  final val failed = "failed"
+  final val processing = "processing"
 
   implicit val format: Format[UpscanFileStatus] = new Format[UpscanFileStatus] {
     override def writes(o: UpscanFileStatus): JsValue = o match {
-      case Ready  => JsString("ready")
-      case Failed => JsString("failed")
+      case Ready      => JsString(UpscanFileStatus.ready)
+      case Failed     => JsString(UpscanFileStatus.failed)
+      case Processing => JsString(UpscanFileStatus.processing)
     }
 
     override def reads(json: JsValue): JsResult[UpscanFileStatus] =
       json match {
         case JsString(status) =>
           status.toLowerCase match {
-            case "ready"  => JsSuccess(Ready)
-            case "failed" => JsSuccess(Failed)
-            case unknown  => JsError(s"Unknown upscan file status. Expected 'ready' or 'failed', but got: $unknown")
+            case UpscanFileStatus.ready      => JsSuccess(Ready)
+            case UpscanFileStatus.failed     => JsSuccess(Failed)
+            case UpscanFileStatus.processing => JsSuccess(Processing)
+            case unknown =>
+              JsError(s"Unknown upscan file status. Expected 'processing', 'ready' or 'failed', but got: $unknown")
           }
         case unknown => JsError(s"Unknown upscan file status. Expected JsString, but got: $unknown")
-
       }
   }
 }
