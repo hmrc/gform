@@ -47,16 +47,3 @@ object ConfirmationFailure {
 
   implicit val format: Format[ConfirmationFailure] = derived.oformat()
 }
-
-case class UpscanDuplicateCheck(
-  _id: UpscanReference,
-  status: UpscanFileStatus,
-  receivedAt: Instant
-)
-
-object UpscanDuplicateCheck {
-  implicit val format: OFormat[UpscanDuplicateCheck] = {
-    implicit val dtf: Format[Instant] = MongoJavatimeFormats.instantFormat
-    derived.oformat()
-  }
-}
