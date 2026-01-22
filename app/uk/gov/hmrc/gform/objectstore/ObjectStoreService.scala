@@ -317,17 +317,10 @@ class ObjectStoreService(
 
     def roboticsFileExtension = summaries.roboticsFileExtension.map(_.toLowerCase).getOrElse("xml")
     def roboticsFileName = hmrcDms.roboticsFileName(fileNamePrefix, roboticsFileExtension)
-    def roboticsAttachmentName = if (
-      hmrcDms.roboticsAsAttachment
-        .getOrElse(false)
-    ) {
-      Seq(roboticsFileName)
-    } else { Seq() }
 
     def preExistingEnvelopeNames =
       preExistingEnvelope.files
         .map(_.fileName)
-        .filterNot(x => x.endsWith("-iform.pdf") || x.endsWith("-metadata.xml")) ++ roboticsAttachmentName
 
     def uploadMetadataXmlF: Future[Unit] = {
       val reconciliationId = ReconciliationId.create(submission.submissionRef)
