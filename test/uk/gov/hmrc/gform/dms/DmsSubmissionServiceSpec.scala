@@ -61,9 +61,9 @@ class DmsSubmissionServiceSpec extends Spec {
         expectedSubmission,
         expectedPdfAndXmlSummaries,
         expectedHmrcDms,
-        0,
         fixture().objectStoreEnable,
-        formTemplateId
+        formTemplateId,
+        Seq()
       )
       .service
       .submitToDms(validSubmission, List.empty) shouldBe expectedEnvId
@@ -100,9 +100,9 @@ class DmsSubmissionServiceSpec extends Spec {
         expectedSubmission,
         expectedPdfAndXmlSummaries,
         expectedDmsSubmission,
-        1,
         fixture().objectStoreEnable,
-        formTemplateId
+        formTemplateId,
+        fileAttachments
       )
       .service
       .submitToDms(validSubmission, fileAttachments) shouldBe expectedEnvId
@@ -132,16 +132,16 @@ class DmsSubmissionServiceSpec extends Spec {
         expectedSubmission,
         expectedPdfAndXmlSummaries,
         expectedHmrcDms,
-        0,
         fixture().objectStoreEnable,
-        formTemplateId
+        formTemplateId,
+        Seq()
       )
       .service
       .submitPdfToDms(pdfContent, validSubmission.metadata, List.empty) shouldBe expectedEnvId
   }
 
   private val validSubmission =
-    DmsHtmlSubmission("", DmsMetadata("some-form-id", "some-customer-id", "", "", None, None))
+    DmsHtmlSubmission("", DmsMetadata("some-form-id", "some-customer-id", "", "", None, None, None))
   private val stubPdfDocument = stub[PDDocument]
 
   private val envelopeExpiryDays: Long = 5L
