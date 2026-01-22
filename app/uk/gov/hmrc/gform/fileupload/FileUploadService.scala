@@ -69,8 +69,7 @@ class FileUploadService(
     summaries: PdfAndXmlSummaries,
     hmrcDms: HmrcDms,
     objectStore: Boolean,
-    formTemplateId: FormTemplateId,
-    fileAttachments: Seq[FileAttachment]
+    formTemplateId: FormTemplateId
   )(implicit
     hc: HeaderCarrier
   ): Future[Unit] = {
@@ -123,16 +122,6 @@ class FileUploadService(
 
     def roboticsFileExtension = summaries.roboticsFileExtension.map(_.toLowerCase).getOrElse("xml")
     def roboticsFileName = hmrcDms.roboticsFileName(fileNamePrefix, roboticsFileExtension)
-    def roboticsAttachmentName = if (
-      hmrcDms.roboticsAsAttachment
-        .getOrElse(false)
-    ) {
-      Seq(roboticsFileName)
-    } else { Seq() }
-    def preExistingEnvelopeFileNames =
-      fileAttachments
-        .map(_.filename.getFileName.toString)
-        .filterNot(x => x.endsWith("-iform.pdf") || x.endsWith("-metadata.xml")) ++ roboticsAttachmentName
 
     def uploadMetadataXmlF: Future[Unit] = {
       val reconciliationId = ReconciliationId.create(submission.submissionRef)
@@ -143,7 +132,7 @@ class FileUploadService(
           summaries.instructionPdfSummary.fold(summaries.pdfSummary.numberOfPages)(_.numberOfPages),
           submission.noOfAttachments + summaries.instructionPdfSummary.fold(0)(_ => 1),
           hmrcDms,
-          preExistingEnvelopeFileNames
+          Seq()
         )
       uploadFile(
         submission.envelopeId,

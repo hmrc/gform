@@ -62,8 +62,7 @@ class DmsSubmissionServiceSpec extends Spec {
         expectedPdfAndXmlSummaries,
         expectedHmrcDms,
         fixture().objectStoreEnable,
-        formTemplateId,
-        Seq()
+        formTemplateId
       )
       .service
       .submitToDms(validSubmission, List.empty) shouldBe expectedEnvId
@@ -101,8 +100,7 @@ class DmsSubmissionServiceSpec extends Spec {
         expectedPdfAndXmlSummaries,
         expectedDmsSubmission,
         fixture().objectStoreEnable,
-        formTemplateId,
-        fileAttachments
+        formTemplateId
       )
       .service
       .submitToDms(validSubmission, fileAttachments) shouldBe expectedEnvId
@@ -133,8 +131,7 @@ class DmsSubmissionServiceSpec extends Spec {
         expectedPdfAndXmlSummaries,
         expectedHmrcDms,
         fixture().objectStoreEnable,
-        formTemplateId,
-        Seq()
+        formTemplateId
       )
       .service
       .submitPdfToDms(pdfContent, validSubmission.metadata, List.empty) shouldBe expectedEnvId
@@ -209,8 +206,7 @@ class DmsSubmissionServiceSpec extends Spec {
       pdfAndXmlSummaries: PdfAndXmlSummaries,
       hmrcDms: HmrcDms,
       objectStore: Boolean,
-      formTemplateId: FormTemplateId,
-      fileAttachments: Seq[FileAttachment]
+      formTemplateId: FormTemplateId
     ): Fixture = {
       (fileUpload
         .submitEnvelope(
@@ -218,12 +214,11 @@ class DmsSubmissionServiceSpec extends Spec {
           _: PdfAndXmlSummaries,
           _: HmrcDms,
           _: Boolean,
-          _: FormTemplateId,
-          _: Seq[FileAttachment]
+          _: FormTemplateId
         )(
           _: HeaderCarrier
         ))
-        .expects(submission, pdfAndXmlSummaries, hmrcDms, objectStore, formTemplateId, fileAttachments, hc)
+        .expects(submission, pdfAndXmlSummaries, hmrcDms, objectStore, formTemplateId, hc)
         .returning(())
 
       this
