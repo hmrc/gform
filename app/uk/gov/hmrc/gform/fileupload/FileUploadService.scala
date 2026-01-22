@@ -120,9 +120,6 @@ class FileUploadService(
         )
         .getOrElse(Future.successful(()))
 
-    def roboticsFileExtension = summaries.roboticsFileExtension.map(_.toLowerCase).getOrElse("xml")
-    def roboticsFileName = hmrcDms.roboticsFileName(fileNamePrefix, roboticsFileExtension)
-
     def uploadMetadataXmlF: Future[Unit] = {
       val reconciliationId = ReconciliationId.create(submission.submissionRef)
       val metadataXml = MetadataXml.xmlDec + "\n" + MetadataXml
@@ -146,10 +143,11 @@ class FileUploadService(
 
     def uploadRoboticsContentF: Future[Unit] = summaries.roboticsFile match {
       case Some(elem) =>
+        def roboticsFileExtension = summaries.roboticsFileExtension.map(_.toLowerCase).getOrElse("xml")
         uploadFile(
           submission.envelopeId,
           roboticsFileId(roboticsFileExtension),
-          roboticsFileName,
+          hmrcDms.roboticsFileName(fileNamePrefix, roboticsFileExtension),
           ByteString(elem.getBytes),
           getContentType(roboticsFileExtension),
           objectStore
