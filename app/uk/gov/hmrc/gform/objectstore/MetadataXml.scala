@@ -43,8 +43,6 @@ object MetadataXml {
       fileAttachmentNames.map(name => createAttribute("attachment_name", name))
     else Seq()
 
-    println("names: " + fileAttachmentNames)
-
     val roboticsAsAttachmentCountOffset = if (roboticsAsAttachment) 1 else 0
 
     val attributes = List(
