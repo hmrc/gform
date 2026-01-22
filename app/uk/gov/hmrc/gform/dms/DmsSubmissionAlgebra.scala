@@ -32,6 +32,7 @@ import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FormId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DataOutputFormat, DestinationId, DestinationIncludeIf, TemplateType }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Constant, FormTemplateId }
+import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination
 import uk.gov.hmrc.gform.submission._
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -100,6 +101,7 @@ object DmsSubmissionService {
   def createHmrcDms(metadata: DmsMetadata): HmrcDms =
     HmrcDms(
       DestinationId("HmrcDms"),
+      SdesDestination.Dms,
       metadata.dmsFormId,
       Constant(metadata.customerId),
       metadata.classificationType,
@@ -115,6 +117,8 @@ object DmsSubmissionService {
       TemplateType.XML,
       metadata.roboticsAsAttachment,
       Some(false),
+      None,
+      None,
       None
     )
 

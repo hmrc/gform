@@ -23,6 +23,7 @@ import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FormId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DataOutputFormat, DestinationId, DestinationIncludeIf, InstructionPdfFields, TemplateType }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
+import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination.Dms
 import uk.gov.hmrc.gform.submission._
 
 import scala.xml.{ Elem, Utility }
@@ -183,7 +184,8 @@ class MetadataXmlSpec extends Spec {
         pdfSummary.numberOfPages,
         submission.noOfAttachments,
         hmrcDms,
-        attachmentNames
+        attachmentNames,
+        None
       )
 
     metadataXml should equal(Utility.trim(expected).asInstanceOf[Elem])(after being streamlined[Elem])
@@ -194,6 +196,7 @@ class MetadataXmlSpec extends Spec {
     generateXml(
       HmrcDms(
         DestinationId("TestHmrcDmsId"),
+        Dms,
         "some-id",
         Constant("TestHmrcDmsCustomerId"),
         "some-classification-type",
@@ -207,6 +210,8 @@ class MetadataXmlSpec extends Spec {
         None,
         None,
         TemplateType.XML,
+        None,
+        None,
         None,
         None,
         None
@@ -219,6 +224,7 @@ class MetadataXmlSpec extends Spec {
     generateXml(
       HmrcDms(
         DestinationId("TestHmrcDmsId"),
+        Dms,
         "some-id",
         Constant("TestHmrcDmsCustomerId"),
         "some-classification-type",
@@ -233,6 +239,8 @@ class MetadataXmlSpec extends Spec {
         None,
         TemplateType.XML,
         Some(true),
+        None,
+        None,
         None,
         None
       )
@@ -243,6 +251,7 @@ class MetadataXmlSpec extends Spec {
     generateXml(
       HmrcDms(
         DestinationId("TestHmrcDmsId"),
+        Dms,
         "some-id",
         Constant("TestHmrcDmsCustomerId"),
         "some-classification-type",
@@ -258,6 +267,8 @@ class MetadataXmlSpec extends Spec {
         TemplateType.XML,
         None,
         Some(true),
+        None,
+        None,
         None
       )
     )
@@ -267,6 +278,7 @@ class MetadataXmlSpec extends Spec {
     generateXml(
       HmrcDms(
         DestinationId("TestHmrcDmsId"),
+        Dms,
         "some-id",
         Constant("TestHmrcDmsCustomerId"),
         "some-classification-type",
@@ -282,6 +294,8 @@ class MetadataXmlSpec extends Spec {
         TemplateType.XML,
         Some(true),
         Some(true),
+        None,
+        None,
         None
       )
     )

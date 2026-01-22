@@ -26,7 +26,8 @@ final case class SdesConfig(
   dataStore: SdesRouting,
   lockTTL: Long,
   welshDefaults: WelshDefaults,
-  infoArchive: SdesRouting
+  infoArchive: SdesRouting,
+  pegaCaseflow: SdesRouting
 )
 
 final case class SdesKeyAndCredentialsApiConfig(basePath: String)

@@ -30,6 +30,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.UserField.Enrolment
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations._
+import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination.Dms
 import uk.gov.hmrc.gform.sharedmodel.{ AvailableLanguages, DataRetrieve, DataRetrieveId }
 
 import scala.language.implicitConversions
@@ -449,6 +450,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
         NonEmptyList.of(
           HmrcDms(
             DestinationId("TestHmrcDmsId"),
+            Dms,
             "TestHmrcDmsFormId",
             Constant("TestHmrcDmsCustomerId"),
             "TestHmrcDmsClassificationType",
@@ -462,6 +464,8 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
             None,
             None,
             TemplateType.XML,
+            None,
+            None,
             None,
             None,
             None

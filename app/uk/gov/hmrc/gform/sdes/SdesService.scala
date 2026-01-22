@@ -465,7 +465,7 @@ class SdesService(
                             )
                         }
         } yield objSummary
-      case SdesDestination.Dms =>
+      case SdesDestination.Dms | SdesDestination.PegaCaseflow =>
         objectStoreAlgebra.zipFiles(envelopeId, paths)
       case SdesDestination.InfoArchive =>
         objectStoreAlgebra.zipAndEncrypt(envelopeId, paths)

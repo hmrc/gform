@@ -135,6 +135,7 @@ class UploadableDestinationSpec extends Spec with ScalaCheckDrivenPropertyChecks
     import destination._
     UploadableHmrcDmsDestination(
       id,
+      Some(routing),
       dmsFormId,
       TextExpression(customerId),
       classificationType,

@@ -29,12 +29,12 @@ import uk.gov.hmrc.gform.objectstore.{ Envelope, File, FileStatus, ObjectStoreAl
 import uk.gov.hmrc.gform.pdfgenerator.{ FopService, PdfGeneratorService }
 import uk.gov.hmrc.gform.sdes.WelshDefaults
 import uk.gov.hmrc.gform.sdes.workitem.DestinationWorkItemAlgebra
-import uk.gov.hmrc.gform.sharedmodel.LangADT
+import uk.gov.hmrc.gform.sharedmodel.{ DestinationResult, LangADT }
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId, Submitted }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DmsDestinationResponse
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DestinationResponse, HandlebarsTemplateProcessorModel }
-import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination.Dms
+import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination
 import uk.gov.hmrc.gform.submission.PdfAndXmlSummariesFactory
 import uk.gov.hmrc.gform.submission.handlebars.HandlebarsModelTree
 import uk.gov.hmrc.http.HeaderCarrier
@@ -59,7 +59,8 @@ class DmsSubmitter(
     accumulatedModel: HandlebarsTemplateProcessorModel,
     modelTree: HandlebarsModelTree,
     hmrcDms: HmrcDms,
-    l: LangADT
+    l: LangADT,
+    destinationResult: Option[DestinationResult]
   )(implicit hc: HeaderCarrier): FOpt[DestinationResponse] = {
     import submissionInfo._
     implicit val now: Instant = Instant.now()
@@ -84,14 +85,16 @@ class DmsSubmitter(
             .apply(form, formTemplate, accumulatedModel, modelTree, customerId, submission.submissionRef, updatedDms, l)
         )
       envelope <- envelopeAlgebra.get(submission.envelopeId)
-      _        <- objectStoreAlgebra.submitEnvelope(submission, summaries, updatedDms, formTemplate._id, envelope)
+      _ <-
+        objectStoreAlgebra
+          .submitEnvelope(submission, summaries, updatedDms, formTemplate._id, envelope, destinationResult)
       _ <-
         destinationWorkItemAlgebra
           .pushWorkItem(
             submission.envelopeId,
             form.formTemplateId,
             submission.submissionRef,
-            Dms,
+            hmrcDms.routing,
             None,
             hmrcDms.submissionPrefix
           )
@@ -101,12 +104,15 @@ class DmsSubmitter(
         )
       _ <- success(logFileSizeBreach(submission.envelopeId, envelopeDetails.files))
       _ <- formService.updateFormStatus(submissionInfo.formId, Submitted)
-    } yield DmsDestinationResponse(
-      updatedDms.dmsFormId,
-      updatedDms.classificationType,
-      updatedDms.businessArea,
-      modelTree.value.structuredFormData.fields.length
-    )
+    } yield
+      if (hmrcDms.routing === SdesDestination.PegaCaseflow) DestinationResponse.NoResponse
+      else
+        DmsDestinationResponse(
+          updatedDms.dmsFormId,
+          updatedDms.classificationType,
+          updatedDms.businessArea,
+          modelTree.value.structuredFormData.fields.length
+        )
   }
 
   /** This log line is used in alert-config, to trigger a pager duty alert when files sizes exceeds the threshold

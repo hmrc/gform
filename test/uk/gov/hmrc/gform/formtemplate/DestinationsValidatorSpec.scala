@@ -26,6 +26,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.PrimitiveGen._
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Constant, Equals, FormComponentId, FormCtx, IncludeIf }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationIncludeIf.{ HandlebarValue, IncludeIfValue }
+import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination.PegaCaseflow
 
 class DestinationsValidatorSpec extends Spec with ScalaCheckDrivenPropertyChecks {
   "validateUniqueDestinationIds" should "return an error when there are duplicate ids" in {
@@ -181,4 +182,56 @@ class DestinationsValidatorSpec extends Spec with ScalaCheckDrivenPropertyChecks
       result should be(expected)
     }
   }
+
+  "validateCaseflow" should "validate hmrcDms destinations with Pega Caseflow routing correctly" in {
+    val table = Table(
+      ("destinations", "expected"),
+      (
+        NonEmptyList.of(
+          hmrcDms.copy(routing = PegaCaseflow, postalCode = Some(Constant("expr")), caseId = Some(Constant("expr")))
+        ),
+        Valid
+      ),
+      (
+        NonEmptyList.of(
+          hmrcDms.copy(routing = PegaCaseflow),
+          hmrcDms
+        ),
+        Invalid(
+          "hmrcDms destinations cannot be a mix of DMS and Pega Caseflow routings."
+        )
+      ),
+      (
+        NonEmptyList.of(
+          hmrcDms.copy(routing = PegaCaseflow),
+          hmrcDms.copy(routing = PegaCaseflow)
+        ),
+        Invalid(
+          "Cannot define more than 1 hmrcDms destination with routing to Pega Caseflow."
+        )
+      ),
+      (
+        NonEmptyList.of(
+          hmrcDms.copy(routing = PegaCaseflow, postalCode = Some(Constant("expr")))
+        ),
+        Invalid(
+          "Pega Caseflow destination 'TestHmrcDmsId' must have caseId expression defined."
+        )
+      ),
+      (
+        NonEmptyList.of(
+          hmrcDms.copy(routing = PegaCaseflow, caseId = Some(Constant("expr")))
+        ),
+        Invalid(
+          "Pega Caseflow destination 'TestHmrcDmsId' must have postalCode expression defined."
+        )
+      )
+    )
+
+    org.scalatest.prop.TableDrivenPropertyChecks.forAll(table) { (destinations, expected) =>
+      val result = DestinationsValidator.validateCaseflow(destinationList.copy(destinations = destinations))
+      result should be(expected)
+    }
+  }
+
 }

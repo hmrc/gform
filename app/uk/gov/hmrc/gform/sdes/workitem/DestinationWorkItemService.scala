@@ -85,7 +85,7 @@ class DestinationWorkItemService(
         submissionPrefix
       )
     sdesDestination match {
-      case SdesDestination.Dms => dmsWorkItemRepo.pushNew(sdesWorkItem).void
+      case SdesDestination.Dms | SdesDestination.PegaCaseflow => dmsWorkItemRepo.pushNew(sdesWorkItem).void
       case SdesDestination.HmrcIlluminate | SdesDestination.DataStore | SdesDestination.DataStoreLegacy =>
         dataStoreWorkItemRepo.pushNew(sdesWorkItem).void
       case SdesDestination.InfoArchive => infoArchiveWorkItemRepo.pushNew(sdesWorkItem).void
@@ -114,7 +114,7 @@ class DestinationWorkItemService(
   }
 
   private def findCollection(sdesDestination: SdesDestination) = sdesDestination match {
-    case SdesDestination.Dms => dmsWorkItemRepo.collection
+    case SdesDestination.Dms | SdesDestination.PegaCaseflow => dmsWorkItemRepo.collection
     case SdesDestination.HmrcIlluminate | SdesDestination.DataStore | SdesDestination.DataStoreLegacy =>
       dataStoreWorkItemRepo.collection
     case SdesDestination.InfoArchive => infoArchiveWorkItemRepo.collection
@@ -129,7 +129,8 @@ class DestinationWorkItemService(
 
   override def enqueue(id: String, sdesDestination: SdesDestination): Future[Unit] =
     sdesDestination match {
-      case SdesDestination.Dms => dmsWorkItemRepo.markAs(new ObjectId(id), ProcessingStatus.ToDo).void
+      case SdesDestination.Dms | SdesDestination.PegaCaseflow =>
+        dmsWorkItemRepo.markAs(new ObjectId(id), ProcessingStatus.ToDo).void
       case SdesDestination.HmrcIlluminate | SdesDestination.DataStore | SdesDestination.DataStoreLegacy =>
         dataStoreWorkItemRepo.markAs(new ObjectId(id), ProcessingStatus.ToDo).void
       case SdesDestination.InfoArchive => infoArchiveWorkItemRepo.markAs(new ObjectId(id), ProcessingStatus.ToDo).void
@@ -137,7 +138,7 @@ class DestinationWorkItemService(
 
   override def find(id: String, sdesDestination: SdesDestination): Future[Option[WorkItem[SdesWorkItem]]] =
     sdesDestination match {
-      case SdesDestination.Dms => dmsWorkItemRepo.findById(new ObjectId(id))
+      case SdesDestination.Dms | SdesDestination.PegaCaseflow => dmsWorkItemRepo.findById(new ObjectId(id))
       case SdesDestination.HmrcIlluminate | SdesDestination.DataStore | SdesDestination.DataStoreLegacy =>
         dataStoreWorkItemRepo.findById(new ObjectId(id))
       case SdesDestination.InfoArchive => infoArchiveWorkItemRepo.findById(new ObjectId(id))
