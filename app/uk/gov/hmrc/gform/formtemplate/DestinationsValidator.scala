@@ -154,12 +154,12 @@ object DestinationsValidator {
 
   def validateDependsOnDataOutputFormat(
     destinations: Destinations
-  )(destinationName: String)(fTrueParameter: Destination.HmrcDms => Option[Boolean]): ValidationResult =
+  )(destinationName: String)(checkFlag: Destination.HmrcDms => Option[Boolean]): ValidationResult =
     destinations match {
       case Destinations.DestinationList(destinations, _, _) =>
         destinations.map {
           case destination: Destination.HmrcDms =>
-            fTrueParameter(destination) -> destination.dataOutputFormat match {
+            checkFlag(destination) -> destination.dataOutputFormat match {
               case (Some(true), None) =>
                 Invalid(
                   s"""The destination '${destination.id.id}' is not valid. Once the property '$destinationName' is set to true, the 'dataOutputFormat' property must exist. Example: "dataOutputFormat": "xml" """
