@@ -48,10 +48,24 @@ class UpscanService(
       )
     )
 
+  def confirmReceipt(reference: UpscanReference): Future[UpscanConfirmation] =
+    upscanRepository.upsert(
+      UpscanConfirmation(
+        reference,
+        UpscanFileStatus.Processing,
+        ConfirmationFailure.AllOk,
+        Instant.now(),
+        None
+      )
+    )
+
   def reference(upscanReference: UpscanReference): Future[Option[UpscanConfirmation]] =
-    upscanRepository.find(upscanReference)
+    upscanRepository.findDone(upscanReference)
 
   def deleteReference(upscanReference: UpscanReference): Future[Unit] =
     upscanRepository.delete(upscanReference)
+
+  def checkForDuplicate(upscanReference: UpscanReference): Future[Option[UpscanConfirmation]] =
+    upscanRepository.checkForDuplicate(upscanReference)
 
 }

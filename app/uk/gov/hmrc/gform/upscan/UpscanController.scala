@@ -92,7 +92,9 @@ class UpscanController(
     formIdDataCrypted: Crypted
   ): Action[JsValue] =
     Action.async(parse.json) { implicit request =>
-      logger.info(s"Upscan callback - received notification for $formComponentId")
+      logger.info(
+        s"Upscan callback - received notification for ${formComponentId.value} within envelope id ${envelopeId.value}"
+      )
 
       val upscanCallbackPayload: JsResult[UpscanCallback] = request.body.validate[UpscanCallback]
 
@@ -110,7 +112,7 @@ class UpscanController(
             logger.error(s"Upscan callback payload failed to parse: ${request.body}, reported error: $error")
           )
 
-      } yield upscanCallback match {
+      } yield handleDuplicateCheck(upscanCallback) {
         case upscanCallbackSuccess: UpscanCallback.Success =>
           formTemplateService.get(formIdData.formTemplateId).flatMap { formTemplate =>
             logger.info(
@@ -258,6 +260,24 @@ class UpscanController(
       callbackResult.getOrElse(NoContent.pure[Future])
 
     }
+
+  private def handleDuplicateCheck(callback: UpscanCallback)(fn: UpscanCallback => Future[Result]): Future[Result] = {
+    val upscanReference: UpscanReference = callback match {
+      case success: UpscanCallback.Success => success.reference
+      case failure: UpscanCallback.Failure => failure.reference
+    }
+
+    upscanService.checkForDuplicate(upscanReference).flatMap { maybeDuplicate =>
+      maybeDuplicate.fold {
+        upscanService.confirmReceipt(upscanReference).flatMap(_ => fn(callback))
+      } { _ =>
+        logger.warn(
+          s"Upscan callback - ignoring notify message as duplicate detected: $upscanReference"
+        )
+        NoContent.pure[Future]
+      }
+    }
+  }
 
   private def findAvailableFileIdMulti(
     formComponentId: FormComponentId, // Note that formComponentId at this point is the same for all uploaded files ie. it has no index information!

@@ -17,7 +17,8 @@
 package uk.gov.hmrc.gform.upscan
 
 import org.mongodb.scala.WriteConcern
-import org.mongodb.scala.model.{ Filters, FindOneAndReplaceOptions, IndexModel, IndexOptions, Indexes, ReturnDocument }
+import org.mongodb.scala.model.Filters._
+import org.mongodb.scala.model.{ FindOneAndReplaceOptions, IndexModel, IndexOptions, Indexes, ReturnDocument }
 import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.gform.config.AppConfig
 import uk.gov.hmrc.mongo.MongoComponent
@@ -32,6 +33,7 @@ class UpscanRepository(
       collectionName = "upscan",
       mongoComponent = mongoComponent,
       domainFormat = UpscanConfirmation.format,
+      replaceIndexes = true,
       indexes = Seq(
         IndexModel(
           Indexes.ascending("confirmedAt"),
@@ -43,15 +45,20 @@ class UpscanRepository(
       )
     ) {
 
-  def find(reference: UpscanReference): Future[Option[UpscanConfirmation]] =
+  def findDone(reference: UpscanReference): Future[Option[UpscanConfirmation]] =
     collection
-      .find(Filters.equal("_id", reference.value))
+      .find(
+        and(
+          equal("_id", reference.value),
+          notEqual("status", UpscanFileStatus.processing)
+        )
+      )
       .headOption()
 
   def upsert(confirmation: UpscanConfirmation): Future[UpscanConfirmation] =
     collection
       .findOneAndReplace(
-        Filters.equal("_id", confirmation._id.value),
+        equal("_id", confirmation._id.value),
         confirmation,
         FindOneAndReplaceOptions().upsert(true).returnDocument(ReturnDocument.AFTER)
       )
@@ -61,8 +68,13 @@ class UpscanRepository(
     this.collection
       .withWriteConcern(WriteConcern.ACKNOWLEDGED)
       .deleteOne(
-        filter = Filters.equal("_id", reference.value)
+        filter = equal("_id", reference.value)
       )
       .toFuture()
       .map(_ => ())
+
+  def checkForDuplicate(reference: UpscanReference): Future[Option[UpscanConfirmation]] =
+    collection
+      .find(equal("_id", reference.value))
+      .headOption()
 }
