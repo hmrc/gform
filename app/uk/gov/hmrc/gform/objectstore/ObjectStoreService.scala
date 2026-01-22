@@ -315,6 +315,20 @@ class ObjectStoreService(
         )
         .getOrElse(Future.unit)
 
+    def roboticsFileExtension = summaries.roboticsFileExtension.map(_.toLowerCase).getOrElse("xml")
+    def roboticsFileName = hmrcDms.roboticsFileName(fileNamePrefix, roboticsFileExtension)
+    def roboticsAttachmentName = if (
+      hmrcDms.roboticsAsAttachment
+        .getOrElse(false)
+    ) {
+      Seq(roboticsFileName)
+    } else { Seq() }
+
+    def preExistingEnvelopeNames =
+      preExistingEnvelope.files
+        .map(_.fileName)
+        .filterNot(x => x.endsWith("-iform.pdf") || x.endsWith("-metadata.xml")) ++ roboticsAttachmentName
+
     def uploadMetadataXmlF: Future[Unit] = {
       val reconciliationId = ReconciliationId.create(submission.submissionRef)
       val metadataXml = MetadataXml.xmlDec + "\n" + MetadataXml
@@ -323,7 +337,8 @@ class ObjectStoreService(
           reconciliationId,
           summaries.instructionPdfSummary.fold(summaries.pdfSummary.numberOfPages)(_.numberOfPages),
           submission.noOfAttachments + summaries.instructionPdfSummary.fold(0)(_ => 1),
-          hmrcDms
+          hmrcDms,
+          preExistingEnvelopeNames
         )
       uploadFile(
         submission.envelopeId,
@@ -337,11 +352,10 @@ class ObjectStoreService(
 
     def uploadRoboticsContentF: Future[Unit] = summaries.roboticsFile match {
       case Some(elem) =>
-        val roboticsFileExtension = summaries.roboticsFileExtension.map(_.toLowerCase).getOrElse("xml")
         uploadFile(
           submission.envelopeId,
           roboticsFileId(roboticsFileExtension).prefix(fileIdPrefix),
-          hmrcDms.roboticsFileName(fileNamePrefix, roboticsFileExtension),
+          roboticsFileName,
           ByteString(elem.getBytes),
           getContentType(roboticsFileExtension),
           hmrcDms.submissionPrefix

@@ -208,15 +208,22 @@ class DmsSubmissionServiceSpec extends Spec {
       submission: Submission,
       pdfAndXmlSummaries: PdfAndXmlSummaries,
       hmrcDms: HmrcDms,
-      numberOfAttachments: Int,
       objectStore: Boolean,
-      formTemplateId: FormTemplateId
+      formTemplateId: FormTemplateId,
+      fileAttachments: Seq[FileAttachment]
     ): Fixture = {
       (fileUpload
-        .submitEnvelope(_: Submission, _: PdfAndXmlSummaries, _: HmrcDms, _: Boolean, _: FormTemplateId)(
+        .submitEnvelope(
+          _: Submission,
+          _: PdfAndXmlSummaries,
+          _: HmrcDms,
+          _: Boolean,
+          _: FormTemplateId,
+          _: Seq[FileAttachment]
+        )(
           _: HeaderCarrier
         ))
-        .expects(submission, pdfAndXmlSummaries, hmrcDms, objectStore, formTemplateId, hc)
+        .expects(submission, pdfAndXmlSummaries, hmrcDms, objectStore, formTemplateId, fileAttachments, hc)
         .returning(())
 
       this

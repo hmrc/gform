@@ -21,8 +21,8 @@ import org.apache.pekko.util.ByteString
 import org.slf4j.LoggerFactory
 import uk.gov.hmrc.gform.core.FutureSyntax
 import uk.gov.hmrc.gform.dms.FileAttachment
-import uk.gov.hmrc.gform.objectstore.{ Envelope, MetadataXml, ObjectStoreAlgebra, ReconciliationId, RouteEnvelopeRequest }
 import uk.gov.hmrc.gform.objectstore.ObjectStoreService.FileIds._
+import uk.gov.hmrc.gform.objectstore._
 import uk.gov.hmrc.gform.sdes.workitem.DestinationWorkItemAlgebra
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
@@ -69,7 +69,8 @@ class FileUploadService(
     summaries: PdfAndXmlSummaries,
     hmrcDms: HmrcDms,
     objectStore: Boolean,
-    formTemplateId: FormTemplateId
+    formTemplateId: FormTemplateId,
+    fileAttachments: Seq[FileAttachment]
   )(implicit
     hc: HeaderCarrier
   ): Future[Unit] = {
@@ -120,6 +121,19 @@ class FileUploadService(
         )
         .getOrElse(Future.successful(()))
 
+    def roboticsFileExtension = summaries.roboticsFileExtension.map(_.toLowerCase).getOrElse("xml")
+    def roboticsFileName = hmrcDms.roboticsFileName(fileNamePrefix, roboticsFileExtension)
+    def roboticsAttachmentName = if (
+      hmrcDms.roboticsAsAttachment
+        .getOrElse(false)
+    ) {
+      Seq(roboticsFileName)
+    } else { Seq() }
+    def preExistingEnvelopeFileNames =
+      fileAttachments
+        .map(_.filename.getFileName.toString)
+        .filterNot(x => x.endsWith("-iform.pdf") || x.endsWith("-metadata.xml")) ++ roboticsAttachmentName
+
     def uploadMetadataXmlF: Future[Unit] = {
       val reconciliationId = ReconciliationId.create(submission.submissionRef)
       val metadataXml = MetadataXml.xmlDec + "\n" + MetadataXml
@@ -128,7 +142,8 @@ class FileUploadService(
           reconciliationId,
           summaries.instructionPdfSummary.fold(summaries.pdfSummary.numberOfPages)(_.numberOfPages),
           submission.noOfAttachments + summaries.instructionPdfSummary.fold(0)(_ => 1),
-          hmrcDms
+          hmrcDms,
+          preExistingEnvelopeFileNames
         )
       uploadFile(
         submission.envelopeId,
@@ -142,11 +157,10 @@ class FileUploadService(
 
     def uploadRoboticsContentF: Future[Unit] = summaries.roboticsFile match {
       case Some(elem) =>
-        val roboticsFileExtension = summaries.roboticsFileExtension.map(_.toLowerCase).getOrElse("xml")
         uploadFile(
           submission.envelopeId,
           roboticsFileId(roboticsFileExtension),
-          hmrcDms.roboticsFileName(fileNamePrefix, roboticsFileExtension),
+          roboticsFileName,
           ByteString(elem.getBytes),
           getContentType(roboticsFileExtension),
           objectStore

@@ -72,7 +72,8 @@ trait FileUploadAlgebra[F[_]] {
     summaries: PdfAndXmlSummaries,
     hmrcDms: HmrcDms,
     objectStore: Boolean,
-    formTemplateId: FormTemplateId
+    formTemplateId: FormTemplateId,
+    fileAttachments: Seq[FileAttachment]
   )(implicit
     hc: HeaderCarrier
   ): F[Unit]

@@ -170,7 +170,8 @@ class ObjectStoreModule(
       preExistingEnvelope: EnvelopeData
     )(implicit hc: HeaderCarrier): FOpt[Unit] =
       fromFutureA(
-        objectStoreService.submitEnvelope(submission, summaries, hmrcDms, formTemplateId, preExistingEnvelope)
+        objectStoreService
+          .submitEnvelope(submission, summaries, hmrcDms, formTemplateId, preExistingEnvelope)
       )
 
     override def zipAndEncrypt(envelopeId: EnvelopeId, objectStorePaths: ObjectStorePaths)(implicit
