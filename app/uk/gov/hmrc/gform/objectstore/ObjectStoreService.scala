@@ -318,8 +318,9 @@ class ObjectStoreService(
     def roboticsFileExtension = summaries.roboticsFileExtension.map(_.toLowerCase).getOrElse("xml")
     def roboticsFileName = hmrcDms.roboticsFileName(fileNamePrefix, roboticsFileExtension)
 
-    def preExistingEnvelopeNames =
+    def preExistingEnvelopeFileNames =
       preExistingEnvelope.files
+        .filter(_.subDirectory.isEmpty)
         .map(_.fileName)
 
     def uploadMetadataXmlF: Future[Unit] = {
@@ -331,7 +332,7 @@ class ObjectStoreService(
           summaries.instructionPdfSummary.fold(summaries.pdfSummary.numberOfPages)(_.numberOfPages),
           submission.noOfAttachments + summaries.instructionPdfSummary.fold(0)(_ => 1),
           hmrcDms,
-          preExistingEnvelopeNames
+          preExistingEnvelopeFileNames
         )
       uploadFile(
         submission.envelopeId,
