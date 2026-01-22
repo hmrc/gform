@@ -315,16 +315,12 @@ class ObjectStoreService(
         )
         .getOrElse(Future.unit)
 
-    def roboticsFileExtension = summaries.roboticsFileExtension.map(_.toLowerCase).getOrElse("xml")
-    def roboticsFileName = hmrcDms.roboticsFileName(fileNamePrefix, roboticsFileExtension)
-
-    def preExistingEnvelopeFileNames =
-      preExistingEnvelope.files
-        .filter(_.subDirectory.isEmpty)
-        .map(_.fileName)
-
     def uploadMetadataXmlF: Future[Unit] = {
       val reconciliationId = ReconciliationId.create(submission.submissionRef)
+      def preExistingEnvelopeFileNames =
+        preExistingEnvelope.files
+          .filter(_.subDirectory.isEmpty)
+          .map(_.fileName)
       val metadataXml = MetadataXml.xmlDec + "\n" + MetadataXml
         .getXml(
           submission,
@@ -346,10 +342,11 @@ class ObjectStoreService(
 
     def uploadRoboticsContentF: Future[Unit] = summaries.roboticsFile match {
       case Some(elem) =>
+        val roboticsFileExtension = summaries.roboticsFileExtension.map(_.toLowerCase).getOrElse("xml")
         uploadFile(
           submission.envelopeId,
           roboticsFileId(roboticsFileExtension).prefix(fileIdPrefix),
-          roboticsFileName,
+          hmrcDms.roboticsFileName(fileNamePrefix, roboticsFileExtension),
           ByteString(elem.getBytes),
           getContentType(roboticsFileExtension),
           hmrcDms.submissionPrefix
