@@ -43,10 +43,15 @@ class MetadataXmlSpec extends Spec {
 
     val pdfSummary = PdfSummary(numberOfPages = 10L, pdfContent = Array.empty[Byte])
 
-    val attachmentNames = Seq("example.pdf", "example2.pdf")
+    val roboticsAttachmentsName = if (hmrcDms.roboticsAsAttachment.getOrElse(false)) {
+      Seq("robotics.xml")
+    } else {
+      Seq()
+    }
 
-    val expectedAttachmentCount =
-      if (hmrcDms.roboticsAsAttachment.getOrElse(false)) attachmentNames.length + 1 else attachmentNames.length
+    val attachmentNames = Seq("example.pdf", "example2.pdf") ++ roboticsAttachmentsName
+
+    val expectedAttachmentCount = attachmentNames.length
 
     val attachmentNamesXml: Seq[Elem] = if (hmrcDms.includeAttachmentNames.getOrElse(false)) {
       attachmentNames.map { attachmentName =>
@@ -234,7 +239,7 @@ class MetadataXmlSpec extends Spec {
     )
   }
 
-  "metadata.xml attachment_name" should "be added if includeAttachmentNames is trues" in {
+  "metadata.xml attachment_name" should "be added if includeAttachmentNames is true" in {
     generateXml(
       HmrcDms(
         DestinationId("TestHmrcDmsId"),
@@ -252,6 +257,30 @@ class MetadataXmlSpec extends Spec {
         None,
         TemplateType.XML,
         None,
+        Some(true),
+        None
+      )
+    )
+  }
+
+  "metadata.xml attachment_name" should "be added if includeAttachmentNames is true and robotics name should also be added if robotics added as an attachment" in {
+    generateXml(
+      HmrcDms(
+        DestinationId("TestHmrcDmsId"),
+        "some-id",
+        Constant("TestHmrcDmsCustomerId"),
+        "some-classification-type",
+        "some-business-area",
+        DestinationIncludeIf.HandlebarValue(""),
+        true,
+        Some(DataOutputFormat.XML),
+        true,
+        Some(true),
+        Some(InstructionPdfFields.Ordered),
+        None,
+        None,
+        TemplateType.XML,
+        Some(true),
         Some(true),
         None
       )
