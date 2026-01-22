@@ -21,8 +21,8 @@ import org.apache.pekko.util.ByteString
 import org.slf4j.LoggerFactory
 import uk.gov.hmrc.gform.core.FutureSyntax
 import uk.gov.hmrc.gform.dms.FileAttachment
-import uk.gov.hmrc.gform.objectstore.{ Envelope, MetadataXml, ObjectStoreAlgebra, ReconciliationId, RouteEnvelopeRequest }
 import uk.gov.hmrc.gform.objectstore.ObjectStoreService.FileIds._
+import uk.gov.hmrc.gform.objectstore._
 import uk.gov.hmrc.gform.sdes.workitem.DestinationWorkItemAlgebra
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
@@ -128,7 +128,8 @@ class FileUploadService(
           reconciliationId,
           summaries.instructionPdfSummary.fold(summaries.pdfSummary.numberOfPages)(_.numberOfPages),
           submission.noOfAttachments + summaries.instructionPdfSummary.fold(0)(_ => 1),
-          hmrcDms
+          hmrcDms,
+          Seq()
         )
       uploadFile(
         submission.envelopeId,

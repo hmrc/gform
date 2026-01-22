@@ -27,11 +27,23 @@ object MetadataXml {
 
   val xmlDec = """<?xml version="1.0" encoding="UTF-8" standalone="no"?>"""
 
-  private def createMetadata(submission: Submission, noOfPages: Long, attachmentCount: Int, hmrcDms: HmrcDms): Elem = {
+  private def createMetadata(
+    submission: Submission,
+    noOfPages: Long,
+    attachmentCount: Int,
+    hmrcDms: HmrcDms,
+    fileAttachmentNames: Seq[String]
+  ): Elem = {
+
+    val roboticsAsAttachment = hmrcDms.roboticsAsAttachment.getOrElse(false)
 
     val backscan = hmrcDms.backscan.map(backscan => createAttribute("backscan", backscan)).toList
 
-    val roboticsAsAttachmentCountOffset = if (hmrcDms.roboticsAsAttachment.getOrElse(false)) 1 else 0
+    def attachmentNameAttributes = if (hmrcDms.includeAttachmentNames.getOrElse(false))
+      fileAttachmentNames.map(name => createAttribute("attachment_name", name))
+    else Seq()
+
+    val roboticsAsAttachmentCountOffset = if (roboticsAsAttachment) 1 else 0
 
     val attributes = List(
       createAttribute("hmrc_time_of_receipt", submission.submittedDate),
@@ -46,7 +58,7 @@ object MetadataXml {
       createAttribute("classification_type", hmrcDms.classificationType),
       createAttribute("business_area", hmrcDms.businessArea),
       createAttribute("attachment_count", attachmentCount + roboticsAsAttachmentCountOffset)
-    ) ++ backscan
+    ) ++ attachmentNameAttributes ++ backscan
 
     <metadata></metadata>.copy(child = attributes)
   }
@@ -72,12 +84,13 @@ object MetadataXml {
     reconciliationId: ReconciliationId,
     noOfPages: Long,
     attachmentCount: Int,
-    hmrcDms: HmrcDms
+    hmrcDms: HmrcDms,
+    fileAttachmentNames: Seq[String]
   ): Elem = {
     val body =
       List(
         createHeader(submission.submissionRef, reconciliationId),
-        createMetadata(submission, noOfPages, attachmentCount, hmrcDms)
+        createMetadata(submission, noOfPages, attachmentCount, hmrcDms, fileAttachmentNames)
       )
 
     trim(createDocument(body))

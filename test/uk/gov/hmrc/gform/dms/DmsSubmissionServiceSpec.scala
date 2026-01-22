@@ -61,7 +61,6 @@ class DmsSubmissionServiceSpec extends Spec {
         expectedSubmission,
         expectedPdfAndXmlSummaries,
         expectedHmrcDms,
-        0,
         fixture().objectStoreEnable,
         formTemplateId
       )
@@ -100,7 +99,6 @@ class DmsSubmissionServiceSpec extends Spec {
         expectedSubmission,
         expectedPdfAndXmlSummaries,
         expectedDmsSubmission,
-        1,
         fixture().objectStoreEnable,
         formTemplateId
       )
@@ -132,7 +130,6 @@ class DmsSubmissionServiceSpec extends Spec {
         expectedSubmission,
         expectedPdfAndXmlSummaries,
         expectedHmrcDms,
-        0,
         fixture().objectStoreEnable,
         formTemplateId
       )
@@ -141,7 +138,7 @@ class DmsSubmissionServiceSpec extends Spec {
   }
 
   private val validSubmission =
-    DmsHtmlSubmission("", DmsMetadata("some-form-id", "some-customer-id", "", "", None, None))
+    DmsHtmlSubmission("", DmsMetadata("some-form-id", "some-customer-id", "", "", None, None, None))
   private val stubPdfDocument = stub[PDDocument]
 
   private val envelopeExpiryDays: Long = 5L
@@ -208,12 +205,17 @@ class DmsSubmissionServiceSpec extends Spec {
       submission: Submission,
       pdfAndXmlSummaries: PdfAndXmlSummaries,
       hmrcDms: HmrcDms,
-      numberOfAttachments: Int,
       objectStore: Boolean,
       formTemplateId: FormTemplateId
     ): Fixture = {
       (fileUpload
-        .submitEnvelope(_: Submission, _: PdfAndXmlSummaries, _: HmrcDms, _: Boolean, _: FormTemplateId)(
+        .submitEnvelope(
+          _: Submission,
+          _: PdfAndXmlSummaries,
+          _: HmrcDms,
+          _: Boolean,
+          _: FormTemplateId
+        )(
           _: HeaderCarrier
         ))
         .expects(submission, pdfAndXmlSummaries, hmrcDms, objectStore, formTemplateId, hc)

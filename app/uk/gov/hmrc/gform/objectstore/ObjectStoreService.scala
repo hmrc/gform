@@ -317,13 +317,18 @@ class ObjectStoreService(
 
     def uploadMetadataXmlF: Future[Unit] = {
       val reconciliationId = ReconciliationId.create(submission.submissionRef)
+      def preExistingEnvelopeFileNames =
+        preExistingEnvelope.files
+          .filter(_.subDirectory.isEmpty)
+          .map(_.fileName)
       val metadataXml = MetadataXml.xmlDec + "\n" + MetadataXml
         .getXml(
           submission,
           reconciliationId,
           summaries.instructionPdfSummary.fold(summaries.pdfSummary.numberOfPages)(_.numberOfPages),
           submission.noOfAttachments + summaries.instructionPdfSummary.fold(0)(_ => 1),
-          hmrcDms
+          hmrcDms,
+          preExistingEnvelopeFileNames
         )
       uploadFile(
         submission.envelopeId,

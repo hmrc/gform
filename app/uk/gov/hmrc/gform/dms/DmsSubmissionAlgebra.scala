@@ -114,6 +114,7 @@ object DmsSubmissionService {
       None,
       TemplateType.XML,
       metadata.roboticsAsAttachment,
+      Some(false),
       None
     )
 

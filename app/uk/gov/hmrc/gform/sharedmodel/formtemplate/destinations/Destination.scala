@@ -98,6 +98,7 @@ object Destination {
     payload: Option[String],
     payloadType: TemplateType,
     roboticsAsAttachment: Option[Boolean],
+    includeAttachmentNames: Option[Boolean],
     submissionPrefix: Option[String]
   ) extends Destination with DestinationWithCustomerId {
     def roboticsFileName(fileNamePrefix: String, roboticsFileExtension: String): String =
@@ -266,6 +267,7 @@ case class UploadableHmrcDmsDestination(
   closedStatus: Option[Boolean],
   instructionPdfFields: Option[InstructionPdfFields] = None,
   roboticsAsAttachment: Option[Boolean],
+  includeAttachmentNames: Option[Boolean],
   submissionPrefix: Option[String] = None
 ) {
 
@@ -288,6 +290,7 @@ case class UploadableHmrcDmsDestination(
       None,
       TemplateType.XML,
       roboticsAsAttachment,
+      includeAttachmentNames,
       submissionPrefix
     )
 }

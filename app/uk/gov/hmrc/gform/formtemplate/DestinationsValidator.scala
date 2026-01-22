@@ -152,15 +152,17 @@ object DestinationsValidator {
 
   def extractIds(destination: Destination): NonEmptyList[DestinationId] = NonEmptyList.of(destination.id)
 
-  def validateRoboticsAsAttachment(destinations: Destinations): ValidationResult =
+  def validateDependsOnDataOutputFormat(
+    destinations: Destinations
+  )(destinationName: String)(checkFlag: Destination.HmrcDms => Option[Boolean]): ValidationResult =
     destinations match {
       case Destinations.DestinationList(destinations, _, _) =>
         destinations.map {
           case destination: Destination.HmrcDms =>
-            destination.roboticsAsAttachment -> destination.dataOutputFormat match {
+            checkFlag(destination) -> destination.dataOutputFormat match {
               case (Some(true), None) =>
                 Invalid(
-                  s"""The destination '${destination.id.id}' is not valid. Once the property 'roboticsAsAttachment' is set to true, the 'dataOutputFormat' property must exist. Example: "dataOutputFormat": "xml" """
+                  s"""The destination '${destination.id.id}' is not valid. Once the property '$destinationName' is set to true, the 'dataOutputFormat' property must exist. Example: "dataOutputFormat": "xml" """
                 )
               case _ => Valid
             }

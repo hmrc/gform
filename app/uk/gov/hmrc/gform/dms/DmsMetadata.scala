@@ -24,7 +24,8 @@ case class DmsMetadata(
   classificationType: String,
   businessArea: String,
   backscan: Option[Boolean],
-  roboticsAsAttachment: Option[Boolean]
+  roboticsAsAttachment: Option[Boolean],
+  includeAttachmentNames: Option[Boolean]
 )
 
 object DmsMetadata {

@@ -43,7 +43,29 @@ class MetadataXmlSpec extends Spec {
 
     val pdfSummary = PdfSummary(numberOfPages = 10L, pdfContent = Array.empty[Byte])
 
-    val expectedAttachmentCount = if (hmrcDms.roboticsAsAttachment.getOrElse(false)) 3 else 2
+    val roboticsAttachmentsName = if (hmrcDms.roboticsAsAttachment.getOrElse(false)) {
+      Seq("robotics.xml")
+    } else {
+      Seq()
+    }
+
+    val attachmentNames = Seq("example.pdf", "example2.pdf") ++ roboticsAttachmentsName
+
+    val expectedAttachmentCount = attachmentNames.length
+
+    val attachmentNamesXml: Seq[Elem] = if (hmrcDms.includeAttachmentNames.getOrElse(false)) {
+      attachmentNames.map { attachmentName =>
+        <attribute>
+          <attribute_name>attachment_name</attribute_name>
+          <attribute_type>string</attribute_type>
+          <attribute_values>
+            <attribute_value>{attachmentName}</attribute_value>
+          </attribute_values>
+        </attribute>
+      }
+    } else {
+      Seq()
+    }
 
     val expected =
       <documents xmlns="http://govtalk.gov.uk/hmrc/gis/content/1">
@@ -142,6 +164,7 @@ class MetadataXmlSpec extends Spec {
                 <attribute_value>{expectedAttachmentCount.toString}</attribute_value>
               </attribute_values>
             </attribute>
+            {attachmentNamesXml}
             <attribute>
               <attribute_name>backscan</attribute_name>
               <attribute_type>boolean</attribute_type>
@@ -159,7 +182,8 @@ class MetadataXmlSpec extends Spec {
         ReconciliationId("some-recocilliatin-id"),
         pdfSummary.numberOfPages,
         submission.noOfAttachments,
-        hmrcDms
+        hmrcDms,
+        attachmentNames
       )
 
     metadataXml should equal(Utility.trim(expected).asInstanceOf[Elem])(after being streamlined[Elem])
@@ -184,6 +208,7 @@ class MetadataXmlSpec extends Spec {
         None,
         TemplateType.XML,
         None,
+        None,
         None
       )
     )
@@ -207,6 +232,55 @@ class MetadataXmlSpec extends Spec {
         None,
         None,
         TemplateType.XML,
+        Some(true),
+        None,
+        None
+      )
+    )
+  }
+
+  "metadata.xml attachment_name" should "be added if includeAttachmentNames is true" in {
+    generateXml(
+      HmrcDms(
+        DestinationId("TestHmrcDmsId"),
+        "some-id",
+        Constant("TestHmrcDmsCustomerId"),
+        "some-classification-type",
+        "some-business-area",
+        DestinationIncludeIf.HandlebarValue(""),
+        true,
+        Some(DataOutputFormat.XML),
+        true,
+        Some(true),
+        Some(InstructionPdfFields.Ordered),
+        None,
+        None,
+        TemplateType.XML,
+        None,
+        Some(true),
+        None
+      )
+    )
+  }
+
+  "metadata.xml attachment_name" should "be added if includeAttachmentNames is true and robotics name should also be added if robotics added as an attachment" in {
+    generateXml(
+      HmrcDms(
+        DestinationId("TestHmrcDmsId"),
+        "some-id",
+        Constant("TestHmrcDmsCustomerId"),
+        "some-classification-type",
+        "some-business-area",
+        DestinationIncludeIf.HandlebarValue(""),
+        true,
+        Some(DataOutputFormat.XML),
+        true,
+        Some(true),
+        Some(InstructionPdfFields.Ordered),
+        None,
+        None,
+        TemplateType.XML,
+        Some(true),
         Some(true),
         None
       )
