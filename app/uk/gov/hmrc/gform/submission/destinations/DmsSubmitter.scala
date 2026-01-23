@@ -34,7 +34,6 @@ import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId, Submitted }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DmsDestinationResponse
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DestinationResponse, HandlebarsTemplateProcessorModel }
-import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination
 import uk.gov.hmrc.gform.submission.PdfAndXmlSummariesFactory
 import uk.gov.hmrc.gform.submission.handlebars.HandlebarsModelTree
 import uk.gov.hmrc.http.HeaderCarrier
@@ -105,7 +104,7 @@ class DmsSubmitter(
       _ <- success(logFileSizeBreach(submission.envelopeId, envelopeDetails.files))
       _ <- formService.updateFormStatus(submissionInfo.formId, Submitted)
     } yield
-      if (hmrcDms.routing === SdesDestination.PegaCaseflow) DestinationResponse.NoResponse
+      if (hmrcDms.isPegaCaseflow) DestinationResponse.NoResponse
       else
         DmsDestinationResponse(
           updatedDms.dmsFormId,

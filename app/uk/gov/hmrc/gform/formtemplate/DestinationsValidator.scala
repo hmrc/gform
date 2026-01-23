@@ -25,7 +25,6 @@ import uk.gov.hmrc.gform.sharedmodel.HandlebarsSchemaId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationIncludeIf.{ HandlebarValue, IncludeIfValue }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponent, FormComponentId, FormTemplateId, IsGroup }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationId, Destinations }
-import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination.{ Dms, PegaCaseflow }
 
 object DestinationsValidator {
   def someDestinationIdsAreUsedMoreThanOnce(duplicates: Set[DestinationId]) =
@@ -48,8 +47,8 @@ object DestinationsValidator {
     case destinationList: Destinations.DestinationList =>
       val dmsList = destinationList.destinations.collect { case d: Destination.HmrcDms => d }
 
-      val caseflows = dmsList.filter(dms => dms.routing === PegaCaseflow)
-      val isDms = dmsList.exists(_.routing === Dms)
+      val caseflows = dmsList.filter(_.isPegaCaseflow)
+      val isDms = dmsList.exists(!_.isPegaCaseflow)
 
       val mixtureCheck = if (caseflows.nonEmpty && isDms) {
         Invalid(

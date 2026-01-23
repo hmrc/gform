@@ -421,7 +421,8 @@ class SdesService(
     sdesDestination match {
       case SdesDestination.DataStore | SdesDestination.DataStoreLegacy | SdesDestination.HmrcIlluminate =>
         objectStoreAlgebra.deleteFile(paths.ephemeral, fileName)
-      case SdesDestination.Dms | SdesDestination.InfoArchive => objectStoreAlgebra.deleteZipFile(envelopeId, paths)
+      case SdesDestination.Dms | SdesDestination.PegaCaseflow | SdesDestination.InfoArchive =>
+        objectStoreAlgebra.deleteZipFile(envelopeId, paths)
     }
   }
 

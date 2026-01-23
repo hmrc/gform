@@ -18,7 +18,6 @@ package uk.gov.hmrc.gform.objectstore
 
 import uk.gov.hmrc.gform.sharedmodel.{ DestinationResult, SubmissionRef }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
-import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination.PegaCaseflow
 import uk.gov.hmrc.gform.submission.Submission
 import uk.gov.hmrc.gform.typeclasses.Attribute
 
@@ -47,7 +46,7 @@ object MetadataXml {
 
     val roboticsAsAttachmentCountOffset = if (roboticsAsAttachment) 1 else 0
 
-    val pegaCaseflowAttributes = if (hmrcDms.routing == PegaCaseflow) {
+    val pegaCaseflowAttributes = if (hmrcDms.isPegaCaseflow) {
       List(
         createAttribute("hm_post_received_date", submission.submittedDate),
         createAttribute("hm_po_box", destinationResult.flatMap(_.postalCode).getOrElse("Unable to evaluate")),
