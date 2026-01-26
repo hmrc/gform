@@ -263,7 +263,7 @@ class SdesService(
           for {
             (numberOfFiles, uploadCount, size) <-
               sdesSubmission.sdesDestination match {
-                case SdesDestination.Dms =>
+                case SdesDestination.Dms | SdesDestination.PegaCaseflow =>
                   val envelope = envelopeAlgebra.get(sdesSubmission.envelopeId)
                   envelope.map(e =>
                     (
