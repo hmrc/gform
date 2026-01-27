@@ -30,7 +30,6 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.{ DestinationGen, F
 import uk.gov.hmrc.gform.sharedmodel.generators.{ PdfDataGen, StructuredFormValueGen }
 import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
 import uk.gov.hmrc.gform.sharedmodel._
-import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination.PegaCaseflow
 import uk.gov.hmrc.gform.submission.handlebars.{ FocussedHandlebarsModelTree, HandlebarsHttpApiSubmitter, HandlebarsModelTree, HandlebarsTemplateProcessor }
 import uk.gov.hmrc.gform.submissionconsolidator.SubmissionConsolidatorAlgebra
 import uk.gov.hmrc.gform.{ Possible, Spec, possibleMonadError }
@@ -65,7 +64,7 @@ class DestinationSubmitterSpec
       case _                 => ""
     }
 
-  def dmsResponse(hmrcDms: HmrcDms) = if (hmrcDms.routing === PegaCaseflow) DestinationResponse.NoResponse
+  def dmsResponse(hmrcDms: HmrcDms) = if (hmrcDms.isPegaCaseflow) DestinationResponse.NoResponse
   else
     DmsDestinationResponse(hmrcDms.dmsFormId, hmrcDms.classificationType, hmrcDms.businessArea, 5)
 
