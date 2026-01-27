@@ -325,7 +325,6 @@ class ObjectStoreService(
         preExistingEnvelope.files
           .filter(_.subDirectory.isEmpty)
           .map(_.fileName)
-
       val metadataXml = MetadataXml.xmlDec + "\n" + MetadataXml
         .getXml(
           submission,
