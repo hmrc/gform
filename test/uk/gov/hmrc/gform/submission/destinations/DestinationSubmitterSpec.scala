@@ -64,9 +64,8 @@ class DestinationSubmitterSpec
       case _                 => ""
     }
 
-  def dmsResponse(hmrcDms: HmrcDms) = if (hmrcDms.isPegaCaseflow) DestinationResponse.NoResponse
-  else
-    DmsDestinationResponse(hmrcDms.dmsFormId, hmrcDms.classificationType, hmrcDms.businessArea, 5)
+  def dmsResponse(hmrcDms: HmrcDms) =
+    DmsDestinationResponse(hmrcDms.dmsFormId, hmrcDms.routing, hmrcDms.classificationType, hmrcDms.businessArea, 5)
 
   "A Destination.HandlebarsHttpApi" should "be sent to the HandlebarsHttpApiSubmitter when includeIf is evaluated to true" in {
     forAll(

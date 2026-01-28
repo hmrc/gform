@@ -103,15 +103,13 @@ class DmsSubmitter(
         )
       _ <- success(logFileSizeBreach(submission.envelopeId, envelopeDetails.files))
       _ <- formService.updateFormStatus(submissionInfo.formId, Submitted)
-    } yield
-      if (hmrcDms.isPegaCaseflow) DestinationResponse.NoResponse
-      else
-        DmsDestinationResponse(
-          updatedDms.dmsFormId,
-          updatedDms.classificationType,
-          updatedDms.businessArea,
-          modelTree.value.structuredFormData.fields.length
-        )
+    } yield DmsDestinationResponse(
+      updatedDms.dmsFormId,
+      updatedDms.routing,
+      updatedDms.classificationType,
+      updatedDms.businessArea,
+      modelTree.value.structuredFormData.fields.length
+    )
   }
 
   /** This log line is used in alert-config, to trigger a pager duty alert when files sizes exceeds the threshold
