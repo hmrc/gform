@@ -124,20 +124,7 @@ trait Verifier {
                .validateHandlebarSchemaCheck(formTemplate._id, formTemplate.destinations, handlebarsSchemaIds)
                .toEither
            )
-      _ <- fromOptA(
-             DestinationsValidator
-               .validateDependsOnDataOutputFormat(formTemplate.destinations)("roboticsAsAttachment")(destination =>
-                 destination.roboticsAsAttachment
-               )
-               .toEither
-           )
-      _ <- fromOptA(
-             DestinationsValidator
-               .validateDependsOnDataOutputFormat(formTemplate.destinations)("includeAttachmentNames")(destination =>
-                 destination.includeAttachmentNames
-               )
-               .toEither
-           )
+      _ <- fromOptA(DestinationsValidator.validateRoboticsAsAttachment(formTemplate.destinations).toEither)
       _ <- fromOptA(AcknowledgementValidator.validateNoPIITitle(formTemplate, allExpressions).toEither)
     } yield ()
 
