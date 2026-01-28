@@ -272,7 +272,7 @@ class ObjectStoreService(
         }
         .getOrElse(Future.unit)
 
-    def customerSummaryFileName =  s"$fileNamePrefix-customerSummary.pdf"
+    def customerSummaryFileName = s"$fileNamePrefix-customerSummary.pdf"
     def iFormFileName = s"$fileNamePrefix-iform.pdf"
     def formDataFileName = s"$fileNamePrefix-formdata.xml"
     def metadataFileName = s"$fileNamePrefix-metadata.xml"
