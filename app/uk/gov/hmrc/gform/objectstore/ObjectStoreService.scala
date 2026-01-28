@@ -272,17 +272,22 @@ class ObjectStoreService(
         }
         .getOrElse(Future.unit)
 
+    def customerSummaryFileName =  s"$fileNamePrefix-customerSummary.pdf"
+    def iFormFileName = s"$fileNamePrefix-iform.pdf"
+    def formDataFileName = s"$fileNamePrefix-formdata.xml"
+    def metadataFileName = s"$fileNamePrefix-metadata.xml"
+
     def uploadPfdF: Future[Unit] = {
-      val (fileId, fileNameSuffix) = {
+      val (fileId, fileName) = {
         if (hmrcDms.instructionPdfFields.isDefined)
-          (customerSummaryPdf.prefix(fileIdPrefix), "customerSummary")
-        else (pdf.prefix(fileIdPrefix), "iform")
+          (customerSummaryPdf.prefix(fileIdPrefix), customerSummaryFileName)
+        else (pdf.prefix(fileIdPrefix), iFormFileName)
       }
 
       uploadFile(
         submission.envelopeId,
         fileId,
-        s"$fileNamePrefix-$fileNameSuffix.pdf",
+        fileName,
         ByteString(summaries.pdfSummary.pdfContent),
         ContentType.`application/pdf`,
         hmrcDms.submissionPrefix
@@ -294,7 +299,7 @@ class ObjectStoreService(
         uploadFile(
           submission.envelopeId,
           pdf.prefix(fileIdPrefix),
-          s"$fileNamePrefix-iform.pdf",
+          iFormFileName,
           ByteString(iPdf.pdfContent),
           ContentType.`application/pdf`,
           hmrcDms.submissionPrefix
@@ -307,7 +312,7 @@ class ObjectStoreService(
           uploadFile(
             submission.envelopeId,
             formdataXml.prefix(fileIdPrefix),
-            s"$fileNamePrefix-formdata.xml",
+            formDataFileName,
             ByteString(elem.getBytes),
             ContentType.`application/xml`,
             hmrcDms.submissionPrefix
@@ -319,7 +324,7 @@ class ObjectStoreService(
       val reconciliationId = ReconciliationId.create(submission.submissionRef)
 
       val customerSummaryFileName =
-        hmrcDms.instructionPdfFields.fold(Seq(): Seq[String])(_ => Seq(s"""$fileNamePrefix-customerSummary.pdf"""))
+        hmrcDms.instructionPdfFields.map(_ => customerSummaryFileName)
 
       def preExistingEnvelopeFileNames =
         preExistingEnvelope.files
@@ -337,7 +342,7 @@ class ObjectStoreService(
       uploadFile(
         submission.envelopeId,
         xml.prefix(fileIdPrefix),
-        s"$fileNamePrefix-metadata.xml",
+        metadataFileName,
         ByteString(metadataXml.getBytes),
         ContentType.`application/xml`,
         hmrcDms.submissionPrefix
