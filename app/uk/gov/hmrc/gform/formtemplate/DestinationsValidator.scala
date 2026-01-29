@@ -43,6 +43,52 @@ object DestinationsValidator {
       duplicates.isEmpty.validationResult(someDestinationIdsAreUsedMoreThanOnce(duplicates))
   }
 
+  def validateCaseflow(destinations: Destinations): ValidationResult = destinations match {
+    case destinationList: Destinations.DestinationList =>
+      val dmsList = destinationList.destinations.collect { case d: Destination.HmrcDms => d }
+
+      val caseflows = dmsList.filter(_.isPegaCaseflow)
+      val isDms = dmsList.exists(!_.isPegaCaseflow)
+
+      val mixtureCheck = if (caseflows.nonEmpty && isDms) {
+        Invalid(
+          "hmrcDms destinations cannot be a mix of DMS and Pega Caseflow routings."
+        )
+      } else {
+        Valid
+      }
+
+      val countCheck = if (caseflows.size > 1) {
+        Invalid(
+          "Cannot define more than 1 hmrcDms destination with routing to Pega Caseflow."
+        )
+      } else {
+        Valid
+      }
+
+      val attributesCheck = caseflows.flatMap { dest =>
+        List(
+          if (dest.caseId.isEmpty) {
+            Invalid(
+              s"Pega Caseflow destination '${dest.id.id}' must have caseId expression defined."
+            )
+          } else {
+            Valid
+          },
+          if (dest.postalCode.isEmpty) {
+            Invalid(
+              s"Pega Caseflow destination '${dest.id.id}' must have postalCode expression defined."
+            )
+          } else {
+            Valid
+          }
+        )
+      }
+
+      Monoid[ValidationResult].combineAll(List(mixtureCheck, countCheck) ++ attributesCheck)
+    case _ => Valid
+  }
+
   def validateSubmissionPrefix(destinations: Destinations): ValidationResult = destinations match {
     case destinationList: Destinations.DestinationList =>
       val dmsList = destinationList.destinations.collect { case d: Destination.HmrcDms => d }

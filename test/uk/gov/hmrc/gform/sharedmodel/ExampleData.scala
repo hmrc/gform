@@ -28,6 +28,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.Dest
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DataOutputFormat, DestinationId, DestinationIncludeIf, InstructionPdfFields, TemplateType }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.DestinationGen
 import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination
+import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination.Dms
 import uk.gov.hmrc.gform.submission.{ DmsMetaData, Submission, SubmissionId }
 
 import java.time.{ Instant, LocalDateTime }
@@ -42,6 +43,7 @@ trait ExampleAuthConfig extends DestinationGen {
 
   val hmrcDms = HmrcDms(
     DestinationId("TestHmrcDmsId"),
+    Dms,
     "TestHmrcDmsFormId",
     Constant("TestHmrcDmsCustomerId"),
     "TestHmrcDmsClassificationType",
@@ -55,6 +57,8 @@ trait ExampleAuthConfig extends DestinationGen {
     None,
     None,
     TemplateType.XML,
+    None,
+    None,
     None,
     None,
     None

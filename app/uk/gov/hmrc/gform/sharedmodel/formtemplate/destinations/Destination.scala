@@ -24,6 +24,7 @@ import uk.gov.hmrc.gform.sharedmodel.EmailVerifierService
 import uk.gov.hmrc.gform.sharedmodel.email.LocalisedEmailTemplateId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import UploadableConditioning._
+import cats.implicits.catsSyntaxEq
 import uk.gov.hmrc.gform.core.parsers.BooleanExprParser
 import uk.gov.hmrc.gform.sharedmodel.form.{ FormId, FormStatus }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationIncludeIf.{ HandlebarValue, IncludeIfValue }
@@ -33,6 +34,12 @@ import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination
 
 sealed trait DestinationWithCustomerId {
   def customerId(): Expr
+}
+
+sealed trait DestinationWithCustomerCaseflow {
+  def customerId(): Expr
+  def caseId(): Option[Expr]
+  def postalCode(): Option[Expr]
 }
 
 sealed trait DestinationWithTaxpayerId extends Destination {
@@ -84,6 +91,7 @@ sealed trait Destination extends Product with Serializable {
 object Destination {
   case class HmrcDms(
     id: DestinationId,
+    routing: SdesDestination,
     dmsFormId: String,
     customerId: Expr,
     classificationType: String,
@@ -99,14 +107,18 @@ object Destination {
     payloadType: TemplateType,
     roboticsAsAttachment: Option[Boolean],
     includeAttachmentNames: Option[Boolean],
-    submissionPrefix: Option[String]
-  ) extends Destination with DestinationWithCustomerId {
+    submissionPrefix: Option[String],
+    caseId: Option[Expr],
+    postalCode: Option[Expr]
+  ) extends Destination with DestinationWithCustomerCaseflow {
     def roboticsFileName(fileNamePrefix: String, roboticsFileExtension: String): String =
       if (roboticsAsAttachment.getOrElse(false)) {
         s"$fileNamePrefix." + roboticsFileExtension
       } else {
         s"$fileNamePrefix-robotic." + roboticsFileExtension
       }
+
+    def isPegaCaseflow: Boolean = this.routing === SdesDestination.PegaCaseflow
   }
 
   case class DataStore(
@@ -241,6 +253,12 @@ object Destination {
   implicit val leafExprs: LeafExpr[Destination] = (path: TemplatePath, t: Destination) =>
     t match {
       case d: DestinationWithCustomerId => List(ExprWithPath(path + "customerId", d.customerId()))
+      case d: DestinationWithCustomerCaseflow =>
+        List(ExprWithPath(path + "customerId", d.customerId())) ++
+          List(
+            d.caseId().map(c => ExprWithPath(path + "caseId", c)).toList,
+            d.postalCode().map(pc => ExprWithPath(path + "postalCode", pc)).toList
+          ).flatten
       case d: DestinationWithPaymentReference =>
         List(ExprWithPath(path + "paymentReference", d.paymentReference)) ++
           List(
@@ -255,6 +273,7 @@ object Destination {
 
 case class UploadableHmrcDmsDestination(
   id: DestinationId,
+  routing: Option[SdesDestination],
   dmsFormId: String,
   customerId: TextExpression,
   classificationType: String,
@@ -268,7 +287,9 @@ case class UploadableHmrcDmsDestination(
   instructionPdfFields: Option[InstructionPdfFields] = None,
   roboticsAsAttachment: Option[Boolean],
   includeAttachmentNames: Option[Boolean],
-  submissionPrefix: Option[String] = None
+  submissionPrefix: Option[String] = None,
+  caseId: Option[TextExpression] = None,
+  postalCode: Option[TextExpression] = None
 ) {
 
   def toHmrcDmsDestination: Either[String, Destination.HmrcDms] =
@@ -276,6 +297,7 @@ case class UploadableHmrcDmsDestination(
       cvii <- addErrorInfo(id, convertSingleQuotes, includeIf)
     } yield Destination.HmrcDms(
       id,
+      routing.getOrElse(SdesDestination.Dms),
       dmsFormId,
       customerId.expr,
       classificationType,
@@ -291,7 +313,9 @@ case class UploadableHmrcDmsDestination(
       TemplateType.XML,
       roboticsAsAttachment,
       includeAttachmentNames,
-      submissionPrefix
+      submissionPrefix,
+      caseId.map(_.expr),
+      postalCode.map(_.expr)
     )
 }
 

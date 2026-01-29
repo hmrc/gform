@@ -129,7 +129,8 @@ class FileUploadService(
           summaries.instructionPdfSummary.fold(summaries.pdfSummary.numberOfPages)(_.numberOfPages),
           submission.noOfAttachments + summaries.instructionPdfSummary.fold(0)(_ => 1),
           hmrcDms,
-          Seq()
+          Seq(),
+          None
         )
       uploadFile(
         submission.envelopeId,

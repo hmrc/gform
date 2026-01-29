@@ -18,6 +18,7 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations
 
 import julienrf.json.derived
 import play.api.libs.json.{ Format, JsNull, JsValue }
+import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination
 import uk.gov.hmrc.http.HttpResponse
 
 sealed trait DestinationResponse
@@ -28,6 +29,7 @@ object DestinationResponse {
 
 case class DmsDestinationResponse(
   dmsFormId: String,
+  routing: SdesDestination,
   classificationType: String,
   businessArea: String,
   dataItemCount: Int

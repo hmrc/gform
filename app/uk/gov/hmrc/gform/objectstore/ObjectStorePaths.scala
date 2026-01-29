@@ -49,4 +49,10 @@ object ObjectStorePaths {
     val ephemeral: Path.Directory = Path.Directory("sdes/info-archive")
     val zipFilePrefix: String = "GFDA_"
   }
+
+  def pegaCaseflowPaths(envelopeId: EnvelopeId) = new ObjectStorePaths {
+    val permanent: Path.Directory = Path.Directory("envelopes/" + envelopeId.value)
+    val ephemeral: Path.Directory = Path.Directory("sdes/pega-caseflow")
+    val zipFilePrefix: String = ""
+  }
 }

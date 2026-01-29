@@ -26,6 +26,7 @@ import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.core.{ FOpt, fromFutureA }
 import uk.gov.hmrc.gform.envelope.EnvelopeModule
 import uk.gov.hmrc.gform.sdes.SdesConnector
+import uk.gov.hmrc.gform.sharedmodel.DestinationResult
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 import uk.gov.hmrc.gform.sharedmodel.envelope.EnvelopeData
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
@@ -167,11 +168,12 @@ class ObjectStoreModule(
       summaries: PdfAndXmlSummaries,
       hmrcDms: Destination.HmrcDms,
       formTemplateId: FormTemplateId,
-      preExistingEnvelope: EnvelopeData
+      preExistingEnvelope: EnvelopeData,
+      destinationResult: Option[DestinationResult]
     )(implicit hc: HeaderCarrier): FOpt[Unit] =
       fromFutureA(
         objectStoreService
-          .submitEnvelope(submission, summaries, hmrcDms, formTemplateId, preExistingEnvelope)
+          .submitEnvelope(submission, summaries, hmrcDms, formTemplateId, preExistingEnvelope, destinationResult)
       )
 
     override def zipAndEncrypt(envelopeId: EnvelopeId, objectStorePaths: ObjectStorePaths)(implicit

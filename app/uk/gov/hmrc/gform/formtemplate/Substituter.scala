@@ -522,7 +522,12 @@ object Substituter {
   ): Substituter[A, Destination] = (substitutions, t) =>
     t match {
       case d: Destination.HmrcDms =>
-        d.copy(customerId = d.customerId(substitutions), includeIf = d.includeIf(substitutions))
+        d.copy(
+          customerId = d.customerId(substitutions),
+          includeIf = d.includeIf(substitutions),
+          postalCode = d.postalCode(substitutions),
+          caseId = d.caseId(substitutions)
+        )
       case d: Destination.DataStore =>
         d.copy(taxpayerId = d.taxpayerId(substitutions), includeIf = d.includeIf(substitutions))
       case d: Destination.InfoArchive =>
