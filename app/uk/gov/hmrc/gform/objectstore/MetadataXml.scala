@@ -76,16 +76,22 @@ object MetadataXml {
     <metadata></metadata>.copy(child = attributes)
   }
 
-  private def createHeader(submissionRef: SubmissionRef, reconciliationId: ReconciliationId): Elem =
+  private def createHeader(
+    submissionRef: SubmissionRef,
+    reconciliationId: ReconciliationId,
+    destination: HmrcDms
+  ): Elem = {
+    val target = if (destination.isPegaCaseflow) "PegaCaseflow" else "DMS"
     <header>
       <title>{submissionRef.withoutHyphens}</title>
       <format>pdf</format>
       <mime_type>application/pdf</mime_type>
       <store>true</store>
       <source>dfs</source>
-      <target>DMS</target>
+      <target>{target}</target>
       <reconciliation_id>{reconciliationId.value}</reconciliation_id>
     </header>
+  }
 
   private def createDocument(elems: List[Elem]): Elem =
     <documents xmlns="http://govtalk.gov.uk/hmrc/gis/content/1">
@@ -103,7 +109,7 @@ object MetadataXml {
   ): Elem = {
     val body =
       List(
-        createHeader(submission.submissionRef, reconciliationId),
+        createHeader(submission.submissionRef, reconciliationId, hmrcDms),
         createMetadata(submission, noOfPages, attachmentCount, hmrcDms, fileAttachmentNames, destinationResult)
       )
 
