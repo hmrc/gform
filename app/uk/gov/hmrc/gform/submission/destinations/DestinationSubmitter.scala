@@ -168,7 +168,8 @@ class DestinationSubmitter[M[_]](
           accumulatedModel,
           modelTree,
           d,
-          l
+          l,
+          destinationEvaluation.evaluation.find(_.destinationId === d.id)
         )
       case d: Destination.DataStore =>
         submitToDataStore(
@@ -312,9 +313,10 @@ class DestinationSubmitter[M[_]](
     accumulatedModel: HandlebarsTemplateProcessorModel,
     modelTree: HandlebarsModelTree,
     d: Destination.HmrcDms,
-    l: LangADT
+    l: LangADT,
+    dr: Option[DestinationResult]
   )(implicit hc: HeaderCarrier): M[DestinationResponse] =
-    monadError.handleErrorWith(dms(submissionInfo, accumulatedModel, modelTree, d, l)) { msg =>
+    monadError.handleErrorWith(dms(submissionInfo, accumulatedModel, modelTree, d, l, dr)) { msg =>
       if (d.failOnError)
         raiseDestinationError(submissionInfo.formId, d.id, msg)
       else {

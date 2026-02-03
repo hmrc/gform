@@ -22,7 +22,8 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.Expr
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationIncludeIf.HandlebarValue
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DataOutputFormat, Destination, DestinationId, DestinationIncludeIf, ProjectId, TemplateType }
 import uk.gov.hmrc.gform.sharedmodel.notifier.{ NotifierPersonalisationFieldId, NotifierTemplateId }
-import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination.{ DataStore, DataStoreLegacy, Dms, HmrcIlluminate, InfoArchive }
+import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination
+import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination.{ DataStore, DataStoreLegacy, Dms, HmrcIlluminate, InfoArchive, PegaCaseflow }
 
 trait DestinationGen {
   def destinationIdGen: Gen[DestinationId] =
@@ -37,10 +38,12 @@ trait DestinationGen {
   def businessAreaGen: Gen[String] = PrimitiveGen.nonEmptyAlphaNumStrGen
   def signatureGen: Gen[String] = PrimitiveGen.nonEmptyAsciiPrintableString
   def projectIdGen: Gen[ProjectId] = PrimitiveGen.nonEmptyAlphaNumStrGen.map(ProjectId(_))
+  def dmsSdesDestinationGen: Gen[SdesDestination] = Gen.frequency(9 -> Dms, 1 -> PegaCaseflow)
 
   def hmrcDmsGen: Gen[Destination.HmrcDms] =
     for {
       id                   <- destinationIdGen
+      routing              <- dmsSdesDestinationGen
       dmsFormId            <- dmsFormIdGen
       customerId           <- customerIdGen
       classificationType   <- classificationTypeGen
@@ -53,6 +56,7 @@ trait DestinationGen {
     } yield Destination
       .HmrcDms(
         id,
+        routing,
         dmsFormId,
         customerId,
         classificationType,
@@ -66,6 +70,8 @@ trait DestinationGen {
         None,
         None,
         TemplateType.XML,
+        None,
+        None,
         None,
         None,
         None
@@ -120,7 +126,7 @@ trait DestinationGen {
       None
     )
 
-  def sdesDestinationGen = Gen.oneOf(List(Dms, HmrcIlluminate, DataStoreLegacy, DataStore, InfoArchive))
+  def sdesDestinationGen = Gen.oneOf(List(Dms, HmrcIlluminate, DataStoreLegacy, DataStore, InfoArchive, PegaCaseflow))
   def taxpayerIdGen: Gen[Expr] = ExprGen.exprGen()
 
   def dataStoreGen: Gen[Destination.DataStore] =

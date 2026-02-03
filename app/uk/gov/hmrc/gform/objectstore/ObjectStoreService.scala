@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory
 import uk.gov.hmrc.gform.envelope.EnvelopeAlgebra
 import uk.gov.hmrc.gform.objectstore.ObjectStoreService.FileIds._
 import uk.gov.hmrc.gform.sdes.SdesConnector
+import uk.gov.hmrc.gform.sharedmodel.DestinationResult
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 import uk.gov.hmrc.gform.sharedmodel.envelope.{ EnvelopeData, EnvelopeFile }
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
@@ -240,7 +241,8 @@ class ObjectStoreService(
     summaries: PdfAndXmlSummaries,
     hmrcDms: HmrcDms,
     formTemplateId: FormTemplateId,
-    preExistingEnvelope: EnvelopeData
+    preExistingEnvelope: EnvelopeData,
+    destinationResult: Option[DestinationResult]
   )(implicit hc: HeaderCarrier): Future[Unit] = {
     logger.debug(s"env-id submit: ${submission.envelopeId}")
     val timeProvider = new TimeProvider
@@ -337,7 +339,8 @@ class ObjectStoreService(
           summaries.instructionPdfSummary.fold(summaries.pdfSummary.numberOfPages)(_.numberOfPages),
           submission.noOfAttachments + summaries.instructionPdfSummary.fold(0)(_ => 1),
           hmrcDms,
-          preExistingEnvelopeFileNames ++ includeCustomerSummaryFileName
+          preExistingEnvelopeFileNames ++ includeCustomerSummaryFileName,
+          destinationResult
         )
       uploadFile(
         submission.envelopeId,

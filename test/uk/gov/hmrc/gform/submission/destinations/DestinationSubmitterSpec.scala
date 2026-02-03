@@ -65,7 +65,7 @@ class DestinationSubmitterSpec
     }
 
   def dmsResponse(hmrcDms: HmrcDms) =
-    DmsDestinationResponse(hmrcDms.dmsFormId, hmrcDms.classificationType, hmrcDms.businessArea, 5)
+    DmsDestinationResponse(hmrcDms.dmsFormId, hmrcDms.routing, hmrcDms.classificationType, hmrcDms.businessArea, 5)
 
   "A Destination.HandlebarsHttpApi" should "be sent to the HandlebarsHttpApiSubmitter when includeIf is evaluated to true" in {
     forAll(
@@ -324,7 +324,7 @@ class DestinationSubmitterSpec
         )
 
       createSubmitter
-        .expectHmrcDmsSubmission(si, HandlebarsTemplateProcessorModel.empty, theTree, hmrcDms, LangADT.En)
+        .expectHmrcDmsSubmission(si, HandlebarsTemplateProcessorModel.empty, theTree, hmrcDms, LangADT.En, None)
         .expectIncludeIfEvaluation(
           "true",
           HandlebarsTemplateProcessorModel.empty,
@@ -368,6 +368,23 @@ class DestinationSubmitterSpec
           structuredFormData
         )
 
+      val destinationResult = DestinationResult(
+        hmrcDms.id,
+        None,
+        Some(si.customerId),
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None
+      )
+
       createSubmitter
         .expectIncludeIfEvaluation(
           getHandlebarValue(hmrcDms.includeIf),
@@ -375,7 +392,14 @@ class DestinationSubmitterSpec
           FocussedHandlebarsModelTree(theTree),
           requiredResult = true
         )
-        .expectHmrcDmsSubmission(si, HandlebarsTemplateProcessorModel.empty, theTree, hmrcDms, LangADT.En)
+        .expectHmrcDmsSubmission(
+          si,
+          HandlebarsTemplateProcessorModel.empty,
+          theTree,
+          hmrcDms,
+          LangADT.En,
+          Some(destinationResult)
+        )
         .expectDestinationAudit(hmrcDms, None, None, si.formId, pdfData, si.submission.submissionRef, template, model)
         .sut
         .submitIfIncludeIf(
@@ -386,26 +410,7 @@ class DestinationSubmitterSpec
           submitter,
           None,
           LangADT.En,
-          DestinationEvaluation(
-            List(
-              DestinationResult(
-                hmrcDms.id,
-                None,
-                Some(si.customerId),
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None
-              )
-            )
-          ),
+          DestinationEvaluation(List(destinationResult)),
           UserSession.empty
         ) shouldBe Right(dmsResponse(hmrcDms))
     }
@@ -475,6 +480,23 @@ class DestinationSubmitterSpec
           structuredFormData
         )
 
+      val destinationResult = DestinationResult(
+        hmrcDms.id,
+        None,
+        Some(si.customerId),
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None
+      )
+
       createSubmitter
         .expectHmrcDmsSubmissionFailure(
           si,
@@ -482,7 +504,8 @@ class DestinationSubmitterSpec
           theTree,
           hmrcDms,
           "an error",
-          LangADT.En
+          LangADT.En,
+          Some(destinationResult)
         )
         .expectIncludeIfEvaluation(
           "true",
@@ -500,26 +523,7 @@ class DestinationSubmitterSpec
           submitter,
           None,
           LangADT.En,
-          DestinationEvaluation(
-            List(
-              DestinationResult(
-                hmrcDms.id,
-                None,
-                Some(si.customerId),
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None
-              )
-            )
-          ),
+          DestinationEvaluation(List(destinationResult)),
           UserSession.empty
         ) shouldBe Right(DestinationResponse.NoResponse)
     }
@@ -546,6 +550,23 @@ class DestinationSubmitterSpec
           structuredFormData
         )
 
+      val destinationResult = DestinationResult(
+        hmrcDms.id,
+        None,
+        Some(si.customerId),
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None
+      )
+
       val res: Possible[DestinationResponse] = createSubmitter
         .expectHmrcDmsSubmissionFailure(
           si,
@@ -553,7 +574,8 @@ class DestinationSubmitterSpec
           theTree,
           hmrcDms,
           "an error",
-          LangADT.En
+          LangADT.En,
+          Some(destinationResult)
         )
         .expectIncludeIfEvaluation(
           "true",
@@ -570,26 +592,7 @@ class DestinationSubmitterSpec
           submitter,
           None,
           LangADT.En,
-          DestinationEvaluation(
-            List(
-              DestinationResult(
-                hmrcDms.id,
-                None,
-                Some(si.customerId),
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None
-              )
-            )
-          ),
+          DestinationEvaluation(List(destinationResult)),
           UserSession.empty
         )
 
@@ -872,7 +875,8 @@ class DestinationSubmitterSpec
       accumulatedModel: HandlebarsTemplateProcessorModel,
       modelTree: HandlebarsModelTree,
       hmrcDms: HmrcDms,
-      l: LangADT
+      l: LangADT,
+      dr: Option[DestinationResult]
     )(implicit F: Applicative[F]): SubmitterParts[F] = {
       (dmsSubmitter
         .apply(
@@ -880,9 +884,10 @@ class DestinationSubmitterSpec
           _: HandlebarsTemplateProcessorModel,
           _: HandlebarsModelTree,
           _: HmrcDms,
-          _: LangADT
+          _: LangADT,
+          _: Option[DestinationResult]
         )(_: HeaderCarrier))
-        .expects(si, accumulatedModel, modelTree, hmrcDms, l, hc)
+        .expects(si, accumulatedModel, modelTree, hmrcDms, l, dr, hc)
         .returning(
           F.pure(dmsResponse(hmrcDms))
         )
@@ -960,7 +965,8 @@ class DestinationSubmitterSpec
       model: HandlebarsModelTree,
       hmrcDms: HmrcDms,
       error: String,
-      l: LangADT
+      l: LangADT,
+      dr: Option[DestinationResult]
     ): SubmitterParts[F] = {
       (dmsSubmitter
         .apply(
@@ -968,9 +974,10 @@ class DestinationSubmitterSpec
           _: HandlebarsTemplateProcessorModel,
           _: HandlebarsModelTree,
           _: HmrcDms,
-          _: LangADT
+          _: LangADT,
+          _: Option[DestinationResult]
         )(_: HeaderCarrier))
-        .expects(si, accumulatedModel, model, hmrcDms, l, hc)
+        .expects(si, accumulatedModel, model, hmrcDms, l, dr, hc)
         .returning(F.raiseError(new Exception(error)))
       this
     }
@@ -1058,7 +1065,17 @@ class DestinationSubmitterSpec
     val sdesRouting = SdesRouting("api-key", "information-type", "recipient-or-sender")
     val defaults = WelshDefaults("WLU-WCC-XDFSWelshLanguageService", "WLU")
     val sdesConfig =
-      SdesConfig("base-path", "file-location-url", sdesRouting, sdesRouting, sdesRouting, 100L, defaults, sdesRouting)
+      SdesConfig(
+        "base-path",
+        "file-location-url",
+        sdesRouting,
+        sdesRouting,
+        sdesRouting,
+        100L,
+        defaults,
+        sdesRouting,
+        sdesRouting
+      )
     val submitter =
       new DestinationSubmitter[Possible](
         dmsSubmitter,

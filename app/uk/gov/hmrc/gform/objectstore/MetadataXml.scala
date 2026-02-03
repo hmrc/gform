@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.gform.objectstore
 
-import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
+import uk.gov.hmrc.gform.sharedmodel.{ DestinationResult, SubmissionRef }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
 import uk.gov.hmrc.gform.submission.Submission
 import uk.gov.hmrc.gform.typeclasses.Attribute
@@ -32,7 +32,8 @@ object MetadataXml {
     noOfPages: Long,
     attachmentCount: Int,
     hmrcDms: HmrcDms,
-    fileAttachmentNames: Seq[String]
+    fileAttachmentNames: Seq[String],
+    destinationResult: Option[DestinationResult]
   ): Elem = {
 
     val roboticsAsAttachment = hmrcDms.roboticsAsAttachment.getOrElse(false)
@@ -44,6 +45,18 @@ object MetadataXml {
     else Seq()
 
     val roboticsAsAttachmentCountOffset = if (roboticsAsAttachment) 1 else 0
+
+    val pegaCaseflowAttributes = if (hmrcDms.isPegaCaseflow) {
+      List(
+        createAttribute("hm_post_received_date", submission.submittedDate),
+        createAttribute("hm_po_box", destinationResult.flatMap(_.postalCode).getOrElse("Unable to evaluate")),
+        createAttribute("hm_unique_doc_id", submission.submissionRef.withoutHyphens),
+        createAttribute("hm_number_pages", noOfPages),
+        createAttribute("hm_case_id", destinationResult.flatMap(_.pegaCaseId).getOrElse("Unable to evaluate")),
+        createAttribute("hm_attachment_count", attachmentCount + roboticsAsAttachmentCountOffset),
+        createAttribute("hm_doc_source", "Gform")
+      )
+    } else Nil
 
     val attributes = List(
       createAttribute("hmrc_time_of_receipt", submission.submittedDate),
@@ -58,21 +71,27 @@ object MetadataXml {
       createAttribute("classification_type", hmrcDms.classificationType),
       createAttribute("business_area", hmrcDms.businessArea),
       createAttribute("attachment_count", attachmentCount + roboticsAsAttachmentCountOffset)
-    ) ++ attachmentNameAttributes ++ backscan
+    ) ++ attachmentNameAttributes ++ backscan ++ pegaCaseflowAttributes
 
     <metadata></metadata>.copy(child = attributes)
   }
 
-  private def createHeader(submissionRef: SubmissionRef, reconciliationId: ReconciliationId): Elem =
+  private def createHeader(
+    submissionRef: SubmissionRef,
+    reconciliationId: ReconciliationId,
+    destination: HmrcDms
+  ): Elem = {
+    val target = if (destination.isPegaCaseflow) "PegaCaseflow" else "DMS"
     <header>
       <title>{submissionRef.withoutHyphens}</title>
       <format>pdf</format>
       <mime_type>application/pdf</mime_type>
       <store>true</store>
       <source>dfs</source>
-      <target>DMS</target>
+      <target>{target}</target>
       <reconciliation_id>{reconciliationId.value}</reconciliation_id>
     </header>
+  }
 
   private def createDocument(elems: List[Elem]): Elem =
     <documents xmlns="http://govtalk.gov.uk/hmrc/gis/content/1">
@@ -85,12 +104,13 @@ object MetadataXml {
     noOfPages: Long,
     attachmentCount: Int,
     hmrcDms: HmrcDms,
-    fileAttachmentNames: Seq[String]
+    fileAttachmentNames: Seq[String],
+    destinationResult: Option[DestinationResult]
   ): Elem = {
     val body =
       List(
-        createHeader(submission.submissionRef, reconciliationId),
-        createMetadata(submission, noOfPages, attachmentCount, hmrcDms, fileAttachmentNames)
+        createHeader(submission.submissionRef, reconciliationId, hmrcDms),
+        createMetadata(submission, noOfPages, attachmentCount, hmrcDms, fileAttachmentNames, destinationResult)
       )
 
     trim(createDocument(body))

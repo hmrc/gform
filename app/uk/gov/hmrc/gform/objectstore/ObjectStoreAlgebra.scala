@@ -25,6 +25,7 @@ import org.apache.pekko.stream.Materializer
 import org.apache.pekko.stream.scaladsl.Source
 import org.apache.pekko.util.ByteString
 import uk.gov.hmrc.gform.objectstore
+import uk.gov.hmrc.gform.sharedmodel.DestinationResult
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 import uk.gov.hmrc.gform.sharedmodel.envelope.{ EnvelopeData, EnvelopeFile }
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
@@ -112,7 +113,8 @@ trait ObjectStoreAlgebra[F[_]] {
     summaries: PdfAndXmlSummaries,
     hmrcDms: HmrcDms,
     formTemplateId: FormTemplateId,
-    preExistingEnvelope: EnvelopeData
+    preExistingEnvelope: EnvelopeData,
+    destinationResult: Option[DestinationResult]
   )(implicit hc: HeaderCarrier): F[Unit]
 
   def zipAndEncrypt(envelopeId: EnvelopeId, objectStorePaths: ObjectStorePaths)(implicit
