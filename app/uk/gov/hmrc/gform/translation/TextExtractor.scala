@@ -524,6 +524,8 @@ object TextExtractor {
       Pure(DownField("header")) :: ackPdf,
       Pure(DownField("footer")) :: ackPdf,
       Pure(DownField("title")) :: tasks,
+      Pure(DownField("hint")) :: tasks,
+      Pure(DownField("caption")) :: tasks,
       Pure(DownField("title")) :: enrolmentSection
     ) ++
       pathForSection(sections) ++

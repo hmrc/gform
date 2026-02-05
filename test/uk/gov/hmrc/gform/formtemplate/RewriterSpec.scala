@@ -182,7 +182,8 @@ class RewriterSpec extends FunSuite with FormTemplateSupport with RewriterSuppor
       declarationSection = None,
       includeIf = None,
       startIf = None,
-      notRequiredIf = None
+      notRequiredIf = None,
+      hint = None
     )
 
     val taskSectionTitle1 =
