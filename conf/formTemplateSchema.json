@@ -560,6 +560,9 @@
               "title": {
                 "$ref": "#/$defs/stringOrEnCyObject"
               },
+              "hint": {
+                "$ref": "#/$defs/stringOrEnCyObject"
+              },
               "id": {
                 "type": "string"
               },

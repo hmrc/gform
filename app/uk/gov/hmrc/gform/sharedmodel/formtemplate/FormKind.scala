@@ -92,7 +92,8 @@ final case class Task(
   includeIf: Option[IncludeIf],
   caption: Option[SmartString],
   startIf: Option[IncludeIf],
-  notRequiredIf: Option[IncludeIf]
+  notRequiredIf: Option[IncludeIf],
+  hint: Option[SmartString]
 )
 
 object Task {
@@ -106,5 +107,6 @@ object Task {
       LeafExpr(path + "includeIf", t.includeIf) ++
       LeafExpr(path + "caption", t.caption) ++
       LeafExpr(path + "startIf", t.startIf) ++
-      LeafExpr(path + "notRequiredIf", t.notRequiredIf)
+      LeafExpr(path + "notRequiredIf", t.notRequiredIf) ++
+      LeafExpr(path + "hint", t.hint)
 }
