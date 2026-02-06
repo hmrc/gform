@@ -61,7 +61,7 @@ class HandlebarsTemplateController(
   }
 
   private def doTemplateUpsert(formTemplateRaw: FormTemplateRaw) =
-    handler.handleRequest(formTemplateRaw).fold(_.asBadRequest, _ => NoContent)
+    handler.handleRequest(formTemplateRaw, updateHistory = true).fold(_.asBadRequest, _ => NoContent)
 
   def getRaw(handlebarsTemplateId: HandlebarsTemplateId) = Action.async { _ =>
     handlebarsTemplateAlgebra

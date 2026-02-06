@@ -97,7 +97,7 @@ class FormTemplatesController(
   }
 
   private def doUpsert(formTemplateRaw: FormTemplateRaw) =
-    handler.handleRequest(formTemplateRaw).fold(_.asBadRequest, _ => Results.NoContent)
+    handler.handleRequest(formTemplateRaw, updateHistory = true).fold(_.asBadRequest, _ => Results.NoContent)
 
   def getTitlesWithPII(formTemplateRawId: FormTemplateRawId, filters: Option[String], includeJson: Boolean) =
     Action.async { _ =>

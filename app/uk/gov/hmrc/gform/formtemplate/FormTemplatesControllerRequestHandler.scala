@@ -25,13 +25,13 @@ import play.api.libs.functional.syntax._
 import scala.concurrent.ExecutionContext
 import scala.language.postfixOps
 import uk.gov.hmrc.gform.config.FileInfoConfig
-import uk.gov.hmrc.gform.core.{ FOpt, Opt, fromOptA }
+import uk.gov.hmrc.gform.core.{ FOpt, Opt, fromOptA, success }
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.history.FormTemplateHistory
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Default, Expr, ExpressionOutput, FormCategory, FormComponentId, FormTemplate, FormTemplateId, FormTemplateRaw, SummarySection, TopLevelRef }
 
 trait RequestHandlerAlg[F[_]] {
-  def handleRequest(templateRaw: FormTemplateRaw): F[Unit]
+  def handleRequest(templateRaw: FormTemplateRaw, updateHistory: Boolean): F[Unit]
 }
 
 class FormTemplatesControllerRequestHandler[F[_]](
@@ -42,7 +42,7 @@ class FormTemplatesControllerRequestHandler[F[_]](
 )(implicit ec: ExecutionContext) {
 
   val futureInterpreter = new RequestHandlerAlg[FOpt] {
-    override def handleRequest(templateRaw: FormTemplateRaw): FOpt[Unit] = {
+    override def handleRequest(templateRaw: FormTemplateRaw, updateHistory: Boolean): FOpt[Unit] = {
 
       val expressionsContextOpt: Opt[ExprSubstitutions] = ExprSubstitutions.from(templateRaw)
 
@@ -69,7 +69,7 @@ class FormTemplatesControllerRequestHandler[F[_]](
         )
       }
 
-      processAndPersistTemplate(formTemplateWithSubstitutions, templateRaw.lowerCaseId)
+      processAndPersistTemplate(formTemplateWithSubstitutions, templateRaw.lowerCaseId, updateHistory)
     }
   }
 
@@ -126,13 +126,14 @@ class FormTemplatesControllerRequestHandler[F[_]](
 
   private def processAndPersistTemplate(
     formTemplateOpt: Opt[(FormTemplate, ExprSubstitutions, BooleanExprSubstitutions)],
-    templateRaw: FormTemplateRaw
+    templateRaw: FormTemplateRaw,
+    updateHistory: Boolean
   ): FOpt[Unit] =
     for {
       ft <- fromOptA(formTemplateOpt)
       _  <- verifyAndSave(ft._1)(ft._2)(ft._3)
       _  <- save(templateRaw)
-      _  <- saveHistory(FormTemplateHistory.fromFormTemplateRaw(templateRaw))
+      _  <- if (updateHistory) saveHistory(FormTemplateHistory.fromFormTemplateRaw(templateRaw)) else success(())
       _  <- saveCache(ft._1._id)
     } yield ()
 }
