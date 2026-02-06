@@ -53,7 +53,7 @@ class FormTemplatesControllerRequestHandlerTest extends AnyWordSpec with Matcher
         _ => saveHistory,
         _ => saveCache
       )
-      val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
+      val eventualResult = handler.futureInterpreter.handleRequest(templateRaw, true)
 
       whenReady(eventualResult.value) { response =>
         response shouldBe Right(())
@@ -78,7 +78,7 @@ class FormTemplatesControllerRequestHandlerTest extends AnyWordSpec with Matcher
         _ => saveHistory,
         _ => saveCache
       )
-      val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
+      val eventualResult = handler.futureInterpreter.handleRequest(templateRaw, true)
 
       whenReady(eventualResult.value) { response =>
         response shouldBe Right(())
@@ -98,7 +98,7 @@ class FormTemplatesControllerRequestHandlerTest extends AnyWordSpec with Matcher
         _ => saveHistory,
         _ => saveCache
       )
-      val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
+      val eventualResult = handler.futureInterpreter.handleRequest(templateRaw, true)
 
       whenReady(eventualResult.value) { response =>
         response shouldBe Right(())
@@ -122,7 +122,7 @@ class FormTemplatesControllerRequestHandlerTest extends AnyWordSpec with Matcher
         _ => saveHistory,
         _ => saveCache
       )
-      val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
+      val eventualResult = handler.futureInterpreter.handleRequest(templateRaw, true)
 
       whenReady(eventualResult.value) { response =>
         response shouldBe Right(())
@@ -146,7 +146,7 @@ class FormTemplatesControllerRequestHandlerTest extends AnyWordSpec with Matcher
         _ => saveHistory,
         _ => saveCache
       )
-      val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
+      val eventualResult = handler.futureInterpreter.handleRequest(templateRaw, true)
 
       whenReady(eventualResult.value) { response =>
         response shouldBe Right(())
@@ -170,7 +170,7 @@ class FormTemplatesControllerRequestHandlerTest extends AnyWordSpec with Matcher
         _ => saveHistory,
         _ => saveCache
       )
-      val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
+      val eventualResult = handler.futureInterpreter.handleRequest(templateRaw, true)
 
       whenReady(eventualResult.value) { response =>
         response shouldBe Right(())
@@ -195,7 +195,7 @@ class FormTemplatesControllerRequestHandlerTest extends AnyWordSpec with Matcher
         _ => saveHistory,
         _ => saveCache
       )
-      val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
+      val eventualResult = handler.futureInterpreter.handleRequest(templateRaw, true)
 
       whenReady(eventualResult.value) { response =>
         response shouldBe Right(())
@@ -219,7 +219,7 @@ class FormTemplatesControllerRequestHandlerTest extends AnyWordSpec with Matcher
         _ => saveHistory,
         _ => saveCache
       )
-      val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
+      val eventualResult = handler.futureInterpreter.handleRequest(templateRaw, true)
 
       whenReady(eventualResult.value) { response =>
         response should matchPattern { case Left(UnexpectedState(_)) =>
@@ -244,7 +244,7 @@ class FormTemplatesControllerRequestHandlerTest extends AnyWordSpec with Matcher
         _ => saveHistory,
         _ => saveCache
       )
-      val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
+      val eventualResult = handler.futureInterpreter.handleRequest(templateRaw, true)
 
       whenReady(eventualResult.value) { response =>
         response should matchPattern { case Left(UnexpectedState(_)) =>
@@ -269,7 +269,7 @@ class FormTemplatesControllerRequestHandlerTest extends AnyWordSpec with Matcher
         _ => saveHistory,
         _ => saveCache
       )
-      val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
+      val eventualResult = handler.futureInterpreter.handleRequest(templateRaw, true)
 
       whenReady(eventualResult.value) { response =>
         response should matchPattern { case Left(UnexpectedState(_)) =>
@@ -294,7 +294,7 @@ class FormTemplatesControllerRequestHandlerTest extends AnyWordSpec with Matcher
         _ => saveHistory,
         _ => saveCache
       )
-      val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
+      val eventualResult = handler.futureInterpreter.handleRequest(templateRaw, true)
 
       whenReady(eventualResult.value) { response =>
         response should matchPattern { case Right(()) =>
@@ -319,7 +319,7 @@ class FormTemplatesControllerRequestHandlerTest extends AnyWordSpec with Matcher
         _ => saveHistory,
         _ => saveCache
       )
-      val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
+      val eventualResult = handler.futureInterpreter.handleRequest(templateRaw, true)
 
       whenReady(eventualResult.value) { response =>
         response should matchPattern { case Left(UnexpectedState(_)) =>
@@ -344,7 +344,7 @@ class FormTemplatesControllerRequestHandlerTest extends AnyWordSpec with Matcher
         _ => saveHistory,
         _ => saveCache
       )
-      val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
+      val eventualResult = handler.futureInterpreter.handleRequest(templateRaw, true)
 
       whenReady(eventualResult.value) { response =>
         response should matchPattern { case Left(UnexpectedState(_)) =>
@@ -364,7 +364,7 @@ class FormTemplatesControllerRequestHandlerTest extends AnyWordSpec with Matcher
           _ => saveHistory,
           _ => saveCache
         )
-      val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
+      val eventualResult = handler.futureInterpreter.handleRequest(templateRaw, true)
 
       whenReady(eventualResult.value) { response =>
         response should matchPattern { case Left(UnexpectedState(_)) =>
@@ -382,7 +382,7 @@ class FormTemplatesControllerRequestHandlerTest extends AnyWordSpec with Matcher
           _ => saveHistory,
           _ => saveCache
         )
-        val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
+        val eventualResult = handler.futureInterpreter.handleRequest(templateRaw, true)
 
         whenReady(eventualResult.value) { response =>
           response should matchPattern { case Left(UnexpectedState(_)) =>
@@ -408,7 +408,7 @@ class FormTemplatesControllerRequestHandlerTest extends AnyWordSpec with Matcher
         _ => saveHistory,
         _ => saveCache
       )
-      val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
+      val eventualResult = handler.futureInterpreter.handleRequest(templateRaw, true)
 
       whenReady(eventualResult.value) { response =>
         response should matchPattern { case Left(UnexpectedState(_)) =>
@@ -434,7 +434,7 @@ class FormTemplatesControllerRequestHandlerTest extends AnyWordSpec with Matcher
         _ => saveHistory,
         _ => saveCache
       )
-      val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
+      val eventualResult = handler.futureInterpreter.handleRequest(templateRaw, true)
 
       whenReady(eventualResult.value) { response =>
         response should matchPattern { case Left(UnexpectedState(_)) =>
@@ -460,7 +460,7 @@ class FormTemplatesControllerRequestHandlerTest extends AnyWordSpec with Matcher
         _ => saveHistory,
         _ => saveCache
       )
-      val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
+      val eventualResult = handler.futureInterpreter.handleRequest(templateRaw, true)
 
       whenReady(eventualResult.value) { response =>
         response should matchPattern { case Left(UnexpectedState(_)) =>
@@ -486,7 +486,7 @@ class FormTemplatesControllerRequestHandlerTest extends AnyWordSpec with Matcher
         _ => saveHistory,
         _ => saveCache
       )
-      val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
+      val eventualResult = handler.futureInterpreter.handleRequest(templateRaw, true)
 
       whenReady(eventualResult.value) { response =>
         response should matchPattern { case Left(UnexpectedState(_)) =>
