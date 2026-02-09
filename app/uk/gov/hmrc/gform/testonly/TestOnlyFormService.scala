@@ -103,7 +103,7 @@ class TestOnlyFormService(
     snapshotMongoCache.find(snapshotId).flatMap {
       case Some(snapshot) =>
         requestHandler
-          .handleRequest(snapshot.toSnapshotTemplate())
+          .handleRequest(snapshot.toSnapshotTemplate(), updateHistory = true)
           .fold(_ => throw new Exception(s"Unable to create a new template"), _ => Results.Ok)
           .map(_ => ())
       case None => throw new Exception(s"We could not find snapshot item with id: $snapshotId")
@@ -140,7 +140,7 @@ class TestOnlyFormService(
           _ <- formMongoCache.upsert(newForm)
           _ <- formMetadataAlgebra.upsert(newFormIdData)
           _ <- if (useOriginalTemplate)
-                 requestHandler.handleRequest(snapshot.toSnapshotTemplate()).value
+                 requestHandler.handleRequest(snapshot.toSnapshotTemplate(), updateHistory = true).value
                else Future.successful(())
         } yield RestoredSnapshot(
           newFormIdData,

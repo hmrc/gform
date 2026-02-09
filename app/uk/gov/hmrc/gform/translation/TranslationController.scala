@@ -319,7 +319,7 @@ class TranslationController(
       }
       .flatMap { case (originalJson, jsonToSave, stats) =>
         interpreter
-          .handleRequest(FormTemplateRaw(jsonToSave))
+          .handleRequest(FormTemplateRaw(jsonToSave), updateHistory = true)
           .foldF(
             error =>
               translationService

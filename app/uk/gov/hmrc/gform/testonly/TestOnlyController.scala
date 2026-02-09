@@ -490,7 +490,7 @@ class TestOnlyController(
         logger.info(s"Redeploying ${formTemplateRaws.size} form templates...")
         formTemplateRaws.traverse { formTemplateRaw =>
           handler
-            .handleRequest(formTemplateRaw)
+            .handleRequest(formTemplateRaw, updateHistory = false)
             .fold(
               err => logger.error(s"Unable to redeploy form template '${formTemplateRaw._id.value}'. Error: $err"),
               _ => {

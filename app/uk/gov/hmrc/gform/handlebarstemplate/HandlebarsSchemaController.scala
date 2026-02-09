@@ -56,7 +56,7 @@ class HandlebarsSchemaController(
   }
 
   private def doTemplateUpsert(formTemplateRaw: FormTemplateRaw) =
-    handler.handleRequest(formTemplateRaw).fold(_.asBadRequest, _ => NoContent)
+    handler.handleRequest(formTemplateRaw, updateHistory = true).fold(_.asBadRequest, _ => NoContent)
 
   def get(handlebarsSchemaId: HandlebarsSchemaId) = Action.async { _ =>
     handlebarsSchemaAlgebra

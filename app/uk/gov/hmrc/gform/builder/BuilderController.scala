@@ -1057,7 +1057,7 @@ class BuilderController(
     jsResult.flatMap {
       case Right((templateRaw, result)) =>
         requestHandler
-          .handleRequest(templateRaw)
+          .handleRequest(templateRaw, updateHistory = true)
           .fold(
             _.asBadRequest,
             _ => result
