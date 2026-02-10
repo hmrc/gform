@@ -96,6 +96,7 @@ class HistoryRepository(mongoModule: MongoModule, appConfig: AppConfig)(implicit
       collectionName = "history",
       mongoComponent = mongoModule.mongoComponent,
       domainFormat = FormTemplateHistory.mongoFormat,
+      replaceIndexes = true,
       indexes = Seq(
         IndexModel(
           Indexes.ascending("createdAt"),
