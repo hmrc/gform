@@ -162,6 +162,7 @@ GET           /companieshouse/company/:companynumber/insolvency                 
 
 GET           /hip/ni-claim-validation/:nino/:claimReference                                            uk.gov.hmrc.gform.hip.HipController.validateNiClaimReference(nino: String, claimReference: String)
 GET           /hip/ni-employments/:nino/:taxYear                                                        uk.gov.hmrc.gform.hip.HipController.getEmployments(nino: String, taxYear: Int)
+GET           /hip/caseflow-case-details/:caseId                                                        uk.gov.hmrc.gform.hip.HipController.getCaseflowCaseDetails(caseId: String)
 
 POST          /email-migration                                                                          uk.gov.hmrc.gform.emailmigration.EmailMigrationController.migrateEmail()
 

@@ -1786,6 +1786,40 @@
               "parameters"
             ],
             "additionalProperties": false
+          },
+          {
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "caseflowCaseDetails"
+                ]
+              },
+              "id": {
+                "type": "string"
+              },
+              "if": {
+                "type": "string"
+              },
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "caseId": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "caseId"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "type",
+              "id",
+              "parameters"
+            ],
+            "additionalProperties": false
           }
         ]
       }

@@ -59,6 +59,8 @@ trait HipAlgebra[F[_]] {
     taxYear: Int,
     correlationId: CorrelationId
   ): F[JsValue]
+
+  def getCaseflowCaseDetails(caseId: String, correlationId: CorrelationId): F[JsValue]
 }
 
 class HipConnector(http: HttpClientV2, baseUrl: String, hipConfig: HipConnectorConfig)(implicit ec: ExecutionContext)
@@ -213,9 +215,19 @@ class HipConnector(http: HttpClientV2, baseUrl: String, hipConfig: HipConnectorC
     http
       .get(url"$url")
       .setHeader(authHeaders: _*)
-      .setHeader(Headers.CorrelationId -> correlationId.value)
       .execute[HttpResponse]
       .map(response => handleResponse(response, "Get Employments", correlationId.value, _.json))
+  }
+
+  def getCaseflowCaseDetails(caseId: String, correlationId: CorrelationId): Future[JsValue] = {
+    logger.info(s"getCaseflowCaseDetails for caseId $caseId called, ${loggingHelpers.cleanHeaderCarrierHeader(hc)}")
+    val url = s"$baseUrl${hipConfig.basePath}/api/CFSSuite/v1/CaseDetails/$caseId"
+
+    http
+      .get(url"$url")
+      .setHeader(authHeaders: _*)
+      .execute[HttpResponse]
+      .map(response => handleResponse(response, "Get Caseflow Case Details", correlationId.value, _.json))
   }
 
   private def extractEtag(response: HttpResponse, caseId: String): String =

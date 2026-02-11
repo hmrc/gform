@@ -865,6 +865,42 @@ object DataRetrieveDefinitions {
     None
   )
 
+  private val caseflowCaseDetails = DataRetrieveDefinition(
+    DataRetrieve.Type("caseflowCaseDetails"),
+    Attr.FromObject(
+      List(
+        AttributeInstruction(
+          DataRetrieve.Attribute("pyHTTPResponseCode"),
+          ConstructAttribute.AsIs(Fetch(List("pyHTTPResponseCode")))
+        ),
+        AttributeInstruction(
+          DataRetrieve.Attribute("caseStatus"),
+          ConstructAttribute.AsIs(Fetch(List("caseStatus")))
+        ),
+        AttributeInstruction(
+          DataRetrieve.Attribute("oudnStatus"),
+          ConstructAttribute.AsIs(Fetch(List("oudnStatus")))
+        ),
+        AttributeInstruction(
+          DataRetrieve.Attribute("resolvedTimestamp"),
+          ConstructAttribute.AsIs(Fetch(List("resolvedTimestamp")))
+        )
+      )
+    ),
+    List(
+      Parameter("caseId")
+    ),
+    Map(
+      DataRetrieve.Attribute("pyHTTPResponseCode") -> DataRetrieve.AttrType.Number,
+      DataRetrieve.Attribute("caseStatus")         -> DataRetrieve.AttrType.String,
+      DataRetrieve.Attribute("oudnStatus")         -> DataRetrieve.AttrType.String,
+      DataRetrieve.Attribute("resolvedTimestamp")  -> DataRetrieve.AttrType.String
+    ),
+    Some(
+      "https://admin.tax.service.gov.uk/integration-hub/apis/view-specification/61cffebd-1f98-4424-b048-f974e77a64f1/test"
+    )
+  )
+
   val staticDefinitions = DataRetrieveDefinitions(
     List(
       validateBankDetails,
@@ -882,7 +918,8 @@ object DataRetrieveDefinitions {
       hmrcTaxRates,
       delegatedAgentAuthVat,
       delegatedAgentAuthPaye,
-      niRefundClaim
+      niRefundClaim,
+      caseflowCaseDetails
     )
   )
 

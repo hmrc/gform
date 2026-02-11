@@ -27,7 +27,8 @@ import scala.concurrent.{ ExecutionContext, Future }
 
 class HipController(
   hipService: HipServiceAlgebra[Future],
-  controllerComponents: ControllerComponents
+  controllerComponents: ControllerComponents,
+  hipConnector: HipAlgebra[Future]
 )(implicit ec: ExecutionContext)
     extends BaseController(controllerComponents) {
 
@@ -52,6 +53,15 @@ class HipController(
           .recover(standardErrors)
       }
     }
+
+  def getCaseflowCaseDetails(caseId: String): Action[AnyContent] = Action.async { implicit request =>
+    withCorrelationId("getCaseflowCaseDetails") { correlationId =>
+      hipConnector
+        .getCaseflowCaseDetails(caseId, correlationId)
+        .asOkJson
+        .recover(standardErrors)
+    }
+  }
 
   private def withCorrelationId(
     identifier: String
