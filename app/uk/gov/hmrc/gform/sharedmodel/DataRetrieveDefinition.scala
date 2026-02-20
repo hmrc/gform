@@ -865,17 +865,56 @@ object DataRetrieveDefinitions {
     None
   )
 
+  private val pegaCaseStatuses = List(
+    "Resolved-Completed",
+    "Resolved-Archived",
+    "Resolved-Rejected",
+    "New",
+    "Open",
+    "Open-OnHold",
+    "Resolved-NotApplicable",
+    "Closed-Completed",
+    "Closed-ReturnDeselected",
+    "New-Stock",
+    "New-Distribute",
+    "New-Build",
+    "Return-Distribute",
+    "Resolved-DueForDeletion",
+    "Closed-Rejected",
+    "Closed-Complete",
+    "Pre-Open",
+    "Returned-NewBuild",
+    "Resolved-DueForPD1Deletion",
+    "ResolvedDueForPD1Deletion",
+    "Closed-Archived",
+    "Closed-Deselected"
+  )
+
   private val caseflowCaseDetails = DataRetrieveDefinition(
     DataRetrieve.Type("caseflowCaseDetails"),
     Attr.FromObject(
       List(
         AttributeInstruction(
           DataRetrieve.Attribute("pyHTTPResponseCode"),
-          ConstructAttribute.AsIs(Fetch(List("pyHTTPResponseCode")))
+          ConstructAttribute.AsIs(Fetch(List("pyHTTPResponseCode"))),
+          Some(
+            AllowedValues(
+              List("1"),
+              AllowedValueType.JsNumberType,
+              isRequired = false
+            )
+          )
         ),
         AttributeInstruction(
           DataRetrieve.Attribute("caseStatus"),
-          ConstructAttribute.AsIs(Fetch(List("caseStatus")))
+          ConstructAttribute.AsIs(Fetch(List("caseStatus"))),
+          Some(
+            AllowedValues(
+              "*" :: pegaCaseStatuses,
+              AllowedValueType.JsStringType,
+              isRequired = false
+            )
+          )
         ),
         AttributeInstruction(
           DataRetrieve.Attribute("oudnStatus"),
