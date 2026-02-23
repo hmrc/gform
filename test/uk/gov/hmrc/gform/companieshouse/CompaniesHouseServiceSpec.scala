@@ -19,7 +19,6 @@ package uk.gov.hmrc.gform.companieshouse
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import play.api.Configuration
-import play.api.mvc.Request
 import play.api.test.FakeRequest
 import uk.gov.hmrc.gform.companieshouse.models.{ Address, Item, ItemLinks, Links, Officer, OfficersResponse }
 import uk.gov.hmrc.http.HeaderCarrier
@@ -33,13 +32,8 @@ class CompaniesHouseServiceSpec extends UnitSpec {
     "Return an officers response with an empty Items list if no officers are returned" in new Setup {
       val response = OfficersResponse(0, "", Nil, 0, "", Links(None), 0, 0, None)
 
-      when(mockCompaniesHouseConnector.getCompanyOfficersPaged(any[String], any[String])(any[Int])(any[Request[_]]))
+      when(mockCompaniesHouseConnector.getCompanyOfficersPaged(any[String])(any[Int]))
         .thenReturn(Future.successful(response))
-      when(
-        mockAuditing.successfulCompanyOfficersResponse(any[OfficersResponse], any[String], any[Option[String]])(
-          any[Request[_]]
-        )
-      ).thenReturn(Future.unit)
 
       val result = await(service.findCompanyOfficersBySurname("someCompanyNumber", "Testing")(FakeRequest()))
       result.items shouldBe Nil
@@ -64,13 +58,8 @@ class CompaniesHouseServiceSpec extends UnitSpec {
       )
       val response = OfficersResponse(0, "", officers, 0, "", Links(None), 0, 0, None)
 
-      when(mockCompaniesHouseConnector.getCompanyOfficersPaged(any[String], any[String])(any[Int])(any[Request[_]]))
+      when(mockCompaniesHouseConnector.getCompanyOfficersPaged(any[String])(any[Int]))
         .thenReturn(Future.successful(response))
-      when(
-        mockAuditing.successfulCompanyOfficersResponse(any[OfficersResponse], any[String], any[Option[String]])(
-          any[Request[_]]
-        )
-      ).thenReturn(Future.unit)
 
       val result = await(service.findCompanyOfficersBySurname("someCompanyNumber", "Testing")(FakeRequest()))
       result.items shouldBe Nil
@@ -96,13 +85,8 @@ class CompaniesHouseServiceSpec extends UnitSpec {
         )
       val response = OfficersResponse(0, "", officers, 0, "", Links(None), 0, 0, None)
 
-      when(mockCompaniesHouseConnector.getCompanyOfficersPaged(any[String], any[String])(any[Int])(any[Request[_]]))
+      when(mockCompaniesHouseConnector.getCompanyOfficersPaged(any[String])(any[Int]))
         .thenReturn(Future.successful(response))
-      when(
-        mockAuditing.successfulCompanyOfficersResponse(any[OfficersResponse], any[String], any[Option[String]])(
-          any[Request[_]]
-        )
-      ).thenReturn(Future.unit)
 
       val result = await(service.findCompanyOfficersBySurname("someCompanyNumber", "valid")(FakeRequest()))
       result.items shouldBe Nil
@@ -127,13 +111,8 @@ class CompaniesHouseServiceSpec extends UnitSpec {
       )
       val response = OfficersResponse(0, "", officers, 0, "", Links(None), 0, 0, None)
 
-      when(mockCompaniesHouseConnector.getCompanyOfficersPaged(any[String], any[String])(any[Int])(any[Request[_]]))
+      when(mockCompaniesHouseConnector.getCompanyOfficersPaged(any[String])(any[Int]))
         .thenReturn(Future.successful(response))
-      when(
-        mockAuditing.successfulCompanyOfficersResponse(any[OfficersResponse], any[String], any[Option[String]])(
-          any[Request[_]]
-        )
-      ).thenReturn(Future.unit)
 
       val result = await(service.findCompanyOfficersBySurname("someCompanyNumber", "valid")(FakeRequest()))
       result.items.size shouldBe 1
@@ -176,14 +155,9 @@ class CompaniesHouseServiceSpec extends UnitSpec {
       val firstResponse = OfficersResponse(0, "", first100, 0, "", Links(None), 0, 0, Some(101))
       val secondResponse = OfficersResponse(0, "", officer101, 0, "", Links(None), 0, 0, Some(101))
 
-      when(mockCompaniesHouseConnector.getCompanyOfficersPaged(any[String], any[String])(any[Int])(any[Request[_]]))
+      when(mockCompaniesHouseConnector.getCompanyOfficersPaged(any[String])(any[Int]))
         .thenReturn(Future.successful(firstResponse))
         .thenReturn(Future.successful(secondResponse))
-      when(
-        mockAuditing.successfulCompanyOfficersResponse(any[OfficersResponse], any[String], any[Option[String]])(
-          any[Request[_]]
-        )
-      ).thenReturn(Future.unit)
 
       val result = await(service.findCompanyOfficersBySurname("someCompanyNumber", "valid")(FakeRequest()))
       result.items.size shouldBe 1
@@ -194,14 +168,13 @@ class CompaniesHouseServiceSpec extends UnitSpec {
   trait Setup {
     val mockCompaniesHouseConnector = mock[CompaniesHouseConnector]
     val mockConfiguration = mock[Configuration]
-    val mockAuditing = mock[CompaniesHouseAuditService]
 
     val address =
       Address(Some("someAddress1"), None, None, Some("someCounty"), Some("someLocality"), None, None, None, None)
     val appointedOn = LocalDate.now()
     val itemLinks = ItemLinks(Officer("someAppointment"))
 
-    val service = new CompaniesHouseService(mockCompaniesHouseConnector, mockConfiguration, mockAuditing) {
+    val service = new CompaniesHouseService(mockCompaniesHouseConnector, mockConfiguration) {
       override def withCircuitBreaker[T](f: => Future[T])(implicit hc: HeaderCarrier): Future[T] = f
     }
   }

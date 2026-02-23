@@ -19,7 +19,6 @@ package uk.gov.hmrc.gform.companieshouse
 import models.OfficersResponse
 import play.api.Logging
 import play.api.libs.json.JsValue
-import play.api.mvc.Request
 import uk.gov.hmrc.gform.companieshouse.CompaniesHouseModule.CompaniesHouseAPIConfig
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{ ForbiddenException, HeaderCarrier, HeaderNames, HttpResponse, InternalServerException, NotFoundException, StringContextOps, UnauthorizedException }
@@ -31,8 +30,7 @@ import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
 
 class CompaniesHouseConnector(
   http: HttpClientV2,
-  config: CompaniesHouseAPIConfig,
-  auditService: CompaniesHouseAuditService
+  config: CompaniesHouseAPIConfig
 )(implicit ec: ExecutionContext)
     extends BackendHeaderCarrierProvider with Logging {
 
@@ -40,8 +38,7 @@ class CompaniesHouseConnector(
 
   private val headersWithApiKey = HeaderNames.authorisation -> s"Basic ${config.authorizationToken}"
 
-  def getCompany(companyNumber: String)(implicit request: Request[?]): Future[JsValue] = {
-    auditService.companyInformationRequest(companyNumber)
+  def getCompany(companyNumber: String): Future[JsValue] =
     http
       .get(url"$serviceUrl/company/$companyNumber")(HeaderCarrier())
       .setHeader(headersWithApiKey)
@@ -50,37 +47,29 @@ class CompaniesHouseConnector(
       .map { response =>
         handleJsonResponse(
           response,
-          "Company profile",
-          auditService.successfulCompanyInformationResponse(response.json),
-          auditService.failedCompanyInformationResponse
+          "Company profile"
         )
       }
-  }
 
-  def getCompanyOfficers(companyNumber: String)(implicit request: Request[?]): Future[OfficersResponse] = {
-    auditService.companyOfficersRequest(companyNumber)
+  def getCompanyOfficers(companyNumber: String): Future[OfficersResponse] =
     http
       .get(url"$serviceUrl/company/$companyNumber/officers")(HeaderCarrier())
       .setHeader(headersWithApiKey)
       .withProxy
       .execute[HttpResponse]
       .map(handleOfficersResponse)
-  }
 
-  def getCompanyOfficersPaged(companyNumber: String, surname: String)(
+  def getCompanyOfficersPaged(companyNumber: String)(
     pageIndex: Int
-  )(implicit request: Request[?]): Future[OfficersResponse] = {
-    auditService.companyOfficersRequest(companyNumber, Some(surname))
+  ): Future[OfficersResponse] =
     http
       .get(url"$serviceUrl/company/$companyNumber/officers?items_per_page=100&start_index=$pageIndex")(HeaderCarrier())
       .setHeader(headersWithApiKey)
       .withProxy
       .execute[HttpResponse]
       .map(handleOfficersResponse)
-  }
 
-  def getCompanyInsolvency(companyNumber: String)(implicit request: Request[?]): Future[JsValue] = {
-    auditService.companyInsolvencyRequest(companyNumber)
+  def getCompanyInsolvency(companyNumber: String): Future[JsValue] =
     http
       .get(url"$serviceUrl/company/$companyNumber/insolvency")(HeaderCarrier())
       .setHeader(headersWithApiKey)
@@ -89,35 +78,26 @@ class CompaniesHouseConnector(
       .map(
         handleJsonResponse(
           _,
-          "Company insolvency information",
-          auditService.successfulCompanyInsolvencyResponse(companyNumber),
-          auditService.failedCompanyInsolvencyResponse
+          "Company insolvency information"
         )
       )
-  }
 
   private def handleJsonResponse(
     response: HttpResponse,
-    resource: String,
-    auditSuccess: => Future[Unit],
-    auditFailure: (Int, String) => Future[Unit]
+    resource: String
   ): JsValue =
     response.status match {
       case 200 =>
-        auditSuccess
         response.json
       case 404 =>
-        auditFailure(404, s"$resource not found")
         throw new NotFoundException(s"$resource not found")
       case 401 =>
         logger.error(
           s"Received unauthorized response. Check whether the api-key permissions are changed. ${response.body}"
         )
-        auditFailure(401, "Unauthorized request to companies house")
         throw new UnauthorizedException("Unauthorized request to companies house")
       case 403 =>
         logger.error(s"Received forbidden response. Check whether the api-key has expired. ${response.body}")
-        auditFailure(403, "Forbidden request to companies house")
         throw new ForbiddenException("Forbidden request to companies house")
       case 429 =>
         val message = "Received rate limit response from companies house"
@@ -125,11 +105,10 @@ class CompaniesHouseConnector(
         throw new InternalServerException(message)
       case status =>
         logger.error(s"Received unexpected status $status. ${response.body}")
-        auditFailure(status, "Unexpected response code from companies house")
         throw new InternalServerException("Unexpected response code from companies house")
     }
 
-  private def handleOfficersResponse(response: HttpResponse)(implicit request: Request[?]): OfficersResponse =
+  private def handleOfficersResponse(response: HttpResponse): OfficersResponse =
     response.status match {
       case 200 =>
         response.json.validate[OfficersResponse].recoverTotal { errors =>
@@ -137,17 +116,14 @@ class CompaniesHouseConnector(
           throw new IllegalArgumentException("Unparseable officers response")
         }
       case 404 =>
-        auditService.failedCompanyOfficersResponse(404, "Company profile not found")
         throw new NotFoundException("Company profile not found")
       case 401 =>
         logger.error(
           s"Received unauthorized response. Check whether the api-key permissions are changed. ${response.body}"
         )
-        auditService.failedCompanyOfficersResponse(401, "Unauthorized request to companies house")
         throw new UnauthorizedException("Unauthorized request to companies house")
       case 403 =>
         logger.error(s"Received forbidden response. Check whether the api-key has expired. ${response.body}")
-        auditService.failedCompanyOfficersResponse(403, "Forbidden request to companies house")
         throw new ForbiddenException("Forbidden request to companies house")
       case 429 =>
         val message = "Received rate limit response from companies house"
@@ -155,7 +131,6 @@ class CompaniesHouseConnector(
         throw new InternalServerException(message)
       case status =>
         logger.error(s"Received unexpected status $status. ${response.body}")
-        auditService.failedCompanyOfficersResponse(status, "Unexpected response code from companies house")
         throw new InternalServerException("Unexpected response code from companies house")
     }
 

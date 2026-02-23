@@ -28,8 +28,7 @@ import scala.concurrent.{ ExecutionContext, Future }
 
 class CompaniesHouseService(
   connector: CompaniesHouseConnector,
-  configuration: Configuration,
-  auditing: CompaniesHouseAuditService
+  configuration: Configuration
 )(implicit ec: ExecutionContext)
     extends UsingCircuitBreaker with BackendHeaderCarrierProvider {
 
@@ -41,7 +40,6 @@ class CompaniesHouseService(
   def findCompanyOfficers(companyNumber: String)(implicit request: Request[?]): Future[OfficersResponse] =
     withCircuitBreaker {
       connector.getCompanyOfficers(companyNumber).map { response =>
-        auditing.successfulCompanyOfficersResponse(response, companyNumber, surnameFilter = None)
         response
       }
     }
@@ -50,20 +48,18 @@ class CompaniesHouseService(
     request: Request[?]
   ): Future[OfficersResponse] =
     withCircuitBreaker {
-      connector.getCompanyOfficersPaged(companyNumber, surname)(0).flatMap { initialResult =>
+      connector.getCompanyOfficersPaged(companyNumber)(0).flatMap { initialResult =>
         val indexes = 100 to initialResult.totalResults.getOrElse(0) by 100
 
         val collectedResponses = indexes.foldLeft(Future.successful(Seq(initialResult)))((current, index) =>
           for {
             currentResult <- current
-            newResult     <- connector.getCompanyOfficersPaged(companyNumber, surname)(index)
+            newResult     <- connector.getCompanyOfficersPaged(companyNumber)(index)
           } yield currentResult ++ Seq(newResult)
         )
 
         collectedResponses.map(response => findSpecificActiveOfficer(surname, response)).map { matchingOfficers =>
-          val updated = initialResult.copy(items = matchingOfficers)
-          auditing.successfulCompanyOfficersResponse(updated, companyNumber, Some(surname))
-          updated
+          initialResult.copy(items = matchingOfficers)
         }
       }
     }
