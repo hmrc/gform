@@ -1786,6 +1786,46 @@
               "parameters"
             ],
             "additionalProperties": false
+          },
+          {
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "caseflowCaseDetails"
+                ]
+              },
+              "id": {
+                "type": "string"
+              },
+              "if": {
+                "type": "string"
+              },
+              "failureCountResetMinutes": {
+                "type": "integer"
+              },
+              "maxFailedAttempts": {
+                "type": "integer"
+              },
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "caseId": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "caseId"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "type",
+              "id",
+              "parameters"
+            ],
+            "additionalProperties": false
           }
         ]
       }
