@@ -89,6 +89,8 @@ import uk.gov.hmrc.mongo.cache.CacheIdType.SimpleCacheId
 import uk.gov.hmrc.mongo.cache.MongoCacheRepository
 import uk.gov.hmrc.play.bootstrap.LoggerModule
 import uk.gov.hmrc.play.bootstrap.config.AppName
+import uk.gov.hmrc.play.audit.http.HttpAuditing
+import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 
 import java.util.concurrent.TimeUnit
 import scala.concurrent.{ Future, Promise }
@@ -110,26 +112,28 @@ class ApplicationModule(context: Context)
   loggerModule.bindings(environment, configuration)
   private val logger = LoggerFactory.getLogger(getClass)
 
-  private val appName = AppName.fromConfiguration(configuration)
+  private val applicationName = AppName.fromConfiguration(configuration)
 
-  logger.info(s"Starting microservice $appName")
+  logger.info(s"Starting microservice $applicationName")
 
-  private val httpClientV2: HttpClientV2 =
-    new HttpClientV2Impl(
-      wsClient = AhcWSClient(AhcWSClientConfigFactory.forConfig(configuration.underlying)),
-      actorSystem,
-      configuration,
-      hooks = Seq.empty
-    )
-
-  private val akkaModule = new AkkaModule(materializer, actorSystem)
   protected val playComponents = new PlayComponents(context, self, self)
-
+  private val akkaModule = new AkkaModule(materializer, actorSystem)
   protected val configModule = new ConfigModule(configuration, controllerComponents)
   private val metricsModule = new MetricsModule(playComponents, akkaModule, executionContext)
   private val graphiteModule = new GraphiteModule(configuration, applicationLifecycle, metricsModule)
   protected val auditingModule =
     new AuditingModule(configModule, graphiteModule, akkaModule, applicationLifecycle)
+  private val httpAuditing = new HttpAuditing {
+    override def auditConnector: AuditConnector = auditingModule.auditConnector
+    override def appName: String = applicationName
+  }
+  private val httpClientV2: HttpClientV2 =
+    new HttpClientV2Impl(
+      wsClient = AhcWSClient(AhcWSClientConfigFactory.forConfig(configuration.underlying)),
+      actorSystem,
+      configuration,
+      hooks = Seq(httpAuditing.AuditingHook)
+    )
   protected lazy val wSHttpModule = new WSHttpModule(httpClientV2)
   private val proxyModule = new ProxyModule(configModule)
   private val notifierModule = new NotifierModule(configModule, proxyModule)
@@ -418,7 +422,6 @@ class ApplicationModule(context: Context)
 
   val companiesHouseModule = new CompaniesHouseModule(
     configModule,
-    auditingModule,
     wSHttpModule
   )
 
@@ -495,6 +498,7 @@ class ApplicationModule(context: Context)
   }
 
   logger.info(
-    s"Microservice $appName started in mode ${environment.mode} at port ${application.configuration.getOptional[String]("http.port")}"
+    s"Microservice $applicationName started in mode ${environment.mode} at port ${application.configuration
+      .getOptional[String]("http.port")}"
   )
 }

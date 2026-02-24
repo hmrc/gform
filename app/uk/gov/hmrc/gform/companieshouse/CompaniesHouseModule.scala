@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.gform.companieshouse
 
-import uk.gov.hmrc.gform.auditing.AuditingModule
 import uk.gov.hmrc.gform.companieshouse.CompaniesHouseModule.CompaniesHouseAPIConfig
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.wshttp.WSHttpModule
@@ -28,18 +27,15 @@ import scala.concurrent.ExecutionContext
 
 class CompaniesHouseModule(
   configModule: ConfigModule,
-  auditingModule: AuditingModule,
   wSHttpModule: WSHttpModule
 )(implicit ex: ExecutionContext) {
 
   val companiesHouseConfig: CompaniesHouseAPIConfig = readCompaniesHouseConfig
 
-  val companiesHouseAuditService =
-    new CompaniesHouseAuditService(auditingModule.auditConnector, configModule.configuration)
   val companiesHouseConnector =
-    new CompaniesHouseConnector(wSHttpModule.httpClient, companiesHouseConfig, companiesHouseAuditService)
+    new CompaniesHouseConnector(wSHttpModule.httpClient, companiesHouseConfig)
   val companiesHouseService =
-    new CompaniesHouseService(companiesHouseConnector, configModule.configuration, companiesHouseAuditService)
+    new CompaniesHouseService(companiesHouseConnector, configModule.configuration)
   val companiesHouseController = new CompaniesHouseController(companiesHouseService, configModule.controllerComponents)
 
   private def readCompaniesHouseConfig = {
