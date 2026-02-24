@@ -222,7 +222,7 @@ class HipConnector(http: HttpClientV2, baseUrl: String, hipConfig: HipConnectorC
 
   def getCaseflowCaseDetails(caseId: String, correlationId: CorrelationId): Future[JsValue] = {
     logger.info(s"getCaseflowCaseDetails for caseId $caseId called, ${loggingHelpers.cleanHeaderCarrierHeader(hc)}")
-    val url = s"$baseUrl${hipConfig.basePath}/api/CFSSuite/v1/CaseDetails/$caseId"
+    val url = s"$baseUrl${hipConfig.basePath}/prsup/api/CFSSuite/v1/GetCaseDetails/$caseId"
 
     http
       .get(url"$url")
