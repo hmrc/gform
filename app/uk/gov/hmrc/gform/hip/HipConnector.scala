@@ -60,7 +60,7 @@ trait HipAlgebra[F[_]] {
     correlationId: CorrelationId
   ): F[JsValue]
 
-  def getCaseflowCaseDetails(caseId: String, correlationId: CorrelationId): F[JsValue]
+  def getCaseflowCaseDetails(caseId: String, correlationId: CorrelationId): F[HttpResponse]
 }
 
 class HipConnector(http: HttpClientV2, baseUrl: String, hipConfig: HipConnectorConfig)(implicit ec: ExecutionContext)
@@ -220,7 +220,7 @@ class HipConnector(http: HttpClientV2, baseUrl: String, hipConfig: HipConnectorC
       .map(response => handleResponse(response, "Get Employments", correlationId.value, _.json))
   }
 
-  def getCaseflowCaseDetails(caseId: String, correlationId: CorrelationId): Future[JsValue] = {
+  def getCaseflowCaseDetails(caseId: String, correlationId: CorrelationId): Future[HttpResponse] = {
     logger.info(s"getCaseflowCaseDetails for caseId $caseId called, ${loggingHelpers.cleanHeaderCarrierHeader(hc)}")
     val url =
       s"$baseUrl${hipConfig.basePath}/compliance/civil-investigation-and-avoidance/api/CFSSuite/v1/CaseDetails/$caseId"
@@ -229,7 +229,6 @@ class HipConnector(http: HttpClientV2, baseUrl: String, hipConfig: HipConnectorC
       .get(url"$url")
       .setHeader(authHeaders: _*)
       .execute[HttpResponse]
-      .map(response => handleResponse(response, "Get Caseflow Case Details", correlationId.value, _.json))
   }
 
   private def extractEtag(response: HttpResponse, caseId: String): String =
