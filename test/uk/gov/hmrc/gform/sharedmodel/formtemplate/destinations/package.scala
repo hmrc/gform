@@ -40,6 +40,7 @@ package object destinations {
           |  "includeIf":  "${getHandlebarValue(destination.includeIf)}",
           |  ${optionalField("failOnError", Option(destination.failOnError), true)}
           |  "${Destination.typeDiscriminatorFieldName}": "${Destination.hmrcDms}",
+          |  "routing": "$routing",
           |  "dmsFormId": "$dmsFormId",
           |  "customerId": ${TextExpression.format.writes(TextExpression(customerId))},
           |  "classificationType": "$classificationType",
