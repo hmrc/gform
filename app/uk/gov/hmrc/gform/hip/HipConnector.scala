@@ -190,11 +190,11 @@ class HipConnector(http: HttpClientV2, baseUrl: String, hipConfig: HipConnectorC
       s"niClaimUpdateBankDetails called for reference '$refundClaimReference', ${loggingHelpers.cleanHeaderCarrierHeader(hc)}"
     )
 
-    val url = buildNiUrl(s"contributions/$nino/claim/refund/$refundClaimReference/bank-details")
+    val url = buildNiUrl(s"contributions/$nino/claim/refund/$refundClaimReference/issue-refund")
     val body = buildBankDetailsBody(bankAccountName, sortCode, accountNumber, rollNumber)
 
     http
-      .put(url"$url")
+      .post(url"$url")
       .setHeader(authHeaders: _*)
       .setHeader(Headers.CorrelationId -> correlationId)
       .withBody(body)
@@ -247,7 +247,7 @@ class HipConnector(http: HttpClientV2, baseUrl: String, hipConfig: HipConnectorC
   ): JsValue = {
     val rollNumberJson: JsObject = rollNumber.filter(_.nonEmpty).fold(Json.obj())(r => Json.obj("rollNumber" -> r))
     Json.obj(
-      "refundClaimBankDetails" -> (Json.obj(
+      "RefundClaimBankDetails" -> (Json.obj(
         "bankAccountName" -> bankAccountName,
         "sortCode"        -> sortCode,
         "accountNumber"   -> accountNumber
