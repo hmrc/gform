@@ -862,7 +862,7 @@ object DataRetrieveDefinitions {
       DataRetrieve.Attribute("class3ContributionWeeks") -> DataRetrieve.AttrType.Number,
       DataRetrieve.Attribute("weeksOfCredits")          -> DataRetrieve.AttrType.Number
     ),
-    None
+    Some("https://admin.tax.service.gov.uk/integration-hub/apis/details/bb28bb26-29cb-47a1-80f6-026435fd4b43")
   )
 
   private val pegaCaseStatuses = List(

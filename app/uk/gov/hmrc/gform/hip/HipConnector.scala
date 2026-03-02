@@ -167,7 +167,7 @@ class HipConnector(http: HttpClientV2, baseUrl: String, hipConfig: HipConnectorC
       s"validateNIClaimReference called for reference '$claimReference', ${loggingHelpers.cleanHeaderCarrierHeader(hc)}"
     )
 
-    val url = buildNiUrl(s"person/$nino/national-insurance/claim/refund/$claimReference")
+    val url = buildNiUrl(s"contributions/$nino/claim/refund/$claimReference")
 
     http
       .get(url"$url")
