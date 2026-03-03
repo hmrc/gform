@@ -58,8 +58,14 @@ class HipController(
     withCorrelationId("getCaseflowCaseDetails") { correlationId =>
       hipConnector
         .getCaseflowCaseDetails(caseId, correlationId)
-        .asOkJson
-        .recover(standardErrors)
+        .map { response =>
+          if (response.status > 299) {
+            logger.error(
+              s"non 2xx response from getCaseflowCaseDetails. Response code: ${response.status}. Body: ${response.body}"
+            )
+          }
+          Status(response.status)(response.body)
+        }
     }
   }
 

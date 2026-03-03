@@ -923,6 +923,17 @@ object DataRetrieveDefinitions {
         AttributeInstruction(
           DataRetrieve.Attribute("resolvedTimestamp"),
           ConstructAttribute.AsIs(Fetch(List("resolvedTimestamp")))
+        ),
+        AttributeInstruction(
+          DataRetrieve.Attribute("error"),
+          ConstructAttribute.AsIs(Fetch(List("error"))),
+          Some(
+            AllowedValues(
+              List("CASE_ID_VALIDATION_ERROR"),
+              AllowedValueType.JsStringType,
+              isRequired = false
+            )
+          )
         )
       )
     ),
@@ -933,7 +944,8 @@ object DataRetrieveDefinitions {
       DataRetrieve.Attribute("pyHTTPResponseCode") -> DataRetrieve.AttrType.Number,
       DataRetrieve.Attribute("caseStatus")         -> DataRetrieve.AttrType.String,
       DataRetrieve.Attribute("oudnStatus")         -> DataRetrieve.AttrType.String,
-      DataRetrieve.Attribute("resolvedTimestamp")  -> DataRetrieve.AttrType.String
+      DataRetrieve.Attribute("resolvedTimestamp")  -> DataRetrieve.AttrType.String,
+      DataRetrieve.Attribute("error")              -> DataRetrieve.AttrType.String //gform-frontend exceptional response value
     ),
     Some(
       "https://admin.tax.service.gov.uk/integration-hub/apis/view-specification/61cffebd-1f98-4424-b048-f974e77a64f1/test"
