@@ -133,7 +133,6 @@ class FormTemplateJSONSuite extends FunSuite with JsResultMatcher with Matchers 
              |  "accessiblePdf":false,
              |  "downloadPreviousSubmissionPdf":true,
              |  "displayAccountHeader":false,
-             |  "serviceNavigationComponent": false,
              |  "parentFormSubmissionRefs": []
              |}""".stripMargin
         )
@@ -276,7 +275,6 @@ class FormTemplateJSONSuite extends FunSuite with JsResultMatcher with Matchers 
              |  "accessiblePdf":false,
              |  "downloadPreviousSubmissionPdf":true,
              |  "displayAccountHeader":false,
-             |  "serviceNavigationComponent": false,
              |  "parentFormSubmissionRefs": []
              |}""".stripMargin
         )

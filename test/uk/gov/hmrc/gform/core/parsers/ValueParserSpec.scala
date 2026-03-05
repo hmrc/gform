@@ -536,8 +536,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     false,
     None,
     true,
-    None,
-    false
+    None
   )
 
   val yourDetailsSection = Section.NonRepeatingPage(
