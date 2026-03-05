@@ -20,15 +20,14 @@ import org.scalamock.scalatest.MockFactory
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike
-import play.api.libs.json.{ JsValue, Json }
+import play.api.libs.json.JsNull
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.hip.HipAlgebra
-import uk.gov.hmrc.gform.sharedmodel.DestinationResult
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FormId }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationId, DestinationResponse }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationIncludeIf.HandlebarValue
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationId, HandlebarsDestinationResponse }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponentId, FormCtx, FormTemplateId }
-import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
+import uk.gov.hmrc.gform.sharedmodel.{ DestinationResult, SubmissionRef }
 import uk.gov.hmrc.gform.submission.{ DmsMetaData, Submission, SubmissionId }
 
 import java.time.LocalDateTime
@@ -102,7 +101,7 @@ class NiRefundSubmitterSpec extends AnyWordSpecLike with Matchers with MockFacto
       refundClaimReference = refundClaimReference
     )
 
-  private val successResponse: JsValue = Json.obj("status" -> "success")
+  val expectedValidResponse = HandlebarsDestinationResponse(DestinationId("ni-refund-test"), 204, JsNull)
 
   "NiRefundSubmitter.submitBankDetails" should {
     "successfully submit bank details when all required fields are present" in {
@@ -119,7 +118,7 @@ class NiRefundSubmitterSpec extends AnyWordSpecLike with Matchers with MockFacto
           "REF123456",
           "ENV123"
         )
-        .returning(Future.successful(successResponse))
+        .returning(Future.successful(204))
         .once()
 
       val result = submitter.submitBankDetails(
@@ -129,7 +128,7 @@ class NiRefundSubmitterSpec extends AnyWordSpecLike with Matchers with MockFacto
       )
 
       whenReady(result.value) { either =>
-        either shouldBe Right(DestinationResponse.NoResponse)
+        either shouldBe Right(expectedValidResponse)
       }
     }
 
@@ -147,7 +146,7 @@ class NiRefundSubmitterSpec extends AnyWordSpecLike with Matchers with MockFacto
           "REF123456",
           "ENV123"
         )
-        .returning(Future.successful(successResponse))
+        .returning(Future.successful(204))
         .once()
 
       val result = submitter.submitBankDetails(
@@ -157,7 +156,7 @@ class NiRefundSubmitterSpec extends AnyWordSpecLike with Matchers with MockFacto
       )
 
       whenReady(result.value) { either =>
-        either shouldBe Right(DestinationResponse.NoResponse)
+        either shouldBe Right(expectedValidResponse)
       }
     }
 
