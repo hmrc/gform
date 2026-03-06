@@ -62,8 +62,7 @@ case class FormTemplate(
   displayAccountHeader: Boolean,
   serviceStartPageUrl: Option[ServiceStartPageUrl],
   downloadPreviousSubmissionPdf: Boolean,
-  overrides: Option[Overrides],
-  serviceNavigationComponent: Boolean
+  overrides: Option[Overrides]
 ) {
 
   def formComponents[A](predicate: PartialFunction[FormComponent, A]): List[A] =

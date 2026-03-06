@@ -161,8 +161,7 @@ trait FormTemplateGen {
       false,
       serviceStartPageUrl,
       true,
-      None,
-      false
+      None
     )
 }
 

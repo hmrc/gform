@@ -108,6 +108,5 @@
   "parentFormSubmissionRefs": [],
   "accessiblePdf": false,
   "downloadPreviousSubmissionPdf": true,
-  "displayAccountHeader": false,
-  "serviceNavigationComponent": false
+  "displayAccountHeader": false
 }
