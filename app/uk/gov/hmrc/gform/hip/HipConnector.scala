@@ -53,7 +53,7 @@ trait HipAlgebra[F[_]] {
     rollNumber: Option[String],
     refundClaimReference: String,
     correlationId: String
-  ): F[JsValue]
+  ): F[Int]
   def getEmployments(
     nino: String,
     taxYear: Int,
@@ -105,7 +105,7 @@ class HipConnector(http: HttpClientV2, baseUrl: String, hipConfig: HipConnectorC
     successHandler: HttpResponse => T
   ): T =
     response.status match {
-      case OK => successHandler(response)
+      case OK | NO_CONTENT => successHandler(response)
       case BAD_REQUEST =>
         logger.error(s"Received bad request response from $apiName: ${response.body}")
         throw new BadRequestException(s"Bad request response from $apiName for identifier: $identifier")
@@ -185,7 +185,7 @@ class HipConnector(http: HttpClientV2, baseUrl: String, hipConfig: HipConnectorC
     rollNumber: Option[String],
     refundClaimReference: String,
     correlationId: String
-  ): Future[JsValue] = {
+  ): Future[Int] = {
     logger.info(
       s"niClaimUpdateBankDetails called for reference '$refundClaimReference', ${loggingHelpers.cleanHeaderCarrierHeader(hc)}"
     )
@@ -199,7 +199,9 @@ class HipConnector(http: HttpClientV2, baseUrl: String, hipConfig: HipConnectorC
       .setHeader(Headers.CorrelationId -> correlationId)
       .withBody(body)
       .execute[HttpResponse]
-      .map(response => handleResponse(response, "NI Claim Refund (Update Bank Details)", refundClaimReference, _.json))
+      .map(response =>
+        handleResponse(response, "Trigger NI Claim Refund (Update Bank Details)", refundClaimReference, _.status)
+      )
   }
 
   def getEmployments(
