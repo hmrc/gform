@@ -852,54 +852,13 @@ object BuilderSupport {
 
   }
 
-  // Top level hints are deprecated, move them into choices
-  private def moveHints(json: Json): Json = {
-    val tpe = json.hcursor.downField("type").focus
-    val choice = Json.fromString("choice")
-    val revealingChoice = Json.fromString("revealingChoice")
-    if (tpe.contains(choice) || tpe.contains(revealingChoice)) {
-
-      val maybeHints: Option[Iterable[Json]] = json.hcursor.downField("hints").values
-      val maybeChoices: Option[Iterable[Json]] = json.hcursor.downField("choices").values
-
-      (maybeHints, maybeChoices) match {
-        case (Some(hints), Some(choices)) =>
-          val merged: Iterable[io.circe.Json] = hints.zip(choices).map { case (hint, choice) =>
-            val choiceNormalised = if (choice.isString) {
-              Json.obj("en" := choice)
-            } else {
-              choice.hcursor.downField("hint").delete.root.focus.getOrElse(choice)
-            }
-            // Top level hint has priority over choice's hint
-            Json.obj("hint" := hint).deepMerge(choiceNormalised)
-          }
-          val choicesUpd = Json.arr(merged.toList: _*)
-
-          json.hcursor
-            .downField("hints") // Delete top level hints
-            .delete
-            .root
-            .downField("choices")
-            .set(choicesUpd)
-            .root
-            .focus
-            .getOrElse(json)
-
-        case _ => json
-      }
-    } else {
-      json
-    }
-  }
-
   private def patchFormComponent(maybeHistory: Option[List[CursorOp]], json: Json, formComponentData: Json): Json =
     maybeHistory
       .flatMap { history =>
         json.hcursor
           .replay(history)
           .withFocus { field =>
-            val fieldUpd = moveHints(field)
-            updateFormComponent(fieldUpd, formComponentData)
+            updateFormComponent(field, formComponentData)
           }
           .root
           .focus

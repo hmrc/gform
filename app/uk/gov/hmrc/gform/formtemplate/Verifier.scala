@@ -45,7 +45,6 @@ trait Verifier {
     for {
       _ <- fromOptA(FormTemplateValidator.validateLowercaseIds(formTemplate).toEither)
       _ <- fromOptA(FormTemplateValidator.validateChoiceHelpText(pages).toEither)
-      _ <- fromOptA(FormTemplateValidator.validateChoiceHints(pages).toEither)
       _ <- fromOptA(FormTemplateValidator.validateTypeAheadChoices(pages).toEither)
       _ <- fromOptA(FormTemplateValidator.validateTypeAheadKeyWordUsage(pages).toEither)
       _ <- fromOptA(FormTemplateValidator.validateChoiceDividerPositionLowerBound(pages).toEither)
