@@ -852,8 +852,6 @@ object BuilderSupport {
 
   }
 
-  // Top level hints are no longer supported
-
   private def patchFormComponent(maybeHistory: Option[List[CursorOp]], json: Json, formComponentData: Json): Json =
     maybeHistory
       .flatMap { history =>
