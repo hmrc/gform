@@ -80,14 +80,12 @@ trait ComponentTypeGen {
       options     <- optionDataGen
       orientation <- orientationGen
       selections  <- PrimitiveGen.zeroOrMoreGen(Gen.posNum[Int])
-      hints       <- Gen.option(PrimitiveGen.oneOrMoreGen(SmartStringGen.smartStringGen))
       helpText    <- Gen.option(PrimitiveGen.oneOrMoreGen(SmartStringGen.smartStringGen))
     } yield Choice(
       tpe,
       options,
       orientation,
       selections,
-      hints,
       helpText,
       None,
       divider,
@@ -101,9 +99,8 @@ trait ComponentTypeGen {
     for {
       choice          <- Gen.oneOf(optionDataIndexBasedGen, optionDataValueBasedGen)
       revealingFields <- PrimitiveGen.zeroOrMoreGen(FormComponentGen.formComponentGen(1))
-      hint            <- Gen.option(SmartStringGen.smartStringGen)
       selected        <- PrimitiveGen.booleanGen
-    } yield RevealingChoiceElement(choice, revealingFields, hint, selected)
+    } yield RevealingChoiceElement(choice, revealingFields, selected)
 
   def revealingChoiceGen: Gen[RevealingChoice] =
     for {
