@@ -38,7 +38,6 @@ trait FormTemplateSupport {
         Nil,
         None,
         None,
-        None,
         divider,
         None,
         None,

@@ -638,13 +638,6 @@ object FormTemplateValidator {
     validateChoice(sectionsList, check, "Choice components doesn't have equal number of choices and help texts")
   }
 
-  def validateChoiceHints(sectionsList: List[Page]): ValidationResult = {
-    def check(choice: Choice): Boolean =
-      choice.hints.fold(false)(hints => choice.options.size != hints.size)
-
-    validateChoice(sectionsList, check, "Choice components doesn't have equal number of choices and hints")
-  }
-
   def validateChoiceDividerPositionValue(sectionsList: List[Page]): ValidationResult = {
     def check(choice: Choice): Boolean = choice.dividerPosition.exists {
       case DividerPosition.Number(i) => false
@@ -1226,14 +1219,14 @@ object FormTemplateValidator {
 
   @nowarn
   def validate(componentType: ComponentType, formTemplate: FormTemplate): ValidationResult = componentType match {
-    case HasExpr(SingleExpr(expr))                  => validate(expr, formTemplate.formKind.allSections)
-    case HasExpr(MultipleExpr(fields))              => Valid
-    case Date(_, _, _)                              => Valid
-    case CalendarDate                               => Valid
-    case TaxPeriodDate                              => Valid
-    case Address(_, _, _, Some(expr))               => validateAddressValue(expr, formTemplate)
-    case Address(_, _, _, _)                        => Valid
-    case Choice(_, _, _, _, _, _, _, _, _, _, _, _) => Valid
+    case HasExpr(SingleExpr(expr))               => validate(expr, formTemplate.formKind.allSections)
+    case HasExpr(MultipleExpr(fields))           => Valid
+    case Date(_, _, _)                           => Valid
+    case CalendarDate                            => Valid
+    case TaxPeriodDate                           => Valid
+    case Address(_, _, _, Some(expr))            => validateAddressValue(expr, formTemplate)
+    case Address(_, _, _, _)                     => Valid
+    case Choice(_, _, _, _, _, _, _, _, _, _, _) => Valid
     case RevealingChoice(revealingChoiceElements, _) =>
       validate(revealingChoiceElements.toList.flatMap(_.revealingFields.map(_.`type`)), formTemplate)
     case HmrcTaxPeriod(_, _, _)                     => Valid
