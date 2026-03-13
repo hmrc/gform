@@ -26,6 +26,7 @@ import uk.gov.hmrc.gform.envelope.EnvelopeModule
 import uk.gov.hmrc.gform.mongo.MongoModule
 import uk.gov.hmrc.gform.objectstore.ObjectStoreModule
 import uk.gov.hmrc.gform.repo.Repo
+import uk.gov.hmrc.gform.scheduler.datalakehouse.DataLakehouseWorkItemRepo
 import uk.gov.hmrc.gform.scheduler.datastore.DataStoreWorkItemRepo
 import uk.gov.hmrc.gform.scheduler.dms.DmsWorkItemRepo
 import uk.gov.hmrc.gform.scheduler.infoarchive.InfoArchiveWorkItemRepo
@@ -97,9 +98,15 @@ class SdesModule(
 
   val dataStoreWorkItemRepo = new DataStoreWorkItemRepo(mongoModule.mongoComponent)
   val infoArchiveWorkItemRepo = new InfoArchiveWorkItemRepo(mongoModule.mongoComponent)
+  val dataLakehouseWorkItemRepo = new DataLakehouseWorkItemRepo(mongoModule.mongoComponent)
 
   val destinationWorkItemService: DestinationWorkItemAlgebra[Future] =
-    new DestinationWorkItemService(dmsWorkItemRepo, dataStoreWorkItemRepo, infoArchiveWorkItemRepo)
+    new DestinationWorkItemService(
+      dmsWorkItemRepo,
+      dataStoreWorkItemRepo,
+      infoArchiveWorkItemRepo,
+      dataLakehouseWorkItemRepo
+    )
 
   val destinationWorkItemController: DestinationWorkItemController =
     new DestinationWorkItemController(configModule.controllerComponents, destinationWorkItemService)
@@ -140,6 +147,7 @@ class SdesModule(
     emailModule.emailLogic,
     dmsWorkItemRepo,
     dataStoreWorkItemRepo,
+    dataLakehouseWorkItemRepo,
     lockRepoSdesAlert,
     configModule.workItemAlertConfig.lockDuration
   )

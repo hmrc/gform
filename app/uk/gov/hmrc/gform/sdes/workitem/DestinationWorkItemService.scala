@@ -20,6 +20,7 @@ import cats.syntax.functor._
 import org.bson.types.ObjectId
 import org.mongodb.scala.model.Filters
 import org.mongodb.scala.model.Filters.equal
+import uk.gov.hmrc.gform.scheduler.datalakehouse.DataLakehouseWorkItemRepo
 import uk.gov.hmrc.gform.scheduler.datastore.DataStoreWorkItemRepo
 import uk.gov.hmrc.gform.scheduler.dms.DmsWorkItemRepo
 import uk.gov.hmrc.gform.scheduler.infoarchive.InfoArchiveWorkItemRepo
@@ -62,7 +63,8 @@ trait DestinationWorkItemAlgebra[F[_]] {
 class DestinationWorkItemService(
   dmsWorkItemRepo: DmsWorkItemRepo,
   dataStoreWorkItemRepo: DataStoreWorkItemRepo,
-  infoArchiveWorkItemRepo: InfoArchiveWorkItemRepo
+  infoArchiveWorkItemRepo: InfoArchiveWorkItemRepo,
+  dataLakehouseWorkItemRepo: DataLakehouseWorkItemRepo
 )(implicit ec: ExecutionContext)
     extends DestinationWorkItemAlgebra[Future] {
   override def pushWorkItem(
@@ -88,7 +90,8 @@ class DestinationWorkItemService(
       case SdesDestination.Dms | SdesDestination.PegaCaseflow => dmsWorkItemRepo.pushNew(sdesWorkItem).void
       case SdesDestination.HmrcIlluminate | SdesDestination.DataStore | SdesDestination.DataStoreLegacy =>
         dataStoreWorkItemRepo.pushNew(sdesWorkItem).void
-      case SdesDestination.InfoArchive => infoArchiveWorkItemRepo.pushNew(sdesWorkItem).void
+      case SdesDestination.InfoArchive   => infoArchiveWorkItemRepo.pushNew(sdesWorkItem).void
+      case SdesDestination.DataLakehouse => dataLakehouseWorkItemRepo.pushNew(sdesWorkItem).void
     }
   }
 
@@ -117,7 +120,8 @@ class DestinationWorkItemService(
     case SdesDestination.Dms | SdesDestination.PegaCaseflow => dmsWorkItemRepo.collection
     case SdesDestination.HmrcIlluminate | SdesDestination.DataStore | SdesDestination.DataStoreLegacy =>
       dataStoreWorkItemRepo.collection
-    case SdesDestination.InfoArchive => infoArchiveWorkItemRepo.collection
+    case SdesDestination.InfoArchive   => infoArchiveWorkItemRepo.collection
+    case SdesDestination.DataLakehouse => dataLakehouseWorkItemRepo.collection
   }
 
   override def delete(id: String, sdesDestination: SdesDestination): Future[Unit] =
@@ -134,14 +138,18 @@ class DestinationWorkItemService(
       case SdesDestination.HmrcIlluminate | SdesDestination.DataStore | SdesDestination.DataStoreLegacy =>
         dataStoreWorkItemRepo.markAs(new ObjectId(id), ProcessingStatus.ToDo).void
       case SdesDestination.InfoArchive => infoArchiveWorkItemRepo.markAs(new ObjectId(id), ProcessingStatus.ToDo).void
+      case SdesDestination.DataLakehouse =>
+        dataLakehouseWorkItemRepo.markAs(new ObjectId(id), ProcessingStatus.ToDo).void
     }
 
   override def find(id: String, sdesDestination: SdesDestination): Future[Option[WorkItem[SdesWorkItem]]] =
     sdesDestination match {
-      case SdesDestination.Dms | SdesDestination.PegaCaseflow => dmsWorkItemRepo.findById(new ObjectId(id))
+      case SdesDestination.Dms | SdesDestination.PegaCaseflow =>
+        dmsWorkItemRepo.findById(new ObjectId(id))
       case SdesDestination.HmrcIlluminate | SdesDestination.DataStore | SdesDestination.DataStoreLegacy =>
         dataStoreWorkItemRepo.findById(new ObjectId(id))
-      case SdesDestination.InfoArchive => infoArchiveWorkItemRepo.findById(new ObjectId(id))
+      case SdesDestination.InfoArchive   => infoArchiveWorkItemRepo.findById(new ObjectId(id))
+      case SdesDestination.DataLakehouse => dataLakehouseWorkItemRepo.findById(new ObjectId(id))
     }
 
   override def findByEnvelopeId(

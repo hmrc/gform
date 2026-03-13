@@ -139,7 +139,8 @@ class InfoArchiveSubmitter(
                       paths.permanent,
                       s"$fileName.${contentType.extension}",
                       content,
-                      contentType
+                      contentType,
+                      None
                     )
     } yield objSummary
 }
