@@ -41,7 +41,7 @@ class SdesRenotifyService(
                     for {
                       objSummary <- sdesDestination match {
                                       case SdesDestination.DataStore | SdesDestination.DataStoreLegacy |
-                                          SdesDestination.HmrcIlluminate =>
+                                          SdesDestination.HmrcIlluminate | SdesDestination.DataLakehouse =>
                                         val fileName = s"${submission.envelopeId.value}.json"
                                         for {
                                           maybeObject <- objectStoreAlgebra.getFile(paths.permanent, fileName)
@@ -58,7 +58,8 @@ class SdesRenotifyService(
                                                                 paths.ephemeral,
                                                                 fileNameWithPrefix,
                                                                 concatenatedByteString,
-                                                                ContentType.`application/json`
+                                                                ContentType.`application/json`,
+                                                                None
                                                               )
                                                             }
                                                           case None =>

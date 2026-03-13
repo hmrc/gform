@@ -30,6 +30,7 @@ import uk.gov.hmrc.gform.sdes.SdesModule
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.FiniteDuration
 import pureconfig.generic.auto._
+import uk.gov.hmrc.gform.scheduler.datalakehouse.{ DataLakehouseQueuePollingService, DataLakehouseQueueService, DataLakehouseWorkItemRepo }
 
 class SchedulerModule(
   configModule: ConfigModule,
@@ -39,7 +40,12 @@ class SchedulerModule(
   applicationLifecycle: ApplicationLifecycle
 )(implicit ex: ExecutionContext) {
 
-  case class SdesConfig(dms: DestinationConfig, dataStore: DestinationConfig, infoArchive: DestinationConfig)
+  case class SdesConfig(
+    dms: DestinationConfig,
+    dataStore: DestinationConfig,
+    infoArchive: DestinationConfig,
+    dataLakehouse: DestinationConfig
+  )
   case class DestinationConfig(queue: QueueConfig, poller: PollerConfig)
   case class QueueConfig(retryAfter: FiniteDuration, maxFailureCount: Int)
   case class PollerConfig(enabled: Boolean, initialDelay: FiniteDuration, interval: FiniteDuration, pollLimit: Int)
@@ -101,6 +107,25 @@ class SchedulerModule(
     config.infoArchive.poller.interval,
     config.infoArchive.poller.enabled,
     infoArchiveQueueService
+  )
+
+  private val dataLakehouseNotificationRepository = new DataLakehouseWorkItemRepo(mongoModule.mongoComponent)
+
+  val dataLakehouseQueueService =
+    new DataLakehouseQueueService(
+      sdesModule.sdesService,
+      dataLakehouseNotificationRepository,
+      config.dataLakehouse.poller.pollLimit,
+      config.dataLakehouse.queue.maxFailureCount,
+      config.dataLakehouse.queue.retryAfter.toMillis
+    )
+
+  new DataLakehouseQueuePollingService(
+    akkaModule.actorSystem,
+    config.dataLakehouse.poller.initialDelay,
+    config.dataLakehouse.poller.interval,
+    config.dataLakehouse.poller.enabled,
+    dataLakehouseQueueService
   )
 
   new SdesSubmissionAlertJob(

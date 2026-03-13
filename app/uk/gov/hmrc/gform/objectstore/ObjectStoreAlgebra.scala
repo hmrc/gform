@@ -31,6 +31,7 @@ import uk.gov.hmrc.gform.sharedmodel.envelope.{ EnvelopeData, EnvelopeFile }
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
+import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination
 import uk.gov.hmrc.gform.submission.{ PdfAndXmlSummaries, Submission }
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.objectstore.client
@@ -53,8 +54,14 @@ trait ObjectStoreAlgebra[F[_]] {
     maybeSubDirectory: Option[String]
   )(implicit hc: HeaderCarrier): F[ObjectSummaryWithMd5]
 
-  def uploadFileWithDir(directory: Path.Directory, fileName: String, content: ByteString, contentType: ContentType)(
-    implicit hc: HeaderCarrier
+  def uploadFileWithDir(
+    directory: Path.Directory,
+    fileName: String,
+    content: ByteString,
+    contentType: ContentType,
+    finalDestination: Option[SdesDestination]
+  )(implicit
+    hc: HeaderCarrier
   ): F[ObjectSummaryWithMd5]
 
   def getEnvelope(envelopeId: EnvelopeId): F[EnvelopeData]
