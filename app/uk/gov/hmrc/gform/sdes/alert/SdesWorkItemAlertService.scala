@@ -18,6 +18,7 @@ package uk.gov.hmrc.gform.sdes.alert
 
 import org.slf4j.{ Logger, LoggerFactory }
 import uk.gov.hmrc.gform.email.EmailService
+import uk.gov.hmrc.gform.scheduler.datalakehouse.DataLakehouseWorkItemRepo
 import uk.gov.hmrc.gform.scheduler.datastore.DataStoreWorkItemRepo
 import uk.gov.hmrc.gform.scheduler.dms.DmsWorkItemRepo
 import uk.gov.hmrc.gform.scheduler.quartz.QScheduledService
@@ -37,6 +38,7 @@ class SdesWorkItemAlertService(
   emailService: EmailService,
   dmsWorkItemRepo: DmsWorkItemRepo,
   dataStoreWorkItemRepo: DataStoreWorkItemRepo,
+  dataLakehouseWorkItemRepo: DataLakehouseWorkItemRepo,
   lockRepositoryProvider: MongoLockRepository,
   mongodbLockTimeoutDuration: Duration
 ) extends QScheduledService[Unit] {
@@ -65,11 +67,14 @@ class SdesWorkItemAlertService(
 
   private def processUnAlertedItems(implicit ec: ExecutionContext): Future[Unit] =
     for {
-      dmsFailedCount                  <- dmsWorkItemRepo.count(ProcessingStatus.Failed)
-      dmsPermanentlyFailedCount       <- dmsWorkItemRepo.count(ProcessingStatus.PermanentlyFailed)
-      dataStoreFailedCount            <- dataStoreWorkItemRepo.count(ProcessingStatus.Failed)
-      dataStorePermanentlyFailedCount <- dataStoreWorkItemRepo.count(ProcessingStatus.PermanentlyFailed)
-      total = dmsFailedCount + dmsPermanentlyFailedCount + dataStoreFailedCount + dataStorePermanentlyFailedCount
+      dmsFailedCount                      <- dmsWorkItemRepo.count(ProcessingStatus.Failed)
+      dmsPermanentlyFailedCount           <- dmsWorkItemRepo.count(ProcessingStatus.PermanentlyFailed)
+      dataStoreFailedCount                <- dataStoreWorkItemRepo.count(ProcessingStatus.Failed)
+      dataStorePermanentlyFailedCount     <- dataStoreWorkItemRepo.count(ProcessingStatus.PermanentlyFailed)
+      dataLakehouseFailedCount            <- dataLakehouseWorkItemRepo.count(ProcessingStatus.Failed)
+      dataLakehousePermanentlyFailedCount <- dataLakehouseWorkItemRepo.count(ProcessingStatus.PermanentlyFailed)
+      total =
+        dmsFailedCount + dmsPermanentlyFailedCount + dataStoreFailedCount + dataStorePermanentlyFailedCount + dataLakehouseFailedCount + dataLakehousePermanentlyFailedCount
       _ <- if (total > 0) sendEmail(total)
            else {
              logger.info("No failed SDES work item was found")

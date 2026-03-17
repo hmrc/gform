@@ -34,12 +34,14 @@ import uk.gov.hmrc.gform.sharedmodel.envelope.{ EnvelopeData, EnvelopeFile }
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
+import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination
+import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination.fromName
 import uk.gov.hmrc.gform.submission.destinations.PgpEncryption
 import uk.gov.hmrc.gform.submission.{ PdfAndXmlSummaries, Submission }
 import uk.gov.hmrc.gform.time.TimeProvider
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.objectstore.client
-import uk.gov.hmrc.objectstore.client.{ ObjectSummaryWithMd5, Path, PresignedDownloadUrl }
+import uk.gov.hmrc.objectstore.client.{ ObjectSummaryWithMd5, Path, PresignedDownloadUrl, RetentionPeriod }
 
 import java.net.URL
 import java.time.format.DateTimeFormatter
@@ -48,7 +50,9 @@ import scala.concurrent.{ ExecutionContext, Future }
 class ObjectStoreService(
   objectStoreConnector: ObjectStoreConnector,
   envelopeService: EnvelopeAlgebra[Future],
-  sdesConnector: SdesConnector
+  sdesConnector: SdesConnector,
+  exceptionRetentionPeriod: RetentionPeriod,
+  exceptionDestinations: Set[String]
 )(implicit
   ec: ExecutionContext
 ) extends ObjectStoreAlgebra[Future] {
@@ -120,14 +124,22 @@ class ObjectStoreService(
     directory: Path.Directory,
     fileName: String,
     content: ByteString,
-    contentType: ContentType
-  )(implicit hc: HeaderCarrier): Future[ObjectSummaryWithMd5] =
+    contentType: ContentType,
+    finalDestination: Option[SdesDestination]
+  )(implicit hc: HeaderCarrier): Future[ObjectSummaryWithMd5] = {
+    val maybeExceptionRetentionPeriod = finalDestination
+      .map(fromName)
+      .filter(exceptionDestinations.contains)
+      .map(_ => exceptionRetentionPeriod)
+
     objectStoreConnector.uploadFile(
       directory,
       fileName,
       content,
-      Some(contentType.value)
+      Some(contentType.value),
+      maybeExceptionRetentionPeriod
     )
+  }
 
   override def getEnvelope(envelopeId: EnvelopeId): Future[EnvelopeData] = envelopeService.get(envelopeId)
 
@@ -411,7 +423,8 @@ class ObjectStoreService(
                           objectStorePaths.ephemeral,
                           s"${objectStorePaths.zipFilePrefix}${envelopeId.value}.zip",
                           ByteString(encrypted),
-                          ContentType.`application/zip`
+                          ContentType.`application/zip`,
+                          None
                         )
                       }
                     case None =>

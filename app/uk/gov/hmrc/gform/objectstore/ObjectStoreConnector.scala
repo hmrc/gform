@@ -21,19 +21,21 @@ import org.apache.pekko.NotUsed
 import org.apache.pekko.actor.ActorSystem
 import org.apache.pekko.stream.scaladsl.Source
 import org.apache.pekko.util.ByteString
+import play.api.Logging
 import uk.gov.hmrc.gform.models.helpers.ObjectStoreHelper._
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.objectstore.client
 import uk.gov.hmrc.objectstore.client.play.Implicits._
 import uk.gov.hmrc.objectstore.client.play.PlayObjectStoreClient
-import uk.gov.hmrc.objectstore.client.{ ObjectSummaryWithMd5, Path, PresignedDownloadUrl }
+import uk.gov.hmrc.objectstore.client.{ ObjectSummaryWithMd5, Path, PresignedDownloadUrl, RetentionPeriod }
 
 import scala.concurrent.{ ExecutionContext, Future }
 
 class ObjectStoreConnector(
   objectStoreClient: PlayObjectStoreClient
-)(implicit ex: ExecutionContext, actorSystem: ActorSystem) {
+)(implicit ex: ExecutionContext, actorSystem: ActorSystem)
+    extends Logging {
 
   private val zipExtension = ".zip"
 
@@ -58,15 +60,32 @@ class ObjectStoreConnector(
         contentType = contentType
       )
 
-  def uploadFile(directory: Path.Directory, fileName: String, content: ByteString, contentType: Option[String])(implicit
+  def uploadFile(
+    directory: Path.Directory,
+    fileName: String,
+    content: ByteString,
+    contentType: Option[String],
+    maybeRetentionPeriod: Option[RetentionPeriod]
+  )(implicit
     hc: HeaderCarrier
   ): Future[ObjectSummaryWithMd5] =
-    objectStoreClient
-      .putObject(
-        path = directory.file(fileName),
-        content = toSource(content),
-        contentType = contentType
-      )
+    maybeRetentionPeriod.fold {
+      objectStoreClient
+        .putObject(
+          path = directory.file(fileName),
+          content = toSource(content),
+          contentType = contentType
+        )
+    } { retentionPeriod =>
+      logger.info(s"Storing file '$fileName' in object store with exception retention period: $retentionPeriod")
+      objectStoreClient
+        .putObject(
+          path = directory.file(fileName),
+          content = toSource(content),
+          contentType = contentType,
+          retentionPeriod = retentionPeriod
+        )
+    }
 
   def getFile(directory: Path.Directory, fileName: String)(implicit
     hc: HeaderCarrier

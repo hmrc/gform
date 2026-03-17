@@ -99,6 +99,7 @@ GET           /object-store/dms/envelopes/:envelopeId                           
 GET           /object-store/data-store/envelopes/:envelopeId                                            uk.gov.hmrc.gform.objectstore.ObjectStoreController.downloadDataStoreFile(envelopeId: EnvelopeId)
 GET           /object-store/hmrc-illuminate/envelopes/:envelopeId                                       uk.gov.hmrc.gform.objectstore.ObjectStoreController.downloadHmrcIlluminateFile(envelopeId: EnvelopeId)
 GET           /object-store/info-archive/envelopes/:envelopeId                                          uk.gov.hmrc.gform.objectstore.ObjectStoreController.downloadInfoArchiveFiles(envelopeId: EnvelopeId)
+GET           /object-store/data-lakehouse/envelopes/:envelopeId                                        uk.gov.hmrc.gform.objectstore.ObjectStoreController.downloadDataLakehouseFile(envelopeId: EnvelopeId)
 
 GET           /translation/:formTemplateId                                                              uk.gov.hmrc.gform.translation.TranslationController.generateTranslatebleCsv(formTemplateId: FormTemplateId)
 GET           /translation/:formTemplateId/brief                                                        uk.gov.hmrc.gform.translation.TranslationController.generateBriefTranslatebleCsv(formTemplateId: FormTemplateId)

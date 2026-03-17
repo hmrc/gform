@@ -32,6 +32,7 @@ import uk.gov.hmrc.gform.sharedmodel.envelope.EnvelopeData
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination
+import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination
 import uk.gov.hmrc.gform.submission.{ PdfAndXmlSummaries, Submission }
 import uk.gov.hmrc.gform.wshttp.WSHttpModule
 import uk.gov.hmrc.http.HeaderCarrier
@@ -41,6 +42,7 @@ import uk.gov.hmrc.objectstore.client.play.PlayObjectStoreClient
 import uk.gov.hmrc.objectstore.client.{ ObjectSummaryWithMd5, Path, PresignedDownloadUrl, RetentionPeriod }
 
 import scala.concurrent.{ ExecutionContext, Future }
+import scala.jdk.CollectionConverters._
 
 class ObjectStoreModule(
   configModule: ConfigModule,
@@ -55,6 +57,13 @@ class ObjectStoreModule(
   private val defaultRetentionPeriod = RetentionPeriod
     .parse(configModule.typesafeConfig.getString("object-store.default-retention-period"))
     .fold(m => throw new IllegalStateException(m), identity)
+
+  private val exceptionRetentionPeriod = RetentionPeriod
+    .parse(configModule.typesafeConfig.getString("object-store.exception-retention-period"))
+    .fold(m => throw new IllegalStateException(m), identity)
+
+  private val exceptionDestinations =
+    configModule.typesafeConfig.getStringList("object-store.exception-retention-period-destinations").asScala.toSet
 
   private val objectStoreClientConfig = ObjectStoreClientConfig(
     baseUrl,
@@ -86,7 +95,13 @@ class ObjectStoreModule(
     )
 
   val objectStoreService: ObjectStoreAlgebra[Future] =
-    new ObjectStoreService(objectStoreConnector, envelopeModule.envelopeService, sdesConnector)
+    new ObjectStoreService(
+      objectStoreConnector,
+      envelopeModule.envelopeService,
+      sdesConnector,
+      exceptionRetentionPeriod,
+      exceptionDestinations
+    )
 
   val objectStoreController: ObjectStoreController =
     new ObjectStoreController(configModule.controllerComponents, objectStoreService)(ex, akkaModule.materializer)
@@ -140,9 +155,12 @@ class ObjectStoreModule(
       path: Path.Directory,
       fileName: String,
       content: ByteString,
-      contentType: ContentType
+      contentType: ContentType,
+      finalDestination: Option[SdesDestination]
     )(implicit hc: HeaderCarrier): FOpt[ObjectSummaryWithMd5] =
-      fromFutureA(objectStoreService.uploadFileWithDir(path, fileName, content, contentType))
+      fromFutureA(
+        objectStoreService.uploadFileWithDir(path, fileName, content, contentType, finalDestination)
+      )
 
     override def deleteFile(directory: Path.Directory, fileName: String)(implicit hc: HeaderCarrier): FOpt[Unit] =
       fromFutureA(objectStoreService.deleteFile(directory, fileName))

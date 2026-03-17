@@ -230,7 +230,8 @@ class DataStoreSubmitter(
              paths.permanent,
              fileName,
              byteString,
-             ContentType.`application/json`
+             ContentType.`application/json`,
+             Some(destination)
            )
       _ <- destinationWorkItemAlgebra.pushWorkItem(
              submission.envelopeId,

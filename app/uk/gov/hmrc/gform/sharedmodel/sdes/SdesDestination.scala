@@ -31,6 +31,7 @@ sealed trait SdesDestination extends Product with Serializable {
     case SdesDestination.Dms             => sdesConfig.dms
     case SdesDestination.InfoArchive     => sdesConfig.infoArchive
     case SdesDestination.PegaCaseflow    => sdesConfig.pegaCaseflow
+    case SdesDestination.DataLakehouse   => sdesConfig.dataLakehouse
   }
 
   def objectStorePaths(envelopeId: EnvelopeId, submissionPrefix: Option[String]): ObjectStorePaths =
@@ -41,6 +42,7 @@ sealed trait SdesDestination extends Product with Serializable {
       case SdesDestination.Dms             => ObjectStorePaths.dmsPaths(envelopeId, submissionPrefix)
       case SdesDestination.InfoArchive     => ObjectStorePaths.infoArchivePaths(envelopeId)
       case SdesDestination.PegaCaseflow    => ObjectStorePaths.pegaCaseflowPaths(envelopeId)
+      case SdesDestination.DataLakehouse   => ObjectStorePaths.dataLakehousePaths(envelopeId)
     }
 }
 
@@ -51,6 +53,7 @@ object SdesDestination {
   case object DataStore extends SdesDestination
   case object InfoArchive extends SdesDestination
   case object PegaCaseflow extends SdesDestination
+  case object DataLakehouse extends SdesDestination
 
   implicit val equal: Eq[SdesDestination] = Eq.fromUniversalEquals
   implicit val format: Format[SdesDestination] =
@@ -60,7 +63,8 @@ object SdesDestination {
       "DataStoreLegacy" -> DataStoreLegacy,
       "DataStore"       -> DataStore,
       "InfoArchive"     -> InfoArchive,
-      "PegaCaseflow"    -> PegaCaseflow
+      "PegaCaseflow"    -> PegaCaseflow,
+      "DataLakehouse"   -> DataLakehouse
     )
 
   def fromName(destination: SdesDestination): String = destination match {
@@ -70,6 +74,7 @@ object SdesDestination {
     case DataStore       => "DataStore"
     case InfoArchive     => "InfoArchive"
     case PegaCaseflow    => "PegaCaseflow"
+    case DataLakehouse   => "DataLakehouse"
   }
 
   def fromString(destination: String): SdesDestination = destination match {
@@ -79,5 +84,6 @@ object SdesDestination {
     case "DataStore"       => DataStore
     case "InfoArchive"     => InfoArchive
     case "PegaCaseflow"    => PegaCaseflow
+    case "DataLakehouse"   => DataLakehouse
   }
 }

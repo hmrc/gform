@@ -26,9 +26,11 @@ import uk.gov.hmrc.gform.sdes.SdesConnector
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 import uk.gov.hmrc.gform.sharedmodel.envelope.{ EnvelopeData, EnvelopeFile }
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
+import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination.{ DataLakehouse, HmrcIlluminate, fromName }
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.objectstore.client.Path.File
-import uk.gov.hmrc.objectstore.client.{ Md5Hash, ObjectSummaryWithMd5 }
+import uk.gov.hmrc.objectstore.client.RetentionPeriod.OneYear
+import uk.gov.hmrc.objectstore.client.{ Md5Hash, ObjectSummaryWithMd5, Path, RetentionPeriod }
 
 import java.time.Instant
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -40,6 +42,7 @@ class ObjectStoreServiceSpec extends AnyFlatSpec with Matchers with ScalaFutures
   private val byteString = ByteString("byte-string")
   private val envelopeId = EnvelopeId("envelope-id")
   private val fileId = FileId("file-id")
+  private val directory = Path.Directory("/")
   private val expectedObjectSummary = ObjectSummaryWithMd5(File("/test"), 1L, Md5Hash("md5"), Instant.now())
   private val expectedEnvelopeData = EnvelopeData(
     envelopeId,
@@ -74,6 +77,24 @@ class ObjectStoreServiceSpec extends AnyFlatSpec with Matchers with ScalaFutures
       .expectSave(expectedSavedEnvelopeData)
       .service
       .uploadFile(envelopeId, fileId, fileName, byteString, ContentType.`application/pdf`, None)
+      .futureValue shouldBe expectedObjectSummary
+  }
+
+  "uploadFileWithDir" should "upload file with default retention period" in {
+
+    fixture()
+      .expectUploadFileWithDir(directory, fileName, byteString, ContentType.`application/json`, None)
+      .service
+      .uploadFileWithDir(directory, fileName, byteString, ContentType.`application/json`, Some(HmrcIlluminate))
+      .futureValue shouldBe expectedObjectSummary
+  }
+
+  it should "upload file with exception retention period" in {
+
+    fixture()
+      .expectUploadFileWithDir(directory, fileName, byteString, ContentType.`application/json`, Some(OneYear))
+      .service
+      .uploadFileWithDir(directory, fileName, byteString, ContentType.`application/json`, Some(DataLakehouse))
       .futureValue shouldBe expectedObjectSummary
   }
 
@@ -135,6 +156,23 @@ class ObjectStoreServiceSpec extends AnyFlatSpec with Matchers with ScalaFutures
       this
     }
 
+    def expectUploadFileWithDir(
+      directory: Path.Directory,
+      fileName: String,
+      content: ByteString,
+      contentType: ContentType,
+      expectedRetentionPeriod: Option[RetentionPeriod]
+    ): Fixture = {
+      (objectStoreConnector
+        .uploadFile(_: Path.Directory, _: String, _: ByteString, _: Option[String], _: Option[RetentionPeriod])(
+          _: HeaderCarrier
+        ))
+        .expects(directory, fileName, content, Some(contentType.value), expectedRetentionPeriod, hc)
+        .returning(Future.successful(expectedObjectSummary))
+
+      this
+    }
+
     def expectSave(envelope: EnvelopeData): Fixture = {
       (envelopeService
         .save(_: EnvelopeData))
@@ -171,7 +209,13 @@ class ObjectStoreServiceSpec extends AnyFlatSpec with Matchers with ScalaFutures
     val sdesConnector = mock[SdesConnector]
 
     Fixture(
-      new ObjectStoreService(objectStoreConnector, envelopeAlgebra, sdesConnector),
+      new ObjectStoreService(
+        objectStoreConnector,
+        envelopeAlgebra,
+        sdesConnector,
+        OneYear,
+        Set(fromName(DataLakehouse))
+      ),
       objectStoreConnector,
       envelopeAlgebra
     )
