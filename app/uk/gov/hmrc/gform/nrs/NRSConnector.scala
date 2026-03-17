@@ -243,8 +243,9 @@ class NRSConnector(
 
   private def retrieveAttachments(envelopeData: EnvelopeData, envelopeId: EnvelopeId)(implicit
     hc: HeaderCarrier
-  ): Future[List[NRSAttachment]] =
-    Future.sequence(envelopeData.files.filterNot(_.contentType == ContentType("application/pdf")).map { envelopeFile =>
+  ): Future[List[NRSAttachment]] = {
+    val excludeEndingWith = Seq("-metadata.xml", "-robotic.xml", "-iform.pdf", "-formdata.xml", "-customerSummary.pdf")
+    Future.sequence(envelopeData.files.filterNot(file => excludeEndingWith.exists(ending => file.fileName.endsWith(ending)) ).map { envelopeFile =>
       val sha256: String = envelopeFile.metadata
         .getOrElse("sha256Checksum", throw new RuntimeException("No checksum available in meta data"))
         .head
@@ -268,6 +269,7 @@ class NRSConnector(
           case Left(_)                             => throw new RuntimeException("Unknown type expected NRSAttachment")
         }
     })
+  }
 
   def submit(
     envelopeId: EnvelopeId,
