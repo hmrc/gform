@@ -38,7 +38,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.objectstore.client
 import uk.gov.hmrc.objectstore.client.config.ObjectStoreClientConfig
 import uk.gov.hmrc.objectstore.client.play.PlayObjectStoreClient
-import uk.gov.hmrc.objectstore.client.{ ObjectSummaryWithMd5, Path, RetentionPeriod }
+import uk.gov.hmrc.objectstore.client.{ ObjectSummaryWithMd5, Path, PresignedDownloadUrl, RetentionPeriod }
 
 import scala.concurrent.{ ExecutionContext, Future }
 
@@ -157,11 +157,12 @@ class ObjectStoreModule(
       envelopeId: EnvelopeId,
       fileId: FileId,
       contentType: ContentType,
-      fileName: String
+      fileName: String,
+      sha256Checksum: Option[String]
     )(implicit
       hc: HeaderCarrier
     ): FOpt[ObjectSummaryWithMd5] =
-      fromFutureA(objectStoreService.uploadFromUrl(from, envelopeId, fileId, contentType, fileName))
+      fromFutureA(objectStoreService.uploadFromUrl(from, envelopeId, fileId, contentType, fileName, sha256Checksum))
 
     override def submitEnvelope(
       submission: Submission,
@@ -181,5 +182,8 @@ class ObjectStoreModule(
       m: Materializer
     ): FOpt[ObjectSummaryWithMd5] =
       fromFutureA(objectStoreService.zipAndEncrypt(envelopeId, objectStorePaths))
+
+    override def presignedDownloadUrl(path: Path.File)(implicit hc: HeaderCarrier): FOpt[PresignedDownloadUrl] =
+      fromFutureA(objectStoreService.presignedDownloadUrl(path))
   }
 }

@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.gform.sharedmodel
 
-import play.api.libs.json.{ Format, Json, OFormat }
+import play.api.libs.json.{ Format, JsError, JsObject, JsResult, Json, OFormat }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationId
 
 case class DestinationResult(
@@ -33,7 +33,8 @@ case class DestinationResult(
   sortCode: Option[String],
   accountNumber: Option[String],
   rollNumber: Option[String],
-  refundClaimReference: Option[String]
+  refundClaimReference: Option[String],
+  data: Option[JsObject]
 )
 
 object DestinationResult {
@@ -45,4 +46,33 @@ case class DestinationEvaluation(evaluation: List[DestinationResult])
 object DestinationEvaluation {
   val empty = DestinationEvaluation(List.empty[DestinationResult])
   implicit val format: OFormat[DestinationEvaluation] = Json.format[DestinationEvaluation]
+}
+
+case class NRSOrchestratorDestinationResultData(
+  businessId: String,
+  notableEvent: String,
+  searchKeys: JsObject
+)
+
+case class NRSOrchestratorDestinationResult(
+  id: DestinationId,
+  includeIf: Option[Boolean],
+  data: NRSOrchestratorDestinationResultData
+)
+
+object NRSOrchestratorDestinationResult {
+  implicit val dataFormat: Format[NRSOrchestratorDestinationResultData] = Json.format
+  def fromDestinationResult(destinationResult: DestinationResult): JsResult[NRSOrchestratorDestinationResult] =
+    destinationResult.data
+      .map { dataJson =>
+        val data = dataJson.validate[NRSOrchestratorDestinationResultData]
+        data.map { data =>
+          NRSOrchestratorDestinationResult(
+            destinationResult.destinationId,
+            destinationResult.includeIf,
+            data
+          )
+        }
+      }
+      .getOrElse(JsError("destination result has no data object"))
 }

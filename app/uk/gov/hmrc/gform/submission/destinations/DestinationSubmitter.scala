@@ -34,6 +34,7 @@ import uk.gov.hmrc.gform.submissionconsolidator.SubmissionConsolidatorAlgebra
 import uk.gov.hmrc.gform.wshttp.HttpResponseSyntax
 import uk.gov.hmrc.gform.core.FOpt
 import uk.gov.hmrc.gform.core.fromFutureA
+import uk.gov.hmrc.gform.nrs.NRSConnector
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.HandlebarsDestinationResponse
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 
@@ -51,7 +52,8 @@ class DestinationSubmitter[M[_]](
   sdesConfig: SdesConfig,
   handlebarsTemplateProcessor: HandlebarsTemplateProcessor = RealHandlebarsTemplateProcessor,
   pegaSubmitterAlgebra: PegaSubmitterAlgebra[M],
-  niRefundSubmitterAlgebra: NiRefundSubmitterAlgebra[M]
+  niRefundSubmitterAlgebra: NiRefundSubmitterAlgebra[M],
+  nrsConnector: NRSConnector
 )(implicit monadError: MonadError[M, Throwable], futureConverter: FutureConverter[M])
     extends DestinationSubmitterAlgebra[M] {
 
@@ -205,6 +207,13 @@ class DestinationSubmitter[M[_]](
           d,
           destinationEvaluation.evaluation.find(_.destinationId === d.id),
           submissionInfo
+        )
+      case d: Destination.NRSOrchestrator =>
+        submitToNrsOrchestrator(
+          d,
+          destinationEvaluation.evaluation.find(_.destinationId === d.id),
+          submissionInfo,
+          userSession
         )
     }
 
@@ -416,6 +425,51 @@ class DestinationSubmitter[M[_]](
             createSuccessResponse(d, response)
         }
       }
+
+  private def submitToNrsOrchestrator(
+    d: Destination.NRSOrchestrator,
+    destinationResult: Option[DestinationResult],
+    submissionInfo: DestinationSubmissionInfo,
+    userSession: UserSession
+  )(implicit hc: HeaderCarrier): M[DestinationResponse] = {
+    val payload = """{"hello": "world"}"""
+    destinationResult match {
+      case Some(destinationResult) =>
+        val envelopeId = submissionInfo.submission.envelopeId
+        liftToM(nrsConnector.submit(envelopeId, d, payload, userSession)).map { response =>
+          val allOk: Boolean = response.submissionResponse.isSuccess && response.attachmentResponses.forall(_.isSuccess)
+          lazy val errorMsg: String = {
+            val errorMessage = new StringBuilder()
+            if (!response.submissionResponse.isSuccess) {
+              errorMessage.addAll(
+                s"main submission failed. Status: ${response.submissionResponse.status} Body: ${response.submissionResponse.body}\n"
+              )
+            }
+            response.attachmentResponses.foreach {
+              case attachmentResponse if !attachmentResponse.isSuccess =>
+                errorMessage.addAll(
+                  s"attachment submission failed. Status: ${attachmentResponse.status} Body: ${attachmentResponse.body}\n"
+                )
+            }
+            errorMessage.mkString
+          }
+          def logError(): Unit = logger.error(
+            genericLogMessage(submissionInfo.formId, d.id, errorMsg)
+          )
+          if (allOk) {
+            DestinationResponse.NoResponse
+          } else if (d.failOnError) {
+            logError()
+            throw new Exception(errorMsg)
+          } else {
+            logError()
+            DestinationResponse.NoResponse
+          }
+        }
+
+      case None => throw new RuntimeException("destination result not available")
+    }
+  }
 
   private def createFailureResponse(
     destination: Destination.HandlebarsHttpApi,

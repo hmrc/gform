@@ -48,6 +48,8 @@ class ConfigModule(
     ConfigSource.default.at("microservice.services.etmp-hod").loadOrThrow[DesConnectorConfig]
   val hipConfig: HipConnectorConfig =
     ConfigSource.default.at("microservice.services.hip").loadOrThrow[HipConnectorConfig]
+  val nrsConfig: NRSConnectorConfig =
+    ConfigSource.default.at("microservice.services.nrs-orchestrator").loadOrThrow[NRSConnectorConfig]
 
   val isProd: Boolean = typesafeConfig.getString("play.http.router") =!= "testOnlyDoNotUseInAppConf.Routes"
 
@@ -180,3 +182,4 @@ final case class HipConnectorConfig(
   originatorId: String,
   correlationId: String
 )
+final case class NRSConnectorConfig(authorizationToken: String)

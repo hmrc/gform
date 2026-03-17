@@ -32,7 +32,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.Submi
 import uk.gov.hmrc.gform.sharedmodel.notifier.NotifierPersonalisationFieldId
 import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination
 
-sealed trait DestinationWithCustomerId {
+sealed trait DestinationWithCustomerId extends Destination {
   def customerId(): Expr
 }
 
@@ -64,6 +64,11 @@ sealed trait DestinationWithNiRefundClaimBankDetails extends Destination {
   def rollNumber: Option[Expr]
   def refundClaimReference: Expr
   def nino: Expr
+}
+
+sealed trait DestinationWithNrsOrchestrator extends Destination {
+  def businessId: String
+  def notableEvent: String
 }
 
 sealed trait DestinationIncludeIf extends Product with Serializable
@@ -217,6 +222,14 @@ object Destination {
     nino: Expr
   ) extends Destination with DestinationWithNiRefundClaimBankDetails
 
+  case class NRSOrchestrator(
+    id: DestinationId,
+    includeIf: DestinationIncludeIf,
+    failOnError: Boolean,
+    businessId: String,
+    notableEvent: String
+  ) extends DestinationWithNrsOrchestrator
+
   val typeDiscriminatorFieldName: String = "type"
   val hmrcDms: String = "hmrcDms"
   val dataStore: String = "hmrcIlluminate"
@@ -228,6 +241,7 @@ object Destination {
   val email: String = "email"
   val pegaApi: String = "pegaApi"
   val niRefundClaimApi: String = "niRefundClaimApi"
+  val nrsOrchestrator: String = "nrsOrchestrator"
 
   implicit def format: OFormat[Destination] = {
     implicit val personalisationReads =
@@ -245,7 +259,8 @@ object Destination {
         log                    -> UploadableLogDestination.reads,
         email                  -> UploadableEmailDestination.reads,
         pegaApi                -> UploadablePegaApiDestination.reads,
-        niRefundClaimApi       -> UploadableNiRefundClaimApiDestination.reads
+        niRefundClaimApi       -> UploadableNiRefundClaimApiDestination.reads,
+        nrsOrchestrator        -> UploadableNrsOrchestratorDestination.reads
       )
     )
   }
@@ -617,6 +632,33 @@ object UploadableNiRefundClaimApiDestination {
     private val d: Reads[UploadableNiRefundClaimApiDestination] = derived.reads[UploadableNiRefundClaimApiDestination]()
     override def reads(json: JsValue): JsResult[Destination.NiRefundClaimApi] =
       d.reads(json).flatMap(_.toNiRefundClaimApiDestination.fold(JsError(_), JsSuccess(_)))
+  }
+}
+
+case class UploadableNrsOrchestratorDestination(
+  id: DestinationId,
+  includeIf: DestinationIncludeIf,
+  failOnError: Boolean,
+  businessId: String,
+  notableEvent: String
+) {
+  private def toNrsOchestratorDestination: Either[String, Destination.NRSOrchestrator] =
+    for {
+      cvii <- addErrorInfo(id, None, includeIf)
+    } yield Destination.NRSOrchestrator(
+      id,
+      cvii,
+      failOnError,
+      businessId,
+      notableEvent
+    )
+}
+
+object UploadableNrsOrchestratorDestination {
+  implicit val reads: Reads[Destination.NRSOrchestrator] = new Reads[Destination.NRSOrchestrator] {
+    private val d: Reads[UploadableNrsOrchestratorDestination] = derived.reads()
+    override def reads(json: JsValue): JsResult[Destination.NRSOrchestrator] =
+      d.reads(json).flatMap(_.toNrsOchestratorDestination.fold(JsError(_), JsSuccess(_)))
   }
 }
 

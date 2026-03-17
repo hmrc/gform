@@ -31,11 +31,13 @@ import uk.gov.hmrc.gform.core._
 import uk.gov.hmrc.gform.envelope.EnvelopeModule
 import uk.gov.hmrc.gform.hip.HipModule
 import uk.gov.hmrc.gform.notifier.NotifierModule
+import uk.gov.hmrc.gform.nrs.NRSConnector
 import uk.gov.hmrc.gform.objectstore.ObjectStoreModule
 import uk.gov.hmrc.gform.repo.{ Repo, RepoAlgebra }
 import uk.gov.hmrc.gform.sdes.SdesModule
 import uk.gov.hmrc.gform.submission.destinations.{ DataStoreSubmitter, DestinationModule, DestinationSubmitter, DestinationsSubmitter, DestinationsSubmitterAlgebra, DmsSubmitter, InfoArchiveSubmitter, NiRefundSubmitter, PegaSubmitter, StateTransitionService }
 import uk.gov.hmrc.gform.submissionconsolidator.SubmissionConsolidatorModule
+import uk.gov.hmrc.gform.wshttp.WSHttpModule
 
 import scala.concurrent.ExecutionContext
 
@@ -55,7 +57,8 @@ class SubmissionModule(
   objectStoreModule: ObjectStoreModule,
   sdesModule: SdesModule,
   materializer: Materializer,
-  hipModule: HipModule
+  hipModule: HipModule,
+  wSHttpModule: WSHttpModule
 )(implicit ex: ExecutionContext) {
 
   //TODO: this should be replaced with save4later for submissions
@@ -103,6 +106,8 @@ class SubmissionModule(
     hipModule.getConnector
   )
 
+  val nrsConnector = new NRSConnector(configModule, wSHttpModule.httpClient, objectStoreModule, envelopeModule)
+
   private val stateTransitionService = new StateTransitionService(formModule.fOptFormService)
 
   private val realDestinationSubmitter = new DestinationSubmitter(
@@ -116,7 +121,8 @@ class SubmissionModule(
     infoArchiveSubmitter,
     configModule.sdesConfig,
     pegaSubmitterAlgebra = pegaSubmitter,
-    niRefundSubmitterAlgebra = niRefundSubmitter
+    niRefundSubmitterAlgebra = niRefundSubmitter,
+    nrsConnector = nrsConnector
   )
 
   private val destinationsSubmitter: DestinationsSubmitterAlgebra[FOpt] = new DestinationsSubmitter(
