@@ -52,7 +52,7 @@ class ObjectStoreServiceSpec extends AnyFlatSpec with Matchers with ScalaFutures
       FileStatus.Available,
       ContentType.`application/pdf`,
       1L,
-      Map.empty,
+      Map("sha256Checksum" -> List("ee37679709770434f979b0aa871020dd2d4f13e081756fa6f7dc55d15af12a28")),
       None
     )
   )

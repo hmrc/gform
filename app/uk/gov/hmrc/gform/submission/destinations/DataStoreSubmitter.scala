@@ -23,7 +23,7 @@ import play.api.libs.json.{ JsObject, Json }
 import scala.util.Try
 import uk.gov.hmrc.gform.core.FOpt
 import uk.gov.hmrc.gform.sdes.SdesRouting
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DestinationId, DestinationResponse, HandlebarsTemplateProcessorModel, TemplateType }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationId, DestinationResponse, HandlebarsTemplateProcessorModel, TemplateType }
 import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination
 import uk.gov.hmrc.gform.sharedmodel.{ DataStoreMetaData, LangADT, UserSession }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.DataStore
@@ -37,12 +37,55 @@ import uk.gov.hmrc.gform.formtemplate.{ HandlebarsSchemaErrorParser, JsonSchemaV
 import uk.gov.hmrc.gform.objectstore.ObjectStoreAlgebra
 import uk.gov.hmrc.gform.sdes.workitem.DestinationWorkItemAlgebra
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
+import uk.gov.hmrc.gform.sharedmodel.form.FormId
 import uk.gov.hmrc.http.HeaderCarrier
 
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import scala.concurrent.ExecutionContext
 import scala.util.matching.Regex
+
+case class PayloadConfigurationParameters(
+  id: DestinationId,
+  formId: FormId,
+  payload: Option[String],
+  taxpayerId: Option[String],
+  formDataPayload: Boolean,
+  handlebarPayload: Boolean,
+  version: String,
+  regime: String,
+  includeSessionInfo: Boolean
+)
+
+object PayloadConfigurationParameters {
+  def fromDataStoreDestination(d: Destination.DataStore, taxPayerId: Option[String]): PayloadConfigurationParameters =
+    PayloadConfigurationParameters(
+      d.id,
+      d.formId,
+      d.payload,
+      taxPayerId,
+      d.formDataPayload,
+      d.handlebarPayload,
+      d.version,
+      d.regime,
+      d.includeSessionInfo
+    )
+  def fromNrsOchestratorDesitnaion(
+    d: Destination.NRSOrchestrator,
+    taxPayerId: Option[String]
+  ): PayloadConfigurationParameters =
+    PayloadConfigurationParameters(
+      d.id,
+      d.formId,
+      d.payload,
+      taxPayerId,
+      d.formDataPayload,
+      d.handlebarPayload,
+      d.version,
+      d.regime,
+      d.includeSessionInfo
+    )
+}
 
 class DataStoreSubmitter(
   objectStoreAlgebra: ObjectStoreAlgebra[FOpt],
@@ -56,10 +99,9 @@ class DataStoreSubmitter(
   override def generatePayload(
     submissionInfo: DestinationSubmissionInfo,
     structuredFormData: StructuredFormValue.ObjectStructure,
-    dataStore: DataStore,
+    config: PayloadConfigurationParameters,
     l: LangADT,
     userSession: UserSession,
-    taxpayerId: Option[String],
     accumulatedModel: HandlebarsTemplateProcessorModel,
     modelTree: HandlebarsModelTree
   ): String = {
@@ -68,7 +110,7 @@ class DataStoreSubmitter(
     val submission = submissionInfo.submission
 
     val focussedTree = FocussedHandlebarsModelTree(modelTree, modelTree.value.model)
-    val maybeHandlebarBasedPayload = dataStore.payload.map(payload =>
+    val maybeHandlebarBasedPayload = config.payload.map(payload =>
       RealHandlebarsTemplateProcessor(payload, accumulatedModel, focussedTree, TemplateType.JSON)
     )
 
@@ -83,12 +125,12 @@ class DataStoreSubmitter(
       )
     )
 
-    val formDataBasedPayload: JsObject = convertToJson(rawFormDataBasedPayload, dataStore.id, "robotics")
+    val formDataBasedPayload: JsObject = convertToJson(rawFormDataBasedPayload, config.id, "robotics")
     val handleBarPayload: JsObject = maybeHandlebarBasedPayload.fold(Json.obj()) { handlebarBasedPayload =>
-      convertToJson(handlebarBasedPayload, dataStore.id, "handlebar")
+      convertToJson(handlebarBasedPayload, config.id, "handlebar")
     }
 
-    val payloads: JsObject = (dataStore.formDataPayload, dataStore.handlebarPayload) match {
+    val payloads: JsObject = (config.formDataPayload, config.handlebarPayload) match {
       case (true, true)   => formDataBasedPayload ++ handleBarPayload
       case (true, false)  => formDataBasedPayload
       case (false, true)  => handleBarPayload
@@ -96,11 +138,11 @@ class DataStoreSubmitter(
     }
 
     val dataStoreMetaData = DataStoreMetaData(
-      dataStore.formId.value,
-      dataStore.version,
+      config.formId.value,
+      config.version,
       "",
-      dataStore.regime,
-      taxpayerId.getOrElse(""),
+      config.regime,
+      config.taxpayerId.getOrElse(""),
       dateSubmittedFormatter.format(submission.submittedDate.toLocalDate),
       dateSubmittedTime.format(submission.submittedDate.toLocalTime),
       submission.submissionRef.value,
@@ -108,7 +150,7 @@ class DataStoreSubmitter(
       l.langADTToString.toUpperCase
     )
 
-    DataStoreFileGenerator(userSession, dataStoreMetaData, payloads, dataStore.includeSessionInfo)
+    DataStoreFileGenerator(userSession, dataStoreMetaData, payloads, config.includeSessionInfo)
   }
 
   override def validateSchema(

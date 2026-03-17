@@ -213,7 +213,11 @@ class DestinationSubmitter[M[_]](
           d,
           destinationEvaluation.evaluation.find(_.destinationId === d.id),
           submissionInfo,
-          userSession
+          userSession,
+          modelTree.value.structuredFormData,
+          l,
+          accumulatedModel,
+          modelTree
         )
     }
 
@@ -346,10 +350,9 @@ class DestinationSubmitter[M[_]](
     val payload = dataStore.generatePayload(
       submissionInfo,
       structuredFormData,
-      d,
+      PayloadConfigurationParameters.fromDataStoreDestination(d, destinationResult.flatMap(_.taxpayerId)),
       l,
       userSession,
-      destinationResult.flatMap(_.taxpayerId),
       accumulatedModel,
       modelTree
     )
@@ -430,9 +433,21 @@ class DestinationSubmitter[M[_]](
     d: Destination.NRSOrchestrator,
     destinationResult: Option[DestinationResult],
     submissionInfo: DestinationSubmissionInfo,
-    userSession: UserSession
+    userSession: UserSession,
+    structuredFormData: StructuredFormValue.ObjectStructure,
+    l: LangADT,
+    accumulatedModel: HandlebarsTemplateProcessorModel,
+    modelTree: HandlebarsModelTree
   )(implicit hc: HeaderCarrier): M[DestinationResponse] = {
-    val payload = """{"hello": "world"}"""
+    val payload = dataStore.generatePayload(
+      submissionInfo,
+      structuredFormData,
+      PayloadConfigurationParameters.fromNrsOchestratorDesitnaion(d, destinationResult.flatMap(_.taxpayerId)),
+      l,
+      userSession,
+      accumulatedModel,
+      modelTree
+    )
     val nrsDestinationResult = {
       val dr = destinationResult
         .getOrElse(throw new RuntimeException("destination result is not available"))
@@ -456,7 +471,7 @@ class DestinationSubmitter[M[_]](
                 s"main submission failed. Status: ${response.submissionResponse.status} Body: ${response.submissionResponse.body}\n"
               )
             }
-            response.attachmentResponses.foreach {
+            response.attachmentResponses.collect {
               case attachmentResponse if !attachmentResponse.isSuccess =>
                 errorMessage.addAll(
                   s"attachment submission failed. Status: ${attachmentResponse.status} Body: ${attachmentResponse.body}\n"

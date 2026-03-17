@@ -99,7 +99,8 @@ class NiRefundSubmitterSpec extends AnyWordSpecLike with Matchers with MockFacto
       sortCode = sortCode,
       accountNumber = accountNumber,
       rollNumber = rollNumber,
-      refundClaimReference = refundClaimReference
+      refundClaimReference = refundClaimReference,
+      data = None
     )
 
   private val successResponse: JsValue = Json.obj("status" -> "success")

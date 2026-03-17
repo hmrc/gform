@@ -17,31 +17,28 @@
 package uk.gov.hmrc.gform.nrs
 
 import org.bouncycastle.util.encoders.Hex
-import play.api.libs.json.{ Format, JsError, JsObject, JsString, JsSuccess, JsValue, Json, Reads, Writes }
-import play.api.mvc.Request
-import pureconfig.ConfigSource
+import org.slf4j.LoggerFactory
+import play.api.libs.json.{Format, JsObject, JsString, JsValue, Json, Reads, Writes}
 import uk.gov.hmrc.auth.core.retrieve.Retrieval
-import uk.gov.hmrc.auth.core.{ AuthConnector, AuthProvider, AuthProviders, MissingBearerToken, PlayAuthConnector }
-import uk.gov.hmrc.gform.config.{ ConfigModule, HipConnectorConfig, NRSConnectorConfig }
-import uk.gov.hmrc.gform.envelope.{ EnvelopeModule, EnvelopeService }
+import uk.gov.hmrc.auth.core.{AuthConnector, AuthProvider, AuthProviders, MissingBearerToken, PlayAuthConnector}
+import uk.gov.hmrc.gform.config.ConfigModule
+import uk.gov.hmrc.gform.envelope.EnvelopeModule
 import uk.gov.hmrc.gform.objectstore.ObjectStoreModule
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
-import uk.gov.hmrc.gform.sharedmodel.{ DestinationResult, NRSOrchestratorDestinationResult, UserSession }
+import uk.gov.hmrc.gform.sharedmodel.{NRSOrchestratorDestinationResult, UserSession}
 import uk.gov.hmrc.gform.sharedmodel.envelope.EnvelopeData
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.{ NRSOrchestrator, nrsOrchestrator }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.NRSOrchestrator
 import uk.gov.hmrc.http.client.HttpClientV2
-import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse, SessionKeys, StringContextOps }
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps}
 import uk.gov.hmrc.objectstore.client.Path
-import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
+import uk.gov.hmrc.http.HttpReads.Implicits._
 
 import java.net.URL
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 import java.util.Base64
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.{ExecutionContext, Future}
 
 private case class SubmissionRequestMetaData(
   businessId: String,
@@ -77,7 +74,9 @@ private case class AttachmentRequest(
   attachmentId: String,
   attachmentSha256Checksum: String,
   attachmentContentType: String,
-  nrSubmissionId: String
+  nrSubmissionId: String,
+  businessId: String,
+  notableEvent: String
 )
 
 private object AttachmentRequest {
@@ -85,6 +84,11 @@ private object AttachmentRequest {
 }
 
 case class NRSAttachment(url: String, id: String, sha256Checksum: String, contentType: String)
+
+case class NrsOrchestratorHttpResponse(
+  submissionResponse: HttpResponse,
+  attachmentResponses: List[HttpResponse]
+)
 
 object NRSConnector {
 
@@ -104,20 +108,21 @@ class NRSConnector(
   objectStoreModule: ObjectStoreModule,
   envelopeModule: EnvelopeModule
 )(implicit ec: ExecutionContext) {
-
-  private val envelopeService = envelopeModule.envelopeService
-  private val authConnector: AuthConnector = new PlayAuthConnector {
+  private lazy val envelopeService = envelopeModule.envelopeService
+  private lazy val authConnector: AuthConnector = new PlayAuthConnector {
     override val serviceUrl: String = configModule.serviceConfig.baseUrl("auth")
     override def httpClientV2: HttpClientV2 = httpClient
   }
 
-  private val apiKey = configModule.nrsConfig.authorizationToken
-  private val contentType = "application/json"
+  private lazy val apiKey = configModule.nrsConfig.authorizationToken
+  private lazy val contentType = "application/json"
+
+  private lazy val logger = LoggerFactory.getLogger(getClass)
 
   private def makeCall[T](url: URL, body: T)(implicit writes: Writes[T], hc: HeaderCarrier) = {
 
-    println(url)
-    println(Json.prettyPrint(Json.toJson(body)))
+    logger.debug("request: POST " + url)
+    logger.debug(Json.prettyPrint(Json.toJson(body)))
     val headers = Seq(
       "Content-Type" -> contentType,
       "X-API-Key"    -> apiKey
@@ -130,6 +135,7 @@ class NRSConnector(
   }
 
   //Documentation: https://confluence.tools.tax.service.gov.uk/pages/viewpage.action?spaceKey=NR&title=Submission+API+specification
+  //Local testing: https://github.com/hmrc/nrs-orchestrator/blob/main/LOCAL-CONFIG.md
   private def createSubmission(
     destination: NRSOrchestrator,
     attachmentIds: Option[Seq[String]],
@@ -215,7 +221,11 @@ class NRSConnector(
   }
 
   //Documentation: https://confluence.tools.tax.service.gov.uk/display/NR/Attachments+API+specification
-  private def addObjectStoreAttachment(nrSubmissionId: String, attachment: NRSAttachment)(implicit
+  private def addObjectStoreAttachment(
+    nrSubmissionId: String,
+    attachment: NRSAttachment,
+    nrsOrchestrator: NRSOrchestrator
+  )(implicit
     hc: HeaderCarrier
   ): Future[HttpResponse] = {
     val url = url"${configModule.serviceConfig.baseUrl("nrs-orchestrator")}/nrs-orchestrator/attachment"
@@ -224,7 +234,9 @@ class NRSConnector(
       attachmentId = attachment.id,
       attachmentSha256Checksum = attachment.sha256Checksum,
       attachmentContentType = attachment.contentType,
-      nrSubmissionId = nrSubmissionId
+      nrSubmissionId = nrSubmissionId,
+      businessId = nrsOrchestrator.businessId,
+      notableEvent = nrsOrchestrator.notableEvent
     )
     makeCall(url, body)
   }
@@ -233,7 +245,6 @@ class NRSConnector(
     hc: HeaderCarrier
   ): Future[List[NRSAttachment]] =
     Future.sequence(envelopeData.files.filterNot(_.contentType == ContentType("application/pdf")).map { envelopeFile =>
-      println(envelopeFile)
       val sha256: String = envelopeFile.metadata
         .getOrElse("sha256Checksum", throw new RuntimeException("No checksum available in meta data"))
         .head
@@ -248,7 +259,7 @@ class NRSConnector(
             downloadUrl.downloadUrl.toString,
             envelopeFile.fileId,
             sha256,
-            envelopeFile.contentType.toString
+            envelopeFile.contentType.value
           )
         }
         .value
@@ -258,11 +269,6 @@ class NRSConnector(
         }
     })
 
-  case class NrsOrchestratorHttpResponse(
-    submissionResponse: HttpResponse,
-    attachmentResponses: List[HttpResponse]
-  )
-
   def submit(
     envelopeId: EnvelopeId,
     destination: NRSOrchestrator,
@@ -270,11 +276,6 @@ class NRSConnector(
     userSession: UserSession,
     nrsOrchestratorDestinationResult: NRSOrchestratorDestinationResult
   )(implicit hc: HeaderCarrier): Future[NrsOrchestratorHttpResponse] = {
-//    val nrsDestinationResults = NRSOrchestratorDestinationResult
-//      .fromDestinationResult(destinationResult) match {
-//      case JsSuccess(value, path) => value
-//      case JsError(errors) => throw new RuntimeException(errors.toString())
-//    }
     val envelopeDataFtr = envelopeService.get(envelopeId)
 
     val attachmentsFtr = envelopeDataFtr.flatMap(envelopeData => retrieveAttachments(envelopeData, envelopeId))
@@ -294,13 +295,13 @@ class NRSConnector(
         attachments        <- attachmentsFtr
         submissionResponse <- submissionFtr
       } yield
-        if (submissionResponse.status != 200) {
+        if (submissionResponse.status != 202) {
           Future.successful(List())
         } else {
           val submissionId = Json.parse(submissionResponse.body).as[NRSSubmissionResponse].nrSubmissionId
           Future.sequence(
             attachments.map { attachment =>
-              addObjectStoreAttachment(submissionId, attachment)
+              addObjectStoreAttachment(submissionId, attachment, destination)
             }
           )
         }).flatten

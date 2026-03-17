@@ -72,6 +72,14 @@ sealed trait DestinationWithNrsOrchestrator extends Destination {
   def saUtr: Option[Expr]
   def ctUtr: Option[Expr]
   def submissionReferenceId: Option[Expr]
+  def formId: FormId
+  def version: String
+  def taxpayerId: Expr
+  def regime: String
+  def includeSessionInfo: Boolean
+  def handlebarPayload: Boolean
+  def formDataPayload: Boolean
+  def payload: Option[String]
 }
 
 sealed trait DestinationIncludeIf extends Product with Serializable
@@ -233,7 +241,15 @@ object Destination {
     notableEvent: String,
     saUtr: Option[Expr],
     ctUtr: Option[Expr],
-    submissionReferenceId: Option[Expr]
+    submissionReferenceId: Option[Expr],
+    formId: FormId,
+    version: String,
+    taxpayerId: Expr,
+    regime: String,
+    includeSessionInfo: Boolean,
+    handlebarPayload: Boolean,
+    formDataPayload: Boolean,
+    payload: Option[String]
   ) extends DestinationWithNrsOrchestrator
 
   val typeDiscriminatorFieldName: String = "type"
@@ -649,7 +665,15 @@ case class UploadableNrsOrchestratorDestination(
   notableEvent: String,
   saUtr: Option[TextExpression],
   ctUtr: Option[TextExpression],
-  submissionReferenceId: Option[TextExpression]
+  submissionReferenceId: Option[TextExpression],
+  formId: String,
+  version: String,
+  taxpayerId: TextExpression,
+  regime: String,
+  includeSessionInfo: Boolean,
+  handlebarPayload: Boolean,
+  formDataPayload: Boolean,
+  payload: Option[String]
 ) {
   private def toNrsOchestratorDestination: Either[String, Destination.NRSOrchestrator] =
     for {
@@ -662,7 +686,15 @@ case class UploadableNrsOrchestratorDestination(
       notableEvent,
       saUtr.map(_.expr),
       ctUtr.map(_.expr),
-      submissionReferenceId.map(_.expr)
+      submissionReferenceId.map(_.expr),
+      FormId(formId),
+      version,
+      taxpayerId.expr,
+      regime,
+      includeSessionInfo,
+      handlebarPayload,
+      formDataPayload,
+      payload
     )
 }
 

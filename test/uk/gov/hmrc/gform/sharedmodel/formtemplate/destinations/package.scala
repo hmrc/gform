@@ -19,6 +19,7 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate
 import cats.Show
 import cats.syntax.show._
 import play.api.libs.json.{ JsValue, Writes }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.NRSOrchestrator
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationIncludeIf.HandlebarValue
 
 package object destinations {
@@ -157,6 +158,32 @@ package object destinations {
           |  "nino": ${TextExpression.format.writes(TextExpression(niRefundClaimApi.nino))},
           |  "${Destination.typeDiscriminatorFieldName}": "${Destination.niRefundClaimApi}"
           |}""".stripMargin
+    case nrsOrchestrator: NRSOrchestrator =>
+      import nrsOrchestrator._
+      s"""
+         |{
+         |  "id": "${id.id}",
+         |  "includeIf":  "${getHandlebarValue(destination.includeIf)}",
+         |  ${optionalField("failOnError", Option(destination.failOnError), true)}
+         |  "businessId": "$businessId",
+         |  "notableEvent": "$notableEvent",
+         |  ${optionalField("saUtr", saUtr.map(saUtr => TextExpression.format.writes(TextExpression(saUtr))))}
+         |  ${optionalField("ctUtr", ctUtr.map(ctUtr => TextExpression.format.writes(TextExpression(ctUtr))))}
+         |  ${optionalField(
+        "submissionReferenceId",
+        submissionReferenceId.map { submissionReferenceId =>
+          TextExpression.format.writes(TextExpression(submissionReferenceId))
+        }
+      )}
+         |  "version": "$version",
+         |  "taxpayerId": ${TextExpression.format.writes(TextExpression(taxpayerId))},
+         |  "regime": "$regime",
+         |  "includeSessionInfo": "$includeSessionInfo",
+         |  "handlebarPayload": "$handlebarPayload",
+         |  "formDataPayload": "$formDataPayload",
+         |  ${optionalField("payload", Option(payload))}
+         |}
+         |""".stripMargin
   }
 
   def optionalField[T: Writes](fieldName: String, ot: Option[T]): String =

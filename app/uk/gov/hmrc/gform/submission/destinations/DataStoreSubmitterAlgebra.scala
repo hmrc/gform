@@ -36,10 +36,9 @@ trait DataStoreSubmitterAlgebra[F[_]] {
   def generatePayload(
     submissionInfo: DestinationSubmissionInfo,
     structuredFormData: StructuredFormValue.ObjectStructure,
-    dataStore: DataStore,
+    config: PayloadConfigurationParameters,
     l: LangADT,
     userSession: UserSession,
-    taxpayerId: Option[String],
     accumulatedModel: HandlebarsTemplateProcessorModel,
     modelTree: HandlebarsModelTree
   ): String
