@@ -121,7 +121,7 @@ class NRSConnector(
 
   private def makeCall[T](url: URL, body: T)(implicit writes: Writes[T], hc: HeaderCarrier) = {
 
-    if(!configModule.isProd) {
+    if (!configModule.isProd) {
       logger.warn("request: POST " + url)
       logger.warn(Json.prettyPrint(Json.toJson(body)))
     }
