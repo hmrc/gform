@@ -17,11 +17,12 @@
 package uk.gov.hmrc.gform.submission.destinations
 
 import org.slf4j.LoggerFactory
+import play.api.libs.json.JsNull
 import uk.gov.hmrc.gform.core.{ FOpt, fromFutureA, fromOptA }
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.hip.HipAlgebra
 import uk.gov.hmrc.gform.sharedmodel.DestinationResult
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationId, DestinationResponse }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationId, DestinationResponse, HandlebarsDestinationResponse }
 
 import scala.concurrent.{ ExecutionContext, Future }
 
@@ -42,8 +43,8 @@ class NiRefundSubmitter(
     for {
       destinationResult <- validateDestinationResult(maybeDesRes, d.id, formId)
       bankDetails       <- extractBankDetails(destinationResult, d.id, formId)
-      _                 <- submitToHip(bankDetails, submissionInfo.submission.envelopeId.value)
-    } yield DestinationResponse.NoResponse
+      status            <- submitToHip(bankDetails, submissionInfo.submission.envelopeId.value)
+    } yield HandlebarsDestinationResponse(d.id, status, JsNull)
   }
 
   private def validateDestinationResult(
@@ -88,7 +89,7 @@ class NiRefundSubmitter(
     }
   }
 
-  private def submitToHip(claimDetails: ClaimDetailsData, correlationId: String): FOpt[Unit] =
+  private def submitToHip(claimDetails: ClaimDetailsData, correlationId: String): FOpt[Int] =
     fromFutureA(
       hipConnectorAlgebra.niClaimUpdateBankDetails(
         claimDetails.nino,
@@ -99,7 +100,7 @@ class NiRefundSubmitter(
         claimDetails.refundClaimReference,
         correlationId
       )
-    ).map(_ => ())
+    )
 
   private def buildMissingParametersError(
     dr: DestinationResult,

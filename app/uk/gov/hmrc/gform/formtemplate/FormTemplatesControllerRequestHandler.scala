@@ -197,10 +197,6 @@ object FormTemplatesControllerRequestHandler {
       (__ \ "displayAccountHeader").json
         .copyFrom((__ \ "displayAccountHeader").json.pick orElse Reads.pure(JsFalse))
 
-    val ensureServiceNavigationComponent =
-      (__ \ "serviceNavigationComponent").json
-        .copyFrom((__ \ "serviceNavigationComponent").json.pick orElse Reads.pure(JsFalse))
-
     val ensureOriginalId = (__ \ "originalId").json.copyFrom((__ \ "_id").json.pick) orElse noTemplateId
 
     val lowerCaseId: Reads[JsObject] = (__ \ "_id").json.copyFrom(
@@ -577,7 +573,6 @@ object FormTemplatesControllerRequestHandler {
         ensureAccessiblePdf and
         ensureDownloadPreviousSubmissionPdf and
         ensureDisplayAccountHeader and
-        ensureServiceNavigationComponent and
         ensureFormCategory and
         ensureLanguages and
         transformSummarySection and

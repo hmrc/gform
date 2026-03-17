@@ -47,7 +47,7 @@ trait LogCapturing {
       val underlying = logger.logger.asInstanceOf[LogbackLogger]
       appender.setContext(underlying.getLoggerContext)
       underlying.addAppender(appender)
-      underlying.setLevel(Level.ALL)
+      underlying.setLevel(Level.TRACE)
       underlying.setAdditive(true)
     }
 

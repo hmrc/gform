@@ -60,7 +60,6 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
                                              |  "accessiblePdf":false,
                                              |  "downloadPreviousSubmissionPdf":true,
                                              |  "displayAccountHeader":false,
-                                             |  "serviceNavigationComponent": false,
                                              |  "parentFormSubmissionRefs": [],
                                              |  "summarySection": $summarySection,
                                              |  "allowedFileTypes": [
@@ -187,7 +186,6 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
                                              |  "accessiblePdf":false,
                                              |  "downloadPreviousSubmissionPdf":true,
                                              |  "displayAccountHeader":false,
-                                             |  "serviceNavigationComponent": false,
                                              |  "parentFormSubmissionRefs": [
                                              |    "123",
                                              |    "456"
@@ -332,7 +330,6 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
                                  |  "accessiblePdf":false,
                                  |  "downloadPreviousSubmissionPdf":true,
                                  |  "displayAccountHeader":false,
-                                 |  "serviceNavigationComponent": false,
                                  |  "testText": "hello",
                                  |  "testJsonArr": [
                                  |    "en",
@@ -482,7 +479,6 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
                                                                    |  "accessiblePdf":false,
                                                                    |  "downloadPreviousSubmissionPdf":true,
                                                                    |  "displayAccountHeader":false,
-                                                                   |  "serviceNavigationComponent": false,
                                                                    |  "testText": "hello",
                                                                    |  "testJsonArr": [
                                                                    |    "en",
