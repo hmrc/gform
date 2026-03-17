@@ -49,9 +49,9 @@ object DestinationEvaluation {
 }
 
 case class NRSOrchestratorDestinationResultData(
-  businessId: String,
-  notableEvent: String,
-  searchKeys: JsObject
+  saUtr: Option[String],
+  ctUtr: Option[String],
+  submissionReferenceId: Option[String]
 )
 
 case class NRSOrchestratorDestinationResult(

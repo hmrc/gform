@@ -69,6 +69,9 @@ sealed trait DestinationWithNiRefundClaimBankDetails extends Destination {
 sealed trait DestinationWithNrsOrchestrator extends Destination {
   def businessId: String
   def notableEvent: String
+  def saUtr: Option[Expr]
+  def ctUtr: Option[Expr]
+  def submissionReferenceId: Option[Expr]
 }
 
 sealed trait DestinationIncludeIf extends Product with Serializable
@@ -227,7 +230,10 @@ object Destination {
     includeIf: DestinationIncludeIf,
     failOnError: Boolean,
     businessId: String,
-    notableEvent: String
+    notableEvent: String,
+    saUtr: Option[Expr],
+    ctUtr: Option[Expr],
+    submissionReferenceId: Option[Expr]
   ) extends DestinationWithNrsOrchestrator
 
   val typeDiscriminatorFieldName: String = "type"
@@ -640,7 +646,10 @@ case class UploadableNrsOrchestratorDestination(
   includeIf: DestinationIncludeIf,
   failOnError: Boolean,
   businessId: String,
-  notableEvent: String
+  notableEvent: String,
+  saUtr: Option[TextExpression],
+  ctUtr: Option[TextExpression],
+  submissionReferenceId: Option[TextExpression]
 ) {
   private def toNrsOchestratorDestination: Either[String, Destination.NRSOrchestrator] =
     for {
@@ -650,7 +659,10 @@ case class UploadableNrsOrchestratorDestination(
       cvii,
       failOnError,
       businessId,
-      notableEvent
+      notableEvent,
+      saUtr.map(_.expr),
+      ctUtr.map(_.expr),
+      submissionReferenceId.map(_.expr)
     )
 }
 

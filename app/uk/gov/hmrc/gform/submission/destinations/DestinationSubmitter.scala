@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory
 import play.api.libs.json._
 import uk.gov.hmrc.gform.notifier.NotifierAlgebra
 import uk.gov.hmrc.gform.sdes.SdesConfig
-import uk.gov.hmrc.gform.sharedmodel.{ DestinationEvaluation, DestinationResult, EmailVerifierService, LangADT, UserSession }
+import uk.gov.hmrc.gform.sharedmodel.{ DestinationEvaluation, DestinationResult, EmailVerifierService, LangADT, NRSOrchestratorDestinationResult, UserSession }
 import uk.gov.hmrc.gform.sharedmodel.form.{ FormData, FormId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations._
 import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
@@ -433,10 +433,21 @@ class DestinationSubmitter[M[_]](
     userSession: UserSession
   )(implicit hc: HeaderCarrier): M[DestinationResponse] = {
     val payload = """{"hello": "world"}"""
+    val nrsDestinationResult = {
+      val dr = destinationResult
+        .getOrElse(throw new RuntimeException("destination result is not available"))
+      NRSOrchestratorDestinationResult.fromDestinationResult(dr) match {
+        case JsSuccess(value, path) => value
+        case JsError(errors) =>
+          throw new RuntimeException(s"Can't parse nrs orchestrator destination result. Errors: $errors")
+      }
+
+    }
+
     destinationResult match {
       case Some(destinationResult) =>
         val envelopeId = submissionInfo.submission.envelopeId
-        liftToM(nrsConnector.submit(envelopeId, d, payload, userSession)).map { response =>
+        liftToM(nrsConnector.submit(envelopeId, d, payload, userSession, nrsDestinationResult)).map { response =>
           val allOk: Boolean = response.submissionResponse.isSuccess && response.attachmentResponses.forall(_.isSuccess)
           lazy val errorMsg: String = {
             val errorMessage = new StringBuilder()

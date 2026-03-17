@@ -29,7 +29,7 @@ import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 import uk.gov.hmrc.gform.sharedmodel.{ DestinationResult, NRSOrchestratorDestinationResult, UserSession }
 import uk.gov.hmrc.gform.sharedmodel.envelope.EnvelopeData
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.NRSOrchestrator
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.{ NRSOrchestrator, nrsOrchestrator }
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse, SessionKeys, StringContextOps }
 import uk.gov.hmrc.objectstore.client.Path
@@ -134,7 +134,8 @@ class NRSConnector(
     destination: NRSOrchestrator,
     attachmentIds: Option[Seq[String]],
     payload: String,
-    userSession: UserSession
+    userSession: UserSession,
+    nrsOrchestratorDestinationResult: NRSOrchestratorDestinationResult
   )(implicit hc: HeaderCarrier): Future[HttpResponse] = {
     val now = java.time.Instant.now().toString
     val attachmentCount = attachmentIds.toSeq.flatten.length
@@ -153,6 +154,14 @@ class NRSConnector(
 
     val url = url"${configModule.serviceConfig.baseUrl("nrs-orchestrator")}/nrs-orchestrator/submission"
 
+    val searchKeys = JsObject(
+      Seq(
+        nrsOrchestratorDestinationResult.data.saUtr.map("saUtr"                                 -> JsString(_)),
+        nrsOrchestratorDestinationResult.data.ctUtr.map("ctUtr"                                 -> JsString(_)),
+        nrsOrchestratorDestinationResult.data.submissionReferenceId.map("submissionReferenceId" -> JsString(_))
+      ).flatten
+    )
+
     for {
       identityData <- getRetrievals()
       body = SubmissionRequest(
@@ -167,7 +176,7 @@ class NRSConnector(
                  identityData = identityData,
                  userAuthToken = userAuthToken,
                  headerData = headerData,
-                 searchKeys = JsObject.empty //TODO: Figure out how to handle
+                 searchKeys = searchKeys
                )
              )
       response <- makeCall(url, body)
@@ -258,7 +267,8 @@ class NRSConnector(
     envelopeId: EnvelopeId,
     destination: NRSOrchestrator,
     payload: String,
-    userSession: UserSession
+    userSession: UserSession,
+    nrsOrchestratorDestinationResult: NRSOrchestratorDestinationResult
   )(implicit hc: HeaderCarrier): Future[NrsOrchestratorHttpResponse] = {
 //    val nrsDestinationResults = NRSOrchestratorDestinationResult
 //      .fromDestinationResult(destinationResult) match {
@@ -274,7 +284,8 @@ class NRSConnector(
         destination,
         if (attachmentIds.nonEmpty) Some(attachmentIds) else None,
         payload,
-        userSession
+        userSession,
+        nrsOrchestratorDestinationResult
       )
     }
 
