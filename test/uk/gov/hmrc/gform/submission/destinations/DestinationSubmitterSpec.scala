@@ -1074,6 +1074,7 @@ class DestinationSubmitterSpec
         100L,
         defaults,
         sdesRouting,
+        sdesRouting,
         sdesRouting
       )
     val submitter =

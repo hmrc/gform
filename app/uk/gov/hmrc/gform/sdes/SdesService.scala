@@ -419,7 +419,8 @@ class SdesService(
     val envelopeId = submission.envelopeId
     val paths = sdesDestination.objectStorePaths(envelopeId, submission.submissionPrefix)
     sdesDestination match {
-      case SdesDestination.DataStore | SdesDestination.DataStoreLegacy | SdesDestination.HmrcIlluminate =>
+      case SdesDestination.DataStore | SdesDestination.DataStoreLegacy | SdesDestination.HmrcIlluminate |
+          SdesDestination.DataLakehouse =>
         objectStoreAlgebra.deleteFile(paths.ephemeral, fileName)
       case SdesDestination.Dms | SdesDestination.PegaCaseflow | SdesDestination.InfoArchive =>
         objectStoreAlgebra.deleteZipFile(envelopeId, paths)
@@ -439,7 +440,8 @@ class SdesService(
   ): Future[ObjectSummaryWithMd5] = {
     val paths = destination.objectStorePaths(envelopeId, submissionPrefix)
     destination match {
-      case SdesDestination.DataStore | SdesDestination.DataStoreLegacy | SdesDestination.HmrcIlluminate =>
+      case SdesDestination.DataStore | SdesDestination.DataStoreLegacy | SdesDestination.HmrcIlluminate |
+          SdesDestination.DataLakehouse =>
         val fileName = s"${envelopeId.value}.json"
         for {
           maybeObject <- objectStoreAlgebra.getFile(paths.permanent, fileName)
@@ -455,7 +457,8 @@ class SdesService(
                                 paths.ephemeral,
                                 fileNameWithPrefix,
                                 concatenatedByteString,
-                                ContentType.`application/json`
+                                ContentType.`application/json`,
+                                None
                               )
                             }
                           case None =>

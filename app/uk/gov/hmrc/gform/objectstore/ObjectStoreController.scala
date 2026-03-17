@@ -70,6 +70,11 @@ class ObjectStoreController(controllerComponents: ControllerComponents, objectSt
     downloadJsonFile(paths, envelopeId)
   }
 
+  def downloadDataLakehouseFile(envelopeId: EnvelopeId) = Action.async { implicit request =>
+    val paths = SdesDestination.DataLakehouse.objectStorePaths(envelopeId, None)
+    downloadJsonFile(paths, envelopeId)
+  }
+
   def downloadInfoArchiveFiles(envelopeId: EnvelopeId) = Action.async { implicit request =>
     val paths = SdesDestination.InfoArchive.objectStorePaths(envelopeId, None)
     val fileName = s"${paths.zipFilePrefix}${envelopeId.value}.zip"
