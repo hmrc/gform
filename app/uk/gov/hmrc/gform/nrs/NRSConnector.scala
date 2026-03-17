@@ -18,19 +18,19 @@ package uk.gov.hmrc.gform.nrs
 
 import org.bouncycastle.util.encoders.Hex
 import org.slf4j.LoggerFactory
-import play.api.libs.json.{Format, JsObject, JsString, JsValue, Json, Reads, Writes}
+import play.api.libs.json.{ Format, JsObject, JsString, JsValue, Json, Reads, Writes }
 import uk.gov.hmrc.auth.core.retrieve.Retrieval
-import uk.gov.hmrc.auth.core.{AuthConnector, AuthProvider, AuthProviders, MissingBearerToken, PlayAuthConnector}
+import uk.gov.hmrc.auth.core.{ AuthConnector, AuthProvider, AuthProviders, MissingBearerToken, PlayAuthConnector }
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.envelope.EnvelopeModule
 import uk.gov.hmrc.gform.objectstore.ObjectStoreModule
-import uk.gov.hmrc.gform.sharedmodel.config.ContentType
-import uk.gov.hmrc.gform.sharedmodel.{NRSOrchestratorDestinationResult, UserSession}
+import uk.gov.hmrc.gform.sharedmodel.{ NRSOrchestratorDestinationResult, SubmissionRef, UserSession }
 import uk.gov.hmrc.gform.sharedmodel.envelope.EnvelopeData
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.NRSOrchestrator
+import uk.gov.hmrc.gform.submission.destinations.DestinationSubmissionInfo
 import uk.gov.hmrc.http.client.HttpClientV2
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps}
+import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse, StringContextOps }
 import uk.gov.hmrc.objectstore.client.Path
 import uk.gov.hmrc.http.HttpReads.Implicits._
 
@@ -38,7 +38,7 @@ import java.net.URL
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
 import java.util.Base64
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 
 private case class SubmissionRequestMetaData(
   businessId: String,
@@ -121,8 +121,10 @@ class NRSConnector(
 
   private def makeCall[T](url: URL, body: T)(implicit writes: Writes[T], hc: HeaderCarrier) = {
 
-    logger.debug("request: POST " + url)
-    logger.debug(Json.prettyPrint(Json.toJson(body)))
+    if(!configModule.isProd) {
+      logger.warn("request: POST " + url)
+      logger.warn(Json.prettyPrint(Json.toJson(body)))
+    }
     val headers = Seq(
       "Content-Type" -> contentType,
       "X-API-Key"    -> apiKey
@@ -241,46 +243,49 @@ class NRSConnector(
     makeCall(url, body)
   }
 
-  private def retrieveAttachments(envelopeData: EnvelopeData, envelopeId: EnvelopeId)(implicit
-    hc: HeaderCarrier
-  ): Future[List[NRSAttachment]] = {
-    val excludeEndingWith = Seq("-metadata.xml", "-robotic.xml", "-iform.pdf", "-formdata.xml", "-customerSummary.pdf")
-    Future.sequence(envelopeData.files.filterNot(file => excludeEndingWith.exists(ending => file.fileName.endsWith(ending)) ).map { envelopeFile =>
-      val sha256: String = envelopeFile.metadata
-        .getOrElse("sha256Checksum", throw new RuntimeException("No checksum available in meta data"))
-        .head
+  private def retrieveAttachments(envelopeData: EnvelopeData, envelopeId: EnvelopeId, submissionRef: SubmissionRef)(
+    implicit hc: HeaderCarrier
+  ): Future[List[NRSAttachment]] =
+    Future.sequence(
+      envelopeData.files.filterNot(file => file.fileName.startsWith(submissionRef.withoutHyphens)).map { envelopeFile =>
+        val sha256: String = envelopeFile.metadata
+          .getOrElse("sha256Checksum", throw new RuntimeException("No checksum available in meta data"))
+          .head
 
-      val path: Path.File = objectStoreModule.objectStoreConnector
-        .directory(envelopeId.value, envelopeFile.subDirectory)
-        .file(envelopeFile.fileName)
-      val downloadUrlFtr = objectStoreModule.foptObjectStoreService.presignedDownloadUrl(path)
-      downloadUrlFtr
-        .map { downloadUrl =>
-          NRSAttachment(
-            downloadUrl.downloadUrl.toString,
-            envelopeFile.fileId,
-            sha256,
-            envelopeFile.contentType.value
-          )
-        }
-        .value
-        .map {
-          case Right(nrsAttachment: NRSAttachment) => nrsAttachment
-          case Left(_)                             => throw new RuntimeException("Unknown type expected NRSAttachment")
-        }
-    })
-  }
+        val path: Path.File = objectStoreModule.objectStoreConnector
+          .directory(envelopeId.value, envelopeFile.subDirectory)
+          .file(envelopeFile.fileName)
+        val downloadUrlFtr = objectStoreModule.foptObjectStoreService.presignedDownloadUrl(path)
+        downloadUrlFtr
+          .map { downloadUrl =>
+            NRSAttachment(
+              downloadUrl.downloadUrl.toString,
+              envelopeFile.fileId,
+              sha256,
+              envelopeFile.contentType.value
+            )
+          }
+          .value
+          .map {
+            case Right(nrsAttachment: NRSAttachment) => nrsAttachment
+            case Left(_)                             => throw new RuntimeException("Unknown type expected NRSAttachment")
+          }
+      }
+    )
 
   def submit(
     envelopeId: EnvelopeId,
     destination: NRSOrchestrator,
     payload: String,
     userSession: UserSession,
-    nrsOrchestratorDestinationResult: NRSOrchestratorDestinationResult
+    nrsOrchestratorDestinationResult: NRSOrchestratorDestinationResult,
+    submission: DestinationSubmissionInfo
   )(implicit hc: HeaderCarrier): Future[NrsOrchestratorHttpResponse] = {
     val envelopeDataFtr = envelopeService.get(envelopeId)
 
-    val attachmentsFtr = envelopeDataFtr.flatMap(envelopeData => retrieveAttachments(envelopeData, envelopeId))
+    val attachmentsFtr = envelopeDataFtr.flatMap(envelopeData =>
+      retrieveAttachments(envelopeData, envelopeId, submission.submission.submissionRef)
+    )
     val submissionFtr = attachmentsFtr.flatMap { attachments =>
       val attachmentIds = attachments.map(_.id)
       createSubmission(
