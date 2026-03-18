@@ -69,9 +69,7 @@ sealed trait DestinationWithNiRefundClaimBankDetails extends Destination {
 sealed trait DestinationWithNrsOrchestrator extends Destination {
   def businessId: String
   def notableEvent: String
-  def saUtr: Option[Expr]
-  def ctUtr: Option[Expr]
-  def submissionReferenceId: Option[Expr]
+  def searchKeys: Map[String, Expr]
   def formId: FormId
   def version: String
   def taxpayerId: Expr
@@ -239,9 +237,7 @@ object Destination {
     failOnError: Boolean,
     businessId: String,
     notableEvent: String,
-    saUtr: Option[Expr],
-    ctUtr: Option[Expr],
-    submissionReferenceId: Option[Expr],
+    searchKeys: Map[String, Expr],
     formId: FormId,
     version: String,
     taxpayerId: Expr,
@@ -663,9 +659,7 @@ case class UploadableNrsOrchestratorDestination(
   failOnError: Boolean,
   businessId: String,
   notableEvent: String,
-  saUtr: Option[TextExpression],
-  ctUtr: Option[TextExpression],
-  submissionReferenceId: Option[TextExpression],
+  searchKeys: Map[String, TextExpression],
   formId: String,
   version: String,
   taxpayerId: TextExpression,
@@ -675,7 +669,8 @@ case class UploadableNrsOrchestratorDestination(
   formDataPayload: Boolean,
   payload: Option[String]
 ) {
-  private def toNrsOchestratorDestination: Either[String, Destination.NRSOrchestrator] =
+  private def toNrsOchestratorDestination: Either[String, Destination.NRSOrchestrator] = {
+    println(searchKeys)
     for {
       cvii <- addErrorInfo(id, None, includeIf)
     } yield Destination.NRSOrchestrator(
@@ -684,9 +679,7 @@ case class UploadableNrsOrchestratorDestination(
       failOnError,
       businessId,
       notableEvent,
-      saUtr.map(_.expr),
-      ctUtr.map(_.expr),
-      submissionReferenceId.map(_.expr),
+      searchKeys.map { case (key, value) => key -> value.expr },
       FormId(formId),
       version,
       taxpayerId.expr,
@@ -696,6 +689,7 @@ case class UploadableNrsOrchestratorDestination(
       formDataPayload,
       payload
     )
+  }
 }
 
 object UploadableNrsOrchestratorDestination {

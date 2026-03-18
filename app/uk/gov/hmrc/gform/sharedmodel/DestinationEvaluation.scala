@@ -49,9 +49,7 @@ object DestinationEvaluation {
 }
 
 case class NRSOrchestratorDestinationResultData(
-  saUtr: Option[String],
-  ctUtr: Option[String],
-  submissionReferenceId: Option[String]
+  searchKeys: Map[String, String]
 )
 
 case class NRSOrchestratorDestinationResult(

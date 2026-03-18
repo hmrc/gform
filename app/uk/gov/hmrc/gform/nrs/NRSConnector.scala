@@ -138,6 +138,8 @@ class NRSConnector(
 
   //Documentation: https://confluence.tools.tax.service.gov.uk/pages/viewpage.action?spaceKey=NR&title=Submission+API+specification
   //Local testing: https://github.com/hmrc/nrs-orchestrator/blob/main/LOCAL-CONFIG.md
+  //Curl to add local auth access to nrs-orchestrator
+  //curl -i -X POST -H 'Content-Type: application/json' -d '{ "token": "1234", "principal": "nrs-orchestrator", "permissions": [{ "resourceType": "object-store", "resourceLocation": "nrs-orchestrator", "actions": ["*"] }]}' 'http://localhost:8470/test-only/token'
   private def createSubmission(
     destination: NRSOrchestrator,
     attachmentIds: Option[Seq[String]],
@@ -162,13 +164,7 @@ class NRSConnector(
 
     val url = url"${configModule.serviceConfig.baseUrl("nrs-orchestrator")}/nrs-orchestrator/submission"
 
-    val searchKeys = JsObject(
-      Seq(
-        nrsOrchestratorDestinationResult.data.saUtr.map("saUtr"                                 -> JsString(_)),
-        nrsOrchestratorDestinationResult.data.ctUtr.map("ctUtr"                                 -> JsString(_)),
-        nrsOrchestratorDestinationResult.data.submissionReferenceId.map("submissionReferenceId" -> JsString(_))
-      ).flatten
-    )
+    val searchKeys = Json.toJson(nrsOrchestratorDestinationResult.data.searchKeys).as[JsObject]
 
     for {
       identityData <- getRetrievals()
