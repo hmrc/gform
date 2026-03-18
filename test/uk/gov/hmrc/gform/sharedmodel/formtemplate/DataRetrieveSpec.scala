@@ -64,12 +64,12 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
           AttributeInstruction(
             DataRetrieve.Attribute("sortCodeSupportsDirectDebit"),
             ConstructAttribute.AsIs(Fetch(List("sortCodeSupportsDirectDebit"))),
-            Some(AllowedValues(List("yes", "no", "error"), AllowedValueType.JsStringType, isRequired = true))
+            Some(AllowedValues(List("yes", "no", "error"), AllowedValueType.JsStringType, isRequired = false))
           ),
           AttributeInstruction(
             DataRetrieve.Attribute("sortCodeSupportsDirectCredit"),
             ConstructAttribute.AsIs(Fetch(List("sortCodeSupportsDirectCredit"))),
-            Some(AllowedValues(List("yes", "no", "error"), AllowedValueType.JsStringType, isRequired = true))
+            Some(AllowedValues(List("yes", "no", "error"), AllowedValueType.JsStringType, isRequired = false))
           ),
           AttributeInstruction(
             DataRetrieve.Attribute("iban"),
@@ -160,12 +160,12 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
           AttributeInstruction(
             DataRetrieve.Attribute("sortCodeSupportsDirectDebit"),
             ConstructAttribute.AsIs(Fetch(List("sortCodeSupportsDirectDebit"))),
-            Some(AllowedValues(List("yes", "no", "error"), AllowedValueType.JsStringType, isRequired = true))
+            Some(AllowedValues(List("yes", "no", "error"), AllowedValueType.JsStringType, isRequired = false))
           ),
           AttributeInstruction(
             DataRetrieve.Attribute("sortCodeSupportsDirectCredit"),
             ConstructAttribute.AsIs(Fetch(List("sortCodeSupportsDirectCredit"))),
-            Some(AllowedValues(List("yes", "no", "error"), AllowedValueType.JsStringType, isRequired = true))
+            Some(AllowedValues(List("yes", "no", "error"), AllowedValueType.JsStringType, isRequired = false))
           ),
           AttributeInstruction(
             DataRetrieve.Attribute("accountName"),
@@ -673,12 +673,12 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
           AttributeInstruction(
             DataRetrieve.Attribute("sortCodeSupportsDirectDebit"),
             ConstructAttribute.AsIs(Fetch(List("sortCodeSupportsDirectDebit"))),
-            Some(AllowedValues(List("yes", "no", "error"), AllowedValueType.JsStringType, isRequired = true))
+            Some(AllowedValues(List("yes", "no", "error"), AllowedValueType.JsStringType, isRequired = false))
           ),
           AttributeInstruction(
             DataRetrieve.Attribute("sortCodeSupportsDirectCredit"),
             ConstructAttribute.AsIs(Fetch(List("sortCodeSupportsDirectCredit"))),
-            Some(AllowedValues(List("yes", "no", "error"), AllowedValueType.JsStringType, isRequired = true))
+            Some(AllowedValues(List("yes", "no", "error"), AllowedValueType.JsStringType, isRequired = false))
           ),
           AttributeInstruction(
             DataRetrieve.Attribute("sortCodeBankName"),
