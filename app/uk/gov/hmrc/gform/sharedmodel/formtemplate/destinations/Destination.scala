@@ -670,7 +670,6 @@ case class UploadableNrsOrchestratorDestination(
   payload: Option[String]
 ) {
   private def toNrsOchestratorDestination: Either[String, Destination.NRSOrchestrator] = {
-    println(searchKeys)
     for {
       cvii <- addErrorInfo(id, None, includeIf)
     } yield Destination.NRSOrchestrator(
