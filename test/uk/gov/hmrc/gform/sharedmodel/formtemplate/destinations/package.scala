@@ -167,14 +167,11 @@ package object destinations {
          |  ${optionalField("failOnError", Option(destination.failOnError), true)}
          |  "businessId": "$businessId",
          |  "notableEvent": "$notableEvent",
-         |  ${optionalField("saUtr", saUtr.map(saUtr => TextExpression.format.writes(TextExpression(saUtr))))}
-         |  ${optionalField("ctUtr", ctUtr.map(ctUtr => TextExpression.format.writes(TextExpression(ctUtr))))}
-         |  ${optionalField(
-        "submissionReferenceId",
-        submissionReferenceId.map { submissionReferenceId =>
-          TextExpression.format.writes(TextExpression(submissionReferenceId))
-        }
-      )}
+         |  "searchKeys": {
+         |    ${searchKeys
+        .map { case (key, value) => s""""$key": ${TextExpression.format.writes(TextExpression(value))}""" }
+        .mkString(",")}
+         |  }
          |  "version": "$version",
          |  "taxpayerId": ${TextExpression.format.writes(TextExpression(taxpayerId))},
          |  "regime": "$regime",
