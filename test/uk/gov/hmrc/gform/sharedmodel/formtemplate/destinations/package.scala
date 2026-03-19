@@ -172,13 +172,6 @@ package object destinations {
         .map { case (key, value) => s""""$key": ${TextExpression.format.writes(TextExpression(value))}""" }
         .mkString(",")}
          |  }
-         |  "version": "$version",
-         |  "taxpayerId": ${TextExpression.format.writes(TextExpression(taxpayerId))},
-         |  "regime": "$regime",
-         |  "includeSessionInfo": "$includeSessionInfo",
-         |  "handlebarPayload": "$handlebarPayload",
-         |  "formDataPayload": "$formDataPayload",
-         |  ${optionalField("payload", Option(payload))}
          |}
          |""".stripMargin
   }

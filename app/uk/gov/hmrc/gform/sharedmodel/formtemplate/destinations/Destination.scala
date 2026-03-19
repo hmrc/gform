@@ -70,14 +70,6 @@ sealed trait DestinationWithNrsOrchestrator extends Destination {
   def businessId: String
   def notableEvent: String
   def searchKeys: Map[String, Expr]
-  def formId: FormId
-  def version: String
-  def taxpayerId: Expr
-  def regime: String
-  def includeSessionInfo: Boolean
-  def handlebarPayload: Boolean
-  def formDataPayload: Boolean
-  def payload: Option[String]
 }
 
 sealed trait DestinationIncludeIf extends Product with Serializable
@@ -237,15 +229,7 @@ object Destination {
     failOnError: Boolean,
     businessId: String,
     notableEvent: String,
-    searchKeys: Map[String, Expr],
-    formId: FormId,
-    version: String,
-    taxpayerId: Expr,
-    regime: String,
-    includeSessionInfo: Boolean,
-    handlebarPayload: Boolean,
-    formDataPayload: Boolean,
-    payload: Option[String]
+    searchKeys: Map[String, Expr]
   ) extends DestinationWithNrsOrchestrator
 
   val typeDiscriminatorFieldName: String = "type"
@@ -659,15 +643,7 @@ case class UploadableNrsOrchestratorDestination(
   failOnError: Boolean,
   businessId: String,
   notableEvent: String,
-  searchKeys: Map[String, TextExpression],
-  formId: String,
-  version: String,
-  taxpayerId: TextExpression,
-  regime: String,
-  includeSessionInfo: Boolean,
-  handlebarPayload: Boolean,
-  formDataPayload: Boolean,
-  payload: Option[String]
+  searchKeys: Map[String, TextExpression]
 ) {
   private def toNrsOchestratorDestination: Either[String, Destination.NRSOrchestrator] =
     for {
@@ -678,15 +654,7 @@ case class UploadableNrsOrchestratorDestination(
       failOnError,
       businessId,
       notableEvent,
-      searchKeys.map { case (key, value) => key -> value.expr },
-      FormId(formId),
-      version,
-      taxpayerId.expr,
-      regime,
-      includeSessionInfo,
-      handlebarPayload,
-      formDataPayload,
-      payload
+      searchKeys.map { case (key, value) => key -> value.expr }
     )
 }
 
