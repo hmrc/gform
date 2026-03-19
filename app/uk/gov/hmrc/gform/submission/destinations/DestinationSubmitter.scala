@@ -214,8 +214,8 @@ class DestinationSubmitter[M[_]](
           destinationEvaluation.evaluation.find(_.destinationId === d.id),
           submissionInfo,
           userSession,
-          modelTree.value.structuredFormData,
-          l
+          l,
+          formData
         )
     }
 
@@ -433,8 +433,8 @@ class DestinationSubmitter[M[_]](
     destinationResult: Option[DestinationResult],
     submissionInfo: DestinationSubmissionInfo,
     userSession: UserSession,
-    structuredFormData: StructuredFormValue.ObjectStructure,
-    l: LangADT
+    l: LangADT,
+    formData: Option[FormData]
   )(implicit hc: HeaderCarrier): M[DestinationResponse] = {
     val nrsDestinationResult = {
       val dr = destinationResult
@@ -449,7 +449,15 @@ class DestinationSubmitter[M[_]](
     val envelopeId = submissionInfo.submission.envelopeId
 
     liftToM(
-      nrsConnector.submit(envelopeId, d, userSession, nrsDestinationResult, submissionInfo, structuredFormData, l)
+      nrsConnector.submit(
+        envelopeId,
+        d,
+        userSession,
+        nrsDestinationResult,
+        submissionInfo,
+        l,
+        formData.getOrElse(throw new RuntimeException("form data is not available"))
+      )
     ).map { response =>
       val allOk: Boolean =
         response.submissionResponse.isSuccess && response.attachmentResponses.forall(_.isSuccess)
