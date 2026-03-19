@@ -16,7 +16,10 @@
 
 package uk.gov.hmrc.gform.nrs
 
+import cats.implicits.catsSyntaxEq
 import org.bouncycastle.util.encoders.Hex
+import org.json4s.native.JsonMethods
+import org.json4s.native.Printer.compact
 import org.slf4j.LoggerFactory
 import play.api.libs.json.{ Format, JsObject, JsString, JsValue, Json, Reads, Writes }
 import uk.gov.hmrc.auth.core.retrieve.Retrieval
@@ -24,10 +27,12 @@ import uk.gov.hmrc.auth.core.{ AuthConnector, AuthProvider, AuthProviders, Missi
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.envelope.EnvelopeModule
 import uk.gov.hmrc.gform.objectstore.ObjectStoreModule
-import uk.gov.hmrc.gform.sharedmodel.{ NRSOrchestratorDestinationResult, SubmissionRef, UserSession }
+import uk.gov.hmrc.gform.sharedmodel.{ LangADT, NRSOrchestratorDestinationResult, SubmissionRef, UserSession }
 import uk.gov.hmrc.gform.sharedmodel.envelope.EnvelopeData
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.NRSOrchestrator
+import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
+import uk.gov.hmrc.gform.submission.{ RoboticsXMLGenerator, Submission }
 import uk.gov.hmrc.gform.submission.destinations.DestinationSubmissionInfo
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse, StringContextOps }
@@ -37,8 +42,10 @@ import uk.gov.hmrc.http.HttpReads.Implicits._
 import java.net.URL
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
-import java.util.Base64
+import java.util.{ Base64, UUID }
 import scala.concurrent.{ ExecutionContext, Future }
+import scala.util.Try
+import scala.util.matching.Regex
 
 private case class SubmissionRequestMetaData(
   businessId: String,
@@ -100,6 +107,16 @@ object NRSConnector {
     val hash = digest.digest(payload)
     new String(Hex.encode(hash))
   }
+}
+
+case class NrsPayloadMetaData(`submission-reference`: String, correlationId: String, userLanguage: String)
+object NrsPayloadMetaData {
+  implicit val format: Format[NrsPayloadMetaData] = Json.format
+}
+
+case class NrsPayload(gform: JsObject, metaData: NrsPayloadMetaData)
+object NrsPayload {
+  implicit val format: Format[NrsPayload] = Json.format
 }
 
 class NRSConnector(
@@ -251,12 +268,13 @@ class NRSConnector(
         val path: Path.File = objectStoreModule.objectStoreConnector
           .directory(envelopeId.value, envelopeFile.subDirectory)
           .file(envelopeFile.fileName)
+        val fileId = UUID.randomUUID().toString
         val downloadUrlFtr = objectStoreModule.foptObjectStoreService.presignedDownloadUrl(path)
         downloadUrlFtr
           .map { downloadUrl =>
             NRSAttachment(
               downloadUrl.downloadUrl.toString,
-              envelopeFile.fileId,
+              fileId,
               sha256,
               envelopeFile.contentType.value
             )
@@ -269,15 +287,81 @@ class NRSConnector(
       }
     )
 
+  private def createPayload(
+    structuredFormData: StructuredFormValue.ObjectStructure,
+    submission: Submission,
+    l: LangADT
+  ): NrsPayload = {
+
+    def replacePII(value: String): String = {
+      val stringRegex: Regex = """"[^:"]*":\s*".*"""".r
+
+      stringRegex.replaceAllIn(
+        value,
+        regexMatch => {
+          val matchedString: String = regexMatch.matched
+          val (field, value) = matchedString.splitAt(matchedString.indexOf(":"))
+          val numberOfSpaces = value.splitAt(value.indexOf(":") + 1)._2.takeWhile(_ === ' ').length
+          val valueLength: Int = value.length - 3 - numberOfSpaces // Minus 3 for the colon and quotation marks
+          field + s""":${" " * numberOfSpaces}"$valueLength""""
+        }
+      )
+    }
+
+    def convertToJson(payload: String): JsObject =
+      Try {
+        Json.parse(payload)
+      }.fold(
+        error => {
+          val errorMessageWithoutPii = replacePII(error.getMessage)
+          val fullJsonWithoutPii: String = replacePII(payload)
+
+          throw new Exception(
+            s"nrsOrchestrator destination error, failed to parse payload into a json:\n$errorMessageWithoutPii, full json:\n$fullJsonWithoutPii"
+          )
+        },
+        jsValue =>
+          jsValue.asOpt[JsObject].getOrElse {
+            throw new Exception(
+              s"nrsOrchestrator destination error. Cannot convert payload into a JsObject. This is not a JsObject: '$jsValue'"
+            )
+          }
+      )
+
+    val rawFormDataBasedPayload = compact(
+      JsonMethods.render(
+        org.json4s.Xml.toJson(
+          RoboticsXMLGenerator.buildDataStoreXML(
+            structuredFormData,
+            sanitizeRequired = false
+          )
+        )
+      )
+    )
+
+    val formDataBasedPayload: JsObject = convertToJson(rawFormDataBasedPayload)
+
+    NrsPayload(
+      formDataBasedPayload.value("gform").as[JsObject],
+      NrsPayloadMetaData(
+        submission.submissionRef.value,
+        submission.envelopeId.value,
+        l.langADTToString.toUpperCase
+      )
+    )
+  }
+
   def submit(
     envelopeId: EnvelopeId,
     destination: NRSOrchestrator,
-    payload: String,
     userSession: UserSession,
     nrsOrchestratorDestinationResult: NRSOrchestratorDestinationResult,
-    submission: DestinationSubmissionInfo
+    submission: DestinationSubmissionInfo,
+    structuredFormValue: StructuredFormValue.ObjectStructure,
+    l: LangADT
   )(implicit hc: HeaderCarrier): Future[NrsOrchestratorHttpResponse] = {
     val envelopeDataFtr = envelopeService.get(envelopeId)
+    val payload = createPayload(structuredFormValue, submission.submission, l)
 
     val attachmentsFtr = envelopeDataFtr.flatMap(envelopeData =>
       retrieveAttachments(envelopeData, envelopeId, submission.submission.submissionRef)
@@ -287,7 +371,7 @@ class NRSConnector(
       createSubmission(
         destination,
         if (attachmentIds.nonEmpty) Some(attachmentIds) else None,
-        payload,
+        Json.stringify(Json.toJson(payload)),
         userSession,
         nrsOrchestratorDestinationResult
       )

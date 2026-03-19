@@ -38,7 +38,7 @@ import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FormId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
-import uk.gov.hmrc.gform.submission.destinations.{ DataStoreSubmitter, DestinationSubmissionInfo, DestinationsProcessorModelAlgebra, PayloadConfigurationParameters }
+import uk.gov.hmrc.gform.submission.destinations.{ DataStoreSubmitter, DestinationSubmissionInfo, DestinationsProcessorModelAlgebra }
 import uk.gov.hmrc.gform.submission.handlebars.{ FocussedHandlebarsModelTree, HandlebarsModelTree, RealHandlebarsTemplateProcessor }
 import uk.gov.hmrc.gform.submission.{ DmsMetaData, Submission, SubmissionId }
 import uk.gov.hmrc.http.HeaderCarrier
@@ -312,9 +312,10 @@ class TestOnlyController(
                   val payload = dataStoreSubmitter.generatePayload(
                     submissionInfo,
                     structuredFormData,
-                    PayloadConfigurationParameters.fromDataStoreDestination(dataStore, taxpayerId),
+                    dataStore,
                     LangADT.En,
                     userSession,
+                    taxpayerId,
                     accumulatedModel,
                     modelTree
                   )

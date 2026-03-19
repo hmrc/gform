@@ -669,7 +669,7 @@ case class UploadableNrsOrchestratorDestination(
   formDataPayload: Boolean,
   payload: Option[String]
 ) {
-  private def toNrsOchestratorDestination: Either[String, Destination.NRSOrchestrator] = {
+  private def toNrsOchestratorDestination: Either[String, Destination.NRSOrchestrator] =
     for {
       cvii <- addErrorInfo(id, None, includeIf)
     } yield Destination.NRSOrchestrator(
@@ -688,7 +688,6 @@ case class UploadableNrsOrchestratorDestination(
       formDataPayload,
       payload
     )
-  }
 }
 
 object UploadableNrsOrchestratorDestination {

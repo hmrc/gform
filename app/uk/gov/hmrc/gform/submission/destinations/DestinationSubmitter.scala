@@ -215,9 +215,7 @@ class DestinationSubmitter[M[_]](
           submissionInfo,
           userSession,
           modelTree.value.structuredFormData,
-          l,
-          accumulatedModel,
-          modelTree
+          l
         )
     }
 
@@ -350,9 +348,10 @@ class DestinationSubmitter[M[_]](
     val payload = dataStore.generatePayload(
       submissionInfo,
       structuredFormData,
-      PayloadConfigurationParameters.fromDataStoreDestination(d, destinationResult.flatMap(_.taxpayerId)),
+      d,
       l,
       userSession,
+      destinationResult.flatMap(_.taxpayerId),
       accumulatedModel,
       modelTree
     )
@@ -435,19 +434,8 @@ class DestinationSubmitter[M[_]](
     submissionInfo: DestinationSubmissionInfo,
     userSession: UserSession,
     structuredFormData: StructuredFormValue.ObjectStructure,
-    l: LangADT,
-    accumulatedModel: HandlebarsTemplateProcessorModel,
-    modelTree: HandlebarsModelTree
+    l: LangADT
   )(implicit hc: HeaderCarrier): M[DestinationResponse] = {
-    val payload = dataStore.generatePayload(
-      submissionInfo,
-      structuredFormData,
-      PayloadConfigurationParameters.fromNrsOchestratorDesitnaion(d, destinationResult.flatMap(_.taxpayerId)),
-      l,
-      userSession,
-      accumulatedModel,
-      modelTree
-    )
     val nrsDestinationResult = {
       val dr = destinationResult
         .getOrElse(throw new RuntimeException("destination result is not available"))
@@ -462,37 +450,38 @@ class DestinationSubmitter[M[_]](
     destinationResult match {
       case Some(destinationResult) =>
         val envelopeId = submissionInfo.submission.envelopeId
-        liftToM(nrsConnector.submit(envelopeId, d, payload, userSession, nrsDestinationResult, submissionInfo)).map {
-          response =>
-            val allOk: Boolean =
-              response.submissionResponse.isSuccess && response.attachmentResponses.forall(_.isSuccess)
-            lazy val errorMsg: String = {
-              val errorMessage = new StringBuilder()
-              if (!response.submissionResponse.isSuccess) {
+        liftToM(
+          nrsConnector.submit(envelopeId, d, userSession, nrsDestinationResult, submissionInfo, structuredFormData, l)
+        ).map { response =>
+          val allOk: Boolean =
+            response.submissionResponse.isSuccess && response.attachmentResponses.forall(_.isSuccess)
+          lazy val errorMsg: String = {
+            val errorMessage = new StringBuilder()
+            if (!response.submissionResponse.isSuccess) {
+              errorMessage.addAll(
+                s"main submission failed. Status: ${response.submissionResponse.status} Body: ${response.submissionResponse.body}\n"
+              )
+            }
+            response.attachmentResponses.collect {
+              case attachmentResponse if !attachmentResponse.isSuccess =>
                 errorMessage.addAll(
-                  s"main submission failed. Status: ${response.submissionResponse.status} Body: ${response.submissionResponse.body}\n"
+                  s"attachment submission failed. Status: ${attachmentResponse.status} Body: ${attachmentResponse.body}\n"
                 )
-              }
-              response.attachmentResponses.collect {
-                case attachmentResponse if !attachmentResponse.isSuccess =>
-                  errorMessage.addAll(
-                    s"attachment submission failed. Status: ${attachmentResponse.status} Body: ${attachmentResponse.body}\n"
-                  )
-              }
-              errorMessage.mkString
             }
-            def logError(): Unit = logger.error(
-              genericLogMessage(submissionInfo.formId, d.id, errorMsg)
-            )
-            if (allOk) {
-              DestinationResponse.NoResponse
-            } else if (d.failOnError) {
-              logError()
-              throw new Exception(errorMsg)
-            } else {
-              logError()
-              DestinationResponse.NoResponse
-            }
+            errorMessage.mkString
+          }
+          def logError(): Unit = logger.error(
+            genericLogMessage(submissionInfo.formId, d.id, errorMsg)
+          )
+          if (allOk) {
+            DestinationResponse.NoResponse
+          } else if (d.failOnError) {
+            logError()
+            throw new Exception(errorMsg)
+          } else {
+            logError()
+            DestinationResponse.NoResponse
+          }
         }
 
       case None => throw new RuntimeException("destination result not available")
