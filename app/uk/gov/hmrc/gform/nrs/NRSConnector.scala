@@ -132,9 +132,9 @@ class NRSConnector(
   }
 
   private lazy val apiKey = configModule.nrsConfig.authorizationToken
-  private lazy val contentType = "application/json"
+  private val contentType = "application/json"
 
-  private lazy val logger = LoggerFactory.getLogger(getClass)
+  private val logger = LoggerFactory.getLogger(getClass)
 
   private def makeCall[T](url: URL, body: T)(implicit writes: Writes[T], hc: HeaderCarrier) = {
 
