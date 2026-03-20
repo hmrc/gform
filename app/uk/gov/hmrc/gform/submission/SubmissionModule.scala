@@ -115,13 +115,16 @@ class SubmissionModule(
 
   private val nrsConnectorApiKey = configModule.nrsConfig.authorizationToken
 
+  private val baseUrl = configModule.serviceConfig.baseUrl("nrs-orchestrator")
+
   val nrsConnector = new NRSConnector(
-    configModule,
+    baseUrl,
     wSHttpModule.httpClient,
     objectStoreModule,
     envelopeModule.envelopeService,
     nrsConnectorAuthConnector,
-    nrsConnectorApiKey
+    nrsConnectorApiKey,
+    configModule.isProd
   )
 
   private val stateTransitionService = new StateTransitionService(formModule.fOptFormService)

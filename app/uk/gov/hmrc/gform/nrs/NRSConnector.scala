@@ -22,7 +22,6 @@ import play.api.libs.json._
 import uk.gov.hmrc.auth.core.retrieve.Retrieval
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
-import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.envelope.EnvelopeAlgebra
 import uk.gov.hmrc.gform.objectstore.ObjectStoreModule
 import uk.gov.hmrc.gform.sharedmodel.envelope.EnvelopeData
@@ -115,15 +114,14 @@ object NrsPayload {
 }
 
 class NRSConnector(
-  configModule: ConfigModule,
+  baseUrl: String,
   httpClient: HttpClientV2,
   objectStoreModule: ObjectStoreModule,
   envelopeService: EnvelopeAlgebra[Future],
   authConnector: AuthConnector,
-  apiKey: String
+  apiKey: String,
+  isProd: Boolean
 )(implicit ec: ExecutionContext) {
-
-  private val baseUrl = configModule.serviceConfig.baseUrl("nrs-orchestrator")
 
   private val contentType = "application/json"
 
@@ -131,7 +129,7 @@ class NRSConnector(
 
   private def makeCall[T](url: URL, body: T)(implicit writes: Writes[T], hc: HeaderCarrier) = {
 
-    if (!configModule.isProd) {
+    if (!isProd) {
       logger.warn("request: POST " + url)
       logger.warn(Json.prettyPrint(Json.toJson(body)))
     }
@@ -234,7 +232,7 @@ class NRSConnector(
   )(implicit
     hc: HeaderCarrier
   ): Future[HttpResponse] = {
-    val url = url"${configModule.serviceConfig.baseUrl("nrs-orchestrator")}/nrs-orchestrator/attachment"
+    val url = url"$baseUrl/nrs-orchestrator/attachment"
     val body = AttachmentRequest(
       attachmentUrl = attachment.url,
       attachmentId = attachment.id,
