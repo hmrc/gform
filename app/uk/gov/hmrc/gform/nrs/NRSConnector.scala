@@ -123,6 +123,8 @@ class NRSConnector(
   apiKey: String
 )(implicit ec: ExecutionContext) {
 
+  private val baseUrl = configModule.serviceConfig.baseUrl("nrs-orchestrator")
+
   private val contentType = "application/json"
 
   private val logger = LoggerFactory.getLogger(getClass)
@@ -170,7 +172,7 @@ class NRSConnector(
 
     def toBase64(str: String) = new String(Base64.getEncoder.encode(str.getBytes("UTF-8")), "UTF-8")
 
-    val url = url"${configModule.serviceConfig.baseUrl("nrs-orchestrator")}/nrs-orchestrator/submission"
+    val url = url"$baseUrl/nrs-orchestrator/submission"
 
     val searchKeys = Json.toJson(nrsOrchestratorDestinationResult.data.searchKeys).as[JsObject]
 
