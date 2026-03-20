@@ -23,24 +23,24 @@ import uk.gov.hmrc.auth.core.retrieve.Retrieval
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
 import uk.gov.hmrc.gform.config.ConfigModule
-import uk.gov.hmrc.gform.envelope.EnvelopeModule
+import uk.gov.hmrc.gform.envelope.EnvelopeAlgebra
 import uk.gov.hmrc.gform.objectstore.ObjectStoreModule
 import uk.gov.hmrc.gform.sharedmodel.envelope.EnvelopeData
-import uk.gov.hmrc.gform.sharedmodel.form.{EnvelopeId, FormData}
+import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FormData }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.NRSOrchestrator
-import uk.gov.hmrc.gform.sharedmodel.{LangADT, NRSOrchestratorDestinationResult, SubmissionRef, UserSession}
+import uk.gov.hmrc.gform.sharedmodel.{ LangADT, NRSOrchestratorDestinationResult, SubmissionRef, UserSession }
 import uk.gov.hmrc.gform.submission.Submission
 import uk.gov.hmrc.gform.submission.destinations.DestinationSubmissionInfo
 import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.client.HttpClientV2
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps}
+import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse, StringContextOps }
 import uk.gov.hmrc.objectstore.client.Path
 
 import java.net.URL
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
-import java.util.{Base64, UUID}
-import scala.concurrent.{ExecutionContext, Future}
+import java.util.{ Base64, UUID }
+import scala.concurrent.{ ExecutionContext, Future }
 
 private case class SubmissionRequestMetaData(
   businessId: String,
@@ -118,15 +118,11 @@ class NRSConnector(
   configModule: ConfigModule,
   httpClient: HttpClientV2,
   objectStoreModule: ObjectStoreModule,
-  envelopeModule: EnvelopeModule
+  envelopeService: EnvelopeAlgebra[Future],
+  authConnector: AuthConnector,
+  apiKey: String
 )(implicit ec: ExecutionContext) {
-  private lazy val envelopeService = envelopeModule.envelopeService
-  private lazy val authConnector: AuthConnector = new PlayAuthConnector {
-    override val serviceUrl: String = configModule.serviceConfig.baseUrl("auth")
-    override def httpClientV2: HttpClientV2 = httpClient
-  }
 
-  private lazy val apiKey = configModule.nrsConfig.authorizationToken
   private val contentType = "application/json"
 
   private val logger = LoggerFactory.getLogger(getClass)
@@ -203,26 +199,25 @@ class NRSConnector(
     val retrieval = new Retrieval[JsObject] {
       override def propertyNames: Seq[String] =
         (Retrievals.internalId and
-        Retrievals.externalId and
-        Retrievals.agentCode and
-        Retrievals.credentials and
-        Retrievals.confidenceLevel and
-        Retrievals.nino and
-        Retrievals.saUtr and
-        Retrievals.name and
-        Retrievals.dateOfBirth and
-        Retrievals.email and
-        Retrievals.agentInformation and
-        Retrievals.groupIdentifier and
-        Retrievals.credentialRole and
-        Retrievals.mdtpInformation and
-        Retrievals.itmpName and
-        Retrievals.itmpDateOfBirth and
-        Retrievals.itmpAddress and
-        Retrievals.affinityGroup and
-        Retrievals.credentialStrength and
-        Retrievals.loginTimes).propertyNames
-
+          Retrievals.externalId and
+          Retrievals.agentCode and
+          Retrievals.credentials and
+          Retrievals.confidenceLevel and
+          Retrievals.nino and
+          Retrievals.saUtr and
+          Retrievals.name and
+          Retrievals.dateOfBirth and
+          Retrievals.email and
+          Retrievals.agentInformation and
+          Retrievals.groupIdentifier and
+          Retrievals.credentialRole and
+          Retrievals.mdtpInformation and
+          Retrievals.itmpName and
+          Retrievals.itmpDateOfBirth and
+          Retrievals.itmpAddress and
+          Retrievals.affinityGroup and
+          Retrievals.credentialStrength and
+          Retrievals.loginTimes).propertyNames
 
       override def reads: Reads[JsObject] = (json: JsValue) => json.validate[JsObject]
     }
