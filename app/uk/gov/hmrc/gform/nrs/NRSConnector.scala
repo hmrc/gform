@@ -251,7 +251,7 @@ class NRSConnector(
     implicit hc: HeaderCarrier
   ): Future[List[NRSAttachment]] =
     Future.sequence(
-      envelopeData.files.filterNot(file => file.fileName.startsWith(submissionRef.withoutHyphens)).map { envelopeFile =>
+      envelopeData.files.filterNot(file => file.fileName.startsWith(submissionRef.withoutHyphens) && file.subDirectory.nonEmpty).map { envelopeFile =>
         val sha256: String = envelopeFile.metadata
           .getOrElse("sha256Checksum", throw new RuntimeException("No checksum available in meta data"))
           .head
