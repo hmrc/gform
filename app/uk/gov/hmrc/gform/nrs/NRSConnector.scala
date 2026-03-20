@@ -205,7 +205,6 @@ class NRSConnector(
           Retrievals.confidenceLevel and
           Retrievals.nino and
           Retrievals.saUtr and
-          Retrievals.name and
           Retrievals.dateOfBirth and
           Retrievals.email and
           Retrievals.agentInformation and
