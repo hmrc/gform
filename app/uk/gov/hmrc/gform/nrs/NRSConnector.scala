@@ -299,13 +299,12 @@ class NRSConnector(
     l: LangADT,
     formData: FormData
   )(implicit hc: HeaderCarrier): Future[NrsOrchestratorHttpResponse] = {
-    val envelopeDataFtr = envelopeService.get(envelopeId)
     val payload = createPayload(formData, submission.submission, l)
 
-    val attachmentsFtr = envelopeDataFtr.flatMap(envelopeData =>
-      retrieveAttachments(envelopeData, envelopeId, submission.submission.submissionRef)
-    )
-    val submissionFtr = attachmentsFtr.flatMap { attachments =>
+    def attachmentsFtr(envelope: EnvelopeData): Future[List[NRSAttachment]] =
+      retrieveAttachments(envelope, envelopeId, submission.submission.submissionRef)
+
+    def submissionFtr(attachments: List[NRSAttachment]): Future[HttpResponse] = {
       val attachmentIds = attachments.map(_.id)
       createSubmission(
         destination,
@@ -316,25 +315,26 @@ class NRSConnector(
       )
     }
 
-    val attachmentResponsesFtr =
-      (for {
-        attachments        <- attachmentsFtr
-        submissionResponse <- submissionFtr
-      } yield
-        if (submissionResponse.status != 202) {
-          Future.successful(List())
-        } else {
-          val submissionId = Json.parse(submissionResponse.body).as[NRSSubmissionResponse].nrSubmissionId
-          Future.sequence(
-            attachments.map { attachment =>
-              addObjectStoreAttachment(submissionId, attachment, destination)
-            }
-          )
-        }).flatten
+    def submitAttachments(
+      submissionResponse: HttpResponse,
+      attachments: List[NRSAttachment]
+    ): Future[List[HttpResponse]] =
+      if (submissionResponse.status != 202) {
+        Future.successful(List())
+      } else {
+        val submissionId = Json.parse(submissionResponse.body).as[NRSSubmissionResponse].nrSubmissionId
+        Future.sequence(
+          attachments.map { attachment =>
+            addObjectStoreAttachment(submissionId, attachment, destination)
+          }
+        )
+      }
 
     for {
-      submissionResponse  <- submissionFtr
-      attachmentResponses <- attachmentResponsesFtr
+      envelope            <- envelopeService.get(envelopeId)
+      attachments         <- attachmentsFtr(envelope)
+      submissionResponse  <- submissionFtr(attachments)
+      attachmentResponses <- submitAttachments(submissionResponse, attachments)
     } yield NrsOrchestratorHttpResponse(submissionResponse, attachmentResponses)
   }
 }
