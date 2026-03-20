@@ -331,7 +331,8 @@ class ApplicationModule(context: Context)
       objectStoreModule,
       sdesModule,
       materializer,
-      hipModule
+      hipModule,
+      wSHttpModule
     )
 
   private val retrievalModule =

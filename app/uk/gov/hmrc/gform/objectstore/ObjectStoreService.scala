@@ -25,6 +25,7 @@ import org.apache.pekko.stream.scaladsl.Source
 import org.apache.pekko.util.ByteString
 import org.slf4j.LoggerFactory
 import uk.gov.hmrc.gform.envelope.EnvelopeAlgebra
+import uk.gov.hmrc.gform.nrs.NRSConnector
 import uk.gov.hmrc.gform.objectstore.ObjectStoreService.FileIds._
 import uk.gov.hmrc.gform.sdes.SdesConnector
 import uk.gov.hmrc.gform.sharedmodel.DestinationResult
@@ -40,7 +41,7 @@ import uk.gov.hmrc.gform.submission.{ PdfAndXmlSummaries, Submission }
 import uk.gov.hmrc.gform.time.TimeProvider
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.objectstore.client
-import uk.gov.hmrc.objectstore.client.{ ObjectSummaryWithMd5, Path, RetentionPeriod }
+import uk.gov.hmrc.objectstore.client.{ ObjectSummaryWithMd5, Path, PresignedDownloadUrl, RetentionPeriod }
 
 import java.net.URL
 import java.time.format.DateTimeFormatter
@@ -101,6 +102,8 @@ class ObjectStoreService(
                maybeSubDirectory
              )
       _ <- {
+        val metaData: Map[String, List[String]] =
+          Map.from(Seq("sha256Checksum" -> List(NRSConnector.generateSha256Checksum(content.toArray))))
         val newFiles =
           envelopeData.files.filterNot(_.fileId === fileId.value) :+
             EnvelopeFile(
@@ -109,7 +112,7 @@ class ObjectStoreService(
               FileStatus.Available,
               contentType,
               res.contentLength,
-              Map.empty[String, List[String]],
+              metaData,
               maybeSubDirectory
             )
         envelopeService.save(envelopeData.copy(files = newFiles))
@@ -187,6 +190,9 @@ class ObjectStoreService(
   ): Future[Option[client.Object[Source[ByteString, NotUsed]]]] =
     objectStoreConnector.getFile(directory, fileName)
 
+  override def presignedDownloadUrl(path: Path.File)(implicit hc: HeaderCarrier): Future[PresignedDownloadUrl] =
+    objectStoreConnector.presignedDownloadUrl(path)
+
   override def zipFiles(
     envelopeId: EnvelopeId,
     objectStorePaths: ObjectStorePaths
@@ -214,7 +220,8 @@ class ObjectStoreService(
     envelopeId: EnvelopeId,
     fileId: FileId,
     contentType: ContentType,
-    fileName: String
+    fileName: String,
+    sha256Checksum: Option[String]
   )(implicit
     hc: HeaderCarrier
   ): Future[ObjectSummaryWithMd5] = {
@@ -232,6 +239,10 @@ class ObjectStoreService(
              }
       res <- objectStoreConnector.uploadFromUrl(from, envelopeId, fileName)
       _ <- {
+        val metaData: Map[String, List[String]] = sha256Checksum match {
+          case Some(sha256Checksum) => Map.from(Seq("sha256Checksum" -> List(sha256Checksum)))
+          case None                 => Map.empty
+        }
         val newFiles =
           envelopeData.files.filterNot(_.fileId === fileId.value) :+
             EnvelopeFile(
@@ -240,7 +251,7 @@ class ObjectStoreService(
               FileStatus.Available,
               contentType,
               res.contentLength,
-              Map.empty[String, List[String]],
+              metaData,
               None
             )
         envelopeService.save(envelopeData.copy(files = newFiles))

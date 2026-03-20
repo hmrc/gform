@@ -19,6 +19,7 @@ package uk.gov.hmrc.gform.submission
 import org.apache.pekko.stream.Materializer
 import org.mongodb.scala.model.{ IndexModel, IndexOptions }
 import org.mongodb.scala.model.Indexes.ascending
+import uk.gov.hmrc.auth.core.{ AuthConnector, PlayAuthConnector }
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.email.EmailModule
 import uk.gov.hmrc.gform.form.FormModule
@@ -31,11 +32,14 @@ import uk.gov.hmrc.gform.core._
 import uk.gov.hmrc.gform.envelope.EnvelopeModule
 import uk.gov.hmrc.gform.hip.HipModule
 import uk.gov.hmrc.gform.notifier.NotifierModule
+import uk.gov.hmrc.gform.nrs.NRSConnector
 import uk.gov.hmrc.gform.objectstore.ObjectStoreModule
 import uk.gov.hmrc.gform.repo.{ Repo, RepoAlgebra }
 import uk.gov.hmrc.gform.sdes.SdesModule
 import uk.gov.hmrc.gform.submission.destinations.{ DataStoreSubmitter, DestinationModule, DestinationSubmitter, DestinationsSubmitter, DestinationsSubmitterAlgebra, DmsSubmitter, InfoArchiveSubmitter, NiRefundSubmitter, PegaSubmitter, StateTransitionService }
 import uk.gov.hmrc.gform.submissionconsolidator.SubmissionConsolidatorModule
+import uk.gov.hmrc.gform.wshttp.WSHttpModule
+import uk.gov.hmrc.http.client.HttpClientV2
 
 import scala.concurrent.ExecutionContext
 
@@ -55,7 +59,8 @@ class SubmissionModule(
   objectStoreModule: ObjectStoreModule,
   sdesModule: SdesModule,
   materializer: Materializer,
-  hipModule: HipModule
+  hipModule: HipModule,
+  wSHttpModule: WSHttpModule
 )(implicit ex: ExecutionContext) {
 
   //TODO: this should be replaced with save4later for submissions
@@ -103,6 +108,25 @@ class SubmissionModule(
     hipModule.getConnector
   )
 
+  private val nrsConnectorAuthConnector: AuthConnector = new PlayAuthConnector {
+    override val serviceUrl: String = configModule.serviceConfig.baseUrl("auth")
+    override def httpClientV2: HttpClientV2 = wSHttpModule.httpClient
+  }
+
+  private val nrsConnectorApiKey = configModule.nrsConfig.authorizationToken
+
+  private val baseUrl = configModule.serviceConfig.baseUrl("nrs-orchestrator")
+
+  val nrsConnector = new NRSConnector(
+    baseUrl,
+    wSHttpModule.httpClient,
+    objectStoreModule,
+    envelopeModule.envelopeService,
+    nrsConnectorAuthConnector,
+    nrsConnectorApiKey,
+    configModule.isProd
+  )
+
   private val stateTransitionService = new StateTransitionService(formModule.fOptFormService)
 
   private val realDestinationSubmitter = new DestinationSubmitter(
@@ -116,7 +140,8 @@ class SubmissionModule(
     infoArchiveSubmitter,
     configModule.sdesConfig,
     pegaSubmitterAlgebra = pegaSubmitter,
-    niRefundSubmitterAlgebra = niRefundSubmitter
+    niRefundSubmitterAlgebra = niRefundSubmitter,
+    nrsConnector = nrsConnector
   )
 
   private val destinationsSubmitter: DestinationsSubmitterAlgebra[FOpt] = new DestinationsSubmitter(

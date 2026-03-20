@@ -62,7 +62,8 @@ class InfoArchiveXMLGeneratorSpec extends Spec {
       sortCode,
       accountNumber,
       rollNumber,
-      refundClaimReference
+      refundClaimReference,
+      None
     )
 
   "generatePdi" should "generate the correct XML for submission information package" in {

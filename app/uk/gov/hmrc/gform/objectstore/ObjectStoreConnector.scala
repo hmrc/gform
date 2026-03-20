@@ -28,7 +28,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.objectstore.client
 import uk.gov.hmrc.objectstore.client.play.Implicits._
 import uk.gov.hmrc.objectstore.client.play.PlayObjectStoreClient
-import uk.gov.hmrc.objectstore.client.{ ObjectSummaryWithMd5, Path, RetentionPeriod }
+import uk.gov.hmrc.objectstore.client.{ ObjectSummaryWithMd5, Path, PresignedDownloadUrl, RetentionPeriod }
 
 import scala.concurrent.{ ExecutionContext, Future }
 
@@ -39,7 +39,7 @@ class ObjectStoreConnector(
 
   private val zipExtension = ".zip"
 
-  private def directory(folderName: String, maybeSubDirectory: Option[String]): Path.Directory = {
+  def directory(folderName: String, maybeSubDirectory: Option[String]): Path.Directory = {
     val subDir = maybeSubDirectory.fold("")(sd => s"/$sd")
     Path.Directory(s"envelopes/$folderName$subDir")
   }
@@ -91,6 +91,9 @@ class ObjectStoreConnector(
     hc: HeaderCarrier
   ): Future[Option[client.Object[Source[ByteString, NotUsed]]]] =
     objectStoreClient.getObject(directory.file(fileName))
+
+  def presignedDownloadUrl(path: Path.File)(implicit hc: HeaderCarrier): Future[PresignedDownloadUrl] =
+    objectStoreClient.presignedDownloadUrl(path)
 
   def getFileBytes(envelopeId: EnvelopeId, fileName: String, maybeSubDirectory: Option[String])(implicit
     hc: HeaderCarrier

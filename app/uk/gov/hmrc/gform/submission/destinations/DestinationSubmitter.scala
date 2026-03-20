@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory
 import play.api.libs.json._
 import uk.gov.hmrc.gform.notifier.NotifierAlgebra
 import uk.gov.hmrc.gform.sdes.SdesConfig
-import uk.gov.hmrc.gform.sharedmodel.{ DestinationEvaluation, DestinationResult, EmailVerifierService, LangADT, UserSession }
+import uk.gov.hmrc.gform.sharedmodel.{ DestinationEvaluation, DestinationResult, EmailVerifierService, LangADT, NRSOrchestratorDestinationResult, UserSession }
 import uk.gov.hmrc.gform.sharedmodel.form.{ FormData, FormId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations._
 import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
@@ -34,6 +34,7 @@ import uk.gov.hmrc.gform.submissionconsolidator.SubmissionConsolidatorAlgebra
 import uk.gov.hmrc.gform.wshttp.HttpResponseSyntax
 import uk.gov.hmrc.gform.core.FOpt
 import uk.gov.hmrc.gform.core.fromFutureA
+import uk.gov.hmrc.gform.nrs.NRSConnector
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.HandlebarsDestinationResponse
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 
@@ -51,7 +52,8 @@ class DestinationSubmitter[M[_]](
   sdesConfig: SdesConfig,
   handlebarsTemplateProcessor: HandlebarsTemplateProcessor = RealHandlebarsTemplateProcessor,
   pegaSubmitterAlgebra: PegaSubmitterAlgebra[M],
-  niRefundSubmitterAlgebra: NiRefundSubmitterAlgebra[M]
+  niRefundSubmitterAlgebra: NiRefundSubmitterAlgebra[M],
+  nrsConnector: NRSConnector
 )(implicit monadError: MonadError[M, Throwable], futureConverter: FutureConverter[M])
     extends DestinationSubmitterAlgebra[M] {
 
@@ -205,6 +207,15 @@ class DestinationSubmitter[M[_]](
           d,
           destinationEvaluation.evaluation.find(_.destinationId === d.id),
           submissionInfo
+        )
+      case d: Destination.NRSOrchestrator =>
+        submitToNrsOrchestrator(
+          d,
+          destinationEvaluation.evaluation.find(_.destinationId === d.id),
+          submissionInfo,
+          userSession,
+          l,
+          formData
         )
     }
 
@@ -416,6 +427,74 @@ class DestinationSubmitter[M[_]](
             createSuccessResponse(d, response)
         }
       }
+
+  private def submitToNrsOrchestrator(
+    d: Destination.NRSOrchestrator,
+    destinationResult: Option[DestinationResult],
+    submissionInfo: DestinationSubmissionInfo,
+    userSession: UserSession,
+    l: LangADT,
+    formData: Option[FormData]
+  )(implicit hc: HeaderCarrier): M[DestinationResponse] = {
+    val nrsDestinationResult = {
+      val dr = destinationResult
+        .getOrElse(throw new RuntimeException("destination result is not available"))
+      NRSOrchestratorDestinationResult.fromDestinationResult(dr) match {
+        case JsSuccess(value, path) => value
+        case JsError(errors) =>
+          throw new RuntimeException(s"Can't parse nrs orchestrator destination result. Errors: $errors")
+      }
+    }
+
+    val envelopeId = submissionInfo.submission.envelopeId
+
+    liftToM(
+      nrsConnector.submit(
+        envelopeId,
+        d,
+        userSession,
+        nrsDestinationResult,
+        submissionInfo,
+        l,
+        formData.getOrElse(throw new RuntimeException("form data is not available"))
+      )
+    ).map { response =>
+      val allOk: Boolean =
+        response.submissionResponse.isSuccess && response.attachmentResponses.forall(_.isSuccess)
+      if (allOk) {
+        DestinationResponse.NoResponse
+      } else {
+
+        def errorMsg: String = {
+          val errorMessage = new StringBuilder()
+          if (!response.submissionResponse.isSuccess) {
+            errorMessage.addAll(
+              s"main submission failed. Status: ${response.submissionResponse.status} Body: ${response.submissionResponse.body}\n"
+            )
+          }
+          response.attachmentResponses.collect {
+            case attachmentResponse if !attachmentResponse.isSuccess =>
+              errorMessage.addAll(
+                s"attachment submission failed. Status: ${attachmentResponse.status} Body: ${attachmentResponse.body}\n"
+              )
+          }
+          errorMessage.mkString
+        }
+
+        def logError(): Unit = logger.error(
+          genericLogMessage(submissionInfo.formId, d.id, errorMsg)
+        )
+
+        if (d.failOnError) {
+          logError()
+          throw new Exception(errorMsg)
+        } else {
+          logError()
+          DestinationResponse.NoResponse
+        }
+      }
+    }
+  }
 
   private def createFailureResponse(
     destination: Destination.HandlebarsHttpApi,

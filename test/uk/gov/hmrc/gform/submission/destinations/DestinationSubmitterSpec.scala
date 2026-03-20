@@ -20,6 +20,7 @@ import cats.{ Applicative, MonadError }
 import org.scalacheck.Gen
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import uk.gov.hmrc.gform.notifier.NotifierAlgebra
+import uk.gov.hmrc.gform.nrs.NRSConnector
 import uk.gov.hmrc.gform.sdes.{ SdesConfig, SdesRouting, WelshDefaults }
 import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormData, FormId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
@@ -382,6 +383,7 @@ class DestinationSubmitterSpec
         None,
         None,
         None,
+        None,
         None
       )
 
@@ -494,6 +496,7 @@ class DestinationSubmitterSpec
         None,
         None,
         None,
+        None,
         None
       )
 
@@ -554,6 +557,7 @@ class DestinationSubmitterSpec
         hmrcDms.id,
         None,
         Some(si.customerId),
+        None,
         None,
         None,
         None,
@@ -653,6 +657,7 @@ class DestinationSubmitterSpec
                 submissionConsolidator.id,
                 None,
                 Some(submissionInfo.customerId),
+                None,
                 None,
                 None,
                 None,
@@ -779,6 +784,7 @@ class DestinationSubmitterSpec
                 None,
                 None,
                 None,
+                None,
                 None
               )
             )
@@ -835,6 +841,7 @@ class DestinationSubmitterSpec
                 submissionConsolidator.id,
                 None,
                 Some(submissionInfo.customerId),
+                None,
                 None,
                 None,
                 None,
@@ -1062,6 +1069,7 @@ class DestinationSubmitterSpec
     val infoArchiveSubmitter = mock[InfoArchiveSubmitterAlgebra[Possible]]
     val pegaSubmitter = mock[PegaSubmitterAlgebra[Possible]]
     val niRefundSubmitter = mock[NiRefundSubmitterAlgebra[Possible]]
+    val nrsConnector = mock[NRSConnector]
     val sdesRouting = SdesRouting("api-key", "information-type", "recipient-or-sender")
     val defaults = WelshDefaults("WLU-WCC-XDFSWelshLanguageService", "WLU")
     val sdesConfig =
@@ -1090,7 +1098,8 @@ class DestinationSubmitterSpec
         sdesConfig,
         handlebarsTemplateProcessor,
         pegaSubmitter,
-        niRefundSubmitter
+        niRefundSubmitter,
+        nrsConnector
       )
 
     SubmitterParts(

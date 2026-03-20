@@ -101,7 +101,7 @@ object RoboticsXMLGenerator {
       case arrayNode: ArrayNode             => arrayNodeTag(arrayNode, field, sanitizeRequired, index)
     }
 
-  private[submission] def buildDataStoreXML(value: ObjectStructure, sanitizeRequired: Boolean): NodeSeq =
+  def buildDataStoreXML(value: ObjectStructure, sanitizeRequired: Boolean): NodeSeq =
     <gform>{buildObjectStructureXml(value, sanitizeRequired)}</gform>
 
   private def buildObjectStructureXml(value: ObjectStructure, sanitizeRequired: Boolean): NodeSeq =

@@ -35,7 +35,7 @@ import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination
 import uk.gov.hmrc.gform.submission.{ PdfAndXmlSummaries, Submission }
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.objectstore.client
-import uk.gov.hmrc.objectstore.client.{ ObjectSummaryWithMd5, Path }
+import uk.gov.hmrc.objectstore.client.{ ObjectSummaryWithMd5, Path, PresignedDownloadUrl }
 
 trait ObjectStoreAlgebra[F[_]] {
 
@@ -112,7 +112,8 @@ trait ObjectStoreAlgebra[F[_]] {
     envelopeId: EnvelopeId,
     fileId: FileId,
     contentType: ContentType,
-    fileName: String
+    fileName: String,
+    sha256Checksum: Option[String]
   )(implicit hc: HeaderCarrier): F[ObjectSummaryWithMd5]
 
   def submitEnvelope(
@@ -128,4 +129,6 @@ trait ObjectStoreAlgebra[F[_]] {
     hc: HeaderCarrier,
     m: Materializer
   ): F[ObjectSummaryWithMd5]
+
+  def presignedDownloadUrl(path: Path.File)(implicit hc: HeaderCarrier): F[PresignedDownloadUrl]
 }

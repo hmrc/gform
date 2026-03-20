@@ -50,11 +50,12 @@ case class UserSession(
   affinityGroup: Option[AffinityGroup],
   authEmail: String,
   authPhone: String,
-  enrolments: List[JsValue]
+  enrolments: List[JsValue],
+  onSubmitHeaders: Seq[(String, String)]
 )
 
 object UserSession {
-  val empty = UserSession("", "", "", "", "", None, "", "", Nil)
+  val empty = UserSession("", "", "", "", "", None, "", "", Nil, Seq())
 
   implicit val format: OFormat[UserSession] = Json.format[UserSession]
 }

@@ -19,6 +19,7 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate
 import cats.Show
 import cats.syntax.show._
 import play.api.libs.json.{ JsValue, Writes }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.NRSOrchestrator
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationIncludeIf.HandlebarValue
 
 package object destinations {
@@ -157,6 +158,22 @@ package object destinations {
           |  "nino": ${TextExpression.format.writes(TextExpression(niRefundClaimApi.nino))},
           |  "${Destination.typeDiscriminatorFieldName}": "${Destination.niRefundClaimApi}"
           |}""".stripMargin
+    case nrsOrchestrator: NRSOrchestrator =>
+      import nrsOrchestrator._
+      s"""
+         |{
+         |  "id": "${id.id}",
+         |  "includeIf":  "${getHandlebarValue(destination.includeIf)}",
+         |  ${optionalField("failOnError", Option(destination.failOnError), true)}
+         |  "businessId": "$businessId",
+         |  "notableEvent": "$notableEvent",
+         |  "searchKeys": {
+         |    ${searchKeys
+        .map { case (key, value) => s""""$key": ${TextExpression.format.writes(TextExpression(value))}""" }
+        .mkString(",")}
+         |  }
+         |}
+         |""".stripMargin
   }
 
   def optionalField[T: Writes](fieldName: String, ot: Option[T]): String =

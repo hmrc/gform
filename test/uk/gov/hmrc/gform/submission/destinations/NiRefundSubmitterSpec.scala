@@ -98,7 +98,8 @@ class NiRefundSubmitterSpec extends AnyWordSpecLike with Matchers with MockFacto
       sortCode = sortCode,
       accountNumber = accountNumber,
       rollNumber = rollNumber,
-      refundClaimReference = refundClaimReference
+      refundClaimReference = refundClaimReference,
+      data = None
     )
 
   val expectedValidResponse = HandlebarsDestinationResponse(DestinationId("ni-refund-test"), 204, JsNull)
