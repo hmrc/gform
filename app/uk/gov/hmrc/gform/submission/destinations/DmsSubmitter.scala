@@ -30,7 +30,7 @@ import uk.gov.hmrc.gform.pdfgenerator.{ FopService, PdfGeneratorService }
 import uk.gov.hmrc.gform.sdes.WelshDefaults
 import uk.gov.hmrc.gform.sdes.workitem.DestinationWorkItemAlgebra
 import uk.gov.hmrc.gform.sharedmodel.{ DestinationResult, LangADT }
-import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId, Submitted }
+import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DmsDestinationResponse
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DestinationResponse, HandlebarsTemplateProcessorModel }
@@ -87,7 +87,7 @@ class DmsSubmitter(
       _ <-
         objectStoreAlgebra
           .submitEnvelope(submission, summaries, updatedDms, formTemplate._id, envelope, destinationResult)
-      _ <-
+      workItemId <-
         destinationWorkItemAlgebra
           .pushWorkItem(
             submission.envelopeId,
@@ -102,13 +102,13 @@ class DmsSubmitter(
           Envelope(envelope.files.map(f => File(FileId(f.fileId), FileStatus.Available, f.fileName, f.length)))
         )
       _ <- success(logFileSizeBreach(submission.envelopeId, envelopeDetails.files))
-      _ <- formService.updateFormStatus(submissionInfo.formId, Submitted)
     } yield DmsDestinationResponse(
       updatedDms.dmsFormId,
       updatedDms.routing,
       updatedDms.classificationType,
       updatedDms.businessArea,
-      modelTree.value.structuredFormData.fields.length
+      modelTree.value.structuredFormData.fields.length,
+      workItemId
     )
   }
 

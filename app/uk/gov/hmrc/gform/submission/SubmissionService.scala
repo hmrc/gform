@@ -16,19 +16,20 @@
 
 package uk.gov.hmrc.gform.submission
 
+import cats.syntax.traverse._
 import cats.instances.future._
 import cats.syntax.applicative._
 import org.mongodb.scala.model.Filters.equal
 import org.slf4j.LoggerFactory
 import uk.gov.hmrc.gform.core.{ fromFutureA, _ }
 import uk.gov.hmrc.gform.email.EmailService
-import uk.gov.hmrc.gform.envelope.EnvelopeAlgebra
 import uk.gov.hmrc.gform.form.FormAlgebra
 import uk.gov.hmrc.gform.formredirect.{ FormRedirect, FormRedirectService }
 import uk.gov.hmrc.gform.formtemplate.FormTemplateAlgebra
 import uk.gov.hmrc.gform.repo.Repo
+import uk.gov.hmrc.gform.sdes.workitem.DestinationWorkItemAlgebra
 import uk.gov.hmrc.gform.sharedmodel.form._
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DmsDestinationResponse
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DmsDestinationResponse, OtherSdesDestinationResponse }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplate, FormTemplateId }
 import uk.gov.hmrc.gform.sharedmodel.{ SubmissionData, SubmissionRef }
 import uk.gov.hmrc.gform.submission.destinations.{ DestinationSubmissionInfo, DestinationsProcessorModelAlgebra, DestinationsSubmitterAlgebra }
@@ -47,7 +48,7 @@ class SubmissionService(
   formRedirectService: FormRedirectService,
   email: EmailService,
   timeProvider: TimeProvider,
-  envelopeAlgebra: EnvelopeAlgebra[FOpt]
+  destinationWorkItemService: DestinationWorkItemAlgebra[FOpt]
 )(implicit ex: ExecutionContext) {
   private val logger = LoggerFactory.getLogger(getClass)
 
@@ -90,6 +91,12 @@ class SubmissionService(
             submissionData.destinationEvaluation,
             submissionData.userSession
           )
+      maybeWorkItems = destinationResponses.map(_.collect {
+                         case d: DmsDestinationResponse       => (d.routing, d.workItemId)
+                         case o: OtherSdesDestinationResponse => (o.routing, o.workItemId)
+                       })
+      _ <- maybeWorkItems.traverse(destinationWorkItemService.ready)
+      _ <- formAlgebra.updateFormStatus(submissionInfo.formId, Submitted)
       emailAddress = email.getEmailAddress(form, submissionData.maybeEmailAddress)
       _ <- fromFutureA(
              formTemplate.emailTemplateId.fold(().pure[Future])(emailTemplateId =>

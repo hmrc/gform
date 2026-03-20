@@ -157,7 +157,7 @@ class SubmissionModule(
     formTemplateModule.formRedirectService,
     emailModule.emailLogic,
     timeModule.timeProvider,
-    envelopeModule.foptEnvelopeService
+    sdesModule.foptDestinationWorkItemService
   )
 
   val submissionController = new SubmissionController(configModule.controllerComponents, submissionService)
