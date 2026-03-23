@@ -249,31 +249,33 @@ class NRSConnector(
     implicit hc: HeaderCarrier
   ): Future[List[NRSAttachment]] =
     Future.sequence(
-      envelopeData.files.filterNot(file => file.fileName.startsWith(submissionRef.withoutHyphens)).map { envelopeFile =>
-        val sha256: String = envelopeFile.metadata
-          .getOrElse("sha256Checksum", throw new RuntimeException("No checksum available in meta data"))
-          .head
+      envelopeData.files
+        .filterNot(file => file.fileName.startsWith(submissionRef.withoutHyphens) && file.subDirectory.nonEmpty)
+        .map { envelopeFile =>
+          val sha256: String = envelopeFile.metadata
+            .getOrElse("sha256Checksum", throw new RuntimeException("No checksum available in meta data"))
+            .head
 
-        val path: Path.File = objectStoreModule.objectStoreConnector
-          .directory(envelopeId.value, envelopeFile.subDirectory)
-          .file(envelopeFile.fileName)
-        val fileId = UUID.randomUUID().toString
-        val downloadUrlFtr = objectStoreModule.foptObjectStoreService.presignedDownloadUrl(path)
-        downloadUrlFtr
-          .map { downloadUrl =>
-            NRSAttachment(
-              downloadUrl.downloadUrl.toString,
-              fileId,
-              sha256,
-              envelopeFile.contentType.value
-            )
-          }
-          .value
-          .map {
-            case Right(nrsAttachment: NRSAttachment) => nrsAttachment
-            case Left(_)                             => throw new RuntimeException("Unknown type expected NRSAttachment")
-          }
-      }
+          val path: Path.File = objectStoreModule.objectStoreConnector
+            .directory(envelopeId.value, envelopeFile.subDirectory)
+            .file(envelopeFile.fileName)
+          val fileId = UUID.randomUUID().toString
+          val downloadUrlFtr = objectStoreModule.foptObjectStoreService.presignedDownloadUrl(path)
+          downloadUrlFtr
+            .map { downloadUrl =>
+              NRSAttachment(
+                downloadUrl.downloadUrl.toString,
+                fileId,
+                sha256,
+                envelopeFile.contentType.value
+              )
+            }
+            .value
+            .map {
+              case Right(nrsAttachment: NRSAttachment) => nrsAttachment
+              case Left(_)                             => throw new RuntimeException("Unknown type expected NRSAttachment")
+            }
+        }
     )
 
   private def createPayload(
