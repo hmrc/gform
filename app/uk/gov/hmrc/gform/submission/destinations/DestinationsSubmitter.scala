@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.gform.submission.destinations
 
-import cats.Monad
+import cats.{ Monad, MonadError }
 import cats.data.NonEmptyList
 import cats.syntax.applicative._
 import cats.syntax.either._
@@ -28,8 +28,9 @@ import uk.gov.hmrc.gform.sharedmodel.{ DestinationEvaluation, LangADT, UserSessi
 import uk.gov.hmrc.gform.submission.handlebars.HandlebarsModelTree
 import uk.gov.hmrc.http.HeaderCarrier
 
-class DestinationsSubmitter[M[_]: Monad](destinationSubmitter: DestinationSubmitterAlgebra[M])
-    extends DestinationsSubmitterAlgebra[M] {
+class DestinationsSubmitter[M[_]: Monad](destinationSubmitter: DestinationSubmitterAlgebra[M])(implicit
+  monadError: MonadError[M, Throwable]
+) extends DestinationsSubmitterAlgebra[M] {
 
   override def send(
     submissionInfo: DestinationSubmissionInfo,
@@ -74,7 +75,7 @@ class DestinationsSubmitter[M[_]: Monad](destinationSubmitter: DestinationSubmit
     TailRecParameter(destinations.toList, accumulatedModel, Nil).tailRecM {
       case TailRecParameter(Nil, _, responses) => Option(responses).asRight[TailRecParameter].pure[M]
       case TailRecParameter(head :: rest, updatedAccumulatedModel, updatedResponseList) =>
-        destinationSubmitter
+        val step: M[Either[TailRecParameter, Option[List[DestinationResponse]]]] = destinationSubmitter
           .submitIfIncludeIf(
             head,
             submissionInfo,
@@ -97,6 +98,12 @@ class DestinationsSubmitter[M[_]: Monad](destinationSubmitter: DestinationSubmit
               submitterResult +: updatedResponseList
             ).asLeft
           )
+        monadError.handleErrorWith(step) { throwable =>
+          // Remove workitems captured in updatedResponseList
+          //
+          // And return empty result
+          Option.empty[List[DestinationResponse]].asRight.pure[M]
+        }
     }
   }
 }
