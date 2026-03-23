@@ -142,7 +142,12 @@ class FormTemplateService(
         formTemplateConfirmationsUpdated =
           ConfirmationHelper(formTemplateWithAtlExpressionsUpdated).rewriteConfirmation()
         handlebarsSchemaIds <- handlebarsSchemaAlgebra.getAllIds
-        _                   <- verify(formTemplateConfirmationsUpdated, appConfig, handlebarsSchemaIds)(expressionsContext)
+        _ <- verify(
+               formTemplateConfirmationsUpdated,
+               appConfig,
+               handlebarsSchemaIds,
+               booleanExpressionsContextSubstituted
+             )(expressionsContext)
         formTemplateUpdated <- rewrite(formTemplateConfirmationsUpdated)
       } yield formTemplateUpdated
 
