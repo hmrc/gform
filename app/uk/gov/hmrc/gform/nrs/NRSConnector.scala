@@ -22,25 +22,24 @@ import play.api.libs.json._
 import uk.gov.hmrc.auth.core.retrieve.Retrieval
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
-import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.envelope.EnvelopeAlgebra
 import uk.gov.hmrc.gform.objectstore.ObjectStoreModule
 import uk.gov.hmrc.gform.scheduler.nrsOrchestrator.{NrsOrchestratorAttachmentWorkItem, NrsOrchestratorAttachmentWorkItemRepo, NrsOrchestratorWorkItem, NrsOrchestratorWorkItemRepo}
 import uk.gov.hmrc.gform.sharedmodel.envelope.EnvelopeData
-import uk.gov.hmrc.gform.sharedmodel.form.{EnvelopeId, FormData}
+import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FormData }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.NRSOrchestrator
-import uk.gov.hmrc.gform.sharedmodel.{LangADT, NRSOrchestratorDestinationResultData, SubmissionRef}
+import uk.gov.hmrc.gform.sharedmodel.{LangADT, NRSOrchestratorDestinationResultData, SubmissionRef, UserSession}
 import uk.gov.hmrc.gform.submission.Submission
 import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.client.HttpClientV2
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps}
+import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse, StringContextOps }
 import uk.gov.hmrc.objectstore.client.Path
 
 import java.net.URL
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
-import java.util.{Base64, UUID}
-import scala.concurrent.{ExecutionContext, Future}
+import java.util.{ Base64, UUID }
+import scala.concurrent.{ ExecutionContext, Future }
 
 private case class SubmissionRequestMetaData(
   businessId: String,
@@ -115,14 +114,15 @@ object NrsPayload {
 }
 
 class NRSConnector(
-  configModule: ConfigModule,
+  baseUrl: String,
   httpClient: HttpClientV2,
   objectStoreModule: ObjectStoreModule,
   envelopeService: EnvelopeAlgebra[Future],
   authConnector: AuthConnector,
   apiKey: String,
   nrsOrchestratorWorkItemRepo: NrsOrchestratorWorkItemRepo,
-  nrsOrchestratorAttachmentWorkItemRepo: NrsOrchestratorAttachmentWorkItemRepo
+  nrsOrchestratorAttachmentWorkItemRepo: NrsOrchestratorAttachmentWorkItemRepo,
+  isProd: Boolean
 )(implicit ec: ExecutionContext) {
 
   private val contentType = "application/json"
@@ -131,7 +131,7 @@ class NRSConnector(
 
   private def makeCall[T](url: URL, body: T)(implicit writes: Writes[T], hc: HeaderCarrier) = {
 
-    if (!configModule.isProd) {
+    if (!isProd) {
       logger.warn("request: POST " + url)
       logger.warn(Json.prettyPrint(Json.toJson(body)))
     }
@@ -174,24 +174,24 @@ class NRSConnector(
 
     def toBase64(str: String) = new String(Base64.getEncoder.encode(str.getBytes("UTF-8")), "UTF-8")
 
-    val url = url"${configModule.serviceConfig.baseUrl("nrs-orchestrator")}/nrs-orchestrator/submission"
+    val url = url"$baseUrl/nrs-orchestrator/submission"
 
     val searchKeys = Json.toJson(destinationResultData.searchKeys).as[JsObject]
     val body = SubmissionRequest(
       payload = toBase64(payloadJson),
-      SubmissionRequestMetaData(
-        businessId = destination.businessId,
-        notableEvent = destination.notableEvent,
-        payloadContentType = contentType,
-        payloadSha256Checksum = payloadSha256Checksum,
-        attachmentIds = attachmentIds,
+               SubmissionRequestMetaData(
+                 businessId = destination.businessId,
+                 notableEvent = destination.notableEvent,
+                 payloadContentType = contentType,
+                 payloadSha256Checksum = payloadSha256Checksum,
+                 attachmentIds = attachmentIds,
         userSubmissionTimestamp = submissionDate,
-        identityData = identityData,
-        userAuthToken = userAuthToken,
-        headerData = headerData,
-        searchKeys = searchKeys
-      )
-    )
+                 identityData = identityData,
+                 userAuthToken = userAuthToken,
+                 headerData = headerData,
+                 searchKeys = searchKeys
+               )
+             )
     makeCall(url, body)
   }
 
@@ -230,7 +230,7 @@ class NRSConnector(
     attachment: NRSAttachment,
     nrsOrchestrator: NRSOrchestrator
   )(implicit hc: HeaderCarrier): Future[HttpResponse] = {
-    val url = url"${configModule.serviceConfig.baseUrl("nrs-orchestrator")}/nrs-orchestrator/attachment"
+    val url = url"$baseUrl/nrs-orchestrator/attachment"
     val body = AttachmentRequest(
       attachmentUrl = attachment.url,
       attachmentId = attachment.id,
@@ -246,32 +246,32 @@ class NRSConnector(
   private def retrieveAttachments(envelopeData: EnvelopeData, envelopeId: EnvelopeId, submissionRef: SubmissionRef)(implicit hc: HeaderCarrier): Future[List[NRSAttachment]] =
     Future.sequence(
       envelopeData.files
-        .filterNot(file => file.fileName.startsWith(submissionRef.withoutHyphens)) //Filter out gform generated files
+        .filterNot(file => file.fileName.startsWith(submissionRef.withoutHyphens) && file.subDirectory.nonEmpty) //Filter out gform generated files
         .map { envelopeFile =>
-        val sha256: String = envelopeFile.metadata
-          .getOrElse("sha256Checksum", throw new RuntimeException("No checksum available in meta data"))
-          .head
+          val sha256: String = envelopeFile.metadata
+            .getOrElse("sha256Checksum", throw new RuntimeException("No checksum available in meta data"))
+            .head
 
-        val path: Path.File = objectStoreModule.objectStoreConnector
-          .directory(envelopeId.value, envelopeFile.subDirectory)
-          .file(envelopeFile.fileName)
-        val fileId = UUID.randomUUID().toString
-        val downloadUrlFtr = objectStoreModule.foptObjectStoreService.presignedDownloadUrl(path)
-        downloadUrlFtr
-          .map { downloadUrl =>
-            NRSAttachment(
-              downloadUrl.downloadUrl.toString,
-              fileId,
-              sha256,
-              envelopeFile.contentType.value
-            )
-          }
-          .value
-          .map {
-            case Right(nrsAttachment: NRSAttachment) => nrsAttachment
-            case Left(_)                             => throw new RuntimeException("Unknown type expected NRSAttachment")
-          }
-      }
+          val path: Path.File = objectStoreModule.objectStoreConnector
+            .directory(envelopeId.value, envelopeFile.subDirectory)
+            .file(envelopeFile.fileName)
+          val fileId = UUID.randomUUID().toString
+          val downloadUrlFtr = objectStoreModule.foptObjectStoreService.presignedDownloadUrl(path)
+          downloadUrlFtr
+            .map { downloadUrl =>
+              NRSAttachment(
+                downloadUrl.downloadUrl.toString,
+                fileId,
+                sha256,
+                envelopeFile.contentType.value
+              )
+            }
+            .value
+            .map {
+              case Right(nrsAttachment: NRSAttachment) => nrsAttachment
+              case Left(_)                             => throw new RuntimeException("Unknown type expected NRSAttachment")
+            }
+        }
     )
 
   def createPayload(
@@ -300,12 +300,11 @@ class NRSConnector(
     submissionDate: String,
     workItemSubmission: Boolean
   )(implicit hc: HeaderCarrier): Future[NrsOrchestratorHttpResponse] = {
-    val envelopeDataFtr = envelopeService.get(envelopeId)
 
-    val attachmentsFtr = envelopeDataFtr.flatMap(envelopeData =>
-      retrieveAttachments(envelopeData, envelopeId, submissionRef)
-    )
-    val submissionFtr = attachmentsFtr.flatMap { attachments =>
+    def attachmentsFtr(envelope: EnvelopeData): Future[List[NRSAttachment]] =
+      retrieveAttachments(envelope, envelopeId, submissionRef)
+
+    def submissionFtr(attachments: List[NRSAttachment]): Future[HttpResponse] = {
       val attachmentIds = attachments.map(_.id)
       createSubmission(
         destination,
@@ -331,31 +330,27 @@ class NRSConnector(
       )
     }
 
-    val attachmentResponsesFtr =
-      (for {
-        attachments        <- attachmentsFtr
-        submissionResponse <- submissionFtr
-      } yield {
 
-        if(!workItemSubmission && (submissionResponse.status == 422 || (submissionResponse.status >= 500 && submissionResponse.status < 600))) {
-          pushSubmissionWorkItem
-        }
-
-        if (submissionResponse.status != 202) {
-          Future.successful(List())
-        } else {
-          val submissionId = Json.parse(submissionResponse.body).as[NRSSubmissionResponse].nrSubmissionId
-          Future.sequence(
-            attachments.map { attachment =>
-              submitObjectStoreAttachment(submissionId, attachment, destination)
-            }
-          )
-        }
-      }).flatten
+    def submitAttachments(
+                           submissionResponse: HttpResponse,
+                           attachments: List[NRSAttachment]
+                         ): Future[List[HttpResponse]] =
+      if (submissionResponse.status != 202) {
+        Future.successful(List())
+      } else {
+        val submissionId = Json.parse(submissionResponse.body).as[NRSSubmissionResponse].nrSubmissionId
+        Future.sequence(
+          attachments.map { attachment =>
+            submitObjectStoreAttachment(submissionId, attachment, destination)
+          }
+        )
+      }
 
     for {
-      submissionResponse  <- submissionFtr
-      attachmentResponses <- attachmentResponsesFtr
+      envelope            <- envelopeService.get(envelopeId)
+      attachments         <- attachmentsFtr(envelope)
+      submissionResponse  <- submissionFtr(attachments)
+      attachmentResponses <- submitAttachments(submissionResponse, attachments)
     } yield NrsOrchestratorHttpResponse(submissionResponse, attachmentResponses)
   }
 }
