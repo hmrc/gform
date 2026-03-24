@@ -16,14 +16,14 @@
 
 package uk.gov.hmrc.gform.scheduler.nrsOrchestrator
 
-import play.api.libs.json.{Json, OFormat}
+import play.api.libs.json.{ Json, OFormat }
 import uk.gov.hmrc.gform.nrs.NRSAttachment
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.NRSOrchestrator
 
 final case class NrsOrchestratorAttachmentWorkItem(
-                                                    nrSubmissionId: String,
-                                                    attachment: NRSAttachment,
-                                                    nrsOrchestrator: NRSOrchestrator
+  nrSubmissionId: String,
+  attachment: NRSAttachment,
+  businessId: String,
+  notableEvent: String
 )
 
 object NrsOrchestratorAttachmentWorkItem {

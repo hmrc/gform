@@ -18,7 +18,6 @@ package uk.gov.hmrc.gform.scheduler.nrsOrchestrator
 
 import org.apache.pekko.actor.ActorSystem
 import uk.gov.hmrc.gform.scheduler.PollingService
-import uk.gov.hmrc.gform.sharedmodel.sdes.SdesWorkItem
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.FiniteDuration

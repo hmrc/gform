@@ -39,11 +39,15 @@ class NrsOrchestratorAttachmentQueueService(
     val workItem = nrsWorkItem.item
     logger.debug(s"Retry of nrsOrchestrator attachment ${workItem.attachment.id}")
 
-    nrsConnector.submitObjectStoreAttachment(
-      workItem.nrSubmissionId,
-      workItem.attachment,
-      workItem.nrsOrchestrator
-    ).void(ec)
+    nrsConnector
+      .submitObjectStoreAttachment(
+        workItem.nrSubmissionId,
+        workItem.attachment,
+        workItem.businessId,
+        workItem.notableEvent,
+        workItemSubmission = true
+      )
+      .void(ec)
   }
 
   override val repo: WorkItemRepo[NrsOrchestratorAttachmentWorkItem] = notificationRepository

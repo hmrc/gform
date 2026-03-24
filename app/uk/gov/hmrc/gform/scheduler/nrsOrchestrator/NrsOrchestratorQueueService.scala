@@ -16,14 +16,14 @@
 
 package uk.gov.hmrc.gform.scheduler.nrsOrchestrator
 
-import org.slf4j.{Logger, LoggerFactory}
+import org.slf4j.{ Logger, LoggerFactory }
 import uk.gov.hmrc.gform.core.FutureSyntax
 import uk.gov.hmrc.gform.nrs.NRSConnector
-import uk.gov.hmrc.gform.scheduler.{QueueAlgebra, WorkItemRepo}
+import uk.gov.hmrc.gform.scheduler.{ QueueAlgebra, WorkItemRepo }
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.mongo.workitem.WorkItem
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 
 class NrsOrchestratorQueueService(
   nrsConnector: NRSConnector,
@@ -37,20 +37,23 @@ class NrsOrchestratorQueueService(
   override def sendWorkItem(nrsWorkItem: WorkItem[NrsOrchestratorWorkItem]): Future[Unit] = {
     implicit val hc: HeaderCarrier = HeaderCarrier()
     val workItem = nrsWorkItem.item
-    logger.debug(s"Retry of nrsOrchestrator submit ${workItem.destination.id}")
+    logger.debug(s"Retry of nrsOrchestrator submit envelope id: ${workItem.envelopeId}")
 
-    nrsConnector.submit(
-      workItem.envelopeId,
-      workItem.destination,
-      workItem.onSubmitHeaders,
-      workItem.destinationResultData,
-      workItem.submissionRef,
-      workItem.payload,
-      workItem.userAuthToken,
-      workItem.identityData,
-      workItem.submissionDate,
-      workItemSubmission = true
-    ).void(ec)
+    nrsConnector
+      .submit(
+        workItem.envelopeId,
+        workItem.businessId,
+        workItem.notableEvent,
+        workItem.onSubmitHeaders,
+        workItem.destinationResultData,
+        workItem.submissionRef,
+        workItem.payload,
+        workItem.userAuthToken,
+        workItem.identityData,
+        workItem.submissionDate,
+        workItemSubmission = true
+      )
+      .void(ec)
   }
 
   override val repo: WorkItemRepo[NrsOrchestratorWorkItem] = notificationRepository

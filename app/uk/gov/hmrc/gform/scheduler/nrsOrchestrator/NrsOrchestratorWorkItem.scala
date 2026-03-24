@@ -16,22 +16,22 @@
 
 package uk.gov.hmrc.gform.scheduler.nrsOrchestrator
 
-import play.api.libs.json.{Format, JsObject, Json, OFormat}
+import play.api.libs.json.{ Format, JsObject, Json, OFormat }
 import uk.gov.hmrc.gform.nrs.NrsPayload
-import uk.gov.hmrc.gform.sharedmodel.{NRSOrchestratorDestinationResultData, SubmissionRef}
+import uk.gov.hmrc.gform.sharedmodel.{ NRSOrchestratorDestinationResultData, SubmissionRef }
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.NRSOrchestrator
 
 final case class NrsOrchestratorWorkItem(
-                               envelopeId: EnvelopeId,
-                               destination: NRSOrchestrator,
-                               onSubmitHeaders: Seq[(String, String)],
-                               destinationResultData: NRSOrchestratorDestinationResultData,
-                               submissionRef: SubmissionRef,
-                               payload: NrsPayload,
-                               submissionDate: String,
-                               userAuthToken: String,
-                               identityData: JsObject
+  envelopeId: EnvelopeId,
+  businessId: String,
+  notableEvent: String,
+  onSubmitHeaders: Seq[(String, String)],
+  destinationResultData: NRSOrchestratorDestinationResultData,
+  submissionRef: SubmissionRef,
+  payload: NrsPayload,
+  submissionDate: String,
+  userAuthToken: String,
+  identityData: JsObject
 )
 
 object NrsOrchestratorWorkItem {

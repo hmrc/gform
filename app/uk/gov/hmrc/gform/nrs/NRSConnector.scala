@@ -24,11 +24,10 @@ import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
 import uk.gov.hmrc.gform.envelope.EnvelopeAlgebra
 import uk.gov.hmrc.gform.objectstore.ObjectStoreModule
-import uk.gov.hmrc.gform.scheduler.nrsOrchestrator.{NrsOrchestratorAttachmentWorkItem, NrsOrchestratorAttachmentWorkItemRepo, NrsOrchestratorWorkItem, NrsOrchestratorWorkItemRepo}
+import uk.gov.hmrc.gform.scheduler.nrsOrchestrator.{ NrsOrchestratorAttachmentWorkItem, NrsOrchestratorAttachmentWorkItemRepo, NrsOrchestratorWorkItem, NrsOrchestratorWorkItemRepo }
 import uk.gov.hmrc.gform.sharedmodel.envelope.EnvelopeData
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FormData }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.NRSOrchestrator
-import uk.gov.hmrc.gform.sharedmodel.{LangADT, NRSOrchestratorDestinationResultData, SubmissionRef, UserSession}
+import uk.gov.hmrc.gform.sharedmodel.{ LangADT, NRSOrchestratorDestinationResultData, SubmissionRef }
 import uk.gov.hmrc.gform.submission.Submission
 import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.client.HttpClientV2
@@ -85,6 +84,10 @@ private object AttachmentRequest {
 }
 
 case class NRSAttachment(url: String, id: String, sha256Checksum: String, contentType: String)
+
+object NRSAttachment {
+  implicit val format: Format[NRSAttachment] = Json.format
+}
 
 case class NrsOrchestratorHttpResponse(
   submissionResponse: HttpResponse,
@@ -151,7 +154,8 @@ class NRSConnector(
   //Curl to add local auth access to nrs-orchestrator
   //curl -i -X POST -H 'Content-Type: application/json' -d '{ "token": "1234", "principal": "nrs-orchestrator", "permissions": [{ "resourceType": "object-store", "resourceLocation": "nrs-orchestrator", "actions": ["*"] }]}' 'http://localhost:8470/test-only/token'
   private def createSubmission(
-    destination: NRSOrchestrator,
+    businessId: String,
+    notableEvent: String,
     attachmentIds: Option[Seq[String]],
     payload: NrsPayload,
     onSubmitHeaders: Seq[(String, String)],
@@ -179,19 +183,19 @@ class NRSConnector(
     val searchKeys = Json.toJson(destinationResultData.searchKeys).as[JsObject]
     val body = SubmissionRequest(
       payload = toBase64(payloadJson),
-               SubmissionRequestMetaData(
-                 businessId = destination.businessId,
-                 notableEvent = destination.notableEvent,
-                 payloadContentType = contentType,
-                 payloadSha256Checksum = payloadSha256Checksum,
-                 attachmentIds = attachmentIds,
+      SubmissionRequestMetaData(
+        businessId = businessId,
+        notableEvent = notableEvent,
+        payloadContentType = contentType,
+        payloadSha256Checksum = payloadSha256Checksum,
+        attachmentIds = attachmentIds,
         userSubmissionTimestamp = submissionDate,
-                 identityData = identityData,
-                 userAuthToken = userAuthToken,
-                 headerData = headerData,
-                 searchKeys = searchKeys
-               )
-             )
+        identityData = identityData,
+        userAuthToken = userAuthToken,
+        headerData = headerData,
+        searchKeys = searchKeys
+      )
+    )
     makeCall(url, body)
   }
 
@@ -228,8 +232,21 @@ class NRSConnector(
   def submitObjectStoreAttachment(
     nrSubmissionId: String,
     attachment: NRSAttachment,
-    nrsOrchestrator: NRSOrchestrator
+    businessId: String,
+    notableEvent: String,
+    workItemSubmission: Boolean
   )(implicit hc: HeaderCarrier): Future[HttpResponse] = {
+    def handleWorkItem(attachmentResponse: HttpResponse): Unit = {
+      def pushWorkItem =
+        nrsOrchestratorAttachmentWorkItemRepo.pushNew(
+          NrsOrchestratorAttachmentWorkItem(nrSubmissionId, attachment, businessId, notableEvent)
+        )
+
+      def failed = nrsServerFailure(attachmentResponse)
+      if (!workItemSubmission && failed) {
+        val _ = pushWorkItem
+      }
+    }
     val url = url"$baseUrl/nrs-orchestrator/attachment"
     val body = AttachmentRequest(
       attachmentUrl = attachment.url,
@@ -237,16 +254,23 @@ class NRSConnector(
       attachmentSha256Checksum = attachment.sha256Checksum,
       attachmentContentType = attachment.contentType,
       nrSubmissionId = nrSubmissionId,
-      businessId = nrsOrchestrator.businessId,
-      notableEvent = nrsOrchestrator.notableEvent
+      businessId = businessId,
+      notableEvent = notableEvent
     )
-    makeCall(url, body)
+    makeCall(url, body).map { response =>
+      handleWorkItem(response)
+      response
+    }
   }
 
-  private def retrieveAttachments(envelopeData: EnvelopeData, envelopeId: EnvelopeId, submissionRef: SubmissionRef)(implicit hc: HeaderCarrier): Future[List[NRSAttachment]] =
+  private def retrieveAttachments(envelopeData: EnvelopeData, envelopeId: EnvelopeId, submissionRef: SubmissionRef)(
+    implicit hc: HeaderCarrier
+  ): Future[List[NRSAttachment]] =
     Future.sequence(
       envelopeData.files
-        .filterNot(file => file.fileName.startsWith(submissionRef.withoutHyphens) && file.subDirectory.nonEmpty) //Filter out gform generated files
+        .filterNot(file =>
+          file.fileName.startsWith(submissionRef.withoutHyphens) && file.subDirectory.nonEmpty
+        ) //Filter out gform generated files
         .map { envelopeFile =>
           val sha256: String = envelopeFile.metadata
             .getOrElse("sha256Checksum", throw new RuntimeException("No checksum available in meta data"))
@@ -288,9 +312,15 @@ class NRSConnector(
       )
     )
 
+  private def nrsServerFailure(httpResponse: HttpResponse) = {
+    val status = httpResponse.status
+    status == 422 || (status >= 500 && status < 600)
+  }
+
   def submit(
     envelopeId: EnvelopeId,
-    destination: NRSOrchestrator,
+    businessId: String,
+    notableEvent: String,
     onSubmitHeaders: Seq[(String, String)],
     destinationResultData: NRSOrchestratorDestinationResultData,
     submissionRef: SubmissionRef,
@@ -301,13 +331,40 @@ class NRSConnector(
     workItemSubmission: Boolean
   )(implicit hc: HeaderCarrier): Future[NrsOrchestratorHttpResponse] = {
 
+    def handleWorkItem(
+      submissionResponse: HttpResponse
+    ): Unit = {
+      def pushSubmissionWorkItem =
+        nrsOrchestratorWorkItemRepo.pushNew(
+          NrsOrchestratorWorkItem(
+            envelopeId,
+            businessId,
+            notableEvent,
+            onSubmitHeaders,
+            destinationResultData,
+            submissionRef,
+            payload,
+            submissionDate,
+            userAuthToken,
+            identityData
+          )
+        )
+
+      def submissionFailed = nrsServerFailure(submissionResponse)
+
+      if (!workItemSubmission && submissionFailed) {
+        val _ = pushSubmissionWorkItem
+      }
+    }
+
     def attachmentsFtr(envelope: EnvelopeData): Future[List[NRSAttachment]] =
       retrieveAttachments(envelope, envelopeId, submissionRef)
 
     def submissionFtr(attachments: List[NRSAttachment]): Future[HttpResponse] = {
       val attachmentIds = attachments.map(_.id)
       createSubmission(
-        destination,
+        businessId,
+        notableEvent,
         if (attachmentIds.nonEmpty) Some(attachmentIds) else None,
         payload,
         onSubmitHeaders,
@@ -318,30 +375,23 @@ class NRSConnector(
       )
     }
 
-    def pushSubmissionWorkItem = {
-      nrsOrchestratorWorkItemRepo.pushNew(
-        NrsOrchestratorWorkItem(envelopeId, destination, onSubmitHeaders, destinationResultData, submissionRef, payload, submissionDate, userAuthToken, identityData)
-      )
-    }
-
-    def pushAttachmentWorkItem(nrsOrchestratorAttachmentWorkItem: NrsOrchestratorAttachmentWorkItem) = {
-      nrsOrchestratorAttachmentWorkItemRepo.pushNew(
-        nrsOrchestratorAttachmentWorkItem
-      )
-    }
-
-
     def submitAttachments(
-                           submissionResponse: HttpResponse,
-                           attachments: List[NRSAttachment]
-                         ): Future[List[HttpResponse]] =
+      submissionResponse: HttpResponse,
+      attachments: List[NRSAttachment]
+    ): Future[List[HttpResponse]] =
       if (submissionResponse.status != 202) {
         Future.successful(List())
       } else {
         val submissionId = Json.parse(submissionResponse.body).as[NRSSubmissionResponse].nrSubmissionId
         Future.sequence(
           attachments.map { attachment =>
-            submitObjectStoreAttachment(submissionId, attachment, destination)
+            submitObjectStoreAttachment(
+              submissionId,
+              attachment,
+              businessId,
+              notableEvent,
+              workItemSubmission = false
+            )
           }
         )
       }
@@ -351,6 +401,9 @@ class NRSConnector(
       attachments         <- attachmentsFtr(envelope)
       submissionResponse  <- submissionFtr(attachments)
       attachmentResponses <- submitAttachments(submissionResponse, attachments)
-    } yield NrsOrchestratorHttpResponse(submissionResponse, attachmentResponses)
+    } yield {
+      handleWorkItem(submissionResponse)
+      NrsOrchestratorHttpResponse(submissionResponse, attachmentResponses)
+    }
   }
 }

@@ -26,8 +26,8 @@ import play.api.libs.json._
 import uk.gov.hmrc.auth.core.MissingBearerToken
 import uk.gov.hmrc.gform.notifier.NotifierAlgebra
 import uk.gov.hmrc.gform.sdes.SdesConfig
-import uk.gov.hmrc.gform.sharedmodel.{DestinationEvaluation, DestinationResult, EmailVerifierService, LangADT, NRSOrchestratorDestinationResult, UserSession}
-import uk.gov.hmrc.gform.sharedmodel.form.{FormData, FormId}
+import uk.gov.hmrc.gform.sharedmodel.{ DestinationEvaluation, DestinationResult, EmailVerifierService, LangADT, NRSOrchestratorDestinationResult, UserSession }
+import uk.gov.hmrc.gform.sharedmodel.form.{ FormData, FormId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations._
 import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
 import uk.gov.hmrc.gform.submission.handlebars._
@@ -37,9 +37,9 @@ import uk.gov.hmrc.gform.core.FOpt
 import uk.gov.hmrc.gform.core.fromFutureA
 import uk.gov.hmrc.gform.nrs.NRSConnector
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.HandlebarsDestinationResponse
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
+import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 
 class DestinationSubmitter[M[_]](
   dms: DmsSubmitterAlgebra[M],
@@ -448,7 +448,11 @@ class DestinationSubmitter[M[_]](
     }
 
     val envelopeId = submissionInfo.submission.envelopeId
-    val payload = nrsConnector.createPayload(formData.getOrElse(throw new RuntimeException("form data is not available")), submissionInfo.submission, l)
+    val payload = nrsConnector.createPayload(
+      formData.getOrElse(throw new RuntimeException("form data is not available")),
+      submissionInfo.submission,
+      l
+    )
     val userAuthToken = hc.authorization.getOrElse(throw MissingBearerToken("missing authorisation token")).value
     val submissionDate = java.time.Instant.now().toString
 
@@ -456,7 +460,8 @@ class DestinationSubmitter[M[_]](
       liftToM(
         nrsConnector.submit(
           envelopeId,
-          d,
+          d.businessId,
+          d.notableEvent,
           userSession.onSubmitHeaders,
           nrsDestinationResult.data,
           submissionInfo.submission.submissionRef,

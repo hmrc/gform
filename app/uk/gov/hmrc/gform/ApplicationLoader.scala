@@ -67,6 +67,7 @@ import uk.gov.hmrc.gform.repo.Repo
 import uk.gov.hmrc.gform.retrieval.AuthRetrievalModule
 import uk.gov.hmrc.gform.save4later.FormMongoCache
 import uk.gov.hmrc.gform.scheduler.SchedulerModule
+import uk.gov.hmrc.gform.scheduler.nrsOrchestrator.{ NrsOrchestratorAttachmentWorkItemRepo, NrsOrchestratorWorkItemRepo }
 import uk.gov.hmrc.gform.screenshottool.ScreenshotController
 import uk.gov.hmrc.gform.sdes.SdesModule
 import uk.gov.hmrc.gform.sharedmodel.{ HandlebarsSchema, HandlebarsTemplate }
@@ -314,6 +315,11 @@ class ApplicationModule(context: Context)
 
   private val hipModule = new HipModule(configModule, wSHttpModule)
 
+  private val nrsOrchestratorNotificationRepository = new NrsOrchestratorWorkItemRepo(mongoModule.mongoComponent)
+  private val nrsOrchestratorAttachmentNotificationRepository = new NrsOrchestratorAttachmentWorkItemRepo(
+    mongoModule.mongoComponent
+  )
+
   private val submissionModule =
     new SubmissionModule(
       configModule,
@@ -332,7 +338,9 @@ class ApplicationModule(context: Context)
       sdesModule,
       materializer,
       hipModule,
-      wSHttpModule
+      wSHttpModule,
+      nrsOrchestratorNotificationRepository,
+      nrsOrchestratorAttachmentNotificationRepository
     )
 
   private val retrievalModule =
@@ -411,7 +419,16 @@ class ApplicationModule(context: Context)
     playComponents.context.devContext.map(_.sourceMapper)
   )
 
-  new SchedulerModule(configModule, mongoModule, sdesModule, akkaModule, applicationLifecycle)
+  new SchedulerModule(
+    configModule,
+    mongoModule,
+    sdesModule,
+    akkaModule,
+    applicationLifecycle,
+    submissionModule.nrsConnector,
+    nrsOrchestratorNotificationRepository,
+    nrsOrchestratorAttachmentNotificationRepository
+  )
 
   private val builderModule =
     new BuilderModule(
