@@ -145,7 +145,8 @@ class SubmissionModule(
   )
 
   private val destinationsSubmitter: DestinationsSubmitterAlgebra[FOpt] = new DestinationsSubmitter(
-    realDestinationSubmitter
+    realDestinationSubmitter,
+    sdesModule.foptDestinationWorkItemService
   )
 
   val submissionService = new SubmissionService(

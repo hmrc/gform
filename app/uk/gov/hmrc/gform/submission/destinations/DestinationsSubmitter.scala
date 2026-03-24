@@ -22,15 +22,22 @@ import cats.syntax.applicative._
 import cats.syntax.either._
 import cats.syntax.flatMap._
 import cats.syntax.functor._
+import org.bson.types.ObjectId
+import play.api.Logging
+import uk.gov.hmrc.gform.sdes.workitem.DestinationWorkItemAlgebra
 import uk.gov.hmrc.gform.sharedmodel.form.FormData
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations._
+import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination
 import uk.gov.hmrc.gform.sharedmodel.{ DestinationEvaluation, LangADT, UserSession }
 import uk.gov.hmrc.gform.submission.handlebars.HandlebarsModelTree
 import uk.gov.hmrc.http.HeaderCarrier
 
-class DestinationsSubmitter[M[_]: Monad](destinationSubmitter: DestinationSubmitterAlgebra[M])(implicit
+class DestinationsSubmitter[M[_]: Monad](
+  destinationSubmitter: DestinationSubmitterAlgebra[M],
+  workItemService: DestinationWorkItemAlgebra[M]
+)(implicit
   monadError: MonadError[M, Throwable]
-) extends DestinationsSubmitterAlgebra[M] {
+) extends DestinationsSubmitterAlgebra[M] with Logging {
 
   override def send(
     submissionInfo: DestinationSubmissionInfo,
@@ -98,12 +105,25 @@ class DestinationsSubmitter[M[_]: Monad](destinationSubmitter: DestinationSubmit
               submitterResult +: updatedResponseList
             ).asLeft
           )
-        monadError.handleErrorWith(step) { throwable =>
-          // Remove workitems captured in updatedResponseList
-          //
-          // And return empty result
-          Option.empty[List[DestinationResponse]].asRight.pure[M]
+
+        monadError.onError(step) { _ =>
+          cleanUp(updatedResponseList)
+          monadError.pure(())
         }
     }
+  }
+
+  private def cleanUp(forCleanup: List[DestinationResponse]): Unit = {
+    def deleteWorkItem(workItemId: ObjectId, destination: SdesDestination): M[Unit] = {
+      logger.info(s"Deleting deferred $destination work item ${workItemId.toHexString}")
+      workItemService.delete(workItemId.toHexString, destination).void
+    }
+
+    logger.error(s"Critical error occurred during destination submission, cleaning up work items")
+    forCleanup.collect {
+      case d: DmsDestinationResponse       => deleteWorkItem(d.workItemId, d.routing)
+      case o: OtherSdesDestinationResponse => deleteWorkItem(o.workItemId, o.routing)
+    }
+    ()
   }
 }

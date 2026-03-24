@@ -16,14 +16,15 @@
 
 package uk.gov.hmrc.gform.submission.destinations
 
-import cats.Id
+import cats.{ Applicative, Id, Monad, MonadError, StackSafeMonad }
 import cats.data.NonEmptyList
 import cats.syntax.applicative._
-import cats.{ Applicative, Monad }
 import org.scalacheck.Gen
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import play.api.libs.json._
 import uk.gov.hmrc.gform.Spec
+
+import uk.gov.hmrc.gform.sdes.workitem.DestinationWorkItemAlgebra
 import uk.gov.hmrc.gform.sharedmodel.{ DestinationEvaluation, FrontEndSubmissionVariables, LangADT, PdfContent, SubmissionRef, UserSession }
 import uk.gov.hmrc.gform.sharedmodel.form.FormData
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
@@ -38,6 +39,16 @@ class DestinationsSubmitterSpec
     extends Spec with DestinationGen with DestinationsGen with PdfDataGen with StructuredFormValueGen
     with ScalaCheckDrivenPropertyChecks {
   private implicit val hc: HeaderCarrier = HeaderCarrier()
+
+  implicit val idMonadError: MonadError[Id, Throwable] =
+    new MonadError[Id, Throwable] with StackSafeMonad[Id] {
+      override def pure[A](a: A): Id[A] = a
+      override def flatMap[A, B](fa: Id[A])(f: A => Id[B]): Id[B] = f(fa)
+      override def raiseError[A](e: Throwable): Id[A] = throw e
+      override def handleErrorWith[A](fa: Id[A])(f: Throwable => Id[A]): Id[A] =
+        try fa
+        catch { case t: Throwable => f(t) }
+    }
 
   private def submissionInfoGen: Gen[DestinationSubmissionInfo] =
     DestinationSubmissionInfoGen.destinationSubmissionInfoGen.map { si =>
@@ -242,7 +253,7 @@ class DestinationsSubmitterSpec
             destination === dest && info === submissionInfo && accModel === accumulatedModel && tree.value.model === modelInTree && hc === hc && actualformData
               .contains(formData)
         })
-        .returning(response.pure)
+        .returning(response.pure[F])
       this
     }
 
@@ -267,9 +278,12 @@ class DestinationsSubmitterSpec
 //    }
   }
 
-  private def createSubmitter[M[_]: Monad](): SubmitterParts[M] = {
+  private def createSubmitter[M[_]: Monad]()(implicit
+    monadError: MonadError[M, Throwable]
+  ): SubmitterParts[M] = {
     val destinationSubmitter: DestinationSubmitterAlgebra[M] = mock[DestinationSubmitterAlgebra[M]]
-    val submitter = new DestinationsSubmitter[M](destinationSubmitter)
+    val workItemService: DestinationWorkItemAlgebra[M] = mock[DestinationWorkItemAlgebra[M]]
+    val submitter = new DestinationsSubmitter[M](destinationSubmitter, workItemService)
 
     SubmitterParts(submitter, destinationSubmitter)
   }
