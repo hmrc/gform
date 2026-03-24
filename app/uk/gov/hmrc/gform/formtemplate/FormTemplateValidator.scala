@@ -33,6 +33,7 @@ import uk.gov.hmrc.gform.sharedmodel._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.Dynamic.DataRetrieveBased
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.PageLink
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DestinationPrint
 import uk.gov.hmrc.gform.sharedmodel.graph.DependencyGraph._
 
 import java.time.LocalDate
@@ -1811,6 +1812,28 @@ object FormTemplateValidator {
           )
       }
       .combineAll
+  }
+
+  def validatePrintSection(formTemplate: FormTemplate): ValidationResult = {
+    def validateLinks(instructions: SmartString, path: String, correction: String) =
+      instructions.internals.map { s =>
+        if (s.localised.m.values.exists(_.contains(path)))
+          Invalid(
+            s"`$path$${form.id}` is invalid. Please use `$correction` instead"
+          )
+        else Valid
+      }
+
+    (formTemplate.destinations match {
+      case destinationPrint: DestinationPrint =>
+        validateLinks(
+          destinationPrint.page.instructions,
+          "/submissions/printSection/notificationPdf/",
+          "link.printSectionPdf"
+        ) ++
+          validateLinks(destinationPrint.page.instructions, "/submissions/summary/", "link.summaryPage")
+      case _ => List(Valid)
+    }).combineAll
   }
 
   def validateAddToListCYAPage(formTemplate: FormTemplate): ValidationResult = {
