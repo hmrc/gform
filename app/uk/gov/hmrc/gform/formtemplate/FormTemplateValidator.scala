@@ -627,8 +627,12 @@ object FormTemplateValidator {
     fcIdToComponentType.get(fcId) match {
       case None => Valid
       case Some(componentType) =>
-        (componentType.cast[Date], componentType.cast[CalendarDate.type]) match {
-          case (Some(_), _) | (_, Some(_)) => Valid
+        (
+          componentType.cast[Date],
+          componentType.cast[CalendarDate.type],
+          componentType.cast[TaxPeriodDate.type]
+        ) match {
+          case (Some(_), _, _) | (_, Some(_), _) | (_, _, Some(_)) => Valid
           case _ =>
             Invalid(
               s"$pathDescription: Form component '$fcId' used with date offset should be date type"
