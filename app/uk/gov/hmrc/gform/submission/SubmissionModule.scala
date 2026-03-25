@@ -145,7 +145,8 @@ class SubmissionModule(
   )
 
   private val destinationsSubmitter: DestinationsSubmitterAlgebra[FOpt] = new DestinationsSubmitter(
-    realDestinationSubmitter
+    realDestinationSubmitter,
+    sdesModule.foptDestinationWorkItemService
   )
 
   val submissionService = new SubmissionService(
@@ -157,7 +158,7 @@ class SubmissionModule(
     formTemplateModule.formRedirectService,
     emailModule.emailLogic,
     timeModule.timeProvider,
-    envelopeModule.foptEnvelopeService
+    sdesModule.foptDestinationWorkItemService
   )
 
   val submissionController = new SubmissionController(configModule.controllerComponents, submissionService)

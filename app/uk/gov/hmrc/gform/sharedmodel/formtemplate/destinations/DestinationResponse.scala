@@ -17,13 +17,29 @@
 package uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations
 
 import julienrf.json.derived
-import play.api.libs.json.{ Format, JsNull, JsValue }
+import org.bson.types.ObjectId
+import play.api.libs.json.{ Format, JsError, JsNull, JsString, JsSuccess, JsValue, Reads, Writes }
 import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination
 import uk.gov.hmrc.http.HttpResponse
+
+import scala.util.Try
 
 sealed trait DestinationResponse
 
 object DestinationResponse {
+  val objectIdReads: Reads[ObjectId] = Reads {
+    case JsString(s) =>
+      Try(new ObjectId(s)).fold(
+        _ => JsError(s"invalid ObjectId string: $s"),
+        oid => JsSuccess(oid)
+      )
+    case unexpected => JsError(s"expected JSON string for ObjectId, got: $unexpected")
+  }
+
+  val objectIdWrites: Writes[ObjectId] = Writes(oid => JsString(oid.toHexString))
+
+  implicit val objectIdFormat: Format[ObjectId] = Format(objectIdReads, objectIdWrites)
+
   case object NoResponse extends DestinationResponse
 }
 
@@ -32,11 +48,23 @@ case class DmsDestinationResponse(
   routing: SdesDestination,
   classificationType: String,
   businessArea: String,
-  dataItemCount: Int
+  dataItemCount: Int,
+  workItemId: ObjectId
 ) extends DestinationResponse
 
 object DmsDestinationResponse {
+  import DestinationResponse._
   implicit val format: Format[DmsDestinationResponse] = derived.oformat()
+}
+
+case class OtherSdesDestinationResponse(
+  routing: SdesDestination,
+  workItemId: ObjectId
+) extends DestinationResponse
+
+object OtherSdesDestinationResponse {
+  import DestinationResponse._
+  implicit val format: Format[OtherSdesDestinationResponse] = derived.oformat()
 }
 
 case class HandlebarsDestinationResponse(id: DestinationId, status: Int, json: JsValue) extends DestinationResponse

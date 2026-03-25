@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.gform.sdes.workitem
 
+import cats.syntax.traverse._
 import cats.syntax.functor._
 import org.bson.types.ObjectId
 import org.mongodb.scala.model.Filters
@@ -28,6 +29,7 @@ import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.gform.sharedmodel.sdes._
+import uk.gov.hmrc.mongo.workitem.ProcessingStatus.ToDo
 import uk.gov.hmrc.mongo.workitem.{ ProcessingStatus, WorkItem }
 
 import java.util.UUID
@@ -41,7 +43,7 @@ trait DestinationWorkItemAlgebra[F[_]] {
     destination: SdesDestination,
     filePrefix: Option[String],
     submissionPrefix: Option[String]
-  ): F[Unit]
+  ): F[ObjectId]
 
   def search(
     page: Int,
@@ -50,6 +52,8 @@ trait DestinationWorkItemAlgebra[F[_]] {
     formTemplateId: Option[FormTemplateId],
     status: Option[ProcessingStatus]
   ): F[SdesWorkItemPageData]
+
+  def ready(workItems: List[(SdesDestination, ObjectId)]): F[Unit]
 
   def enqueue(id: String, sdesDestination: SdesDestination): F[Unit]
 
@@ -74,7 +78,7 @@ class DestinationWorkItemService(
     sdesDestination: SdesDestination,
     filePrefix: Option[String],
     submissionPrefix: Option[String]
-  ): Future[Unit] = {
+  ): Future[ObjectId] = {
     val correlationId = UUID.randomUUID().toString
     val sdesWorkItem =
       SdesWorkItem(
@@ -87,13 +91,29 @@ class DestinationWorkItemService(
         submissionPrefix
       )
     sdesDestination match {
-      case SdesDestination.Dms | SdesDestination.PegaCaseflow => dmsWorkItemRepo.pushNew(sdesWorkItem).void
+      case SdesDestination.Dms | SdesDestination.PegaCaseflow =>
+        dmsWorkItemRepo.pushNew(sdesWorkItem, initialState = deferred).map(_.id)
       case SdesDestination.HmrcIlluminate | SdesDestination.DataStore | SdesDestination.DataStoreLegacy =>
-        dataStoreWorkItemRepo.pushNew(sdesWorkItem).void
-      case SdesDestination.InfoArchive   => infoArchiveWorkItemRepo.pushNew(sdesWorkItem).void
-      case SdesDestination.DataLakehouse => dataLakehouseWorkItemRepo.pushNew(sdesWorkItem).void
+        dataStoreWorkItemRepo.pushNew(sdesWorkItem, initialState = deferred).map(_.id)
+      case SdesDestination.InfoArchive =>
+        infoArchiveWorkItemRepo.pushNew(sdesWorkItem, initialState = deferred).map(_.id)
+      case SdesDestination.DataLakehouse =>
+        dataLakehouseWorkItemRepo.pushNew(sdesWorkItem, initialState = deferred).map(_.id)
     }
   }
+
+  private def deferred(item: SdesWorkItem): ProcessingStatus = ProcessingStatus.Deferred
+
+  override def ready(workItems: List[(SdesDestination, ObjectId)]): Future[Unit] =
+    workItems
+      .traverse {
+        case (SdesDestination.Dms | SdesDestination.PegaCaseflow, oid) => dmsWorkItemRepo.markAs(oid, ToDo)
+        case (SdesDestination.HmrcIlluminate | SdesDestination.DataStore | SdesDestination.DataStoreLegacy, oid) =>
+          dataStoreWorkItemRepo.markAs(oid, ToDo)
+        case (SdesDestination.InfoArchive, oid)   => infoArchiveWorkItemRepo.markAs(oid, ToDo)
+        case (SdesDestination.DataLakehouse, oid) => dataLakehouseWorkItemRepo.markAs(oid, ToDo)
+      }
+      .map(_ => ())
 
   override def search(
     page: Int,

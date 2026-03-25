@@ -17,11 +17,14 @@
 package uk.gov.hmrc.gform.submission.destinations
 
 import cats.{ Applicative, MonadError }
+import org.bson.types.ObjectId
 import org.scalacheck.Gen
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import uk.gov.hmrc.gform.notifier.NotifierAlgebra
 import uk.gov.hmrc.gform.nrs.NRSConnector
+import uk.gov.hmrc.gform.sdes.workitem.DestinationWorkItemAlgebra
 import uk.gov.hmrc.gform.sdes.{ SdesConfig, SdesRouting, WelshDefaults }
+import uk.gov.hmrc.gform.sharedmodel._
 import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormData, FormId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.{ HmrcDms, InfoArchive, SubmissionConsolidator }
@@ -30,14 +33,13 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.{ DestinationGen, FormTemplateGen, PrimitiveGen }
 import uk.gov.hmrc.gform.sharedmodel.generators.{ PdfDataGen, StructuredFormValueGen }
 import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
-import uk.gov.hmrc.gform.sharedmodel._
 import uk.gov.hmrc.gform.submission.handlebars.{ FocussedHandlebarsModelTree, HandlebarsHttpApiSubmitter, HandlebarsModelTree, HandlebarsTemplateProcessor }
 import uk.gov.hmrc.gform.submissionconsolidator.SubmissionConsolidatorAlgebra
 import uk.gov.hmrc.gform.{ Possible, Spec, possibleMonadError }
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 
-import scala.concurrent.{ Await, Future }
 import scala.concurrent.duration.DurationInt
+import scala.concurrent.{ Await, Future }
 import scala.util.{ Failure, Success, Try }
 
 class DestinationSubmitterSpec
@@ -66,7 +68,14 @@ class DestinationSubmitterSpec
     }
 
   def dmsResponse(hmrcDms: HmrcDms) =
-    DmsDestinationResponse(hmrcDms.dmsFormId, hmrcDms.routing, hmrcDms.classificationType, hmrcDms.businessArea, 5)
+    DmsDestinationResponse(
+      hmrcDms.dmsFormId,
+      hmrcDms.routing,
+      hmrcDms.classificationType,
+      hmrcDms.businessArea,
+      5,
+      new ObjectId("69bd5d617ebbc08346f4e9a7")
+    )
 
   "A Destination.HandlebarsHttpApi" should "be sent to the HandlebarsHttpApiSubmitter when includeIf is evaluated to true" in {
     forAll(
@@ -1115,7 +1124,8 @@ class DestinationSubmitterSpec
 
   private def submitter: DestinationsSubmitter[Possible] = {
     val destinationSubmitter: DestinationSubmitterAlgebra[Possible] = mock[DestinationSubmitterAlgebra[Possible]]
-    new DestinationsSubmitter[Possible](destinationSubmitter)
+    val workItemService: DestinationWorkItemAlgebra[Possible] = mock[DestinationWorkItemAlgebra[Possible]]
+    new DestinationsSubmitter[Possible](destinationSubmitter, workItemService)
   }
 
   def tree(
