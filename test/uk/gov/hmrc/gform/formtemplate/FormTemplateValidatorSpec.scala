@@ -29,6 +29,8 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.Expr
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.PageLink
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AnyDate, BulletedList, Checkbox, Choice, ChoicesAvailable, ChoicesSelected, Constant, DataRetrieveCtx, DataRetrieveDateCtx, Date, DateCtx, DateFormCtxVar, DateFunction, DateProjection, DateValueExpr, DisplayAsEntered, Dynamic, Equals, ExprWithPath, FormComponent, FormComponentId, FormComponentValidator, FormCtx, FormStartDateExprValue, FormTemplate, HideZeroDecimals, Horizontal, IfElse, IncludeIf, IndexOf, IndexOfDataRetrieveCtx, InformationMessage, Instruction, IsTrue, LeafExpr, LinkCtx, LookupColumn, Mandatory, Not, NumberedList, Offset, OptionData, OptionDataValue, Page, PageId, PostcodeLookup, Radio, Section, ShortText, StandardInfo, SummariseGroupAsGrid, TemplatePath, Text, TextArea, TextWithRestrictions, TypeAhead, ValidIf, Value, Vertical }
 import uk.gov.hmrc.gform.sharedmodel._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.PrintSection
 
 class FormTemplateValidatorSpec
     extends AnyWordSpecLike with Matchers with FormTemplateSupport with TableDrivenPropertyChecks {
@@ -2183,6 +2185,64 @@ class FormTemplateValidatorSpec
         result shouldBe expectedResult
       }
     }
+  }
+
+  "validatePrintSection" should {
+    "return Valid for non-DestinationPrint destinations" in {
+      val formTemplate = mkFormTemplate(List(mkSectionNonRepeatingPage(formComponents = List(mkFormComponent("fc1")))))
+      val result = FormTemplateValidator.validatePrintSection(formTemplate)
+      result shouldBe Valid
+    }
+
+    "return Valid when DestinationPrint instructions contain no invalid paths" in {
+      val formTemplate = mkFormTemplateWithPrintSection(toSmartString("Some clean instructions"))
+      val result = FormTemplateValidator.validatePrintSection(formTemplate)
+      result shouldBe Valid
+    }
+
+    "return Invalid when instructions contain manual printSection notificationPdf path" in {
+      val formTemplate = mkFormTemplateWithPrintSection(
+        toSmartString("Click here /submissions/printSection/notificationPdf/ to download")
+      )
+      val result = FormTemplateValidator.validatePrintSection(formTemplate)
+      result shouldBe Invalid(
+        "`/submissions/printSection/notificationPdf/${form.id}` is invalid. Please use `link.printSectionPdf` instead"
+      )
+    }
+
+    "return Invalid when instructions contain manual summary path" in {
+      val formTemplate = mkFormTemplateWithPrintSection(
+        toSmartString("Click here /submissions/summary/ to view")
+      )
+      val result = FormTemplateValidator.validatePrintSection(formTemplate)
+      result shouldBe Invalid(
+        "`/submissions/summary/${form.id}` is invalid. Please use `link.summaryPage` instead"
+      )
+    }
+
+    "return Invalid when instructions contain both manual paths" in {
+      val instructions = SmartString(
+        LocalisedString(
+          Map(
+            LangADT.En -> "/submissions/printSection/notificationPdf/ and /submissions/summary/"
+          )
+        ),
+        Nil
+      )
+      val formTemplate = mkFormTemplateWithPrintSection(instructions)
+      val result = FormTemplateValidator.validatePrintSection(formTemplate)
+      result shouldBe Invalid(
+        "`/submissions/printSection/notificationPdf/${form.id}` is invalid. Please use `link.printSectionPdf` instead"
+      )
+    }
+  }
+
+  private def mkFormTemplateWithPrintSection(instructions: SmartString): FormTemplate = {
+    val printPage = PrintSection.Page(toSmartString("Print Title"), instructions)
+    val printPdf = PrintSection.Pdf(toSmartString("Header"), toSmartString("Footer"))
+    val destinations = Destinations.DestinationPrint(printPage, printPdf, None)
+    mkFormTemplate(List(mkSectionNonRepeatingPage(formComponents = List(mkFormComponent("fc1")))))
+      .copy(destinations = destinations)
   }
 
   def mkHmrcTaxRatesDataRetrieve(
