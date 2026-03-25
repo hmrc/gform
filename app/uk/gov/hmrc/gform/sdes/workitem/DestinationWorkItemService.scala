@@ -18,12 +18,14 @@ package uk.gov.hmrc.gform.sdes.workitem
 
 import cats.syntax.functor._
 import org.bson.types.ObjectId
+import org.mongodb.scala.MongoCollection
 import org.mongodb.scala.model.Filters
 import org.mongodb.scala.model.Filters.equal
 import uk.gov.hmrc.gform.scheduler.datalakehouse.DataLakehouseWorkItemRepo
 import uk.gov.hmrc.gform.scheduler.datastore.DataStoreWorkItemRepo
 import uk.gov.hmrc.gform.scheduler.dms.DmsWorkItemRepo
 import uk.gov.hmrc.gform.scheduler.infoarchive.InfoArchiveWorkItemRepo
+import uk.gov.hmrc.gform.scheduler.nrsOrchestrator.{ NrsOrchestratorAttachmentWorkItemRepo, NrsOrchestratorWorkItemRepo }
 import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
@@ -64,7 +66,9 @@ class DestinationWorkItemService(
   dmsWorkItemRepo: DmsWorkItemRepo,
   dataStoreWorkItemRepo: DataStoreWorkItemRepo,
   infoArchiveWorkItemRepo: InfoArchiveWorkItemRepo,
-  dataLakehouseWorkItemRepo: DataLakehouseWorkItemRepo
+  dataLakehouseWorkItemRepo: DataLakehouseWorkItemRepo,
+  nrsOrchestratorWorkItemRepo: NrsOrchestratorWorkItemRepo,
+  nrsOrchestratorAttachmentWorkItemRepo: NrsOrchestratorAttachmentWorkItemRepo
 )(implicit ec: ExecutionContext)
     extends DestinationWorkItemAlgebra[Future] {
   override def pushWorkItem(
@@ -92,6 +96,8 @@ class DestinationWorkItemService(
         dataStoreWorkItemRepo.pushNew(sdesWorkItem).void
       case SdesDestination.InfoArchive   => infoArchiveWorkItemRepo.pushNew(sdesWorkItem).void
       case SdesDestination.DataLakehouse => dataLakehouseWorkItemRepo.pushNew(sdesWorkItem).void
+      case SdesDestination.NrsOrchestrator | SdesDestination.NrsOrchestratorAttachment =>
+        throw new RuntimeException("NRS destination should be pushed directly")
     }
   }
 
@@ -107,22 +113,44 @@ class DestinationWorkItemService(
     val sort = equal("receivedAt", -1)
 
     val skip = page * pageSize
-    val collection = findCollection(sdesDestination)
-    for {
-      dmsWorkItem <-
-        collection.find(query).sort(sort).skip(skip).limit(pageSize).toFuture().map(_.toList)
-      dmsWorkItemData = dmsWorkItem.map(workItem => SdesWorkItemData.fromWorkItem(workItem, 1))
-      count <- collection.countDocuments(query).toFuture()
-    } yield SdesWorkItemPageData(dmsWorkItemData, count)
+    sdesDestination match {
+      case SdesDestination.NrsOrchestrator =>
+        val collection = nrsOrchestratorWorkItemRepo.collection
+        for {
+          dmsWorkItem <-
+            collection.find(query).sort(sort).skip(skip).limit(pageSize).toFuture().map(_.toList)
+          dmsWorkItemData = dmsWorkItem.map(workItem => SdesWorkItemData.fromNrsOrchestrator(workItem, 1))
+          count <- collection.countDocuments(query).toFuture()
+        } yield SdesWorkItemPageData(dmsWorkItemData, count)
+      case SdesDestination.NrsOrchestratorAttachment =>
+        val collection = nrsOrchestratorAttachmentWorkItemRepo.collection
+        for {
+          dmsWorkItem <-
+            collection.find(query).sort(sort).skip(skip).limit(pageSize).toFuture().map(_.toList)
+          dmsWorkItemData = dmsWorkItem.map(workItem => SdesWorkItemData.fromNrsOrchestratorAttachment(workItem, 1))
+          count <- collection.countDocuments(query).toFuture()
+        } yield SdesWorkItemPageData(dmsWorkItemData, count)
+      case _ =>
+        val collection = findCollection(sdesDestination)
+        for {
+          dmsWorkItem <-
+            collection.find(query).sort(sort).skip(skip).limit(pageSize).toFuture().map(_.toList)
+          dmsWorkItemData = dmsWorkItem.map(workItem => SdesWorkItemData.fromWorkItem(workItem, 1))
+          count <- collection.countDocuments(query).toFuture()
+        } yield SdesWorkItemPageData(dmsWorkItemData, count)
+    }
   }
 
-  private def findCollection(sdesDestination: SdesDestination) = sdesDestination match {
-    case SdesDestination.Dms | SdesDestination.PegaCaseflow => dmsWorkItemRepo.collection
-    case SdesDestination.HmrcIlluminate | SdesDestination.DataStore | SdesDestination.DataStoreLegacy =>
-      dataStoreWorkItemRepo.collection
-    case SdesDestination.InfoArchive   => infoArchiveWorkItemRepo.collection
-    case SdesDestination.DataLakehouse => dataLakehouseWorkItemRepo.collection
-  }
+  private def findCollection(sdesDestination: SdesDestination): MongoCollection[WorkItem[SdesWorkItem]] =
+    sdesDestination match {
+      case SdesDestination.Dms | SdesDestination.PegaCaseflow => dmsWorkItemRepo.collection
+      case SdesDestination.HmrcIlluminate | SdesDestination.DataStore | SdesDestination.DataStoreLegacy =>
+        dataStoreWorkItemRepo.collection
+      case SdesDestination.InfoArchive   => infoArchiveWorkItemRepo.collection
+      case SdesDestination.DataLakehouse => dataLakehouseWorkItemRepo.collection
+      case SdesDestination.NrsOrchestrator | SdesDestination.NrsOrchestratorAttachment =>
+        throw new RuntimeException("Can't find collection for nrs")
+    }
 
   override def delete(id: String, sdesDestination: SdesDestination): Future[Unit] =
     findCollection(sdesDestination)
@@ -140,6 +168,8 @@ class DestinationWorkItemService(
       case SdesDestination.InfoArchive => infoArchiveWorkItemRepo.markAs(new ObjectId(id), ProcessingStatus.ToDo).void
       case SdesDestination.DataLakehouse =>
         dataLakehouseWorkItemRepo.markAs(new ObjectId(id), ProcessingStatus.ToDo).void
+      case SdesDestination.NrsOrchestrator | SdesDestination.NrsOrchestratorAttachment =>
+        throw new RuntimeException("Can't enqueue nrs")
     }
 
   override def find(id: String, sdesDestination: SdesDestination): Future[Option[WorkItem[SdesWorkItem]]] =
@@ -150,6 +180,9 @@ class DestinationWorkItemService(
         dataStoreWorkItemRepo.findById(new ObjectId(id))
       case SdesDestination.InfoArchive   => infoArchiveWorkItemRepo.findById(new ObjectId(id))
       case SdesDestination.DataLakehouse => dataLakehouseWorkItemRepo.findById(new ObjectId(id))
+      case SdesDestination.NrsOrchestrator | SdesDestination.NrsOrchestratorAttachment =>
+        throw new RuntimeException("Can't find nrs")
+
     }
 
   override def findByEnvelopeId(

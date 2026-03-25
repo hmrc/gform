@@ -456,9 +456,9 @@ class DestinationSubmitter[M[_]](
     val userAuthToken = hc.authorization.getOrElse(throw MissingBearerToken("missing authorisation token")).value
     val submissionDate = java.time.Instant.now().toString
 
-    val submit = liftToM(nrsConnector.getRetrievals()).flatMap { identityData =>
+    val response = liftToM(nrsConnector.getRetrievals()).flatMap { identityData =>
       liftToM(
-        nrsConnector.submit(
+        nrsConnector.issueSubmissionWorkItem(
           envelopeId,
           d.businessId,
           d.notableEvent,
@@ -468,44 +468,19 @@ class DestinationSubmitter[M[_]](
           payload,
           userAuthToken,
           identityData,
-          submissionDate,
-          workItemSubmission = false
+          submissionDate
         )
       )
     }
-    submit.map { response =>
-      val allOk: Boolean =
-        response.submissionResponse.isSuccess && response.attachmentResponses.forall(_.isSuccess)
-      if (allOk) {
-        DestinationResponse.NoResponse
-      } else {
-        def errorMsg: String = {
-          val errorMessage = new StringBuilder()
-          if (!response.submissionResponse.isSuccess) {
-            errorMessage.addAll(
-              s"main submission failed. Status: ${response.submissionResponse.status} Body: ${response.submissionResponse.body}\n"
-            )
-          }
-          response.attachmentResponses.collect {
-            case attachmentResponse if !attachmentResponse.isSuccess =>
-              errorMessage.addAll(
-                s"attachment submission failed. Status: ${attachmentResponse.status} Body: ${attachmentResponse.body}\n"
-              )
-          }
-          errorMessage.mkString
-        }
-
-        def logError(): Unit = logger.error(
-          genericLogMessage(submissionInfo.formId, d.id, errorMsg)
+    monadError.handleErrorWith(response) { msg =>
+      if (d.failOnError)
+        raiseDestinationError(submissionInfo.formId, d.id, msg)
+      else {
+        logErrorInMonad(
+          submissionInfo.formId,
+          d.id,
+          "Failed execution but has 'failOnError' set to false. Ignoring."
         )
-
-        if (d.failOnError) {
-          logError()
-          throw new Exception(errorMsg)
-        } else {
-          logError()
-          DestinationResponse.NoResponse
-        }
       }
     }
   }

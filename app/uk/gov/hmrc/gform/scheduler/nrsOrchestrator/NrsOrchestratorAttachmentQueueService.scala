@@ -44,9 +44,16 @@ class NrsOrchestratorAttachmentQueueService(
         workItem.nrSubmissionId,
         workItem.attachment,
         workItem.businessId,
-        workItem.notableEvent,
-        workItemSubmission = true
+        workItem.notableEvent
       )
+      .flatMap {
+        case response if nrsConnector.nrsServerFailure(response) =>
+          Future.failed(new RuntimeException(s"NRS server failed $response"))
+        case response if response.status != 202 =>
+          logger.error(s"Non 202 response from NRS suggests gform failure. NRS Response: $response")
+          Future.successful(response)
+        case response => Future.successful(response)
+      }(ec)
       .void(ec)
   }
 

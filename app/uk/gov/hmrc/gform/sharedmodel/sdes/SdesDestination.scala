@@ -32,6 +32,8 @@ sealed trait SdesDestination extends Product with Serializable {
     case SdesDestination.InfoArchive     => sdesConfig.infoArchive
     case SdesDestination.PegaCaseflow    => sdesConfig.pegaCaseflow
     case SdesDestination.DataLakehouse   => sdesConfig.dataLakehouse
+    case SdesDestination.NrsOrchestrator | SdesDestination.NrsOrchestratorAttachment =>
+      throw new RuntimeException("no routing nrs")
   }
 
   def objectStorePaths(envelopeId: EnvelopeId, submissionPrefix: Option[String]): ObjectStorePaths =
@@ -43,6 +45,8 @@ sealed trait SdesDestination extends Product with Serializable {
       case SdesDestination.InfoArchive     => ObjectStorePaths.infoArchivePaths(envelopeId)
       case SdesDestination.PegaCaseflow    => ObjectStorePaths.pegaCaseflowPaths(envelopeId)
       case SdesDestination.DataLakehouse   => ObjectStorePaths.dataLakehousePaths(envelopeId)
+      case SdesDestination.NrsOrchestrator | SdesDestination.NrsOrchestratorAttachment =>
+        throw new RuntimeException("no object store path")
     }
 }
 
@@ -54,36 +58,45 @@ object SdesDestination {
   case object InfoArchive extends SdesDestination
   case object PegaCaseflow extends SdesDestination
   case object DataLakehouse extends SdesDestination
+  case object NrsOrchestrator extends SdesDestination
+  case object NrsOrchestratorAttachment extends SdesDestination
 
   implicit val equal: Eq[SdesDestination] = Eq.fromUniversalEquals
   implicit val format: Format[SdesDestination] =
     ADTFormat.formatEnumeration(
-      "Dms"             -> Dms,
-      "HmrcIlluminate"  -> HmrcIlluminate,
-      "DataStoreLegacy" -> DataStoreLegacy,
-      "DataStore"       -> DataStore,
-      "InfoArchive"     -> InfoArchive,
-      "PegaCaseflow"    -> PegaCaseflow,
-      "DataLakehouse"   -> DataLakehouse
+      "Dms"                       -> Dms,
+      "HmrcIlluminate"            -> HmrcIlluminate,
+      "DataStoreLegacy"           -> DataStoreLegacy,
+      "DataStore"                 -> DataStore,
+      "InfoArchive"               -> InfoArchive,
+      "PegaCaseflow"              -> PegaCaseflow,
+      "DataLakehouse"             -> DataLakehouse,
+      "NrsOrchestrator"           -> NrsOrchestrator,
+      "NrsOrchestratorAttachment" -> NrsOrchestratorAttachment
     )
 
   def fromName(destination: SdesDestination): String = destination match {
-    case Dms             => "Dms"
-    case HmrcIlluminate  => "HmrcIlluminate"
-    case DataStoreLegacy => "DataStoreLegacy"
-    case DataStore       => "DataStore"
-    case InfoArchive     => "InfoArchive"
-    case PegaCaseflow    => "PegaCaseflow"
-    case DataLakehouse   => "DataLakehouse"
+    case Dms                       => "Dms"
+    case HmrcIlluminate            => "HmrcIlluminate"
+    case DataStoreLegacy           => "DataStoreLegacy"
+    case DataStore                 => "DataStore"
+    case InfoArchive               => "InfoArchive"
+    case PegaCaseflow              => "PegaCaseflow"
+    case DataLakehouse             => "DataLakehouse"
+    case NrsOrchestrator           => "NrsOrchestrator"
+    case NrsOrchestratorAttachment => "NrsOrchestratorAttachment"
+
   }
 
   def fromString(destination: String): SdesDestination = destination match {
-    case "Dms"             => Dms
-    case "HmrcIlluminate"  => HmrcIlluminate
-    case "DataStoreLegacy" => DataStoreLegacy
-    case "DataStore"       => DataStore
-    case "InfoArchive"     => InfoArchive
-    case "PegaCaseflow"    => PegaCaseflow
-    case "DataLakehouse"   => DataLakehouse
+    case "Dms"                       => Dms
+    case "HmrcIlluminate"            => HmrcIlluminate
+    case "DataStoreLegacy"           => DataStoreLegacy
+    case "DataStore"                 => DataStore
+    case "InfoArchive"               => InfoArchive
+    case "PegaCaseflow"              => PegaCaseflow
+    case "DataLakehouse"             => DataLakehouse
+    case "NrsOrchestrator"           => NrsOrchestrator
+    case "NrsOrchestratorAttachment" => NrsOrchestratorAttachment
   }
 }

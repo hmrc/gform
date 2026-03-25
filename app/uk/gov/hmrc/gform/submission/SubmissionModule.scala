@@ -117,11 +117,15 @@ class SubmissionModule(
   }
 
   private val nrsConnectorApiKey = configModule.nrsConfig.authorizationToken
+  private val nrsSubmissionUrl = configModule.nrsConfig.submissionUrl
+  private val nrsAttachmentUrl = configModule.nrsConfig.attachmentUrl
 
   private val baseUrl = configModule.serviceConfig.baseUrl("nrs-orchestrator")
 
   val nrsConnector = new NRSConnector(
     baseUrl,
+    nrsSubmissionUrl,
+    nrsAttachmentUrl,
     wSHttpModule.httpClient,
     objectStoreModule,
     envelopeModule.envelopeService,

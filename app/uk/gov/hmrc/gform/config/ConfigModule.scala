@@ -182,4 +182,8 @@ final case class HipConnectorConfig(
   originatorId: String,
   correlationId: String
 )
-final case class NRSConnectorConfig(authorizationToken: String)
+final case class NRSConnectorConfig(
+  authorizationToken: String,
+  submissionUrl: String,
+  attachmentUrl: String
+)

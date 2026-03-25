@@ -74,6 +74,9 @@ class SdesRenotifyService(
                                         objectStoreAlgebra.zipFiles(submission.envelopeId, paths)
                                       case SdesDestination.InfoArchive =>
                                         objectStoreAlgebra.zipAndEncrypt(submission.envelopeId, paths)
+                                      case SdesDestination.NrsOrchestrator |
+                                          SdesDestination.NrsOrchestratorAttachment =>
+                                        throw new RuntimeException("NRS can't renotify")
                                     }
                       res <- sdesAlgebra.renotifySDES(submission, objSummary)
                     } yield res

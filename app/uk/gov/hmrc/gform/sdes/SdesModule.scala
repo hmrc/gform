@@ -30,6 +30,7 @@ import uk.gov.hmrc.gform.scheduler.datalakehouse.DataLakehouseWorkItemRepo
 import uk.gov.hmrc.gform.scheduler.datastore.DataStoreWorkItemRepo
 import uk.gov.hmrc.gform.scheduler.dms.DmsWorkItemRepo
 import uk.gov.hmrc.gform.scheduler.infoarchive.InfoArchiveWorkItemRepo
+import uk.gov.hmrc.gform.scheduler.nrsOrchestrator.{ NrsOrchestratorAttachmentWorkItemRepo, NrsOrchestratorWorkItemRepo }
 import uk.gov.hmrc.gform.sdes.alert.{ SdesSubmissionAlertService, SdesWorkItemAlertService }
 import uk.gov.hmrc.gform.sdes.renotify.SdesRenotifyQScheduledService
 import uk.gov.hmrc.gform.sdes.workitem.{ DestinationWorkItemAlgebra, DestinationWorkItemController, DestinationWorkItemService }
@@ -99,13 +100,17 @@ class SdesModule(
   val dataStoreWorkItemRepo = new DataStoreWorkItemRepo(mongoModule.mongoComponent)
   val infoArchiveWorkItemRepo = new InfoArchiveWorkItemRepo(mongoModule.mongoComponent)
   val dataLakehouseWorkItemRepo = new DataLakehouseWorkItemRepo(mongoModule.mongoComponent)
+  val nrsOrchestratorWorkItemRepo = new NrsOrchestratorWorkItemRepo(mongoModule.mongoComponent)
+  val nrsOrchestratorAttachmentWorkItemRepo = new NrsOrchestratorAttachmentWorkItemRepo(mongoModule.mongoComponent)
 
   val destinationWorkItemService: DestinationWorkItemAlgebra[Future] =
     new DestinationWorkItemService(
       dmsWorkItemRepo,
       dataStoreWorkItemRepo,
       infoArchiveWorkItemRepo,
-      dataLakehouseWorkItemRepo
+      dataLakehouseWorkItemRepo,
+      nrsOrchestratorWorkItemRepo,
+      nrsOrchestratorAttachmentWorkItemRepo
     )
 
   val destinationWorkItemController: DestinationWorkItemController =
