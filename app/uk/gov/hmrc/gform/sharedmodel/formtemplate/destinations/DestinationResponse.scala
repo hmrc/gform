@@ -30,10 +30,10 @@ object DestinationResponse {
   val objectIdReads: Reads[ObjectId] = Reads {
     case JsString(s) =>
       Try(new ObjectId(s)).fold(
-        _ => JsError("invalid ObjectId string"),
+        _ => JsError(s"invalid ObjectId string: $s"),
         oid => JsSuccess(oid)
       )
-    case _ => JsError("expected JSON string for ObjectId")
+    case unexpected => JsError(s"expected JSON string for ObjectId, got: $unexpected")
   }
 
   val objectIdWrites: Writes[ObjectId] = Writes(oid => JsString(oid.toHexString))

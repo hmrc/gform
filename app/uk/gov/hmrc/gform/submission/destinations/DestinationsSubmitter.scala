@@ -22,6 +22,7 @@ import cats.syntax.applicative._
 import cats.syntax.either._
 import cats.syntax.flatMap._
 import cats.syntax.functor._
+import cats.syntax.traverse._
 import org.bson.types.ObjectId
 import play.api.Logging
 import uk.gov.hmrc.gform.sdes.workitem.DestinationWorkItemAlgebra
@@ -106,24 +107,26 @@ class DestinationsSubmitter[M[_]: Monad](
             ).asLeft
           )
 
-        monadError.onError(step) { _ =>
-          cleanUp(updatedResponseList)
-          monadError.pure(())
+        monadError.onError(step) { err =>
+          logger.error(s"Critical error occurred during destination submission, cleaning up work items", err)
+          cleanUp(updatedResponseList).void
         }
     }
   }
 
-  private def cleanUp(forCleanup: List[DestinationResponse]): Unit = {
+  private def cleanUp(forCleanup: List[DestinationResponse]): M[List[Unit]] = {
     def deleteWorkItem(workItemId: ObjectId, destination: SdesDestination): M[Unit] = {
       logger.info(s"Deleting deferred $destination work item ${workItemId.toHexString}")
-      workItemService.delete(workItemId.toHexString, destination).void
+      workItemService.delete(workItemId.toHexString, destination)
     }
 
-    logger.error(s"Critical error occurred during destination submission, cleaning up work items")
-    forCleanup.collect {
-      case d: DmsDestinationResponse       => deleteWorkItem(d.workItemId, d.routing)
-      case o: OtherSdesDestinationResponse => deleteWorkItem(o.workItemId, o.routing)
+    val data: List[(ObjectId, SdesDestination)] = forCleanup.collect {
+      case d: DmsDestinationResponse       => (d.workItemId, d.routing)
+      case o: OtherSdesDestinationResponse => (o.workItemId, o.routing)
     }
-    ()
+
+    data.traverse { case (workItemId, routing) =>
+      deleteWorkItem(workItemId, routing)
+    }
   }
 }

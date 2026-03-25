@@ -107,11 +107,11 @@ class DestinationWorkItemService(
   override def ready(workItems: List[(SdesDestination, ObjectId)]): Future[Unit] =
     workItems
       .traverse {
-        case (SdesDestination.Dms | SdesDestination.PegaCaseflow, oid) => dmsWorkItemRepo.markAs(oid, ToDo).void
+        case (SdesDestination.Dms | SdesDestination.PegaCaseflow, oid) => dmsWorkItemRepo.markAs(oid, ToDo)
         case (SdesDestination.HmrcIlluminate | SdesDestination.DataStore | SdesDestination.DataStoreLegacy, oid) =>
-          dataStoreWorkItemRepo.markAs(oid, ToDo).void
-        case (SdesDestination.InfoArchive, oid)   => infoArchiveWorkItemRepo.markAs(oid, ToDo).void
-        case (SdesDestination.DataLakehouse, oid) => dataLakehouseWorkItemRepo.markAs(oid, ToDo).void
+          dataStoreWorkItemRepo.markAs(oid, ToDo)
+        case (SdesDestination.InfoArchive, oid)   => infoArchiveWorkItemRepo.markAs(oid, ToDo)
+        case (SdesDestination.DataLakehouse, oid) => dataLakehouseWorkItemRepo.markAs(oid, ToDo)
       }
       .map(_ => ())
 
