@@ -116,8 +116,10 @@ class DestinationWorkItemService(
         case (SdesDestination.Dms | SdesDestination.PegaCaseflow, oid) => dmsWorkItemRepo.markAs(oid, ToDo)
         case (SdesDestination.HmrcIlluminate | SdesDestination.DataStore | SdesDestination.DataStoreLegacy, oid) =>
           dataStoreWorkItemRepo.markAs(oid, ToDo)
-        case (SdesDestination.InfoArchive, oid)   => infoArchiveWorkItemRepo.markAs(oid, ToDo)
-        case (SdesDestination.DataLakehouse, oid) => dataLakehouseWorkItemRepo.markAs(oid, ToDo)
+        case (SdesDestination.InfoArchive, oid)               => infoArchiveWorkItemRepo.markAs(oid, ToDo)
+        case (SdesDestination.DataLakehouse, oid)             => dataLakehouseWorkItemRepo.markAs(oid, ToDo)
+        case (SdesDestination.NrsOrchestrator, oid)           => throw new RuntimeException("Not implemented for NRS")
+        case (SdesDestination.NrsOrchestratorAttachment, oid) => throw new RuntimeException("Not implemented for NRS")
       }
       .map(_ => ())
 
