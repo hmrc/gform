@@ -33,6 +33,7 @@ import uk.gov.hmrc.gform.sharedmodel._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.Dynamic.DataRetrieveBased
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.PageLink
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DestinationPrint
 import uk.gov.hmrc.gform.sharedmodel.graph.DependencyGraph._
 
 import java.time.LocalDate
@@ -497,6 +498,148 @@ object FormTemplateValidator {
     }
     Monoid.combineAll(validations.flatten)
   }
+
+  def validateDateExprWithOffsetConstraints(
+    formTemplate: FormTemplate,
+    allExpressions: List[ExprWithPath]
+  ): ValidationResult = {
+    val fcIdToComponentType: Map[FormComponentId, ComponentType] = mkFcIdToComponentType(formTemplate)
+
+    val expressionValidations = allExpressions.flatMap { exprWithPath =>
+      fcIdsWithDateOffsetFromExpr(exprWithPath.expr).map(fcId =>
+        validateDateOffsetFcId(fcId, exprWithPath.path.path, fcIdToComponentType)
+      )
+    }
+
+    val pages = SectionHelper.pages(formTemplate.formKind.allSections)
+
+    val dataRetrieveParamValidations = pages.flatMap { page =>
+      page.dataRetrieves().flatMap { dataRetrieve =>
+        dataRetrieve.params.flatMap { paramExpr =>
+          fcIdsWithDateOffsetFromExpr(paramExpr.expr).map { fcId =>
+            validateDateOffsetFcId(
+              fcId,
+              s"dataRetrieve.${dataRetrieve.id.value}.${paramExpr.parameter.name}",
+              fcIdToComponentType
+            )
+          }
+        }
+      }
+    }
+
+    Monoid.combineAll(expressionValidations ++ dataRetrieveParamValidations)
+  }
+
+  def validateDateExprWithOffsetInBooleanExprs(
+    formTemplate: FormTemplate,
+    booleanExprSubstitutions: BooleanExprSubstitutions
+  ): ValidationResult = {
+    val fcIdToComponentType: Map[FormComponentId, ComponentType] = mkFcIdToComponentType(formTemplate)
+
+    val topLevelValidations = booleanExprSubstitutions.expressions.toList.flatMap { case (booleanExprId, booleanExpr) =>
+      fcIdsWithDateOffsetFromBooleanExpr(booleanExpr).map { fcId =>
+        validateDateOffsetFcId(fcId, s"booleanExpressions.${booleanExprId.id}", fcIdToComponentType)
+      }
+    }
+
+    val pages = SectionHelper.pages(formTemplate.formKind.allSections)
+
+    val allBooleanExprs: List[(String, BooleanExpr)] =
+      pages.flatMap { page =>
+        page.includeIf.map(ii => ("page includeIf", ii.booleanExpr)).toList
+      } ++
+        pages.flatMap(_.allFormComponents).flatMap { fc =>
+          fc.includeIf.map(ii => (s"field ${fc.id} includeIf", ii.booleanExpr)).toList ++
+            fc.validIf.map(vi => (s"field ${fc.id} validIf", vi.booleanExpr)).toList ++
+            fc.validators.map(v => (s"field ${fc.id} validator", v.validIf.booleanExpr))
+        } ++
+        formTemplate.formKind.allSections.flatMap {
+          case a: Section.AddToList =>
+            a.includeIf.map(ii => ("addToList includeIf", ii.booleanExpr)).toList ++
+              a.repeatsUntil.map(ii => ("addToList repeatsUntil", ii.booleanExpr)).toList ++
+              a.repeatsWhile.map(ii => ("addToList repeatsWhile", ii.booleanExpr)).toList
+          case _ => Nil
+        }
+
+    val formTemplateValidations = allBooleanExprs.flatMap { case (description, booleanExpr) =>
+      fcIdsWithDateOffsetFromBooleanExpr(booleanExpr).map { fcId =>
+        validateDateOffsetFcId(fcId, description, fcIdToComponentType)
+      }
+    }
+
+    Monoid.combineAll(topLevelValidations ++ formTemplateValidations)
+  }
+
+  private def fcIdsWithDateOffsetFromDateExpr(dateExpr: DateExpr): List[FormComponentId] = dateExpr match {
+    case DateExprWithOffset(DateFormCtxVar(FormCtx(fcId)), _) => List(fcId)
+    case DateExprWithOffset(inner, _)                         => fcIdsWithDateOffsetFromDateExpr(inner)
+    case DateIfElse(_, field1, field2) =>
+      fcIdsWithDateOffsetFromDateExpr(field1) ++ fcIdsWithDateOffsetFromDateExpr(field2)
+    case DateOrElse(field1, field2) =>
+      fcIdsWithDateOffsetFromDateExpr(field1) ++ fcIdsWithDateOffsetFromDateExpr(field2)
+    case EarliestOf(exprs)           => exprs.flatMap(fcIdsWithDateOffsetFromDateExpr)
+    case LatestOf(exprs)             => exprs.flatMap(fcIdsWithDateOffsetFromDateExpr)
+    case DateConstructExpr(dm, year) => fcIdsWithDateOffsetFromDateExpr(dm) ++ fcIdsWithDateOffsetFromExpr(year)
+    case _                           => Nil
+  }
+
+  private def fcIdsWithDateOffsetFromBooleanExpr(be: BooleanExpr): List[FormComponentId] = be match {
+    case DateBefore(l, r)          => fcIdsWithDateOffsetFromDateExpr(l) ++ fcIdsWithDateOffsetFromDateExpr(r)
+    case DateAfter(l, r)           => fcIdsWithDateOffsetFromDateExpr(l) ++ fcIdsWithDateOffsetFromDateExpr(r)
+    case Equals(l, r)              => fcIdsWithDateOffsetFromExpr(l) ++ fcIdsWithDateOffsetFromExpr(r)
+    case GreaterThan(l, r)         => fcIdsWithDateOffsetFromExpr(l) ++ fcIdsWithDateOffsetFromExpr(r)
+    case GreaterThanOrEquals(l, r) => fcIdsWithDateOffsetFromExpr(l) ++ fcIdsWithDateOffsetFromExpr(r)
+    case LessThan(l, r)            => fcIdsWithDateOffsetFromExpr(l) ++ fcIdsWithDateOffsetFromExpr(r)
+    case LessThanOrEquals(l, r)    => fcIdsWithDateOffsetFromExpr(l) ++ fcIdsWithDateOffsetFromExpr(r)
+    case Not(e)                    => fcIdsWithDateOffsetFromBooleanExpr(e)
+    case Or(l, r)                  => fcIdsWithDateOffsetFromBooleanExpr(l) ++ fcIdsWithDateOffsetFromBooleanExpr(r)
+    case And(l, r)                 => fcIdsWithDateOffsetFromBooleanExpr(l) ++ fcIdsWithDateOffsetFromBooleanExpr(r)
+    case Contains(_, value)        => fcIdsWithDateOffsetFromExpr(value)
+    case In(value, _)              => fcIdsWithDateOffsetFromExpr(value)
+    case MatchRegex(expr, _)       => fcIdsWithDateOffsetFromExpr(expr)
+    case _                         => Nil
+  }
+
+  private def fcIdsWithDateOffsetFromExpr(expr: Expr): List[FormComponentId] = expr match {
+    case DateCtx(dateExpr) => fcIdsWithDateOffsetFromDateExpr(dateExpr)
+    case Add(l, r)         => fcIdsWithDateOffsetFromExpr(l) ++ fcIdsWithDateOffsetFromExpr(r)
+    case Multiply(l, r)    => fcIdsWithDateOffsetFromExpr(l) ++ fcIdsWithDateOffsetFromExpr(r)
+    case Subtraction(l, r) => fcIdsWithDateOffsetFromExpr(l) ++ fcIdsWithDateOffsetFromExpr(r)
+    case Divide(l, r)      => fcIdsWithDateOffsetFromExpr(l) ++ fcIdsWithDateOffsetFromExpr(r)
+    case IfElse(cond, l, r) =>
+      fcIdsWithDateOffsetFromBooleanExpr(cond) ++ fcIdsWithDateOffsetFromExpr(l) ++ fcIdsWithDateOffsetFromExpr(r)
+    case Else(l, r)          => fcIdsWithDateOffsetFromExpr(l) ++ fcIdsWithDateOffsetFromExpr(r)
+    case HideZeroDecimals(e) => fcIdsWithDateOffsetFromExpr(e)
+    case Sum(e)              => fcIdsWithDateOffsetFromExpr(e)
+    case Period(l, r)        => fcIdsWithDateOffsetFromExpr(l) ++ fcIdsWithDateOffsetFromExpr(r)
+    case Between(l, r, _)    => fcIdsWithDateOffsetFromExpr(l) ++ fcIdsWithDateOffsetFromExpr(r)
+    case PeriodExt(p, _)     => fcIdsWithDateOffsetFromExpr(p)
+    case Typed(e, _)         => fcIdsWithDateOffsetFromExpr(e)
+    case StringOps(e, _)     => fcIdsWithDateOffsetFromExpr(e)
+    case Concat(exprs)       => exprs.flatMap(fcIdsWithDateOffsetFromExpr)
+    case _                   => Nil
+  }
+
+  private def validateDateOffsetFcId(
+    fcId: FormComponentId,
+    pathDescription: String,
+    fcIdToComponentType: Map[FormComponentId, ComponentType]
+  ): ValidationResult =
+    fcIdToComponentType.get(fcId) match {
+      case None => Valid
+      case Some(componentType) =>
+        (
+          componentType.cast[Date],
+          componentType.cast[CalendarDate.type],
+          componentType.cast[TaxPeriodDate.type]
+        ) match {
+          case (Some(_), _, _) | (_, Some(_), _) | (_, _, Some(_)) => Valid
+          case _ =>
+            Invalid(
+              s"$pathDescription: Form component '$fcId' used with date offset should be date type"
+            )
+        }
+    }
 
   def validateDateConstructExpressions(
     allExpressions: List[ExprWithPath]
@@ -1811,6 +1954,28 @@ object FormTemplateValidator {
           )
       }
       .combineAll
+  }
+
+  def validatePrintSection(formTemplate: FormTemplate): ValidationResult = {
+    def validateLinks(instructions: SmartString, path: String, correction: String) =
+      instructions.internals.map { s =>
+        if (s.localised.m.values.exists(_.contains(path)))
+          Invalid(
+            s"`$path$${form.id}` is invalid. Please use `$correction` instead"
+          )
+        else Valid
+      }
+
+    (formTemplate.destinations match {
+      case destinationPrint: DestinationPrint =>
+        validateLinks(
+          destinationPrint.page.instructions,
+          "/submissions/printSection/notificationPdf/",
+          "link.printSectionPdf"
+        ) ++
+          validateLinks(destinationPrint.page.instructions, "/submissions/summary/", "link.summaryPage")
+      case _ => List(Valid)
+    }).combineAll
   }
 
   def validateAddToListCYAPage(formTemplate: FormTemplate): ValidationResult = {

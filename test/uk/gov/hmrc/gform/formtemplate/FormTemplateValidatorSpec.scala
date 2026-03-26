@@ -27,8 +27,10 @@ import uk.gov.hmrc.gform.core.{ Invalid, Opt, Valid, ValidationResult }
 import uk.gov.hmrc.gform.sharedmodel.DataRetrieve.Attribute
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.Expr
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.PageLink
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AnyDate, BulletedList, Checkbox, Choice, ChoicesAvailable, ChoicesSelected, Constant, DataRetrieveCtx, DataRetrieveDateCtx, Date, DateCtx, DateFormCtxVar, DateFunction, DateProjection, DateValueExpr, DisplayAsEntered, Dynamic, Equals, ExprWithPath, FormComponent, FormComponentId, FormComponentValidator, FormCtx, FormStartDateExprValue, FormTemplate, HideZeroDecimals, Horizontal, IfElse, IncludeIf, IndexOf, IndexOfDataRetrieveCtx, InformationMessage, Instruction, IsTrue, LeafExpr, LinkCtx, LookupColumn, Mandatory, Not, NumberedList, Offset, OptionData, OptionDataValue, Page, PageId, PostcodeLookup, Radio, Section, ShortText, StandardInfo, SummariseGroupAsGrid, TemplatePath, Text, TextArea, TextWithRestrictions, TypeAhead, ValidIf, Value, Vertical }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AnyDate, BulletedList, CalendarDate, Checkbox, Choice, ChoicesAvailable, ChoicesSelected, Constant, DataRetrieveCtx, DataRetrieveDateCtx, Date, DateAfter, DateBefore, DateCtx, DateExprWithOffset, DateFormCtxVar, DateFunction, DateProjection, DateValueExpr, DisplayAsEntered, Dynamic, Equals, ExprWithPath, FormComponent, FormComponentId, FormComponentValidator, FormCtx, FormStartDateExprValue, FormTemplate, GreaterThan, HideZeroDecimals, Horizontal, IfElse, IncludeIf, IndexOf, IndexOfDataRetrieveCtx, InformationMessage, Instruction, IsTrue, LeafExpr, LinkCtx, LookupColumn, Mandatory, Not, NumberedList, Offset, OffsetUnit, OffsetYMD, OptionData, OptionDataValue, Page, PageId, PostcodeLookup, Radio, Section, ShortText, StandardInfo, SummariseGroupAsGrid, TaxPeriodDate, TemplatePath, Text, TextArea, TextWithRestrictions, TodayDateExprValue, TypeAhead, ValidIf, Value, Vertical }
 import uk.gov.hmrc.gform.sharedmodel._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.PrintSection
 
 class FormTemplateValidatorSpec
     extends AnyWordSpecLike with Matchers with FormTemplateSupport with TableDrivenPropertyChecks {
@@ -1877,6 +1879,753 @@ class FormTemplateValidatorSpec
     }
   }
 
+  "validateDateExprWithOffsetConstraints" should {
+    "validate and report non-date references used with date offsets" in {
+      val yearOffset = OffsetYMD(OffsetUnit.Year(-1))
+      val monthOffset = OffsetYMD(OffsetUnit.Month(-1))
+      val dayOffset = OffsetYMD(OffsetUnit.Day(-1))
+
+      val table = Table(
+        ("sections", "expected"),
+        // Valid: Date field with year offset
+        (
+          List(
+            mkSectionNonRepeatingPage(
+              name = "page1",
+              formComponents = List(
+                mkFormComponent("dateComp", Date(AnyDate, Offset(0), None), false)
+              )
+            ),
+            mkSectionNonRepeatingPage(
+              name = "page2",
+              formComponents = List(
+                mkFormComponent(
+                  "infoComp",
+                  InformationMessage(
+                    StandardInfo,
+                    SmartString(
+                      toLocalisedString("{0}"),
+                      List(
+                        DateCtx(
+                          DateExprWithOffset(DateFormCtxVar(FormCtx(FormComponentId("dateComp"))), yearOffset)
+                        )
+                      )
+                    )
+                  ),
+                  false
+                )
+              )
+            )
+          ),
+          Valid
+        ),
+        // Valid: CalendarDate field with month offset
+        (
+          List(
+            mkSectionNonRepeatingPage(
+              name = "page1",
+              formComponents = List(
+                mkFormComponent("calDateComp", CalendarDate, false)
+              )
+            ),
+            mkSectionNonRepeatingPage(
+              name = "page2",
+              formComponents = List(
+                mkFormComponent(
+                  "infoComp",
+                  InformationMessage(
+                    StandardInfo,
+                    SmartString(
+                      toLocalisedString("{0}"),
+                      List(
+                        DateCtx(
+                          DateExprWithOffset(DateFormCtxVar(FormCtx(FormComponentId("calDateComp"))), monthOffset)
+                        )
+                      )
+                    )
+                  ),
+                  false
+                )
+              )
+            )
+          ),
+          Valid
+        ),
+        // Valid: TaxPeriodDate field with month offset
+        (
+          List(
+            mkSectionNonRepeatingPage(
+              name = "page1",
+              formComponents = List(
+                mkFormComponent("taxPeriodComp", TaxPeriodDate, false)
+              )
+            ),
+            mkSectionNonRepeatingPage(
+              name = "page2",
+              formComponents = List(
+                mkFormComponent(
+                  "infoComp",
+                  InformationMessage(
+                    StandardInfo,
+                    SmartString(
+                      toLocalisedString("{0}"),
+                      List(
+                        DateCtx(
+                          DateExprWithOffset(DateFormCtxVar(FormCtx(FormComponentId("taxPeriodComp"))), monthOffset)
+                        )
+                      )
+                    )
+                  ),
+                  false
+                )
+              )
+            )
+          ),
+          Valid
+        ),
+        // Valid: TODAY with day offset (no FormCtx involved)
+        (
+          List(
+            mkSectionNonRepeatingPage(
+              name = "page1",
+              formComponents = List(
+                mkFormComponent(
+                  "infoComp",
+                  InformationMessage(
+                    StandardInfo,
+                    SmartString(
+                      toLocalisedString("{0}"),
+                      List(
+                        DateCtx(
+                          DateExprWithOffset(DateValueExpr(TodayDateExprValue), dayOffset)
+                        )
+                      )
+                    )
+                  ),
+                  false
+                )
+              )
+            )
+          ),
+          Valid
+        ),
+        // Valid: form.startDate with year offset (no FormCtx involved)
+        (
+          List(
+            mkSectionNonRepeatingPage(
+              name = "page1",
+              formComponents = List(
+                mkFormComponent(
+                  "infoComp",
+                  InformationMessage(
+                    StandardInfo,
+                    SmartString(
+                      toLocalisedString("{0}"),
+                      List(
+                        DateCtx(
+                          DateExprWithOffset(DateValueExpr(FormStartDateExprValue), yearOffset)
+                        )
+                      )
+                    )
+                  ),
+                  false
+                )
+              )
+            )
+          ),
+          Valid
+        ),
+        // Invalid: Text field with year offset
+        (
+          List(
+            mkSectionNonRepeatingPage(
+              name = "page1",
+              formComponents = List(
+                mkFormComponent("textComp", Text(ShortText.default, Value), false)
+              )
+            ),
+            mkSectionNonRepeatingPage(
+              name = "page2",
+              formComponents = List(
+                mkFormComponent(
+                  "infoComp",
+                  InformationMessage(
+                    StandardInfo,
+                    SmartString(
+                      toLocalisedString("{0}"),
+                      List(
+                        DateCtx(
+                          DateExprWithOffset(DateFormCtxVar(FormCtx(FormComponentId("textComp"))), yearOffset)
+                        )
+                      )
+                    )
+                  ),
+                  false
+                )
+              )
+            )
+          ),
+          Invalid(
+            "sections.fields.[id=infoComp].infoText: Form component 'textComp' used with date offset should be date type"
+          )
+        ),
+        // Invalid: Text field with month offset
+        (
+          List(
+            mkSectionNonRepeatingPage(
+              name = "page1",
+              formComponents = List(
+                mkFormComponent("textComp", Text(ShortText.default, Value), false)
+              )
+            ),
+            mkSectionNonRepeatingPage(
+              name = "page2",
+              formComponents = List(
+                mkFormComponent(
+                  "infoComp",
+                  InformationMessage(
+                    StandardInfo,
+                    SmartString(
+                      toLocalisedString("{0}"),
+                      List(
+                        DateCtx(
+                          DateExprWithOffset(DateFormCtxVar(FormCtx(FormComponentId("textComp"))), monthOffset)
+                        )
+                      )
+                    )
+                  ),
+                  false
+                )
+              )
+            )
+          ),
+          Invalid(
+            "sections.fields.[id=infoComp].infoText: Form component 'textComp' used with date offset should be date type"
+          )
+        ),
+        // Invalid: Text field with day offset
+        (
+          List(
+            mkSectionNonRepeatingPage(
+              name = "page1",
+              formComponents = List(
+                mkFormComponent("textComp", Text(ShortText.default, Value), false)
+              )
+            ),
+            mkSectionNonRepeatingPage(
+              name = "page2",
+              formComponents = List(
+                mkFormComponent(
+                  "infoComp",
+                  InformationMessage(
+                    StandardInfo,
+                    SmartString(
+                      toLocalisedString("{0}"),
+                      List(
+                        DateCtx(
+                          DateExprWithOffset(DateFormCtxVar(FormCtx(FormComponentId("textComp"))), dayOffset)
+                        )
+                      )
+                    )
+                  ),
+                  false
+                )
+              )
+            )
+          ),
+          Invalid(
+            "sections.fields.[id=infoComp].infoText: Form component 'textComp' used with date offset should be date type"
+          )
+        ),
+        // Invalid: Choice field with year offset (the original motivating case)
+        (
+          List(
+            mkSectionNonRepeatingPage(
+              name = "page1",
+              formComponents = List(
+                mkFormComponent(
+                  "choiceComp",
+                  Choice(
+                    Radio,
+                    NonEmptyList
+                      .of(toSmartString("2001"), toSmartString("2002"))
+                      .map(OptionData.IndexBased(_, None, None, None, None)),
+                    Horizontal,
+                    Nil,
+                    None,
+                    None,
+                    None,
+                    noDivider,
+                    None,
+                    None,
+                    false,
+                    false
+                  ),
+                  false
+                )
+              )
+            ),
+            mkSectionNonRepeatingPage(
+              name = "page2",
+              formComponents = List(
+                mkFormComponent(
+                  "infoComp",
+                  InformationMessage(
+                    StandardInfo,
+                    SmartString(
+                      toLocalisedString("{0}"),
+                      List(
+                        DateCtx(
+                          DateExprWithOffset(DateFormCtxVar(FormCtx(FormComponentId("choiceComp"))), yearOffset)
+                        )
+                      )
+                    )
+                  ),
+                  false
+                )
+              )
+            )
+          ),
+          Invalid(
+            "sections.fields.[id=infoComp].infoText: Form component 'choiceComp' used with date offset should be date type"
+          )
+        )
+      )
+
+      forAll(table) { (sections, expected) =>
+        val formTemplate = mkFormTemplate(sections)
+        val allExprs: List[ExprWithPath] = LeafExpr(TemplatePath.root, formTemplate)
+        FormTemplateValidator.validateDateExprWithOffsetConstraints(
+          formTemplate,
+          allExprs
+        ) shouldBe expected
+      }
+    }
+
+    "validate non-date references used with date offsets in dataRetrieve parameters" in {
+      val table = Table(
+        ("sections", "expected"),
+        // Invalid: Choice field used with offset in dataRetrieve parameter
+        (
+          List(
+            mkSectionNonRepeatingPage(
+              name = "page1",
+              formComponents = List(
+                mkFormComponent(
+                  "choiceComp",
+                  Choice(
+                    Radio,
+                    NonEmptyList
+                      .of(toSmartString("2001"), toSmartString("2002"))
+                      .map(OptionData.IndexBased(_, None, None, None, None)),
+                    Horizontal,
+                    Nil,
+                    None,
+                    None,
+                    None,
+                    noDivider,
+                    None,
+                    None,
+                    false,
+                    false
+                  ),
+                  false
+                )
+              ),
+              dataRetrieve = mkHmrcTaxRatesDataRetrieve("dr1", None, Some("${choiceComp-1y}"))
+            )
+          ),
+          Invalid(
+            "dataRetrieve.dr1.date: Form component 'choiceComp' used with date offset should be date type"
+          )
+        ),
+        // Valid: Date field used with offset in dataRetrieve parameter
+        (
+          List(
+            mkSectionNonRepeatingPage(
+              name = "page1",
+              formComponents = List(
+                mkFormComponent("dateComp", Date(AnyDate, Offset(0), None), false)
+              ),
+              dataRetrieve = mkHmrcTaxRatesDataRetrieve("dr1", None, Some("${dateComp-1y}"))
+            )
+          ),
+          Valid
+        ),
+        // Valid: TODAY with offset in dataRetrieve parameter
+        (
+          List(
+            mkSectionNonRepeatingPage(
+              name = "page1",
+              formComponents = List(
+                mkFormComponent("someComp", Text(ShortText.default, Value), false)
+              ),
+              dataRetrieve = mkHmrcTaxRatesDataRetrieve("dr1", None, Some("${TODAY-1y}"))
+            )
+          ),
+          Valid
+        )
+      )
+
+      forAll(table) { (sections, expected) =>
+        val formTemplate = mkFormTemplate(sections)
+        val allExprs: List[ExprWithPath] = LeafExpr(TemplatePath.root, formTemplate)
+        FormTemplateValidator.validateDateExprWithOffsetConstraints(
+          formTemplate,
+          allExprs
+        ) shouldBe expected
+      }
+    }
+  }
+
+  "validateDateExprWithOffsetInBooleanExprs" should {
+    val yearOffset = OffsetYMD(OffsetUnit.Year(-1))
+
+    "validate non-date references used with date offsets in top-level boolean expressions" in {
+      val table = Table(
+        ("sections", "booleanExprSubstitutions", "expected"),
+        // Invalid: GreaterThan with Choice field + offset in top-level boolean expression
+        (
+          List(
+            mkSectionNonRepeatingPage(
+              name = "page1",
+              formComponents = List(
+                mkFormComponent(
+                  "choiceComp",
+                  Choice(
+                    Radio,
+                    NonEmptyList
+                      .of(toSmartString("2001"), toSmartString("2002"))
+                      .map(OptionData.IndexBased(_, None, None, None, None)),
+                    Horizontal,
+                    Nil,
+                    None,
+                    None,
+                    None,
+                    noDivider,
+                    None,
+                    None,
+                    false,
+                    false
+                  ),
+                  false
+                )
+              )
+            )
+          ),
+          BooleanExprSubstitutions(
+            Map(
+              BooleanExprId("testBool") -> GreaterThan(
+                DateCtx(
+                  DateExprWithOffset(DateFormCtxVar(FormCtx(FormComponentId("choiceComp"))), yearOffset)
+                ),
+                Constant("2024-06-30")
+              )
+            )
+          ),
+          Invalid(
+            "booleanExpressions.testBool: Form component 'choiceComp' used with date offset should be date type"
+          )
+        ),
+        // Valid: GreaterThan with Date field + offset in top-level boolean expression
+        (
+          List(
+            mkSectionNonRepeatingPage(
+              name = "page1",
+              formComponents = List(
+                mkFormComponent("dateComp", Date(AnyDate, Offset(0), None), false)
+              )
+            )
+          ),
+          BooleanExprSubstitutions(
+            Map(
+              BooleanExprId("testBool") -> GreaterThan(
+                DateCtx(
+                  DateExprWithOffset(DateFormCtxVar(FormCtx(FormComponentId("dateComp"))), yearOffset)
+                ),
+                Constant("2024-06-30")
+              )
+            )
+          ),
+          Valid
+        ),
+        // Invalid: DateBefore with Choice field + offset in top-level boolean expression
+        (
+          List(
+            mkSectionNonRepeatingPage(
+              name = "page1",
+              formComponents = List(
+                mkFormComponent(
+                  "choiceComp",
+                  Choice(
+                    Radio,
+                    NonEmptyList
+                      .of(toSmartString("2001"), toSmartString("2002"))
+                      .map(OptionData.IndexBased(_, None, None, None, None)),
+                    Horizontal,
+                    Nil,
+                    None,
+                    None,
+                    None,
+                    noDivider,
+                    None,
+                    None,
+                    false,
+                    false
+                  ),
+                  false
+                )
+              )
+            )
+          ),
+          BooleanExprSubstitutions(
+            Map(
+              BooleanExprId("testBool") -> DateBefore(
+                DateExprWithOffset(DateFormCtxVar(FormCtx(FormComponentId("choiceComp"))), yearOffset),
+                DateValueExpr(TodayDateExprValue)
+              )
+            )
+          ),
+          Invalid(
+            "booleanExpressions.testBool: Form component 'choiceComp' used with date offset should be date type"
+          )
+        ),
+        // Valid: DateAfter with Date field + offset in top-level boolean expression
+        (
+          List(
+            mkSectionNonRepeatingPage(
+              name = "page1",
+              formComponents = List(
+                mkFormComponent("dateComp", Date(AnyDate, Offset(0), None), false)
+              )
+            )
+          ),
+          BooleanExprSubstitutions(
+            Map(
+              BooleanExprId("testBool") -> DateAfter(
+                DateExprWithOffset(DateFormCtxVar(FormCtx(FormComponentId("dateComp"))), yearOffset),
+                DateValueExpr(TodayDateExprValue)
+              )
+            )
+          ),
+          Valid
+        ),
+        // Valid: No boolean expressions
+        (
+          List(
+            mkSectionNonRepeatingPage(
+              name = "page1",
+              formComponents = List(
+                mkFormComponent("textComp", Text(ShortText.default, Value), false)
+              )
+            )
+          ),
+          BooleanExprSubstitutions(Map.empty),
+          Valid
+        )
+      )
+
+      forAll(table) { (sections, booleanExprSubstitutions, expected) =>
+        val formTemplate = mkFormTemplate(sections)
+        FormTemplateValidator.validateDateExprWithOffsetInBooleanExprs(
+          formTemplate,
+          booleanExprSubstitutions
+        ) shouldBe expected
+      }
+    }
+
+    "validate non-date references used with date offsets in IncludeIf/ValidIf boolean expressions" in {
+      val table = Table(
+        ("sections", "expected"),
+        // Invalid: DateBefore with Choice field + offset in component includeIf
+        (
+          List(
+            mkSectionNonRepeatingPage(
+              name = "page1",
+              formComponents = List(
+                mkFormComponent(
+                  "choiceComp",
+                  Choice(
+                    Radio,
+                    NonEmptyList
+                      .of(toSmartString("2001"), toSmartString("2002"))
+                      .map(OptionData.IndexBased(_, None, None, None, None)),
+                    Horizontal,
+                    Nil,
+                    None,
+                    None,
+                    None,
+                    noDivider,
+                    None,
+                    None,
+                    false,
+                    false
+                  ),
+                  false
+                ),
+                mkFormComponent("textComp", Text(ShortText.default, Value), false).copy(
+                  includeIf = Some(
+                    IncludeIf(
+                      DateBefore(
+                        DateExprWithOffset(
+                          DateFormCtxVar(FormCtx(FormComponentId("choiceComp"))),
+                          yearOffset
+                        ),
+                        DateValueExpr(TodayDateExprValue)
+                      )
+                    )
+                  )
+                )
+              )
+            )
+          ),
+          Invalid(
+            "field textComp includeIf: Form component 'choiceComp' used with date offset should be date type"
+          )
+        ),
+        // Valid: DateBefore with Date field + offset in component includeIf
+        (
+          List(
+            mkSectionNonRepeatingPage(
+              name = "page1",
+              formComponents = List(
+                mkFormComponent("dateComp", Date(AnyDate, Offset(0), None), false),
+                mkFormComponent("textComp", Text(ShortText.default, Value), false).copy(
+                  includeIf = Some(
+                    IncludeIf(
+                      DateBefore(
+                        DateExprWithOffset(
+                          DateFormCtxVar(FormCtx(FormComponentId("dateComp"))),
+                          yearOffset
+                        ),
+                        DateValueExpr(TodayDateExprValue)
+                      )
+                    )
+                  )
+                )
+              )
+            )
+          ),
+          Valid
+        ),
+        // Invalid: DateAfter with Choice field + offset in component validIf
+        (
+          List(
+            mkSectionNonRepeatingPage(
+              name = "page1",
+              formComponents = List(
+                mkFormComponent(
+                  "choiceComp",
+                  Choice(
+                    Radio,
+                    NonEmptyList
+                      .of(toSmartString("2001"), toSmartString("2002"))
+                      .map(OptionData.IndexBased(_, None, None, None, None)),
+                    Horizontal,
+                    Nil,
+                    None,
+                    None,
+                    None,
+                    noDivider,
+                    None,
+                    None,
+                    false,
+                    false
+                  ),
+                  false
+                ),
+                mkFormComponent("textComp", Text(ShortText.default, Value), false).copy(
+                  validIf = Some(
+                    ValidIf(
+                      DateAfter(
+                        DateExprWithOffset(
+                          DateFormCtxVar(FormCtx(FormComponentId("choiceComp"))),
+                          yearOffset
+                        ),
+                        DateValueExpr(TodayDateExprValue)
+                      )
+                    )
+                  )
+                )
+              )
+            )
+          ),
+          Invalid(
+            "field textComp validIf: Form component 'choiceComp' used with date offset should be date type"
+          )
+        ),
+        // Invalid: DateBefore with Choice field + offset in page includeIf
+        (
+          List(
+            Section.NonRepeatingPage(
+              Page(
+                toSmartString("page1"),
+                None,
+                None,
+                None,
+                None,
+                None,
+                Some(
+                  IncludeIf(
+                    DateBefore(
+                      DateExprWithOffset(
+                        DateFormCtxVar(FormCtx(FormComponentId("choiceComp"))),
+                        yearOffset
+                      ),
+                      DateValueExpr(TodayDateExprValue)
+                    )
+                  )
+                ),
+                List(
+                  mkFormComponent(
+                    "choiceComp",
+                    Choice(
+                      Radio,
+                      NonEmptyList
+                        .of(toSmartString("2001"), toSmartString("2002"))
+                        .map(OptionData.IndexBased(_, None, None, None, None)),
+                      Horizontal,
+                      Nil,
+                      None,
+                      None,
+                      None,
+                      noDivider,
+                      None,
+                      None,
+                      false,
+                      false
+                    ),
+                    false
+                  )
+                ),
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None
+              )
+            )
+          ),
+          Invalid(
+            "page includeIf: Form component 'choiceComp' used with date offset should be date type"
+          )
+        )
+      )
+
+      forAll(table) { (sections, expected) =>
+        val formTemplate = mkFormTemplate(sections)
+        FormTemplateValidator.validateDateExprWithOffsetInBooleanExprs(
+          formTemplate,
+          BooleanExprSubstitutions(Map.empty)
+        ) shouldBe expected
+      }
+    }
+  }
+
   "validateTypeAheadChoices" should {
     "validate TypeAhead choice constraints" in {
       val table = Table(
@@ -2183,6 +2932,64 @@ class FormTemplateValidatorSpec
         result shouldBe expectedResult
       }
     }
+  }
+
+  "validatePrintSection" should {
+    "return Valid for non-DestinationPrint destinations" in {
+      val formTemplate = mkFormTemplate(List(mkSectionNonRepeatingPage(formComponents = List(mkFormComponent("fc1")))))
+      val result = FormTemplateValidator.validatePrintSection(formTemplate)
+      result shouldBe Valid
+    }
+
+    "return Valid when DestinationPrint instructions contain no invalid paths" in {
+      val formTemplate = mkFormTemplateWithPrintSection(toSmartString("Some clean instructions"))
+      val result = FormTemplateValidator.validatePrintSection(formTemplate)
+      result shouldBe Valid
+    }
+
+    "return Invalid when instructions contain manual printSection notificationPdf path" in {
+      val formTemplate = mkFormTemplateWithPrintSection(
+        toSmartString("Click here /submissions/printSection/notificationPdf/ to download")
+      )
+      val result = FormTemplateValidator.validatePrintSection(formTemplate)
+      result shouldBe Invalid(
+        "`/submissions/printSection/notificationPdf/${form.id}` is invalid. Please use `link.printSectionPdf` instead"
+      )
+    }
+
+    "return Invalid when instructions contain manual summary path" in {
+      val formTemplate = mkFormTemplateWithPrintSection(
+        toSmartString("Click here /submissions/summary/ to view")
+      )
+      val result = FormTemplateValidator.validatePrintSection(formTemplate)
+      result shouldBe Invalid(
+        "`/submissions/summary/${form.id}` is invalid. Please use `link.summaryPage` instead"
+      )
+    }
+
+    "return Invalid when instructions contain both manual paths" in {
+      val instructions = SmartString(
+        LocalisedString(
+          Map(
+            LangADT.En -> "/submissions/printSection/notificationPdf/ and /submissions/summary/"
+          )
+        ),
+        Nil
+      )
+      val formTemplate = mkFormTemplateWithPrintSection(instructions)
+      val result = FormTemplateValidator.validatePrintSection(formTemplate)
+      result shouldBe Invalid(
+        "`/submissions/printSection/notificationPdf/${form.id}` is invalid. Please use `link.printSectionPdf` instead"
+      )
+    }
+  }
+
+  private def mkFormTemplateWithPrintSection(instructions: SmartString): FormTemplate = {
+    val printPage = PrintSection.Page(toSmartString("Print Title"), instructions)
+    val printPdf = PrintSection.Pdf(toSmartString("Header"), toSmartString("Footer"))
+    val destinations = Destinations.DestinationPrint(printPage, printPdf, None)
+    mkFormTemplate(List(mkSectionNonRepeatingPage(formComponents = List(mkFormComponent("fc1")))))
+      .copy(destinations = destinations)
   }
 
   def mkHmrcTaxRatesDataRetrieve(

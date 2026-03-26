@@ -27,7 +27,7 @@ import uk.gov.hmrc.gform.sdes.workitem.DestinationWorkItemAlgebra
 import uk.gov.hmrc.gform.sharedmodel.{ DestinationResult, LangADT }
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 import uk.gov.hmrc.gform.sharedmodel.form.Submitted
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationResponse }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationResponse, OtherSdesDestinationResponse }
 import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination.InfoArchive
 import uk.gov.hmrc.gform.submission.{ InfoArchiveXMLGenerator, PdfAndXmlSummariesFactory }
 import uk.gov.hmrc.gform.submission.handlebars.HandlebarsModelTree
@@ -106,7 +106,7 @@ class InfoArchiveSubmitter(
              ByteString(sip),
              ContentType.`application/xml`
            )
-      _ <-
+      workItemId <-
         destinationWorkItemAlgebra.pushWorkItem(
           envelopeId,
           formTemplateId,
@@ -116,7 +116,7 @@ class InfoArchiveSubmitter(
           None
         )
       _ <- formService.updateFormStatus(submissionInfo.formId, Submitted)
-    } yield DestinationResponse.NoResponse
+    } yield OtherSdesDestinationResponse(InfoArchive, workItemId)
   }
 
   private def calcHash(content: Array[Byte]) = {

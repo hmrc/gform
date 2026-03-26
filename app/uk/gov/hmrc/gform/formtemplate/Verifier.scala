@@ -28,7 +28,8 @@ trait Verifier {
   def verify(
     formTemplate: FormTemplate,
     appConfig: AppConfig,
-    handlebarsSchemaIds: List[HandlebarsSchemaId]
+    handlebarsSchemaIds: List[HandlebarsSchemaId],
+    booleanExpressionsContextSubstituted: BooleanExprSubstitutions
   )(expressionsContext: ExprSubstitutions)(implicit ec: ExecutionContext): FOpt[Unit] = {
 
     val sections = formTemplate.formKind.allSections
@@ -85,8 +86,17 @@ trait Verifier {
       _ <- fromOptA(
              FormTemplateValidator.validateDateFunctionReferenceConstraints(formTemplate, allExpressions).toEither
            )
+      _ <- fromOptA(
+             FormTemplateValidator.validateDateExprWithOffsetConstraints(formTemplate, allExpressions).toEither
+           )
+      _ <- fromOptA(
+             FormTemplateValidator
+               .validateDateExprWithOffsetInBooleanExprs(formTemplate, booleanExpressionsContextSubstituted)
+               .toEither
+           )
       _ <- fromOptA(FormTemplateValidator.validateDateConstructExpressions(allExpressions).toEither)
       _ <- fromOptA(FormTemplateValidator.validateSummarySection(formTemplate).toEither)
+      _ <- fromOptA(FormTemplateValidator.validatePrintSection(formTemplate).toEither)
       _ <- fromOptA(FormTemplateValidator.validateAddToListCYAPage(formTemplate).toEither)
       _ <- fromOptA(FormTemplateValidator.validateAddToListDeclarationSection(formTemplate).toEither)
       _ <- fromOptA(FormTemplateValidator.validateAddToListDefaultPage(formTemplate).toEither)

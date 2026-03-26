@@ -17,6 +17,7 @@
 package uk.gov.hmrc.gform.sdes
 
 import com.mongodb.client.result.UpdateResult
+import org.bson.types.ObjectId
 import org.mongodb.scala.model.{ IndexModel, IndexOptions, Indexes }
 import uk.gov.hmrc.gform.akka.AkkaModule
 import uk.gov.hmrc.gform.config.ConfigModule
@@ -269,7 +270,7 @@ class SdesModule(
       destination: SdesDestination,
       filePrefix: Option[String],
       submissionPrefix: Option[String]
-    ): FOpt[Unit] =
+    ): FOpt[ObjectId] =
       fromFutureA(
         destinationWorkItemService
           .pushWorkItem(envelopeId, formTemplateId, submissionRef, destination, filePrefix, submissionPrefix)
@@ -298,6 +299,9 @@ class SdesModule(
 
     override def delete(id: String, sdesDestination: SdesDestination): FOpt[Unit] =
       fromFutureA(destinationWorkItemService.delete(id, sdesDestination))
+
+    override def ready(workItems: List[(SdesDestination, ObjectId)]): FOpt[Unit] =
+      fromFutureA(destinationWorkItemService.ready(workItems))
   }
 
 }

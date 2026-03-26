@@ -53,7 +53,7 @@ object RealHandlebarsTemplateProcessor extends HandlebarsTemplateProcessor {
       catch {
         case ex: Exception =>
           throw new Exception(
-            "Error processing handlebar template. Model: " + focussedTree.focus.model.toString,
+            "Error processing handlebar template. Template: " + compiledTemplate.text(),
             ex
           )
       }
