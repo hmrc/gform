@@ -118,8 +118,8 @@ class DestinationWorkItemService(
           dataStoreWorkItemRepo.markAs(oid, ToDo)
         case (SdesDestination.InfoArchive, oid)               => infoArchiveWorkItemRepo.markAs(oid, ToDo)
         case (SdesDestination.DataLakehouse, oid)             => dataLakehouseWorkItemRepo.markAs(oid, ToDo)
-        case (SdesDestination.NrsOrchestrator, oid)           => throw new RuntimeException("Not implemented for NRS")
-        case (SdesDestination.NrsOrchestratorAttachment, oid) => throw new RuntimeException("Not implemented for NRS")
+        case (SdesDestination.NrsOrchestrator, oid)           => nrsOrchestratorWorkItemRepo.markAs(oid, ToDo)
+        case (SdesDestination.NrsOrchestratorAttachment, oid) => nrsOrchestratorAttachmentWorkItemRepo.markAs(oid, ToDo)
       }
       .map(_ => ())
 
