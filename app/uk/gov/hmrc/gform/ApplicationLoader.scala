@@ -192,6 +192,15 @@ class ApplicationModule(context: Context)
     )
   private val pdfGeneratorModule = new PdfGeneratorModule(playComponents.context.environment)
 
+  private val jsonCrypto: Encrypter with Decrypter =
+    SymmetricCryptoFactory.aesCryptoFromConfig(baseConfigKey = "json.encryption", configModule.typesafeConfig)
+
+  private val nrsOrchestratorNotificationRepository =
+    new NrsOrchestratorWorkItemRepo(mongoModule.mongoComponent)(implicitly, jsonCrypto)
+  private val nrsOrchestratorAttachmentNotificationRepository = new NrsOrchestratorAttachmentWorkItemRepo(
+    mongoModule.mongoComponent
+  )(implicitly, jsonCrypto)
+
   private val sdesModule =
     new SdesModule(
       configModule,
@@ -199,8 +208,11 @@ class ApplicationModule(context: Context)
       objectStoreModule,
       akkaModule,
       envelopeModule,
-      emailModule
+      emailModule,
+      nrsOrchestratorNotificationRepository,
+      nrsOrchestratorAttachmentNotificationRepository
     )
+
   private val fileUploadModule =
     new FileUploadModule(
       configModule,
@@ -218,9 +230,6 @@ class ApplicationModule(context: Context)
     baseConfigKey = "upscan.callback.encryption",
     configModule.typesafeConfig
   )
-
-  private val jsonCrypto: Encrypter with Decrypter =
-    SymmetricCryptoFactory.aesCryptoFromConfig(baseConfigKey = "json.encryption", configModule.typesafeConfig)
 
   private val prodExpiryDays: Int = configModule.appConfig.formExpiryDays
   private val prodCreatedExpiryDays: Int = configModule.appConfig.formExpiryDaysFromCreation
@@ -314,11 +323,6 @@ class ApplicationModule(context: Context)
   private val submissionConsolidatorModule = new SubmissionConsolidatorModule(wSHttpModule, formModule, configModule)
 
   private val hipModule = new HipModule(configModule, wSHttpModule)
-
-  private val nrsOrchestratorNotificationRepository = new NrsOrchestratorWorkItemRepo(mongoModule.mongoComponent)
-  private val nrsOrchestratorAttachmentNotificationRepository = new NrsOrchestratorAttachmentWorkItemRepo(
-    mongoModule.mongoComponent
-  )
 
   private val submissionModule =
     new SubmissionModule(

@@ -54,7 +54,9 @@ class SdesModule(
   objectStoreModule: ObjectStoreModule,
   akkaModule: AkkaModule,
   envelopeModule: EnvelopeModule,
-  emailModule: EmailModule
+  emailModule: EmailModule,
+  nrsOrchestratorWorkItemRepo: NrsOrchestratorWorkItemRepo,
+  nrsOrchestratorAttachmentWorkItemRepo: NrsOrchestratorAttachmentWorkItemRepo
 )(implicit ex: ExecutionContext) {
 
   private val fileLocationUrl = configModule.sdesConfig.fileLocationUrl
@@ -100,8 +102,6 @@ class SdesModule(
   val dataStoreWorkItemRepo = new DataStoreWorkItemRepo(mongoModule.mongoComponent)
   val infoArchiveWorkItemRepo = new InfoArchiveWorkItemRepo(mongoModule.mongoComponent)
   val dataLakehouseWorkItemRepo = new DataLakehouseWorkItemRepo(mongoModule.mongoComponent)
-  val nrsOrchestratorWorkItemRepo = new NrsOrchestratorWorkItemRepo(mongoModule.mongoComponent)
-  val nrsOrchestratorAttachmentWorkItemRepo = new NrsOrchestratorAttachmentWorkItemRepo(mongoModule.mongoComponent)
 
   val destinationWorkItemService: DestinationWorkItemAlgebra[Future] =
     new DestinationWorkItemService(

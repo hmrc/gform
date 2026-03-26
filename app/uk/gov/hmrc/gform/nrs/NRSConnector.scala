@@ -25,22 +25,22 @@ import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
 import uk.gov.hmrc.gform.core.FOpt
 import uk.gov.hmrc.gform.envelope.EnvelopeAlgebra
 import uk.gov.hmrc.gform.objectstore.ObjectStoreModule
-import uk.gov.hmrc.gform.scheduler.nrsOrchestrator.{NrsOrchestratorAttachmentWorkItem, NrsOrchestratorAttachmentWorkItemRepo, NrsOrchestratorWorkItem, NrsOrchestratorWorkItemRepo}
+import uk.gov.hmrc.gform.scheduler.nrsOrchestrator.{ NrsOrchestratorAttachmentWorkItem, NrsOrchestratorAttachmentWorkItemRepo, NrsOrchestratorWorkItem, NrsOrchestratorWorkItemRepo }
 import uk.gov.hmrc.gform.sharedmodel.envelope.EnvelopeData
-import uk.gov.hmrc.gform.sharedmodel.form.{EnvelopeId, FormData}
+import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FormData }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationResponse
-import uk.gov.hmrc.gform.sharedmodel.{LangADT, NRSOrchestratorDestinationResultData, SubmissionRef}
+import uk.gov.hmrc.gform.sharedmodel.{ LangADT, NRSOrchestratorDestinationResultData, SubmissionRef }
 import uk.gov.hmrc.gform.submission.Submission
 import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.client.HttpClientV2
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps}
-import uk.gov.hmrc.objectstore.client.{Path, PresignedDownloadUrl}
+import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse, StringContextOps }
+import uk.gov.hmrc.objectstore.client.{ Path, PresignedDownloadUrl }
 
 import java.net.URL
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
-import java.util.{Base64, UUID}
-import scala.concurrent.{ExecutionContext, Future}
+import java.util.{ Base64, UUID }
+import scala.concurrent.{ ExecutionContext, Future }
 
 private case class SubmissionRequestMetaData(
   businessId: String,
@@ -85,7 +85,14 @@ private object AttachmentRequest {
   implicit val format: Format[AttachmentRequest] = Json.format
 }
 
-case class NRSAttachment(id: String, sha256Checksum: String, contentType: String, fileName: String, envelopeId: EnvelopeId, subDirectory: Option[String]) {
+case class NRSAttachment(
+  id: String,
+  sha256Checksum: String,
+  contentType: String,
+  fileName: String,
+  envelopeId: EnvelopeId,
+  subDirectory: Option[String]
+) {
   def getPresignedUrl(objectStoreModule: ObjectStoreModule)(implicit hc: HeaderCarrier): FOpt[PresignedDownloadUrl] = {
     val path: Path.File = objectStoreModule.objectStoreConnector
       .directory(envelopeId.value, subDirectory)
@@ -206,7 +213,7 @@ class NRSConnector(
     makeCall(url, body)
   }
 
-  def getRetrievals()(implicit hc: HeaderCarrier) = {
+  def getRetrievals()(implicit hc: HeaderCarrier): Future[JsObject] = {
     val retrieval = new Retrieval[JsObject] {
       override def propertyNames: Seq[String] =
         (Retrievals.internalId and
@@ -254,27 +261,31 @@ class NRSConnector(
   )(implicit hc: HeaderCarrier): Future[HttpResponse] = {
     val presignedUrl = attachment.getPresignedUrl(objectStoreModule)
     val url = url"$baseUrl/$attachmentUrl"
-    presignedUrl.map { presignedUrl =>
-      val body = AttachmentRequest(
-        attachmentUrl = presignedUrl.downloadUrl.toString,
-        attachmentId = attachment.id,
-        attachmentSha256Checksum = attachment.sha256Checksum,
-        attachmentContentType = attachment.contentType,
-        nrSubmissionId = nrSubmissionId,
-        businessId = businessId,
-        notableEvent = notableEvent
-      )
-      makeCall(url, body)
-    }.value
+    presignedUrl
+      .map { presignedUrl =>
+        val body = AttachmentRequest(
+          attachmentUrl = presignedUrl.downloadUrl.toString,
+          attachmentId = attachment.id,
+          attachmentSha256Checksum = attachment.sha256Checksum,
+          attachmentContentType = attachment.contentType,
+          nrSubmissionId = nrSubmissionId,
+          businessId = businessId,
+          notableEvent = notableEvent
+        )
+        makeCall(url, body)
+      }
+      .value
       .flatMap {
-        case Left(er) => throw new RuntimeException(s"Unexpected state: $er")
+        case Left(er)     => throw new RuntimeException(s"Unexpected state: $er")
         case Right(value) => value
       }
 
   }
 
-  private def retrieveAttachments(envelopeData: EnvelopeData, envelopeId: EnvelopeId, submissionRef: SubmissionRef)(
-    implicit hc: HeaderCarrier
+  private def retrieveAttachments(
+    envelopeData: EnvelopeData,
+    envelopeId: EnvelopeId,
+    submissionRef: SubmissionRef
   ): List[NRSAttachment] =
     envelopeData.files
       .filterNot(file =>
@@ -399,8 +410,8 @@ class NRSConnector(
       }
 
     for {
-      envelope           <- envelopeService.get(envelopeId)
-      attachments        =  getAttachments(envelope)
+      envelope <- envelopeService.get(envelopeId)
+      attachments = getAttachments(envelope)
       submissionResponse <- submissionFtr(attachments)
       _                  <- issueAttachmentWorkItems(submissionResponse, attachments)
     } yield submissionResponse

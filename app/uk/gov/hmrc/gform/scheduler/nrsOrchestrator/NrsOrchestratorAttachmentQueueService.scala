@@ -48,9 +48,13 @@ class NrsOrchestratorAttachmentQueueService(
       )
       .flatMap {
         case response if nrsConnector.nrsServerFailure(response) =>
-          Future.failed(new RuntimeException(s"NRS server failed $response"))
+          Future.failed(
+            new RuntimeException(
+              s"NRS server failed. NRS Response: $response"
+            )
+          )
         case response if response.status != 202 =>
-          logger.error(s"Non 202 response from NRS suggests gform failure. NRS Response: $response")
+          logger.error(s"Non 202, 422, 5xx response from NRS suggests gform failure. NRS Response: $response")
           Future.successful(response)
         case response => Future.successful(response)
       }(ec)
