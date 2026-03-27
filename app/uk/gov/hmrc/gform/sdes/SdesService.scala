@@ -424,8 +424,6 @@ class SdesService(
         objectStoreAlgebra.deleteFile(paths.ephemeral, fileName)
       case SdesDestination.Dms | SdesDestination.PegaCaseflow | SdesDestination.InfoArchive =>
         objectStoreAlgebra.deleteZipFile(envelopeId, paths)
-      case SdesDestination.NrsOrchestrator | SdesDestination.NrsOrchestratorAttachment =>
-        throw new RuntimeException("No files to delete")
     }
   }
 
@@ -475,8 +473,6 @@ class SdesService(
         objectStoreAlgebra.zipFiles(envelopeId, paths)
       case SdesDestination.InfoArchive =>
         objectStoreAlgebra.zipAndEncrypt(envelopeId, paths)
-      case SdesDestination.NrsOrchestrator | SdesDestination.NrsOrchestratorAttachment =>
-        throw new RuntimeException("Nothing to notify")
     }
   }
 

@@ -17,11 +17,9 @@
 package uk.gov.hmrc.gform.sharedmodel.sdes
 
 import play.api.libs.json.{ Format, Json, OFormat }
-import uk.gov.hmrc.gform.scheduler.nrsOrchestrator.{ NrsOrchestratorAttachmentWorkItem, NrsOrchestratorWorkItem }
 import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
-import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination.{ NrsOrchestrator, NrsOrchestratorAttachment }
 import uk.gov.hmrc.mongo.workitem.{ ProcessingStatus, WorkItem }
 
 import java.time.Instant
@@ -49,33 +47,6 @@ case class SdesWorkItemData(
 )
 
 object SdesWorkItemData {
-
-  def fromNrsOrchestrator(workItem: WorkItem[NrsOrchestratorWorkItem], numberOfFiles: Int = 0) = SdesWorkItemData(
-    workItem.id.toString,
-    workItem.item.envelopeId,
-    NrsOrchestrator,
-    FormTemplateId(""), //TODO: Implement
-    workItem.item.submissionRef,
-    numberOfFiles,
-    workItem.status,
-    workItem.failureCount,
-    workItem.receivedAt,
-    workItem.updatedAt
-  )
-
-  def fromNrsOrchestratorAttachment(workItem: WorkItem[NrsOrchestratorAttachmentWorkItem], numberOfFiles: Int = 0) =
-    SdesWorkItemData(
-      workItem.id.toString,
-      EnvelopeId(""), //TODO: Implement
-      NrsOrchestratorAttachment,
-      FormTemplateId(""), //TODO: Implement
-      SubmissionRef(""), //TODO: Implement
-      numberOfFiles,
-      workItem.status,
-      workItem.failureCount,
-      workItem.receivedAt,
-      workItem.updatedAt
-    )
 
   def fromWorkItem(workItem: WorkItem[SdesWorkItem], numberOfFiles: Int = 0) = SdesWorkItemData(
     workItem.id.toString,

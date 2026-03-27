@@ -459,7 +459,7 @@ class DestinationSubmitter[M[_]](
     val userAuthToken = hc.authorization.getOrElse(throw MissingBearerToken("missing authorisation token")).value
 
     val submissionDate =
-      submissionInfo.submission.submittedDate.format(DateTimeFormatter.ofPattern("YYYY-MM-dd'T'HH:mm:ss.SSSSSSZ"))
+      submissionInfo.submission.submittedDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ"))
     val workItem: M[WorkItem[NrsOrchestratorWorkItem]] = liftToM(nrsConnector.getRetrievals()).flatMap { identityData =>
       liftToM(
         nrsConnector.issueSubmissionWorkItem(

@@ -103,8 +103,6 @@ class DestinationWorkItemService(
         infoArchiveWorkItemRepo.pushNew(sdesWorkItem, initialState = deferred).map(_.id)
       case SdesDestination.DataLakehouse =>
         dataLakehouseWorkItemRepo.pushNew(sdesWorkItem, initialState = deferred).map(_.id)
-      case SdesDestination.NrsOrchestrator | SdesDestination.NrsOrchestratorAttachment =>
-        throw new RuntimeException("NRS destination should be pushed directly")
     }
   }
 
@@ -116,10 +114,8 @@ class DestinationWorkItemService(
         case (SdesDestination.Dms | SdesDestination.PegaCaseflow, oid) => dmsWorkItemRepo.markAs(oid, ToDo)
         case (SdesDestination.HmrcIlluminate | SdesDestination.DataStore | SdesDestination.DataStoreLegacy, oid) =>
           dataStoreWorkItemRepo.markAs(oid, ToDo)
-        case (SdesDestination.InfoArchive, oid)               => infoArchiveWorkItemRepo.markAs(oid, ToDo)
-        case (SdesDestination.DataLakehouse, oid)             => dataLakehouseWorkItemRepo.markAs(oid, ToDo)
-        case (SdesDestination.NrsOrchestrator, oid)           => nrsOrchestratorWorkItemRepo.markAs(oid, ToDo)
-        case (SdesDestination.NrsOrchestratorAttachment, oid) => nrsOrchestratorAttachmentWorkItemRepo.markAs(oid, ToDo)
+        case (SdesDestination.InfoArchive, oid)   => infoArchiveWorkItemRepo.markAs(oid, ToDo)
+        case (SdesDestination.DataLakehouse, oid) => dataLakehouseWorkItemRepo.markAs(oid, ToDo)
       }
       .map(_ => ())
 
@@ -135,32 +131,13 @@ class DestinationWorkItemService(
     val sort = equal("receivedAt", -1)
 
     val skip = page * pageSize
-    sdesDestination match {
-      case SdesDestination.NrsOrchestrator =>
-        val collection = nrsOrchestratorWorkItemRepo.collection
-        for {
-          dmsWorkItem <-
-            collection.find(query).sort(sort).skip(skip).limit(pageSize).toFuture().map(_.toList)
-          dmsWorkItemData = dmsWorkItem.map(workItem => SdesWorkItemData.fromNrsOrchestrator(workItem, 1))
-          count <- collection.countDocuments(query).toFuture()
-        } yield SdesWorkItemPageData(dmsWorkItemData, count)
-      case SdesDestination.NrsOrchestratorAttachment =>
-        val collection = nrsOrchestratorAttachmentWorkItemRepo.collection
-        for {
-          dmsWorkItem <-
-            collection.find(query).sort(sort).skip(skip).limit(pageSize).toFuture().map(_.toList)
-          dmsWorkItemData = dmsWorkItem.map(workItem => SdesWorkItemData.fromNrsOrchestratorAttachment(workItem, 1))
-          count <- collection.countDocuments(query).toFuture()
-        } yield SdesWorkItemPageData(dmsWorkItemData, count)
-      case _ =>
-        val collection = findCollection(sdesDestination)
-        for {
-          dmsWorkItem <-
-            collection.find(query).sort(sort).skip(skip).limit(pageSize).toFuture().map(_.toList)
-          dmsWorkItemData = dmsWorkItem.map(workItem => SdesWorkItemData.fromWorkItem(workItem, 1))
-          count <- collection.countDocuments(query).toFuture()
-        } yield SdesWorkItemPageData(dmsWorkItemData, count)
-    }
+    val collection = findCollection(sdesDestination)
+    for {
+      dmsWorkItem <-
+        collection.find(query).sort(sort).skip(skip).limit(pageSize).toFuture().map(_.toList)
+      dmsWorkItemData = dmsWorkItem.map(workItem => SdesWorkItemData.fromWorkItem(workItem, 1))
+      count <- collection.countDocuments(query).toFuture()
+    } yield SdesWorkItemPageData(dmsWorkItemData, count)
   }
 
   private def findCollection(sdesDestination: SdesDestination): MongoCollection[WorkItem[SdesWorkItem]] =
@@ -170,8 +147,6 @@ class DestinationWorkItemService(
         dataStoreWorkItemRepo.collection
       case SdesDestination.InfoArchive   => infoArchiveWorkItemRepo.collection
       case SdesDestination.DataLakehouse => dataLakehouseWorkItemRepo.collection
-      case SdesDestination.NrsOrchestrator | SdesDestination.NrsOrchestratorAttachment =>
-        throw new RuntimeException("Can't find collection for nrs")
     }
 
   override def delete(id: String, sdesDestination: SdesDestination): Future[Unit] =
@@ -190,8 +165,6 @@ class DestinationWorkItemService(
       case SdesDestination.InfoArchive => infoArchiveWorkItemRepo.markAs(new ObjectId(id), ProcessingStatus.ToDo).void
       case SdesDestination.DataLakehouse =>
         dataLakehouseWorkItemRepo.markAs(new ObjectId(id), ProcessingStatus.ToDo).void
-      case SdesDestination.NrsOrchestrator | SdesDestination.NrsOrchestratorAttachment =>
-        throw new RuntimeException("Can't enqueue nrs")
     }
 
   override def find(id: String, sdesDestination: SdesDestination): Future[Option[WorkItem[SdesWorkItem]]] =
@@ -202,9 +175,6 @@ class DestinationWorkItemService(
         dataStoreWorkItemRepo.findById(new ObjectId(id))
       case SdesDestination.InfoArchive   => infoArchiveWorkItemRepo.findById(new ObjectId(id))
       case SdesDestination.DataLakehouse => dataLakehouseWorkItemRepo.findById(new ObjectId(id))
-      case SdesDestination.NrsOrchestrator | SdesDestination.NrsOrchestratorAttachment =>
-        throw new RuntimeException("Can't find nrs")
-
     }
 
   override def findByEnvelopeId(
