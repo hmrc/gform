@@ -18,12 +18,12 @@ package uk.gov.hmrc.gform.scheduler.nrsOrchestrator
 
 import play.api.libs.json._
 import uk.gov.hmrc.crypto.{ Decrypter, Encrypter }
-import uk.gov.hmrc.gform.nrs.NRSAttachment
+import uk.gov.hmrc.gform.nrs.{ BusinessId, NRSAttachment }
 
 final case class NrsOrchestratorAttachmentWorkItem(
   nrSubmissionId: String,
   attachment: NRSAttachment,
-  businessId: String,
+  businessId: BusinessId,
   notableEvent: String
 )
 

@@ -19,7 +19,7 @@ package uk.gov.hmrc.gform.formtemplate
 import cats.implicits._
 import org.slf4j.LoggerFactory
 import play.api.libs.json.JsObject
-import uk.gov.hmrc.gform.config.AppConfig
+import uk.gov.hmrc.gform.config.{ AppConfig, NRSConnectorConfig }
 import uk.gov.hmrc.gform.core.{ FOpt, _ }
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.formredirect.FormRedirect
@@ -47,6 +47,7 @@ class FormTemplateService(
   handlebarsTemplateAlgebra: HandlebarsTemplateAlgebra[FOpt],
   handlebarsSchemaAlgebra: HandlebarsSchemaAlgebra[FOpt],
   appConfig: AppConfig,
+  nrsConnectorConfig: NRSConnectorConfig,
   gformFrontendConnector: GformFrontendConnector
 )(implicit
   ec: ExecutionContext
@@ -145,6 +146,7 @@ class FormTemplateService(
         _ <- verify(
                formTemplateConfirmationsUpdated,
                appConfig,
+               nrsConnectorConfig,
                handlebarsSchemaIds,
                booleanExpressionsContextSubstituted
              )(expressionsContext)

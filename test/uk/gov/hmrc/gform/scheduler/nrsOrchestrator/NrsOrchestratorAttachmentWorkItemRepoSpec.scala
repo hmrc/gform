@@ -21,7 +21,7 @@ import org.scalatest.matchers.should.Matchers
 import play.api.libs.json.Json
 import uk.gov.hmrc.crypto.{ Decrypter, Encrypter }
 import uk.gov.hmrc.crypto.SymmetricCryptoFactory.{ aesCrypto, composeCrypto }
-import uk.gov.hmrc.gform.nrs.NRSAttachment
+import uk.gov.hmrc.gform.nrs.{ BusinessId, NRSAttachment }
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 
 class NrsOrchestratorAttachmentWorkItemRepoSpec extends AnyFlatSpec with Matchers {
@@ -40,7 +40,7 @@ class NrsOrchestratorAttachmentWorkItemRepoSpec extends AnyFlatSpec with Matcher
         EnvelopeId("test"),
         Some("test")
       ),
-      "test",
+      BusinessId("test"),
       "test"
     )
     obj shouldBe Json

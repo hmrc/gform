@@ -18,13 +18,13 @@ package uk.gov.hmrc.gform.scheduler.nrsOrchestrator
 
 import play.api.libs.json._
 import uk.gov.hmrc.crypto.{ Decrypter, Encrypter }
-import uk.gov.hmrc.gform.nrs.NrsPayload
+import uk.gov.hmrc.gform.nrs.{ BusinessId, NrsPayload }
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.{ NRSOrchestratorDestinationResultData, SubmissionRef }
 
 final case class NrsOrchestratorWorkItem(
   envelopeId: EnvelopeId,
-  businessId: String,
+  businessId: BusinessId,
   notableEvent: String,
   onSubmitHeaders: Seq[(String, String)],
   destinationResultData: NRSOrchestratorDestinationResultData,

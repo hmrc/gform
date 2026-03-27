@@ -116,7 +116,7 @@ class SubmissionModule(
     override def httpClientV2: HttpClientV2 = wSHttpModule.httpClient
   }
 
-  private val nrsConnectorApiKey = configModule.nrsConfig.authorizationToken
+  private val nrsConnectorApiKeys = configModule.nrsConfig.authorizationTokens
   private val nrsSubmissionUrl = configModule.nrsConfig.submissionUrl
   private val nrsAttachmentUrl = configModule.nrsConfig.attachmentUrl
 
@@ -130,7 +130,7 @@ class SubmissionModule(
     objectStoreModule,
     envelopeModule.envelopeService,
     nrsConnectorAuthConnector,
-    nrsConnectorApiKey,
+    nrsConnectorApiKeys,
     nrsOrchestratorWorkItemRepo,
     nrsOrchestratorAttachmentWorkItemRepo,
     configModule.isProd

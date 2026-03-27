@@ -20,6 +20,7 @@ import play.api.libs.json._
 import cats.syntax.either._
 import cats.syntax.option._
 import julienrf.json.derived
+import uk.gov.hmrc.gform.nrs.BusinessId
 import uk.gov.hmrc.gform.sharedmodel.EmailVerifierService
 import uk.gov.hmrc.gform.sharedmodel.email.LocalisedEmailTemplateId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
@@ -67,7 +68,7 @@ sealed trait DestinationWithNiRefundClaimBankDetails extends Destination {
 }
 
 sealed trait DestinationWithNrsOrchestrator extends Destination {
-  def businessId: String
+  def businessId: BusinessId
   def notableEvent: String
   def searchKeys: Map[String, Expr]
 }
@@ -227,7 +228,7 @@ object Destination {
     id: DestinationId,
     includeIf: DestinationIncludeIf,
     failOnError: Boolean,
-    businessId: String,
+    businessId: BusinessId,
     notableEvent: String,
     searchKeys: Map[String, Expr]
   ) extends DestinationWithNrsOrchestrator
@@ -641,7 +642,7 @@ case class UploadableNrsOrchestratorDestination(
   id: DestinationId,
   includeIf: DestinationIncludeIf,
   failOnError: Boolean,
-  businessId: String,
+  businessId: BusinessId,
   notableEvent: String,
   searchKeys: Map[String, TextExpression]
 ) {

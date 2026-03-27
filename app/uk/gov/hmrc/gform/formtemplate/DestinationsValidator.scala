@@ -19,8 +19,10 @@ package uk.gov.hmrc.gform.formtemplate
 import cats.Monoid
 import cats.implicits._
 import cats.data.NonEmptyList
+import uk.gov.hmrc.gform.config.NRSConnectorConfig
 import uk.gov.hmrc.gform.core.ValidationResult.{ BooleanToValidationResultSyntax, validationResultMonoid }
 import uk.gov.hmrc.gform.core.{ Invalid, Valid, ValidationResult }
+import uk.gov.hmrc.gform.nrs.BusinessId
 import uk.gov.hmrc.gform.sharedmodel.HandlebarsSchemaId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationIncludeIf.{ HandlebarValue, IncludeIfValue }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponent, FormComponentId, FormTemplateId, IsGroup }
@@ -43,6 +45,30 @@ object DestinationsValidator {
       duplicates.isEmpty.validationResult(someDestinationIdsAreUsedMoreThanOnce(duplicates))
   }
 
+  def validateNrs(destinations: Destinations, appConfig: NRSConnectorConfig): ValidationResult = {
+    val allowedBusinessIds: Set[BusinessId] = appConfig.authorizationTokens.keys.toSet
+
+    destinations match {
+      case destinationList: Destinations.DestinationList =>
+        val nrsList: List[Destination.NRSOrchestrator] = destinationList.destinations.collect {
+          case d: Destination.NRSOrchestrator => d
+        }
+        nrsList.map { nrsOrchestrator =>
+          val businessId = nrsOrchestrator.businessId
+          if (allowedBusinessIds(businessId)) {
+            Valid
+          } else {
+            val allowedBusinessIdsStr =
+              allowedBusinessIds.map(businessId => "'" + businessId.value + "'").mkString(", ")
+            Invalid(
+              s"Invalid businessId '${businessId.value}' for '${nrsOrchestrator.id.id}' destination. Supported values are: $allowedBusinessIdsStr. If the businessId you need is not in the supported value raise the issue with engineering team."
+            )
+          }
+        }.combineAll
+      case _ => Valid
+    }
+  }
+
   def validateCaseflow(destinations: Destinations): ValidationResult = destinations match {
     case destinationList: Destinations.DestinationList =>
       val dmsList = destinationList.destinations.collect { case d: Destination.HmrcDms => d }
@@ -54,9 +80,8 @@ object DestinationsValidator {
         Invalid(
           "hmrcDms destinations cannot be a mix of DMS and Pega Caseflow routings."
         )
-      } else {
+      } else
         Valid
-      }
 
       val countCheck = if (caseflows.size > 1) {
         Invalid(

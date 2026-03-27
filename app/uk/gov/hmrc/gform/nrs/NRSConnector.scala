@@ -43,7 +43,7 @@ import java.util.{ Base64, UUID }
 import scala.concurrent.{ ExecutionContext, Future }
 
 private case class SubmissionRequestMetaData(
-  businessId: String,
+  businessId: BusinessId,
   notableEvent: String,
   payloadContentType: String,
   payloadSha256Checksum: String,
@@ -77,7 +77,7 @@ private case class AttachmentRequest(
   attachmentSha256Checksum: String,
   attachmentContentType: String,
   nrSubmissionId: String,
-  businessId: String,
+  businessId: BusinessId,
   notableEvent: String
 )
 
@@ -135,7 +135,7 @@ class NRSConnector(
   objectStoreModule: ObjectStoreModule,
   envelopeService: EnvelopeAlgebra[Future],
   authConnector: AuthConnector,
-  apiKey: String,
+  apiKeys: Map[BusinessId, String],
   nrsOrchestratorWorkItemRepo: NrsOrchestratorWorkItemRepo,
   nrsOrchestratorAttachmentWorkItemRepo: NrsOrchestratorAttachmentWorkItemRepo,
   isProd: Boolean
@@ -145,7 +145,7 @@ class NRSConnector(
 
   private val logger = LoggerFactory.getLogger(getClass)
 
-  private def makeCall[T](url: URL, body: T)(implicit writes: Writes[T], hc: HeaderCarrier) = {
+  private def makeCall[T](url: URL, body: T, apiKey: String)(implicit writes: Writes[T], hc: HeaderCarrier) = {
 
     if (!isProd) { //TODO: Remove log before going into production
       logger.warn(s"""request: POST $url
@@ -170,7 +170,7 @@ class NRSConnector(
   //Curl to add local auth access to nrs-orchestrator
   //curl -i -X POST -H 'Content-Type: application/json' -d '{ "token": "1234", "principal": "nrs-orchestrator", "permissions": [{ "resourceType": "object-store", "resourceLocation": "nrs-orchestrator", "actions": ["*"] }]}' 'http://localhost:8470/test-only/token'
   private def createSubmission(
-    businessId: String,
+    businessId: BusinessId,
     notableEvent: String,
     attachmentIds: Option[Seq[String]],
     payload: NrsPayload,
@@ -212,7 +212,8 @@ class NRSConnector(
         searchKeys = searchKeys
       )
     )
-    makeCall(url, body)
+    val apiKey = getApiKey(businessId)
+    makeCall(url, body, apiKey)
   }
 
   def getRetrievals()(implicit hc: HeaderCarrier): Future[JsObject] = {
@@ -247,7 +248,7 @@ class NRSConnector(
   def issueAttachmentWorkItem(
     nrSubmissionId: String,
     attachment: NRSAttachment,
-    businessId: String,
+    businessId: BusinessId,
     notableEvent: String,
     envelopeId: EnvelopeId
   ) = {
@@ -264,11 +265,14 @@ class NRSConnector(
     workItem
   }
 
+  private def getApiKey(businessId: BusinessId): String =
+    apiKeys.get(businessId).getOrElse(throw new Exception(s"NRS api key not found for $businessId"))
+
   //Documentation: https://confluence.tools.tax.service.gov.uk/display/NR/Attachments+API+specification
   def submitObjectStoreAttachment(
     nrSubmissionId: String,
     attachment: NRSAttachment,
-    businessId: String,
+    businessId: BusinessId,
     notableEvent: String
   )(implicit hc: HeaderCarrier): Future[HttpResponse] = {
     val presignedUrl = attachment.getPresignedUrl(objectStoreModule)
@@ -284,7 +288,8 @@ class NRSConnector(
           businessId = businessId,
           notableEvent = notableEvent
         )
-        makeCall(url, body)
+        val apiKey = getApiKey(businessId)
+        makeCall(url, body, apiKey)
       }
       .value
       .flatMap {
@@ -341,7 +346,7 @@ class NRSConnector(
 
   def issueSubmissionWorkItem(
     envelopeId: EnvelopeId,
-    businessId: String,
+    businessId: BusinessId,
     notableEvent: String,
     onSubmitHeaders: Seq[(String, String)],
     destinationResultData: NRSOrchestratorDestinationResultData,
@@ -369,7 +374,7 @@ class NRSConnector(
 
   def submit(
     envelopeId: EnvelopeId,
-    businessId: String,
+    businessId: BusinessId,
     notableEvent: String,
     onSubmitHeaders: Seq[(String, String)],
     destinationResultData: NRSOrchestratorDestinationResultData,

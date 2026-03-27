@@ -21,7 +21,7 @@ import org.scalatest.matchers.should.Matchers
 import play.api.libs.json.Json
 import uk.gov.hmrc.crypto.{ Decrypter, Encrypter }
 import uk.gov.hmrc.crypto.SymmetricCryptoFactory.{ aesCrypto, composeCrypto }
-import uk.gov.hmrc.gform.nrs.{ NrsPayload, NrsPayloadMetaData }
+import uk.gov.hmrc.gform.nrs.{ BusinessId, NrsPayload, NrsPayloadMetaData }
 import uk.gov.hmrc.gform.sharedmodel.ExampleData.formData
 import uk.gov.hmrc.gform.sharedmodel.{ NRSOrchestratorDestinationResultData, SubmissionRef }
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
@@ -34,7 +34,7 @@ class NrsOrchestratorWorkItemRepoSpec extends AnyFlatSpec with Matchers {
   "NrsOrchestratorWorkItemRepoSpec" should "serialise and de-serialise into the same value" in {
     val obj = NrsOrchestratorWorkItem(
       EnvelopeId("test"),
-      "test",
+      BusinessId("test"),
       "test",
       Seq(("test", "test"), ("test2", "test2")),
       NRSOrchestratorDestinationResultData(Map("test" -> "test", "test2" -> "test2")),
