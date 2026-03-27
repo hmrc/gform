@@ -16,36 +16,22 @@
 
 package uk.gov.hmrc.gform.scheduler.nrsOrchestrator
 
-import play.api.libs.json.{ JsDefined, JsError, JsResult, JsString, JsSuccess, JsUndefined, JsValue, Json, Reads, Writes }
+import play.api.libs.json.{ JsObject, JsResult, JsValue, Json, OFormat, Reads, __ }
 import uk.gov.hmrc.crypto.{ Crypted, Decrypter, Encrypter, PlainText }
 
-import reflect.runtime.universe._
-
 object JsonCryptoUtils {
-  def encrypt[T: TypeTag](obj: T)(implicit writes: Writes[T], jsonCrypto: Encrypter): JsString =
-    if (typeOf[T] <:< typeOf[String]) {
-      JsString(jsonCrypto.encrypt(PlainText(obj.toString)).value)
-    } else {
-      JsString(jsonCrypto.encrypt(PlainText(Json.stringify(Json.toJson(obj)))).value)
-    }
+  def formatEncrypted[T](format: OFormat[T])(implicit jsonCrypto: Encrypter with Decrypter): OFormat[T] =
+    new OFormat[T] {
+      override def writes(o: T): JsObject =
+        Json.obj(
+          "data" -> jsonCrypto.encrypt(PlainText(Json.toJson(o)(format).toString())).value
+        )
 
-  def decrypt[T: TypeTag](json: JsValue, fieldName: String)(implicit
-    reads: Reads[T],
-    jsonCrypto: Decrypter
-  ): JsResult[T] =
-    json \ fieldName match {
-      case JsDefined(value) =>
-        value
-          .validate[String]
-          .flatMap { field =>
-            val decryptedValue = jsonCrypto.decrypt(Crypted(field)).value
-            if (typeOf[T] <:< typeOf[String]) {
-              JsSuccess(decryptedValue.asInstanceOf[T])
-            } else {
-              Json.parse(jsonCrypto.decrypt(Crypted(field)).value).validate[T]
-            }
+      val reads: Reads[T] = (__ \ "data")
+        .read[String]
+        .map(s => Json.parse(jsonCrypto.decrypt(Crypted(s)).value).as[T](format))
 
-          }
-      case undefined: JsUndefined => JsError(s"$fieldName not found")
+      override def reads(json: JsValue): JsResult[T] =
+        json.validate[T](reads)
     }
 }

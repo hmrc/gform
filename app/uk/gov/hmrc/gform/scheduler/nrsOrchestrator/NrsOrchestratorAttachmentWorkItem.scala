@@ -19,7 +19,6 @@ package uk.gov.hmrc.gform.scheduler.nrsOrchestrator
 import play.api.libs.json._
 import uk.gov.hmrc.crypto.{ Decrypter, Encrypter }
 import uk.gov.hmrc.gform.nrs.NRSAttachment
-import reflect.runtime.universe._
 
 final case class NrsOrchestratorAttachmentWorkItem(
   nrSubmissionId: String,
@@ -29,48 +28,7 @@ final case class NrsOrchestratorAttachmentWorkItem(
 )
 
 object NrsOrchestratorAttachmentWorkItem {
-  def formatEncrypted(implicit
-    jsonCrypto: Encrypter with Decrypter
-  ): OFormat[NrsOrchestratorAttachmentWorkItem] = new OFormat[NrsOrchestratorAttachmentWorkItem] {
-    private val nrSubmissionId = "nrSubmissionId"
-    private val attachment = "attachment"
-    private val businessId = "businessId"
-    private val notableEvent = "notableEvent"
-    override def writes(o: NrsOrchestratorAttachmentWorkItem): JsObject =
-      JsObject(
-        Seq(
-          nrSubmissionId -> JsonCryptoUtils.encrypt(o.nrSubmissionId),
-          attachment     -> JsonCryptoUtils.encrypt(o.attachment),
-          businessId     -> JsonCryptoUtils.encrypt(o.businessId),
-          notableEvent   -> JsonCryptoUtils.encrypt(o.notableEvent)
-        )
-      )
-
-    override def reads(json: JsValue): JsResult[NrsOrchestratorAttachmentWorkItem] = {
-
-      def decrypt[T: TypeTag](str: String)(implicit reads: Reads[T]) = JsonCryptoUtils.decrypt[T](json, str)
-      val fields: Array[JsResult[_]] = Array(
-        decrypt[String](nrSubmissionId),
-        decrypt[NRSAttachment](attachment),
-        decrypt[String](businessId),
-        decrypt[String](notableEvent)
-      )
-
-      val validationErrors = fields.collect { case JsError(errors) => errors }.flatten
-
-      if (validationErrors.isEmpty) {
-        val validatedFields = fields.map(_.get)
-        JsSuccess(
-          NrsOrchestratorAttachmentWorkItem(
-            validatedFields.head.asInstanceOf[String],
-            validatedFields(1).asInstanceOf[NRSAttachment],
-            validatedFields(2).asInstanceOf[String],
-            validatedFields(3).asInstanceOf[String]
-          )
-        )
-      } else {
-        JsError(validationErrors)
-      }
-    }
-  }
+  val format: OFormat[NrsOrchestratorAttachmentWorkItem] = Json.format[NrsOrchestratorAttachmentWorkItem]
+  def formatEncrypted(implicit jsonCrypto: Encrypter with Decrypter): OFormat[NrsOrchestratorAttachmentWorkItem] =
+    JsonCryptoUtils.formatEncrypted(format)(jsonCrypto)
 }

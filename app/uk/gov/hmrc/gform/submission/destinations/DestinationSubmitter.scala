@@ -36,9 +36,12 @@ import uk.gov.hmrc.gform.wshttp.HttpResponseSyntax
 import uk.gov.hmrc.gform.core.FOpt
 import uk.gov.hmrc.gform.core.fromFutureA
 import uk.gov.hmrc.gform.nrs.NRSConnector
+import uk.gov.hmrc.gform.scheduler.nrsOrchestrator.NrsOrchestratorWorkItem
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.HandlebarsDestinationResponse
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
+import uk.gov.hmrc.mongo.workitem.WorkItem
 
+import java.time.format.DateTimeFormatter
 import scala.concurrent.{ ExecutionContext, Future }
 
 class DestinationSubmitter[M[_]](
@@ -454,9 +457,10 @@ class DestinationSubmitter[M[_]](
       l
     )
     val userAuthToken = hc.authorization.getOrElse(throw MissingBearerToken("missing authorisation token")).value
-    val submissionDate = java.time.Instant.now().toString
 
-    val response = liftToM(nrsConnector.getRetrievals()).flatMap { identityData =>
+    val submissionDate =
+      submissionInfo.submission.submittedDate.format(DateTimeFormatter.ofPattern("YYYY-MM-dd'T'HH:mm:ss.SSSSSSZ"))
+    val workItem: M[WorkItem[NrsOrchestratorWorkItem]] = liftToM(nrsConnector.getRetrievals()).flatMap { identityData =>
       liftToM(
         nrsConnector.issueSubmissionWorkItem(
           envelopeId,
@@ -472,6 +476,9 @@ class DestinationSubmitter[M[_]](
         )
       )
     }
+
+    val response: M[DestinationResponse] = workItem.map(_ => DestinationResponse.NoResponse)
+
     monadError.handleErrorWith(response) { msg =>
       if (d.failOnError)
         raiseDestinationError(submissionInfo.formId, d.id, msg)

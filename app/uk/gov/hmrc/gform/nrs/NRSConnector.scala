@@ -19,8 +19,8 @@ package uk.gov.hmrc.gform.nrs
 import org.bouncycastle.util.encoders.Hex
 import org.slf4j.LoggerFactory
 import play.api.libs.json._
-import uk.gov.hmrc.auth.core.retrieve.Retrieval
 import uk.gov.hmrc.auth.core._
+import uk.gov.hmrc.auth.core.retrieve.Retrieval
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
 import uk.gov.hmrc.gform.core.FOpt
 import uk.gov.hmrc.gform.envelope.EnvelopeAlgebra
@@ -28,12 +28,12 @@ import uk.gov.hmrc.gform.objectstore.ObjectStoreModule
 import uk.gov.hmrc.gform.scheduler.nrsOrchestrator.{ NrsOrchestratorAttachmentWorkItem, NrsOrchestratorAttachmentWorkItemRepo, NrsOrchestratorWorkItem, NrsOrchestratorWorkItemRepo }
 import uk.gov.hmrc.gform.sharedmodel.envelope.EnvelopeData
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FormData }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationResponse
 import uk.gov.hmrc.gform.sharedmodel.{ LangADT, NRSOrchestratorDestinationResultData, SubmissionRef }
 import uk.gov.hmrc.gform.submission.Submission
 import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse, StringContextOps }
+import uk.gov.hmrc.mongo.workitem.WorkItem
 import uk.gov.hmrc.objectstore.client.{ Path, PresignedDownloadUrl }
 
 import java.net.URL
@@ -338,7 +338,7 @@ class NRSConnector(
     userAuthToken: String,
     identityData: JsObject,
     submissionDate: String
-  ): Future[DestinationResponse] =
+  ): Future[WorkItem[NrsOrchestratorWorkItem]] =
     nrsOrchestratorWorkItemRepo
       .pushNew(
         NrsOrchestratorWorkItem(
@@ -354,9 +354,6 @@ class NRSConnector(
           identityData
         )
       )
-      .map { _ =>
-        DestinationResponse.NoResponse
-      }
 
   def submit(
     envelopeId: EnvelopeId,
@@ -392,9 +389,17 @@ class NRSConnector(
     def issueAttachmentWorkItems(
       submissionResponse: HttpResponse,
       attachments: List[NRSAttachment]
-    ): Future[_] =
+    ): Future[List[WorkItem[NrsOrchestratorAttachmentWorkItem]]] =
       if (submissionResponse.status == 202) {
-        val submissionId = Json.parse(submissionResponse.body).as[NRSSubmissionResponse].nrSubmissionId
+        val submissionId = Json
+          .parse(submissionResponse.body)
+          .validate[NRSSubmissionResponse]
+          .getOrElse(
+            throw new RuntimeException(
+              s"Invalid response from NRS submission. Status: 202. Body: ${submissionResponse.body}"
+            )
+          )
+          .nrSubmissionId
         Future.sequence(
           attachments.map { attachment =>
             issueAttachmentWorkItem(
