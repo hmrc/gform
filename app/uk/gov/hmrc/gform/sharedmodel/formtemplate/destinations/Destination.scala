@@ -68,8 +68,6 @@ sealed trait DestinationWithNiRefundClaimBankDetails extends Destination {
 }
 
 sealed trait DestinationWithNrsOrchestrator extends Destination {
-  def businessId: BusinessId
-  def notableEvent: String
   def searchKeys: Map[String, Expr]
 }
 
@@ -285,7 +283,11 @@ object Destination {
             d.postalCode.map(pc => ExprWithPath(path + "postalCode", pc)).toList
           ).flatten
       case d: DestinationWithPegaCaseId => List(ExprWithPath(path + "caseId", d.caseId))
-      case _                            => Nil
+      case d: DestinationWithNrsOrchestrator =>
+        d.searchKeys.toList.map { case (searchKey, expr) =>
+          ExprWithPath(path + "searchKeys" + searchKey, expr)
+        }
+      case _ => Nil
     }
 }
 
