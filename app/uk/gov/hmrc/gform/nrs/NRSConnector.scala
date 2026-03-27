@@ -147,9 +147,12 @@ class NRSConnector(
 
   private def makeCall[T](url: URL, body: T)(implicit writes: Writes[T], hc: HeaderCarrier) = {
 
-    if (!isProd) {
-      logger.warn("request: POST " + url)
-      logger.warn(Json.prettyPrint(Json.toJson(body)))
+    if (!isProd) { //TODO: Remove log before going into production
+      logger.warn(
+        s"""request: POST $url
+           |Body:
+           |${Json.prettyPrint(Json.toJson(body))}
+           |""".stripMargin)
     }
     val headers = Seq(
       "Content-Type" -> contentType,
@@ -246,11 +249,22 @@ class NRSConnector(
     nrSubmissionId: String,
     attachment: NRSAttachment,
     businessId: String,
-    notableEvent: String
-  ) =
-    nrsOrchestratorAttachmentWorkItemRepo.pushNew(
+    notableEvent: String,
+    envelopeId: EnvelopeId
+  ) = {
+
+    val workItem = nrsOrchestratorAttachmentWorkItemRepo.pushNew(
       NrsOrchestratorAttachmentWorkItem(nrSubmissionId, attachment, businessId, notableEvent)
     )
+    workItem.foreach { workItem =>
+      logger.info(
+        s"""NRS Orchestrator destination attachment workItem was created.
+          |workItem Id: ${workItem.id}
+          |envelopeId: $envelopeId
+          |""".stripMargin)
+    }
+    workItem
+  }
 
   //Documentation: https://confluence.tools.tax.service.gov.uk/display/NR/Attachments+API+specification
   def submitObjectStoreAttachment(
@@ -406,7 +420,8 @@ class NRSConnector(
               submissionId,
               attachment,
               businessId,
-              notableEvent
+              notableEvent,
+              envelopeId
             )
           }
         )

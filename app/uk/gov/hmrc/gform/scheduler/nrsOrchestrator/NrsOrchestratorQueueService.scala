@@ -56,14 +56,22 @@ class NrsOrchestratorQueueService(
         case response if nrsConnector.nrsServerFailure(response) =>
           Future.failed(
             new RuntimeException(
-              s"NRS server failed. NRS Response: $response"
+              s"""NRS Orchestrator work-item failed due to NRS server failure.
+                 |NRS Response Status: ${response.status}
+                 |NRS Response Body: ${response.body}
+                 |WorkItem Id: ${nrsWorkItem.id}""".stripMargin
             )
           )
         case response if response.status != 202 =>
-          logger.error(
-            s"Non 202, 422, 5xx response from NRS suggests gform failure. NRS Response: $response"
+          Future.failed( //TODO: Work item should not retry in cases where gform fails. Future.failed response will trigger a retry of work-item.
+            new RuntimeException(
+              s"""NRS Orchestrator work-item failed.
+                 | Non 202, 422, 5xx response from NRS suggest gform failure.
+                 | NRS Response status: ${response.status}.
+                 | NRS response body: ${response.body}.
+                 | Envelope id: ${workItem.envelopeId}.""".stripMargin
+            )
           )
-          Future.successful(response)
         case response => Future.successful(response)
       }(ec)
       .void(ec)
