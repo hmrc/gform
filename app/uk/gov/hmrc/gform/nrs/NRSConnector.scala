@@ -148,11 +148,10 @@ class NRSConnector(
   private def makeCall[T](url: URL, body: T)(implicit writes: Writes[T], hc: HeaderCarrier) = {
 
     if (!isProd) { //TODO: Remove log before going into production
-      logger.warn(
-        s"""request: POST $url
-           |Body:
-           |${Json.prettyPrint(Json.toJson(body))}
-           |""".stripMargin)
+      logger.warn(s"""request: POST $url
+                     |Body:
+                     |${Json.prettyPrint(Json.toJson(body))}
+                     |""".stripMargin)
     }
     val headers = Seq(
       "Content-Type" -> contentType,
@@ -257,11 +256,10 @@ class NRSConnector(
       NrsOrchestratorAttachmentWorkItem(nrSubmissionId, attachment, businessId, notableEvent)
     )
     workItem.foreach { workItem =>
-      logger.info(
-        s"""NRS Orchestrator destination attachment workItem was created.
-          |workItem Id: ${workItem.id}
-          |envelopeId: $envelopeId
-          |""".stripMargin)
+      logger.info(s"""NRS Orchestrator destination attachment workItem was created.
+                     |workItem Id: ${workItem.id}
+                     |envelopeId: $envelopeId
+                     |""".stripMargin)
     }
     workItem
   }
