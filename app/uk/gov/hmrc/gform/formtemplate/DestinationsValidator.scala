@@ -49,9 +49,10 @@ object DestinationsValidator {
   def validateNrs(destinations: Destinations, appConfig: NRSConnectorConfig): ValidationResult = {
     val allowedBusinessIds: Set[BusinessId] = appConfig.authorizationTokens.keys.toSet
 
-    def missingRequiredSearchKeys(d: NRSOrchestrator) = {
-      val requiredSearchKeys = NRSConnector.requiredSearchKeys(d.businessId)
-      requiredSearchKeys.filterNot(requiredKey => d.searchKeys.keySet.contains(requiredKey))
+    def missingRequiredSearchKeys(d: NRSOrchestrator): (Set[String], Set[String]) = {
+      val requiredSearchKeys: Set[String] = NRSConnector.requiredSearchKeys(d.businessId)
+      val definedSearchKeys: Set[String] = d.searchKeys.keySet
+      (requiredSearchKeys.diff(definedSearchKeys), definedSearchKeys.diff(requiredSearchKeys))
     }
 
     destinations match {
@@ -62,15 +63,19 @@ object DestinationsValidator {
         nrsList.map { nrsOrchestrator =>
           val businessId = nrsOrchestrator.businessId
           if (allowedBusinessIds(businessId)) {
-            val reqKeysMissing = missingRequiredSearchKeys(nrsOrchestrator)
-            if (reqKeysMissing.isEmpty) {
+            val (reqKeysMissing, unsupportedSearchKeys) = missingRequiredSearchKeys(nrsOrchestrator)
+            if (reqKeysMissing.isEmpty && unsupportedSearchKeys.isEmpty) {
               Valid
             } else {
-              Invalid(
-                s"""'${nrsOrchestrator.id.id}' destination is missing required search keys: ${reqKeysMissing.mkString(
-                  ", "
-                )}."""
-              )
+              if (reqKeysMissing.nonEmpty) {
+                Invalid(
+                  s"'${nrsOrchestrator.id.id}' destination is missing required search keys: ${reqKeysMissing.mkString(", ")}."
+                )
+              } else {
+                Invalid(
+                  s"'${nrsOrchestrator.id.id}' destination defines unsupported search keys: ${unsupportedSearchKeys.mkString(", ")}."
+                )
+              }
             }
 
           } else {
