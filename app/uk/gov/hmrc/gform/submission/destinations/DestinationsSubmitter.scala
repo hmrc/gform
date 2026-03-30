@@ -109,10 +109,25 @@ class DestinationsSubmitter[M[_]: Monad](
 
         monadError.onError(step) { err =>
           logger.error(s"Critical error occurred during destination submission, cleaning up work items", err)
-          cleanUp(updatedResponseList).void
+
+          val nrsOrchestratorDestinationList = updatedResponseList.flatMap {
+            case d: NrsOrchestratorDestinationResponse => Some(d)
+            case _                                     => None
+          }
+
+          for {
+            _ <- cleanUp(updatedResponseList)
+            _ <- cleanUpNrsOrchestrator(nrsOrchestratorDestinationList)
+          } yield ()
         }
     }
   }
+
+  private def cleanUpNrsOrchestrator(destinationResponses: List[NrsOrchestratorDestinationResponse]): M[List[Unit]] =
+    destinationResponses.traverse { d =>
+      logger.info(s"Deleting deferred nrsOrchestrator work item ${d.workItemId.toHexString}")
+      workItemService.deleteNrsOrchestrator(d.workItemId.toHexString)
+    }
 
   private def cleanUp(forCleanup: List[DestinationResponse]): M[List[Unit]] = {
     def deleteWorkItem(workItemId: ObjectId, destination: SdesDestination): M[Unit] = {

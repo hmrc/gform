@@ -504,7 +504,7 @@ class DestinationSubmitter[M[_]](
       )
     }
 
-    val response: M[DestinationResponse] = workItem.map(_ => DestinationResponse.NoResponse)
+    val response: M[DestinationResponse] = workItem.map(workItem => NrsOrchestratorDestinationResponse(workItem.id))
 
     monadError.handleErrorWith(response) { msg =>
       if (d.failOnError)

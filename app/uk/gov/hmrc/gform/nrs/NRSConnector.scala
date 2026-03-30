@@ -193,8 +193,7 @@ class NRSConnector(
     destinationResultData: NRSOrchestratorDestinationResultData,
     submissionDate: String,
     userAuthToken: String,
-    identityData: JsObject,
-    envelopeId: EnvelopeId
+    identityData: JsObject
   )(implicit hc: HeaderCarrier): Future[HttpResponse] = {
 
     val attachmentCount = attachmentIds.toSeq.flatten.length
@@ -275,7 +274,7 @@ class NRSConnector(
     )
     workItem.foreach { workItem =>
       logger.info(s"""NRS Orchestrator destination attachment workItem was created.
-                     |workItem Id: ${workItem.id}
+                     |workItem Id: ${workItem.id.toHexString}
                      |envelopeId: $envelopeId
                      |""".stripMargin)
     }
@@ -416,8 +415,7 @@ class NRSConnector(
         destinationResultData,
         submissionDate,
         userAuthToken,
-        identityData,
-        envelopeId
+        identityData
       )
     }
 

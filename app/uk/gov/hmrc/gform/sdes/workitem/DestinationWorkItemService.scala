@@ -26,7 +26,7 @@ import uk.gov.hmrc.gform.scheduler.datalakehouse.DataLakehouseWorkItemRepo
 import uk.gov.hmrc.gform.scheduler.datastore.DataStoreWorkItemRepo
 import uk.gov.hmrc.gform.scheduler.dms.DmsWorkItemRepo
 import uk.gov.hmrc.gform.scheduler.infoarchive.InfoArchiveWorkItemRepo
-import uk.gov.hmrc.gform.scheduler.nrsOrchestrator.{ NrsOrchestratorAttachmentWorkItemRepo, NrsOrchestratorWorkItemRepo }
+import uk.gov.hmrc.gform.scheduler.nrsOrchestrator.NrsOrchestratorWorkItemRepo
 import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
@@ -57,6 +57,8 @@ trait DestinationWorkItemAlgebra[F[_]] {
 
   def ready(workItems: List[(SdesDestination, ObjectId)]): F[Unit]
 
+  def readyNrsOrchestrator(workItems: List[ObjectId]): F[Unit]
+
   def enqueue(id: String, sdesDestination: SdesDestination): F[Unit]
 
   def find(id: String, sdesDestination: SdesDestination): F[Option[WorkItem[SdesWorkItem]]]
@@ -64,6 +66,8 @@ trait DestinationWorkItemAlgebra[F[_]] {
   def findByEnvelopeId(envelopeId: EnvelopeId, sdesDestination: SdesDestination): F[List[WorkItem[SdesWorkItem]]]
 
   def delete(id: String, sdesDestination: SdesDestination): F[Unit]
+
+  def deleteNrsOrchestrator(id: String): F[Unit]
 }
 
 class DestinationWorkItemService(
@@ -71,8 +75,7 @@ class DestinationWorkItemService(
   dataStoreWorkItemRepo: DataStoreWorkItemRepo,
   infoArchiveWorkItemRepo: InfoArchiveWorkItemRepo,
   dataLakehouseWorkItemRepo: DataLakehouseWorkItemRepo,
-  nrsOrchestratorWorkItemRepo: NrsOrchestratorWorkItemRepo,
-  nrsOrchestratorAttachmentWorkItemRepo: NrsOrchestratorAttachmentWorkItemRepo
+  nrsOrchestratorWorkItemRepo: NrsOrchestratorWorkItemRepo
 )(implicit ec: ExecutionContext)
     extends DestinationWorkItemAlgebra[Future] {
   override def pushWorkItem(
@@ -119,6 +122,9 @@ class DestinationWorkItemService(
       }
       .map(_ => ())
 
+  override def readyNrsOrchestrator(workItems: List[ObjectId]): Future[Unit] =
+    workItems.traverse(item => nrsOrchestratorWorkItemRepo.markAs(item, ToDo)).void
+
   override def search(
     page: Int,
     pageSize: Int,
@@ -155,6 +161,12 @@ class DestinationWorkItemService(
       .toFuture()
       .map(_.getDeletedCount > 0)
       .void
+
+  override def deleteNrsOrchestrator(id: String): Future[Unit] = nrsOrchestratorWorkItemRepo.collection
+    .deleteOne(equal("_id", new ObjectId(id)))
+    .toFuture()
+    .map(_.getDeletedCount > 0)
+    .void
 
   override def enqueue(id: String, sdesDestination: SdesDestination): Future[Unit] =
     sdesDestination match {

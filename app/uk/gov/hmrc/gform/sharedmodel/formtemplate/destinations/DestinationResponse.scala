@@ -79,3 +79,5 @@ object HandlebarsDestinationResponse {
       case _: Exception => JsNull
     }
 }
+
+case class NrsOrchestratorDestinationResponse(workItemId: ObjectId) extends DestinationResponse

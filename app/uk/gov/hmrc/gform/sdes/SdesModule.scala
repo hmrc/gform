@@ -110,8 +110,7 @@ class SdesModule(
       dataStoreWorkItemRepo,
       infoArchiveWorkItemRepo,
       dataLakehouseWorkItemRepo,
-      nrsOrchestratorWorkItemRepo,
-      nrsOrchestratorAttachmentWorkItemRepo
+      nrsOrchestratorWorkItemRepo
     )
 
   val destinationWorkItemController: DestinationWorkItemController =
@@ -300,8 +299,14 @@ class SdesModule(
     override def delete(id: String, sdesDestination: SdesDestination): FOpt[Unit] =
       fromFutureA(destinationWorkItemService.delete(id, sdesDestination))
 
+    override def deleteNrsOrchestrator(id: String): FOpt[Unit] =
+      fromFutureA(destinationWorkItemService.deleteNrsOrchestrator(id))
+
     override def ready(workItems: List[(SdesDestination, ObjectId)]): FOpt[Unit] =
       fromFutureA(destinationWorkItemService.ready(workItems))
+
+    override def readyNrsOrchestrator(workItems: List[ObjectId]): FOpt[Unit] =
+      fromFutureA(destinationWorkItemService.readyNrsOrchestrator(workItems))
   }
 
 }
