@@ -110,38 +110,34 @@ class DestinationsSubmitter[M[_]: Monad](
         monadError.onError(step) { err =>
           logger.error(s"Critical error occurred during destination submission, cleaning up work items", err)
 
-          val nrsOrchestratorDestinationList = updatedResponseList.flatMap {
-            case d: NrsOrchestratorDestinationResponse => Some(d)
-            case _                                     => None
-          }
-
           for {
             _ <- cleanUp(updatedResponseList)
-            _ <- cleanUpNrsOrchestrator(nrsOrchestratorDestinationList)
+            _ <- cleanUpNrsOrchestrator(updatedResponseList)
           } yield ()
         }
     }
   }
 
-  private def cleanUpNrsOrchestrator(destinationResponses: List[NrsOrchestratorDestinationResponse]): M[List[Unit]] =
-    destinationResponses.traverse { d =>
-      logger.info(s"Deleting deferred nrsOrchestrator work item ${d.workItemId.toHexString}")
-      workItemService.deleteNrsOrchestrator(d.workItemId.toHexString)
+  private def cleanUpNrsOrchestrator(forCleanup: List[DestinationResponse]): M[List[Unit]] = {
+    val data: List[ObjectId] = forCleanup.collect { case d: NrsOrchestratorDestinationResponse =>
+      d.workItemId
     }
+
+    data.traverse { workItemId =>
+      logger.info(s"Deleting deferred nrsOrchestrator work item ${workItemId.toHexString}")
+      workItemService.deleteNrsOrchestrator(workItemId.toHexString)
+    }
+  }
 
   private def cleanUp(forCleanup: List[DestinationResponse]): M[List[Unit]] = {
-    def deleteWorkItem(workItemId: ObjectId, destination: SdesDestination): M[Unit] = {
-      logger.info(s"Deleting deferred $destination work item ${workItemId.toHexString}")
-      workItemService.delete(workItemId.toHexString, destination)
-    }
-
     val data: List[(ObjectId, SdesDestination)] = forCleanup.collect {
       case d: DmsDestinationResponse       => (d.workItemId, d.routing)
       case o: OtherSdesDestinationResponse => (o.workItemId, o.routing)
     }
 
-    data.traverse { case (workItemId, routing) =>
-      deleteWorkItem(workItemId, routing)
+    data.traverse { case (workItemId, destination) =>
+      logger.info(s"Deleting deferred $destination work item ${workItemId.toHexString}")
+      workItemService.delete(workItemId.toHexString, destination)
     }
   }
 }
