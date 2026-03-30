@@ -41,7 +41,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.HandlebarsDestina
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 import uk.gov.hmrc.mongo.workitem.WorkItem
 
-import java.time.format.DateTimeFormatter
+import java.time.ZoneOffset
 import scala.concurrent.{ ExecutionContext, Future }
 
 class DestinationSubmitter[M[_]](
@@ -459,7 +459,34 @@ class DestinationSubmitter[M[_]](
     val userAuthToken = hc.authorization.getOrElse(throw MissingBearerToken("missing authorisation token")).value
 
     val submissionDate =
-      submissionInfo.submission.submittedDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ"))
+      submissionInfo.submission.submittedDate.toInstant(ZoneOffset.UTC).toString
+
+    def searchKeyIsEmpty(key: String) = {
+      val keyValue = nrsDestinationResult.data.searchKeys.get(key)
+      if (keyValue.isEmpty) true
+      else {
+        keyValue.get.trim == ""
+      }
+    }
+
+    val emptySearchKeys = NRSConnector.requiredSearchKeys
+      .getOrElse(
+        d.businessId,
+        throw new RuntimeException(
+          s"""nrsOrchestrator destination error. EnvelopeId: $envelopeId. Required keys missing for businessId: ${d.businessId}"""
+        )
+      )
+      .collect {
+        case requiredSearchKey if searchKeyIsEmpty(requiredSearchKey) => requiredSearchKey
+      }
+
+    if (emptySearchKeys.nonEmpty) {
+      throw new RuntimeException(
+        s"""nrsOrchestrator destination error. EnvelopeId: $envelopeId. Required search keys are either empty or missing entirely: ${emptySearchKeys
+          .mkString(", ")}"""
+      )
+    }
+
     val workItem: M[WorkItem[NrsOrchestratorWorkItem]] = liftToM(nrsConnector.getRetrievals()).flatMap { identityData =>
       liftToM(
         nrsConnector.issueSubmissionWorkItem(

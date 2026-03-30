@@ -107,6 +107,12 @@ object NRSAttachment {
 
 object NRSConnector {
 
+  val requiredSearchKeys: Map[BusinessId, Array[String]] = Map.from(
+    Seq(
+      BusinessId("vap") -> Array("taxpayerIdReference", "taxpayerId", "submissionReferenceId")
+    )
+  )
+
   def generateSha256Checksum(payload: String): String =
     generateSha256Checksum(payload.getBytes(StandardCharsets.UTF_8))
 
@@ -148,7 +154,7 @@ class NRSConnector(
   private def makeCall[T](url: URL, body: T, apiKey: String)(implicit writes: Writes[T], hc: HeaderCarrier) = {
 
     if (!isProd) { //TODO: Remove log before going into production
-      logger.warn(s"""request: POST $url
+      logger.warn(s"""nrsOrchestrator request: POST $url
                      |Body:
                      |${Json.prettyPrint(Json.toJson(body))}
                      |""".stripMargin)
@@ -164,11 +170,20 @@ class NRSConnector(
       .execute[HttpResponse]
   }
 
-  //Documentation: https://confluence.tools.tax.service.gov.uk/pages/viewpage.action?spaceKey=NR&title=Submission+API+specification
-  //Local testing: https://github.com/hmrc/nrs-orchestrator/blob/main/LOCAL-CONFIG.md
-  //NRS stubs to test work-item: https://github.com/hmrc/nrs-stubs
-  //Curl to add local auth access to nrs-orchestrator
-  //curl -i -X POST -H 'Content-Type: application/json' -d '{ "token": "1234", "principal": "nrs-orchestrator", "permissions": [{ "resourceType": "object-store", "resourceLocation": "nrs-orchestrator", "actions": ["*"] }]}' 'http://localhost:8470/test-only/token'
+  /*
+    Documentation: https://confluence.tools.tax.service.gov.uk/pages/viewpage.action?spaceKey=NR&title=Submission+API+specification
+    Local testing: https://github.com/hmrc/nrs-orchestrator/blob/main/LOCAL-CONFIG.md
+    NRS stubs to test work-item: https://github.com/hmrc/nrs-stubs
+    Curl to add local auth access to nrs-orchestrator
+    curl -i -X POST -H 'Content-Type: application/json' -d '{ "token": "1234", "principal": "nrs-orchestrator", "permissions": [{ "resourceType": "object-store", "resourceLocation": "nrs-orchestrator", "actions": ["*"] }]}' 'http://localhost:8470/test-only/token'
+
+    Example local nrs orchestrator:
+    sm2 --start NRS_ORCHESTRATOR -appendArgs '{
+    "NRS_ORCHESTRATOR": [
+      "-J-Dnonrep-submission.clients.vap.apiKeySha256=334ad56b6df663c2909f6563f6955d070b68498d2307338f7de3e22303344ca7",
+      "-J-Dnonrep-submission.clients.vap.notableEvents.abc.1=taxpayerIdReference","-J-Dnonrep-submission.clients.vap.attachmentsAllowed=true"
+    ] }'
+   */
   private def createSubmission(
     businessId: BusinessId,
     notableEvent: String,
@@ -178,7 +193,8 @@ class NRSConnector(
     destinationResultData: NRSOrchestratorDestinationResultData,
     submissionDate: String,
     userAuthToken: String,
-    identityData: JsObject
+    identityData: JsObject,
+    envelopeId: EnvelopeId
   )(implicit hc: HeaderCarrier): Future[HttpResponse] = {
 
     val attachmentCount = attachmentIds.toSeq.flatten.length
@@ -197,6 +213,7 @@ class NRSConnector(
     val url = url"$baseUrl/$submissionUrl"
 
     val searchKeys = Json.toJson(destinationResultData.searchKeys).as[JsObject]
+
     val body = SubmissionRequest(
       payload = toBase64(payloadJson),
       SubmissionRequestMetaData(
@@ -399,7 +416,8 @@ class NRSConnector(
         destinationResultData,
         submissionDate,
         userAuthToken,
-        identityData
+        identityData,
+        envelopeId
       )
     }
 

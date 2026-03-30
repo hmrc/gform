@@ -22,8 +22,9 @@ import cats.data.NonEmptyList
 import uk.gov.hmrc.gform.config.NRSConnectorConfig
 import uk.gov.hmrc.gform.core.ValidationResult.{ BooleanToValidationResultSyntax, validationResultMonoid }
 import uk.gov.hmrc.gform.core.{ Invalid, Valid, ValidationResult }
-import uk.gov.hmrc.gform.nrs.BusinessId
+import uk.gov.hmrc.gform.nrs.{ BusinessId, NRSConnector }
 import uk.gov.hmrc.gform.sharedmodel.HandlebarsSchemaId
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.NRSOrchestrator
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationIncludeIf.{ HandlebarValue, IncludeIfValue }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponent, FormComponentId, FormTemplateId, IsGroup }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationId, Destinations }
@@ -48,6 +49,11 @@ object DestinationsValidator {
   def validateNrs(destinations: Destinations, appConfig: NRSConnectorConfig): ValidationResult = {
     val allowedBusinessIds: Set[BusinessId] = appConfig.authorizationTokens.keys.toSet
 
+    def missingRequiredSearchKeys(d: NRSOrchestrator) = {
+      val requiredSearchKeys = NRSConnector.requiredSearchKeys(d.businessId)
+      requiredSearchKeys.filterNot(requiredKey => d.searchKeys.keySet.contains(requiredKey))
+    }
+
     destinations match {
       case destinationList: Destinations.DestinationList =>
         val nrsList: List[Destination.NRSOrchestrator] = destinationList.destinations.collect {
@@ -56,7 +62,17 @@ object DestinationsValidator {
         nrsList.map { nrsOrchestrator =>
           val businessId = nrsOrchestrator.businessId
           if (allowedBusinessIds(businessId)) {
-            Valid
+            val reqKeysMissing = missingRequiredSearchKeys(nrsOrchestrator)
+            if (reqKeysMissing.isEmpty) {
+              Valid
+            } else {
+              Invalid(
+                s"""'${nrsOrchestrator.id.id}' destination is missing required search keys: ${reqKeysMissing.mkString(
+                  ", "
+                )}."""
+              )
+            }
+
           } else {
             val allowedBusinessIdsStr =
               allowedBusinessIds.map(businessId => "'" + businessId.value + "'").mkString(", ")
