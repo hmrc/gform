@@ -31,6 +31,7 @@ import uk.gov.hmrc.gform.scheduler.datalakehouse.DataLakehouseWorkItemRepo
 import uk.gov.hmrc.gform.scheduler.datastore.DataStoreWorkItemRepo
 import uk.gov.hmrc.gform.scheduler.dms.DmsWorkItemRepo
 import uk.gov.hmrc.gform.scheduler.infoarchive.InfoArchiveWorkItemRepo
+import uk.gov.hmrc.gform.scheduler.nrsOrchestrator.{ NrsOrchestratorAttachmentWorkItemRepo, NrsOrchestratorWorkItemRepo }
 import uk.gov.hmrc.gform.sdes.alert.{ SdesSubmissionAlertService, SdesWorkItemAlertService }
 import uk.gov.hmrc.gform.sdes.renotify.SdesRenotifyQScheduledService
 import uk.gov.hmrc.gform.sdes.workitem.{ DestinationWorkItemAlgebra, DestinationWorkItemController, DestinationWorkItemService }
@@ -38,6 +39,7 @@ import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
 import uk.gov.hmrc.gform.sharedmodel.email.EmailTemplateId
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.NrsOrchestratorDestinationResponse
 import uk.gov.hmrc.gform.sharedmodel.notifier.NotifierEmailAddress
 import uk.gov.hmrc.gform.sharedmodel.sdes._
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
@@ -54,7 +56,9 @@ class SdesModule(
   objectStoreModule: ObjectStoreModule,
   akkaModule: AkkaModule,
   envelopeModule: EnvelopeModule,
-  emailModule: EmailModule
+  emailModule: EmailModule,
+  nrsOrchestratorWorkItemRepo: NrsOrchestratorWorkItemRepo,
+  nrsOrchestratorAttachmentWorkItemRepo: NrsOrchestratorAttachmentWorkItemRepo
 )(implicit ex: ExecutionContext) {
 
   private val fileLocationUrl = configModule.sdesConfig.fileLocationUrl
@@ -106,7 +110,8 @@ class SdesModule(
       dmsWorkItemRepo,
       dataStoreWorkItemRepo,
       infoArchiveWorkItemRepo,
-      dataLakehouseWorkItemRepo
+      dataLakehouseWorkItemRepo,
+      nrsOrchestratorWorkItemRepo
     )
 
   val destinationWorkItemController: DestinationWorkItemController =
@@ -295,8 +300,14 @@ class SdesModule(
     override def delete(id: String, sdesDestination: SdesDestination): FOpt[Unit] =
       fromFutureA(destinationWorkItemService.delete(id, sdesDestination))
 
+    override def deleteNrsOrchestrator(id: String): FOpt[Unit] =
+      fromFutureA(destinationWorkItemService.deleteNrsOrchestrator(id))
+
     override def ready(workItems: List[(SdesDestination, ObjectId)]): FOpt[Unit] =
       fromFutureA(destinationWorkItemService.ready(workItems))
+
+    override def readyNrsOrchestrator(workItems: List[NrsOrchestratorDestinationResponse]): FOpt[Unit] =
+      fromFutureA(destinationWorkItemService.readyNrsOrchestrator(workItems))
   }
 
 }

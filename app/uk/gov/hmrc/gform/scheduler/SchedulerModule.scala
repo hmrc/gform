@@ -30,21 +30,27 @@ import uk.gov.hmrc.gform.sdes.SdesModule
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.FiniteDuration
 import pureconfig.generic.auto._
+import uk.gov.hmrc.gform.nrs.NRSConnector
 import uk.gov.hmrc.gform.scheduler.datalakehouse.{ DataLakehouseQueuePollingService, DataLakehouseQueueService, DataLakehouseWorkItemRepo }
+import uk.gov.hmrc.gform.scheduler.nrsOrchestrator.{ NrsOrchestratorAttachmentQueuePollingService, NrsOrchestratorAttachmentQueueService, NrsOrchestratorAttachmentWorkItemRepo, NrsOrchestratorQueuePollingService, NrsOrchestratorQueueService, NrsOrchestratorWorkItemRepo }
 
 class SchedulerModule(
   configModule: ConfigModule,
   mongoModule: MongoModule,
   sdesModule: SdesModule,
   akkaModule: AkkaModule,
-  applicationLifecycle: ApplicationLifecycle
+  applicationLifecycle: ApplicationLifecycle,
+  nrsConnector: NRSConnector,
+  nrsOrchestratorNotificationRepository: NrsOrchestratorWorkItemRepo,
+  nrsOrchestratorAttachmentNotificationRepository: NrsOrchestratorAttachmentWorkItemRepo
 )(implicit ex: ExecutionContext) {
 
   case class SdesConfig(
     dms: DestinationConfig,
     dataStore: DestinationConfig,
     infoArchive: DestinationConfig,
-    dataLakehouse: DestinationConfig
+    dataLakehouse: DestinationConfig,
+    nrsOrchestrator: DestinationConfig
   )
   case class DestinationConfig(queue: QueueConfig, poller: PollerConfig)
   case class QueueConfig(retryAfter: FiniteDuration, maxFailureCount: Int)
@@ -126,6 +132,40 @@ class SchedulerModule(
     config.dataLakehouse.poller.interval,
     config.dataLakehouse.poller.enabled,
     dataLakehouseQueueService
+  )
+
+  val nrsOrchestratorQueueService =
+    new NrsOrchestratorQueueService(
+      nrsConnector,
+      nrsOrchestratorNotificationRepository,
+      config.nrsOrchestrator.poller.pollLimit,
+      config.nrsOrchestrator.queue.maxFailureCount,
+      config.nrsOrchestrator.queue.retryAfter.toMillis
+    )
+
+  val nrsOrchestratorAttachmentQueueService =
+    new NrsOrchestratorAttachmentQueueService(
+      nrsConnector,
+      nrsOrchestratorAttachmentNotificationRepository,
+      config.nrsOrchestrator.poller.pollLimit,
+      config.nrsOrchestrator.queue.maxFailureCount,
+      config.nrsOrchestrator.queue.retryAfter.toMillis
+    )
+
+  new NrsOrchestratorQueuePollingService(
+    akkaModule.actorSystem,
+    config.nrsOrchestrator.poller.initialDelay,
+    config.nrsOrchestrator.poller.interval,
+    config.nrsOrchestrator.poller.enabled,
+    nrsOrchestratorQueueService
+  )
+
+  new NrsOrchestratorAttachmentQueuePollingService(
+    akkaModule.actorSystem,
+    config.nrsOrchestrator.poller.initialDelay,
+    config.nrsOrchestrator.poller.interval,
+    config.nrsOrchestrator.poller.enabled,
+    nrsOrchestratorAttachmentQueueService
   )
 
   new SdesSubmissionAlertJob(

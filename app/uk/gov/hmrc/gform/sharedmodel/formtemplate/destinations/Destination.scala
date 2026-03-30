@@ -20,6 +20,7 @@ import play.api.libs.json._
 import cats.syntax.either._
 import cats.syntax.option._
 import julienrf.json.derived
+import uk.gov.hmrc.gform.nrs.BusinessId
 import uk.gov.hmrc.gform.sharedmodel.EmailVerifierService
 import uk.gov.hmrc.gform.sharedmodel.email.LocalisedEmailTemplateId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
@@ -67,8 +68,6 @@ sealed trait DestinationWithNiRefundClaimBankDetails extends Destination {
 }
 
 sealed trait DestinationWithNrsOrchestrator extends Destination {
-  def businessId: String
-  def notableEvent: String
   def searchKeys: Map[String, Expr]
 }
 
@@ -227,7 +226,7 @@ object Destination {
     id: DestinationId,
     includeIf: DestinationIncludeIf,
     failOnError: Boolean,
-    businessId: String,
+    businessId: BusinessId,
     notableEvent: String,
     searchKeys: Map[String, Expr]
   ) extends DestinationWithNrsOrchestrator
@@ -284,7 +283,11 @@ object Destination {
             d.postalCode.map(pc => ExprWithPath(path + "postalCode", pc)).toList
           ).flatten
       case d: DestinationWithPegaCaseId => List(ExprWithPath(path + "caseId", d.caseId))
-      case _                            => Nil
+      case d: DestinationWithNrsOrchestrator =>
+        d.searchKeys.toList.map { case (searchKey, expr) =>
+          ExprWithPath(path + "searchKeys" + searchKey, expr)
+        }
+      case _ => Nil
     }
 }
 
@@ -641,7 +644,7 @@ case class UploadableNrsOrchestratorDestination(
   id: DestinationId,
   includeIf: DestinationIncludeIf,
   failOnError: Boolean,
-  businessId: String,
+  businessId: BusinessId,
   notableEvent: String,
   searchKeys: Map[String, TextExpression]
 ) {

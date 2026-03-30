@@ -109,24 +109,35 @@ class DestinationsSubmitter[M[_]: Monad](
 
         monadError.onError(step) { err =>
           logger.error(s"Critical error occurred during destination submission, cleaning up work items", err)
-          cleanUp(updatedResponseList).void
+
+          for {
+            _ <- cleanUp(updatedResponseList)
+            _ <- cleanUpNrsOrchestrator(updatedResponseList)
+          } yield ()
         }
     }
   }
 
-  private def cleanUp(forCleanup: List[DestinationResponse]): M[List[Unit]] = {
-    def deleteWorkItem(workItemId: ObjectId, destination: SdesDestination): M[Unit] = {
-      logger.info(s"Deleting deferred $destination work item ${workItemId.toHexString}")
-      workItemService.delete(workItemId.toHexString, destination)
+  private def cleanUpNrsOrchestrator(forCleanup: List[DestinationResponse]): M[List[Unit]] = {
+    val data: List[ObjectId] = forCleanup.collect { case d: NrsOrchestratorDestinationResponse =>
+      d.workItemId
     }
 
+    data.traverse { workItemId =>
+      logger.info(s"Deleting deferred nrsOrchestrator work item ${workItemId.toHexString}")
+      workItemService.deleteNrsOrchestrator(workItemId.toHexString)
+    }
+  }
+
+  private def cleanUp(forCleanup: List[DestinationResponse]): M[List[Unit]] = {
     val data: List[(ObjectId, SdesDestination)] = forCleanup.collect {
       case d: DmsDestinationResponse       => (d.workItemId, d.routing)
       case o: OtherSdesDestinationResponse => (o.workItemId, o.routing)
     }
 
-    data.traverse { case (workItemId, routing) =>
-      deleteWorkItem(workItemId, routing)
+    data.traverse { case (workItemId, destination) =>
+      logger.info(s"Deleting deferred $destination work item ${workItemId.toHexString}")
+      workItemService.delete(workItemId.toHexString, destination)
     }
   }
 }

@@ -52,6 +52,10 @@ case class NRSOrchestratorDestinationResultData(
   searchKeys: Map[String, String]
 )
 
+object NRSOrchestratorDestinationResultData {
+  implicit val format: Format[NRSOrchestratorDestinationResultData] = Json.format
+}
+
 case class NRSOrchestratorDestinationResult(
   id: DestinationId,
   includeIf: Option[Boolean],

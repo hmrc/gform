@@ -24,7 +24,7 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.time.{ Millis, Seconds, Span }
 import org.scalatest.wordspec.AnyWordSpec
 import play.api.libs.json._
-import uk.gov.hmrc.gform.config.AppConfig
+import uk.gov.hmrc.gform.config.{ AppConfig, NRSConnectorConfig }
 import uk.gov.hmrc.gform.core.{ FOpt, fromFutureA }
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.sharedmodel.HandlebarsSchemaId
@@ -501,11 +501,13 @@ class FormTemplatesControllerRequestHandlerTest extends AnyWordSpec with Matcher
     val templateRaw = implicitly[Reads[FormTemplateRaw]].reads(json).get
     val formTemplate: Option[FormTemplate] = FormTemplate.transformAndReads(json).asOpt
     val appConfig = AppConfig.loadOrThrow(ConfigFactory.load())
+    val nrsConfig = NRSConnectorConfig(Map.empty, "", "")
     val verifySideEffect: Option[FOpt[Unit]] =
       formTemplate.map(formTemplate =>
-        new Verifier {}.verify(formTemplate, appConfig, List.empty[HandlebarsSchemaId], BooleanExprSubstitutions.empty)(
-          ExprSubstitutions.empty
-        )
+        new Verifier {}
+          .verify(formTemplate, appConfig, nrsConfig, List.empty[HandlebarsSchemaId], BooleanExprSubstitutions.empty)(
+            ExprSubstitutions.empty
+          )
       )
 
     f(sideEffect, verifySideEffect, templateRaw)

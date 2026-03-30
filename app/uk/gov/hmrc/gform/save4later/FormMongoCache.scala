@@ -57,7 +57,7 @@ class FormMongoCache(
   }
 
   private def findLegacyForm(formId: FormId): Future[Option[Form]] = {
-    implicit val formatFormEncrypted: Format[Form] = EncyryptedFormat.formatEncrypted[Form](jsonCrypto)(Form.format)
+    implicit val formatFormEncrypted: Format[Form] = EncryptedFormat.formatEncrypted[Form](jsonCrypto)(Form.format)
     mongoCacheRepository
       .get[Form](formId.value)(formDataKey)
   }

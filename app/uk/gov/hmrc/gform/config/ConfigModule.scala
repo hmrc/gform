@@ -21,6 +21,7 @@ import com.typesafe.config.{ Config => TypeSafeConfig }
 import play.api.Configuration
 import play.api.mvc.ControllerComponents
 import uk.gov.hmrc.gform.notifier.NotifierConfig
+import uk.gov.hmrc.gform.nrs.BusinessId
 import uk.gov.hmrc.gform.sdes.{ SdesAlertConfig, SdesConfig, SdesKeyAndCredentialsApiConfig, SdesRenotifyConfig }
 import uk.gov.hmrc.gform.sharedmodel.config.ExposedConfig
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.ProfileName
@@ -182,4 +183,9 @@ final case class HipConnectorConfig(
   originatorId: String,
   correlationId: String
 )
-final case class NRSConnectorConfig(authorizationToken: String)
+
+final case class NRSConnectorConfig(
+  authorizationTokens: Map[BusinessId, String],
+  submissionUrl: String,
+  attachmentUrl: String
+)

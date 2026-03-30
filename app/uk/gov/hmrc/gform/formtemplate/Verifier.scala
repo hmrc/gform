@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.gform.formtemplate
 
+import uk.gov.hmrc.gform.config.NRSConnectorConfig
 import uk.gov.hmrc.gform.core.{ FOpt, fromOptA }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import cats.implicits._
@@ -28,6 +29,7 @@ trait Verifier {
   def verify(
     formTemplate: FormTemplate,
     appConfig: AppConfig,
+    nrsConnectorConfig: NRSConnectorConfig,
     handlebarsSchemaIds: List[HandlebarsSchemaId],
     booleanExpressionsContextSubstituted: BooleanExprSubstitutions
   )(expressionsContext: ExprSubstitutions)(implicit ec: ExecutionContext): FOpt[Unit] = {
@@ -130,6 +132,7 @@ trait Verifier {
       _ <- fromOptA(DestinationsValidator.validateDestinationIncludeIfs(formTemplate.destinations).toEither)
       _ <- fromOptA(DestinationsValidator.validateSubmissionPrefix(formTemplate.destinations).toEither)
       _ <- fromOptA(DestinationsValidator.validateCaseflow(formTemplate.destinations).toEither)
+      _ <- fromOptA(DestinationsValidator.validateNrs(formTemplate.destinations, nrsConnectorConfig).toEither)
       _ <- fromOptA(
              DestinationsValidator
                .validateHandlebarSchemaCheck(formTemplate._id, formTemplate.destinations, handlebarsSchemaIds)

@@ -23,6 +23,7 @@ import cats.syntax.flatMap._
 import cats.syntax.functor._
 import org.slf4j.LoggerFactory
 import play.api.libs.json._
+import uk.gov.hmrc.auth.core.MissingBearerToken
 import uk.gov.hmrc.gform.notifier.NotifierAlgebra
 import uk.gov.hmrc.gform.sdes.SdesConfig
 import uk.gov.hmrc.gform.sharedmodel.{ DestinationEvaluation, DestinationResult, EmailVerifierService, LangADT, NRSOrchestratorDestinationResult, UserSession }
@@ -35,9 +36,12 @@ import uk.gov.hmrc.gform.wshttp.HttpResponseSyntax
 import uk.gov.hmrc.gform.core.FOpt
 import uk.gov.hmrc.gform.core.fromFutureA
 import uk.gov.hmrc.gform.nrs.NRSConnector
+import uk.gov.hmrc.gform.scheduler.nrsOrchestrator.NrsOrchestratorWorkItem
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.HandlebarsDestinationResponse
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
+import uk.gov.hmrc.mongo.workitem.WorkItem
 
+import java.time.ZoneOffset
 import scala.concurrent.{ ExecutionContext, Future }
 
 class DestinationSubmitter[M[_]](
@@ -447,51 +451,70 @@ class DestinationSubmitter[M[_]](
     }
 
     val envelopeId = submissionInfo.submission.envelopeId
+    val payload = nrsConnector.createPayload(
+      formData.getOrElse(throw new RuntimeException("form data is not available")),
+      submissionInfo.submission,
+      l
+    )
+    val userAuthToken = hc.authorization.getOrElse(throw MissingBearerToken("missing authorisation token")).value
 
-    liftToM(
-      nrsConnector.submit(
-        envelopeId,
-        d,
-        userSession,
-        nrsDestinationResult,
-        submissionInfo,
-        l,
-        formData.getOrElse(throw new RuntimeException("form data is not available"))
-      )
-    ).map { response =>
-      val allOk: Boolean =
-        response.submissionResponse.isSuccess && response.attachmentResponses.forall(_.isSuccess)
-      if (allOk) {
-        DestinationResponse.NoResponse
-      } else {
+    val submissionDate =
+      submissionInfo.submission.submittedDate.toInstant(ZoneOffset.UTC).toString
 
-        def errorMsg: String = {
-          val errorMessage = new StringBuilder()
-          if (!response.submissionResponse.isSuccess) {
-            errorMessage.addAll(
-              s"main submission failed. Status: ${response.submissionResponse.status} Body: ${response.submissionResponse.body}\n"
-            )
-          }
-          response.attachmentResponses.collect {
-            case attachmentResponse if !attachmentResponse.isSuccess =>
-              errorMessage.addAll(
-                s"attachment submission failed. Status: ${attachmentResponse.status} Body: ${attachmentResponse.body}\n"
-              )
-          }
-          errorMessage.mkString
+    val emptyKeys: List[String] = nrsDestinationResult.data.searchKeys.collect {
+      case (key, value) if value.trim.isEmpty => key
+    }.toList
+
+    val errorPrefix =
+      s"nrsOrchestrator destination ${d.id.id} error. EnvelopeId: ${envelopeId.value}, businessId: ${d.businessId.value}"
+
+    if (emptyKeys.nonEmpty) {
+      throw new RuntimeException(s"$errorPrefix. Empty search keys $emptyKeys.")
+    }
+
+    // There is upload time check for this, but just to be sure let's double check that search key names are matching.
+    NRSConnector.requiredSearchKeys.get(d.businessId) match {
+      case None =>
+        throw new Exception(s"$errorPrefix. Gform configuration error, required keys not found for businessId.")
+      case Some(requiredKeys) =>
+        val providedKeys: Set[String] = nrsDestinationResult.data.searchKeys.keys.toSet
+        if (requiredKeys =!= providedKeys) {
+          throw new Exception(
+            s"""|$errorPrefix. Mismatch between provided search keys and required search keys for businessId.
+                |Required search keys: $requiredKeys
+                |Provided search keys: $providedKeys""".stripMargin
+          )
         }
+    }
 
-        def logError(): Unit = logger.error(
-          genericLogMessage(submissionInfo.formId, d.id, errorMsg)
+    val workItem: M[WorkItem[NrsOrchestratorWorkItem]] = liftToM(nrsConnector.getRetrievals()).flatMap { identityData =>
+      liftToM(
+        nrsConnector.issueSubmissionWorkItem(
+          envelopeId,
+          d.businessId,
+          d.notableEvent,
+          userSession.onSubmitHeaders,
+          nrsDestinationResult.data,
+          submissionInfo.submission.submissionRef,
+          payload,
+          userAuthToken,
+          identityData,
+          submissionDate
         )
+      )
+    }
 
-        if (d.failOnError) {
-          logError()
-          throw new Exception(errorMsg)
-        } else {
-          logError()
-          DestinationResponse.NoResponse
-        }
+    val response: M[DestinationResponse] = workItem.map(workItem => NrsOrchestratorDestinationResponse(workItem.id))
+
+    monadError.handleErrorWith(response) { msg =>
+      if (d.failOnError)
+        raiseDestinationError(submissionInfo.formId, d.id, msg)
+      else {
+        logErrorInMonad(
+          submissionInfo.formId,
+          d.id,
+          "Failed execution but has 'failOnError' set to false. Ignoring."
+        )
       }
     }
   }

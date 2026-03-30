@@ -40,6 +40,7 @@ import uk.gov.hmrc.gform.submission.destinations.{ DataStoreSubmitter, Destinati
 import uk.gov.hmrc.gform.submissionconsolidator.SubmissionConsolidatorModule
 import uk.gov.hmrc.gform.wshttp.WSHttpModule
 import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.gform.scheduler.nrsOrchestrator.{ NrsOrchestratorAttachmentWorkItemRepo, NrsOrchestratorWorkItemRepo }
 
 import scala.concurrent.ExecutionContext
 
@@ -60,7 +61,9 @@ class SubmissionModule(
   sdesModule: SdesModule,
   materializer: Materializer,
   hipModule: HipModule,
-  wSHttpModule: WSHttpModule
+  wSHttpModule: WSHttpModule,
+  nrsOrchestratorWorkItemRepo: NrsOrchestratorWorkItemRepo,
+  nrsOrchestratorAttachmentWorkItemRepo: NrsOrchestratorAttachmentWorkItemRepo
 )(implicit ex: ExecutionContext) {
 
   //TODO: this should be replaced with save4later for submissions
@@ -113,17 +116,23 @@ class SubmissionModule(
     override def httpClientV2: HttpClientV2 = wSHttpModule.httpClient
   }
 
-  private val nrsConnectorApiKey = configModule.nrsConfig.authorizationToken
+  private val nrsConnectorApiKeys = configModule.nrsConfig.authorizationTokens
+  private val nrsSubmissionUrl = configModule.nrsConfig.submissionUrl
+  private val nrsAttachmentUrl = configModule.nrsConfig.attachmentUrl
 
   private val baseUrl = configModule.serviceConfig.baseUrl("nrs-orchestrator")
 
   val nrsConnector = new NRSConnector(
     baseUrl,
+    nrsSubmissionUrl,
+    nrsAttachmentUrl,
     wSHttpModule.httpClient,
     objectStoreModule,
     envelopeModule.envelopeService,
     nrsConnectorAuthConnector,
-    nrsConnectorApiKey,
+    nrsConnectorApiKeys,
+    nrsOrchestratorWorkItemRepo,
+    nrsOrchestratorAttachmentWorkItemRepo,
     configModule.isProd
   )
 

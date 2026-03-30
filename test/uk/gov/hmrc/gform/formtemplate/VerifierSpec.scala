@@ -22,7 +22,7 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.time.{ Millis, Seconds, Span }
 import org.scalatest.wordspec.AnyWordSpecLike
 import uk.gov.hmrc.gform.Helpers.toSmartString
-import uk.gov.hmrc.gform.config.AppConfig
+import uk.gov.hmrc.gform.config.{ AppConfig, NRSConnectorConfig }
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.sharedmodel.HandlebarsSchemaId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.Instruction
@@ -49,10 +49,12 @@ class VerifierSpec extends AnyWordSpecLike with Matchers with ScalaFutures with 
       )
 
       val appConfig = AppConfig.loadOrThrow(ConfigFactory.load())
+      val nrsConfig = NRSConnectorConfig(Map.empty, "", "")
       val result =
         Verifier.verify(
           mkFormTemplate(sections),
           appConfig,
+          nrsConfig,
           List.empty[HandlebarsSchemaId],
           BooleanExprSubstitutions.empty
         )(ExprSubstitutions.empty)
