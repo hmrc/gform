@@ -33,7 +33,7 @@ import uk.gov.hmrc.gform.submission.Submission
 import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse, StringContextOps }
-import uk.gov.hmrc.mongo.workitem.WorkItem
+import uk.gov.hmrc.mongo.workitem.{ ProcessingStatus, WorkItem }
 import uk.gov.hmrc.objectstore.client.{ Path, PresignedDownloadUrl }
 
 import java.net.URL
@@ -261,7 +261,7 @@ class NRSConnector(
     authConnector.authorise(predicate, retrieval)
   }
 
-  def issueAttachmentWorkItem(
+  private def issueAttachmentWorkItem(
     nrSubmissionId: String,
     attachment: NRSAttachment,
     businessId: BusinessId,
@@ -385,7 +385,8 @@ class NRSConnector(
           submissionDate,
           userAuthToken,
           identityData
-        )
+        ),
+        initialState = _ => ProcessingStatus.Deferred
       )
 
   def submit(
