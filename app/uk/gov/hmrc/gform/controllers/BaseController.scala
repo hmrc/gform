@@ -59,11 +59,16 @@ class BaseController(controllerComponents: ControllerComponents)(implicit ec: Ex
 
   def asRes[T](a: T): LeftResult[T] = EitherT[Future, Result, T](Future.successful(a.asRight))
 
-  def formAction[A](
-    bodyParser: BodyParser[A]
-  )(endPoint: String, formIdData: FormIdData)(block: Request[A] => Future[Result]): Action[A] =
+  def formAction[A](bodyParser: BodyParser[A], endPoint: String, formIdData: FormIdData)(
+    block: Request[A] => Future[Result]
+  ): Action[A] =
+    formAction[A](bodyParser, endPoint, formIdData.toFormId)(block)
+
+  def formAction[A](bodyParser: BodyParser[A], endPoint: String, formId: FormId)(
+    block: Request[A] => Future[Result]
+  ): Action[A] =
     controllerComponents.actionBuilder.async(bodyParser) { request =>
-      addFormIdToMdc(formIdData.toFormId)
+      addFormIdToMdc(formId)
       logger.info(s"${getClass.getSimpleName}.$endPoint, ${loggingHelpers.cleanHeaders(request.headers)}")
       block(request)
     }

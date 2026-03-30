@@ -39,7 +39,8 @@ trait DestinationsProcessorModelAlgebra[M[_]] {
     frontEndSubmissionVariables: FrontEndSubmissionVariables,
     pdfData: PdfContent,
     instructionPdfHtml: Option[PdfContent],
-    structuredFormData: StructuredFormValue.ObjectStructure
+    structuredFormData: StructuredFormValue.ObjectStructure,
+    submissionRef: SubmissionRef
   )(implicit hc: HeaderCarrier): M[HandlebarsTemplateProcessorModel]
 }
 
@@ -50,7 +51,8 @@ object DestinationsProcessorModelAlgebra {
     instructionPdfData: Option[PdfContent],
     structuredFormData: StructuredFormValue.ObjectStructure,
     form: Form,
-    files: Option[List[UploadedFile]]
+    files: Option[List[UploadedFile]],
+    submissionRef: SubmissionRef
   ): HandlebarsTemplateProcessorModel =
     createFormId(form._id) +
       createStructuredFormData(structuredFormData) +
@@ -59,7 +61,7 @@ object DestinationsProcessorModelAlgebra {
       createFormStatus(form.status) +
       createPdfHtml(pdfData) +
       createInstructionPdfContent(instructionPdfData) +
-      createSubmissionReference(SubmissionRef(form.envelopeId).value) +
+      createSubmissionReference(submissionRef) +
       createUploadedFiles(files) +
       createCaseworker(form.thirdPartyData.reviewData.flatMap(_.get("caseworker")))
 
@@ -162,8 +164,8 @@ object DestinationsProcessorModelAlgebra {
       HandlebarsTemplateProcessorModel("instructionHtml" -> textNode(content.content))
     }
 
-  private def createSubmissionReference(submissionReference: String): HandlebarsTemplateProcessorModel =
-    HandlebarsTemplateProcessorModel("submissionReference" -> textNode(submissionReference))
+  private def createSubmissionReference(submissionReference: SubmissionRef): HandlebarsTemplateProcessorModel =
+    HandlebarsTemplateProcessorModel("submissionReference" -> textNode(submissionReference.value))
 
   def createHmrcTaxPeriods(form: Form): HandlebarsTemplateProcessorModel = {
 

@@ -24,7 +24,7 @@ import uk.gov.hmrc.gform.formmetadata.FormMetadataModule
 import uk.gov.hmrc.gform.mongo.MongoModule
 import uk.gov.hmrc.gform.objectstore.{ ObjectStoreAlgebra, ObjectStoreModule }
 import uk.gov.hmrc.gform.repo.{ Repo, RepoAlgebra }
-import uk.gov.hmrc.gform.sharedmodel.{ FrontEndSubmissionVariables, PdfContent }
+import uk.gov.hmrc.gform.sharedmodel.{ FrontEndSubmissionVariables, PdfContent, SubmissionRef }
 import uk.gov.hmrc.gform.sharedmodel.form.Form
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.HandlebarsTemplateProcessorModel
 import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
@@ -80,10 +80,11 @@ class DestinationModule(
         frontEndSubmissionVariables: FrontEndSubmissionVariables,
         pdfData: PdfContent,
         instructionPdfHtml: Option[PdfContent],
-        structuredFormData: StructuredFormValue.ObjectStructure
+        structuredFormData: StructuredFormValue.ObjectStructure,
+        submissionRef: SubmissionRef
       )(implicit hc: HeaderCarrier): Future[HandlebarsTemplateProcessorModel] =
         destinationsProcessorModelService
-          .create(form, frontEndSubmissionVariables, pdfData, instructionPdfHtml, structuredFormData)
+          .create(form, frontEndSubmissionVariables, pdfData, instructionPdfHtml, structuredFormData, submissionRef)
           .toFuture
     }
 }

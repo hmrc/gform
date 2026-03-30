@@ -222,7 +222,8 @@ class TestOnlyController(
                      submissionData.variables,
                      submissionData.pdfData,
                      submissionData.instructionPDFData,
-                     submissionData.structuredFormData
+                     submissionData.structuredFormData,
+                     submissionData.submissionRef
                    )
       } yield {
         val jsValue: JsValue = Json.toJson[JsonNode](model.model)
@@ -241,10 +242,11 @@ class TestOnlyController(
       for {
         formTemplate <- formTemplateAlgebra.get(formTemplateId)
         form         <- formAlgebra.get(formId)
+        submissionRef = submissionData.submissionRef
         submission = Submission(
                        SubmissionId(formId, form.envelopeId),
                        LocalDateTime.now(ZoneId.of("Europe/London")),
-                       SubmissionRef(form.envelopeId),
+                       submissionRef,
                        form.envelopeId,
                        0,
                        DmsMetaData(formTemplate._id, customerIdHeader)
@@ -255,7 +257,8 @@ class TestOnlyController(
                      submissionData.variables,
                      submissionData.pdfData,
                      submissionData.instructionPDFData,
-                     submissionData.structuredFormData
+                     submissionData.structuredFormData,
+                     submissionRef
                    )
       } yield {
         val maybeDestination: Option[Destination] =

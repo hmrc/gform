@@ -21,9 +21,9 @@ import java.security.MessageDigest
 
 import cats.{ Eq, Show }
 import play.api.libs.json._
-import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 
 import scala.math.pow
+import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 
 case class SubmissionRef(value: String) extends AnyVal {
   override def toString = value
@@ -43,12 +43,13 @@ object SubmissionRef {
 
   implicit val show: Show[SubmissionRef] = Show.show(_.value)
 
-  def apply(value: EnvelopeId): SubmissionRef = SubmissionRef(getSubmissionReference(value))
+  def noCustomReference(envelopeId: EnvelopeId): SubmissionRef =
+    SubmissionRef(getSubmissionReference(envelopeId.value))
 
-  private def getSubmissionReference(envelopeId: EnvelopeId): String =
-    if (envelopeId.value.nonEmpty) {
+  private def getSubmissionReference(seed: String): String =
+    if (seed.nonEmpty) {
       // As 36^11 (number of combinations of 11 base 36 digits) < 2^63 (number of combinations of 63 base 2 digits) we can get full significance from this digest.
-      val digest = MessageDigest.getInstance("SHA-256").digest(envelopeId.value.getBytes()).take(8)
+      val digest = MessageDigest.getInstance("SHA-256").digest(seed.getBytes()).take(8)
       val initialValue = new BigInteger(digest).abs()
       val unformattedString = calculate(initialValue, radix, digits, comb)
       unformattedString.grouped(4).mkString("-").toUpperCase

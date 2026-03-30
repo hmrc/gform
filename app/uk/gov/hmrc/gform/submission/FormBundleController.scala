@@ -61,7 +61,8 @@ class FormBundleController(
     formTemplateId: FormTemplateId,
     accessCode: AccessCode
   ): Action[NonEmptyList[BundledFormSubmissionData]] =
-    formAction(parse.json[NonEmptyList[BundledFormSubmissionData]])(
+    formAction(
+      parse.json[NonEmptyList[BundledFormSubmissionData]],
       "submitFormBundleAfterReview",
       FormIdData.WithAccessCode(userId, formTemplateId, accessCode)
     ) { implicit request =>

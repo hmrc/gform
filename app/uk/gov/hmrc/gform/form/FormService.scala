@@ -89,7 +89,7 @@ class FormService[F[_]: Monad](
     def checkDraftRetrievalMethod(draftRetrievalMethod: DraftRetrievalMethod) =
       (draftRetrievalMethod, affinityGroup) match {
         case (BySubmissionReference, _) =>
-          val submissionRef = SubmissionRef(envelopeId)
+          val submissionRef = SubmissionRef.noCustomReference(envelopeId)
           FormIdData.WithAccessCode(userId, formTemplateId, AccessCode(submissionRef.value))
 
         case (FormAccessCodeForAgents(_), Some(AffinityGroup.Agent)) | (FormAccessCode(_), _) =>

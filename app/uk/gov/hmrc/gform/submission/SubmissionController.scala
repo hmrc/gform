@@ -21,7 +21,7 @@ import org.apache.commons.text.StringEscapeUtils
 import play.api.libs.json.Json
 import play.api.mvc.{ Action, AnyContent, ControllerComponents, Request }
 import uk.gov.hmrc.gform.controllers.BaseController
-import uk.gov.hmrc.gform.sharedmodel.AccessCode
+import uk.gov.hmrc.gform.sharedmodel.{ AccessCode, SubmissionRef }
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FormId, FormIdData }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.gform.sharedmodel.{ SubmissionData, UserId }
@@ -33,9 +33,9 @@ class SubmissionController(controllerComponents: ControllerComponents, submissio
 ) extends BaseController(controllerComponents) {
 
   def createSubmission(formId: FormId, formTemplateId: FormTemplateId, envelopeId: EnvelopeId, noOfAttachments: Int) =
-    formAction("createSubmission", formId) { implicit request =>
+    formAction(parse.json[SubmissionRef], "createSubmission", formId) { implicit request =>
       submissionService
-        .createSubmission(formId, formTemplateId, envelopeId, customerIdHeader, noOfAttachments)
+        .createSubmission(formId, formTemplateId, envelopeId, customerIdHeader, noOfAttachments, request.body)
         .fold(unexpectedState => BadRequest(unexpectedState.error), submission => Ok(Json.toJson(submission)))
     }
 
@@ -45,7 +45,7 @@ class SubmissionController(controllerComponents: ControllerComponents, submissio
     submitFormByFormIdData(FormIdData.WithAccessCode(userId, formTemplateId, accessCode))
 
   private def submitFormByFormIdData(formIdData: FormIdData): Action[SubmissionData] =
-    formAction(parse.json[SubmissionData])("submitFormByFormIdData", formIdData) { implicit request =>
+    formAction(parse.json[SubmissionData], "submitFormByFormIdData", formIdData) { implicit request =>
       import request._
 
       submissionService

@@ -45,7 +45,7 @@ class FormController(
     formTemplateId: FormTemplateId,
     affinityGroup: Option[AffinityGroup]
   ): Action[QueryParams] =
-    formAction(parse.json[QueryParams])("newForm", FormIdData.Plain(userId, formTemplateId)) { implicit request =>
+    formAction(parse.json[QueryParams], "newForm", FormIdData.Plain(userId, formTemplateId)) { implicit request =>
       formService
         .create(userId, formTemplateId, affinityGroup, request.body)
         .asOkJson
@@ -74,7 +74,7 @@ class FormController(
     createFormFromLegacyData(FormIdData.WithAccessCode(userId, formTemplateId, accessCode))
 
   private def createFormFromLegacyData(formIdData: FormIdData): Action[FormIdData] =
-    formAction(parse.json[FormIdData])("createFormFromLegacyData", formIdData) { implicit request =>
+    formAction(parse.json[FormIdData], "createFormFromLegacyData", formIdData) { implicit request =>
       formService
         .createFormFromLegacy(formIdData, request.body)
         .asOkJson
@@ -86,7 +86,7 @@ class FormController(
     updateFormDataByFormIdData(FormIdData.WithAccessCode(userId, FormTemplateId(formTemplateId), accessCode))
 
   private def updateFormDataByFormIdData(formIdData: FormIdData): Action[UserData] =
-    formAction(parse.json[UserData])("updateFormDataByFormIdData", formIdData) { implicit request =>
+    formAction(parse.json[UserData], "updateFormDataByFormIdData", formIdData) { implicit request =>
       for {
         _ <- formService.updateUserData(formIdData, request.body)
       } yield NoContent
@@ -99,7 +99,7 @@ class FormController(
     changeVersion(FormIdData.WithAccessCode(userId, FormTemplateId(formTemplateId), accessCode))
 
   private def changeVersion(formIdData: FormIdData): Action[FormTemplateId] =
-    formAction(parse.json[FormTemplateId])("changeVersion", formIdData) { implicit request =>
+    formAction(parse.json[FormTemplateId], "changeVersion", formIdData) { implicit request =>
       formService.changeVersion(formIdData, request.body).asOkJson
     }
 

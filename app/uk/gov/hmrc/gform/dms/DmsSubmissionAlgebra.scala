@@ -131,7 +131,7 @@ object DmsSubmissionService {
     Submission(
       SubmissionId(FormId(metadata.dmsFormId), envId),
       submittedDate,
-      SubmissionRef(envId),
+      SubmissionRef.noCustomReference(envId),
       envId,
       attachments,
       DmsMetaData(FormTemplateId(metadata.dmsFormId), metadata.customerId)
