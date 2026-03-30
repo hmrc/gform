@@ -30,6 +30,7 @@ import uk.gov.hmrc.gform.scheduler.nrsOrchestrator.NrsOrchestratorWorkItemRepo
 import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.NrsOrchestratorDestinationResponse
 import uk.gov.hmrc.gform.sharedmodel.sdes._
 import uk.gov.hmrc.mongo.workitem.ProcessingStatus.ToDo
 import uk.gov.hmrc.mongo.workitem.{ ProcessingStatus, WorkItem }
@@ -57,7 +58,7 @@ trait DestinationWorkItemAlgebra[F[_]] {
 
   def ready(workItems: List[(SdesDestination, ObjectId)]): F[Unit]
 
-  def readyNrsOrchestrator(workItems: List[ObjectId]): F[Unit]
+  def readyNrsOrchestrator(workItems: List[NrsOrchestratorDestinationResponse]): F[Unit]
 
   def enqueue(id: String, sdesDestination: SdesDestination): F[Unit]
 
@@ -122,8 +123,8 @@ class DestinationWorkItemService(
       }
       .map(_ => ())
 
-  override def readyNrsOrchestrator(workItems: List[ObjectId]): Future[Unit] =
-    workItems.traverse(item => nrsOrchestratorWorkItemRepo.markAs(item, ToDo)).void
+  override def readyNrsOrchestrator(workItems: List[NrsOrchestratorDestinationResponse]): Future[Unit] =
+    workItems.traverse(item => nrsOrchestratorWorkItemRepo.markAs(item.workItemId, ToDo)).void
 
   override def search(
     page: Int,

@@ -39,6 +39,7 @@ import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
 import uk.gov.hmrc.gform.sharedmodel.email.EmailTemplateId
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.NrsOrchestratorDestinationResponse
 import uk.gov.hmrc.gform.sharedmodel.notifier.NotifierEmailAddress
 import uk.gov.hmrc.gform.sharedmodel.sdes._
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
@@ -305,7 +306,7 @@ class SdesModule(
     override def ready(workItems: List[(SdesDestination, ObjectId)]): FOpt[Unit] =
       fromFutureA(destinationWorkItemService.ready(workItems))
 
-    override def readyNrsOrchestrator(workItems: List[ObjectId]): FOpt[Unit] =
+    override def readyNrsOrchestrator(workItems: List[NrsOrchestratorDestinationResponse]): FOpt[Unit] =
       fromFutureA(destinationWorkItemService.readyNrsOrchestrator(workItems))
   }
 

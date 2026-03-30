@@ -97,7 +97,7 @@ class SubmissionService(
                        })
       _ <- maybeWorkItems.traverse(destinationWorkItemService.ready)
       _ <- destinationResponses
-             .map(_.collect { case d: NrsOrchestratorDestinationResponse => d.workItemId })
+             .map(_.collect { case d: NrsOrchestratorDestinationResponse => d })
              .traverse(destinationWorkItemService.readyNrsOrchestrator)
       _ <- formAlgebra.updateFormStatus(submissionInfo.formId, Submitted)
       emailAddress = email.getEmailAddress(form, submissionData.maybeEmailAddress)
