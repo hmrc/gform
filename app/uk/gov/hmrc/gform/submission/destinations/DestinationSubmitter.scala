@@ -461,30 +461,30 @@ class DestinationSubmitter[M[_]](
     val submissionDate =
       submissionInfo.submission.submittedDate.toInstant(ZoneOffset.UTC).toString
 
-    def searchKeyIsEmpty(key: String) = {
-      val keyValue = nrsDestinationResult.data.searchKeys.get(key)
-      if (keyValue.isEmpty) true
-      else {
-        keyValue.get.trim == ""
-      }
+    val emptyKeys: List[String] = nrsDestinationResult.data.searchKeys.collect {
+      case (key, value) if value.trim.isEmpty => key
+    }.toList
+
+    val errorPrefix =
+      s"nrsOrchestrator destination ${d.id.id} error. EnvelopeId: ${envelopeId.value}, businessId: ${d.businessId.value}"
+
+    if (emptyKeys.nonEmpty) {
+      throw new RuntimeException(s"$errorPrefix. Empty search keys $emptyKeys.")
     }
 
-    val emptySearchKeys = NRSConnector.requiredSearchKeys
-      .getOrElse(
-        d.businessId,
-        throw new RuntimeException(
-          s"""nrsOrchestrator destination error. EnvelopeId: $envelopeId. Required keys missing for businessId: ${d.businessId}"""
-        )
-      )
-      .collect {
-        case requiredSearchKey if searchKeyIsEmpty(requiredSearchKey) => requiredSearchKey
-      }
-
-    if (emptySearchKeys.nonEmpty) {
-      throw new RuntimeException(
-        s"""nrsOrchestrator destination error. EnvelopeId: $envelopeId. Required search keys are either empty or missing entirely: ${emptySearchKeys
-          .mkString(", ")}"""
-      )
+    // There is upload time check for this, but just to be sure let's double check that search key names are matching.
+    NRSConnector.requiredSearchKeys.get(d.businessId) match {
+      case None =>
+        throw new Exception(s"$errorPrefix. Gform configuration error, required keys not found for businessId.")
+      case Some(requiredKeys) =>
+        val providedKeys: Set[String] = nrsDestinationResult.data.searchKeys.keys.toSet
+        if (requiredKeys =!= providedKeys) {
+          throw new Exception(
+            s"""|$errorPrefix. Mismatch between provided search keys and required search keys for businessId.
+                |Required search keys: $requiredKeys
+                |Provided search keys: $providedKeys""".stripMargin
+          )
+        }
     }
 
     val workItem: M[WorkItem[NrsOrchestratorWorkItem]] = liftToM(nrsConnector.getRetrievals()).flatMap { identityData =>
