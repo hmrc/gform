@@ -107,10 +107,8 @@ object NRSAttachment {
 
 object NRSConnector {
 
-  val requiredSearchKeys: Map[BusinessId, Array[String]] = Map.from(
-    Seq(
-      BusinessId("vap") -> Array("taxpayerIdReference", "taxpayerId", "submissionReferenceId")
-    )
+  val requiredSearchKeys: Map[BusinessId, Set[String]] = Map(
+    BusinessId("vap") -> Set("taxpayerIdReference", "taxpayerId", "submissionReferenceId")
   )
 
   def generateSha256Checksum(payload: String): String =
