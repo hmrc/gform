@@ -12,6 +12,9 @@
     "formName": {
       "$ref": "#/$defs/stringOrEnCyObject"
     },
+    "customSubmissionRef": {
+      "type": "string"
+    },
     "description": {
       "$ref": "#/$defs/stringOrEnCyObject"
     },

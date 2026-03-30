@@ -62,7 +62,8 @@ case class FormTemplate(
   displayAccountHeader: Boolean,
   serviceStartPageUrl: Option[ServiceStartPageUrl],
   downloadPreviousSubmissionPdf: Boolean,
-  overrides: Option[Overrides]
+  overrides: Option[Overrides],
+  customSubmissionRef: Option[CustomSubmissionRef]
 ) {
 
   def formComponents[A](predicate: PartialFunction[FormComponent, A]): List[A] =
@@ -88,6 +89,7 @@ object FormTemplate {
   implicit val leafExprs: LeafExpr[FormTemplate] = (path: TemplatePath, t: FormTemplate) =>
     LeafExpr(path + "sections", t.formKind) ++
       LeafExpr(path + "emailExpr", t.emailExpr) ++
+      LeafExpr(path + "customSubmissionRef", t.customSubmissionRef) ++
       leafExprsNoSections.exprs(path, t)
 
   val leafExprsNoSections: LeafExpr[FormTemplate] = (path: TemplatePath, t: FormTemplate) =>

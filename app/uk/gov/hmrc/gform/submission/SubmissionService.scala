@@ -57,9 +57,10 @@ class SubmissionService(
     formTemplateId: FormTemplateId,
     envelopeId: EnvelopeId,
     customerId: String,
-    noOfAttachments: Int
+    noOfAttachments: Int,
+    submissionRef: SubmissionRef
   ): FOpt[Submission] = {
-    val submission = buildSubmission(formId, formTemplateId, envelopeId, customerId, noOfAttachments)
+    val submission = buildSubmission(formId, formTemplateId, envelopeId, customerId, noOfAttachments, submissionRef)
     submissionRepo
       .upsert(submission)
       .map(_ => logger.info(s"Upserted Submission for ${formId.value}"))
@@ -138,7 +139,8 @@ class SubmissionService(
         submissionData.variables,
         submissionData.pdfData,
         submissionData.instructionPDFData,
-        submissionData.structuredFormData
+        submissionData.structuredFormData,
+        submissionRef
       )
       .map(model =>
         HandlebarsModelTree(
@@ -163,11 +165,12 @@ class SubmissionService(
     formTemplateId: FormTemplateId,
     envelopeId: EnvelopeId,
     customerId: String,
-    noOfAttachments: Int
+    noOfAttachments: Int,
+    submissionRef: SubmissionRef
   ) =
     Submission(
       submittedDate = timeProvider.localDateTime(),
-      submissionRef = SubmissionRef(envelopeId),
+      submissionRef = submissionRef,
       envelopeId = envelopeId,
       _id = SubmissionId(formId, envelopeId),
       noOfAttachments = noOfAttachments,

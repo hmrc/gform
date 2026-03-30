@@ -21,7 +21,7 @@ import uk.gov.hmrc.gform.Spec
 class SubmissionRefSpec extends Spec {
 
   "SubmissionRef.createSubmissionRef" should "generate submissionRef" in {
-    val submissionRef = SubmissionRef(envelopeId)
+    val submissionRef = SubmissionRef.noCustomReference(envelopeId)
 
     submissionRef.value should be("6FJX-HVQL-U4FD")
 

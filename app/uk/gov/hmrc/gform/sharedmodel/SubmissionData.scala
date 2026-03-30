@@ -31,7 +31,8 @@ case class SubmissionData(
   l: LangADT,
   maybeEmailAddress: Option[String],
   destinationEvaluation: DestinationEvaluation,
-  userSession: UserSession
+  userSession: UserSession,
+  submissionRef: SubmissionRef
 )
 
 object SubmissionData {

@@ -108,7 +108,7 @@ class DestinationsSubmitterSpec
       val response1 = HttpResponse(responseCode1, responseJson1, Map.empty[String, Seq[String]])
 
       val initialModel = DestinationsProcessorModelAlgebra
-        .createModel(FrontEndSubmissionVariables(JsNull), pdfData, None, structuredFormValue, form, None)
+        .createModel(FrontEndSubmissionVariables(JsNull), pdfData, None, structuredFormValue, form, None, submissionRef)
 
       val response1Model = HandlebarsDestinationResponse(handlebarsHttpApi1, response1)
       val accumulatedModel1 = DestinationsProcessorModelAlgebra.createDestinationResponse(response1Model)
