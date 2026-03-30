@@ -19,6 +19,7 @@ package uk.gov.hmrc.gform.scheduler.nrsOrchestrator
 import play.api.libs.json._
 import uk.gov.hmrc.crypto.{ Decrypter, Encrypter }
 import uk.gov.hmrc.gform.nrs.{ BusinessId, NRSAttachment }
+import uk.gov.hmrc.gform.save4later.EncryptedFormat
 
 final case class NrsOrchestratorAttachmentWorkItem(
   nrSubmissionId: String,
@@ -29,6 +30,6 @@ final case class NrsOrchestratorAttachmentWorkItem(
 
 object NrsOrchestratorAttachmentWorkItem {
   val format: OFormat[NrsOrchestratorAttachmentWorkItem] = Json.format[NrsOrchestratorAttachmentWorkItem]
-  def formatEncrypted(implicit jsonCrypto: Encrypter with Decrypter): OFormat[NrsOrchestratorAttachmentWorkItem] =
-    JsonCryptoUtils.formatEncrypted(format)(jsonCrypto)
+  def formatEncrypted(implicit jsonCrypto: Encrypter with Decrypter): Format[NrsOrchestratorAttachmentWorkItem] =
+    EncryptedFormat.formatEncrypted(jsonCrypto)(format)
 }

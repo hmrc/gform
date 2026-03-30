@@ -21,7 +21,7 @@ import uk.gov.hmrc.crypto.{ Crypted, Decrypter, Encrypter, PlainText }
 
 import scala.util.{ Failure, Success, Try }
 
-object EncyryptedFormat {
+object EncryptedFormat {
   def formatEncrypted[A](jsonCrypto: Encrypter with Decrypter)(implicit format: Format[A]): Format[A] = new Format[A] {
     override def reads(json: JsValue): JsResult[A] = json match {
       case JsString(encrypted) =>
