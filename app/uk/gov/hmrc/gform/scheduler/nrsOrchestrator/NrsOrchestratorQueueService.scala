@@ -59,6 +59,7 @@ class NrsOrchestratorQueueService(
               s"""NRS Orchestrator work-item failed due to NRS server failure.
                  |NRS Response Status: ${response.status}
                  |NRS Response Body: ${response.body}
+                 |Envelope id: ${workItem.envelopeId}
                  |WorkItem Id: ${nrsWorkItem.id}""".stripMargin
             )
           )
@@ -69,7 +70,8 @@ class NrsOrchestratorQueueService(
                  | Non 202, 422, 5xx response from NRS suggest gform failure.
                  | NRS Response status: ${response.status}.
                  | NRS response body: ${response.body}.
-                 | Envelope id: ${workItem.envelopeId}.""".stripMargin
+                 | Envelope id: ${workItem.envelopeId}
+                 | WorkItem Id: ${nrsWorkItem.id}""".stripMargin
             )
           )
         case response => Future.successful(response)
