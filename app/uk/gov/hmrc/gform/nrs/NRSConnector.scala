@@ -206,8 +206,8 @@ class NRSConnector(
     val headerData: JsObject = new JsObject(onSubmitHeaders.map(x => x._1 -> JsString(x._2)).toMap)
 
     def toBase64(str: String) = new String(Base64.getEncoder.encode(str.getBytes("UTF-8")), "UTF-8")
-
-    val url = url"$baseUrl/$submissionUrl"
+    val urlStr = s"$baseUrl/$submissionUrl"
+    val url = url"$urlStr"
 
     val searchKeys = Json.toJson(destinationResultData.searchKeys).as[JsObject]
 
@@ -290,7 +290,8 @@ class NRSConnector(
     notableEvent: String
   )(implicit hc: HeaderCarrier): Future[HttpResponse] = {
     val presignedUrl = attachment.getPresignedUrl(objectStoreModule)
-    val url = url"$baseUrl/$attachmentUrl"
+    val urlStr = s"$baseUrl/$attachmentUrl"
+    val url = url"$urlStr"
     presignedUrl
       .map { presignedUrl =>
         val body = AttachmentRequest(
