@@ -639,7 +639,8 @@ object Substituter {
       summarySection = t.summarySection(substitutions),
       emailParameters = t.emailParameters(substitutions),
       dataRetrieve = t.dataRetrieve(substitutions),
-      exitPages = t.exitPages(substitutions)
+      exitPages = t.exitPages(substitutions),
+      customSubmissionRef = t.customSubmissionRef(substitutions)
     )
 
   implicit def redirectSubstituter[A](implicit
@@ -664,5 +665,12 @@ object Substituter {
       `if` = t.`if`(substitutions),
       label = t.label(substitutions),
       exitMessage = t.exitMessage(substitutions)
+    )
+
+  implicit def customSubmissionRefSubstituter[A](implicit
+    ev: Substituter[A, Expr]
+  ): Substituter[A, CustomSubmissionRef] = (substitutions, t) =>
+    t.copy(
+      expr = t.expr(substitutions)
     )
 }
