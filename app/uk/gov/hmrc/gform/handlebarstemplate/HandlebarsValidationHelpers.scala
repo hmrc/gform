@@ -51,7 +51,7 @@ object HandlebarsValidationHelpers {
     refinedTokensFromPayload.diff(allValidFormFields ++ knownHelpersAndReservedWords)
   }
 
-  def extractSyntheticTokens(payload: String): Set[String] = {
+  private def extractSyntheticTokens(payload: String): Set[String] = {
     val tokenPattern = "\\{\\{\\s*#with[^}|]+\\|([a-zA-Z0-9]+)\\|\\s*}}".r
     tokenPattern.findAllMatchIn(payload).map(_.group(1)).toSet
   }
