@@ -17,32 +17,39 @@
 package uk.gov.hmrc.gform.handlebarstemplate
 
 import cats.implicits.catsSyntaxEq
+import com.github.jknack.handlebars.{ Handlebars, TagType, Template }
+import uk.gov.hmrc.gform.sharedmodel.form.FormId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ HandlebarsTemplateProcessorModel, UploadableConditioning }
+import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
+import uk.gov.hmrc.gform.sharedmodel.{ PdfContent, SubmissionRef }
+import uk.gov.hmrc.gform.submission.handlebars.{ FocussedHandlebarsModelTree, HandlebarsModelTree, HandlebarsTemplateProcessorHelpers, RecursiveHandlebarsTemplateProcessor }
+
+import scala.jdk.CollectionConverters._
 
 object HandlebarsValidationHelpers {
 
-  def extractTokensFromPayload(payload: String): Set[String] = {
-    val pattern = """\{\{([^}]*)}}""".r
-    pattern
-      .findAllMatchIn(payload)
-      .map(_.group(1))
-      // Exclude Handlebars comments
-      .filterNot(_.startsWith("!--"))
-      // Remove string literals to avoid extracting tokens from them
-      .map(_.replaceAll("'[^']+'", ""))
-      // Exclude the special token "." which refers to the current context
-      .filterNot(_ == ".")
-      // Split on dot and dash to separate tokens (e.g., "user.name" -> "user", "name")
+  def validateHandlebarsPayload(payload: String, formTemplate: FormTemplate): Set[String] = {
+    val handlebars: Handlebars = getHandlebarsInstance(formTemplate)
+    val conditionedPayload: String = UploadableConditioning.conditionAndValidate(Some(true), payload).getOrElse("")
+    val compiledTemplate: Template = handlebars.compileInline(conditionedPayload)
+
+    val allTokensAndVariables: List[String] =
+      (compiledTemplate.collect(TagType.VAR, TagType.SUB_EXPRESSION).asScala ++ compiledTemplate
+        .collectReferenceParameters()
+        .asScala).toList
+
+    val refinedTokensFromPayload: Set[String] = allTokensAndVariables
       .flatMap(_.split("[.-]"))
-      // Replace special characters with space (to keep tokens separate)
-      .map(_.replaceAll("[#/()';^=>*|]+", " "))
-      // Split on whitespace to get individual tokens
-      .flatMap(_.trim.split("\\s+"))
-      // Exclude pure numeric tokens as they're commonly used as literals
-      .filterNot(_.matches("^\\d+$"))
-      // Exclude Handlebars block parameters (e.g., "@index")
       .filterNot(_.startsWith("@"))
       .toSet
+
+    val syntheticFields: Set[String] = extractSyntheticTokens(payload)
+    val allValidFormFields: Set[String] = extractAllFormFields(formTemplate) ++ syntheticFields
+    val knownHelpersAndReservedWords: Set[String] = extractKnownHelpers(handlebars) ++ reservedWords
+
+    // Identify tokens in the payload that are not in the valid tokens set
+    refinedTokensFromPayload.diff(allValidFormFields ++ knownHelpersAndReservedWords)
   }
 
   def extractSyntheticTokens(payload: String): Set[String] = {
@@ -50,69 +57,9 @@ object HandlebarsValidationHelpers {
     tokenPattern.findAllMatchIn(payload).map(_.group(1)).toList.filterNot(_ === ".").toSet
   }
 
-  val knownHelpersAndReservedWords: Set[String] =
+  private val reservedWords: Set[String] =
     Set(
-      // Handlebars built-in helpers
-      "if",
-      "unless",
-      "each",
-      "with",
-      "lookup",
-      "else",
-      "log",
-      // GForms custom helpers
-      "either",
-      "toDesDate",
-      "yesNoToEtmpChoice",
-      "dateToEtmpDate",
-      "toEtmpDate",
-      "toISO8601Date",
-      "toISO8601DateTime",
-      "either",
-      "eitherExcludingBlanks",
-      "isSuccessCode",
-      "isNotSuccessCode",
-      "desCurrentDate",
-      "currentDate",
-      "currentTimestamp",
-      "currentMonth",
-      "greaterThan",
-      "lessThan",
-      "equal",
-      "isSigned",
-      "isAccepted",
-      "isAccepting",
-      "isReturning",
-      "isSubmitting",
-      "toEtmpLegalStatus",
-      "toEtmpDeclarationStatus",
-      "match",
-      "yesNoNull",
-      "booleanToYesNo",
-      "capitaliseFirst",
-      "indexedLookup",
-      "toDesAddressWithoutPostcodeFromArray",
-      "toDesAddressWithoutPostcode",
-      "removeEmptyAndGet",
-      "elementAt",
-      "stripCommas",
-      "stripSpaces",
-      "not",
-      "or",
-      "and",
-      "isNull",
-      "isNotNull",
-      "toEtmpParamSequence",
-      "toEtmpTelephoneNumber",
-      "exists",
-      "plus",
-      "base64Encode",
-      "normalisePostcode",
-      "keyedLookup",
-      "importBySubmissionReference",
-      // Reserved/special words
-      "formId",
-      "revealed",
+      "this",
       "street1",
       "street2",
       "street3",
@@ -125,13 +72,13 @@ object HandlebarsValidationHelpers {
       "town",
       "postcode",
       "country",
-      "as",
       "year",
       "month",
       "day",
+      "revealed",
       "choices",
       "choice",
-      "this",
+      "formId",
       "periodKey",
       "periodFrom",
       "periodTo",
@@ -154,18 +101,58 @@ object HandlebarsValidationHelpers {
       "customerId"
     )
 
-  def getAllFormFields(formTemplate: FormTemplate): List[String] =
-    formTemplate.formKind.allSections.flatMap { section =>
-      section.fold { page =>
-        page.page.allFormComponentIds.map(_.value)
-      } { repeatingPage =>
-        repeatingPage.page.allFormComponentIds.map(_.value)
-      } { addToList =>
-        addToList.addAnotherQuestion.id.value :: addToList.pages.toList.flatMap(
-          _.allFormComponentIds.map(_.value)
-        )
-      }
-    } ++ formTemplate.expressionsOutput.fold(List.empty[String])(
-      _.lookup.keys.map(_.id).toList
-    ) ++ formTemplate.destinations.allFormComponents.map(_.id.value)
+  private def extractAllFormFields(formTemplate: FormTemplate): Set[String] =
+    (
+      formTemplate.formKind.allSections.flatMap { section =>
+        section.fold { page =>
+          page.page.allFormComponentIds.map(_.value)
+        } { repeatingPage =>
+          repeatingPage.page.allFormComponentIds.map(_.value)
+        } { addToList =>
+          addToList.addAnotherQuestion.id.value :: addToList.pages.toList.flatMap(
+            _.allFormComponentIds.map(_.value)
+          )
+        }
+      } ++ formTemplate.expressionsOutput.fold(List.empty[String])(
+        _.lookup.keys.map(_.id).toList
+      ) ++ formTemplate.destinations.allFormComponents.map(_.id.value)
+    ).toSet
+
+  private def extractKnownHelpers(handlebars: Handlebars): Set[String] =
+    handlebars
+      .helpers()
+      .asScala
+      .map(_.getKey)
+      .filterNot(_.contains("$"))
+      .toSet
+
+  private def getHandlebarsInstance(formTemplate: FormTemplate): Handlebars = {
+    val emptyTree: HandlebarsModelTree = HandlebarsModelTree(
+      FormId(""),
+      SubmissionRef(""),
+      formTemplate,
+      PdfContent(""),
+      None,
+      StructuredFormValue.ObjectStructure(List.empty),
+      HandlebarsTemplateProcessorModel.empty
+    )
+
+    val helpers: HandlebarsTemplateProcessorHelpers =
+      new HandlebarsTemplateProcessorHelpers(
+        HandlebarsTemplateProcessorModel.empty,
+        emptyTree,
+        new DummyTemplateProcessor
+      )
+
+    new Handlebars().registerHelpers(helpers)
+  }
+
+  private class DummyTemplateProcessor extends RecursiveHandlebarsTemplateProcessor {
+    override def apply(
+      template: String,
+      accumulatedModel: HandlebarsTemplateProcessorModel,
+      focussedTree: FocussedHandlebarsModelTree
+    ): String = template
+  }
+
 }

@@ -17,6 +17,7 @@
 package uk.gov.hmrc.gform.handlebarstemplate
 
 import cats.implicits.catsSyntaxApplicativeId
+import com.github.jknack.handlebars.HandlebarsException
 import org.slf4j.LoggerFactory
 import play.api.libs.json.Json
 import play.api.mvc.ControllerComponents
@@ -77,24 +78,19 @@ class HandlebarsTemplateController(
       s"Validating Handlebars template for form template: ${formTemplate._id}, handlebars template id: ${handlebarsTemplate._id}"
     )
 
-    // Extract tokens and check against form fields
-    val tokens: Set[String] = extractTokensFromPayload(handlebarsTemplate.payload) -- knownHelpersAndReservedWords
-    val syntheticFields: Set[String] = extractSyntheticTokens(handlebarsTemplate.payload)
-    val allValidFormFields: Set[String] = getAllFormFields(formTemplate).toSet ++ syntheticFields
-
-    val missingFields: Set[String] = tokens -- allValidFormFields
-    if (missingFields.nonEmpty) {
-      logger.error(
-        s"Handlebars template validation failed for ${handlebarsTemplate._id.value}; missing fields (or incorrect helpers): ${missingFields
-          .mkString(", ")}"
-      )
-      Future.failed(
-        new IllegalArgumentException(
-          s"Invalid Handlebars template; missing fields (or incorrect helpers): ${missingFields.mkString(", ")}"
+    try {
+      val missingFields: Set[String] = validateHandlebarsPayload(handlebarsTemplate.payload, formTemplate)
+      if (missingFields.nonEmpty) {
+        throw new IllegalArgumentException(
+          s"Invalid Handlebars template; fields missing from form: ${missingFields.mkString(", ")}"
         )
-      )
-    } else
-      ().pure[Future]
+      } else
+        ().pure[Future]
+    } catch {
+      case he: HandlebarsException =>
+        Future.failed(new IllegalArgumentException(s"Invalid Handlebars template; error: ${he.getMessage}", he))
+      case e: Exception => Future.failed(e)
+    }
   }
 
   private def doTemplateUpsert(formTemplateRaw: FormTemplateRaw) =
