@@ -122,6 +122,7 @@ trait Rewriter {
           case InfoArchive(_, IncludeIfValue(includeIf), _, _, _, _, _, _)                                 => includeIf
           case PegaApi(_, IncludeIfValue(includeIf), _, _)                                                 => includeIf
           case NiRefundClaimApi(_, IncludeIfValue(includeIf), _, _, _, _, _, _, _)                         => includeIf
+          case NRSOrchestrator(_, IncludeIfValue(includeIf), _, _, _, _)                                   => includeIf
         }
       case _ => Nil
     }

@@ -555,6 +555,11 @@ object Substituter {
           rollNumber = d.rollNumber(substitutions),
           refundClaimReference = d.refundClaimReference(substitutions)
         )
+      case d: Destination.NRSOrchestrator =>
+        d.copy(
+          includeIf = d.includeIf(substitutions),
+          searchKeys = d.searchKeys.map { case (k, expr) => (k, expr(substitutions)) }
+        )
       case otherwise => otherwise
     }
 
