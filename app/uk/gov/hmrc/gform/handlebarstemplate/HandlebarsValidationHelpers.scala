@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.gform.handlebarstemplate
 
-import cats.implicits.catsSyntaxEq
 import com.github.jknack.handlebars.{ Handlebars, TagType, Template }
 import uk.gov.hmrc.gform.sharedmodel.form.FormId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
@@ -54,7 +53,7 @@ object HandlebarsValidationHelpers {
 
   def extractSyntheticTokens(payload: String): Set[String] = {
     val tokenPattern = "\\{\\{\\s*#with[^}|]+\\|([a-zA-Z0-9]+)\\|\\s*}}".r
-    tokenPattern.findAllMatchIn(payload).map(_.group(1)).toList.filterNot(_ === ".").toSet
+    tokenPattern.findAllMatchIn(payload).map(_.group(1)).toSet
   }
 
   private val reservedWords: Set[String] =
