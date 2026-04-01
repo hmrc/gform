@@ -82,7 +82,7 @@ class HandlebarsTemplateController(
       val missingFields: Set[String] = validateHandlebarsPayload(handlebarsTemplate.payload, formTemplate)
       if (missingFields.nonEmpty) {
         throw new IllegalArgumentException(
-          s"Invalid Handlebars template; fields not found in form: ${missingFields.mkString(", ")}"
+          s"Invalid Handlebars template; fields not found in form: ${missingFields.toList.sorted.mkString(", ")}"
         )
       } else
         ().pure[Future]
