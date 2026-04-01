@@ -16,21 +16,19 @@
 
 package uk.gov.hmrc.gform.handlebarstemplate
 
+import cats.implicits.catsSyntaxApplicativeId
+import com.github.jknack.handlebars.HandlebarsException
 import org.slf4j.LoggerFactory
 import play.api.libs.json.Json
 import play.api.mvc.ControllerComponents
 import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.core.FOpt
-import uk.gov.hmrc.gform.formtemplate.FormTemplateService
-import uk.gov.hmrc.gform.formtemplate.RequestHandlerAlg
-import uk.gov.hmrc.gform.sharedmodel.HandlebarsTemplate
-import uk.gov.hmrc.gform.sharedmodel.HandlebarsTemplateId
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateRaw
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateRawId
+import uk.gov.hmrc.gform.formtemplate.{ FormTemplateService, RequestHandlerAlg }
+import uk.gov.hmrc.gform.sharedmodel._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
-import scala.concurrent.ExecutionContext
-import scala.concurrent.Future
+import scala.concurrent.{ ExecutionContext, Future }
 
 class HandlebarsTemplateController(
   controllerComponents: ControllerComponents,
@@ -52,12 +50,47 @@ class HandlebarsTemplateController(
                               // do not reload template if this is the first upsert
                               case _: NoSuchElementException => None
                             }
+      formTemplateOpt <- formTemplateService.get(FormTemplateId(formTemplateIdStr)).map(Some(_)).recover {
+                           case _: NoSuchElementException => None
+                         }
+      _ <- formTemplateOpt match {
+             case Some(formTemplate) => validateHandlebarsTemplate(handleBarsTemplate, formTemplate)
+             case None =>
+               logger.warn(
+                 s"Form template not found for Handlebars template: ${handlebarsTemplateId.value}. Skipping validation."
+               )
+               Future.successful(())
+           }
       _ <- handlebarsTemplateAlgebra.save(handleBarsTemplate)
       _ <- formTemplateRawOpt match {
              case Some(formTemplateRaw) => doTemplateUpsert(formTemplateRaw)
              case None                  => Future.successful(())
            }
     } yield NoContent
+  }
+
+  private def validateHandlebarsTemplate(
+    handlebarsTemplate: HandlebarsTemplate,
+    formTemplate: FormTemplate
+  ): Future[Unit] = {
+    import HandlebarsValidationHelpers._
+    logger.info(
+      s"Validating Handlebars template for form template: ${formTemplate._id}, handlebars template id: ${handlebarsTemplate._id}"
+    )
+
+    try {
+      val missingFields: Set[String] = validateHandlebarsPayload(handlebarsTemplate.payload, formTemplate)
+      if (missingFields.nonEmpty) {
+        throw new IllegalArgumentException(
+          s"Invalid Handlebars template; fields not found in form: ${missingFields.toList.sorted.mkString(", ")}"
+        )
+      } else
+        ().pure[Future]
+    } catch {
+      case he: HandlebarsException =>
+        Future.failed(new IllegalArgumentException(s"Invalid Handlebars template; error: ${he.getMessage}", he))
+      case e: Exception => Future.failed(e)
+    }
   }
 
   private def doTemplateUpsert(formTemplateRaw: FormTemplateRaw) =
