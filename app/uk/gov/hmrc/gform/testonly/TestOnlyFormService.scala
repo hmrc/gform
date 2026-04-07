@@ -19,6 +19,7 @@ package uk.gov.hmrc.gform.testonly
 import play.api.libs.json._
 import play.api.mvc.Results
 import uk.gov.hmrc.gform.sharedmodel.form.Form
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplateRaw, FormTemplateRawId }
 import uk.gov.hmrc.gform.formtemplate.{ FormTemplateService, RequestHandlerAlg }
@@ -45,11 +46,16 @@ class TestOnlyFormService(
 )(implicit ec: ExecutionContext) {
 
   private def maybeReplaceDestinations(raw: FormTemplateRaw): FormTemplateRaw = {
-    val destinations = (raw.value \ "destinations").as[JsArray]
-    if (containTypes(destinations, List("hmrcIlluminate", "hmrcDms")))
-      replaceDestination(raw)
-    else
-      raw
+    val maybeDestinations: JsResult[JsArray] = (raw.value \ "destinations").validate[JsArray]
+
+    maybeDestinations match {
+      case JsError(_) => raw
+      case JsSuccess(destinations, _) =>
+        if (containTypes(destinations, List(Destination.dataStore, Destination.hmrcDms)))
+          replaceDestination(raw)
+        else
+          raw
+    }
   }
 
   private def replaceDestination(raw: FormTemplateRaw): FormTemplateRaw = {
