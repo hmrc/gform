@@ -170,7 +170,8 @@ class FileUploadService(
             submission.submissionRef,
             Dms,
             None,
-            None
+            None,
+            readyImmediately = true
           )
         else fileUploadConnector.routeEnvelope(RouteEnvelopeRequest(submission.envelopeId, "dfs", "DMS"))
     } yield ()

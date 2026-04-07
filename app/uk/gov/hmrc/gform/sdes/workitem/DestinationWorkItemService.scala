@@ -45,7 +45,8 @@ trait DestinationWorkItemAlgebra[F[_]] {
     submissionRef: SubmissionRef,
     destination: SdesDestination,
     filePrefix: Option[String],
-    submissionPrefix: Option[String]
+    submissionPrefix: Option[String],
+    readyImmediately: Boolean
   ): F[ObjectId]
 
   def search(
@@ -85,7 +86,8 @@ class DestinationWorkItemService(
     submissionRef: SubmissionRef,
     sdesDestination: SdesDestination,
     filePrefix: Option[String],
-    submissionPrefix: Option[String]
+    submissionPrefix: Option[String],
+    readyImmediately: Boolean
   ): Future[ObjectId] = {
     val correlationId = UUID.randomUUID().toString
     val sdesWorkItem =
@@ -98,19 +100,23 @@ class DestinationWorkItemService(
         filePrefix,
         submissionPrefix
       )
+
+    val initialState: SdesWorkItem => ProcessingStatus = if (readyImmediately) todo else deferred
+
     sdesDestination match {
       case SdesDestination.Dms | SdesDestination.PegaCaseflow =>
-        dmsWorkItemRepo.pushNew(sdesWorkItem, initialState = deferred).map(_.id)
+        dmsWorkItemRepo.pushNew(sdesWorkItem, initialState = initialState).map(_.id)
       case SdesDestination.HmrcIlluminate | SdesDestination.DataStore | SdesDestination.DataStoreLegacy =>
-        dataStoreWorkItemRepo.pushNew(sdesWorkItem, initialState = deferred).map(_.id)
+        dataStoreWorkItemRepo.pushNew(sdesWorkItem, initialState = initialState).map(_.id)
       case SdesDestination.InfoArchive =>
-        infoArchiveWorkItemRepo.pushNew(sdesWorkItem, initialState = deferred).map(_.id)
+        infoArchiveWorkItemRepo.pushNew(sdesWorkItem, initialState = initialState).map(_.id)
       case SdesDestination.DataLakehouse =>
-        dataLakehouseWorkItemRepo.pushNew(sdesWorkItem, initialState = deferred).map(_.id)
+        dataLakehouseWorkItemRepo.pushNew(sdesWorkItem, initialState = initialState).map(_.id)
     }
   }
 
   private def deferred(item: SdesWorkItem): ProcessingStatus = ProcessingStatus.Deferred
+  private def todo(item: SdesWorkItem): ProcessingStatus = ProcessingStatus.ToDo
 
   override def ready(workItems: List[(SdesDestination, ObjectId)]): Future[Unit] =
     workItems

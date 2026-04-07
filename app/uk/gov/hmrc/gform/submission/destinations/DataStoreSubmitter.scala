@@ -197,7 +197,8 @@ class DataStoreSubmitter(
                       submission.submissionRef,
                       destination,
                       filePrefix,
-                      None
+                      None,
+                      readyImmediately = false
                     )
     } yield OtherSdesDestinationResponse(destination, workItemId)
   }

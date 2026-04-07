@@ -113,7 +113,8 @@ class InfoArchiveSubmitter(
           submission.submissionRef,
           InfoArchive,
           None,
-          None
+          None,
+          readyImmediately = false
         )
       _ <- formService.updateFormStatus(submissionInfo.formId, Submitted)
     } yield OtherSdesDestinationResponse(InfoArchive, workItemId)

@@ -506,7 +506,8 @@ class SdesService(
              sdesSubmission.submissionRef,
              sdesDestination,
              sdesSubmission.filePrefix,
-             sdesSubmission.submissionPrefix
+             sdesSubmission.submissionPrefix,
+             readyImmediately = true
            )
       _ <-
         saveSdesSubmission(
