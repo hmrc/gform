@@ -269,11 +269,20 @@ class SdesModule(
       submissionRef: SubmissionRef,
       destination: SdesDestination,
       filePrefix: Option[String],
-      submissionPrefix: Option[String]
+      submissionPrefix: Option[String],
+      readyImmediately: Boolean
     ): FOpt[ObjectId] =
       fromFutureA(
         destinationWorkItemService
-          .pushWorkItem(envelopeId, formTemplateId, submissionRef, destination, filePrefix, submissionPrefix)
+          .pushWorkItem(
+            envelopeId,
+            formTemplateId,
+            submissionRef,
+            destination,
+            filePrefix,
+            submissionPrefix,
+            readyImmediately
+          )
       )
 
     override def search(

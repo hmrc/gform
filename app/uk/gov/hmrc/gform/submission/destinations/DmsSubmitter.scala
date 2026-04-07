@@ -95,7 +95,8 @@ class DmsSubmitter(
             submission.submissionRef,
             hmrcDms.routing,
             None,
-            hmrcDms.submissionPrefix
+            hmrcDms.submissionPrefix,
+            readyImmediately = false
           )
       envelopeDetails <-
         success(
