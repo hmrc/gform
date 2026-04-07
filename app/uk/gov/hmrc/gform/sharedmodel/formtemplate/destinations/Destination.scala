@@ -118,7 +118,7 @@ object Destination {
   ) extends Destination with DestinationWithCustomerCaseflow {
     def roboticsFileName(fileNamePrefix: String, roboticsFileExtension: String): String =
       if (roboticsAsAttachment.getOrElse(false)) {
-        s"$fileNamePrefix." + roboticsFileExtension
+        s"$fileNamePrefix.xhtml"
       } else {
         s"$fileNamePrefix-robotic." + roboticsFileExtension
       }
