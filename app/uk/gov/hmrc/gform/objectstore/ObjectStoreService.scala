@@ -346,7 +346,7 @@ class ObjectStoreService(
         .getOrElse(Future.unit)
 
     def uploadMetadataXmlF: Future[Unit] = {
-      val reconciliationId = ReconciliationId.create(submission.submissionRef)
+      val reconciliationId = ReconciliationId.create(submission.submissionRef, hmrcDms.submissionPrefix)
 
       val includeCustomerSummaryFileName =
         hmrcDms.instructionPdfFields.map(_ => customerSummaryFileName)

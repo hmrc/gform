@@ -121,7 +121,7 @@ class FileUploadService(
         .getOrElse(Future.successful(()))
 
     def uploadMetadataXmlF: Future[Unit] = {
-      val reconciliationId = ReconciliationId.create(submission.submissionRef)
+      val reconciliationId = ReconciliationId.create(submission.submissionRef, None)
       val metadataXml = MetadataXml.xmlDec + "\n" + MetadataXml
         .getXml(
           submission,
