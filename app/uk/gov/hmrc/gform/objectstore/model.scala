@@ -50,9 +50,13 @@ case class ReconciliationId(value: String) extends AnyVal {
 
 object ReconciliationId {
 
-  def create(submissionRef: SubmissionRef)(implicit now: Now[LocalDateTime]): ReconciliationId = {
+  def create(submissionRef: SubmissionRef, maybeSubmissionPrefix: Option[String])(implicit
+    now: Now[LocalDateTime]
+  ): ReconciliationId = {
     val dateFormatter = now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"))
-    ReconciliationId(submissionRef.withoutHyphens + "-" + dateFormatter)
+    ReconciliationId(
+      s"${maybeSubmissionPrefix.fold("")(prefix => s"$prefix-")}${submissionRef.withoutHyphens}-$dateFormatter"
+    )
   }
 }
 

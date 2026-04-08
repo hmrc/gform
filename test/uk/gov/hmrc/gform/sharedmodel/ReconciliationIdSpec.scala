@@ -25,14 +25,22 @@ import uk.gov.hmrc.gform.typeclasses.Now
 class ReconciliationIdSpec extends Spec {
 
   "ReconciliationId.create" should "generate reconciliationId based on submissionRef and current time" in {
-
     implicit val now = Now(LocalDateTime.of(2017, 1, 31, 13, 53, 45))
 
     val submissionRef = SubmissionRef.noCustomReference(envelopeId)
 
-    val res = ReconciliationId.create(submissionRef)
+    val res = ReconciliationId.create(submissionRef, None)
 
     res.value should be("6FJXHVQLU4FD-20170131135345")
+  }
 
+  it should "generate reconciliationId based on submissionRef, current time and prefix" in {
+    implicit val now = Now(LocalDateTime.of(2017, 1, 31, 13, 53, 45))
+
+    val submissionRef = SubmissionRef.noCustomReference(envelopeId)
+
+    val res = ReconciliationId.create(submissionRef, Some("prefix"))
+
+    res.value should be("prefix-6FJXHVQLU4FD-20170131135345")
   }
 }
