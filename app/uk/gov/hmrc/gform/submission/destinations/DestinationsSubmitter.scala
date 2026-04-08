@@ -113,8 +113,19 @@ class DestinationsSubmitter[M[_]: Monad](
           for {
             _ <- cleanUp(updatedResponseList)
             _ <- cleanUpNrsOrchestrator(updatedResponseList)
+            _ <- cleanUpAsyncHandlebars(updatedResponseList)
           } yield ()
         }
+    }
+  }
+  private def cleanUpAsyncHandlebars(forCleanup: List[DestinationResponse]): M[List[Unit]] = {
+    val data: List[ObjectId] = forCleanup.collect { case d: AsyncHandlebarsDestinationResponse =>
+      d.workItemId
+    }
+
+    data.traverse { workItemId =>
+      logger.info(s"Deleting deferred asyncHandlebarsHttpApi work item ${workItemId.toHexString}")
+      workItemService.deleteAsyncHandlebarsWorkItem(workItemId)
     }
   }
 

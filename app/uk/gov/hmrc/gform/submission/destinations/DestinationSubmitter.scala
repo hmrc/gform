@@ -57,7 +57,8 @@ class DestinationSubmitter[M[_]](
   handlebarsTemplateProcessor: HandlebarsTemplateProcessor = RealHandlebarsTemplateProcessor,
   pegaSubmitterAlgebra: PegaSubmitterAlgebra[M],
   niRefundSubmitterAlgebra: NiRefundSubmitterAlgebra[M],
-  nrsConnector: NRSConnector
+  nrsConnector: NRSConnector,
+  asyncHttpWorkItemSubmitter: AsyncHttpWorkItemSubmitter[M]
 )(implicit monadError: MonadError[M, Throwable], futureConverter: FutureConverter[M])
     extends DestinationSubmitterAlgebra[M] {
 
@@ -197,6 +198,8 @@ class DestinationSubmitter[M[_]](
           l
         )
       case d: Destination.HandlebarsHttpApi => submitToHandlebars(d, accumulatedModel, modelTree, submissionInfo)
+      case d: Destination.AsyncHandlebarsHttpApi =>
+        submitToAsyncHandlebars(d, accumulatedModel, modelTree, submissionInfo)
       case d: Destination.StateTransition =>
         stateTransitionAlgebra(d, submissionInfo.formId).map(_ => DestinationResponse.NoResponse)
       case d: Destination.Log => log(d, accumulatedModel, modelTree).map(_ => DestinationResponse.NoResponse)
@@ -431,6 +434,22 @@ class DestinationSubmitter[M[_]](
             createSuccessResponse(d, response)
         }
       }
+
+  private def submitToAsyncHandlebars(
+    d: Destination.AsyncHandlebarsHttpApi,
+    accumulatedModel: HandlebarsTemplateProcessorModel,
+    modelTree: HandlebarsModelTree,
+    submissionInfo: DestinationSubmissionInfo
+  )(implicit hc: HeaderCarrier): M[DestinationResponse] =
+    monadError.handleErrorWith(
+      asyncHttpWorkItemSubmitter(d, accumulatedModel, modelTree, submissionInfo, handlebarsTemplateProcessor)
+    ) { msg =>
+      if (d.failOnError)
+        raiseDestinationError(submissionInfo.formId, d.id, msg)
+      else {
+        logErrorInMonad(submissionInfo.formId, d.id, "Failed execution but has 'failOnError' set to false. Ignoring.")
+      }
+    }
 
   private def submitToNrsOrchestrator(
     d: Destination.NRSOrchestrator,

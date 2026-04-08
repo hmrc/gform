@@ -19,6 +19,7 @@ package uk.gov.hmrc.gform.sdes
 import com.mongodb.client.result.UpdateResult
 import org.bson.types.ObjectId
 import org.mongodb.scala.model.{ IndexModel, IndexOptions, Indexes }
+import uk.gov.hmrc.crypto.{ Decrypter, Encrypter }
 import uk.gov.hmrc.gform.akka.AkkaModule
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.core.{ FOpt, fromFutureA }
@@ -27,6 +28,7 @@ import uk.gov.hmrc.gform.envelope.EnvelopeModule
 import uk.gov.hmrc.gform.mongo.MongoModule
 import uk.gov.hmrc.gform.objectstore.ObjectStoreModule
 import uk.gov.hmrc.gform.repo.Repo
+import uk.gov.hmrc.gform.scheduler.asynchandlebars.{ AsyncHandlebarsWorkItem, AsyncHandlebarsWorkItemRepo }
 import uk.gov.hmrc.gform.scheduler.datalakehouse.DataLakehouseWorkItemRepo
 import uk.gov.hmrc.gform.scheduler.datastore.DataStoreWorkItemRepo
 import uk.gov.hmrc.gform.scheduler.dms.DmsWorkItemRepo
@@ -39,7 +41,7 @@ import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
 import uk.gov.hmrc.gform.sharedmodel.email.EmailTemplateId
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.NrsOrchestratorDestinationResponse
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ AsyncHandlebarsDestinationResponse, NrsOrchestratorDestinationResponse }
 import uk.gov.hmrc.gform.sharedmodel.notifier.NotifierEmailAddress
 import uk.gov.hmrc.gform.sharedmodel.sdes._
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
@@ -58,7 +60,8 @@ class SdesModule(
   envelopeModule: EnvelopeModule,
   emailModule: EmailModule,
   nrsOrchestratorWorkItemRepo: NrsOrchestratorWorkItemRepo,
-  nrsOrchestratorAttachmentWorkItemRepo: NrsOrchestratorAttachmentWorkItemRepo
+  nrsOrchestratorAttachmentWorkItemRepo: NrsOrchestratorAttachmentWorkItemRepo,
+  jsonCrypto: Encrypter with Decrypter
 )(implicit ex: ExecutionContext) {
 
   private val fileLocationUrl = configModule.sdesConfig.fileLocationUrl
@@ -104,6 +107,7 @@ class SdesModule(
   val dataStoreWorkItemRepo = new DataStoreWorkItemRepo(mongoModule.mongoComponent)
   val infoArchiveWorkItemRepo = new InfoArchiveWorkItemRepo(mongoModule.mongoComponent)
   val dataLakehouseWorkItemRepo = new DataLakehouseWorkItemRepo(mongoModule.mongoComponent)
+  val asyncHandlebarsWorkItemRepo = new AsyncHandlebarsWorkItemRepo(mongoModule.mongoComponent)(ex, jsonCrypto)
 
   val destinationWorkItemService: DestinationWorkItemAlgebra[Future] =
     new DestinationWorkItemService(
@@ -111,7 +115,8 @@ class SdesModule(
       dataStoreWorkItemRepo,
       infoArchiveWorkItemRepo,
       dataLakehouseWorkItemRepo,
-      nrsOrchestratorWorkItemRepo
+      nrsOrchestratorWorkItemRepo,
+      asyncHandlebarsWorkItemRepo
     )
 
   val destinationWorkItemController: DestinationWorkItemController =
@@ -317,6 +322,15 @@ class SdesModule(
 
     override def readyNrsOrchestrator(workItems: List[NrsOrchestratorDestinationResponse]): FOpt[Unit] =
       fromFutureA(destinationWorkItemService.readyNrsOrchestrator(workItems))
+
+    override def pushAsyncHandlebarsWorkItem(workItem: AsyncHandlebarsWorkItem): FOpt[ObjectId] =
+      fromFutureA(destinationWorkItemService.pushAsyncHandlebarsWorkItem(workItem))
+
+    override def readyAsyncHandlebarsWorkItem(workItems: List[AsyncHandlebarsDestinationResponse]): FOpt[Unit] =
+      fromFutureA(destinationWorkItemService.readyAsyncHandlebarsWorkItem(workItems))
+
+    override def deleteAsyncHandlebarsWorkItem(oid: ObjectId): FOpt[Unit] =
+      fromFutureA(destinationWorkItemService.deleteAsyncHandlebarsWorkItem(oid))
   }
 
 }

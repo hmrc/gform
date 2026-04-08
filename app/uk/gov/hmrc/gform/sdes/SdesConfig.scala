@@ -31,6 +31,10 @@ final case class SdesConfig(
   dataLakehouse: SdesRouting
 )
 
+object SdesConfig {
+  val empty: SdesRouting = SdesRouting("", "", "")
+}
+
 final case class SdesKeyAndCredentialsApiConfig(basePath: String)
 
 final case class WelshDefaults(classificationType: String, businessArea: String)

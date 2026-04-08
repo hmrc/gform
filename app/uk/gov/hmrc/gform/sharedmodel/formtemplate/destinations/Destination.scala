@@ -169,6 +169,19 @@ object Destination {
     convertSingleQuotes: Option[Boolean]
   ) extends Destination
 
+  case class AsyncHandlebarsHttpApi(
+    id: DestinationId,
+    profile: ProfileName,
+    uri: String,
+    method: HttpMethod,
+    payload: Option[String],
+    payloadType: TemplateType,
+    includeIf: DestinationIncludeIf,
+    failOnError: Boolean,
+    multiRequestPayload: Boolean,
+    convertSingleQuotes: Option[Boolean]
+  ) extends Destination
+
   case class StateTransition(
     id: DestinationId,
     requiredState: FormStatus,
@@ -237,6 +250,7 @@ object Destination {
   val infoArchive: String = "hmrcInfoArchive"
   val submissionConsolidator: String = "submissionConsolidator"
   val handlebarsHttpApi: String = "handlebarsHttpApi"
+  val asyncHandlebarsHttpApi: String = "asyncHandlebarsHttpApi"
   val stateTransition: String = "stateTransition"
   val log: String = "log"
   val email: String = "email"
@@ -256,6 +270,7 @@ object Destination {
         infoArchive            -> UploadableInfoArchiveDestination.reads,
         submissionConsolidator -> UploadableSubmissionConsolidator.reads,
         handlebarsHttpApi      -> UploadableHandlebarsHttpApiDestination.reads,
+        asyncHandlebarsHttpApi -> UploadableHandlebarsHttpApiDestination.asyncReads,
         stateTransition        -> UploadableStateTransitionDestination.reads,
         log                    -> UploadableLogDestination.reads,
         email                  -> UploadableEmailDestination.reads,
@@ -524,6 +539,26 @@ case class UploadableHandlebarsHttpApiDestination(
         multiRequestPayload.getOrElse(false),
         convertSingleQuotes
       )
+
+  def toAsyncHandlebarsHttpApiDestination: Either[String, Destination.AsyncHandlebarsHttpApi] =
+    for {
+      cvp   <- addErrorInfo(id, "payload")(conditionAndValidate(convertSingleQuotes, payload))
+      cvii  <- addErrorInfo(id, convertSingleQuotes, includeIf)
+      cvuri <- addErrorInfo(id, "uri")(condition(convertSingleQuotes, uri))
+    } yield Destination
+      .AsyncHandlebarsHttpApi(
+        id,
+        profile,
+        cvuri,
+        method,
+        cvp,
+        payloadType.getOrElse(TemplateType.JSON),
+        cvii,
+        failOnError.getOrElse(true),
+        multiRequestPayload.getOrElse(false),
+        convertSingleQuotes
+      )
+
 }
 
 object UploadableHandlebarsHttpApiDestination {
@@ -531,6 +566,12 @@ object UploadableHandlebarsHttpApiDestination {
     private val d = derived.reads[UploadableHandlebarsHttpApiDestination]()
     override def reads(json: JsValue): JsResult[Destination.HandlebarsHttpApi] =
       d.reads(json).flatMap(_.toHandlebarsHttpApiDestination.fold(JsError(_), JsSuccess(_)))
+  }
+
+  implicit val asyncReads: Reads[Destination.AsyncHandlebarsHttpApi] = new Reads[Destination.AsyncHandlebarsHttpApi] {
+    private val d = derived.reads[UploadableHandlebarsHttpApiDestination]()
+    override def reads(json: JsValue): JsResult[Destination.AsyncHandlebarsHttpApi] =
+      d.reads(json).flatMap(_.toAsyncHandlebarsHttpApiDestination.fold(JsError(_), JsSuccess(_)))
   }
 }
 

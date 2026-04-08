@@ -210,7 +210,8 @@ class ApplicationModule(context: Context)
       envelopeModule,
       emailModule,
       nrsOrchestratorNotificationRepository,
-      nrsOrchestratorAttachmentNotificationRepository
+      nrsOrchestratorAttachmentNotificationRepository,
+      jsonCrypto
     )
 
   private val fileUploadModule =

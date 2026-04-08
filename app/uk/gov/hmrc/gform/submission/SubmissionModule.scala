@@ -36,7 +36,7 @@ import uk.gov.hmrc.gform.nrs.NRSConnector
 import uk.gov.hmrc.gform.objectstore.ObjectStoreModule
 import uk.gov.hmrc.gform.repo.{ Repo, RepoAlgebra }
 import uk.gov.hmrc.gform.sdes.SdesModule
-import uk.gov.hmrc.gform.submission.destinations.{ DataStoreSubmitter, DestinationModule, DestinationSubmitter, DestinationsSubmitter, DestinationsSubmitterAlgebra, DmsSubmitter, InfoArchiveSubmitter, NiRefundSubmitter, PegaSubmitter, StateTransitionService }
+import uk.gov.hmrc.gform.submission.destinations.{ DataStoreSubmitter, DestinationModule, DestinationSubmitter, DestinationsSubmitter, DestinationsSubmitterAlgebra, DmsSubmitter, InfoArchiveSubmitter, NiRefundSubmitter, PegaSubmitter, RealAsyncHttpWorkItemSubmitter, StateTransitionService }
 import uk.gov.hmrc.gform.submissionconsolidator.SubmissionConsolidatorModule
 import uk.gov.hmrc.gform.wshttp.WSHttpModule
 import uk.gov.hmrc.http.client.HttpClientV2
@@ -103,6 +103,10 @@ class SubmissionModule(
     formModule.fOptFormService
   )
 
+  val asyncHttpWorkItemSubmitter = new RealAsyncHttpWorkItemSubmitter(
+    sdesModule.foptDestinationWorkItemService
+  )
+
   private val pegaSubmitter = new PegaSubmitter(
     hipModule.getConnector
   )
@@ -150,7 +154,8 @@ class SubmissionModule(
     configModule.sdesConfig,
     pegaSubmitterAlgebra = pegaSubmitter,
     niRefundSubmitterAlgebra = niRefundSubmitter,
-    nrsConnector = nrsConnector
+    nrsConnector = nrsConnector,
+    asyncHttpWorkItemSubmitter = asyncHttpWorkItemSubmitter
   )
 
   private val destinationsSubmitter: DestinationsSubmitterAlgebra[FOpt] = new DestinationsSubmitter(
