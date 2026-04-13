@@ -1002,6 +1002,7 @@ object DataRetrieveDefinitions {
       `if`                <- DataRetrieve.optOption[IncludeIf](json, "if")
       maxFailedAttempts   <- DataRetrieve.optOption[Int](json, "maxFailedAttempts")
       failureResetMinutes <- DataRetrieve.optOption[Int](json, "failureCountResetMinutes")
+      callOnNoChange      <- DataRetrieve.optOption[Boolean](json, "callOnNoChange").map(_.getOrElse(false))
     } yield DataRetrieve(
       tpe = typeValue,
       id = idValue,
@@ -1010,7 +1011,8 @@ object DataRetrieveDefinitions {
       params = params,
       `if` = `if`,
       maxFailedAttempts = maxFailedAttempts,
-      failureCountResetMinutes = failureResetMinutes
+      failureCountResetMinutes = failureResetMinutes,
+      callOnNoChange = callOnNoChange
     )
 
 }

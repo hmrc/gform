@@ -2033,9 +2033,29 @@ object FormTemplateValidator {
     val pageDataRetrieves = pages.flatMap(_.dataRetrieves()).map(_.id)
     val ids = formTemplate.dataRetrieve.fold(pageDataRetrieves)(dr => pageDataRetrieves ++ dr.map(_.id).toList)
     val duplicates = ids.groupBy(identity).collect { case (fId, List(_, _, _*)) => fId }.toSet
-    duplicates.isEmpty.validationResult(
+    val duplicateIdsCheck: ValidationResult = duplicates.isEmpty.validationResult(
       s"Some data retrieve ids are defined more than once: ${duplicates.toList.sortBy(_.value).map(_.value)}"
     )
+
+    val callOnNoChangeCheck: List[ValidationResult] = pages
+      .flatMap(page => page.dataRetrieves().map(dr => (page, dr)))
+      .filter(_._2.callOnNoChange)
+      .flatMap { case (page, dr) =>
+        dr.params
+          .collect { case DataRetrieve.ParamExpr(_, FormCtx(fcId)) => fcId }
+          .map(fcId => page.allFormComponentIds -> fcId)
+      }
+      .filterNot { case (componentIdsOnPage, fcId) =>
+        componentIdsOnPage.contains(fcId)
+      }
+      .map(_._2)
+      .map(fcId =>
+        Invalid(
+          s"Form component '${fcId.value}' must be on the same page as the data retrieve if callOnNoChange is true."
+        )
+      )
+
+    (callOnNoChangeCheck :+ duplicateIdsCheck).combineAll
   }
 
   def validateDataRetrieveBlockAttributes(formTemplate: FormTemplate, pages: List[Page]): ValidationResult = {
@@ -2043,8 +2063,8 @@ object FormTemplateValidator {
     val allDataRetrieves = formTemplate.dataRetrieve.fold(pageDataRetrieves)(drs => pageDataRetrieves ++ drs.toList)
 
     val invalid = allDataRetrieves.collect {
-      case DataRetrieve(_, id, _, _, _, _, Some(_), None) => id
-      case DataRetrieve(_, id, _, _, _, _, None, Some(_)) => id
+      case DataRetrieve(_, id, _, _, _, _, Some(_), None, _) => id
+      case DataRetrieve(_, id, _, _, _, _, None, Some(_), _) => id
     }
 
     invalid.isEmpty.validationResult(
