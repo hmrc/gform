@@ -191,6 +191,12 @@ object FormTemplateValidator {
       fc.id
     }.toSet
 
+    val nonExpressionComponentIds: Set[FormComponentId] = formTemplate.formComponents {
+      case fc @ IsInformationMessage(_) => fc.id
+      case fc @ IsTable(_)              => fc.id
+      case fc @ IsMiniSummaryList(_)    => fc.id
+    }.toSet
+
     val allChoiceCheckboxIds: Set[FormComponentId] = formTemplate.formComponents {
       case fc @ IsChoice(choice: Choice) if choice.`type` === Checkbox =>
         fc.id
@@ -341,6 +347,10 @@ object FormTemplateValidator {
         Invalid(s"${path.path}: $formComponentId is not a Multiline Text field (Text Area) id in the form")
       case ReferenceInfo.LookupOpsExpr(path, LookupOps(FormCtx(formComponentId), _)) if !allFcIds(formComponentId) =>
         invalid(path, formComponentId)
+      case ReferenceInfo.FormCtxExpr(path, FormCtx(formComponentId)) if nonExpressionComponentIds(formComponentId) =>
+        Invalid(
+          s"${path.path}: '$formComponentId' is an info, table or miniSummaryList field and cannot be used in an expression"
+        )
       case _ => Valid
     }
 
@@ -568,6 +578,36 @@ object FormTemplateValidator {
     }
 
     Monoid.combineAll(topLevelValidations ++ formTemplateValidations)
+  }
+
+  def validateNonExpressionComponentsInBooleanExprs(
+    formTemplate: FormTemplate,
+    booleanExprSubstitutions: BooleanExprSubstitutions
+  ): ValidationResult = {
+    val nonExpressionComponentIds: Set[FormComponentId] = formTemplate.formComponents {
+      case fc @ IsInformationMessage(_) => fc.id
+      case fc @ IsTable(_)              => fc.id
+      case fc @ IsMiniSummaryList(_)    => fc.id
+    }.toSet
+
+    def fcIdsFromExprs(booleanExpr: BooleanExpr): List[FormComponentId] =
+      implicitly[LeafExpr[BooleanExpr]]
+        .exprs(TemplatePath.root, booleanExpr)
+        .flatMap(_.referenceInfos)
+        .collect { case ReferenceInfo.FormCtxExpr(_, FormCtx(fcId)) => fcId }
+
+    def validateFcId(fcId: FormComponentId, description: String): ValidationResult =
+      if (nonExpressionComponentIds(fcId))
+        Invalid(
+          s"$description: '$fcId' is an info, table or miniSummaryList field and cannot be used in an expression"
+        )
+      else Valid
+
+    val topLevelValidations = booleanExprSubstitutions.expressions.toList.flatMap { case (booleanExprId, booleanExpr) =>
+      fcIdsFromExprs(booleanExpr).map(fcId => validateFcId(fcId, s"booleanExpressions.${booleanExprId.id}"))
+    }
+
+    Monoid.combineAll(topLevelValidations)
   }
 
   private def fcIdsWithDateOffsetFromDateExpr(dateExpr: DateExpr): List[FormComponentId] = dateExpr match {

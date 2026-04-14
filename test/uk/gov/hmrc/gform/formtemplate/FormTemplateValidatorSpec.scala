@@ -663,6 +663,72 @@ class FormTemplateValidatorSpec
             )
           ),
           Valid
+        ),
+        (
+          List(
+            mkSectionNonRepeatingPage(
+              name = "page1",
+              formComponents = List(
+                mkInfoMessageComponent("info", "Some info text"),
+                mkFormComponent(
+                  "expressionsField",
+                  InformationMessage(
+                    StandardInfo,
+                    SmartString(toLocalisedString("{0}"), List(FormCtx(FormComponentId("info"))))
+                  ),
+                  false
+                )
+              ),
+              pageId = Some(PageId("page1"))
+            )
+          ),
+          Invalid(
+            "sections.fields.[id=expressionsField].infoText: 'info' is an info, table or miniSummaryList field and cannot be used in an expression"
+          )
+        ),
+        (
+          List(
+            mkSectionNonRepeatingPage(
+              name = "page1",
+              formComponents = List(
+                mkTableComponent("table"),
+                mkFormComponent(
+                  "expressionsField",
+                  InformationMessage(
+                    StandardInfo,
+                    SmartString(toLocalisedString("{0}"), List(FormCtx(FormComponentId("table"))))
+                  ),
+                  false
+                )
+              ),
+              pageId = Some(PageId("page1"))
+            )
+          ),
+          Invalid(
+            "sections.fields.[id=expressionsField].infoText: 'table' is an info, table or miniSummaryList field and cannot be used in an expression"
+          )
+        ),
+        (
+          List(
+            mkSectionNonRepeatingPage(
+              name = "page1",
+              formComponents = List(
+                mkMiniSummaryListComponent("miniSummaryList"),
+                mkFormComponent(
+                  "expressionsField",
+                  InformationMessage(
+                    StandardInfo,
+                    SmartString(toLocalisedString("{0}"), List(FormCtx(FormComponentId("miniSummaryList"))))
+                  ),
+                  false
+                )
+              ),
+              pageId = Some(PageId("page1"))
+            )
+          ),
+          Invalid(
+            "sections.fields.[id=expressionsField].infoText: 'miniSummaryList' is an info, table or miniSummaryList field and cannot be used in an expression"
+          )
         )
       )
       forAll(table) { (sections, expected) =>
@@ -2621,6 +2687,89 @@ class FormTemplateValidatorSpec
         FormTemplateValidator.validateDateExprWithOffsetInBooleanExprs(
           formTemplate,
           BooleanExprSubstitutions(Map.empty)
+        ) shouldBe expected
+      }
+    }
+  }
+
+  "validateNonExpressionComponentsInBooleanExprs" should {
+    "validate that info, table and miniSummaryList fields are not used in top-level boolean expressions" in {
+      val table = Table(
+        ("sections", "booleanExprSubstitutions", "expected"),
+        (
+          List(
+            mkSectionNonRepeatingPage(
+              name = "page1",
+              formComponents = List(
+                mkFormComponent("textField", Text(ShortText.default, Value), true),
+                mkInfoMessageComponent("infoField", "Some info")
+              ),
+              pageId = Some(PageId("page1"))
+            )
+          ),
+          BooleanExprSubstitutions(
+            Map(BooleanExprId("myExpr") -> Equals(FormCtx(FormComponentId("textField")), Constant("yes")))
+          ),
+          Valid
+        ),
+        (
+          List(
+            mkSectionNonRepeatingPage(
+              name = "page1",
+              formComponents = List(
+                mkInfoMessageComponent("infoField", "Some info")
+              ),
+              pageId = Some(PageId("page1"))
+            )
+          ),
+          BooleanExprSubstitutions(
+            Map(BooleanExprId("myExpr") -> Equals(FormCtx(FormComponentId("infoField")), Constant("yes")))
+          ),
+          Invalid(
+            "booleanExpressions.myExpr: 'infoField' is an info, table or miniSummaryList field and cannot be used in an expression"
+          )
+        ),
+        (
+          List(
+            mkSectionNonRepeatingPage(
+              name = "page1",
+              formComponents = List(
+                mkTableComponent("tableField")
+              ),
+              pageId = Some(PageId("page1"))
+            )
+          ),
+          BooleanExprSubstitutions(
+            Map(BooleanExprId("myExpr") -> Equals(FormCtx(FormComponentId("tableField")), Constant("yes")))
+          ),
+          Invalid(
+            "booleanExpressions.myExpr: 'tableField' is an info, table or miniSummaryList field and cannot be used in an expression"
+          )
+        ),
+        (
+          List(
+            mkSectionNonRepeatingPage(
+              name = "page1",
+              formComponents = List(
+                mkMiniSummaryListComponent("mslField")
+              ),
+              pageId = Some(PageId("page1"))
+            )
+          ),
+          BooleanExprSubstitutions(
+            Map(BooleanExprId("myExpr") -> Equals(FormCtx(FormComponentId("mslField")), Constant("yes")))
+          ),
+          Invalid(
+            "booleanExpressions.myExpr: 'mslField' is an info, table or miniSummaryList field and cannot be used in an expression"
+          )
+        )
+      )
+
+      forAll(table) { (sections, booleanExprSubstitutions, expected) =>
+        val formTemplate = mkFormTemplate(sections)
+        FormTemplateValidator.validateNonExpressionComponentsInBooleanExprs(
+          formTemplate,
+          booleanExprSubstitutions
         ) shouldBe expected
       }
     }
