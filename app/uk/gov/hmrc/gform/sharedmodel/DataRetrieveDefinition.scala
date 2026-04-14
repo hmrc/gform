@@ -952,6 +952,32 @@ object DataRetrieveDefinitions {
     )
   )
 
+  private val ftaManageEmails = DataRetrieveDefinition(
+    DataRetrieve.Type("ftaManageEmails"),
+    Attr.FromArray(
+      List(
+        AttributeInstruction(
+          DataRetrieve.Attribute("primaryEmail"),
+          ConstructAttribute.AsIs(Fetch(List("primaryEmail")))
+        ),
+        AttributeInstruction(
+          DataRetrieve.Attribute("secondaryEmail"),
+          ConstructAttribute.AsIs(Fetch(List("secondaryEmail")))
+        )
+      )
+    ),
+    List(
+      Parameter("eori")
+    ),
+    Map(
+      DataRetrieve.Attribute("primaryEmail")    -> DataRetrieve.AttrType.String,
+      DataRetrieve.Attribute("secondaryEmail") -> DataRetrieve.AttrType.String
+    ),
+    Some(
+      "https://admin.tax.service.gov.uk/integration-hub/apis/view-specification/a62f3c98-ec18-458a-a1a9-f959e6f1051e#section/Service-Description"
+    )
+  )
+
   val staticDefinitions = DataRetrieveDefinitions(
     List(
       validateBankDetails,
@@ -970,7 +996,8 @@ object DataRetrieveDefinitions {
       delegatedAgentAuthVat,
       delegatedAgentAuthPaye,
       niRefundClaim,
-      caseflowCaseDetails
+      caseflowCaseDetails,
+      ftaManageEmails
     )
   )
 
