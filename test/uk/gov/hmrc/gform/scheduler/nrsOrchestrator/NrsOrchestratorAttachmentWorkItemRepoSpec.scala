@@ -57,7 +57,7 @@ class NrsOrchestratorAttachmentWorkItemRepoSpec extends AnyFlatSpec with Matcher
       .as[NrsOrchestratorAttachmentWorkItem](NrsOrchestratorAttachmentWorkItem.formatEncrypted)
   }
 
-  "NrsOrchestratorAttachmentWorkItemRepoSpec" should "should be able to de-serialise old work-item. All missing data should be replaced with empty " in {
+  "NrsOrchestratorAttachmentWorkItemRepoSpec" should "be able to de-serialise old work-item. All missing data should be replaced with empty " in {
     val oldWorkItem = NrsOrchestratorAttachmentWorkItemOld(
       "test",
       NRSAttachment(
