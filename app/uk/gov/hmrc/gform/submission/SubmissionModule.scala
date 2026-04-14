@@ -132,8 +132,7 @@ class SubmissionModule(
     nrsConnectorAuthConnector,
     nrsConnectorApiKeys,
     nrsOrchestratorWorkItemRepo,
-    nrsOrchestratorAttachmentWorkItemRepo,
-    configModule.isProd
+    nrsOrchestratorAttachmentWorkItemRepo
   )
 
   private val stateTransitionService = new StateTransitionService(formModule.fOptFormService)
