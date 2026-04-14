@@ -692,6 +692,54 @@ class TextExtractorSuite extends FunSuite {
     assertEquals(res, expectedRows)
   }
 
+  test("Do not translate miniSummaryList keys which are field references") {
+    val json =
+      json"""
+          {
+            "sections": [
+              {
+                "title": "Checks",
+                "fields": [
+                  {
+                    "id": "miniSummaryList",
+                    "type": "miniSummaryList",
+                    "label": "",
+                    "rows": [
+                      {
+                        "key": "Your role before",
+                        "value": "roleChoice"
+                      },
+                      {
+                        "key": "Your role now",
+                        "value": "Division director"
+                      },
+                      {
+                        "key": "Your role after",
+                        "value": "$${'CEO'}"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+          """
+
+    val expectedRows = List(
+      TranslatedRow("${'CEO'}", ""),
+      TranslatedRow("Checks", ""),
+      TranslatedRow("Division director", ""),
+      TranslatedRow("Your role after", ""),
+      TranslatedRow("Your role before", ""),
+      TranslatedRow("Your role now", "")
+    )
+
+    val res = Translator(json, TextExtractor.gformPaths).rowsForTranslation
+
+    assertEquals(res, expectedRows)
+
+  }
+
   test("generateExpressionOpHistory") {
     val json =
       json"""
