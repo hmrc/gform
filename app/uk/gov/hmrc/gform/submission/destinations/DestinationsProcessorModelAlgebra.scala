@@ -25,7 +25,7 @@ import uk.gov.hmrc.gform.form.BundledFormTreeNode
 import uk.gov.hmrc.gform.models.helpers.TaxPeriodHelper.formatDate
 import uk.gov.hmrc.gform.objectstore.UploadedFile
 import uk.gov.hmrc.gform.sharedmodel.{ FrontEndSubmissionVariables, NotChecked, ObligationDetail, PdfContent, RetrievedObligations, SubmissionRef, TaxResponse }
-import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormId, FormStatus }
+import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, Form, FormId, FormStatus }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponentId, FormTemplateId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.JsonNodes.{ arrayNode, numberNode, objectNode, parseJson, textNode }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ HandlebarsDestinationResponse, HandlebarsTemplateProcessorModel, JsonNodes, JsonStructuredFormDataBuilder }
@@ -63,7 +63,8 @@ object DestinationsProcessorModelAlgebra {
       createInstructionPdfContent(instructionPdfData) +
       createSubmissionReference(submissionRef) +
       createUploadedFiles(files) +
-      createCaseworker(form.thirdPartyData.reviewData.flatMap(_.get("caseworker")))
+      createCaseworker(form.thirdPartyData.reviewData.flatMap(_.get("caseworker"))) +
+      createEnvelopeId(form.envelopeId)
 
   def createDestinationResponse(result: HandlebarsDestinationResponse): HandlebarsTemplateProcessorModel =
     HandlebarsTemplateProcessorModel(
@@ -122,6 +123,9 @@ object DestinationsProcessorModelAlgebra {
       )
     )
   }
+
+  private def createEnvelopeId(envelopeId: EnvelopeId): HandlebarsTemplateProcessorModel =
+    HandlebarsTemplateProcessorModel("envelopeId" -> textNode(envelopeId.value))
 
   private def fileExtension(filename: String): String = {
     val dotIndex = filename.indexOf(".")

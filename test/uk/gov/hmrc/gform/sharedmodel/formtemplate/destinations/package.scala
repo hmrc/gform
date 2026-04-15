@@ -112,6 +112,21 @@ package object destinations {
           |  "method": ${write(method)}
           |}""".stripMargin
 
+    case asyncHandlebars: Destination.AsyncHandlebarsHttpApi =>
+      import asyncHandlebars._
+      s"""|{
+          |  "id": "${id.id}",
+          |  ${optionalField("payload", payload)}
+          |  ${optionalField("convertSingleQuotes", Option(convertSingleQuotes))}
+          |  "includeIf":  "${getHandlebarValue(destination.includeIf)}",
+          |  ${optionalField("failOnError", Option(destination.failOnError), true)}
+          |  ${optionalField("payloadType", Option(payloadType), TemplateType.JSON)}
+          |  "${Destination.typeDiscriminatorFieldName}": "${Destination.asyncHandlebarsHttpApi}",
+          |  "profile": ${write(profile)},
+          |  "uri": "$uri",
+          |  "method": ${write(method)}
+          |}""".stripMargin
+
     case log: Destination.Log =>
       import log._
       s"""|{

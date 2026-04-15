@@ -16,16 +16,18 @@
 
 package uk.gov.hmrc.gform.submission.destinations
 
-import play.api.libs.json.{ JsArray, Json }
+import org.slf4j.LoggerFactory
 import uk.gov.hmrc.gform.core.FOpt
 import uk.gov.hmrc.gform.scheduler.asynchandlebars.AsyncHandlebarsWorkItem
 import uk.gov.hmrc.gform.sdes.workitem.DestinationWorkItemAlgebra
+import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations._
+import uk.gov.hmrc.gform.sharedmodel.sdes.CorrelationId
 import uk.gov.hmrc.gform.submission.handlebars.{ FocussedHandlebarsModelTree, HandlebarsModelTree, HandlebarsTemplateProcessor }
 import uk.gov.hmrc.http.HeaderCarrier
 
+import java.util.UUID
 import scala.concurrent.ExecutionContext
-import scala.util.Try
 
 trait AsyncHttpWorkItemSubmitter[F[_]] {
   def apply(
@@ -42,6 +44,8 @@ class RealAsyncHttpWorkItemSubmitter(
 )(implicit ec: ExecutionContext)
     extends AsyncHttpWorkItemSubmitter[FOpt] {
 
+  private val logger = LoggerFactory.getLogger(getClass)
+
   def apply(
     destination: Destination.AsyncHandlebarsHttpApi,
     accumulatedModel: HandlebarsTemplateProcessorModel,
@@ -49,7 +53,6 @@ class RealAsyncHttpWorkItemSubmitter(
     submissionInfo: DestinationSubmissionInfo,
     handlebarsTemplateProcessor: HandlebarsTemplateProcessor
   )(implicit hc: HeaderCarrier): FOpt[DestinationResponse] = {
-    val envelopeId = submissionInfo.submission.envelopeId
     val uri = handlebarsTemplateProcessor(
       destination.uri,
       accumulatedModel,
@@ -58,9 +61,9 @@ class RealAsyncHttpWorkItemSubmitter(
     )
 
     val contentType = destination.payloadType match {
-      case TemplateType.JSON  => "application/json"
-      case TemplateType.XML   => "application/xml"
-      case TemplateType.Plain => "text/plain"
+      case TemplateType.JSON  => ContentType.`application/json`
+      case TemplateType.XML   => ContentType.`application/xml`
+      case TemplateType.Plain => ContentType.`text/plain`
     }
 
     def processPayload(template: String): String =
@@ -71,30 +74,26 @@ class RealAsyncHttpWorkItemSubmitter(
         destination.payloadType
       )
 
-    def parseAndProcessAsList(input: String): List[String] =
-      Try(Json.parse(input)).toOption
-        .flatMap {
-          case arr: JsArray => Some(arr.value.map(_.toString).toList)
-          case _            => None
-        }
-        .getOrElse(List(input))
-        .map(processPayload)
-
-    val payloads: List[String] = destination.payload match {
-      case Some(body) if destination.multiRequestPayload => parseAndProcessAsList(body)
-      case Some(body)                                    => List(processPayload(body))
-      case None                                          => List("")
+    val payload: String = destination.payload match {
+      case Some(body) => processPayload(body)
+      case None       => ""
     }
 
     val workItem = AsyncHandlebarsWorkItem(
-      envelopeId = envelopeId,
+      envelopeId = submissionInfo.submission.envelopeId,
+      correlationId = CorrelationId(UUID.randomUUID().toString),
       formTemplateId = submissionInfo.submission.dmsMetaData.formTemplateId,
       submissionRef = submissionInfo.submission.submissionRef,
+      destinationId = destination.id,
       profile = destination.profile,
       uri = uri,
       method = destination.method,
       contentType = contentType,
-      payloads = payloads
+      payload = payload
+    )
+
+    logger.debug(
+      s"Submitting async HTTP work item for form template ${workItem.formTemplateId.value}, destination id ${workItem.destinationId.id}, URI: ${workItem.uri}, method: ${workItem.method}, content type: ${workItem.contentType.value}"
     )
 
     destinationWorkItemAlgebra

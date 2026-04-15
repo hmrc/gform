@@ -178,7 +178,6 @@ object Destination {
     payloadType: TemplateType,
     includeIf: DestinationIncludeIf,
     failOnError: Boolean,
-    multiRequestPayload: Boolean,
     convertSingleQuotes: Option[Boolean]
   ) extends Destination
 
@@ -545,6 +544,9 @@ case class UploadableHandlebarsHttpApiDestination(
       cvp   <- addErrorInfo(id, "payload")(conditionAndValidate(convertSingleQuotes, payload))
       cvii  <- addErrorInfo(id, convertSingleQuotes, includeIf)
       cvuri <- addErrorInfo(id, "uri")(condition(convertSingleQuotes, uri))
+      _ <- addErrorInfo(id, "multiRequestPayload")(
+             if (multiRequestPayload.nonEmpty) Left("not supported for asyncHandlebarsHttpApi") else ().asRight
+           )
     } yield Destination
       .AsyncHandlebarsHttpApi(
         id,
@@ -555,7 +557,6 @@ case class UploadableHandlebarsHttpApiDestination(
         payloadType.getOrElse(TemplateType.JSON),
         cvii,
         failOnError.getOrElse(true),
-        multiRequestPayload.getOrElse(false),
         convertSingleQuotes
       )
 

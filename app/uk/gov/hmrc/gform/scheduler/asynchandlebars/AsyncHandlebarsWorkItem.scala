@@ -19,68 +19,67 @@ package uk.gov.hmrc.gform.scheduler.asynchandlebars
 import play.api.libs.json._
 import uk.gov.hmrc.crypto.{ Crypted, Decrypter, Encrypter, PlainText }
 import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
+import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ HttpMethod, ProfileName }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DestinationId, HttpMethod, ProfileName }
+import uk.gov.hmrc.gform.sharedmodel.sdes.CorrelationId
 
 case class AsyncHandlebarsWorkItem(
   envelopeId: EnvelopeId,
+  correlationId: CorrelationId,
   formTemplateId: FormTemplateId,
   submissionRef: SubmissionRef,
+  destinationId: DestinationId,
   profile: ProfileName,
   uri: String,
   method: HttpMethod,
-  contentType: String,
-  payloads: List[String]
+  contentType: ContentType,
+  payload: String
 )
 
 object AsyncHandlebarsWorkItem {
   def formatEncrypted(jsonCrypto: Encrypter with Decrypter): OFormat[AsyncHandlebarsWorkItem] =
     new OFormat[AsyncHandlebarsWorkItem] {
-      private val envelopeId = "envelopeId"
-      private val formTemplateId = "formTemplateId"
-      private val submissionRef = "submissionRef"
-      private val profile = "profile"
       private val uri = "uri"
       private val method = "method"
-      private val contentType = "contentType"
-      private val payloads = "payloads"
+      private val payload = "payload"
 
       override def writes(workItem: AsyncHandlebarsWorkItem): JsObject =
         EnvelopeId.format.writes(workItem.envelopeId) ++
+          CorrelationId.oformat.writes(workItem.correlationId) ++
           FormTemplateId.oformat.writes(workItem.formTemplateId) ++
           SubmissionRef.oformat.writes(workItem.submissionRef) ++
+          DestinationId.oformat.writes(workItem.destinationId) ++
           ProfileName.oformat.writes(workItem.profile) ++
           Json.obj(uri -> workItem.uri) ++
           Json.obj(method -> workItem.method) ++
-          Json.obj(contentType -> workItem.contentType) ++
-          Json.obj(
-            payloads -> JsArray(
-              workItem.payloads.map(str => JsString(jsonCrypto.encrypt(PlainText(Json.toJson(str).toString())).value))
-            )
-          )
+          ContentType.oformat.writes(workItem.contentType) ++
+          Json.obj(payload -> JsString(jsonCrypto.encrypt(PlainText(workItem.payload)).value))
 
       override def reads(json: JsValue): JsResult[AsyncHandlebarsWorkItem] =
         for {
-          envelopeId     <- (json \ envelopeId).validate[EnvelopeId](EnvelopeId.oformat)
-          formTemplateId <- (json \ formTemplateId).validate[FormTemplateId](FormTemplateId.oformat)
-          submissionRef  <- (json \ submissionRef).validate[SubmissionRef](SubmissionRef.oformat)
-          profile        <- (json \ profile).validate[ProfileName](ProfileName.oformat)
+          envelopeId     <- EnvelopeId.format.reads(json)
+          correlationId  <- CorrelationId.oformat.reads(json)
+          formTemplateId <- FormTemplateId.oformat.reads(json)
+          submissionRef  <- SubmissionRef.oformat.reads(json)
+          destinationId  <- DestinationId.oformat.reads(json)
+          profile        <- ProfileName.oformat.reads(json)
           uri            <- (json \ uri).validate[String]
           method         <- (json \ method).validate[HttpMethod]
-          contentType    <- (json \ contentType).validate[String]
-          payloads <- (json \ payloads)
-                        .validate[List[String]]
-                        .map(_.map(payload => jsonCrypto.decrypt(Crypted(payload)).value))
+          contentType    <- ContentType.oformat.reads(json)
+          payload        <- (json \ payload).validate[String].map(payload => jsonCrypto.decrypt(Crypted(payload)).value)
         } yield AsyncHandlebarsWorkItem(
           envelopeId,
+          correlationId,
           formTemplateId,
           submissionRef,
+          destinationId,
           profile,
           uri,
           method,
           contentType,
-          payloads
+          payload
         )
     }
 }

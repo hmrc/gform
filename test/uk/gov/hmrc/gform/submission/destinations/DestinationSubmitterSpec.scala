@@ -1079,6 +1079,7 @@ class DestinationSubmitterSpec
     val pegaSubmitter = mock[PegaSubmitterAlgebra[Possible]]
     val niRefundSubmitter = mock[NiRefundSubmitterAlgebra[Possible]]
     val nrsConnector = mock[NRSConnector]
+    val asyncHttpWorkItemSubmitter = mock[AsyncHttpWorkItemSubmitter[Possible]]
     val sdesRouting = SdesRouting("api-key", "information-type", "recipient-or-sender")
     val defaults = WelshDefaults("WLU-WCC-XDFSWelshLanguageService", "WLU")
     val sdesConfig =
@@ -1108,7 +1109,8 @@ class DestinationSubmitterSpec
         handlebarsTemplateProcessor,
         pegaSubmitter,
         niRefundSubmitter,
-        nrsConnector
+        nrsConnector,
+        asyncHttpWorkItemSubmitter
       )
 
     SubmitterParts(

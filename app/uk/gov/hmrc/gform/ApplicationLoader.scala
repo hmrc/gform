@@ -429,6 +429,7 @@ class ApplicationModule(context: Context)
     mongoModule,
     sdesModule,
     akkaModule,
+    handlebarsModule,
     applicationLifecycle,
     submissionModule.nrsConnector,
     nrsOrchestratorNotificationRepository,
