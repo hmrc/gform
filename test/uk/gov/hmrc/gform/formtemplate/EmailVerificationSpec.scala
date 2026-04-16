@@ -64,6 +64,50 @@ class EmailVerificationSpec extends AnyFlatSpec with Matchers with JsResultMatch
     verifyPayload(jsonPayload, expected)
   }
 
+  it should "parse email verification with Notify service and bilingual emailTemplateId" in {
+    val jsonPayload = """|{
+                         |  "service": "notify",
+                         |  "emailTemplateId": {
+                         |    "en": "4f438fe6-680d-4610-9e55-b50f711326e4",
+                         |    "cy": "4f438fe6-680d-4610-9e55-b50f711326e4-cy"
+                         |  },
+                         |  "codeField": "someFieldId"
+                         |}
+                         |"""
+
+    val expected =
+      VerifiedBy(
+        FormComponentId("someFieldId"),
+        Notify(
+          NotifierTemplateId("4f438fe6-680d-4610-9e55-b50f711326e4"),
+          Some(NotifierTemplateId("4f438fe6-680d-4610-9e55-b50f711326e4-cy"))
+        )
+      )
+    verifyPayload(jsonPayload, expected)
+  }
+
+  it should "parse email verification with DigitalContact service and bilingual emailTemplateId" in {
+    val jsonPayload = """|{
+                         |  "service": "digitalContact",
+                         |  "emailTemplateId": {
+                         |    "en": "dynamicEmail_code",
+                         |    "cy": "dynamicEmail_code_cy"
+                         |  },
+                         |  "codeField": "someFieldId"
+                         |}
+                         |"""
+
+    val expected = VerifiedBy(
+      FormComponentId("someFieldId"),
+      DigitalContact(
+        EmailTemplateId("dynamicEmail_code"),
+        Some(EmailTemplateId("dynamicEmail_code_cy"))
+      )
+    )
+
+    verifyPayload(jsonPayload, expected)
+  }
+
   it should "fail when value of 'service' is wrong" in {
     val jsonPayload = """|{
                          |  "service": "wrongService",
