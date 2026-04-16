@@ -2042,7 +2042,10 @@ object FormTemplateValidator {
       .filter(_._2.callOnNoChange)
       .flatMap { case (page, dr) =>
         dr.params
-          .collect { case DataRetrieve.ParamExpr(_, FormCtx(fcId)) => fcId }
+          .collect { case DataRetrieve.ParamExpr(_, expr) =>
+            expr.leafs().collect { case FormCtx(fcId) => fcId }
+          }
+          .flatten
           .map(fcId => page.allFormComponentIds -> fcId)
       }
       .filterNot { case (componentIdsOnPage, fcId) =>
@@ -2051,7 +2054,7 @@ object FormTemplateValidator {
       .map(_._2)
       .map(fcId =>
         Invalid(
-          s"Form component '${fcId.value}' must be on the same page as the data retrieve if callOnNoChange is true."
+          s"Form component '${fcId.value}' must be on the same page as the data retrieve if 'callOnNoChange' is true."
         )
       )
 
