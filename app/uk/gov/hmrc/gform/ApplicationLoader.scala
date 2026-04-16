@@ -67,6 +67,7 @@ import uk.gov.hmrc.gform.repo.Repo
 import uk.gov.hmrc.gform.retrieval.AuthRetrievalModule
 import uk.gov.hmrc.gform.save4later.FormMongoCache
 import uk.gov.hmrc.gform.scheduler.SchedulerModule
+import uk.gov.hmrc.gform.scheduler.history.{ WorkItemHistory, WorkItemHistoryService }
 import uk.gov.hmrc.gform.scheduler.nrsOrchestrator.{ NrsOrchestratorAttachmentWorkItemRepo, NrsOrchestratorWorkItemRepo }
 import uk.gov.hmrc.gform.screenshottool.ScreenshotController
 import uk.gov.hmrc.gform.sdes.SdesModule
@@ -319,7 +320,25 @@ class ApplicationModule(context: Context)
 
   private val validationModule = new DesModule(wSHttpModule, configModule)
 
-  private val handlebarsModule = new HandlebarsHttpApiModule(wSHttpModule, configModule)
+  private val workItemHistoryRepo: Repo[WorkItemHistory] =
+    new Repo[WorkItemHistory](
+      "workItemHistory",
+      mongoModule.mongoComponent,
+      _._id.toString,
+      indexes = Seq(
+        IndexModel(
+          compoundIndex(ascending("envelopeId"), ascending("destinationId")),
+          IndexOptions()
+            .background(false)
+            .name("statusLastUpdatedIdx")
+        )
+      ),
+      replaceIndexes = true
+    )
+
+  val workItemHistoryService = new WorkItemHistoryService(workItemHistoryRepo)
+
+  private val handlebarsModule = new HandlebarsHttpApiModule(wSHttpModule, configModule, workItemHistoryService)
 
   private val submissionConsolidatorModule = new SubmissionConsolidatorModule(wSHttpModule, formModule, configModule)
 

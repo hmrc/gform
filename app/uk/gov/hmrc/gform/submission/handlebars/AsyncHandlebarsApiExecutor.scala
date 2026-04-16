@@ -18,6 +18,7 @@ package uk.gov.hmrc.gform.submission.handlebars
 
 import org.slf4j.LoggerFactory
 import uk.gov.hmrc.gform.scheduler.asynchandlebars.AsyncHandlebarsWorkItem
+import uk.gov.hmrc.gform.scheduler.history.{ WorkItemHistory, WorkItemHistoryAlgebra }
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ HttpMethod, ProfileName }
 import uk.gov.hmrc.http.HttpReads.Implicits._
@@ -31,7 +32,8 @@ trait AsyncHandlebarsApiExecutor[F[_]] {
 }
 
 class RealAsyncHandlebarsApiExecutor(
-  buildRequest: (ProfileName, EnvelopeId, String, HttpMethod, HeaderCarrier) => RequestBuilder
+  buildRequest: (ProfileName, EnvelopeId, String, HttpMethod, HeaderCarrier) => RequestBuilder,
+  workItemHistoryService: WorkItemHistoryAlgebra[Future]
 )(implicit ec: ExecutionContext)
     extends AsyncHandlebarsApiExecutor[Future] {
   private val logger = LoggerFactory.getLogger(getClass)
@@ -51,26 +53,33 @@ class RealAsyncHandlebarsApiExecutor(
         .withBody(body)
         .execute[HttpResponse]
 
-    val responseF: Future[HttpResponse] = workItem.method match {
-      case HttpMethod.GET =>
-        buildRequest(workItem.profile, workItem.envelopeId, workItem.uri, workItem.method, hc)
-          .execute[HttpResponse]
+    for {
+      response <- workItem.method match {
+                    case HttpMethod.GET =>
+                      buildRequest(workItem.profile, workItem.envelopeId, workItem.uri, workItem.method, hc)
+                        .execute[HttpResponse]
 
-      case HttpMethod.POST | HttpMethod.PUT => send(workItem.payload)
-    }
+                    case HttpMethod.POST | HttpMethod.PUT => send(workItem.payload)
+                  }
 
-    // TODO: Add history record of the API call, including response status and body, for auditing and debugging purposes
-    responseF
-      .map { response =>
-        if (response.status >= 200 && response.status < 300) {
-          logger.info(
-            s"Successfully called async API for form template ${workItem.formTemplateId.value}, destination id ${workItem.destinationId.id}. Response status: ${response.status}"
-          )
-        } else {
-          throw new RuntimeException(
-            s"Failed to call async API for form template ${workItem.formTemplateId.value}, destination id ${workItem.destinationId.id}. Response status: ${response.status}, body: ${response.body}"
-          )
-        }
+      history = WorkItemHistory.create(
+                  workItem.envelopeId,
+                  workItem.formTemplateId,
+                  workItem.submissionRef,
+                  workItem.destinationId,
+                  response.status,
+                  response.body
+                )
+      _ <- workItemHistoryService.save(history)
+    } yield
+      if (response.status >= 200 && response.status < 300) {
+        logger.info(
+          s"Successfully called async API for form template ${workItem.formTemplateId.value}, destination id ${workItem.destinationId.id}. Response status: ${response.status}"
+        )
+      } else {
+        throw new RuntimeException(
+          s"Failed to call async API for form template ${workItem.formTemplateId.value}, destination id ${workItem.destinationId.id}. Response status: ${response.status}, body: ${response.body}"
+        )
       }
   }
 }
