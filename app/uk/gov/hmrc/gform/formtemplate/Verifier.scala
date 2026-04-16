@@ -96,11 +96,6 @@ trait Verifier {
                .validateDateExprWithOffsetInBooleanExprs(formTemplate, booleanExpressionsContextSubstituted)
                .toEither
            )
-      _ <- fromOptA(
-             FormTemplateValidator
-               .validateNonExpressionComponentsInBooleanExprs(formTemplate, booleanExpressionsContextSubstituted)
-               .toEither
-           )
       _ <- fromOptA(FormTemplateValidator.validateDateConstructExpressions(allExpressions).toEither)
       _ <- fromOptA(FormTemplateValidator.validateSummarySection(formTemplate).toEither)
       _ <- fromOptA(FormTemplateValidator.validatePrintSection(formTemplate).toEither)

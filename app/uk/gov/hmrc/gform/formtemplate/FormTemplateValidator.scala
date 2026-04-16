@@ -580,36 +580,6 @@ object FormTemplateValidator {
     Monoid.combineAll(topLevelValidations ++ formTemplateValidations)
   }
 
-  def validateNonExpressionComponentsInBooleanExprs(
-    formTemplate: FormTemplate,
-    booleanExprSubstitutions: BooleanExprSubstitutions
-  ): ValidationResult = {
-    val nonExpressionComponentIds: Set[FormComponentId] = formTemplate.formComponents {
-      case fc @ IsInformationMessage(_) => fc.id
-      case fc @ IsTable(_)              => fc.id
-      case fc @ IsMiniSummaryList(_)    => fc.id
-    }.toSet
-
-    def fcIdsFromExprs(booleanExpr: BooleanExpr): List[FormComponentId] =
-      implicitly[LeafExpr[BooleanExpr]]
-        .exprs(TemplatePath.root, booleanExpr)
-        .flatMap(_.referenceInfos)
-        .collect { case ReferenceInfo.FormCtxExpr(_, FormCtx(fcId)) => fcId }
-
-    def validateFcId(fcId: FormComponentId, description: String): ValidationResult =
-      if (nonExpressionComponentIds(fcId))
-        Invalid(
-          s"$description: '$fcId' is an info, table or miniSummaryList field and cannot be used in an expression"
-        )
-      else Valid
-
-    val topLevelValidations = booleanExprSubstitutions.expressions.toList.flatMap { case (booleanExprId, booleanExpr) =>
-      fcIdsFromExprs(booleanExpr).map(fcId => validateFcId(fcId, s"booleanExpressions.${booleanExprId.id}"))
-    }
-
-    Monoid.combineAll(topLevelValidations)
-  }
-
   private def fcIdsWithDateOffsetFromDateExpr(dateExpr: DateExpr): List[FormComponentId] = dateExpr match {
     case DateExprWithOffset(DateFormCtxVar(FormCtx(fcId)), _) => List(fcId)
     case DateExprWithOffset(inner, _)                         => fcIdsWithDateOffsetFromDateExpr(inner)
