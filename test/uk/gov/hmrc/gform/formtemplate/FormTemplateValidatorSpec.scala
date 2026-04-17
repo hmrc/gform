@@ -663,6 +663,72 @@ class FormTemplateValidatorSpec
             )
           ),
           Valid
+        ),
+        (
+          List(
+            mkSectionNonRepeatingPage(
+              name = "page1",
+              formComponents = List(
+                mkInfoMessageComponent("info", "Some info text"),
+                mkFormComponent(
+                  "expressionsField",
+                  InformationMessage(
+                    StandardInfo,
+                    SmartString(toLocalisedString("{0}"), List(FormCtx(FormComponentId("info"))))
+                  ),
+                  false
+                )
+              ),
+              pageId = Some(PageId("page1"))
+            )
+          ),
+          Invalid(
+            "sections.fields.[id=expressionsField].infoText: 'info' is an info, table or miniSummaryList field and cannot be used in an expression"
+          )
+        ),
+        (
+          List(
+            mkSectionNonRepeatingPage(
+              name = "page1",
+              formComponents = List(
+                mkTableComponent("table"),
+                mkFormComponent(
+                  "expressionsField",
+                  InformationMessage(
+                    StandardInfo,
+                    SmartString(toLocalisedString("{0}"), List(FormCtx(FormComponentId("table"))))
+                  ),
+                  false
+                )
+              ),
+              pageId = Some(PageId("page1"))
+            )
+          ),
+          Invalid(
+            "sections.fields.[id=expressionsField].infoText: 'table' is an info, table or miniSummaryList field and cannot be used in an expression"
+          )
+        ),
+        (
+          List(
+            mkSectionNonRepeatingPage(
+              name = "page1",
+              formComponents = List(
+                mkMiniSummaryListComponent("miniSummaryList"),
+                mkFormComponent(
+                  "expressionsField",
+                  InformationMessage(
+                    StandardInfo,
+                    SmartString(toLocalisedString("{0}"), List(FormCtx(FormComponentId("miniSummaryList"))))
+                  ),
+                  false
+                )
+              ),
+              pageId = Some(PageId("page1"))
+            )
+          ),
+          Invalid(
+            "sections.fields.[id=expressionsField].infoText: 'miniSummaryList' is an info, table or miniSummaryList field and cannot be used in an expression"
+          )
         )
       )
       forAll(table) { (sections, expected) =>

@@ -191,6 +191,12 @@ object FormTemplateValidator {
       fc.id
     }.toSet
 
+    val nonExpressionComponentIds: Set[FormComponentId] = formTemplate.formComponents {
+      case fc @ IsInformationMessage(_) => fc.id
+      case fc @ IsTable(_)              => fc.id
+      case fc @ IsMiniSummaryList(_)    => fc.id
+    }.toSet
+
     val allChoiceCheckboxIds: Set[FormComponentId] = formTemplate.formComponents {
       case fc @ IsChoice(choice: Choice) if choice.`type` === Checkbox =>
         fc.id
@@ -341,6 +347,10 @@ object FormTemplateValidator {
         Invalid(s"${path.path}: $formComponentId is not a Multiline Text field (Text Area) id in the form")
       case ReferenceInfo.LookupOpsExpr(path, LookupOps(FormCtx(formComponentId), _)) if !allFcIds(formComponentId) =>
         invalid(path, formComponentId)
+      case ReferenceInfo.FormCtxExpr(path, FormCtx(formComponentId)) if nonExpressionComponentIds(formComponentId) =>
+        Invalid(
+          s"${path.path}: '$formComponentId' is an info, table or miniSummaryList field and cannot be used in an expression"
+        )
       case _ => Valid
     }
 
