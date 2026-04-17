@@ -2043,7 +2043,10 @@ object FormTemplateValidator {
       .flatMap { case (page, dr) =>
         dr.params
           .collect { case DataRetrieve.ParamExpr(_, expr) =>
-            expr.leafs().collect { case FormCtx(fcId) => fcId }
+            implicitly[LeafExpr[Expr]]
+              .exprs(TemplatePath.root, expr)
+              .flatMap(_.referenceInfos)
+              .collect { case ReferenceInfo.FormCtxExpr(_, FormCtx(fcId)) => fcId }
           }
           .flatten
           .map(fcId => page.allFormComponentIds -> fcId)

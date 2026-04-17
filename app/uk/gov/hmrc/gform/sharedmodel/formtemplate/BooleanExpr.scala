@@ -50,31 +50,6 @@ sealed trait BooleanExpr {
     case FormPhase(value: FormPhaseValue)                        => Nil
     case t @ TopLevelRef(booleanExprId: BooleanExprId)           => t :: Nil
   }
-
-  def allExpressions: List[Expr] = this match {
-    case Equals(left, right)              => left :: right :: Nil
-    case GreaterThan(left, right)         => left :: right :: Nil
-    case DateAfter(left, right)           => DateCtx(left) :: DateCtx(right) :: Nil
-    case GreaterThanOrEquals(left, right) => left :: right :: Nil
-    case LessThan(left, right)            => left :: right :: Nil
-    case DateBefore(left, right)          => DateCtx(left) :: DateCtx(right) :: Nil
-    case LessThanOrEquals(left, right)    => left :: right :: Nil
-    case Not(e)                           => e.allExpressions
-    case Or(left, right)                  => left.allExpressions ++ right.allExpressions
-    case And(left, right)                 => left.allExpressions ++ right.allExpressions
-    case IsTrue                           => Nil
-    case IsFalse                          => Nil
-    case Contains(multiValueField, value) => multiValueField :: value :: Nil
-    case In(formCtx, _)                   => formCtx :: Nil
-    case HasAnswer(formCtx, atlFormCtx)   => List(formCtx) ++ atlFormCtx.allExpressions.toList
-    case MatchRegex(expr, _)              => expr :: Nil
-    case FormPhase(_)                     => Nil
-    case First(formCtx)                   => formCtx :: Nil
-    case IsLogin(_)                       => Nil
-    case DuplicateExists(_)               => Nil
-    case TopLevelRef(_)                   => Nil
-  }
-
 }
 final case class Equals(left: Expr, right: Expr) extends BooleanExpr
 final case class GreaterThan(left: Expr, right: Expr) extends BooleanExpr
