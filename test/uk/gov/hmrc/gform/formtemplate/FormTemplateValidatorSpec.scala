@@ -1452,6 +1452,166 @@ class FormTemplateValidatorSpec
     }
   }
 
+  "validateDataRetrieve" should {
+    "validate dataRetrieve id duplicates and referencing other pages if callOnNoChange is true" in {
+      val drId = DataRetrieveId("personalBankAccountExistence")
+      val drCallOnChangeTrue: Option[DataRetrieve] =
+        mkPersonalBankAccountExistenceDataRetrieve(drId.value, None, None, true)
+      val drCallOnChangeFalse: Option[DataRetrieve] = mkPersonalBankAccountExistenceDataRetrieve(drId.value, None, None)
+      val drCallOnChangeTrueComplex: Option[DataRetrieve] = mkPersonalBankAccountExistenceDataRetrieve(
+        drId.value,
+        None,
+        None,
+        true,
+        Some(s"""$${if auth.itmpName != '' then auth.itmpName else accountFirstName}""")
+      )
+      val drDuplicate: Option[DataRetrieve] = mkHmrcTaxRatesDataRetrieve(drId.value)
+
+      val fc: FormComponent = mkFormComponent("forwardFormComponent", Date(AnyDate, Offset(0), None), true)
+      val sortCode: FormComponent = mkFormComponent("sortCodePersonal")
+      val accountNum: FormComponent = mkFormComponent("accountNumberPersonal")
+      val firstName: FormComponent = mkFormComponent("accountFirstName")
+      val lastName: FormComponent = mkFormComponent("accountLastName")
+
+      val table = Table(
+        ("page1", "page2", "expectedResult"),
+        (
+          mkSectionNonRepeatingPage(
+            name = "Page 1",
+            formComponents = List(firstName),
+            instruction = None,
+            pageId = None,
+            dataRetrieve = None
+          ),
+          mkSectionNonRepeatingPage(
+            name = "Page 2",
+            formComponents = List(sortCode, accountNum, lastName),
+            instruction = None,
+            pageId = None,
+            dataRetrieve = drCallOnChangeFalse
+          ),
+          Valid
+        ),
+        (
+          mkSectionNonRepeatingPage(
+            name = "Page 1",
+            formComponents = List(fc),
+            instruction = None,
+            pageId = None,
+            dataRetrieve = None
+          ),
+          mkSectionNonRepeatingPage(
+            name = "Page 2",
+            formComponents = List(sortCode, accountNum, firstName, lastName),
+            instruction = None,
+            pageId = None,
+            dataRetrieve = drCallOnChangeTrue
+          ),
+          Valid
+        ),
+        (
+          mkSectionNonRepeatingPage(
+            name = "Page 1",
+            formComponents = List(firstName),
+            instruction = None,
+            pageId = None,
+            dataRetrieve = None
+          ),
+          mkSectionNonRepeatingPage(
+            name = "Page 2",
+            formComponents = List(sortCode, accountNum, lastName),
+            instruction = None,
+            pageId = None,
+            dataRetrieve = drCallOnChangeTrue
+          ),
+          Invalid(
+            "Form component 'accountFirstName' must be on the same page as the data retrieve if 'callOnNoChange' is true."
+          )
+        ),
+        (
+          mkSectionNonRepeatingPage(
+            name = "Page 1",
+            formComponents = List(firstName),
+            instruction = None,
+            pageId = None,
+            dataRetrieve = None
+          ),
+          mkSectionNonRepeatingPage(
+            name = "Page 2",
+            formComponents = List(sortCode, accountNum, lastName),
+            instruction = None,
+            pageId = None,
+            dataRetrieve = drCallOnChangeTrueComplex
+          ),
+          Invalid(
+            "Form component 'accountFirstName' must be on the same page as the data retrieve if 'callOnNoChange' is true."
+          )
+        ),
+        (
+          mkSectionNonRepeatingPage(
+            name = "Page 1",
+            formComponents = List(fc),
+            instruction = None,
+            pageId = None,
+            dataRetrieve = None
+          ),
+          mkSectionNonRepeatingPage(
+            name = "Page 2",
+            formComponents = List(sortCode, accountNum, firstName, lastName),
+            instruction = None,
+            pageId = None,
+            dataRetrieve = drCallOnChangeTrueComplex
+          ),
+          Valid
+        ),
+        (
+          mkSectionNonRepeatingPage(
+            name = "Page 1",
+            formComponents = List(fc),
+            instruction = None,
+            pageId = None,
+            dataRetrieve = drDuplicate.map(_.copy(id = DataRetrieveId("different")))
+          ),
+          mkSectionNonRepeatingPage(
+            name = "Page 2",
+            formComponents = List(sortCode, accountNum, firstName, lastName),
+            instruction = None,
+            pageId = None,
+            dataRetrieve = drCallOnChangeFalse
+          ),
+          Valid
+        ),
+        (
+          mkSectionNonRepeatingPage(
+            name = "Page 1",
+            formComponents = List(fc),
+            instruction = None,
+            pageId = None,
+            dataRetrieve = drDuplicate
+          ),
+          mkSectionNonRepeatingPage(
+            name = "Page 2",
+            formComponents = List(sortCode, accountNum, firstName, lastName),
+            instruction = None,
+            pageId = None,
+            dataRetrieve = drCallOnChangeFalse
+          ),
+          Invalid("Some data retrieve ids are defined more than once: List(personalBankAccountExistence)")
+        )
+      )
+
+      forAll(table) { (page1, page2, expectedResult) =>
+        val sections: List[Section] = List(page1, page2)
+        val formTemplate: FormTemplate = mkFormTemplate(sections)
+        val pages: List[Page] = SectionHelper.pages(sections)
+
+        val result: ValidationResult =
+          FormTemplateValidator.validateDataRetrieve(formTemplate, pages)
+        result shouldBe expectedResult
+      }
+    }
+  }
+
   "validateDataRetrieveForwardReferences" should {
     "validate that dataRetrieves do not forward reference other form components or dataRetrieves" in {
       val dr: Option[DataRetrieve] = mkHmrcTaxRatesDataRetrieve("forwardDataRetrieve")
@@ -3019,10 +3179,17 @@ class FormTemplateValidatorSpec
   def mkPersonalBankAccountExistenceDataRetrieve(
     id: String,
     maybeMaxFailed: Option[Int] = None,
-    maybeFailureReset: Option[Int] = None
+    maybeFailureReset: Option[Int] = None,
+    callOnNoChange: Boolean = false,
+    maybeFirstNameExpression: Option[String] = None
   ): Option[DataRetrieve] = {
     val maxFailedAttempts = maybeMaxFailed.fold("")(i => s""""maxFailedAttempts": $i,""")
     val failureReset = maybeFailureReset.fold("")(i => s""""failureCountResetMinutes": $i,""")
+    val firstNameExpr = maybeFirstNameExpression.fold(""""firstName": "${accountFirstName}",""") { expr =>
+      s"""
+         |"firstName": "$expr",
+         |""".stripMargin
+    }
     val dataRetrieve =
       s"""
          |{
@@ -3030,10 +3197,11 @@ class FormTemplateValidatorSpec
          |  "id": "$id",
          |  $maxFailedAttempts
          |  $failureReset
+         |  "callOnNoChange": $callOnNoChange,
          |  "parameters": {
          |    "sortCode": "$${sortCodePersonal}",
          |    "accountNumber": "$${accountNumberPersonal}",
-         |    "firstName": "$${accountFirstName}",
+         |    $firstNameExpr
          |    "lastName": "$${accountLastName}"
          |  }
          |}

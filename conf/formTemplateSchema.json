@@ -1446,6 +1446,9 @@
               "if": {
                 "type": "string"
               },
+              "callOnNoChange": {
+                "type": "boolean"
+              },
               "parameters": {
                 "type": "object",
                 "properties": {
@@ -1484,6 +1487,9 @@
               "if": {
                 "type": "string"
               },
+              "callOnNoChange": {
+                "type": "boolean"
+              },
               "parameters": {
                 "type": "object",
                 "properties": {
@@ -1518,6 +1524,9 @@
               },
               "if": {
                 "type": "string"
+              },
+              "callOnNoChange": {
+                "type": "boolean"
               },
               "parameters": {
                 "type": "object",
@@ -1565,6 +1574,9 @@
               },
               "maxFailedAttempts": {
                 "type": "integer"
+              },
+              "callOnNoChange": {
+                "type": "boolean"
               },
               "parameters": {
                 "type": "object",
@@ -1618,6 +1630,9 @@
               "if": {
                 "type": "string"
               },
+              "callOnNoChange": {
+                "type": "boolean"
+              },
               "parameters": {
                 "type": "object",
                 "properties": {
@@ -1651,6 +1666,9 @@
               },
               "if": {
                 "type": "string"
+              },
+              "callOnNoChange": {
+                "type": "boolean"
               },
               "parameters": {
                 "type": "object",
@@ -1694,6 +1712,9 @@
               "if": {
                 "type": "string"
               },
+              "callOnNoChange": {
+                "type": "boolean"
+              },
               "parameters": {
                 "type": "object",
                 "properties": {
@@ -1728,6 +1749,9 @@
               "if": {
                 "type": "string"
               },
+              "callOnNoChange": {
+                "type": "boolean"
+              },
               "parameters": {
                 "type": "object",
                 "properties": {
@@ -1761,6 +1785,9 @@
               },
               "if": {
                 "type": "string"
+              },
+              "callOnNoChange": {
+                "type": "boolean"
               },
               "parameters": {
                 "type": "object",
@@ -1805,6 +1832,9 @@
               },
               "maxFailedAttempts": {
                 "type": "integer"
+              },
+              "callOnNoChange": {
+                "type": "boolean"
               },
               "parameters": {
                 "type": "object",

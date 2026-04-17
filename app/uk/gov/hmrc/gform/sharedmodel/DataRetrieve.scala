@@ -108,7 +108,8 @@ case class DataRetrieve(
   params: List[DataRetrieve.ParamExpr],
   `if`: Option[IncludeIf],
   maxFailedAttempts: Option[Int],
-  failureCountResetMinutes: Option[Int]
+  failureCountResetMinutes: Option[Int],
+  callOnNoChange: Boolean
 )
 
 object DataRetrieve {
