@@ -68,8 +68,8 @@ class EmailVerificationSpec extends AnyFlatSpec with Matchers with JsResultMatch
     val jsonPayload = """|{
                          |  "service": "notify",
                          |  "emailTemplateId": {
-                         |    "en": "4f438fe6-680d-4610-9e55-b50f711326e4",
-                         |    "cy": "4f438fe6-680d-4610-9e55-b50f711326e4-cy"
+                         |    "en": "notify-template-id",
+                         |    "cy": "notify-template-id-cy"
                          |  },
                          |  "codeField": "someFieldId"
                          |}
@@ -79,8 +79,8 @@ class EmailVerificationSpec extends AnyFlatSpec with Matchers with JsResultMatch
       VerifiedBy(
         FormComponentId("someFieldId"),
         Notify(
-          NotifierTemplateId("4f438fe6-680d-4610-9e55-b50f711326e4"),
-          Some(NotifierTemplateId("4f438fe6-680d-4610-9e55-b50f711326e4-cy"))
+          NotifierTemplateId("notify-template-id"),
+          Some(NotifierTemplateId("notify-template-id-cy"))
         )
       )
     verifyPayload(jsonPayload, expected)
