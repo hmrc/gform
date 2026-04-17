@@ -18,8 +18,8 @@ package uk.gov.hmrc.gform.sharedmodel
 
 import cats.Show
 import cats.syntax.all._
-import play.api.libs.json.{ JsDefined, JsError, JsString, JsSuccess, JsUndefined, OFormat, Reads }
-import uk.gov.hmrc.gform.sharedmodel.email.EmailTemplateId
+import play.api.libs.json.{ JsDefined, JsError, JsString, JsUndefined, OFormat, Reads }
+import uk.gov.hmrc.gform.sharedmodel.email.{ EmailTemplateId, LocalisedEmailTemplateId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.OFormatWithTemplateReadFallback
 import uk.gov.hmrc.gform.sharedmodel.notifier.NotifierTemplateId
 
@@ -48,15 +48,22 @@ object EmailVerifierService {
   }
 
   private val templateReads: Reads[EmailVerifierService] = Reads { json =>
-    ((json \ "service"), (json \ "emailTemplateId")) match {
-      case (JsDefined(JsString("notify")), JsDefined(JsString(emailTemplateId))) =>
-        JsSuccess(notify(NotifierTemplateId(emailTemplateId), None))
-      case (JsDefined(JsString("digitalContact")), JsDefined(JsString(emailTemplateId))) =>
-        JsSuccess(digitalContact(EmailTemplateId(emailTemplateId), None))
-      case (JsDefined(_), JsUndefined()) => JsError(s"Missing field 'emailTemplateId' in json: $json")
-      case (JsDefined(unknown), _) =>
+    (json \ "service") match {
+      case JsDefined(JsString("notify")) =>
+        (json \ "emailTemplateId") match {
+          case JsDefined(templateIdJson) =>
+            LocalisedEmailTemplateId.reads.reads(templateIdJson).map(_.toNotify)
+          case _: JsUndefined => JsError(s"Missing field 'emailTemplateId' in json: $json")
+        }
+      case JsDefined(JsString("digitalContact")) =>
+        (json \ "emailTemplateId") match {
+          case JsDefined(templateIdJson) =>
+            LocalisedEmailTemplateId.reads.reads(templateIdJson).map(_.toDigitalContact)
+          case _: JsUndefined => JsError(s"Missing field 'emailTemplateId' in json: $json")
+        }
+      case JsDefined(unknown) =>
         JsError(s"Unsupported email service '$unknown'. Only 'notify' or 'digitalContact' are supported")
-      case (_: JsUndefined, _) => JsError(s"Missing email service. Specify one of 'notify' or 'digitalContact'")
+      case _: JsUndefined => JsError(s"Missing email service. Specify one of 'notify' or 'digitalContact'")
     }
   }
 
