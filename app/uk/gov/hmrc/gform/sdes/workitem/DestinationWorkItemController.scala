@@ -59,7 +59,7 @@ class DestinationWorkItemController(
   }
 
   def delete(id: String, sdesDestination: SdesDestination) = Action.async { _ =>
-    destinationWorkItemAlgebra.delete(id, sdesDestination).map { _ =>
+    destinationWorkItemAlgebra.deleteSdes(id, sdesDestination).map { _ =>
       NoContent
     }
   }

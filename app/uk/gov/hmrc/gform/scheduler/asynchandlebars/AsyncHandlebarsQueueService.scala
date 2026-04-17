@@ -17,7 +17,7 @@
 package uk.gov.hmrc.gform.scheduler.asynchandlebars
 
 import org.slf4j.{ Logger, LoggerFactory }
-import uk.gov.hmrc.gform.scheduler.{ QueueAlgebra, WorkItemRepo }
+import uk.gov.hmrc.gform.scheduler.{ QueueAlgebra, TraceableWorkItem, WorkItemRepo }
 import uk.gov.hmrc.gform.submission.handlebars.AsyncHandlebarsApiExecutor
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.mongo.workitem.WorkItem
@@ -31,9 +31,9 @@ class AsyncHandlebarsQueueService(
   asyncHandlebarsMaxFailureCount: Int,
   asyncHandlebarsRetryIntervalMillis: Long
 )(implicit ec: ExecutionContext)
-    extends QueueAlgebra[AsyncHandlebarsWorkItem] {
+    extends QueueAlgebra[TraceableWorkItem[AsyncHandlebarsWorkItem]] {
 
-  override def sendWorkItem(asyncApiWorkItem: WorkItem[AsyncHandlebarsWorkItem]): Future[Unit] = {
+  override def sendWorkItem(asyncApiWorkItem: WorkItem[TraceableWorkItem[AsyncHandlebarsWorkItem]]): Future[Unit] = {
     implicit val hc: HeaderCarrier = HeaderCarrier()
     val workItem = asyncApiWorkItem.item
     logger.debug(s"Calling async handlebars API for ${workItem.envelopeId}")
@@ -41,7 +41,7 @@ class AsyncHandlebarsQueueService(
     asyncHandlebarsExecutor.callAPI(workItem)
   }
 
-  override val repo: WorkItemRepo[AsyncHandlebarsWorkItem] = asyncHandlebarsRepo
+  override val repo: WorkItemRepo[TraceableWorkItem[AsyncHandlebarsWorkItem]] = asyncHandlebarsRepo
   override val pollLimit: Int = asyncHandlebarsPollerLimit
   override implicit val executionContext: ExecutionContext = ec
   override val maxFailureCount: Int = asyncHandlebarsMaxFailureCount

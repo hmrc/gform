@@ -18,19 +18,10 @@ package uk.gov.hmrc.gform.scheduler.asynchandlebars
 
 import play.api.libs.json._
 import uk.gov.hmrc.crypto.{ Crypted, Decrypter, Encrypter, PlainText }
-import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
-import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DestinationId, HttpMethod, ProfileName }
-import uk.gov.hmrc.gform.sharedmodel.sdes.CorrelationId
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ HttpMethod, ProfileName }
 
 case class AsyncHandlebarsWorkItem(
-  envelopeId: EnvelopeId,
-  correlationId: CorrelationId,
-  formTemplateId: FormTemplateId,
-  submissionRef: SubmissionRef,
-  destinationId: DestinationId,
   profile: ProfileName,
   uri: String,
   method: HttpMethod,
@@ -46,12 +37,7 @@ object AsyncHandlebarsWorkItem {
       private val payload = "payload"
 
       override def writes(workItem: AsyncHandlebarsWorkItem): JsObject =
-        EnvelopeId.format.writes(workItem.envelopeId) ++
-          CorrelationId.oformat.writes(workItem.correlationId) ++
-          FormTemplateId.oformat.writes(workItem.formTemplateId) ++
-          SubmissionRef.oformat.writes(workItem.submissionRef) ++
-          DestinationId.oformat.writes(workItem.destinationId) ++
-          ProfileName.oformat.writes(workItem.profile) ++
+        ProfileName.oformat.writes(workItem.profile) ++
           Json.obj(uri -> workItem.uri) ++
           Json.obj(method -> workItem.method) ++
           ContentType.oformat.writes(workItem.contentType) ++
@@ -59,22 +45,12 @@ object AsyncHandlebarsWorkItem {
 
       override def reads(json: JsValue): JsResult[AsyncHandlebarsWorkItem] =
         for {
-          envelopeId     <- EnvelopeId.format.reads(json)
-          correlationId  <- CorrelationId.oformat.reads(json)
-          formTemplateId <- FormTemplateId.oformat.reads(json)
-          submissionRef  <- SubmissionRef.oformat.reads(json)
-          destinationId  <- DestinationId.oformat.reads(json)
-          profile        <- ProfileName.oformat.reads(json)
-          uri            <- (json \ uri).validate[String]
-          method         <- (json \ method).validate[HttpMethod]
-          contentType    <- ContentType.oformat.reads(json)
-          payload        <- (json \ payload).validate[String].map(payload => jsonCrypto.decrypt(Crypted(payload)).value)
+          profile     <- ProfileName.oformat.reads(json)
+          uri         <- (json \ uri).validate[String]
+          method      <- (json \ method).validate[HttpMethod]
+          contentType <- ContentType.oformat.reads(json)
+          payload     <- (json \ payload).validate[String].map(payload => jsonCrypto.decrypt(Crypted(payload)).value)
         } yield AsyncHandlebarsWorkItem(
-          envelopeId,
-          correlationId,
-          formTemplateId,
-          submissionRef,
-          destinationId,
           profile,
           uri,
           method,

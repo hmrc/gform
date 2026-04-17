@@ -16,13 +16,15 @@
 
 package uk.gov.hmrc.gform.sdes.workitem
 
-import cats.syntax.traverse._
 import cats.syntax.functor._
+import cats.syntax.traverse._
 import org.bson.types.ObjectId
 import org.mongodb.scala.MongoCollection
 import org.mongodb.scala.model.Filters
 import org.mongodb.scala.model.Filters.equal
-import uk.gov.hmrc.gform.scheduler.asynchandlebars.{ AsyncHandlebarsWorkItem, AsyncHandlebarsWorkItemRepo }
+import org.slf4j.LoggerFactory
+import uk.gov.hmrc.gform.scheduler.WorkItemRepo
+import uk.gov.hmrc.gform.scheduler.asynchandlebars.AsyncHandlebarsWorkItemRepo
 import uk.gov.hmrc.gform.scheduler.datalakehouse.DataLakehouseWorkItemRepo
 import uk.gov.hmrc.gform.scheduler.datastore.DataStoreWorkItemRepo
 import uk.gov.hmrc.gform.scheduler.dms.DmsWorkItemRepo
@@ -31,7 +33,7 @@ import uk.gov.hmrc.gform.scheduler.nrsOrchestrator.NrsOrchestratorWorkItemRepo
 import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ AsyncHandlebarsDestinationResponse, NrsOrchestratorDestinationResponse }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ AsyncHandlebarsDestinationResponse, DestinationResponse, NrsOrchestratorDestinationResponse }
 import uk.gov.hmrc.gform.sharedmodel.sdes._
 import uk.gov.hmrc.mongo.workitem.ProcessingStatus.ToDo
 import uk.gov.hmrc.mongo.workitem.{ ProcessingStatus, WorkItem }
@@ -58,9 +60,7 @@ trait DestinationWorkItemAlgebra[F[_]] {
     status: Option[ProcessingStatus]
   ): F[SdesWorkItemPageData]
 
-  def ready(workItems: List[(SdesDestination, ObjectId)]): F[Unit]
-
-  def readyNrsOrchestrator(workItems: List[NrsOrchestratorDestinationResponse]): F[Unit]
+  def readySdes(workItems: List[(SdesDestination, ObjectId)]): F[Unit]
 
   def enqueue(id: String, sdesDestination: SdesDestination): F[Unit]
 
@@ -68,15 +68,11 @@ trait DestinationWorkItemAlgebra[F[_]] {
 
   def findByEnvelopeId(envelopeId: EnvelopeId, sdesDestination: SdesDestination): F[List[WorkItem[SdesWorkItem]]]
 
-  def delete(id: String, sdesDestination: SdesDestination): F[Unit]
+  def deleteSdes(id: String, sdesDestination: SdesDestination): F[Unit]
 
-  def deleteNrsOrchestrator(id: String): F[Unit]
+  def readyGeneric(responses: List[DestinationResponse]): F[Unit]
 
-  def pushAsyncHandlebarsWorkItem(workItem: AsyncHandlebarsWorkItem): F[ObjectId]
-
-  def readyAsyncHandlebarsWorkItem(workItems: List[AsyncHandlebarsDestinationResponse]): F[Unit]
-
-  def deleteAsyncHandlebarsWorkItem(oid: ObjectId): F[Unit]
+  def deleteGeneric(response: DestinationResponse): F[Unit]
 }
 
 class DestinationWorkItemService(
@@ -88,6 +84,9 @@ class DestinationWorkItemService(
   asyncHandlebarsWorkItemRepo: AsyncHandlebarsWorkItemRepo
 )(implicit ec: ExecutionContext)
     extends DestinationWorkItemAlgebra[Future] {
+
+  private val logger = LoggerFactory.getLogger(getClass)
+
   override def pushWorkItem(
     envelopeId: EnvelopeId,
     formTemplateId: FormTemplateId,
@@ -126,7 +125,7 @@ class DestinationWorkItemService(
   private def deferred(item: SdesWorkItem): ProcessingStatus = ProcessingStatus.Deferred
   private def todo(item: SdesWorkItem): ProcessingStatus = ProcessingStatus.ToDo
 
-  override def ready(workItems: List[(SdesDestination, ObjectId)]): Future[Unit] =
+  override def readySdes(workItems: List[(SdesDestination, ObjectId)]): Future[Unit] =
     workItems
       .traverse {
         case (SdesDestination.Dms | SdesDestination.PegaCaseflow, oid) => dmsWorkItemRepo.markAs(oid, ToDo)
@@ -136,9 +135,6 @@ class DestinationWorkItemService(
         case (SdesDestination.DataLakehouse, oid) => dataLakehouseWorkItemRepo.markAs(oid, ToDo)
       }
       .map(_ => ())
-
-  override def readyNrsOrchestrator(workItems: List[NrsOrchestratorDestinationResponse]): Future[Unit] =
-    workItems.traverse(item => nrsOrchestratorWorkItemRepo.markAs(item.workItemId, ToDo)).void
 
   override def search(
     page: Int,
@@ -170,18 +166,12 @@ class DestinationWorkItemService(
       case SdesDestination.DataLakehouse => dataLakehouseWorkItemRepo.collection
     }
 
-  override def delete(id: String, sdesDestination: SdesDestination): Future[Unit] =
+  override def deleteSdes(id: String, sdesDestination: SdesDestination): Future[Unit] =
     findCollection(sdesDestination)
       .deleteOne(equal("_id", new ObjectId(id)))
       .toFuture()
       .map(_.getDeletedCount > 0)
       .void
-
-  override def deleteNrsOrchestrator(id: String): Future[Unit] = nrsOrchestratorWorkItemRepo.collection
-    .deleteOne(equal("_id", new ObjectId(id)))
-    .toFuture()
-    .map(_.getDeletedCount > 0)
-    .void
 
   override def enqueue(id: String, sdesDestination: SdesDestination): Future[Unit] =
     sdesDestination match {
@@ -212,18 +202,29 @@ class DestinationWorkItemService(
     findCollection(sdesDestination).find(query).toFuture().map(_.toList)
   }
 
-  override def pushAsyncHandlebarsWorkItem(workItem: AsyncHandlebarsWorkItem): Future[ObjectId] = {
-    def deferred(item: AsyncHandlebarsWorkItem): ProcessingStatus = ProcessingStatus.ToDo
-    asyncHandlebarsWorkItemRepo.pushNew(workItem, initialState = deferred).map(_.id)
+  override def readyGeneric(responses: List[DestinationResponse]): Future[Unit] =
+    responses
+      .traverse {
+        case a: AsyncHandlebarsDestinationResponse => asyncHandlebarsWorkItemRepo.markAs(a.workItemId, ToDo)
+        case n: NrsOrchestratorDestinationResponse => nrsOrchestratorWorkItemRepo.markAs(n.workItemId, ToDo)
+        case _                                     => Future.unit
+      }
+      .map(_ => ())
+
+  override def deleteGeneric(response: DestinationResponse): Future[Unit] = response match {
+    case a: AsyncHandlebarsDestinationResponse =>
+      deleteFromRepo(a.workItemId, asyncHandlebarsWorkItemRepo, "AsyncHandlebars")
+    case n: NrsOrchestratorDestinationResponse =>
+      deleteFromRepo(n.workItemId, nrsOrchestratorWorkItemRepo, "NrsOrchestrator")
+    case _ => Future.unit
   }
 
-  override def readyAsyncHandlebarsWorkItem(workItems: List[AsyncHandlebarsDestinationResponse]): Future[Unit] =
-    workItems.traverse(item => asyncHandlebarsWorkItemRepo.markAs(item.workItemId, ToDo)).void
-
-  override def deleteAsyncHandlebarsWorkItem(oid: ObjectId): Future[Unit] =
-    asyncHandlebarsWorkItemRepo.collection
+  private def deleteFromRepo(oid: ObjectId, repo: WorkItemRepo[_], identifier: String): Future[Unit] = {
+    logger.info(s"Deleting deferred $identifier work item ${oid.toHexString}")
+    repo.collection
       .deleteOne(equal("_id", oid))
       .toFuture()
       .map(_.getDeletedCount > 0)
       .void
+  }
 }

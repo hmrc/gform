@@ -17,6 +17,7 @@
 package uk.gov.hmrc.gform.submission.handlebars
 
 import org.slf4j.LoggerFactory
+import uk.gov.hmrc.gform.scheduler.TraceableWorkItem
 import uk.gov.hmrc.gform.scheduler.asynchandlebars.AsyncHandlebarsWorkItem
 import uk.gov.hmrc.gform.scheduler.history.{ WorkItemHistory, WorkItemHistoryAlgebra }
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
@@ -28,7 +29,7 @@ import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 import scala.concurrent.{ ExecutionContext, Future }
 
 trait AsyncHandlebarsApiExecutor[F[_]] {
-  def callAPI(workItem: AsyncHandlebarsWorkItem)(implicit hc: HeaderCarrier): F[Unit]
+  def callAPI(workItem: TraceableWorkItem[AsyncHandlebarsWorkItem])(implicit hc: HeaderCarrier): F[Unit]
 }
 
 class RealAsyncHandlebarsApiExecutor(
@@ -38,30 +39,28 @@ class RealAsyncHandlebarsApiExecutor(
     extends AsyncHandlebarsApiExecutor[Future] {
   private val logger = LoggerFactory.getLogger(getClass)
 
-  override def callAPI(workItem: AsyncHandlebarsWorkItem)(implicit hc: HeaderCarrier): Future[Unit] = {
+  override def callAPI(
+    workItem: TraceableWorkItem[AsyncHandlebarsWorkItem]
+  )(implicit hc: HeaderCarrier): Future[Unit] = {
     val requestBuilder = buildRequest(
-      workItem.profile,
+      workItem.data.profile,
       workItem.envelopeId,
-      workItem.uri,
-      workItem.method,
+      workItem.data.uri,
+      workItem.data.method,
       hc
     )
 
     def send(body: String): Future[HttpResponse] =
       requestBuilder
-        .setHeader("Content-Type" -> workItem.contentType.value)
+        .setHeader("Content-Type" -> workItem.data.contentType.value)
         .withBody(body)
         .execute[HttpResponse]
 
     for {
-      response <- workItem.method match {
-                    case HttpMethod.GET =>
-                      buildRequest(workItem.profile, workItem.envelopeId, workItem.uri, workItem.method, hc)
-                        .execute[HttpResponse]
-
-                    case HttpMethod.POST | HttpMethod.PUT => send(workItem.payload)
+      response <- workItem.data.method match {
+                    case HttpMethod.GET                   => requestBuilder.execute[HttpResponse]
+                    case HttpMethod.POST | HttpMethod.PUT => send(workItem.data.payload)
                   }
-
       history = WorkItemHistory.create(
                   workItem.envelopeId,
                   workItem.formTemplateId,

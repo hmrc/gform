@@ -17,16 +17,15 @@
 package uk.gov.hmrc.gform.submission.destinations
 
 import org.slf4j.LoggerFactory
-import uk.gov.hmrc.gform.core.FOpt
-import uk.gov.hmrc.gform.scheduler.asynchandlebars.AsyncHandlebarsWorkItem
-import uk.gov.hmrc.gform.sdes.workitem.DestinationWorkItemAlgebra
+import uk.gov.hmrc.gform.core.{ FOpt, fromFutureA }
+import uk.gov.hmrc.gform.scheduler.TraceableWorkItem
+import uk.gov.hmrc.gform.scheduler.asynchandlebars.{ AsyncHandlebarsWorkItem, AsyncHandlebarsWorkItemRepo }
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations._
-import uk.gov.hmrc.gform.sharedmodel.sdes.CorrelationId
 import uk.gov.hmrc.gform.submission.handlebars.{ FocussedHandlebarsModelTree, HandlebarsModelTree, HandlebarsTemplateProcessor }
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.mongo.workitem.ProcessingStatus
 
-import java.util.UUID
 import scala.concurrent.ExecutionContext
 
 trait AsyncHttpWorkItemSubmitter[F[_]] {
@@ -40,11 +39,13 @@ trait AsyncHttpWorkItemSubmitter[F[_]] {
 }
 
 class RealAsyncHttpWorkItemSubmitter(
-  destinationWorkItemAlgebra: DestinationWorkItemAlgebra[FOpt]
+  asyncHandlebarsWorkItemRepo: AsyncHandlebarsWorkItemRepo
 )(implicit ec: ExecutionContext)
     extends AsyncHttpWorkItemSubmitter[FOpt] {
 
   private val logger = LoggerFactory.getLogger(getClass)
+
+  private def deferred(item: TraceableWorkItem[_]): ProcessingStatus = ProcessingStatus.Deferred
 
   def apply(
     destination: Destination.AsyncHandlebarsHttpApi,
@@ -79,25 +80,28 @@ class RealAsyncHttpWorkItemSubmitter(
       case None       => ""
     }
 
-    val workItem = AsyncHandlebarsWorkItem(
+    val workItem = TraceableWorkItem[AsyncHandlebarsWorkItem](
       envelopeId = submissionInfo.submission.envelopeId,
-      correlationId = CorrelationId(UUID.randomUUID().toString),
       formTemplateId = submissionInfo.submission.dmsMetaData.formTemplateId,
       submissionRef = submissionInfo.submission.submissionRef,
       destinationId = destination.id,
-      profile = destination.profile,
-      uri = uri,
-      method = destination.method,
-      contentType = contentType,
-      payload = payload
+      data = AsyncHandlebarsWorkItem(
+        profile = destination.profile,
+        uri = uri,
+        method = destination.method,
+        contentType = contentType,
+        payload = payload
+      )
     )
 
     logger.debug(
-      s"Submitting async HTTP work item for form template ${workItem.formTemplateId.value}, destination id ${workItem.destinationId.id}, URI: ${workItem.uri}, method: ${workItem.method}, content type: ${workItem.contentType.value}"
+      s"Submitting async HTTP work item for form template ${workItem.formTemplateId.value}, destination id ${workItem.destinationId.id}, URI: ${workItem.data.uri}, method: ${workItem.data.method}, content type: ${workItem.data.contentType.value}"
     )
 
-    destinationWorkItemAlgebra
-      .pushAsyncHandlebarsWorkItem(workItem)
-      .map(oid => AsyncHandlebarsDestinationResponse(oid))
+    fromFutureA(
+      asyncHandlebarsWorkItemRepo
+        .pushNew(workItem, initialState = deferred)
+        .map(item => AsyncHandlebarsDestinationResponse(item.id))
+    )
   }
 }

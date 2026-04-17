@@ -18,7 +18,7 @@ package uk.gov.hmrc.gform.scheduler.asynchandlebars
 
 import org.mongodb.scala.model.{ IndexModel, IndexOptions, Indexes }
 import uk.gov.hmrc.crypto.{ Decrypter, Encrypter }
-import uk.gov.hmrc.gform.scheduler.WorkItemRepo
+import uk.gov.hmrc.gform.scheduler.{ TraceableWorkItem, WorkItemRepo }
 import uk.gov.hmrc.mongo.MongoComponent
 
 import scala.concurrent.ExecutionContext
@@ -26,7 +26,7 @@ import scala.concurrent.ExecutionContext
 class AsyncHandlebarsWorkItemRepo(mongoComponent: MongoComponent)(implicit
   ec: ExecutionContext,
   jsonCrypto: Encrypter with Decrypter
-) extends WorkItemRepo[AsyncHandlebarsWorkItem](
+) extends WorkItemRepo[TraceableWorkItem[AsyncHandlebarsWorkItem]](
       mongoComponent,
       "asyncHandlebarsWorkItem",
       extraIndexes = Seq(
@@ -37,4 +37,4 @@ class AsyncHandlebarsWorkItemRepo(mongoComponent: MongoComponent)(implicit
             .name("item.formTemplateId")
         )
       )
-    )(ec, AsyncHandlebarsWorkItem.formatEncrypted(jsonCrypto)) {}
+    )(ec, TraceableWorkItem.format(AsyncHandlebarsWorkItem.formatEncrypted(jsonCrypto)))

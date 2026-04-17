@@ -17,7 +17,7 @@
 package uk.gov.hmrc.gform.scheduler.asynchandlebars
 
 import org.apache.pekko.actor.ActorSystem
-import uk.gov.hmrc.gform.scheduler.PollingService
+import uk.gov.hmrc.gform.scheduler.{ PollingService, TraceableWorkItem }
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.FiniteDuration
@@ -29,7 +29,7 @@ class AsyncHandlebarsQueuePollingService(
   pollerToggle: Boolean,
   queueService: AsyncHandlebarsQueueService
 )(implicit ec: ExecutionContext)
-    extends PollingService[AsyncHandlebarsWorkItem](actorSystem, queueService, pollerToggle) {
+    extends PollingService[TraceableWorkItem[AsyncHandlebarsWorkItem]](actorSystem, queueService, pollerToggle) {
 
   override def name: String = "AsyncHandlebarsPollingService"
 

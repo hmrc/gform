@@ -92,17 +92,18 @@ class SubmissionService(
             submissionData.destinationEvaluation,
             submissionData.userSession
           )
-      maybeWorkItems = destinationResponses.map(_.collect {
-                         case d: DmsDestinationResponse       => (d.routing, d.workItemId)
-                         case o: OtherSdesDestinationResponse => (o.routing, o.workItemId)
-                       })
-      _ <- maybeWorkItems.traverse(destinationWorkItemService.ready)
       _ <- destinationResponses
-             .map(_.collect { case d: NrsOrchestratorDestinationResponse => d })
-             .traverse(destinationWorkItemService.readyNrsOrchestrator)
+             .map(_.collect {
+               case d: DmsDestinationResponse       => (d.routing, d.workItemId)
+               case o: OtherSdesDestinationResponse => (o.routing, o.workItemId)
+             })
+             .traverse(destinationWorkItemService.readySdes)
       _ <- destinationResponses
-             .map(_.collect { case d: AsyncHandlebarsDestinationResponse => d })
-             .traverse(destinationWorkItemService.readyAsyncHandlebarsWorkItem)
+             .map(_.collect {
+               case d: AsyncHandlebarsDestinationResponse => d
+               case d: NrsOrchestratorDestinationResponse => d
+             })
+             .traverse(destinationWorkItemService.readyGeneric)
       _ <- formAlgebra.updateFormStatus(submissionInfo.formId, Submitted)
       emailAddress = email.getEmailAddress(form, submissionData.maybeEmailAddress)
       _ <- fromFutureA(

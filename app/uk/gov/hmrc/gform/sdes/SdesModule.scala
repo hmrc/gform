@@ -28,7 +28,7 @@ import uk.gov.hmrc.gform.envelope.EnvelopeModule
 import uk.gov.hmrc.gform.mongo.MongoModule
 import uk.gov.hmrc.gform.objectstore.ObjectStoreModule
 import uk.gov.hmrc.gform.repo.Repo
-import uk.gov.hmrc.gform.scheduler.asynchandlebars.{ AsyncHandlebarsWorkItem, AsyncHandlebarsWorkItemRepo }
+import uk.gov.hmrc.gform.scheduler.asynchandlebars.AsyncHandlebarsWorkItemRepo
 import uk.gov.hmrc.gform.scheduler.datalakehouse.DataLakehouseWorkItemRepo
 import uk.gov.hmrc.gform.scheduler.datastore.DataStoreWorkItemRepo
 import uk.gov.hmrc.gform.scheduler.dms.DmsWorkItemRepo
@@ -41,7 +41,7 @@ import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
 import uk.gov.hmrc.gform.sharedmodel.email.EmailTemplateId
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ AsyncHandlebarsDestinationResponse, NrsOrchestratorDestinationResponse }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationResponse
 import uk.gov.hmrc.gform.sharedmodel.notifier.NotifierEmailAddress
 import uk.gov.hmrc.gform.sharedmodel.sdes._
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
@@ -311,26 +311,17 @@ class SdesModule(
     ): FOpt[List[WorkItem[SdesWorkItem]]] =
       fromFutureA(destinationWorkItemService.findByEnvelopeId(envelopeId, sdesDestination))
 
-    override def delete(id: String, sdesDestination: SdesDestination): FOpt[Unit] =
-      fromFutureA(destinationWorkItemService.delete(id, sdesDestination))
+    override def deleteSdes(id: String, sdesDestination: SdesDestination): FOpt[Unit] =
+      fromFutureA(destinationWorkItemService.deleteSdes(id, sdesDestination))
 
-    override def deleteNrsOrchestrator(id: String): FOpt[Unit] =
-      fromFutureA(destinationWorkItemService.deleteNrsOrchestrator(id))
+    override def readySdes(workItems: List[(SdesDestination, ObjectId)]): FOpt[Unit] =
+      fromFutureA(destinationWorkItemService.readySdes(workItems))
 
-    override def ready(workItems: List[(SdesDestination, ObjectId)]): FOpt[Unit] =
-      fromFutureA(destinationWorkItemService.ready(workItems))
+    override def readyGeneric(responses: List[DestinationResponse]): FOpt[Unit] =
+      fromFutureA(destinationWorkItemService.readyGeneric(responses))
 
-    override def readyNrsOrchestrator(workItems: List[NrsOrchestratorDestinationResponse]): FOpt[Unit] =
-      fromFutureA(destinationWorkItemService.readyNrsOrchestrator(workItems))
-
-    override def pushAsyncHandlebarsWorkItem(workItem: AsyncHandlebarsWorkItem): FOpt[ObjectId] =
-      fromFutureA(destinationWorkItemService.pushAsyncHandlebarsWorkItem(workItem))
-
-    override def readyAsyncHandlebarsWorkItem(workItems: List[AsyncHandlebarsDestinationResponse]): FOpt[Unit] =
-      fromFutureA(destinationWorkItemService.readyAsyncHandlebarsWorkItem(workItems))
-
-    override def deleteAsyncHandlebarsWorkItem(oid: ObjectId): FOpt[Unit] =
-      fromFutureA(destinationWorkItemService.deleteAsyncHandlebarsWorkItem(oid))
+    override def deleteGeneric(response: DestinationResponse): FOpt[Unit] =
+      fromFutureA(destinationWorkItemService.deleteGeneric(response))
   }
 
 }

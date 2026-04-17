@@ -104,7 +104,7 @@ class SubmissionModule(
   )
 
   val asyncHttpWorkItemSubmitter = new RealAsyncHttpWorkItemSubmitter(
-    sdesModule.foptDestinationWorkItemService
+    sdesModule.asyncHandlebarsWorkItemRepo
   )
 
   private val pegaSubmitter = new PegaSubmitter(
