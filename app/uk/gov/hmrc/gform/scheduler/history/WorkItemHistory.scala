@@ -17,7 +17,8 @@
 package uk.gov.hmrc.gform.scheduler.history
 
 import julienrf.json.derived
-import play.api.libs.json.{ Format, OFormat }
+import play.api.libs.json._
+import uk.gov.hmrc.crypto.{ Crypted, Decrypter, Encrypter, PlainText }
 import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
@@ -57,7 +58,7 @@ object WorkItemHistory {
       responseBody
     )
 
-  implicit val format: OFormat[WorkItemHistory] = {
+  val format: OFormat[WorkItemHistory] = {
     implicit val envelopeIdFormat: Format[EnvelopeId] = EnvelopeId.vformat
     implicit val formTemplateIdFormat: Format[FormTemplateId] = FormTemplateId.vformat
     implicit val submissionRefFormat: Format[SubmissionRef] = SubmissionRef.vformat
@@ -65,4 +66,19 @@ object WorkItemHistory {
     derived.oformat()
   }
 
+  def formatEncrypted(jsonCrypto: Encrypter with Decrypter): OFormat[WorkItemHistory] =
+    new OFormat[WorkItemHistory] {
+      private val responseBodyField = "responseBody"
+
+      override def writes(workItem: WorkItemHistory): JsObject =
+        format.writes(workItem) ++ Json.obj(
+          responseBodyField -> JsString(jsonCrypto.encrypt(PlainText(workItem.responseBody)).value)
+        )
+
+      override def reads(json: JsValue): JsResult[WorkItemHistory] =
+        for {
+          workItem              <- format.reads(json)
+          encryptedResponseBody <- (json \ responseBodyField).validate[String]
+        } yield workItem.copy(responseBody = jsonCrypto.decrypt(Crypted(encryptedResponseBody)).value)
+    }
 }

@@ -28,6 +28,7 @@ import uk.gov.hmrc.gform.envelope.EnvelopeModule
 import uk.gov.hmrc.gform.mongo.MongoModule
 import uk.gov.hmrc.gform.objectstore.ObjectStoreModule
 import uk.gov.hmrc.gform.repo.Repo
+import uk.gov.hmrc.gform.scheduler.TraceableWorkItem
 import uk.gov.hmrc.gform.scheduler.asynchandlebars.AsyncHandlebarsWorkItemRepo
 import uk.gov.hmrc.gform.scheduler.datalakehouse.DataLakehouseWorkItemRepo
 import uk.gov.hmrc.gform.scheduler.datastore.DataStoreWorkItemRepo
@@ -304,6 +305,12 @@ class SdesModule(
 
     override def find(id: String, sdesDestination: SdesDestination): FOpt[Option[WorkItem[SdesWorkItem]]] =
       fromFutureA(destinationWorkItemService.find(id, sdesDestination))
+
+    override def findTraceableWorkItem(
+      id: String,
+      sdesDestination: SdesDestination
+    ): FOpt[Option[WorkItem[TraceableWorkItem[_]]]] =
+      fromFutureA(destinationWorkItemService.findTraceableWorkItem(id, sdesDestination))
 
     override def findByEnvelopeId(
       envelopeId: EnvelopeId,

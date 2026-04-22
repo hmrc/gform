@@ -16,11 +16,14 @@
 
 package uk.gov.hmrc.gform.sdes.workitem
 
+import org.bson.types.ObjectId
 import play.api.libs.json.{ Format, Json }
 import play.api.mvc.ControllerComponents
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.AsyncHandlebarsDestinationResponse
+import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination.AsyncHandlebars
 import uk.gov.hmrc.gform.sharedmodel.sdes.{ SdesDestination, SdesWorkItem, SdesWorkItemData }
 import uk.gov.hmrc.mongo.workitem.{ ProcessingStatus, WorkItem, WorkItemFields }
 
@@ -52,15 +55,31 @@ class DestinationWorkItemController(
   }
 
   def get(id: String, sdesDestination: SdesDestination) = Action.async { _ =>
-    destinationWorkItemAlgebra.find(id, sdesDestination).flatMap {
-      case Some(w) => Future.successful(Ok(Json.toJson(SdesWorkItemData.fromWorkItem(w))))
-      case None    => Future.failed(new RuntimeException(s"Object id [$id] not found in mongo collection"))
+    sdesDestination match {
+      case AsyncHandlebars =>
+        destinationWorkItemAlgebra.findTraceableWorkItem(id, sdesDestination).flatMap {
+          case Some(w) => Future.successful(Ok(Json.toJson(SdesWorkItemData.fromTraceableWorkItem(w, sdesDestination))))
+          case None    => Future.failed(new RuntimeException(s"Object id [$id] not found in mongo collection"))
+        }
+      case _ =>
+        destinationWorkItemAlgebra.find(id, sdesDestination).flatMap {
+          case Some(w) => Future.successful(Ok(Json.toJson(SdesWorkItemData.fromWorkItem(w))))
+          case None    => Future.failed(new RuntimeException(s"Object id [$id] not found in mongo collection"))
+        }
     }
   }
 
   def delete(id: String, sdesDestination: SdesDestination) = Action.async { _ =>
-    destinationWorkItemAlgebra.deleteSdes(id, sdesDestination).map { _ =>
-      NoContent
+    sdesDestination match {
+      case AsyncHandlebars =>
+        destinationWorkItemAlgebra
+          .deleteGeneric(AsyncHandlebarsDestinationResponse(new ObjectId(id)))
+          .map(_ => NoContent)
+      case _ =>
+        destinationWorkItemAlgebra.deleteSdes(id, sdesDestination).map { _ =>
+          NoContent
+        }
+
     }
   }
 

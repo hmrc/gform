@@ -26,6 +26,7 @@ import play.api.http._
 import play.api.i18n.I18nComponents
 import play.api.inject.Injector
 import play.api.inject.SimpleInjector
+import play.api.libs.json.OFormat
 import play.api.libs.ws.ahc.{ AhcWSClient, AhcWSClientConfigFactory, AhcWSComponents }
 import play.api.mvc.EssentialFilter
 import play.api.routing.Router
@@ -320,6 +321,7 @@ class ApplicationModule(context: Context)
 
   private val validationModule = new DesModule(wSHttpModule, configModule)
 
+  implicit val workItemHistoryFormat: OFormat[WorkItemHistory] = WorkItemHistory.formatEncrypted(jsonCrypto)
   private val workItemHistoryRepo: Repo[WorkItemHistory] =
     new Repo[WorkItemHistory](
       "workItemHistory",
@@ -330,7 +332,7 @@ class ApplicationModule(context: Context)
           compoundIndex(ascending("envelopeId"), ascending("destinationId")),
           IndexOptions()
             .background(false)
-            .name("statusLastUpdatedIdx")
+            .name("envelopeAndDestinationIdx")
         )
       ),
       replaceIndexes = true
