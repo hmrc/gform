@@ -499,7 +499,8 @@ class DestinationSubmitter[M[_]](
           payload,
           userAuthToken,
           identityData,
-          submissionDate
+          submissionDate,
+          submissionInfo.submission.dmsMetaData.formTemplateId
         )
       )
     }

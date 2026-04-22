@@ -18,13 +18,15 @@ package uk.gov.hmrc.gform.scheduler.nrsOrchestrator
 
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
-import play.api.libs.json.Json
+import play.api.libs.json.{ Format, Json }
 import uk.gov.hmrc.crypto.{ Decrypter, Encrypter }
 import uk.gov.hmrc.crypto.SymmetricCryptoFactory.{ aesCrypto, composeCrypto }
 import uk.gov.hmrc.gform.nrs.{ BusinessId, NrsPayload, NrsPayloadMetaData }
+import uk.gov.hmrc.gform.save4later.EncryptedFormat
 import uk.gov.hmrc.gform.sharedmodel.ExampleData.formData
 import uk.gov.hmrc.gform.sharedmodel.{ NRSOrchestratorDestinationResultData, SubmissionRef }
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 
 class NrsOrchestratorWorkItemRepoSpec extends AnyFlatSpec with Matchers {
   private implicit val jsonCrypto: Encrypter with Decrypter = composeCrypto(
@@ -33,6 +35,30 @@ class NrsOrchestratorWorkItemRepoSpec extends AnyFlatSpec with Matchers {
   )
   "NrsOrchestratorWorkItemRepoSpec" should "serialise and de-serialise into the same value" in {
     val obj = NrsOrchestratorWorkItem(
+      EnvelopeId("test"),
+      FormTemplateId("test"),
+      SubmissionRef("test"),
+      NrsOrchestratorWorkItemData(
+        BusinessId("test"),
+        "test",
+        Seq(("test", "test"), ("test2", "test2")),
+        NRSOrchestratorDestinationResultData(Map("test" -> "test", "test2" -> "test2")),
+        NrsPayload(
+          formData,
+          NrsPayloadMetaData("test", "test", "test")
+        ),
+        "test",
+        "test",
+        Json.obj(("test", "test"), ("test2", "test2"))
+      )
+    )
+    obj shouldBe Json
+      .toJson(obj)(NrsOrchestratorWorkItem.formatEncrypted)
+      .as[NrsOrchestratorWorkItem](NrsOrchestratorWorkItem.formatEncrypted)
+  }
+
+  "NrsOrchestratorWorkItemRepoSpec" should "be able to de-serialise old work-item. All missing data should be replaced with empty strings" in {
+    val oldWorkItem = NrsOrchestratorWorkItemOld(
       EnvelopeId("test"),
       BusinessId("test"),
       "test",
@@ -47,8 +73,30 @@ class NrsOrchestratorWorkItemRepoSpec extends AnyFlatSpec with Matchers {
       "test",
       Json.obj(("test", "test"), ("test2", "test2"))
     )
-    obj shouldBe Json
-      .toJson(obj)(NrsOrchestratorWorkItem.formatEncrypted)
+
+    implicit val writes: Format[NrsOrchestratorWorkItemOld] =
+      EncryptedFormat.formatEncrypted(jsonCrypto)(Json.format[NrsOrchestratorWorkItemOld])
+    val readJsonValue = Json
+      .toJson(oldWorkItem)
       .as[NrsOrchestratorWorkItem](NrsOrchestratorWorkItem.formatEncrypted)
+    val expected = NrsOrchestratorWorkItem(
+      EnvelopeId("test"),
+      FormTemplateId(""),
+      SubmissionRef("test"),
+      NrsOrchestratorWorkItemData(
+        BusinessId("test"),
+        "test",
+        Seq(("test", "test"), ("test2", "test2")),
+        NRSOrchestratorDestinationResultData(Map("test" -> "test", "test2" -> "test2")),
+        NrsPayload(
+          formData,
+          NrsPayloadMetaData("test", "test", "test")
+        ),
+        "test",
+        "test",
+        Json.obj(("test", "test"), ("test2", "test2"))
+      )
+    )
+    readJsonValue shouldBe expected
   }
 }
