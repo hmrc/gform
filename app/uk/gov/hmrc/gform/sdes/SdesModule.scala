@@ -329,6 +329,12 @@ class SdesModule(
 
     override def deleteGeneric(response: DestinationResponse): FOpt[Unit] =
       fromFutureA(destinationWorkItemService.deleteGeneric(response))
+
+    override def findTraceableWorkItemByEnvelopeId(
+      envelopeId: EnvelopeId,
+      sdesDestination: SdesDestination
+    ): FOpt[List[WorkItem[TraceableWorkItem[_]]]] =
+      fromFutureA(destinationWorkItemService.findTraceableWorkItemByEnvelopeId(envelopeId, sdesDestination))
   }
 
 }

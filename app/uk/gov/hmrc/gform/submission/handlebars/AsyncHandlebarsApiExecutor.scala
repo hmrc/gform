@@ -19,9 +19,9 @@ package uk.gov.hmrc.gform.submission.handlebars
 import org.slf4j.LoggerFactory
 import uk.gov.hmrc.gform.scheduler.TraceableWorkItem
 import uk.gov.hmrc.gform.scheduler.asynchandlebars.AsyncHandlebarsWorkItem
-import uk.gov.hmrc.gform.scheduler.history.{ WorkItemHistory, WorkItemHistoryAlgebra }
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ HttpMethod, ProfileName }
+import uk.gov.hmrc.gform.submission.{ WorkItemHistory, WorkItemHistoryAlgebra }
 import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.client.RequestBuilder
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }

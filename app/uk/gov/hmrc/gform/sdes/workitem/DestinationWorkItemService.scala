@@ -70,6 +70,11 @@ trait DestinationWorkItemAlgebra[F[_]] {
 
   def findTraceableWorkItem(id: String, sdesDestination: SdesDestination): F[Option[WorkItem[TraceableWorkItem[_]]]]
 
+  def findTraceableWorkItemByEnvelopeId(
+    envelopeId: EnvelopeId,
+    sdesDestination: SdesDestination
+  ): F[List[WorkItem[TraceableWorkItem[_]]]]
+
   def findByEnvelopeId(envelopeId: EnvelopeId, sdesDestination: SdesDestination): F[List[WorkItem[SdesWorkItem]]]
 
   def deleteSdes(id: String, sdesDestination: SdesDestination): F[Unit]
@@ -301,4 +306,17 @@ class DestinationWorkItemService(
       .map(_.getDeletedCount > 0)
       .void
   }
+
+  override def findTraceableWorkItemByEnvelopeId(
+    envelopeId: EnvelopeId,
+    sdesDestination: SdesDestination
+  ): Future[List[WorkItem[TraceableWorkItem[_]]]] = {
+    val query = Filters.equal("item.envelopeId", envelopeId.value)
+    asyncHandlebarsWorkItemRepo.collection
+      .find(query)
+      .toFuture()
+      .map(_.toList)
+      .map(_.map(_.asInstanceOf[WorkItem[TraceableWorkItem[_]]]))
+  }
+
 }

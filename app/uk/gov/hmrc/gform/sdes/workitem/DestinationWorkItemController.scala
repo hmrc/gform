@@ -86,13 +86,25 @@ class DestinationWorkItemController(
   implicit val workItemFormat: Format[WorkItem[SdesWorkItem]] =
     WorkItem.formatForFields[SdesWorkItem](WorkItemFields.default)
   def getByEnvelopeId(envelopeId: EnvelopeId, sdesDestination: SdesDestination) = Action.async { _ =>
-    destinationWorkItemAlgebra.findByEnvelopeId(envelopeId, sdesDestination).map {
-      case Nil =>
-        Ok(
-          s"Not found. There are no data in mongo db collection '$sdesDestination' for envelopeId: ${envelopeId.value}."
-        )
-      case w :: Nil => Ok(Json.toJson(w))
-      case ws       => Ok(Json.toJson(ws))
+    sdesDestination match {
+      case AsyncHandlebars =>
+        destinationWorkItemAlgebra.findTraceableWorkItemByEnvelopeId(envelopeId, sdesDestination).map {
+          case Nil =>
+            Ok(
+              s"Not found. There are no data in mongo db collection '$sdesDestination' for envelopeId: ${envelopeId.value}."
+            )
+          case w :: Nil => Ok(Json.toJson(SdesWorkItemData.fromTraceableWorkItem(w, sdesDestination)))
+          case ws       => Ok(Json.toJson(ws.map(SdesWorkItemData.fromTraceableWorkItem(_, sdesDestination))))
+        }
+      case _ =>
+        destinationWorkItemAlgebra.findByEnvelopeId(envelopeId, sdesDestination).map {
+          case Nil =>
+            Ok(
+              s"Not found. There are no data in mongo db collection '$sdesDestination' for envelopeId: ${envelopeId.value}."
+            )
+          case w :: Nil => Ok(Json.toJson(w))
+          case ws       => Ok(Json.toJson(ws))
+        }
     }
   }
 }

@@ -68,13 +68,12 @@ import uk.gov.hmrc.gform.repo.Repo
 import uk.gov.hmrc.gform.retrieval.AuthRetrievalModule
 import uk.gov.hmrc.gform.save4later.FormMongoCache
 import uk.gov.hmrc.gform.scheduler.SchedulerModule
-import uk.gov.hmrc.gform.scheduler.history.{ WorkItemHistory, WorkItemHistoryService }
 import uk.gov.hmrc.gform.scheduler.nrsOrchestrator.{ NrsOrchestratorAttachmentWorkItemRepo, NrsOrchestratorWorkItemRepo }
 import uk.gov.hmrc.gform.screenshottool.ScreenshotController
 import uk.gov.hmrc.gform.sdes.SdesModule
 import uk.gov.hmrc.gform.sharedmodel.{ HandlebarsSchema, HandlebarsTemplate }
 import uk.gov.hmrc.gform.shutter.ShutterModule
-import uk.gov.hmrc.gform.submission.SubmissionModule
+import uk.gov.hmrc.gform.submission.{ SubmissionModule, WorkItemHistory, WorkItemHistoryService }
 import uk.gov.hmrc.gform.submission.destinations.DestinationModule
 import uk.gov.hmrc.gform.submission.handlebars.HandlebarsHttpApiModule
 import uk.gov.hmrc.gform.submissionconsolidator.SubmissionConsolidatorModule
@@ -366,7 +365,8 @@ class ApplicationModule(context: Context)
       hipModule,
       wSHttpModule,
       nrsOrchestratorNotificationRepository,
-      nrsOrchestratorAttachmentNotificationRepository
+      nrsOrchestratorAttachmentNotificationRepository,
+      workItemHistoryService
     )
 
   private val retrievalModule =

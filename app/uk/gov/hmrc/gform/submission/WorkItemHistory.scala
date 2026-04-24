@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.scheduler.history
+package uk.gov.hmrc.gform.submission
 
 import julienrf.json.derived
 import play.api.libs.json._
@@ -70,15 +70,15 @@ object WorkItemHistory {
     new OFormat[WorkItemHistory] {
       private val responseBodyField = "responseBody"
 
-      override def writes(workItem: WorkItemHistory): JsObject =
-        format.writes(workItem) ++ Json.obj(
-          responseBodyField -> JsString(jsonCrypto.encrypt(PlainText(workItem.responseBody)).value)
+      override def writes(history: WorkItemHistory): JsObject =
+        format.writes(history) ++ Json.obj(
+          responseBodyField -> JsString(jsonCrypto.encrypt(PlainText(history.responseBody)).value)
         )
 
       override def reads(json: JsValue): JsResult[WorkItemHistory] =
         for {
-          workItem              <- format.reads(json)
+          history               <- format.reads(json)
           encryptedResponseBody <- (json \ responseBodyField).validate[String]
-        } yield workItem.copy(responseBody = jsonCrypto.decrypt(Crypted(encryptedResponseBody)).value)
+        } yield history.copy(responseBody = jsonCrypto.decrypt(Crypted(encryptedResponseBody)).value)
     }
 }

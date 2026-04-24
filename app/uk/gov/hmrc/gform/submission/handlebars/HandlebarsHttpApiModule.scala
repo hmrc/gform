@@ -17,9 +17,9 @@
 package uk.gov.hmrc.gform.submission.handlebars
 
 import uk.gov.hmrc.gform.config.ConfigModule
-import uk.gov.hmrc.gform.scheduler.history.WorkItemHistoryAlgebra
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ HttpMethod, ProfileName }
+import uk.gov.hmrc.gform.submission.WorkItemHistoryAlgebra
 import uk.gov.hmrc.gform.wshttp.WSHttpModule
 import uk.gov.hmrc.http.client.RequestBuilder
 import uk.gov.hmrc.http.{ HeaderCarrier, StringContextOps }

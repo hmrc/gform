@@ -42,7 +42,7 @@ import uk.gov.hmrc.gform.wshttp.WSHttpModule
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.gform.scheduler.nrsOrchestrator.{ NrsOrchestratorAttachmentWorkItemRepo, NrsOrchestratorWorkItemRepo }
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ ExecutionContext, Future }
 
 class SubmissionModule(
   configModule: ConfigModule,
@@ -63,7 +63,8 @@ class SubmissionModule(
   hipModule: HipModule,
   wSHttpModule: WSHttpModule,
   nrsOrchestratorWorkItemRepo: NrsOrchestratorWorkItemRepo,
-  nrsOrchestratorAttachmentWorkItemRepo: NrsOrchestratorAttachmentWorkItemRepo
+  nrsOrchestratorAttachmentWorkItemRepo: NrsOrchestratorAttachmentWorkItemRepo,
+  workItemHistoryService: WorkItemHistoryAlgebra[Future]
 )(implicit ex: ExecutionContext) {
 
   //TODO: this should be replaced with save4later for submissions
@@ -174,6 +175,9 @@ class SubmissionModule(
     timeModule.timeProvider,
     sdesModule.foptDestinationWorkItemService
   )
+
+  val workItemHistoryController =
+    new WorkItemHistoryController(configModule.controllerComponents, workItemHistoryService)
 
   val submissionController = new SubmissionController(configModule.controllerComponents, submissionService)
 
