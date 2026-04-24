@@ -28,27 +28,27 @@ import scala.util.matching.Regex
 
 sealed trait BooleanExpr {
   def topLevelRefs: List[TopLevelRef] = this match {
-    case Equals(left: Expr, right: Expr)                         => Nil
-    case GreaterThan(left: Expr, right: Expr)                    => Nil
-    case GreaterThanOrEquals(left: Expr, right: Expr)            => Nil
-    case LessThan(left: Expr, right: Expr)                       => Nil
-    case LessThanOrEquals(left: Expr, right: Expr)               => Nil
-    case Not(e: BooleanExpr)                                     => e.topLevelRefs
-    case Or(left: BooleanExpr, right: BooleanExpr)               => left.topLevelRefs ++ right.topLevelRefs
-    case And(left: BooleanExpr, right: BooleanExpr)              => left.topLevelRefs ++ right.topLevelRefs
-    case IsTrue                                                  => Nil
-    case IsFalse                                                 => Nil
-    case Contains(multiValueField: FormCtx, value: Expr)         => Nil
-    case DuplicateExists(fieldList: List[FormCtx])               => Nil
-    case In(value: Expr, dataSource: DataSource)                 => Nil
-    case HasAnswer(formCtx: FormCtx, addToListRef: AddToListRef) => Nil
-    case MatchRegex(expr: Expr, regex: Regex)                    => Nil
-    case DateBefore(left: DateExpr, right: DateExpr)             => Nil
-    case DateAfter(left: DateExpr, right: DateExpr)              => Nil
-    case First(formCtx: FormCtx)                                 => Nil
-    case IsLogin(value: LoginInfo)                               => Nil
-    case FormPhase(value: FormPhaseValue)                        => Nil
-    case t @ TopLevelRef(booleanExprId: BooleanExprId)           => t :: Nil
+    case Equals(left: Expr, right: Expr)                 => Nil
+    case GreaterThan(left: Expr, right: Expr)            => Nil
+    case GreaterThanOrEquals(left: Expr, right: Expr)    => Nil
+    case LessThan(left: Expr, right: Expr)               => Nil
+    case LessThanOrEquals(left: Expr, right: Expr)       => Nil
+    case Not(e: BooleanExpr)                             => e.topLevelRefs
+    case Or(left: BooleanExpr, right: BooleanExpr)       => left.topLevelRefs ++ right.topLevelRefs
+    case And(left: BooleanExpr, right: BooleanExpr)      => left.topLevelRefs ++ right.topLevelRefs
+    case IsTrue                                          => Nil
+    case IsFalse                                         => Nil
+    case Contains(multiValueField: FormCtx, value: Expr) => Nil
+    case DuplicateExists(fieldList: List[FormCtx])       => Nil
+    case In(value: Expr, dataSource: DataSource)         => Nil
+    case HasAnswer(left: FormCtx, right: FormCtx)        => Nil
+    case MatchRegex(expr: Expr, regex: Regex)            => Nil
+    case DateBefore(left: DateExpr, right: DateExpr)     => Nil
+    case DateAfter(left: DateExpr, right: DateExpr)      => Nil
+    case First(formCtx: FormCtx)                         => Nil
+    case IsLogin(value: LoginInfo)                       => Nil
+    case FormPhase(value: FormPhaseValue)                => Nil
+    case t @ TopLevelRef(booleanExprId: BooleanExprId)   => t :: Nil
   }
 }
 final case class Equals(left: Expr, right: Expr) extends BooleanExpr
@@ -64,7 +64,7 @@ final case object IsFalse extends BooleanExpr
 final case class Contains(multiValueField: FormCtx, value: Expr) extends BooleanExpr
 final case class DuplicateExists(fieldList: List[FormCtx]) extends BooleanExpr
 final case class In(value: Expr, dataSource: DataSource) extends BooleanExpr
-final case class HasAnswer(formCtx: FormCtx, addToListRef: AddToListRef) extends BooleanExpr
+final case class HasAnswer(left: FormCtx, right: FormCtx) extends BooleanExpr
 final case class MatchRegex(expr: Expr, regex: Regex) extends BooleanExpr
 
 final case class DateBefore(left: DateExpr, right: DateExpr) extends BooleanExpr
@@ -109,7 +109,7 @@ object BooleanExpr {
       case IsFalse                                         => Nil
       case Contains(multiValueField: FormCtx, value: Expr) => withPath(value, multiValueField)
       case In(value: Expr, dataSource: DataSource)         => withPath(value)
-      case HasAnswer(formCtx: FormCtx, atl: AddToListRef)  => withPath(formCtx :: atl.allExpressions.toList: _*)
+      case HasAnswer(left: FormCtx, right: FormCtx)        => withPath(left, right)
       case MatchRegex(expr: Expr, regex: Regex)            => withPath(expr)
       case DateBefore(left: DateExpr, right: DateExpr)     => withPath(left.leafExprs ++ right.leafExprs: _*)
       case DateAfter(left: DateExpr, right: DateExpr)      => withPath(left.leafExprs ++ right.leafExprs: _*)

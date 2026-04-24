@@ -26,8 +26,9 @@ class FunctionsChecker(formTemplate: FormTemplate, allExpressions: List[ExprWith
     .collect {
       case s: Section.AddToList => Seq(s.addAnotherQuestion.id) ++ s.pages.toList.flatMap(_.fields.map(_.id)).toSet
       case s: Section.NonRepeatingPage =>
-        s.page.fields.collect { case fc @ IsMultiFileUpload(fu) =>
-          fc.id
+        s.page.fields.collect {
+          case fc @ IsMultiFileUpload(_) => fc.id
+          case fc @ IsGroup(_)           => fc.id
         }
     }
     .flatten
@@ -56,7 +57,7 @@ class FunctionsChecker(formTemplate: FormTemplate, allExpressions: List[ExprWith
       )
     case ReferenceInfo.CountExpr(path, Count(formComponentId)) if !allowedCountIds(formComponentId) =>
       Invalid(
-        s"${path.path}: $formComponentId cannot be use with .count function. Only MultiFile upload and AddToList id can be used with .count"
+        s"${path.path}: $formComponentId cannot be use with .count function. Only MultiFile upload id, AddToList id or Group id can be used with .count"
       )
     case ReferenceInfo.IndexExpr(path, Index(formComponentId)) if !allowedIndexIds(formComponentId) =>
       Invalid(

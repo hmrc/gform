@@ -116,12 +116,14 @@ class TestOnlyController(
         .getFormTemplateRaw(formTemplateId)
         .map { rawTemplate =>
           val exprs = for {
-            expressionsContext        <- ExprSubstitutions.from(rawTemplate)
-            booleanExpressionsContext <- BooleanExprSubstitutions.from(rawTemplate)
+            expressionsContext               <- ExprSubstitutions.from(rawTemplate)
+            booleanExpressionsContext        <- BooleanExprSubstitutions.from(rawTemplate)
+            exprSubstitutionsResolved        <- expressionsContext.resolveSelfReferences
+            exprBooleanSubstitutionsResolved <- booleanExpressionsContext.resolveSelfReferences
           } yield {
-            val expressions0: ExprSubstitutions = substituteExpr(expressionsContext)
+            val expressions0: ExprSubstitutions = substituteExpr(exprSubstitutionsResolved)
             val (expressionsSubs, errorMap): (ExprSubstitutions, Map[ExpressionId, String]) =
-              substituteBooleanExprsInExprs(booleanExpressionsContext, expressions0)
+              substituteBooleanExprsInExprs(exprBooleanSubstitutionsResolved, expressions0)
             val expressionsResolved: Either[UnexpectedState, ExprSubstitutions] =
               TopLevelExpressions.resolveReferences(expressionsSubs)
             ExpressionsLookup(
