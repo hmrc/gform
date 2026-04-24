@@ -645,7 +645,8 @@ object Substituter {
       emailParameters = t.emailParameters(substitutions),
       dataRetrieve = t.dataRetrieve(substitutions),
       exitPages = t.exitPages(substitutions),
-      customSubmissionRef = t.customSubmissionRef(substitutions)
+      customSubmissionRef = t.customSubmissionRef(substitutions),
+      emailExpr = t.emailExpr(substitutions)
     )
 
   implicit def redirectSubstituter[A](implicit

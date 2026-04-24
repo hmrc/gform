@@ -31,10 +31,9 @@ object ExprSubstituter extends Substituter[ExprSubstitutions, FormTemplate] {
         case Subtraction(l, r)      => Subtraction(substitute(substitutions, l), substitute(substitutions, r))
         case Divide(l, r)           => Divide(substitute(substitutions, l), substitute(substitutions, r))
         case HideZeroDecimals(l)    => HideZeroDecimals(substitute(substitutions, l))
-        case Period(l, r)           => Period(substitute(substitutions, l), substitute(substitutions, r))
+        case Period(l, r, m)        => Period(substitute(substitutions, l), substitute(substitutions, r), m)
         case Between(l, r, m)       => Between(substitute(substitutions, l), substitute(substitutions, r), m)
         case Sum(l)                 => Sum(substitute(substitutions, l))
-        case PeriodExt(p, pe)       => PeriodExt(substitute(substitutions, p), pe)
         case DateCtx(dateExpr)      => DateCtx(dateExpr(substitutions))
         case DateFunction(dateFunc) => DateFunction(dateFunc(substitutions))
         case i @ IfElse(cond, l, r) =>
@@ -94,17 +93,19 @@ object ExprSubstituter extends Substituter[ExprSubstitutions, FormTemplate] {
       dExpr match {
         case d @ DateFormCtxVar(FormCtx(formComponentId)) =>
           substitutions.expressions.get(ExpressionId(formComponentId.value)) match {
-            case Some(DateCtx(dateExpr))                   => dateExpr
-            case Some(ctx @ FormCtx(_))                    => DateFormCtxVar(ctx)
-            case Some(IfElse(c, DateCtx(f1), DateCtx(f2))) => DateIfElse(c, loop(f1), loop(f2))
-            case here                                      => d
+            case Some(DateCtx(dateExpr))                                  => dateExpr
+            case Some(ctx @ FormCtx(_))                                   => DateFormCtxVar(ctx)
+            case Some(IfElse(c, Expr2DateExpr(f1), Expr2DateExpr(f2)))    => DateIfElse(c, loop(f1), loop(f2))
+            case Some(Else(Expr2DateExpr(dExpr1), Expr2DateExpr(dExpr2))) => DateOrElse(dExpr1, dExpr2)
+            case here                                                     => d
           }
         case d @ HmrcTaxPeriodCtx(FormCtx(fcId), _) =>
           substitutions.expressions.get(ExpressionId(fcId.value)) match {
-            case Some(DateCtx(dateExpr))                   => dateExpr
-            case Some(ctx @ FormCtx(_))                    => DateFormCtxVar(ctx)
-            case Some(IfElse(c, DateCtx(f1), DateCtx(f2))) => DateIfElse(c, loop(f1), loop(f2))
-            case here                                      => d
+            case Some(DateCtx(dateExpr))                                  => dateExpr
+            case Some(ctx @ FormCtx(_))                                   => DateFormCtxVar(ctx)
+            case Some(IfElse(c, Expr2DateExpr(f1), Expr2DateExpr(f2)))    => DateIfElse(c, loop(f1), loop(f2))
+            case Some(Else(Expr2DateExpr(dExpr1), Expr2DateExpr(dExpr2))) => DateOrElse(dExpr1, dExpr2)
+            case here                                                     => d
           }
         case d @ DataRetrieveDateCtx(_, _) => d
         case d @ DateValueExpr(_)          => d

@@ -237,10 +237,7 @@ object FormTemplateValidator {
         invalid(path, formComponentId)
       case ReferenceInfo.CountExpr(path, Count(formComponentId)) if !allFcIds(formComponentId) =>
         invalid(path, formComponentId)
-      case ReferenceInfo.PeriodExpr(path, Period(DateCtx(dateExpr1), DateCtx(dateExpr2)))
-          if dateExprInvalidRefs(dateExpr1, dateExpr2).nonEmpty =>
-        invalid(path, dateExprInvalidRefs(dateExpr1, dateExpr2): _*)
-      case ReferenceInfo.PeriodExtExpr(path, PeriodExt(Period(DateCtx(dateExpr1), DateCtx(dateExpr2)), _))
+      case ReferenceInfo.PeriodExpr(path, Period(DateCtx(dateExpr1), DateCtx(dateExpr2), _))
           if dateExprInvalidRefs(dateExpr1, dateExpr2).nonEmpty =>
         invalid(path, dateExprInvalidRefs(dateExpr1, dateExpr2): _*)
       case ReferenceInfo.BetweenExpr(path, Between(DateCtx(dateExpr1), DateCtx(dateExpr2), _))
@@ -469,12 +466,14 @@ object FormTemplateValidator {
     fcIdToComponentType
       .get(formComponentId)
       .fold[ValidationResult](Invalid(s"${path.path}: Form component $formComponentId is invalid")) { componentType =>
-        (componentType.cast[Date], componentType.cast[CalendarDate.type]) match {
-          case (Some(_), _) | (_, Some(_)) => Valid
-          case _ =>
-            Invalid(
-              s"${path.path}: Form component '$formComponentId' used in $functionName function should be date type"
-            )
+        val errorPrefix = s"${path.path}: Form component '$formComponentId' used in $functionName function"
+        (componentType, functionName) match {
+          case (_: Date, _)           => Valid
+          case (CalendarDate, "year") => Invalid(errorPrefix + " can't be calendarDate")
+          case (CalendarDate, _)      => Valid
+          case (TaxPeriodDate, "day") => Invalid(errorPrefix + " can't be taxPeriodDate")
+          case (TaxPeriodDate, _)     => Valid
+          case _                      => Invalid(errorPrefix + " should be date like type")
         }
       }
 
@@ -621,9 +620,8 @@ object FormTemplateValidator {
     case Else(l, r)          => fcIdsWithDateOffsetFromExpr(l) ++ fcIdsWithDateOffsetFromExpr(r)
     case HideZeroDecimals(e) => fcIdsWithDateOffsetFromExpr(e)
     case Sum(e)              => fcIdsWithDateOffsetFromExpr(e)
-    case Period(l, r)        => fcIdsWithDateOffsetFromExpr(l) ++ fcIdsWithDateOffsetFromExpr(r)
+    case Period(l, r, _)     => fcIdsWithDateOffsetFromExpr(l) ++ fcIdsWithDateOffsetFromExpr(r)
     case Between(l, r, _)    => fcIdsWithDateOffsetFromExpr(l) ++ fcIdsWithDateOffsetFromExpr(r)
-    case PeriodExt(p, _)     => fcIdsWithDateOffsetFromExpr(p)
     case Typed(e, _)         => fcIdsWithDateOffsetFromExpr(e)
     case StringOps(e, _)     => fcIdsWithDateOffsetFromExpr(e)
     case Concat(exprs)       => exprs.flatMap(fcIdsWithDateOffsetFromExpr)
@@ -684,9 +682,7 @@ object FormTemplateValidator {
         .getOrElse(Invalid(s"${path.path}: Expression $expr used in period function should be a date expression"))
 
     val validations = allExpressions.flatMap(_.referenceInfos).collect {
-      case PeriodExpr(path, Period(expr1, expr2)) => List(validateExpr(expr1, path), validateExpr(expr2, path))
-      case PeriodExtExpr(path, PeriodExt(Period(expr1, expr2), _)) =>
-        List(validateExpr(expr1, path), validateExpr(expr2, path))
+      case PeriodExpr(path, Period(expr1, expr2, _)) => List(validateExpr(expr1, path), validateExpr(expr2, path))
     }
     Monoid.combineAll(validations.flatten)
   }
@@ -1581,15 +1577,12 @@ object FormTemplateValidator {
         invalidFCIds.isEmpty.validationResult(
           s"Form field(s) '${invalidFCIds.mkString(",")}' not defined in form template."
         )
-      case DateFunction(value) => Valid
-      case Period(dateCtx1, dateCtx2) =>
-        checkFields(dateCtx1, dateCtx2)
-      case PeriodExt(periodFun, _) => validate(periodFun, sections)
-      case Between(dateCtx1, dateCtx2, _) =>
-        checkFields(dateCtx1, dateCtx2)
-      case DataRetrieveCtx(_, _)  => Valid
-      case DataRetrieveCount(_)   => Valid
-      case LookupColumn(value, _) => validate(FormCtx(value), sections)
+      case DateFunction(value)            => Valid
+      case Period(dateCtx1, dateCtx2, _)  => checkFields(dateCtx1, dateCtx2)
+      case Between(dateCtx1, dateCtx2, _) => checkFields(dateCtx1, dateCtx2)
+      case DataRetrieveCtx(_, _)          => Valid
+      case DataRetrieveCount(_)           => Valid
+      case LookupColumn(value, _)         => validate(FormCtx(value), sections)
       case CsvCountryCountCheck(value, _, _) =>
         SectionHelper
           .addToListIds(sections)
