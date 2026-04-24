@@ -27,9 +27,6 @@ case class FormComponentId(value: String) extends AnyVal {
 
   def withSuffix(suffix: String): FormComponentId = FormComponentId(value + "-" + suffix)
 
-  def extendForRepeatingSection(repetitionIndex: Int) = FormComponentId(s"${repetitionIndex}_$value")
-  def extendForRepeatingGroup(repetitionIndex: Int) = FormComponentId(s"${value}_$repetitionIndex")
-
   def reduceToTemplateFieldId: FormComponentId = {
     val repeatingSectionFieldId = """^\d+_(.+)$""".r
     val repeatingGroupFieldId = """^(.+)_\d+$""".r
