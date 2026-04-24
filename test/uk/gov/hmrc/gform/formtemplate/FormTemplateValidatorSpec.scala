@@ -242,13 +242,13 @@ class FormTemplateValidatorSpec
         (
           "${period(startDate, name)}",
           Invalid(
-            "sections.fields.[id=infoField].infoText: Form component 'name' used in period function should be date type"
+            "sections.fields.[id=infoField].infoText: Form component 'name' used in period function should be date like type"
           )
         ),
         (
           "${period(startDate, name).sum}",
           Invalid(
-            "sections.fields.[id=infoField].infoText: Form component 'name' used in period function should be date type"
+            "sections.fields.[id=infoField].infoText: Form component 'name' used in period function should be date like type"
           )
         )
       )
@@ -303,25 +303,25 @@ class FormTemplateValidatorSpec
         (
           "${daysBetween(startDate, name)}",
           Invalid(
-            "sections.fields.[id=infoField].infoText: Form component 'name' used in daysBetween/weeksBetween function should be date type"
+            "sections.fields.[id=infoField].infoText: Form component 'name' used in daysBetween/weeksBetween function should be date like type"
           )
         ),
         (
           "${daysBetween(startDate, name).sum}",
           Invalid(
-            "sections.fields.[id=infoField].infoText: Form component 'name' used in daysBetween/weeksBetween function should be date type"
+            "sections.fields.[id=infoField].infoText: Form component 'name' used in daysBetween/weeksBetween function should be date like type"
           )
         ),
         (
           "${weeksBetween(startDate, name)}",
           Invalid(
-            "sections.fields.[id=infoField].infoText: Form component 'name' used in daysBetween/weeksBetween function should be date type"
+            "sections.fields.[id=infoField].infoText: Form component 'name' used in daysBetween/weeksBetween function should be date like type"
           )
         ),
         (
           "${weeksBetween(startDate, name).sum}",
           Invalid(
-            "sections.fields.[id=infoField].infoText: Form component 'name' used in daysBetween/weeksBetween function should be date type"
+            "sections.fields.[id=infoField].infoText: Form component 'name' used in daysBetween/weeksBetween function should be date like type"
           )
         )
       )
@@ -2071,7 +2071,7 @@ class FormTemplateValidatorSpec
               )
             )
           ),
-          Invalid(": Form component 'notADateComponent' used in taxYear function should be date type")
+          Invalid(": Form component 'notADateComponent' used in taxYear function should be date like type")
         ),
         (
           List(
@@ -2475,7 +2475,7 @@ class FormTemplateValidatorSpec
             )
           ),
           Invalid(
-            "dataRetrieve.dr1.date: Form component 'choiceComp' used with date offset should be date type"
+            "sections.dataRetrieve.params.expr: Form component 'choiceComp' used with date offset should be date type"
           )
         ),
         // Valid: Date field used with offset in dataRetrieve parameter
