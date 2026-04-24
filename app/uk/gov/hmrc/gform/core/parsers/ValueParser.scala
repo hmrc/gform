@@ -309,8 +309,9 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
     }
     | (periodFun ~ "." ~ "sum|totalMonths|years|months|days".r ^^ {
       case _ ~ (dateExpr1: DateExpr) ~ _ ~ (dateExpr2: DateExpr) ~ _ ~ _ ~ prop =>
-        PeriodExt(
-          Period(DateCtx(dateExpr1), DateCtx(dateExpr2)),
+        Period(
+          DateCtx(dateExpr1),
+          DateCtx(dateExpr2),
           prop match {
             case "sum"         => PeriodFn.Sum
             case "totalMonths" => PeriodFn.TotalMonths
@@ -325,7 +326,7 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
         )
     })
     | periodFun ^^ { case _ ~ dateExpr1 ~ _ ~ dateExpr2 ~ _ =>
-      Period(DateCtx(dateExpr1), DateCtx(dateExpr2))
+      Period(DateCtx(dateExpr1), DateCtx(dateExpr2), PeriodFn.Identity)
     }
     | ("daysBetween(" ~ dateExpr ~ "," ~ dateExpr ~ ")" ~ ".sum|".r ^^ {
       case _ ~ (dateExpr1: DateExpr) ~ _ ~ (dateExpr2: DateExpr) ~ _ ~ prop =>
@@ -647,12 +648,12 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
       In(expr, dataSource)
     }
     | FormComponentId.unanchoredIdValidation ~ "in" ~ FormComponentId.unanchoredIdValidation ^^ {
-      case expr ~ _ ~ addToListRef =>
-        HasAnswer(FormCtx(FormComponentId(expr)), AddToListRef.Basic(FormCtx(FormComponentId(addToListRef))))
+      case left ~ _ ~ right =>
+        HasAnswer(FormCtx(FormComponentId(left)), FormCtx(FormComponentId(right)))
     }
     | FormComponentId.unanchoredIdValidation ~ "notIn" ~ FormComponentId.unanchoredIdValidation ^^ {
-      case expr ~ _ ~ addToListRef =>
-        Not(HasAnswer(FormCtx(FormComponentId(expr)), AddToListRef.Basic(FormCtx(FormComponentId(addToListRef)))))
+      case left ~ _ ~ right =>
+        Not(HasAnswer(FormCtx(FormComponentId(left)), FormCtx(FormComponentId(right))))
     }
     | dateExpr ~ "before" ~ dateExpr ^^ { case expr1 ~ _ ~ expr2 =>
       DateBefore(expr1, expr2)
