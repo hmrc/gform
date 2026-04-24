@@ -31,7 +31,7 @@ class AddressLensChecker(formTemplate: FormTemplate, allExpressions: List[ExprWi
     allExpressions.flatMap(_.referenceInfos).foldMap {
       case ReferenceInfo.AddressExpr(path, AddressLens(formComponentId, detail)) if !allAddressIds(formComponentId) =>
         Invalid(
-          s"${path.path}: $formComponentId cannot be use with .${detail.functionName} function. $formComponentId is not an Address or OverseasAddress component"
+          s"${path.path}: $formComponentId cannot be use with .${detail.functionName} function. $formComponentId is not an Address, OverseasAddress or PostcodeLookup component"
         )
       case _ => Valid
     }
