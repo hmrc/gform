@@ -26,7 +26,7 @@ import uk.gov.hmrc.gform.sharedmodel.{ DataRetrieve, SmartString }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationIncludeIf, Destinations }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationIncludeIf.IncludeIfValue
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.{ DataStore, Email, HandlebarsHttpApi, HmrcDms, InfoArchive, Log, NRSOrchestrator, NiRefundClaimApi, PegaApi, StateTransition, SubmissionConsolidator }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.{ AsyncHandlebarsHttpApi, DataStore, Email, HandlebarsHttpApi, HmrcDms, InfoArchive, Log, NRSOrchestrator, NiRefundClaimApi, PegaApi, StateTransition, SubmissionConsolidator }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DestinationList
 
 trait Rewriter {
@@ -567,6 +567,7 @@ trait Rewriter {
           case h: HmrcDms                => h.copy(includeIf = replaceDesIncludeIf(h.includeIf))
           case e: Email                  => e.copy(includeIf = replaceDesIncludeIf(e.includeIf))
           case h: HandlebarsHttpApi      => h.copy(includeIf = replaceDesIncludeIf(h.includeIf))
+          case a: AsyncHandlebarsHttpApi => a.copy(includeIf = replaceDesIncludeIf(a.includeIf))
           case l: Log                    => l
           case s: StateTransition        => s.copy(includeIf = replaceDesIncludeIf(s.includeIf))
           case s: SubmissionConsolidator => s.copy(includeIf = replaceDesIncludeIf(s.includeIf))

@@ -187,6 +187,7 @@ object DestinationsValidator {
           case _: Destination.DataStore              => Destination.dataStore
           case _: Destination.InfoArchive            => Destination.infoArchive
           case _: Destination.HandlebarsHttpApi      => Destination.handlebarsHttpApi
+          case _: Destination.AsyncHandlebarsHttpApi => Destination.asyncHandlebarsHttpApi
           case _: Destination.Email                  => Destination.email
           case _: Destination.StateTransition        => Destination.stateTransition
           case _: Destination.SubmissionConsolidator => Destination.submissionConsolidator

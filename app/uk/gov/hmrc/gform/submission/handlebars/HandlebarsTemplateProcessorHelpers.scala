@@ -598,6 +598,8 @@ class HandlebarsTemplateProcessorHelpers(
 
   def stripSpaces(s: Any): CharSequence = log("stripSpaces", s)(ifNotNullAsString(s)(_.replaceAll("\\s", "")))
 
+  def stripHyphens(s: Any): CharSequence = log("stripHyphens", s)(ifNotNullAsString(s)(_.replaceAll("-", "")))
+
   def not(s: Any): CharSequence = log("not", s) {
     ifNotNullAsString(s) { v =>
       (!asBoolean(v)).toString
