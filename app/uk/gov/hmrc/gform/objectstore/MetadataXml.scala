@@ -50,12 +50,12 @@ object MetadataXml {
     val pegaCaseflowAttributes = if (hmrcDms.isPegaCaseflow) {
       List(
         createAttribute("hm_post_received_date", submission.submittedDate),
+        createAttribute("hm_post_code", gForm),
         createAttribute("hm_po_box", gForm),
         createAttribute("hm_unique_doc_id", submission.submissionRef.withoutHyphens),
         createAttribute("hm_number_pages", noOfPages),
         createAttribute("hm_case_id", destinationResult.flatMap(_.pegaCaseId).getOrElse("Unable to evaluate")),
-        createAttribute("hm_attachment_count", attachmentCount + roboticsAsAttachmentCountOffset),
-        createAttribute("hm_doc_source", gForm)
+        createAttribute("hm_attachment_count", attachmentCount + roboticsAsAttachmentCountOffset)
       )
     } else Nil
 
