@@ -526,7 +526,6 @@ object Substituter {
         d.copy(
           customerId = d.customerId(substitutions),
           includeIf = d.includeIf(substitutions),
-          postalCode = d.postalCode(substitutions),
           caseId = d.caseId(substitutions)
         )
       case d: Destination.DataStore =>

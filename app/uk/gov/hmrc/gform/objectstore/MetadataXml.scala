@@ -26,6 +26,7 @@ import scala.xml.{ Elem, Utility }
 object MetadataXml {
 
   val xmlDec = """<?xml version="1.0" encoding="UTF-8" standalone="no"?>"""
+  val gForm = "gForm"
 
   private def createMetadata(
     submission: Submission,
@@ -49,12 +50,18 @@ object MetadataXml {
     val pegaCaseflowAttributes = if (hmrcDms.isPegaCaseflow) {
       List(
         createAttribute("hm_post_received_date", submission.submittedDate),
-        createAttribute("hm_po_box", destinationResult.flatMap(_.postalCode).getOrElse("Unable to evaluate")),
+        createAttribute("hm_rdc_received_date", ""),
+        createAttribute("hm_scan_date", ""),
+        createAttribute("hm_post_code", gForm),
+        createAttribute("hm_po_box", gForm),
         createAttribute("hm_unique_doc_id", submission.submissionRef.withoutHyphens),
         createAttribute("hm_number_pages", noOfPages),
         createAttribute("hm_case_id", destinationResult.flatMap(_.pegaCaseId).getOrElse("Unable to evaluate")),
-        createAttribute("hm_attachment_count", attachmentCount + roboticsAsAttachmentCountOffset),
-        createAttribute("hm_doc_source", "Gform")
+        createAttribute("hm_utr", ""),
+        createAttribute("hm_is_returnable_item", ""),
+        createAttribute("hm_is_rescan", ""),
+        createAttribute("hm_is_internal", ""),
+        createAttribute("hm_attachment_count", attachmentCount + roboticsAsAttachmentCountOffset)
       )
     } else Nil
 
@@ -81,7 +88,7 @@ object MetadataXml {
     reconciliationId: ReconciliationId,
     destination: HmrcDms
   ): Elem = {
-    val target = if (destination.isPegaCaseflow) "PegaCaseflow" else "DMS"
+    val target = if (destination.isPegaCaseflow) "CASEFLOW" else "DMS"
     <header>
       <title>{submissionRef.withoutHyphens}</title>
       <format>pdf</format>

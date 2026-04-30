@@ -40,7 +40,6 @@ sealed trait DestinationWithCustomerId extends Destination {
 sealed trait DestinationWithCustomerCaseflow {
   def customerId(): Expr
   def caseId(): Option[Expr]
-  def postalCode(): Option[Expr]
 }
 
 sealed trait DestinationWithTaxpayerId extends Destination {
@@ -113,8 +112,7 @@ object Destination {
     roboticsAsAttachment: Option[Boolean],
     includeAttachmentNames: Option[Boolean],
     submissionPrefix: Option[String],
-    caseId: Option[Expr],
-    postalCode: Option[Expr]
+    caseId: Option[Expr]
   ) extends Destination with DestinationWithCustomerCaseflow {
     def roboticsFileName(fileNamePrefix: String, roboticsFileExtension: String): String =
       if (roboticsAsAttachment.getOrElse(false)) {
@@ -286,8 +284,7 @@ object Destination {
       case d: DestinationWithCustomerCaseflow =>
         List(ExprWithPath(path + "customerId", d.customerId())) ++
           List(
-            d.caseId().map(c => ExprWithPath(path + "caseId", c)).toList,
-            d.postalCode().map(pc => ExprWithPath(path + "postalCode", pc)).toList
+            d.caseId().map(c => ExprWithPath(path + "caseId", c)).toList
           ).flatten
       case d: DestinationWithPaymentReference =>
         List(ExprWithPath(path + "paymentReference", d.paymentReference)) ++
@@ -322,8 +319,7 @@ case class UploadableHmrcDmsDestination(
   roboticsAsAttachment: Option[Boolean],
   includeAttachmentNames: Option[Boolean],
   submissionPrefix: Option[String] = None,
-  caseId: Option[TextExpression] = None,
-  postalCode: Option[TextExpression] = None
+  caseId: Option[TextExpression] = None
 ) {
 
   def toHmrcDmsDestination: Either[String, Destination.HmrcDms] =
@@ -348,8 +344,7 @@ case class UploadableHmrcDmsDestination(
       roboticsAsAttachment,
       includeAttachmentNames,
       submissionPrefix,
-      caseId.map(_.expr),
-      postalCode.map(_.expr)
+      caseId.map(_.expr)
     )
 }
 

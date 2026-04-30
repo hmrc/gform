@@ -118,7 +118,6 @@ object DmsSubmissionService {
       metadata.roboticsAsAttachment,
       Some(false),
       None,
-      None,
       None
     )
 
