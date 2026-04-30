@@ -29,7 +29,7 @@ import uk.gov.hmrc.gform.formtemplate.FormTemplateAlgebra
 import uk.gov.hmrc.gform.repo.Repo
 import uk.gov.hmrc.gform.sdes.workitem.DestinationWorkItemAlgebra
 import uk.gov.hmrc.gform.sharedmodel.form._
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DmsDestinationResponse, NrsOrchestratorDestinationResponse, OtherSdesDestinationResponse }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ AsyncHandlebarsDestinationResponse, DmsDestinationResponse, NrsOrchestratorDestinationResponse, OtherSdesDestinationResponse }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplate, FormTemplateId }
 import uk.gov.hmrc.gform.sharedmodel.{ SubmissionData, SubmissionRef }
 import uk.gov.hmrc.gform.submission.destinations.{ DestinationSubmissionInfo, DestinationsProcessorModelAlgebra, DestinationsSubmitterAlgebra }
@@ -92,14 +92,18 @@ class SubmissionService(
             submissionData.destinationEvaluation,
             submissionData.userSession
           )
-      maybeWorkItems = destinationResponses.map(_.collect {
-                         case d: DmsDestinationResponse       => (d.routing, d.workItemId)
-                         case o: OtherSdesDestinationResponse => (o.routing, o.workItemId)
-                       })
-      _ <- maybeWorkItems.traverse(destinationWorkItemService.ready)
       _ <- destinationResponses
-             .map(_.collect { case d: NrsOrchestratorDestinationResponse => d })
-             .traverse(destinationWorkItemService.readyNrsOrchestrator)
+             .map(_.collect {
+               case d: DmsDestinationResponse       => (d.routing, d.workItemId)
+               case o: OtherSdesDestinationResponse => (o.routing, o.workItemId)
+             })
+             .traverse(destinationWorkItemService.readySdes)
+      _ <- destinationResponses
+             .map(_.collect {
+               case d: AsyncHandlebarsDestinationResponse => d
+               case d: NrsOrchestratorDestinationResponse => d
+             })
+             .traverse(destinationWorkItemService.readyGeneric)
       _ <- formAlgebra.updateFormStatus(submissionInfo.formId, Submitted)
       emailAddress = email.getEmailAddress(form, submissionData.maybeEmailAddress)
       _ <- fromFutureA(

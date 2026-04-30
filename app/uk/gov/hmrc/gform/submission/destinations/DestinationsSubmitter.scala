@@ -112,22 +112,14 @@ class DestinationsSubmitter[M[_]: Monad](
 
           for {
             _ <- cleanUp(updatedResponseList)
-            _ <- cleanUpNrsOrchestrator(updatedResponseList)
+            _ <- cleanUpGenericWorkItems(updatedResponseList)
           } yield ()
         }
     }
   }
 
-  private def cleanUpNrsOrchestrator(forCleanup: List[DestinationResponse]): M[List[Unit]] = {
-    val data: List[ObjectId] = forCleanup.collect { case d: NrsOrchestratorDestinationResponse =>
-      d.workItemId
-    }
-
-    data.traverse { workItemId =>
-      logger.info(s"Deleting deferred nrsOrchestrator work item ${workItemId.toHexString}")
-      workItemService.deleteNrsOrchestrator(workItemId.toHexString)
-    }
-  }
+  private def cleanUpGenericWorkItems(forCleanup: List[DestinationResponse]): M[List[Unit]] =
+    forCleanup.traverse(response => workItemService.deleteGeneric(response))
 
   private def cleanUp(forCleanup: List[DestinationResponse]): M[List[Unit]] = {
     val data: List[(ObjectId, SdesDestination)] = forCleanup.collect {
@@ -137,7 +129,7 @@ class DestinationsSubmitter[M[_]: Monad](
 
     data.traverse { case (workItemId, destination) =>
       logger.info(s"Deleting deferred $destination work item ${workItemId.toHexString}")
-      workItemService.delete(workItemId.toHexString, destination)
+      workItemService.deleteSdes(workItemId.toHexString, destination)
     }
   }
 }

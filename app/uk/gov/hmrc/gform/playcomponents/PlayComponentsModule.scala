@@ -117,6 +117,7 @@ class PlayComponentsModule(
     sdesModule.sdesCallbackController,
     sdesModule.sdesController,
     sdesModule.destinationWorkItemController,
+    submissionModule.workItemHistoryController,
     historyModule.historyController,
     retrievalModule.authRetrievalController,
     companiesHouseModule.companiesHouseController,

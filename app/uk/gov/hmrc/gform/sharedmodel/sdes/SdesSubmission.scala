@@ -89,4 +89,6 @@ object CorrelationId {
     ValueClassFormat.vformat("_id", CorrelationId.apply, x => JsString(x.value))
   val vformat: Format[CorrelationId] =
     ValueClassFormat.vformat("correlationId", CorrelationId.apply, x => JsString(x.value))
+  val oformat: OFormat[CorrelationId] =
+    ValueClassFormat.oformat("correlationId", CorrelationId.apply, _.value)
 }

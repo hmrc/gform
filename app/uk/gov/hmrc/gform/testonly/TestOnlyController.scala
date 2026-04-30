@@ -292,6 +292,18 @@ class TestOnlyController(
                     )
                     Ok(res)
                 }
+              case a: Destination.AsyncHandlebarsHttpApi =>
+                a.payload match {
+                  case None => BadRequest(s"Destination '${a.id.id}' is missing payload data")
+                  case Some(payload) =>
+                    val res = RealHandlebarsTemplateProcessor(
+                      payload,
+                      HandlebarsTemplateProcessorModel.empty,
+                      FocussedHandlebarsModelTree(modelTree),
+                      a.payloadType
+                    )
+                    Ok(res)
+                }
               case h: Destination.HmrcDms =>
                 h.payload match {
                   case None => BadRequest(s"Destination '${h.id.id}' is missing payload data")
@@ -352,10 +364,11 @@ class TestOnlyController(
     destinations match {
       case dl: Destinations.DestinationList =>
         dl.destinations.find {
-          case (d: Destination.HandlebarsHttpApi) if d.id === id => true
-          case (d: Destination.DataStore) if d.id === id         => true
-          case (d: Destination.HmrcDms) if d.id === id           => true
-          case _                                                 => false
+          case (d: Destination.HandlebarsHttpApi) if d.id === id      => true
+          case (d: Destination.AsyncHandlebarsHttpApi) if d.id === id => true
+          case (d: Destination.DataStore) if d.id === id              => true
+          case (d: Destination.HmrcDms) if d.id === id                => true
+          case _                                                      => false
         }
       case _: Destinations.DestinationPrint => None
     }
