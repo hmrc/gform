@@ -112,23 +112,14 @@ object DestinationsValidator {
         Valid
       }
 
-      val attributesCheck = caseflows.flatMap { dest =>
-        List(
-          if (dest.caseId.isEmpty) {
-            Invalid(
-              s"Pega Caseflow destination '${dest.id.id}' must have caseId expression defined."
-            )
-          } else {
-            Valid
-          },
-          if (dest.postalCode.isEmpty) {
-            Invalid(
-              s"Pega Caseflow destination '${dest.id.id}' must have postalCode expression defined."
-            )
-          } else {
-            Valid
-          }
-        )
+      val attributesCheck = caseflows.map { dest =>
+        if (dest.caseId.isEmpty) {
+          Invalid(
+            s"Pega Caseflow destination '${dest.id.id}' must have caseId expression defined."
+          )
+        } else {
+          Valid
+        }
       }
 
       Monoid[ValidationResult].combineAll(List(mixtureCheck, countCheck) ++ attributesCheck)
