@@ -31,7 +31,6 @@ object ReferenceInfo {
   final case class PeriodExpr(path: TemplatePath, period: Period) extends ReferenceInfo
   final case class BetweenExpr(path: TemplatePath, between: Between) extends ReferenceInfo
   final case class DateFunctionExpr(path: TemplatePath, dateProjection: DateProjection) extends ReferenceInfo
-  final case class PeriodExtExpr(path: TemplatePath, periodExt: PeriodExt) extends ReferenceInfo
   final case class LinkCtxExpr(path: TemplatePath, linkCtx: LinkCtx) extends ReferenceInfo
   final case class DataRetrieveCtxExpr(path: TemplatePath, dataRetrieveCtx: DataRetrieveCtx) extends ReferenceInfo
   final case class DataRetrieveCountExpr(path: TemplatePath, dataRetrieveCount: DataRetrieveCount) extends ReferenceInfo
