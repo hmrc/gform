@@ -27,7 +27,7 @@ import cats.syntax.applicative._
 import java.nio.charset.StandardCharsets
 import org.slf4j.{ Logger, LoggerFactory }
 import org.typelevel.ci.CIString
-import play.api.libs.json.{ JsResult, JsValue, Json }
+import play.api.libs.json.{ JsError, JsResult, JsSuccess, JsValue, Json }
 import play.api.mvc.{ Action, AnyContent, ControllerComponents, Result }
 
 import scala.concurrent.{ ExecutionContext, Future }
@@ -41,6 +41,7 @@ import uk.gov.hmrc.gform.objectstore.ObjectStoreAlgebra
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileComponentId, FileId, Form, FormField, FormIdData, UserData }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AllowedFileTypes, FileUpload, FormComponentId, IsFileUpload, IsMultiFileUpload, MultiFileUpload }
+import uk.gov.hmrc.http.{ HeaderCarrier, SessionId }
 
 import java.net.URL
 
@@ -99,8 +100,18 @@ class UpscanController(
       val upscanCallbackPayload: JsResult[UpscanCallback] = request.body.validate[UpscanCallback]
 
       val decrypted: PlainText = queryParameterCrypto.decrypt(formIdDataCrypted)
+      val decryptedJson = Json.parse(decrypted.value)
 
-      val formIdDataJsResult: JsResult[FormIdData] = Json.parse(decrypted.value).validate[FormIdData]
+      val (formIdDataJsResult, maybeSessionId) =
+        (decryptedJson \ "formIdData").validate[FormIdData] match {
+          case s: JsSuccess[FormIdData] =>
+            (s: JsResult[FormIdData], (decryptedJson \ "sessionId").asOpt[String])
+          case _: JsError =>
+            (decryptedJson.validate[FormIdData], Option.empty[String])
+        }
+
+      val hcWithSessionId: HeaderCarrier =
+        maybeSessionId.filter(_.nonEmpty).fold(hc)(sid => hc.copy(sessionId = Some(SessionId(sid))))
 
       val callbackResult: Either[Unit, Future[Result]] = for {
         formIdData <-
@@ -167,7 +178,7 @@ class UpscanController(
                     "failureReason"   -> "rejected-gform",
                     "failureMessage"  -> getAuditFailureMessage(upscanValidationFailure)
                   )
-                )
+                )(ec, hcWithSessionId)
                 for {
                   _ <- upscanService.reject(
                          upscanCallbackSuccess.reference,
@@ -186,7 +197,7 @@ class UpscanController(
                     "mimeType"        -> upscanCallbackSuccess.uploadDetails.fileMimeType,
                     "status"          -> "ready"
                   )
-                )
+                )(ec, hcWithSessionId)
                 for {
                   form <- formService.get(formIdData)
                   (fileComponentId, fileId) = if (isMultipleFileOption) {
@@ -247,7 +258,7 @@ class UpscanController(
               "failureReason"   -> "rejected-upscan",
               "failureMessage"  -> message
             )
-          )
+          )(ec, hcWithSessionId)
 
           for {
             upscanConfirmation <- upscanService.reject(
