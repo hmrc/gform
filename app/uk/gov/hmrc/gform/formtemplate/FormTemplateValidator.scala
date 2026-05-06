@@ -2157,16 +2157,9 @@ object FormTemplateValidator {
     pages: List[Page],
     allExpressions: List[ExprWithPath]
   ): ValidationResult = {
-
-    val referenceInfos: List[DataRetrieveCtxExpr] =
-      allExpressions.collect {
-        case ExprWithPath(path, DataRetrieveCtx(id, attribute)) =>
-          DataRetrieveCtxExpr(path, DataRetrieveCtx(id, attribute))
-        case ExprWithPath(path, DateCtx(DataRetrieveDateCtx(id, attribute))) =>
-          DataRetrieveCtxExpr(path, DataRetrieveCtx(id, attribute))
-        case ExprWithPath(path, IndexOfDataRetrieveCtx(DataRetrieveCtx(id, attribute), _)) =>
-          DataRetrieveCtxExpr(path, DataRetrieveCtx(id, attribute))
-      }
+    val referenceInfos: List[DataRetrieveCtxExpr] = allExpressions
+      .flatMap(_.referenceInfos)
+      .collect { case d @ DataRetrieveCtxExpr(_, _) => d }
 
     val pageDataRetrieves: Map[DataRetrieveId, DataRetrieve] =
       pages.flatMap(p => p.dataRetrieves().map(d => (d.id, d))).toMap
