@@ -970,7 +970,7 @@ object DataRetrieveDefinitions {
       Parameter("eori")
     ),
     Map(
-      DataRetrieve.Attribute("primaryEmail")    -> DataRetrieve.AttrType.String,
+      DataRetrieve.Attribute("primaryEmail")   -> DataRetrieve.AttrType.String,
       DataRetrieve.Attribute("secondaryEmail") -> DataRetrieve.AttrType.String
     ),
     Some(

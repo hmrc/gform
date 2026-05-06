@@ -100,6 +100,11 @@ object Attr {
   implicit val format: OFormat[Attr] = derived.oformat()
 }
 
+case class PopulateATL(
+  id: String,
+  mapping: Map[String, DataRetrieve.ParamExpr]
+)
+
 case class DataRetrieve(
   tpe: DataRetrieve.Type,
   id: DataRetrieveId,
@@ -108,7 +113,8 @@ case class DataRetrieve(
   params: List[DataRetrieve.ParamExpr],
   `if`: Option[IncludeIf],
   maxFailedAttempts: Option[Int],
-  failureCountResetMinutes: Option[Int]
+  failureCountResetMinutes: Option[Int],
+  populateATL: Option[PopulateATL]
 )
 
 object DataRetrieve {
