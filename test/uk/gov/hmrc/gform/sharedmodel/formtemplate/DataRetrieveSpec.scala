@@ -91,7 +91,8 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
       ),
       None,
       None,
-      None
+      None,
+      false
     )
   }
 
@@ -103,6 +104,7 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
                |  "id": "businessBankAccount",
                |  "maxFailedAttempts": 3,
                |  "failureCountResetMinutes": 1440,
+               |  "callOnNoChange": true,
                |  "parameters": {
                |    "sortCode": "${sortCode}",
                |    "accountNumber": "${accountNumber}",
@@ -196,7 +198,8 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
       ),
       None,
       Some(3),
-      Some(1440)
+      Some(1440),
+      true
     )
   }
 
@@ -344,7 +347,8 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
       ),
       None,
       None,
-      None
+      None,
+      false
     )
   }
 
@@ -391,7 +395,8 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
       ),
       None,
       None,
-      None
+      None,
+      false
     )
   }
 
@@ -491,7 +496,8 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
       ),
       None,
       None,
-      None
+      None,
+      false
     )
   }
 
@@ -524,7 +530,8 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
       ),
       None,
       None,
-      None
+      None,
+      false
     )
   }
 
@@ -563,7 +570,8 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
       ),
       None,
       None,
-      None
+      None,
+      false
     )
   }
 
@@ -603,7 +611,8 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
       ),
       Some(IncludeIf(IsTrue)),
       None,
-      None
+      None,
+      false
     )
   }
 
@@ -713,7 +722,8 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
       ),
       None,
       Some(3),
-      Some(1440)
+      Some(1440),
+      false
     )
   }
 
@@ -776,7 +786,8 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
       ),
       None,
       None,
-      None
+      None,
+      false
     )
   }
 
@@ -892,7 +903,8 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
       ),
       None,
       None,
-      None
+      None,
+      false
     )
   }
 
@@ -977,7 +989,8 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
       ),
       None,
       None,
-      None
+      None,
+      false
     )
   }
 
@@ -1041,7 +1054,8 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
       ),
       None,
       None,
-      None
+      None,
+      false
     )
   }
 
@@ -1094,7 +1108,8 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
       ),
       None,
       None,
-      None
+      None,
+      false
     )
   }
 
@@ -1132,7 +1147,8 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
       ),
       None,
       None,
-      None
+      None,
+      false
     )
   }
 

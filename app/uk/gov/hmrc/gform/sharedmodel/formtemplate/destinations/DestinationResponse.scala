@@ -81,3 +81,4 @@ object HandlebarsDestinationResponse {
 }
 
 case class NrsOrchestratorDestinationResponse(workItemId: ObjectId) extends DestinationResponse
+case class AsyncHandlebarsDestinationResponse(workItemId: ObjectId) extends DestinationResponse

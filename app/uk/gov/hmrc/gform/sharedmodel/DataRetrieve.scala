@@ -114,6 +114,7 @@ case class DataRetrieve(
   `if`: Option[IncludeIf],
   maxFailedAttempts: Option[Int],
   failureCountResetMinutes: Option[Int],
+  callOnNoChange: Boolean,
   populateATL: Option[PopulateATL]
 )
 

@@ -26,6 +26,7 @@ import play.api.http._
 import play.api.i18n.I18nComponents
 import play.api.inject.Injector
 import play.api.inject.SimpleInjector
+import play.api.libs.json.OFormat
 import play.api.libs.ws.ahc.{ AhcWSClient, AhcWSClientConfigFactory, AhcWSComponents }
 import play.api.mvc.EssentialFilter
 import play.api.routing.Router
@@ -72,7 +73,7 @@ import uk.gov.hmrc.gform.screenshottool.ScreenshotController
 import uk.gov.hmrc.gform.sdes.SdesModule
 import uk.gov.hmrc.gform.sharedmodel.{ HandlebarsSchema, HandlebarsTemplate }
 import uk.gov.hmrc.gform.shutter.ShutterModule
-import uk.gov.hmrc.gform.submission.SubmissionModule
+import uk.gov.hmrc.gform.submission.{ SubmissionModule, WorkItemHistory, WorkItemHistoryService }
 import uk.gov.hmrc.gform.submission.destinations.DestinationModule
 import uk.gov.hmrc.gform.submission.handlebars.HandlebarsHttpApiModule
 import uk.gov.hmrc.gform.submissionconsolidator.SubmissionConsolidatorModule
@@ -210,7 +211,8 @@ class ApplicationModule(context: Context)
       envelopeModule,
       emailModule,
       nrsOrchestratorNotificationRepository,
-      nrsOrchestratorAttachmentNotificationRepository
+      nrsOrchestratorAttachmentNotificationRepository,
+      jsonCrypto
     )
 
   private val fileUploadModule =
@@ -318,7 +320,26 @@ class ApplicationModule(context: Context)
 
   private val validationModule = new DesModule(wSHttpModule, configModule)
 
-  private val handlebarsModule = new HandlebarsHttpApiModule(wSHttpModule, configModule)
+  implicit val workItemHistoryFormat: OFormat[WorkItemHistory] = WorkItemHistory.formatEncrypted(jsonCrypto)
+  private val workItemHistoryRepo: Repo[WorkItemHistory] =
+    new Repo[WorkItemHistory](
+      "workItemHistory",
+      mongoModule.mongoComponent,
+      _._id.toString,
+      indexes = Seq(
+        IndexModel(
+          compoundIndex(ascending("envelopeId"), ascending("destinationId")),
+          IndexOptions()
+            .background(false)
+            .name("envelopeAndDestinationIdx")
+        )
+      ),
+      replaceIndexes = true
+    )
+
+  val workItemHistoryService = new WorkItemHistoryService(workItemHistoryRepo)
+
+  private val handlebarsModule = new HandlebarsHttpApiModule(wSHttpModule, configModule, workItemHistoryService)
 
   private val submissionConsolidatorModule = new SubmissionConsolidatorModule(wSHttpModule, formModule, configModule)
 
@@ -344,7 +365,8 @@ class ApplicationModule(context: Context)
       hipModule,
       wSHttpModule,
       nrsOrchestratorNotificationRepository,
-      nrsOrchestratorAttachmentNotificationRepository
+      nrsOrchestratorAttachmentNotificationRepository,
+      workItemHistoryService
     )
 
   private val retrievalModule =
@@ -428,6 +450,7 @@ class ApplicationModule(context: Context)
     mongoModule,
     sdesModule,
     akkaModule,
+    handlebarsModule,
     applicationLifecycle,
     submissionModule.nrsConnector,
     nrsOrchestratorNotificationRepository,

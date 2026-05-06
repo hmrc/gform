@@ -15,11 +15,14 @@
  */
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations
-import play.api.libs.json.Format
+import play.api.libs.json.{ Format, JsString, OFormat }
+import uk.gov.hmrc.gform.sharedmodel.ValueClassFormat
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.JsonUtils
 
 case class ProfileName(name: String) extends AnyVal
 
 object ProfileName {
   implicit val format: Format[ProfileName] = JsonUtils.valueClassFormat[ProfileName, String](ProfileName(_), _.name)
+  val oformat: OFormat[ProfileName] = ValueClassFormat.oformat("profile", ProfileName.apply, _.name)
+  val vformat: Format[ProfileName] = ValueClassFormat.vformat("profile", ProfileName.apply, x => JsString(x.name))
 }

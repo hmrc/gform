@@ -26,7 +26,7 @@ import uk.gov.hmrc.gform.sharedmodel.{ DataRetrieve, SmartString }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationIncludeIf, Destinations }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationIncludeIf.IncludeIfValue
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.{ DataStore, Email, HandlebarsHttpApi, HmrcDms, InfoArchive, Log, NRSOrchestrator, NiRefundClaimApi, PegaApi, StateTransition, SubmissionConsolidator }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.{ AsyncHandlebarsHttpApi, DataStore, Email, HandlebarsHttpApi, HmrcDms, InfoArchive, Log, NRSOrchestrator, NiRefundClaimApi, PegaApi, StateTransition, SubmissionConsolidator }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DestinationList
 
 trait Rewriter {
@@ -113,16 +113,16 @@ trait Rewriter {
         dl.acknowledgementSection.fields.flatMap(_.includeIf) ++ dl.declarationSection.fold(List.empty[IncludeIf])(
           section => section.includeIf.fold(List.empty[IncludeIf])(List(_)) ++ section.fields.flatMap(_.includeIf)
         ) ++ dl.destinations.toList.collect {
-          case HmrcDms(_, _, _, _, _, _, IncludeIfValue(includeIf), _, _, _, _, _, _, _, _, _, _, _, _, _) => includeIf
-          case HandlebarsHttpApi(_, _, _, _, _, _, IncludeIfValue(includeIf), _, _, _)                     => includeIf
-          case StateTransition(_, _, IncludeIfValue(includeIf), _)                                         => includeIf
-          case SubmissionConsolidator(_, _, _, _, IncludeIfValue(includeIf), _)                            => includeIf
-          case Email(_, _, IncludeIfValue(includeIf), _, _, _)                                             => includeIf
-          case DataStore(_, _, IncludeIfValue(includeIf), _, _, _, _, _, _, _, _, _, _, _, _, _)           => includeIf
-          case InfoArchive(_, IncludeIfValue(includeIf), _, _, _, _, _, _)                                 => includeIf
-          case PegaApi(_, IncludeIfValue(includeIf), _, _)                                                 => includeIf
-          case NiRefundClaimApi(_, IncludeIfValue(includeIf), _, _, _, _, _, _, _)                         => includeIf
-          case NRSOrchestrator(_, IncludeIfValue(includeIf), _, _, _, _)                                   => includeIf
+          case HmrcDms(_, _, _, _, _, _, IncludeIfValue(includeIf), _, _, _, _, _, _, _, _, _, _, _, _) => includeIf
+          case HandlebarsHttpApi(_, _, _, _, _, _, IncludeIfValue(includeIf), _, _, _)                  => includeIf
+          case StateTransition(_, _, IncludeIfValue(includeIf), _)                                      => includeIf
+          case SubmissionConsolidator(_, _, _, _, IncludeIfValue(includeIf), _)                         => includeIf
+          case Email(_, _, IncludeIfValue(includeIf), _, _, _)                                          => includeIf
+          case DataStore(_, _, IncludeIfValue(includeIf), _, _, _, _, _, _, _, _, _, _, _, _, _)        => includeIf
+          case InfoArchive(_, IncludeIfValue(includeIf), _, _, _, _, _, _)                              => includeIf
+          case PegaApi(_, IncludeIfValue(includeIf), _, _)                                              => includeIf
+          case NiRefundClaimApi(_, IncludeIfValue(includeIf), _, _, _, _, _, _, _)                      => includeIf
+          case NRSOrchestrator(_, IncludeIfValue(includeIf), _, _, _, _)                                => includeIf
         }
       case _ => Nil
     }
@@ -567,6 +567,7 @@ trait Rewriter {
           case h: HmrcDms                => h.copy(includeIf = replaceDesIncludeIf(h.includeIf))
           case e: Email                  => e.copy(includeIf = replaceDesIncludeIf(e.includeIf))
           case h: HandlebarsHttpApi      => h.copy(includeIf = replaceDesIncludeIf(h.includeIf))
+          case a: AsyncHandlebarsHttpApi => a.copy(includeIf = replaceDesIncludeIf(a.includeIf))
           case l: Log                    => l
           case s: StateTransition        => s.copy(includeIf = replaceDesIncludeIf(s.includeIf))
           case s: SubmissionConsolidator => s.copy(includeIf = replaceDesIncludeIf(s.includeIf))

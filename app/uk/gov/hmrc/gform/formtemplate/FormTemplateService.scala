@@ -29,7 +29,7 @@ import uk.gov.hmrc.gform.repo.Repo
 import uk.gov.hmrc.gform.sharedmodel.{ HandlebarsSchemaId, HandlebarsTemplateId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DataOutputFormat.HBS
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.{ DataStore, HandlebarsHttpApi, HmrcDms }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.{ AsyncHandlebarsHttpApi, DataStore, HandlebarsHttpApi, HmrcDms }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DestinationId, Destinations, UploadableConditioning }
 
 import scala.concurrent.{ ExecutionContext, Future }
@@ -158,6 +158,7 @@ class FormTemplateService(
         case destinationList: Destinations.DestinationList =>
           destinationList.destinations.collect {
             case h: HandlebarsHttpApi if h.payload.isEmpty          => h.id
+            case h: AsyncHandlebarsHttpApi if h.payload.isEmpty     => h.id
             case d: DataStore if d.handlebarPayload                 => d.id
             case h: HmrcDms if h.dataOutputFormat.exists(_ === HBS) => h.id
           }
@@ -213,6 +214,9 @@ class FormTemplateService(
             case destinationList: Destinations.DestinationList =>
               destinationList.copy(destinations = destinationList.destinations.map {
                 case h: HandlebarsHttpApi if h.payload.isEmpty =>
+                  val payload = getPayload(h.id, h.convertSingleQuotes)
+                  h.copy(payload = payload)
+                case h: AsyncHandlebarsHttpApi if h.payload.isEmpty =>
                   val payload = getPayload(h.id, h.convertSingleQuotes)
                   h.copy(payload = payload)
                 case h: HmrcDms if h.payload.isEmpty =>

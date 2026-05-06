@@ -19,18 +19,20 @@ package uk.gov.hmrc.gform.submission.handlebars
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ HttpMethod, ProfileName }
+import uk.gov.hmrc.gform.submission.WorkItemHistoryAlgebra
 import uk.gov.hmrc.gform.wshttp.WSHttpModule
-import uk.gov.hmrc.http.{ HeaderCarrier, StringContextOps }
 import uk.gov.hmrc.http.client.RequestBuilder
+import uk.gov.hmrc.http.{ HeaderCarrier, StringContextOps }
 
 import java.time.format.DateTimeFormatter
 import java.time.{ ZoneOffset, ZonedDateTime }
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ ExecutionContext, Future }
 import scala.util.matching.Regex
 
 class HandlebarsHttpApiModule(
   wSHttpModule: WSHttpModule,
-  configModule: ConfigModule
+  configModule: ConfigModule,
+  workItemHistoryService: WorkItemHistoryAlgebra[Future]
 )(implicit ec: ExecutionContext) {
 
   private val checkToken: Regex = "^\\{(.*)}$".r
@@ -77,4 +79,6 @@ class HandlebarsHttpApiModule(
   val handlebarsHttpSubmitter: HandlebarsHttpApiSubmitter =
     new RealHandlebarsHttpApiSubmitter(buildRequest)
 
+  val asyncHandlebarsApiExecutor: AsyncHandlebarsApiExecutor[Future] =
+    new RealAsyncHandlebarsApiExecutor(buildRequest, workItemHistoryService)
 }

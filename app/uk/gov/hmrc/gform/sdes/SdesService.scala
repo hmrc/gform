@@ -424,6 +424,9 @@ class SdesService(
         objectStoreAlgebra.deleteFile(paths.ephemeral, fileName)
       case SdesDestination.Dms | SdesDestination.PegaCaseflow | SdesDestination.InfoArchive =>
         objectStoreAlgebra.deleteZipFile(envelopeId, paths)
+      case _ =>
+        logger.warn(s"File deletion not supported for destination: ${SdesDestination.fromName(sdesDestination)}")
+        Future.unit
     }
   }
 
@@ -473,6 +476,8 @@ class SdesService(
         objectStoreAlgebra.zipFiles(envelopeId, paths)
       case SdesDestination.InfoArchive =>
         objectStoreAlgebra.zipAndEncrypt(envelopeId, paths)
+      case SdesDestination.AsyncHandlebars =>
+        Future.failed(new RuntimeException(s"Unsupported SDES destination: ${SdesDestination.fromName(destination)}"))
     }
   }
 

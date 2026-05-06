@@ -146,6 +146,8 @@ GET           /destination-work-item/:id                                        
 GET           /destination-work-item/envelopeId/:envelopeId                                             uk.gov.hmrc.gform.sdes.workitem.DestinationWorkItemController.getByEnvelopeId(envelopeId: EnvelopeId, destination: SdesDestination)
 DELETE        /destination-work-item/:id                                                                uk.gov.hmrc.gform.sdes.workitem.DestinationWorkItemController.delete(id: String, destination: SdesDestination)
 
+GET           /work-item-history/search/:page/:pageSize                                                 uk.gov.hmrc.gform.submission.WorkItemHistoryController.search(page: Int, pageSize: Int, envelopeId: Option[EnvelopeId], formTemplateId: Option[FormTemplateId])
+
 GET           /history-all-ids                                                                          uk.gov.hmrc.gform.history.HistoryController.allFormTemplateIds()
 GET           /history/template/:historyId                                                              uk.gov.hmrc.gform.history.HistoryController.historyFor(historyId: HistoryId)
 GET           /history/overview/:formTemplateRawId                                                      uk.gov.hmrc.gform.history.HistoryController.formTemplateHistoryOverview(formTemplateRawId: FormTemplateRawId)

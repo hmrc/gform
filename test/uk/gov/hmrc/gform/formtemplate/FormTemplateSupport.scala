@@ -391,4 +391,54 @@ trait FormTemplateSupport {
       None
     )
 
+  def mkTableComponent(id: String): FormComponent =
+    FormComponent(
+      FormComponentId(id),
+      TableComp(
+        header = List(TableHeaderCell(toSmartString("Header"), None)),
+        rows = Nil,
+        summaryValue = toSmartString("Summary"),
+        caption = None,
+        captionClasses = "",
+        classes = "",
+        firstCellIsHeader = false
+      ),
+      toSmartString(id),
+      false,
+      None,
+      None,
+      None,
+      None,
+      Mandatory.True,
+      false,
+      false,
+      false,
+      false,
+      None,
+      None
+    )
+
+  def mkMiniSummaryListComponent(id: String): FormComponent =
+    FormComponent(
+      FormComponentId(id),
+      MiniSummaryList(
+        rows = Nil,
+        displayInSummary = DisplayInSummary(IsTrue),
+        keyDisplayWidth = None
+      ),
+      toSmartString(id),
+      false,
+      None,
+      None,
+      None,
+      None,
+      Mandatory.True,
+      false,
+      false,
+      false,
+      false,
+      None,
+      None
+    )
+
 }

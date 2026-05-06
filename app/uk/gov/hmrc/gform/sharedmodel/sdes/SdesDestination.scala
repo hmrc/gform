@@ -32,6 +32,10 @@ sealed trait SdesDestination extends Product with Serializable {
     case SdesDestination.InfoArchive     => sdesConfig.infoArchive
     case SdesDestination.PegaCaseflow    => sdesConfig.pegaCaseflow
     case SdesDestination.DataLakehouse   => sdesConfig.dataLakehouse
+    case SdesDestination.AsyncHandlebars =>
+      throw new IllegalArgumentException(
+        s"No SDES routing configuration for destination: ${SdesDestination.fromName(this)}"
+      )
   }
 
   def objectStorePaths(envelopeId: EnvelopeId, submissionPrefix: Option[String]): ObjectStorePaths =
@@ -43,6 +47,10 @@ sealed trait SdesDestination extends Product with Serializable {
       case SdesDestination.InfoArchive     => ObjectStorePaths.infoArchivePaths(envelopeId)
       case SdesDestination.PegaCaseflow    => ObjectStorePaths.pegaCaseflowPaths(envelopeId)
       case SdesDestination.DataLakehouse   => ObjectStorePaths.dataLakehousePaths(envelopeId)
+      case SdesDestination.AsyncHandlebars =>
+        throw new IllegalArgumentException(
+          s"No Object Store paths configuration for destination: ${SdesDestination.fromName(this)}"
+        )
     }
 }
 
@@ -54,6 +62,7 @@ object SdesDestination {
   case object InfoArchive extends SdesDestination
   case object PegaCaseflow extends SdesDestination
   case object DataLakehouse extends SdesDestination
+  case object AsyncHandlebars extends SdesDestination
 
   implicit val equal: Eq[SdesDestination] = Eq.fromUniversalEquals
   implicit val format: Format[SdesDestination] =
@@ -64,7 +73,8 @@ object SdesDestination {
       "DataStore"       -> DataStore,
       "InfoArchive"     -> InfoArchive,
       "PegaCaseflow"    -> PegaCaseflow,
-      "DataLakehouse"   -> DataLakehouse
+      "DataLakehouse"   -> DataLakehouse,
+      "AsyncHandlebars" -> AsyncHandlebars
     )
 
   def fromName(destination: SdesDestination): String = destination match {
@@ -75,6 +85,7 @@ object SdesDestination {
     case InfoArchive     => "InfoArchive"
     case PegaCaseflow    => "PegaCaseflow"
     case DataLakehouse   => "DataLakehouse"
+    case AsyncHandlebars => "AsyncHandlebars"
   }
 
   def fromString(destination: String): SdesDestination = destination match {
@@ -85,5 +96,6 @@ object SdesDestination {
     case "InfoArchive"     => InfoArchive
     case "PegaCaseflow"    => PegaCaseflow
     case "DataLakehouse"   => DataLakehouse
+    case "AsyncHandlebars" => AsyncHandlebars
   }
 }

@@ -213,7 +213,6 @@ class MetadataXmlSpec extends Spec {
         None,
         None,
         None,
-        None,
         None
       )
     )
@@ -239,7 +238,6 @@ class MetadataXmlSpec extends Spec {
         None,
         TemplateType.XML,
         Some(true),
-        None,
         None,
         None,
         None
@@ -268,7 +266,6 @@ class MetadataXmlSpec extends Spec {
         None,
         Some(true),
         None,
-        None,
         None
       )
     )
@@ -294,7 +291,6 @@ class MetadataXmlSpec extends Spec {
         TemplateType.XML,
         Some(true),
         Some(true),
-        None,
         None,
         None
       )
