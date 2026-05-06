@@ -25,9 +25,10 @@ import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
 import uk.gov.hmrc.gform.core.FOpt
 import uk.gov.hmrc.gform.envelope.EnvelopeAlgebra
 import uk.gov.hmrc.gform.objectstore.ObjectStoreModule
-import uk.gov.hmrc.gform.scheduler.nrsOrchestrator.{ NrsOrchestratorAttachmentWorkItem, NrsOrchestratorAttachmentWorkItemRepo, NrsOrchestratorWorkItem, NrsOrchestratorWorkItemRepo }
+import uk.gov.hmrc.gform.scheduler.nrsOrchestrator.{ NrsOrchestratorAttachmentWorkItem, NrsOrchestratorAttachmentWorkItemData, NrsOrchestratorAttachmentWorkItemRepo, NrsOrchestratorWorkItem, NrsOrchestratorWorkItemData, NrsOrchestratorWorkItemRepo }
 import uk.gov.hmrc.gform.sharedmodel.envelope.EnvelopeData
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FormData }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.gform.sharedmodel.{ LangADT, NRSOrchestratorDestinationResultData, SubmissionRef }
 import uk.gov.hmrc.gform.submission.Submission
 import uk.gov.hmrc.http.HttpReads.Implicits._
@@ -141,8 +142,7 @@ class NRSConnector(
   authConnector: AuthConnector,
   apiKeys: Map[BusinessId, String],
   nrsOrchestratorWorkItemRepo: NrsOrchestratorWorkItemRepo,
-  nrsOrchestratorAttachmentWorkItemRepo: NrsOrchestratorAttachmentWorkItemRepo,
-  isProd: Boolean
+  nrsOrchestratorAttachmentWorkItemRepo: NrsOrchestratorAttachmentWorkItemRepo
 )(implicit ec: ExecutionContext) {
 
   private val contentType = "application/json"
@@ -150,13 +150,6 @@ class NRSConnector(
   private val logger = LoggerFactory.getLogger(getClass)
 
   private def makeCall[T](url: URL, body: T, apiKey: String)(implicit writes: Writes[T], hc: HeaderCarrier) = {
-
-    if (!isProd) { //TODO: Remove log before going into production
-      logger.warn(s"""nrsOrchestrator request: POST $url
-                     |Body:
-                     |${Json.prettyPrint(Json.toJson(body))}
-                     |""".stripMargin)
-    }
     val headers = Seq(
       "Content-Type" -> contentType,
       "X-API-Key"    -> apiKey
@@ -264,11 +257,18 @@ class NRSConnector(
     attachment: NRSAttachment,
     businessId: BusinessId,
     notableEvent: String,
-    envelopeId: EnvelopeId
+    envelopeId: EnvelopeId,
+    formTemplateId: FormTemplateId,
+    submissionRef: SubmissionRef
   ) = {
 
     val workItem = nrsOrchestratorAttachmentWorkItemRepo.pushNew(
-      NrsOrchestratorAttachmentWorkItem(nrSubmissionId, attachment, businessId, notableEvent)
+      NrsOrchestratorAttachmentWorkItem(
+        envelopeId,
+        formTemplateId,
+        submissionRef,
+        NrsOrchestratorAttachmentWorkItemData(nrSubmissionId, attachment, businessId, notableEvent)
+      )
     )
     workItem.foreach { workItem =>
       logger.info(s"""NRS Orchestrator destination attachment workItem was created.
@@ -369,21 +369,25 @@ class NRSConnector(
     payload: NrsPayload,
     userAuthToken: String,
     identityData: JsObject,
-    submissionDate: String
+    submissionDate: String,
+    formTemplateId: FormTemplateId
   ): Future[WorkItem[NrsOrchestratorWorkItem]] =
     nrsOrchestratorWorkItemRepo
       .pushNew(
         NrsOrchestratorWorkItem(
           envelopeId,
-          businessId,
-          notableEvent,
-          onSubmitHeaders,
-          destinationResultData,
+          formTemplateId,
           submissionRef,
-          payload,
-          submissionDate,
-          userAuthToken,
-          identityData
+          NrsOrchestratorWorkItemData(
+            businessId,
+            notableEvent,
+            onSubmitHeaders,
+            destinationResultData,
+            payload,
+            submissionDate,
+            userAuthToken,
+            identityData
+          )
         ),
         initialState = _ => ProcessingStatus.Deferred
       )
@@ -398,7 +402,8 @@ class NRSConnector(
     payload: NrsPayload,
     userAuthToken: String,
     identityData: JsObject,
-    submissionDate: String
+    submissionDate: String,
+    formTemplateId: FormTemplateId
   )(implicit hc: HeaderCarrier): Future[HttpResponse] = {
 
     def getAttachments(envelope: EnvelopeData): List[NRSAttachment] =
@@ -440,7 +445,9 @@ class NRSConnector(
               attachment,
               businessId,
               notableEvent,
-              envelopeId
+              envelopeId,
+              formTemplateId,
+              submissionRef
             )
           }
         )
