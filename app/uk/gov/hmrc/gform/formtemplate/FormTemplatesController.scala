@@ -168,7 +168,7 @@ class FormTemplatesController(
   def getRaw(id: FormTemplateRawId) = formTemplateAction("getRaw", FormTemplateId(id.value)) { _ =>
     formTemplateService
       .get(id)
-      .asOkJson
+      .asOkPrettyJson
   }
 
   def getRawSensitive(id: String) = formTemplateAction("getRaw", FormTemplateId(id)) { _ =>
