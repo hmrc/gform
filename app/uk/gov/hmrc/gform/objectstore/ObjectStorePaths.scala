@@ -19,6 +19,8 @@ package uk.gov.hmrc.gform.objectstore
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.objectstore.client.Path
 
+import scala.util.matching.Regex
+
 trait ObjectStorePaths {
   def permanent: Path.Directory
   def ephemeral: Path.Directory // Deleted on FileProcessed notification from SDES
@@ -26,7 +28,7 @@ trait ObjectStorePaths {
 }
 object ObjectStorePaths {
 
-  private val endsWith = "^(.*)[-_]$".r
+  val endsWith: Regex = "^(.*)[-_]$".r
 
   def envelopeDirectory(envelopeId: EnvelopeId, maybeSubDirectory: Option[String]): Path.Directory = {
     val subDir = maybeSubDirectory match {

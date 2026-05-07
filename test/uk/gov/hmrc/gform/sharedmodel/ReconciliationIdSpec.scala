@@ -43,4 +43,24 @@ class ReconciliationIdSpec extends Spec {
 
     res.value should be("prefix-6FJXHVQLU4FD-20170131135345")
   }
+
+  it should "generate reconciliationId based on submissionRef, current time and prefix_" in {
+    implicit val now = Now(LocalDateTime.of(2017, 1, 31, 13, 53, 45))
+
+    val submissionRef = SubmissionRef.noCustomReference(envelopeId)
+
+    val res = ReconciliationId.create(submissionRef, Some("prefix_"))
+
+    res.value should be("prefix-6FJXHVQLU4FD-20170131135345")
+  }
+
+  it should "generate reconciliationId based on submissionRef, current time and prefix-" in {
+    implicit val now = Now(LocalDateTime.of(2017, 1, 31, 13, 53, 45))
+
+    val submissionRef = SubmissionRef.noCustomReference(envelopeId)
+
+    val res = ReconciliationId.create(submissionRef, Some("prefix-"))
+
+    res.value should be("prefix-6FJXHVQLU4FD-20170131135345")
+  }
 }
