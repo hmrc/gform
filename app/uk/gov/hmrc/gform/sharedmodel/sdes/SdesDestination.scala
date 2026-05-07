@@ -45,7 +45,7 @@ sealed trait SdesDestination extends Product with Serializable {
       case SdesDestination.DataStoreLegacy => ObjectStorePaths.dataStorePaths(envelopeId)
       case SdesDestination.Dms             => ObjectStorePaths.dmsPaths(envelopeId, submissionPrefix)
       case SdesDestination.InfoArchive     => ObjectStorePaths.infoArchivePaths(envelopeId)
-      case SdesDestination.PegaCaseflow    => ObjectStorePaths.pegaCaseflowPaths(envelopeId)
+      case SdesDestination.PegaCaseflow    => ObjectStorePaths.pegaCaseflowPaths(envelopeId, submissionPrefix)
       case SdesDestination.DataLakehouse   => ObjectStorePaths.dataLakehousePaths(envelopeId)
       case SdesDestination.AsyncHandlebars =>
         throw new IllegalArgumentException(
