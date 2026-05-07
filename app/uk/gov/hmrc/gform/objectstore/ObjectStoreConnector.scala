@@ -39,11 +39,6 @@ class ObjectStoreConnector(
 
   private val zipExtension = ".zip"
 
-  def directory(folderName: String, maybeSubDirectory: Option[String]): Path.Directory = {
-    val subDir = maybeSubDirectory.fold("")(sd => s"/$sd")
-    Path.Directory(s"envelopes/$folderName$subDir")
-  }
-
   def uploadFile(
     envelopeId: EnvelopeId,
     fileName: String,
@@ -55,7 +50,7 @@ class ObjectStoreConnector(
   ): Future[ObjectSummaryWithMd5] =
     objectStoreClient
       .putObject(
-        path = directory(envelopeId.value, maybeSubDirectory).file(fileName),
+        path = ObjectStorePaths.envelopeDirectory(envelopeId, maybeSubDirectory).file(fileName),
         content = toSource(content),
         contentType = contentType
       )
@@ -100,7 +95,7 @@ class ObjectStoreConnector(
   ): Future[ByteString] =
     objectStoreClient
       .getObject[Source[ByteString, NotUsed]](
-        path = directory(envelopeId.value, maybeSubDirectory).file(fileName)
+        path = ObjectStorePaths.envelopeDirectory(envelopeId, maybeSubDirectory).file(fileName)
       )
       .flatMap {
         case Some(o) =>
@@ -109,7 +104,9 @@ class ObjectStoreConnector(
           } yield res
         case _ =>
           Future.failed(
-            new RuntimeException(s"File $fileName not found in path: ${directory(envelopeId.value, maybeSubDirectory)}")
+            new RuntimeException(
+              s"File $fileName not found in path: ${ObjectStorePaths.envelopeDirectory(envelopeId, maybeSubDirectory)}"
+            )
           )
       }
 
@@ -117,7 +114,7 @@ class ObjectStoreConnector(
     hc: HeaderCarrier
   ): Future[Unit] =
     objectStoreClient.deleteObject(
-      path = directory(envelopeId.value, maybeSubDirectory).file(fileName)
+      path = ObjectStorePaths.envelopeDirectory(envelopeId, maybeSubDirectory).file(fileName)
     )
 
   def deleteFiles(envelopeId: EnvelopeId, fileNames: List[(String, Option[String])])(implicit
@@ -126,7 +123,7 @@ class ObjectStoreConnector(
     Future
       .traverse(fileNames) { case (fileName, maybeSubDirectory) =>
         objectStoreClient.deleteObject(
-          path = directory(envelopeId.value, maybeSubDirectory).file(fileName)
+          path = ObjectStorePaths.envelopeDirectory(envelopeId, maybeSubDirectory).file(fileName)
         )
       }
       .void
@@ -164,5 +161,5 @@ class ObjectStoreConnector(
   def uploadFromUrl(from: java.net.URL, envelopeId: EnvelopeId, fileName: String)(implicit
     hc: HeaderCarrier
   ): Future[ObjectSummaryWithMd5] =
-    objectStoreClient.uploadFromUrl(from, to = directory(envelopeId.value, None).file(fileName))
+    objectStoreClient.uploadFromUrl(from, to = ObjectStorePaths.envelopeDirectory(envelopeId, None).file(fileName))
 }

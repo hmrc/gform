@@ -194,7 +194,7 @@ class DestinationsValidatorSpec extends Spec with ScalaCheckDrivenPropertyChecks
       ),
       (
         NonEmptyList.of(
-          hmrcDms.copy(routing = PegaCaseflow),
+          hmrcDms.copy(routing = PegaCaseflow, caseId = Some(Constant("expr"))),
           hmrcDms
         ),
         Invalid(
@@ -203,12 +203,10 @@ class DestinationsValidatorSpec extends Spec with ScalaCheckDrivenPropertyChecks
       ),
       (
         NonEmptyList.of(
-          hmrcDms.copy(routing = PegaCaseflow),
-          hmrcDms.copy(routing = PegaCaseflow)
+          hmrcDms.copy(routing = PegaCaseflow, caseId = Some(Constant("expr"))),
+          hmrcDms.copy(routing = PegaCaseflow, caseId = Some(Constant("expr")))
         ),
-        Invalid(
-          "Cannot define more than 1 hmrcDms destination with routing to Pega Caseflow."
-        )
+        Valid
       ),
       (
         NonEmptyList.of(
