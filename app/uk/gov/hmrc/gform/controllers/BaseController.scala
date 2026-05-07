@@ -24,25 +24,47 @@ import org.slf4j.{ LoggerFactory, MDC }
 import play.api.libs.json._
 import play.api.mvc.{ AbstractController, Action, AnyContent, BodyParser, ControllerComponents, Request, Result }
 import uk.gov.hmrc.gform.auditing.loggingHelpers
+import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 import uk.gov.hmrc.gform.sharedmodel.form.{ FormId, FormIdData }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendHeaderCarrierProvider
 import uk.gov.hmrc.play.bootstrap.controller.WithJsonBody
 
 import scala.concurrent.{ ExecutionContext, Future }
+import io.circe.Printer
 
 class BaseController(controllerComponents: ControllerComponents)(implicit ec: ExecutionContext)
     extends AbstractController(controllerComponents) with BackendHeaderCarrierProvider with WithJsonBody {
 
   private val logger = LoggerFactory.getLogger(getClass)
 
+  private val printer = Printer.spaces2
+    .copy(
+      colonLeft = "",
+      lrbracketsEmpty = ""
+    )
+
   object O {
     def asOkJson[T: Writes](t: T): Result =
       Ok(Json.toJson(t))
+
+    def asOkPrettyJson[T: Writes](t: T): Result = {
+      val jsonAsString: String = Json.stringify(Json.toJson(t))
+      io.circe.parser.parse(jsonAsString) match {
+        case Left(e) => BadRequest(e.getMessage)
+        case Right(json) =>
+          val formatted = printer
+            .print(json)
+            .replaceAll("\\{\\s*\\}", "{}") // render empty object as '{}'
+
+          Ok(formatted).as(ContentType.`application/json`.value)
+      }
+    }
   }
 
   implicit class FutureOps[T: Writes](f: Future[T]) {
     def asOkJson = f.map(t => O.asOkJson(t))
+    def asOkPrettyJson = f.map(t => O.asOkPrettyJson(t))
   }
 
   implicit class FutureOps2(f: Future[_]) {
