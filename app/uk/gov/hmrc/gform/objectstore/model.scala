@@ -53,9 +53,15 @@ object ReconciliationId {
   def create(submissionRef: SubmissionRef, maybeSubmissionPrefix: Option[String])(implicit
     now: Now[LocalDateTime]
   ): ReconciliationId = {
+    import ObjectStorePaths.endsWith
     val dateFormatter = now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"))
+    val prefix = maybeSubmissionPrefix match {
+      case Some(endsWith(prefix)) => s"$prefix-"
+      case Some(prefix)           => s"$prefix-"
+      case None                   => ""
+    }
     ReconciliationId(
-      s"${maybeSubmissionPrefix.fold("")(prefix => s"$prefix-")}${submissionRef.withoutHyphens}-$dateFormatter"
+      s"$prefix${submissionRef.withoutHyphens}-$dateFormatter"
     )
   }
 }

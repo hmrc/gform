@@ -104,14 +104,6 @@ object DestinationsValidator {
       } else
         Valid
 
-      val countCheck = if (caseflows.size > 1) {
-        Invalid(
-          "Cannot define more than 1 hmrcDms destination with routing to Pega Caseflow."
-        )
-      } else {
-        Valid
-      }
-
       val attributesCheck = caseflows.map { dest =>
         if (dest.caseId.isEmpty) {
           Invalid(
@@ -122,7 +114,7 @@ object DestinationsValidator {
         }
       }
 
-      Monoid[ValidationResult].combineAll(List(mixtureCheck, countCheck) ++ attributesCheck)
+      Monoid[ValidationResult].combineAll(mixtureCheck +: attributesCheck)
     case _ => Valid
   }
 
