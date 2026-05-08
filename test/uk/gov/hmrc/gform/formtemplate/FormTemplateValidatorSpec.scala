@@ -1832,6 +1832,27 @@ class FormTemplateValidatorSpec
           Invalid(
             "Data retrieve expression at path TemplatePath(sections.fields.[id=fcId].value) refers to non-existent id invalidDrId"
           )
+        ),
+        (
+          mkFormComponent(
+            "fcId",
+            Text(
+              ShortText.default,
+              IfElse(
+                Equals(
+                  DataRetrieveCtx(DataRetrieveId("invalidDrId"), Attribute("somethingElse")),
+                  Constant("yes")
+                ),
+                Constant("YES"),
+                Constant("NO")
+              )
+            ),
+            toSmartString("label")
+          ),
+          mkPersonalBankAccountExistenceDataRetrieve(drId.value, None, None),
+          Invalid(
+            "Data retrieve expression at path TemplatePath(sections.fields.[id=fcId].value) refers to non-existent id invalidDrId"
+          )
         )
       )
 
