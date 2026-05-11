@@ -195,6 +195,8 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
     InternalLink.printSummaryPdf
   } | "printSectionPdf" ^^ { _ =>
     InternalLink.printSectionPdf
+  } | "printSectionNotificationPdf" ^^ { _ =>
+    InternalLink.printSectionNotificationPdf
   } | "summaryPage" ^^ { _ =>
     InternalLink.summaryPage
   } | "newForm" ~ "." ~ FormTemplateId.unanchoredIdValidation ^^ { case _ ~ _ ~ id =>

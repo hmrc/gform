@@ -25,12 +25,10 @@ import uk.gov.hmrc.gform.Helpers.{ toLocalisedString, toSmartString }
 import uk.gov.hmrc.gform.core.parsers.ValueParser
 import uk.gov.hmrc.gform.core.{ Invalid, Opt, Valid, ValidationResult }
 import uk.gov.hmrc.gform.sharedmodel.DataRetrieve.Attribute
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.Expr
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.PageLink
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AnyDate, BulletedList, CalendarDate, Checkbox, Choice, ChoicesAvailable, ChoicesSelected, Constant, DataRetrieveCtx, DataRetrieveDateCtx, Date, DateAfter, DateBefore, DateCtx, DateExprWithOffset, DateFormCtxVar, DateFunction, DateProjection, DateValueExpr, DisplayAsEntered, Dynamic, Equals, ExprWithPath, FormComponent, FormComponentId, FormComponentValidator, FormCtx, FormStartDateExprValue, FormTemplate, GreaterThan, HideZeroDecimals, Horizontal, IfElse, IncludeIf, IndexOf, IndexOfDataRetrieveCtx, InformationMessage, Instruction, IsTrue, LeafExpr, LinkCtx, LookupColumn, Mandatory, Not, NumberedList, Offset, OffsetUnit, OffsetYMD, OptionData, OptionDataValue, Page, PageId, PostcodeLookup, Radio, Section, ShortText, StandardInfo, SummariseGroupAsGrid, TaxPeriodDate, TemplatePath, Text, TextArea, TextWithRestrictions, TodayDateExprValue, TypeAhead, ValidIf, Value, Vertical }
 import uk.gov.hmrc.gform.sharedmodel._
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.PrintSection
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.PageLink
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destinations, PrintSection }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AnyDate, BulletedList, CalendarDate, Checkbox, Choice, ChoicesAvailable, ChoicesSelected, Constant, DataRetrieveCtx, DataRetrieveDateCtx, Date, DateAfter, DateBefore, DateCtx, DateExprWithOffset, DateFormCtxVar, DateFunction, DateProjection, DateValueExpr, DisplayAsEntered, Dynamic, Equals, Expr, ExprWithPath, FormComponent, FormComponentId, FormComponentValidator, FormCtx, FormStartDateExprValue, FormTemplate, GreaterThan, HideZeroDecimals, Horizontal, IfElse, IncludeIf, IndexOf, IndexOfDataRetrieveCtx, InformationMessage, Instruction, IsTrue, LeafExpr, LinkCtx, LookupColumn, Mandatory, Not, NumberedList, Offset, OffsetUnit, OffsetYMD, OptionData, OptionDataValue, Page, PageId, PostcodeLookup, Radio, Section, ShortText, StandardInfo, SummariseGroupAsGrid, TaxPeriodDate, TemplatePath, Text, TextArea, TextWithRestrictions, TodayDateExprValue, TypeAhead, ValidIf, Value, Vertical }
 
 class FormTemplateValidatorSpec
     extends AnyWordSpecLike with Matchers with FormTemplateSupport with TableDrivenPropertyChecks {
@@ -3200,7 +3198,17 @@ class FormTemplateValidatorSpec
       )
       val result = FormTemplateValidator.validatePrintSection(formTemplate)
       result shouldBe Invalid(
-        "`/submissions/printSection/notificationPdf/${form.id}` is invalid. Please use `link.printSectionPdf` instead"
+        "`/submissions/printSection/notificationPdf/${form.id}` is invalid. Please use `link.printSectionNotificationPdf` instead"
+      )
+    }
+
+    "return Invalid when instructions contain manual printSectionPdf path" in {
+      val formTemplate = mkFormTemplateWithPrintSection(
+        toSmartString("Click here /submissions/printSection/pdf/ to download")
+      )
+      val result = FormTemplateValidator.validatePrintSection(formTemplate)
+      result shouldBe Invalid(
+        "`/submissions/printSection/pdf/${form.id}` is invalid. Please use `link.printSectionPdf` instead"
       )
     }
 
@@ -3218,7 +3226,7 @@ class FormTemplateValidatorSpec
       val instructions = SmartString(
         LocalisedString(
           Map(
-            LangADT.En -> "/submissions/printSection/notificationPdf/ and /submissions/summary/"
+            LangADT.En -> "/submissions/printSection/notificationPdf/ and /submissions/summary/ and /submissions/printSection/pdf/"
           )
         ),
         Nil
@@ -3226,7 +3234,7 @@ class FormTemplateValidatorSpec
       val formTemplate = mkFormTemplateWithPrintSection(instructions)
       val result = FormTemplateValidator.validatePrintSection(formTemplate)
       result shouldBe Invalid(
-        "`/submissions/printSection/notificationPdf/${form.id}` is invalid. Please use `link.printSectionPdf` instead"
+        "`/submissions/printSection/notificationPdf/${form.id}` is invalid. Please use `link.printSectionNotificationPdf` instead"
       )
     }
   }

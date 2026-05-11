@@ -1981,8 +1981,9 @@ object FormTemplateValidator {
         validateLinks(
           destinationPrint.page.instructions,
           "/submissions/printSection/notificationPdf/",
-          "link.printSectionPdf"
+          "link.printSectionNotificationPdf"
         ) ++
+          validateLinks(destinationPrint.page.instructions, "/submissions/printSection/pdf/", "link.printSectionPdf") ++
           validateLinks(destinationPrint.page.instructions, "/submissions/summary/", "link.summaryPage")
       case _ => List(Valid)
     }).combineAll
