@@ -27,7 +27,7 @@ import cats.syntax.applicative._
 import java.nio.charset.StandardCharsets
 import org.slf4j.{ Logger, LoggerFactory }
 import org.typelevel.ci.CIString
-import play.api.libs.json.{ JsError, JsResult, JsSuccess, JsValue, Json }
+import play.api.libs.json.{ JsResult, JsValue, Json }
 import play.api.mvc.{ Action, AnyContent, ControllerComponents, Result }
 
 import scala.concurrent.{ ExecutionContext, Future }
@@ -90,7 +90,8 @@ class UpscanController(
   def callback(
     formComponentId: FormComponentId,
     envelopeId: EnvelopeId,
-    formIdDataCrypted: Crypted
+    formIdDataCrypted: Crypted,
+    sessionId: Option[String]
   ): Action[JsValue] =
     Action.async(parse.json) { implicit request =>
       logger.info(
@@ -100,18 +101,11 @@ class UpscanController(
       val upscanCallbackPayload: JsResult[UpscanCallback] = request.body.validate[UpscanCallback]
 
       val decrypted: PlainText = queryParameterCrypto.decrypt(formIdDataCrypted)
-      val decryptedJson = Json.parse(decrypted.value)
 
-      val (formIdDataJsResult, maybeSessionId) =
-        (decryptedJson \ "formIdData").validate[FormIdData] match {
-          case s: JsSuccess[FormIdData] =>
-            (s: JsResult[FormIdData], (decryptedJson \ "sessionId").asOpt[String])
-          case _: JsError =>
-            (decryptedJson.validate[FormIdData], Option.empty[String])
-        }
+      val formIdDataJsResult: JsResult[FormIdData] = Json.parse(decrypted.value).validate[FormIdData]
 
       val hcWithSessionId: HeaderCarrier =
-        maybeSessionId.filter(_.nonEmpty).fold(hc)(sid => hc.copy(sessionId = Some(SessionId(sid))))
+        sessionId.filter(_.nonEmpty).fold(hc)(sid => hc.copy(sessionId = Some(SessionId(sid))))
 
       val callbackResult: Either[Unit, Future[Result]] = for {
         formIdData <-
