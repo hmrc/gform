@@ -127,22 +127,28 @@ object DestinationsValidator {
       val allPrefixes = dmsList.map(_.submissionPrefix.getOrElse(""))
 
       val uniqueCheck = if (hasSubmissionPrefix && allPrefixes.size != allPrefixes.toSet.size) {
-        Invalid(
-          s"hmrcDms destinations must all have a unique submissionPrefix."
-        )
+        Invalid("hmrcDms destinations must all have a unique submissionPrefix.")
       } else {
         Valid
       }
 
       val allOrNone = if (hasSubmissionPrefix && hasNoSubmissionPrefix) {
         Invalid(
-          s"hmrcDms destinations must all have submissionPrefix or all not have submissionPrefix. It cannot be mix of both."
+          "hmrcDms destinations must all have submissionPrefix or all not have submissionPrefix. It cannot be mix of both."
         )
       } else {
         Valid
       }
 
-      Monoid[ValidationResult].combineAll(List(uniqueCheck, allOrNone))
+      val allHaveDefaultIncludeIf = dmsList.forall(_.includeIf === HandlebarValue(true.toString))
+      val allPrefixesEmpty = dmsList.forall(_.submissionPrefix.isEmpty)
+      val moreThanOneWithoutPrefix = if (dmsList.size > 1 && allHaveDefaultIncludeIf && allPrefixesEmpty) {
+        Invalid("Multiple hmrcDms destinations with default includeIf expression must also include a submissionPrefix.")
+      } else {
+        Valid
+      }
+
+      Monoid[ValidationResult].combineAll(List(uniqueCheck, allOrNone, moreThanOneWithoutPrefix))
     case _ => Valid
   }
 

@@ -173,6 +173,13 @@ class DestinationsValidatorSpec extends Spec with ScalaCheckDrivenPropertyChecks
           hmrcDms,
           hmrcDms
         ),
+        Invalid("Multiple hmrcDms destinations with default includeIf expression must also include a submissionPrefix.")
+      ),
+      (
+        NonEmptyList.of(
+          hmrcDms.copy(includeIf = HandlebarValue("{{isNotNull empName}}")),
+          hmrcDms.copy(includeIf = HandlebarValue("{{isNull empName}}"))
+        ),
         Valid
       )
     )
