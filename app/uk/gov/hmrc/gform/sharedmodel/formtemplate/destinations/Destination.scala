@@ -25,6 +25,7 @@ import uk.gov.hmrc.gform.sharedmodel.EmailVerifierService
 import uk.gov.hmrc.gform.sharedmodel.email.LocalisedEmailTemplateId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import UploadableConditioning._
+import cats.Eq
 import cats.implicits.catsSyntaxEq
 import uk.gov.hmrc.gform.core.parsers.BooleanExprParser
 import uk.gov.hmrc.gform.sharedmodel.form.{ FormId, FormStatus }
@@ -73,6 +74,7 @@ sealed trait DestinationWithNrsOrchestrator extends Destination {
 sealed trait DestinationIncludeIf extends Product with Serializable
 
 object DestinationIncludeIf {
+  implicit val equal: Eq[DestinationIncludeIf] = Eq.fromUniversalEquals
   case class HandlebarValue(value: String) extends DestinationIncludeIf
   case class IncludeIfValue(value: IncludeIf) extends DestinationIncludeIf
   private val templateReads: Reads[DestinationIncludeIf] = Reads {
