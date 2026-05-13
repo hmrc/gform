@@ -1396,15 +1396,16 @@ object FormTemplateValidator {
     case Button(_, _, _, _)                         => Valid
   }
 
-  private def pdfLinkNotAllowed(fc: FormComponent) =
-    s"Field '${fc.id}' is a PdfLink info field. These are only valid in the form's acknowledgement section."
+  private def infoTypeNotAllowed(fc: FormComponent, infoType: InfoType) =
+    s"Field '${fc.id}' is a ${infoType.toString} info field. These are only valid in the form's acknowledgement section."
 
   private def validateInformationMessages(formTemplate: FormTemplate): ValidationResult = {
     val pages = SectionHelper.pages(formTemplate.formKind.allSections)
     pages
       .flatMap(_.fields.map {
-        case fc @ IsInformationMessage(InformationMessage(PdfLink, _, _)) => Invalid(pdfLinkNotAllowed(fc))
-        case _                                                            => Valid
+        case fc @ IsInformationMessage(InformationMessage(PdfLink, _, _))  => Invalid(infoTypeNotAllowed(fc, PdfLink))
+        case fc @ IsInformationMessage(InformationMessage(HtmlLink, _, _)) => Invalid(infoTypeNotAllowed(fc, HtmlLink))
+        case _                                                             => Valid
       })
       .combineAll
   }
@@ -1914,16 +1915,18 @@ object FormTemplateValidator {
       if (summarySection.hideDefaultRows.getOrElse(false)) {
         summarySection.fields.fold(List.empty[ValidationResult])(fields =>
           fields.toList.map {
-            case fc @ IsInformationMessage(i) if i.infoType == PdfLink => Invalid(pdfLinkNotAllowed(fc))
-            case fc                                                    => isViewOnlyComponent(fc, formTemplate, reasonHideAllRows(fc))
+            case fc @ IsInformationMessage(i) if i.infoType == PdfLink  => Invalid(infoTypeNotAllowed(fc, PdfLink))
+            case fc @ IsInformationMessage(i) if i.infoType == HtmlLink => Invalid(infoTypeNotAllowed(fc, HtmlLink))
+            case fc                                                     => isViewOnlyComponent(fc, formTemplate, reasonHideAllRows(fc))
           }
         )
       } else {
         summarySection.fields.fold(List.empty[ValidationResult])(fields =>
           fields.toList.map {
-            case fc @ IsInformationMessage(i) if i.infoType == PdfLink => Invalid(pdfLinkNotAllowed(fc))
-            case IsInformationMessage(_)                               => Valid
-            case fc                                                    => Invalid(reason(fc))
+            case fc @ IsInformationMessage(i) if i.infoType == PdfLink  => Invalid(infoTypeNotAllowed(fc, PdfLink))
+            case fc @ IsInformationMessage(i) if i.infoType == HtmlLink => Invalid(infoTypeNotAllowed(fc, HtmlLink))
+            case IsInformationMessage(_)                                => Valid
+            case fc                                                     => Invalid(reason(fc))
           }
         )
       }
@@ -1988,8 +1991,9 @@ object FormTemplateValidator {
         s"All fields in Check Your Answer page for AddToList must be Info or Table or MiniSummary type. Field Id, '${field.id}' is not an info field, table or mini summary."
 
       field match {
-        case IsInformationMessage(InformationMessage(PdfLink, _, _)) => Invalid(pdfLinkNotAllowed(field))
-        case _                                                       => isViewOnlyComponent(field, formTemplate, reason)
+        case IsInformationMessage(InformationMessage(PdfLink, _, _))  => Invalid(infoTypeNotAllowed(field, PdfLink))
+        case IsInformationMessage(InformationMessage(HtmlLink, _, _)) => Invalid(infoTypeNotAllowed(field, HtmlLink))
+        case _                                                        => isViewOnlyComponent(field, formTemplate, reason)
       }
     }
 
@@ -2008,8 +2012,9 @@ object FormTemplateValidator {
         s"All fields in Declaration section for AddToList must be Info or Table or MiniSummary type. Field Id, '${field.id}' is not an info field, table or mini summary."
 
       field match {
-        case IsInformationMessage(InformationMessage(PdfLink, _, _)) => Invalid(pdfLinkNotAllowed(field))
-        case _                                                       => isViewOnlyComponent(field, formTemplate, reason)
+        case IsInformationMessage(InformationMessage(PdfLink, _, _))  => Invalid(infoTypeNotAllowed(field, PdfLink))
+        case IsInformationMessage(InformationMessage(HtmlLink, _, _)) => Invalid(infoTypeNotAllowed(field, HtmlLink))
+        case _                                                        => isViewOnlyComponent(field, formTemplate, reason)
       }
     }
 
@@ -2300,8 +2305,11 @@ object FormTemplateValidator {
             task.declarationSection
               .map(ds =>
                 ds.fields.map {
-                  case fc @ IsInformationMessage(InformationMessage(PdfLink, _, _)) => Invalid(pdfLinkNotAllowed(fc))
-                  case fc                                                           => isViewOnlyComponent(fc, formTemplate, reason(fc))
+                  case fc @ IsInformationMessage(InformationMessage(PdfLink, _, _)) =>
+                    Invalid(infoTypeNotAllowed(fc, PdfLink))
+                  case fc @ IsInformationMessage(InformationMessage(HtmlLink, _, _)) =>
+                    Invalid(infoTypeNotAllowed(fc, HtmlLink))
+                  case fc => isViewOnlyComponent(fc, formTemplate, reason(fc))
                 }
               )
               .combineAll

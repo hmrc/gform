@@ -390,6 +390,8 @@ case object NoFormat extends InfoType
 
 case object PdfLink extends InfoType
 
+case object HtmlLink extends InfoType
+
 object InfoType {
   implicit val format: OFormat[InfoType] = derived.oformat()
 }
