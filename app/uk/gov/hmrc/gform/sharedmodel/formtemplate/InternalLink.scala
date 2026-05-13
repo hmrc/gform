@@ -33,6 +33,7 @@ object InternalLink {
   case class Image(fileName: String) extends InternalLink
   case class UrlLink(url: String) extends InternalLink
   case object PrintSectionPdf extends InternalLink
+  case object PrintSectionNotificationPdf extends InternalLink
   case object SummaryPage extends InternalLink
 
   val printAcknowledgementPdf: InternalLink = PrintAcknowledgementPdf
@@ -41,6 +42,7 @@ object InternalLink {
   val newSession: InternalLink = NewSession
   val signOut: InternalLink = SignOut
   val printSectionPdf: InternalLink = PrintSectionPdf
+  val printSectionNotificationPdf: InternalLink = PrintSectionNotificationPdf
   val summaryPage: InternalLink = SummaryPage
 
   implicit val format: OFormat[InternalLink] = derived.oformat()
