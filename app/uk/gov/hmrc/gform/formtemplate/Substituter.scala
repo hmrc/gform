@@ -130,8 +130,7 @@ object Substituter {
   ): Substituter[A, RevealingChoiceElement] = (substitutions, t) =>
     t.copy(
       choice = t.choice(substitutions),
-      revealingFields = t.revealingFields(substitutions),
-      hint = t.hint(substitutions)
+      revealingFields = t.revealingFields(substitutions)
     )
 
   implicit def miniSummaryListRowSubstituter[A](implicit
@@ -223,7 +222,6 @@ object Substituter {
             options,
             orientation,
             selections,
-            hints,
             optionHelpText,
             dividerPositon,
             dividerText,
@@ -237,7 +235,6 @@ object Substituter {
           options(substitutions),
           orientation,
           selections,
-          hints(substitutions),
           optionHelpText(substitutions),
           dividerPositon,
           dividerText(substitutions),

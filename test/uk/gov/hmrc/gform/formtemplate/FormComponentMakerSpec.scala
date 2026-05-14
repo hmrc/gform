@@ -914,4 +914,163 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
     result shouldBe Right(expected)
   }
 
+  "choiceOpt" should "return error when top-level hints array is used" in {
+    val formComponentMaker = new FormComponentMaker(Json.parse("""
+                                                                 |{
+                                                                 |  "id": "taxYearChoiceAtl",
+                                                                 |  "type": "choice",
+                                                                 |  "label": "Tax year",
+                                                                 |  "choices": [
+                                                                 |    {
+                                                                 |      "label": "2024",
+                                                                 |      "value": "2024"
+                                                                 |    },
+                                                                 |    {
+                                                                 |      "label": "2023",
+                                                                 |      "value": "2023"
+                                                                 |    }
+                                                                 |  ],
+                                                                 |  "hints": [
+                                                                 |    "",
+                                                                 |    {
+                                                                 |      "en": "Hint Test"
+                                                                 |    }
+                                                                 |  ]
+                                                                 |}
+                                                                 |""".stripMargin))
+    val result = formComponentMaker.optFieldValue()
+    result shouldBe Left(
+      UnexpectedState(
+        "Top-level 'hints' array is no longer supported. Use inline 'hint' on individual choice options instead."
+      )
+    )
+  }
+
+  it should "parse choice component without top-level hints" in {
+    val formComponentMaker = new FormComponentMaker(Json.parse("""
+                                                                 |{
+                                                                 |  "id": "taxYearChoiceAtl",
+                                                                 |  "type": "choice",
+                                                                 |  "label": "Tax year",
+                                                                 |  "choices": [
+                                                                 |    {
+                                                                 |      "label": "2024",
+                                                                 |      "value": "2024",
+                                                                 |      "hint": "a hint"
+                                                                 |    },
+                                                                 |    {
+                                                                 |      "label": "2023",
+                                                                 |      "value": "2023"
+                                                                 |    }
+                                                                 |  ]
+                                                                 |}
+                                                                 |""".stripMargin))
+    val result = formComponentMaker.optFieldValue()
+    result.isRight shouldBe true
+    result.map(_.`type`) shouldBe Right(
+      Choice(
+        Radio,
+        NonEmptyList.of(
+          OptionData
+            .ValueBased(
+              toSmartString("2024"),
+              Some(toSmartString("a hint")),
+              None,
+              None,
+              OptionDataValue.StringBased("2024"),
+              None,
+              None
+            ),
+          OptionData
+            .ValueBased(toSmartString("2023"), None, None, None, OptionDataValue.StringBased("2023"), None, None)
+        ),
+        Vertical,
+        List.empty[Int],
+        None,
+        None,
+        SmartString(LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")), Nil),
+        None,
+        None,
+        false,
+        false
+      )
+    )
+  }
+
+  "revealingChoiceOpt" should "return error when top-level hints array is used" in {
+    val formComponentMaker =
+      new FormComponentMaker(Json.parse("""
+                                          |{
+                                          |  "id": "contactEmailAddress",
+                                          |  "type": "revealingChoice",
+                                          |  "label": "Email",
+                                          |  "choices": [
+                                          |    {
+                                          |      "label": "Email on file"
+                                          |    },
+                                          |    {
+                                          |      "label": "A different email address"
+                                          |    }
+                                          |  ],
+                                          |  "hints": [
+                                          |    "This is the email address for this Government Gateway user ID.",
+                                          |    ""
+                                          |  ],
+                                          |  "revealingFields": [
+                                          |    [],
+                                          |    [
+                                          |      {
+                                          |        "id": "emailAlt",
+                                          |        "type": "text",
+                                          |        "label": "Email address",
+                                          |        "format": "email"
+                                          |      }
+                                          |    ]
+                                          |  ]
+                                          |}
+                                          |""".stripMargin))
+    val result = formComponentMaker.optFieldValue()
+    result shouldBe Left(
+      UnexpectedState(
+        "Top-level 'hints' array is no longer supported. Use inline 'hint' on individual choice options instead."
+      )
+    )
+  }
+
+  it should "parse revealingChoice component without top-level hints" in {
+    val formComponentMaker = new FormComponentMaker(Json.parse("""
+                                                                 |{
+                                                                 |  "id": "contactEmailAddress",
+                                                                 |  "type": "revealingChoice",
+                                                                 |  "label": "Email",
+                                                                 |  "choices": [
+                                                                 |    {
+                                                                 |      "label": "Email on file",
+                                                                 |      "hint": "a hint"
+                                                                 |    },
+                                                                 |    {
+                                                                 |      "label": "A different email address"
+                                                                 |    }
+                                                                 |  ],
+                                                                 |  "revealingFields": [
+                                                                 |    [],
+                                                                 |    [
+                                                                 |      {
+                                                                 |        "id": "emailAlt",
+                                                                 |        "type": "text",
+                                                                 |        "label": "Email address",
+                                                                 |        "format": "email"
+                                                                 |      }
+                                                                 |    ]
+                                                                 |  ]
+                                                                 |}
+                                                                 |""".stripMargin))
+    val result = formComponentMaker.optFieldValue()
+    result.isRight shouldBe true
+    result.map(_.`type`) match {
+      case Right(RevealingChoice(_, _)) => succeed
+      case other                        => fail(s"Expected RevealingChoice but got $other")
+    }
+  }
+
 }
