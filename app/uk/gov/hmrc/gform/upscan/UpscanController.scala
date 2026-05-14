@@ -42,6 +42,7 @@ import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileComponentId, FileId, Form, FormField, FormIdData, UserData }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AllowedFileTypes, FileUpload, FormComponentId, IsFileUpload, IsMultiFileUpload, MultiFileUpload }
 import uk.gov.hmrc.http.{ HeaderCarrier, SessionId }
+import uk.gov.hmrc.play.http.HeaderCarrierConverter
 
 import java.net.URL
 
@@ -98,7 +99,8 @@ class UpscanController(
         s"Upscan callback - received notification for ${formComponentId.value} within envelope id ${envelopeId.value}"
       )
 
-      implicit val hc: HeaderCarrier = new HeaderCarrier(sessionId = Some(SessionId(sessionId)))
+      implicit val hc: HeaderCarrier =
+        HeaderCarrierConverter.fromRequest(request).copy(sessionId = Some(SessionId(sessionId)))
 
       val upscanCallbackPayload: JsResult[UpscanCallback] = request.body.validate[UpscanCallback]
 
