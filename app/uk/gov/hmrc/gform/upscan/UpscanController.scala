@@ -91,21 +91,20 @@ class UpscanController(
     formComponentId: FormComponentId,
     envelopeId: EnvelopeId,
     formIdDataCrypted: Crypted,
-    sessionId: Option[String]
+    sessionId: String
   ): Action[JsValue] =
-    Action.async(parse.json) { implicit request =>
+    Action.async(parse.json) { request =>
       logger.info(
         s"Upscan callback - received notification for ${formComponentId.value} within envelope id ${envelopeId.value}"
       )
+
+      implicit val hc: HeaderCarrier = new HeaderCarrier(sessionId = Some(SessionId(sessionId)))
 
       val upscanCallbackPayload: JsResult[UpscanCallback] = request.body.validate[UpscanCallback]
 
       val decrypted: PlainText = queryParameterCrypto.decrypt(formIdDataCrypted)
 
       val formIdDataJsResult: JsResult[FormIdData] = Json.parse(decrypted.value).validate[FormIdData]
-
-      val hcWithSessionId: HeaderCarrier =
-        sessionId.filter(_.nonEmpty).fold(hc)(sid => hc.copy(sessionId = Some(SessionId(sid))))
 
       val callbackResult: Either[Unit, Future[Result]] = for {
         formIdData <-
@@ -172,7 +171,7 @@ class UpscanController(
                     "failureReason"   -> "rejected-gform",
                     "failureMessage"  -> getAuditFailureMessage(upscanValidationFailure)
                   )
-                )(ec, hcWithSessionId)
+                )
                 for {
                   _ <- upscanService.reject(
                          upscanCallbackSuccess.reference,
@@ -191,7 +190,7 @@ class UpscanController(
                     "mimeType"        -> upscanCallbackSuccess.uploadDetails.fileMimeType,
                     "status"          -> "ready"
                   )
-                )(ec, hcWithSessionId)
+                )
                 for {
                   form <- formService.get(formIdData)
                   (fileComponentId, fileId) = if (isMultipleFileOption) {
@@ -252,7 +251,7 @@ class UpscanController(
               "failureReason"   -> "rejected-upscan",
               "failureMessage"  -> message
             )
-          )(ec, hcWithSessionId)
+          )
 
           for {
             upscanConfirmation <- upscanService.reject(
