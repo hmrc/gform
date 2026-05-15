@@ -54,18 +54,19 @@ class HipService(
     val transformed: List[JsObject] = result.validate[NIEmployments] match {
       case JsSuccess(niEmployments, _) =>
         niEmployments.individualsEmploymentDetails.map { employment =>
-          val (payeNumber, taxDistrictNumber) = Try(EmpRef.fromIdentifiers(employment.employerReference)) match {
-            case Failure(_)   => (employment.employerReference, employment.employerReference)
-            case Success(ref) => (ref.taxOfficeReference, ref.taxOfficeNumber)
-          }
+          val (payeNumber, taxDistrictNumber) =
+            Try(EmpRef.fromIdentifiers(employment.employerReference.getOrElse(""))) match {
+              case Failure(_)   => (None, None)
+              case Success(ref) => (Some(ref.taxOfficeReference), Some(ref.taxOfficeNumber))
+            }
 
           Json.obj(
-            "employerName"      -> JsString(employment.payeSchemeOperatorName),
+            "employerName"      -> employment.payeSchemeOperatorName.fold[JsValue](JsNull)(s => JsString(s)),
             "sequenceNumber"    -> JsNumber(employment.employmentSequenceNumber),
-            "worksNumber"       -> JsString(employment.worksNumber),
-            "taxDistrictNumber" -> JsString(taxDistrictNumber),
-            "payeNumber"        -> JsString(payeNumber),
-            "director"          -> JsBoolean(employment.directorIdentifier)
+            "worksNumber"       -> employment.worksNumber.fold[JsValue](JsNull)(s => JsString(s)),
+            "taxDistrictNumber" -> taxDistrictNumber.fold[JsValue](JsNull)(s => JsString(s)),
+            "payeNumber"        -> payeNumber.fold[JsValue](JsNull)(s => JsString(s)),
+            "director"          -> employment.directorIdentifier.fold[JsValue](JsNull)(b => JsBoolean(b))
           )
         }
       case JsError(err) =>
