@@ -92,7 +92,8 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
       None,
       None,
       None,
-      false
+      false,
+      None
     )
   }
 
@@ -199,7 +200,8 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
       None,
       Some(3),
       Some(1440),
-      true
+      true,
+      None
     )
   }
 
@@ -348,7 +350,8 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
       None,
       None,
       None,
-      false
+      false,
+      None
     )
   }
 
@@ -396,7 +399,8 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
       None,
       None,
       None,
-      false
+      false,
+      None
     )
   }
 
@@ -497,7 +501,8 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
       None,
       None,
       None,
-      false
+      false,
+      None
     )
   }
 
@@ -531,7 +536,8 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
       None,
       None,
       None,
-      false
+      false,
+      None
     )
   }
 
@@ -571,7 +577,8 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
       None,
       None,
       None,
-      false
+      false,
+      None
     )
   }
 
@@ -612,7 +619,8 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
       Some(IncludeIf(IsTrue)),
       None,
       None,
-      false
+      false,
+      None
     )
   }
 
@@ -723,7 +731,8 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
       None,
       Some(3),
       Some(1440),
-      false
+      false,
+      None
     )
   }
 
@@ -787,7 +796,8 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
       None,
       None,
       None,
-      false
+      false,
+      None
     )
   }
 
@@ -904,7 +914,8 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
       None,
       None,
       None,
-      false
+      false,
+      None
     )
   }
 
@@ -990,7 +1001,8 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
       None,
       None,
       None,
-      false
+      false,
+      None
     )
   }
 
@@ -1055,7 +1067,8 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
       None,
       None,
       None,
-      false
+      false,
+      None
     )
   }
 
@@ -1109,7 +1122,8 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
       None,
       None,
       None,
-      false
+      false,
+      None
     )
   }
 
@@ -1148,7 +1162,8 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
       None,
       None,
       None,
-      false
+      false,
+      None
     )
   }
 
