@@ -52,6 +52,7 @@ import uk.gov.hmrc.gform.graphite.GraphiteModule
 import uk.gov.hmrc.gform.handlebarstemplate.{ HandlebarsSchemaAlgebra, HandlebarsSchemaService, HandlebarsTemplateAlgebra, HandlebarsTemplateModule, HandlebarsTemplateService }
 import uk.gov.hmrc.gform.hip.HipModule
 import uk.gov.hmrc.gform.history.HistoryModule
+import uk.gov.hmrc.gform.integrationFramework.IfController
 import uk.gov.hmrc.gform.log.DataAccessLogModule
 import uk.gov.hmrc.gform.metrics.MetricsModule
 import uk.gov.hmrc.gform.mongo.MongoModule
@@ -478,6 +479,8 @@ class ApplicationModule(context: Context)
 
   private val screenshotController = new ScreenshotController(controllerComponents, configModule.appConfig)
 
+  private lazy val ifController = new IfController(configModule, wSHttpModule, controllerComponents)
+
   private val playComponentsModule = new PlayComponentsModule(
     playComponents,
     akkaModule,
@@ -509,7 +512,8 @@ class ApplicationModule(context: Context)
     companiesHouseModule,
     dataAccessLogModule,
     hipModule,
-    screenshotController
+    screenshotController,
+    ifController
   )
 
   override lazy val httpRequestHandler: HttpRequestHandler = playComponentsModule.httpRequestHandler

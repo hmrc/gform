@@ -17,11 +17,12 @@
 package uk.gov.hmrc.gform.sharedmodel
 
 import cats.implicits._
-import play.api.libs.json.{ JsObject, JsValue }
+import play.api.libs.json.{ Format, JsObject, JsValue, Json }
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.core.parsers.ValueParser
+import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.sharedmodel.DataRetrieve.AttrType
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.IncludeIf
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Expr, IncludeIf }
 
 final case class DataRetrieveDefinitions(
   definitions: List[DataRetrieveDefinition]
@@ -1011,7 +1012,68 @@ object DataRetrieveDefinitions {
       }
     }
 
-  def read(json: JsValue): Opt[DataRetrieve] =
+  private case class PopulateAtlJson(id: String, mapping: Map[String, String])
+
+  private object PopulateAtlJson {
+    implicit val populateAtlJsonFormat: Format[PopulateAtlJson] = Json.format
+  }
+
+  def read(json: JsValue): Opt[DataRetrieve] = {
+
+    def getPopulateAtl(jsonOpt: Option[PopulateAtlJson]): Opt[Option[PopulateATL]] = {
+
+      def getMappings(json: PopulateAtlJson): Either[UnexpectedState, Map[String, Expr]] = {
+        val seqOfOptExpressions = json.mapping.toSeq.map { case (key, value) =>
+          key -> ValueParser.validateWithParser(value, ValueParser.expr)
+        }
+
+        val (errors, exprs) =
+          seqOfOptExpressions.foldLeft((Seq(): Seq[(String, UnexpectedState)], Seq(): Seq[(String, Expr)])) {
+            case ((errorsAcc, acc), (key, Left(unexpectedState))) =>
+              (errorsAcc :+ (key -> unexpectedState)) -> acc
+            case ((errorsAcc, acc), (key, Right(expr))) =>
+              errorsAcc -> (acc :+ (key -> expr))
+          }
+
+        errors match {
+          case Seq() => Right(exprs.toMap)
+          case errors =>
+            val errorStr =
+              UnexpectedState(
+                errors
+                  .map { case (key, error) =>
+                    s"""Error at key: $key
+                       |${error.error}
+                       |""".stripMargin
+                  }
+                  .mkString("\n")
+              )
+            Left(
+              UnexpectedState(
+                s"""
+              |populateAtl data retrieve parameter parsing error.
+              |$errorStr
+              |""".strip
+              )
+            )
+        }
+      }
+
+      def getPopulateAtlOpt(json: PopulateAtlJson) =
+        getMappings(json).map { mappings =>
+          PopulateATL(
+            json.id,
+            mappings
+          )
+        }
+
+      jsonOpt match {
+        case Some(populateAtlJson) => getPopulateAtlOpt(populateAtlJson).map(Some(_))
+        case None                  => Right(None)
+      }
+
+    }
+
     for {
       typeValue <- DataRetrieve.opt[String](json, "type").map(DataRetrieve.Type(_))
       idValue   <- DataRetrieve.opt[String](json, "id").map(DataRetrieveId(_))
@@ -1030,6 +1092,8 @@ object DataRetrieveDefinitions {
       maxFailedAttempts   <- DataRetrieve.optOption[Int](json, "maxFailedAttempts")
       failureResetMinutes <- DataRetrieve.optOption[Int](json, "failureCountResetMinutes")
       callOnNoChange      <- DataRetrieve.optOption[Boolean](json, "callOnNoChange").map(_.getOrElse(false))
+      populateAtlJson     <- DataRetrieve.optOption[PopulateAtlJson](json, "populateATL")
+      populateAtl         <- getPopulateAtl(populateAtlJson)
     } yield DataRetrieve(
       tpe = typeValue,
       id = idValue,
@@ -1039,7 +1103,10 @@ object DataRetrieveDefinitions {
       `if` = `if`,
       maxFailedAttempts = maxFailedAttempts,
       failureCountResetMinutes = failureResetMinutes,
-      callOnNoChange = callOnNoChange
+      callOnNoChange = callOnNoChange,
+      populateATL = populateAtl
     )
+
+  }
 
 }

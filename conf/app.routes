@@ -167,6 +167,8 @@ GET           /hip/ni-claim-validation/:nino/:claimReference                    
 GET           /hip/ni-employments/:nino/:taxYear                                                        uk.gov.hmrc.gform.hip.HipController.getEmployments(nino: String, taxYear: Int)
 GET           /hip/caseflow-case-details/:caseId                                                        uk.gov.hmrc.gform.hip.HipController.getCaseflowCaseDetails(caseId: String)
 
+GET           /if/fta/manageemails/v1                                                                   uk.gov.hmrc.gform.integrationFramework.IfController.manageEmails(eori: String)
+
 POST          /email-migration                                                                          uk.gov.hmrc.gform.emailmigration.EmailMigrationController.migrateEmail()
 
 POST          /access-logs                                                                              uk.gov.hmrc.gform.log.DataAccessLogController.saveDataAccessLog()

@@ -102,8 +102,12 @@ object Attr {
 
 case class PopulateATL(
   id: String,
-  mapping: Map[String, DataRetrieve.ParamExpr]
+  mapping: Map[String, Expr]
 )
+
+object PopulateATL {
+  implicit val format: Format[PopulateATL] = Json.format
+}
 
 case class DataRetrieve(
   tpe: DataRetrieve.Type,
