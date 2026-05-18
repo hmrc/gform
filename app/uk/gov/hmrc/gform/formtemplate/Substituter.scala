@@ -113,12 +113,22 @@ object Substituter {
     ev2: Substituter[A, BooleanExpr]
   ): Substituter[A, OptionData] = (substitutions, t) =>
     t match {
-      case o: OptionData.IndexBased => o.copy(label = o.label(substitutions), includeIf = o.includeIf(substitutions))
+      case o: OptionData.IndexBased =>
+        o.copy(
+          label = o.label(substitutions),
+          hint = o.hint(substitutions),
+          includeIf = o.includeIf(substitutions)
+        )
       case o @ OptionData.ValueBased(_, _, _, _, OptionDataValue.StringBased(_), _, _) =>
-        o.copy(label = o.label(substitutions), includeIf = o.includeIf(substitutions))
+        o.copy(
+          label = o.label(substitutions),
+          hint = o.hint(substitutions),
+          includeIf = o.includeIf(substitutions)
+        )
       case o @ OptionData.ValueBased(_, _, _, _, OptionDataValue.ExprBased(expr), _, _) =>
         o.copy(
           label = o.label(substitutions),
+          hint = o.hint(substitutions),
           includeIf = o.includeIf(substitutions),
           value = OptionDataValue.ExprBased(expr(substitutions))
         )
