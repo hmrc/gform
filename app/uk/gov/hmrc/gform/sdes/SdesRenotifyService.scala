@@ -70,7 +70,7 @@ class SdesRenotifyService(
                                                             )
                                                         }
                                         } yield objSummary
-                                      case SdesDestination.Dms | SdesDestination.PegaCaseflow =>
+                                      case SdesDestination.Dms | SdesDestination.Caseflow =>
                                         objectStoreAlgebra.zipFiles(submission.envelopeId, paths)
                                       case SdesDestination.InfoArchive =>
                                         objectStoreAlgebra.zipAndEncrypt(submission.envelopeId, paths)
