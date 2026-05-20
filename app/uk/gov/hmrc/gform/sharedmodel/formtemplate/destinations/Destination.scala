@@ -123,7 +123,7 @@ object Destination {
         s"$fileNamePrefix-robotic." + roboticsFileExtension
       }
 
-    def isPegaCaseflow: Boolean = this.routing === SdesDestination.PegaCaseflow
+    def isCaseflow: Boolean = this.routing === SdesDestination.Caseflow
   }
 
   case class DataStore(

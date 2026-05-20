@@ -94,12 +94,12 @@ object DestinationsValidator {
     case destinationList: Destinations.DestinationList =>
       val dmsList = destinationList.destinations.collect { case d: Destination.HmrcDms => d }
 
-      val caseflows = dmsList.filter(_.isPegaCaseflow)
-      val isDms = dmsList.exists(!_.isPegaCaseflow)
+      val caseflows = dmsList.filter(_.isCaseflow)
+      val isDms = dmsList.exists(!_.isCaseflow)
 
       val mixtureCheck = if (caseflows.nonEmpty && isDms) {
         Invalid(
-          "hmrcDms destinations cannot be a mix of DMS and Pega Caseflow routings."
+          "hmrcDms destinations cannot be a mix of DMS and Caseflow routings."
         )
       } else
         Valid
@@ -107,7 +107,7 @@ object DestinationsValidator {
       val attributesCheck = caseflows.map { dest =>
         if (dest.caseId.isEmpty) {
           Invalid(
-            s"Pega Caseflow destination '${dest.id.id}' must have caseId expression defined."
+            s"Caseflow destination '${dest.id.id}' must have caseId expression defined."
           )
         } else {
           Valid

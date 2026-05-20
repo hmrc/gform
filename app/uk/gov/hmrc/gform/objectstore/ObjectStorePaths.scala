@@ -63,9 +63,9 @@ object ObjectStorePaths {
     val zipFilePrefix: String = "GFDA_"
   }
 
-  def pegaCaseflowPaths(envelopeId: EnvelopeId, submissionPrefix: Option[String]) = new ObjectStorePaths {
+  def caseflowPaths(envelopeId: EnvelopeId, submissionPrefix: Option[String]) = new ObjectStorePaths {
     val permanent: Path.Directory = envelopeDirectory(envelopeId, submissionPrefix)
-    val ephemeral: Path.Directory = Path.Directory("sdes/pega-caseflow")
+    val ephemeral: Path.Directory = Path.Directory("sdes/caseflow")
     val zipFilePrefix: String = submissionPrefix.getOrElse("")
   }
 

@@ -263,7 +263,7 @@ class SdesService(
           for {
             (numberOfFiles, uploadCount, size) <-
               sdesSubmission.sdesDestination match {
-                case SdesDestination.Dms | SdesDestination.PegaCaseflow =>
+                case SdesDestination.Dms | SdesDestination.Caseflow =>
                   val envelope = envelopeAlgebra.get(sdesSubmission.envelopeId)
                   envelope.map(e =>
                     (
@@ -422,7 +422,7 @@ class SdesService(
       case SdesDestination.DataStore | SdesDestination.DataStoreLegacy | SdesDestination.HmrcIlluminate |
           SdesDestination.DataLakehouse =>
         objectStoreAlgebra.deleteFile(paths.ephemeral, fileName)
-      case SdesDestination.Dms | SdesDestination.PegaCaseflow | SdesDestination.InfoArchive =>
+      case SdesDestination.Dms | SdesDestination.Caseflow | SdesDestination.InfoArchive =>
         objectStoreAlgebra.deleteZipFile(envelopeId, paths)
       case _ =>
         logger.warn(s"File deletion not supported for destination: ${SdesDestination.fromName(sdesDestination)}")
@@ -472,7 +472,7 @@ class SdesService(
                             )
                         }
         } yield objSummary
-      case SdesDestination.Dms | SdesDestination.PegaCaseflow =>
+      case SdesDestination.Dms | SdesDestination.Caseflow =>
         objectStoreAlgebra.zipFiles(envelopeId, paths)
       case SdesDestination.InfoArchive =>
         objectStoreAlgebra.zipAndEncrypt(envelopeId, paths)
