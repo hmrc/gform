@@ -1792,7 +1792,7 @@ class BuilderControllerSuite extends FunSuite {
           "en": "##Now send your form\n\nYou need to submit your form on the next screen.\n\nBefore you do this you can [print or save a PDF copy of your answers (opens in a new window or tab)]($${link.printSummaryPdf}).",
           "cy": "##Nawr anfonwch eich ffurflen\n\nMae angen i chi gyflwyno’ch ffurflen ar y sgrin nesaf.\n\nCyn i chi wneud hyn gallwch [argraffu neu gadw copi PDF o’ch atebion (yn agor ffenestr neu dab newydd)]($${link.printSummaryPdf})."
         },
-        "includePrintPageButton": true
+        "includePrintPageButton": false
       }
     }"""
 
@@ -1825,7 +1825,7 @@ class BuilderControllerSuite extends FunSuite {
           "en": "##Now send your return\n\nYou need to submit your return on the next screen.\n\nBefore you do this you can [print or save a PDF copy of your answers (opens in a new window or tab)]($${link.printSummaryPdf}).",
           "cy": "##Nawr anfonwch eich datganiad\n\nMae angen i chi gyflwyno’ch datganiad ar y sgrin nesaf.\n\nCyn i chi wneud hyn gallwch [argraffu neu gadw copi PDF o’ch atebion (yn agor ffenestr neu dab newydd)]($${link.printSummaryPdf})."
         },
-        "includePrintPageButton": true
+        "includePrintPageButton": false
       }
     }"""
 
