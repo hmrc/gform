@@ -69,7 +69,6 @@ DELETE        /handlebars-schemas/:handlebarsSchemaId                           
 GET           /exposed-config                                                                           uk.gov.hmrc.gform.config.ConfigController.exposedConfig()
 
 POST          /des/organisation/:utr                                                                    uk.gov.hmrc.gform.des.DesController.organisation(utr: String)
-GET           /des/personal-details/:idType/:idNumber                                                   uk.gov.hmrc.gform.des.DesController.agentDetails(idType: String, idNumber: String)
 
 POST          /dms/submit                                                                               uk.gov.hmrc.gform.dms.DmsSubmissionController.submitToDms()
 POST          /dms/submit-pdf                                                                           uk.gov.hmrc.gform.dms.DmsSubmissionController.submitPdfToDms()
@@ -164,6 +163,7 @@ GET           /companieshouse/company/:companynumber/insolvency                 
 GET           /hip/ni-claim-validation/:nino/:claimReference                                            uk.gov.hmrc.gform.hip.HipController.validateNiClaimReference(nino: String, claimReference: String)
 GET           /hip/ni-employments/:nino/:taxYear                                                        uk.gov.hmrc.gform.hip.HipController.getEmployments(nino: String, taxYear: Int)
 GET           /hip/caseflow-case-details/:caseId                                                        uk.gov.hmrc.gform.hip.HipController.getCaseflowCaseDetails(caseId: String)
+GET           /hip/agent-details/:arn                                                                   uk.gov.hmrc.gform.hip.HipController.agentDetails(arn: String)
 
 POST          /email-migration                                                                          uk.gov.hmrc.gform.emailmigration.EmailMigrationController.migrateEmail()
 

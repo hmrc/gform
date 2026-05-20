@@ -19,6 +19,7 @@ package uk.gov.hmrc.gform.hip
 import org.slf4j.LoggerFactory
 import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.config.HipConnectorConfig
+import uk.gov.hmrc.gform.sharedmodel.{ CannotRetrieveResponse, NotFound, ServiceCallResponse, ServiceResponse }
 import uk.gov.hmrc.http.{ BadRequestException, ForbiddenException, HeaderCarrier, HttpReadsEither, HttpReadsHttpResponse, HttpResponse, InternalServerException, LowPriorityHttpReadsJson, NotFoundException, ServiceUnavailableException, StringContextOps, UnauthorizedException }
 import play.api.http.HeaderNames.AUTHORIZATION
 import play.api.http.Status._
@@ -26,6 +27,9 @@ import play.api.libs.json.{ JsObject, JsValue, Json }
 import uk.gov.hmrc.gform.sharedmodel.sdes.CorrelationId
 import uk.gov.hmrc.http.client.HttpClientV2
 
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
+import java.time.Instant
 import scala.concurrent.{ ExecutionContext, Future }
 
 trait HipAlgebra[F[_]] {
@@ -61,6 +65,8 @@ trait HipAlgebra[F[_]] {
   ): F[JsValue]
 
   def getCaseflowCaseDetails(caseId: String, correlationId: CorrelationId): F[HttpResponse]
+
+  def lookupAgentDetails(arn: String, correlationId: CorrelationId): F[ServiceCallResponse[JsValue]]
 }
 
 class HipConnector(http: HttpClientV2, baseUrl: String, hipConfig: HipConnectorConfig)(implicit ec: ExecutionContext)
@@ -231,6 +237,54 @@ class HipConnector(http: HttpClientV2, baseUrl: String, hipConfig: HipConnectorC
       .get(url"$url")
       .setHeader(authHeaders: _*)
       .execute[HttpResponse]
+  }
+
+  def lookupAgentDetails(arn: String, correlationId: CorrelationId): Future[ServiceCallResponse[JsValue]] = {
+    logger.info(s"lookupAgentDetails for arn $arn called, ${loggingHelpers.cleanHeaderCarrierHeader(hc)}")
+    val url = s"$baseUrl${hipConfig.basePath}/etmp/RESTAdapter/generic/agent/subscription/$arn"
+    val receiptDate = DateTimeFormatter
+      .ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
+      .withZone(ZoneOffset.UTC)
+      .format(Instant.now())
+
+    http
+      .get(url"$url")
+      .setHeader(authHeaders: _*)
+      .setHeader(Headers.CorrelationId -> correlationId.value)
+      .setHeader("X-Originating-System" -> "MDTP-GFORM")
+      .setHeader("X-Receipt-Date" -> receiptDate)
+      .setHeader("X-Transmitting-System" -> "HIP")
+      .execute[HttpResponse]
+      .map { response =>
+        response.status match {
+          case OK => ServiceResponse(response.json)
+          case NOT_FOUND =>
+            logger.info(s"lookupAgentDetails: agent not found for arn $arn")
+            NotFound
+          case UNAUTHORIZED =>
+            logger.error(s"lookupAgentDetails: unauthorized response for arn $arn")
+            CannotRetrieveResponse
+          case FORBIDDEN =>
+            logger.error(s"lookupAgentDetails: forbidden response for arn $arn")
+            CannotRetrieveResponse
+          case UNPROCESSABLE_ENTITY =>
+            logger.error(s"lookupAgentDetails: unprocessable entity response for arn $arn. Body: ${response.body}")
+            CannotRetrieveResponse
+          case INTERNAL_SERVER_ERROR =>
+            logger.error(s"lookupAgentDetails: internal server error for arn $arn. Body: ${response.body}")
+            CannotRetrieveResponse
+          case SERVICE_UNAVAILABLE =>
+            logger.error(s"lookupAgentDetails: service unavailable for arn $arn")
+            CannotRetrieveResponse
+          case status =>
+            logger.error(s"lookupAgentDetails: unexpected status $status for arn $arn. Body: ${response.body}")
+            CannotRetrieveResponse
+        }
+      }
+      .recover { case ex =>
+        logger.error(s"lookupAgentDetails: unknown problem for arn $arn", ex)
+        CannotRetrieveResponse
+      }
   }
 
   private def extractEtag(response: HttpResponse, caseId: String): String =
