@@ -18,7 +18,7 @@ package uk.gov.hmrc.gform.des
 
 import cats.Functor
 import uk.gov.hmrc.gform.sharedmodel.ServiceCallResponse
-import uk.gov.hmrc.gform.sharedmodel.des.{ DesAgentDetailsResponse, DesRegistrationRequest, DesRegistrationResponse }
+import uk.gov.hmrc.gform.sharedmodel.des.{ DesRegistrationRequest, DesRegistrationResponse }
 
 class DesService[F[_]: Functor](des: DesAlgebra[F]) {
   def organisation(
@@ -26,10 +26,4 @@ class DesService[F[_]: Functor](des: DesAlgebra[F]) {
     desRegistrationRequest: DesRegistrationRequest
   ): F[ServiceCallResponse[DesRegistrationResponse]] =
     des.lookupRegistration(utr, desRegistrationRequest)
-
-  def agentDetails(
-    idType: String,
-    idNumber: String
-  ): F[ServiceCallResponse[DesAgentDetailsResponse]] =
-    des.lookupAgentDetails(idType, idNumber)
 }
