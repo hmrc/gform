@@ -24,7 +24,7 @@ import org.slf4j.LoggerFactory
 import play.api.libs.json._
 import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.config.DesConnectorConfig
-import uk.gov.hmrc.gform.sharedmodel.des.{ DesAgentDetailsResponse, DesRegistrationRequest, DesRegistrationResponse, DesRegistrationResponseError }
+import uk.gov.hmrc.gform.sharedmodel.des.{ DesRegistrationRequest, DesRegistrationResponse, DesRegistrationResponseError }
 import uk.gov.hmrc.gform.sharedmodel._
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.http.client.HttpClientV2
@@ -42,11 +42,6 @@ trait DesAlgebra[F[_]] {
   ): F[ServiceCallResponse[DesRegistrationResponse]]
 
   def lookupTaxPeriod(idType: String, idNumber: String, regimeType: String): F[ServiceCallResponse[Obligation]]
-
-  def lookupAgentDetails(
-    idType: String,
-    idNumber: String
-  ): F[ServiceCallResponse[DesAgentDetailsResponse]]
 
   def testOnlyGet(url: String): Future[HttpResponse]
 }
@@ -148,41 +143,6 @@ class DesConnector(httpClient: HttpClientV2, baseUrl: String, desConfig: DesConn
       .get(url"$url")
       .setHeader(authHeaders)
       .execute[HttpResponse]
-  }
-
-  override def lookupAgentDetails(
-    idType: String,
-    idNumber: String
-  ): Future[ServiceCallResponse[DesAgentDetailsResponse]] = {
-    logger.info(
-      s"Des agent-details called, ${loggingHelpers.cleanHeaderCarrierHeader(hc)}"
-    )
-
-    val url = s"$baseUrl${desConfig.basePath}/registration/personal-details/$idType/$idNumber"
-    httpClient
-      .get(url"$url")
-      .setHeader(authHeaders)
-      .execute[HttpResponse]
-      .map { httpResponse =>
-        val status = httpResponse.status
-        if (status === 404 || status === 400) {
-          processResponse[DesRegistrationResponseError, Nothing](httpResponse) { desError =>
-            if (desError.code === "NOT_FOUND" || desError.code === s"INVALID_${idType.toUpperCase}") NotFound
-            else {
-              val jsonResponse = Json.prettyPrint(Json.toJson(desError))
-              logger.error(
-                s"Problem when calling des registration for agent details. Response status: $status, body response: $jsonResponse"
-              )
-              CannotRetrieveResponse
-            }
-          }
-        } else
-          processResponse[DesAgentDetailsResponse, DesAgentDetailsResponse](httpResponse)(ServiceResponse.apply)
-      }
-      .recover { case ex =>
-        logger.error("Unknown problem when calling des registration for agent details", ex)
-        CannotRetrieveResponse
-      }
   }
 }
 
