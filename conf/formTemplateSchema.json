@@ -328,6 +328,9 @@
           "items": {
             "$ref": "#/$defs/fields"
           }
+        },
+        "includePrintPageButton": {
+          "type": "boolean"
         }
       }
     },
