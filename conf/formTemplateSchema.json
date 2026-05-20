@@ -328,6 +328,9 @@
           "items": {
             "$ref": "#/$defs/fields"
           }
+        },
+        "includePrintPageButton": {
+          "type": "boolean"
         }
       }
     },
@@ -925,7 +928,8 @@
             "long",
             "important",
             "banner",
-            "pdflink"
+            "pdflink",
+            "htmllink"
           ]
         },
         "excludeFromPdf": {

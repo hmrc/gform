@@ -35,6 +35,7 @@ object InternalLink {
   case object PrintSectionPdf extends InternalLink
   case object PrintSectionNotificationPdf extends InternalLink
   case object SummaryPage extends InternalLink
+  case object PrintAcknowledgementHtml extends InternalLink
 
   val printAcknowledgementPdf: InternalLink = PrintAcknowledgementPdf
   val printSummaryPdf: InternalLink = PrintSummaryPdf
@@ -44,6 +45,7 @@ object InternalLink {
   val printSectionPdf: InternalLink = PrintSectionPdf
   val printSectionNotificationPdf: InternalLink = PrintSectionNotificationPdf
   val summaryPage: InternalLink = SummaryPage
+  val printAcknowledgementHtml: InternalLink = PrintAcknowledgementHtml
 
   implicit val format: OFormat[InternalLink] = derived.oformat()
 }
