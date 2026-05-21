@@ -20,8 +20,6 @@ import uk.gov.hmrc.gform.core.ValidationResult
 import uk.gov.hmrc.gform.sharedmodel.{ Attr, DataRetrieve, DataRetrieveDefinitions }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ DataRetrieveCtx, FormTemplate, Page, Section }
 
-import scala.collection.mutable.ArrayBuffer
-
 class PopulateAtlFormTemplateValidator(private val formTemplate: FormTemplate, pages: List[Page]) {
 
   private lazy val atlMap = formTemplate.formKind.allSections.collect { case atl: Section.AddToList =>
@@ -44,35 +42,35 @@ class PopulateAtlFormTemplateValidator(private val formTemplate: FormTemplate, p
   }
 
   private def validateDataRetrieve(dataRetrieve: DataRetrieve): List[String] = {
-    val errors = ArrayBuffer[String]()
-    dataRetrieve.populateATL.foreach { populateAtl =>
+    dataRetrieve.populateATL.map { populateAtl =>
       val atlId = populateAtl.id
       val mappingFields = populateAtl.mapping.keys
 
       val atl = atlMap.get(atlId)
 
-      if (atl.isEmpty)
-        errors.addOne(s"dataRetrieve ${dataRetrieve.id.value}: is referencing an ATL id ($atlId) that does not exist")
+      val atlIdDoesNotExistError = if (atl.isEmpty) {
+        Some(s"dataRetrieve ${dataRetrieve.id.value}: is referencing an ATL id ($atlId) that does not exist")
+      } else {
+        None
+      }
 
-      atl.foreach { atl =>
+      val otherErrors = atl.toList.flatMap { atl =>
         def mappingFieldContainedInAtl(fieldId: String): Boolean =
           atl.pages.toList
             .flatMap(_.fields)
             .map(_.id.value)
             .contains(fieldId)
 
-        mappingFields
+        val atlIdFieldMissingErrors = mappingFields
           .map(mappingFieldContainedInAtl)
           .zip(mappingFields)
           .collect { case (false, fieldId) =>
-            errors.addOne(
-              s"dataRetrieve ${dataRetrieve.id.value}: mapping field $fieldId is not available inside of ATL $atlId"
-            )
+            s"dataRetrieve ${dataRetrieve.id.value}: mapping field $fieldId is not available inside of ATL $atlId"
           }
 
         val expressions = populateAtl.mapping.values
 
-        expressions
+        val dataRetrieveTypeErrors = expressions
           .flatMap(expr => expr.leafs())
           .collect {
             case DataRetrieveCtx(id, attribute) if id == dataRetrieve.id =>
@@ -81,20 +79,23 @@ class PopulateAtlFormTemplateValidator(private val formTemplate: FormTemplate, p
                 .get
               dataRetrieveDefinition.attributes match {
                 case Attr.FromObject(inst) =>
-                  errors.addOne(
-                    s"dataRetrieve ${dataRetrieve.id.value} of type ${dataRetrieve.tpe} is an object data retrieve. Only array dataRetrieves are supported"
-                  )
+                    Some(s"dataRetrieve ${dataRetrieve.id.value} of type ${dataRetrieve.tpe} is an object data retrieve. Only array dataRetrieves are supported")
                 case Attr.FromArray(inst) =>
                   val containsAttribute = dataRetrieveDefinition.attrTypeMapping.keys.toList.contains(attribute)
                   if (!containsAttribute) {
-                    errors.addOne(
+                    Some(
                       s"dataRetrieve ${dataRetrieve.id.value}: dataRetrieve.${dataRetrieve.id.value}.${attribute.name} does not exist for dataRetrieve type of ${dataRetrieve.tpe.name}"
                     )
+                  } else {
+                    None
                   }
               }
-          }
+          }.flatten
+
+        atlIdFieldMissingErrors ++ dataRetrieveTypeErrors
       }
-    }
-    errors.toList
+
+      atlIdDoesNotExistError ++ otherErrors
+    }.toList.flatten
   }
 }
