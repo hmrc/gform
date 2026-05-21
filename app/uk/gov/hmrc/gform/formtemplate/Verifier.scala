@@ -139,6 +139,7 @@ trait Verifier {
            )
       _ <- fromOptA(DestinationsValidator.validateRoboticsAsAttachment(formTemplate.destinations).toEither)
       _ <- fromOptA(AcknowledgementValidator.validateNoPIITitle(formTemplate, allExpressions).toEither)
+      _ <- fromOptA(new PopulateAtlFormTemplateValidator(formTemplate, pages).validate().toEither)
     } yield ()
 
   }
