@@ -17,8 +17,9 @@
 package uk.gov.hmrc.gform.formtemplate
 
 import uk.gov.hmrc.gform.core.ValidationResult
-import uk.gov.hmrc.gform.sharedmodel.{ Attr, DataRetrieve, DataRetrieveDefinitions }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ DataRetrieveCtx, FormTemplate, Page, Section }
+import uk.gov.hmrc.gform.models.constraints.ReferenceInfo
+import uk.gov.hmrc.gform.sharedmodel.{Attr, DataRetrieve, DataRetrieveDefinitions}
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{DataRetrieveCtx, ExprWithPath, FormTemplate, Page, Section, TemplatePath}
 
 class PopulateAtlFormTemplateValidator(private val formTemplate: FormTemplate, pages: List[Page]) {
 
@@ -70,10 +71,15 @@ class PopulateAtlFormTemplateValidator(private val formTemplate: FormTemplate, p
 
         val expressions = populateAtl.mapping.values
 
-        val dataRetrieveTypeErrors = expressions
-          .flatMap(expr => expr.leafs())
+        val dataRetrieveCtx = expressions.flatMap { expr =>
+            ExprWithPath(TemplatePath.leaf, expr).referenceInfos.collect {
+              case ReferenceInfo.DataRetrieveCtxExpr(_, dataRetrieveCtx) if dataRetrieveCtx.id == dataRetrieve.id => dataRetrieveCtx
+            }
+          }
+
+        val dataRetrieveTypeErrors = dataRetrieveCtx
           .collect {
-            case DataRetrieveCtx(id, attribute) if id == dataRetrieve.id =>
+            case DataRetrieveCtx(id, attribute) =>
               val dataRetrieveDefinition = DataRetrieveDefinitions.staticDefinitions.definitions
                 .find(_.tpe == dataRetrieve.tpe)
                 .get
