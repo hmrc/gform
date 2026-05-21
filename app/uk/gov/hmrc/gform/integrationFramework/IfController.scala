@@ -17,7 +17,7 @@
 package uk.gov.hmrc.gform.integrationFramework
 
 import org.slf4j.LoggerFactory
-import play.api.libs.json.{Format, JsError, JsObject, JsString, JsSuccess, Json}
+import play.api.libs.json.{ Format, JsError, JsObject, JsString, JsSuccess, Json }
 import play.api.mvc._
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.controllers.BaseController
@@ -25,11 +25,11 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.ProfileName
 import uk.gov.hmrc.gform.wshttp.WSHttpModule
 import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
 import uk.gov.hmrc.http.client.RequestBuilder
-import uk.gov.hmrc.http.{HeaderCarrier, HttpException, StringContextOps}
+import uk.gov.hmrc.http.{ HeaderCarrier, HttpException, StringContextOps }
 
 import java.net.URL
 import java.time.format.DateTimeFormatter
-import java.time.{ZoneOffset, ZonedDateTime}
+import java.time.{ ZoneOffset, ZonedDateTime }
 import scala.concurrent.ExecutionContext
 
 case class ManageEmailsResponse(primaryEmail: String, secondaryEmails: Seq[String])
@@ -98,10 +98,13 @@ class IfController(configModule: ConfigModule, wSHttpModule: WSHttpModule, cc: C
               val transformedJsonResp = Json.toJson(respSeq)
               Status(resp.status)(transformedJsonResp).as("application/json")
             case JsError(errors) =>
-              logger.error(s"IF server returned an unexpected type for manageEmails API call. Json validation errors: $errors")
+              logger.error(
+                s"IF server returned an unexpected type for manageEmails API call. Json validation errors: $errors"
+              )
               Status(resp.status)(resp.body).as("application/json")
           }
-        }.recover(standardErrors)
+        }
+        .recover(standardErrors)
     }
   }
 
@@ -109,7 +112,7 @@ class IfController(configModule: ConfigModule, wSHttpModule: WSHttpModule, cc: C
     case e: HttpException =>
       logger.error(s"Connection with IF failed. Status: ${e.responseCode}. Message: ${e.message}")
       Status(e.responseCode)(e.message)
-    case e                =>
+    case e =>
       logger.error(s"Connection with IF failed. Message: ${e.getMessage}", e)
       ServiceUnavailable
   }

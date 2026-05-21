@@ -18,8 +18,8 @@ package uk.gov.hmrc.gform.formtemplate
 
 import uk.gov.hmrc.gform.core.ValidationResult
 import uk.gov.hmrc.gform.models.constraints.ReferenceInfo
-import uk.gov.hmrc.gform.sharedmodel.{Attr, DataRetrieve, DataRetrieveDefinitions}
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{DataRetrieveCtx, ExprWithPath, FormTemplate, Page, Section, TemplatePath}
+import uk.gov.hmrc.gform.sharedmodel.{ Attr, DataRetrieve, DataRetrieveDefinitions }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ DataRetrieveCtx, ExprWithPath, FormTemplate, Page, Section, TemplatePath }
 
 class PopulateAtlFormTemplateValidator(private val formTemplate: FormTemplate, pages: List[Page]) {
 
@@ -42,66 +42,69 @@ class PopulateAtlFormTemplateValidator(private val formTemplate: FormTemplate, p
     }
   }
 
-  private def validateDataRetrieve(dataRetrieve: DataRetrieve): List[String] = {
-    dataRetrieve.populateATL.map { populateAtl =>
-      val atlId = populateAtl.id
-      val mappingFields = populateAtl.mapping.keys
+  private def validateDataRetrieve(dataRetrieve: DataRetrieve): List[String] =
+    dataRetrieve.populateATL
+      .map { populateAtl =>
+        val atlId = populateAtl.id
+        val mappingFields = populateAtl.mapping.keys
 
-      val atl = atlMap.get(atlId)
+        val atl = atlMap.get(atlId)
 
-      val atlIdDoesNotExistError = if (atl.isEmpty) {
-        Some(s"dataRetrieve ${dataRetrieve.id.value}: is referencing an ATL id ($atlId) that does not exist")
-      } else {
-        None
-      }
+        val atlIdDoesNotExistError = if (atl.isEmpty) {
+          Some(s"dataRetrieve ${dataRetrieve.id.value}: is referencing an ATL id ($atlId) that does not exist")
+        } else {
+          None
+        }
 
-      val otherErrors = atl.toList.flatMap { atl =>
-        def mappingFieldContainedInAtl(fieldId: String): Boolean =
-          atl.pages.toList
-            .flatMap(_.fields)
-            .map(_.id.value)
-            .contains(fieldId)
+        val otherErrors = atl.toList.flatMap { atl =>
+          def mappingFieldContainedInAtl(fieldId: String): Boolean =
+            atl.pages.toList
+              .flatMap(_.fields)
+              .map(_.id.value)
+              .contains(fieldId)
 
-        val atlIdFieldMissingErrors = mappingFields
-          .map(mappingFieldContainedInAtl)
-          .zip(mappingFields)
-          .collect { case (false, fieldId) =>
-            s"dataRetrieve ${dataRetrieve.id.value}: mapping field $fieldId is not available inside of ATL $atlId"
-          }
+          val atlIdFieldMissingErrors = mappingFields
+            .map(mappingFieldContainedInAtl)
+            .zip(mappingFields)
+            .collect { case (false, fieldId) =>
+              s"dataRetrieve ${dataRetrieve.id.value}: mapping field $fieldId is not available inside of ATL $atlId"
+            }
 
-        val expressions = populateAtl.mapping.values
+          val expressions = populateAtl.mapping.values
 
-        val dataRetrieveCtx = expressions.flatMap { expr =>
+          val dataRetrieveCtx = expressions.flatMap { expr =>
             ExprWithPath(TemplatePath.leaf, expr).referenceInfos.collect {
-              case ReferenceInfo.DataRetrieveCtxExpr(_, dataRetrieveCtx) if dataRetrieveCtx.id == dataRetrieve.id => dataRetrieveCtx
+              case ReferenceInfo.DataRetrieveCtxExpr(_, dataRetrieveCtx) if dataRetrieveCtx.id == dataRetrieve.id =>
+                dataRetrieveCtx
             }
           }
 
-        val dataRetrieveTypeErrors = dataRetrieveCtx
-          .collect {
-            case DataRetrieveCtx(id, attribute) =>
-              val dataRetrieveDefinition = DataRetrieveDefinitions.staticDefinitions.definitions
-                .find(_.tpe == dataRetrieve.tpe)
-                .get
-              dataRetrieveDefinition.attributes match {
-                case Attr.FromObject(inst) =>
-                    Some(s"dataRetrieve ${dataRetrieve.id.value} of type ${dataRetrieve.tpe} is an object data retrieve. Only array dataRetrieves are supported")
-                case Attr.FromArray(inst) =>
-                  val containsAttribute = dataRetrieveDefinition.attrTypeMapping.keys.toList.contains(attribute)
-                  if (!containsAttribute) {
-                    Some(
-                      s"dataRetrieve ${dataRetrieve.id.value}: dataRetrieve.${dataRetrieve.id.value}.${attribute.name} does not exist for dataRetrieve type of ${dataRetrieve.tpe.name}"
-                    )
-                  } else {
-                    None
-                  }
-              }
+          val dataRetrieveTypeErrors = dataRetrieveCtx.collect { case DataRetrieveCtx(id, attribute) =>
+            val dataRetrieveDefinition = DataRetrieveDefinitions.staticDefinitions.definitions
+              .find(_.tpe == dataRetrieve.tpe)
+              .get
+            dataRetrieveDefinition.attributes match {
+              case Attr.FromObject(inst) =>
+                Some(
+                  s"dataRetrieve ${dataRetrieve.id.value} of type ${dataRetrieve.tpe} is an object data retrieve. Only array dataRetrieves are supported"
+                )
+              case Attr.FromArray(inst) =>
+                val containsAttribute = dataRetrieveDefinition.attrTypeMapping.keys.toList.contains(attribute)
+                if (!containsAttribute) {
+                  Some(
+                    s"dataRetrieve ${dataRetrieve.id.value}: dataRetrieve.${dataRetrieve.id.value}.${attribute.name} does not exist for dataRetrieve type of ${dataRetrieve.tpe.name}"
+                  )
+                } else {
+                  None
+                }
+            }
           }.flatten
 
-        atlIdFieldMissingErrors ++ dataRetrieveTypeErrors
-      }
+          atlIdFieldMissingErrors ++ dataRetrieveTypeErrors
+        }
 
-      atlIdDoesNotExistError ++ otherErrors
-    }.toList.flatten
-  }
+        atlIdDoesNotExistError ++ otherErrors
+      }
+      .toList
+      .flatten
 }
