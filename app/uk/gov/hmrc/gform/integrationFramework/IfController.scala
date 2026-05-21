@@ -16,7 +16,8 @@
 
 package uk.gov.hmrc.gform.integrationFramework
 
-import play.api.libs.json.{ Format, JsObject, JsString, Json }
+import org.slf4j.LoggerFactory
+import play.api.libs.json.{Format, JsError, JsObject, JsString, JsSuccess, Json}
 import play.api.mvc._
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.controllers.BaseController
@@ -24,11 +25,11 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.ProfileName
 import uk.gov.hmrc.gform.wshttp.WSHttpModule
 import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
 import uk.gov.hmrc.http.client.RequestBuilder
-import uk.gov.hmrc.http.{ HeaderCarrier, StringContextOps }
+import uk.gov.hmrc.http.{HeaderCarrier, HttpException, StringContextOps}
 
 import java.net.URL
 import java.time.format.DateTimeFormatter
-import java.time.{ ZoneOffset, ZonedDateTime }
+import java.time.{ZoneOffset, ZonedDateTime}
 import scala.concurrent.ExecutionContext
 
 case class ManageEmailsResponse(primaryEmail: String, secondaryEmails: Seq[String])
@@ -40,6 +41,8 @@ object ManageEmailsResponse {
 class IfController(configModule: ConfigModule, wSHttpModule: WSHttpModule, cc: ControllerComponents)(implicit
   ec: ExecutionContext
 ) extends BaseController(cc) {
+
+  private val logger = LoggerFactory.getLogger(getClass)
 
   private class IfRequest(fullUrl: URL, headers: Seq[(String, String)]) {
     def get(implicit hc: HeaderCarrier): RequestBuilder =
@@ -74,18 +77,40 @@ class IfController(configModule: ConfigModule, wSHttpModule: WSHttpModule, cc: C
     withCorrelationIdHeader(req) { correlationId =>
       ifRequest(s"/fta/manageemails/v1?eori=$eori", correlationId).get.execute
         .map { resp =>
-          val respTyped = resp.json.as[ManageEmailsResponse]
-          val respSeq = respTyped.secondaryEmails.map { secondaryEmail =>
-            JsObject(
-              Map(
-                "primaryEmail"   -> JsString(respTyped.primaryEmail),
-                "secondaryEmail" -> JsString(secondaryEmail)
-              )
+          if (resp.status > 299) {
+            logger.error(
+              s"non 2xx response from IF manageemails. Response code: ${resp.status}. Body: ${resp.body}"
             )
           }
-          val transformedJsonResp = Json.toJson(respSeq)
-          Status(resp.status)(transformedJsonResp).as("application/json")
-        }
+
+          val respTyped = resp.json.validate[ManageEmailsResponse]
+
+          respTyped match {
+            case JsSuccess(respTyped, path) =>
+              val respSeq = respTyped.secondaryEmails.map { secondaryEmail =>
+                JsObject(
+                  Map(
+                    "primaryEmail"   -> JsString(respTyped.primaryEmail),
+                    "secondaryEmail" -> JsString(secondaryEmail)
+                  )
+                )
+              }
+              val transformedJsonResp = Json.toJson(respSeq)
+              Status(resp.status)(transformedJsonResp).as("application/json")
+            case JsError(errors) =>
+              logger.error(s"IF server returned an unexpected type for manageEmails API call. Json validation errors: $errors")
+              Status(resp.status)(resp.body).as("application/json")
+          }
+        }.recover(standardErrors)
     }
+  }
+
+  private def standardErrors: PartialFunction[Throwable, Result] = {
+    case e: HttpException =>
+      logger.error(s"Connection with IF failed. Status: ${e.responseCode}. Message: ${e.message}")
+      Status(e.responseCode)(e.message)
+    case e                =>
+      logger.error(s"Connection with IF failed. Message: ${e.getMessage}", e)
+      ServiceUnavailable
   }
 }
