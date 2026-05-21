@@ -100,8 +100,9 @@ trait Rewriter {
       formTemplate.formKind.allSections.flatMap {
         case Section.NonRepeatingPage(page) => page.fields.flatMap(f)
         case Section.RepeatingPage(page, _) => page.fields.flatMap(f)
-        case Section.AddToList(_, _, _, _, _, _, _, _, pages, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) =>
-          pages.toList.flatMap(page => page.fields.flatMap(f))
+        case Section
+              .AddToList(_, _, _, _, _, _, _, _, pages, _, _, _, _, _, _, _, _, _, defaultPage, _, _, _, _, _, _) =>
+          (pages.toList ++ defaultPage.toList).flatMap(page => page.fields.flatMap(f))
       }
 
     val validIfs: List[ValidIf] = traverseFormComponents(formComponentValidIf) ++ validIfsDeclaration
@@ -221,7 +222,7 @@ trait Rewriter {
             _,
             _,
             _,
-            _,
+            defaultPage,
             cyaPage,
             fields,
             _,
@@ -229,7 +230,9 @@ trait Rewriter {
             _,
             _
           ) =>
-        includeIf.toList ++ pages.toList.flatMap(_.includeIf.toList) ++ fields.fold(List.empty[IncludeIf])(
+        includeIf.toList ++ (pages.toList ++ defaultPage.toList).flatMap(_.includeIf.toList) ++ fields.fold(
+          List.empty[IncludeIf]
+        )(
           _.toList.flatMap(_.includeIf.toList)
         ) ++ cyaPage.fold(List.empty[IncludeIf])(
           _.fields.fold(List.empty[IncludeIf])(_.toList.flatMap(_.includeIf.toList))
@@ -237,6 +240,12 @@ trait Rewriter {
           dp.includeIf.toList ++ dp.fields.flatMap(_.includeIf.toList)
         )
     } ++ fieldsIncludeIfs ++ destinationsIncludeIfs ++ summarySectionIncludeIfs ++ choiceIncludeIfs ++ miniSummaryListIncludeIfs ++ redirectsIncludeIfs ++ confirmationRedirectsIncludeIfs ++ taskDeclarationSectionIncludeIfs ++ taskIncludeIfs
+
+    val removeItemIfs: List[RemoveItemIf] = formTemplate.formKind.allSections.flatMap {
+      case Section.NonRepeatingPage(page) => page.removeItemIf.toList
+      case Section.RepeatingPage(page, _) => page.removeItemIf.toList
+      case atl: Section.AddToList         => atl.pages.toList.flatMap(_.removeItemIf.toList)
+    }
 
     def validate(
       c: String,
@@ -445,6 +454,12 @@ trait Rewriter {
           .map(booleanExpr => validIf -> ValidIf(booleanExpr)): Possible[(ValidIf, ValidIf)]
       }
 
+    val rewriteRemoveItemIfRules: Possible[List[(RemoveItemIf, RemoveItemIf)]] =
+      removeItemIfs.traverse { removeItemIf =>
+        rewrite(removeItemIf.booleanExpr)
+          .map(booleanExpr => removeItemIf -> RemoveItemIf(booleanExpr)): Possible[(RemoveItemIf, RemoveItemIf)]
+      }
+
     // Updating of FormTemplate with rewritten IfElse expression would be complex, so we are not going to do it.
     // We only need to raise an error when such rewrite is needed.
     // Raising of an error is enough because no invalid IfElse exists in production.
@@ -467,24 +482,29 @@ trait Rewriter {
       }
 
     for {
-      includeIfRules <- rewriteIncludeIfRules
-      validIfRules   <- rewriteValidIfRules
-      _              <- rewriteIfElseRules
+      includeIfRules    <- rewriteIncludeIfRules
+      validIfRules      <- rewriteValidIfRules
+      removeItemIfRules <- rewriteRemoveItemIfRules
+      _                 <- rewriteIfElseRules
     } yield {
       val includeIfRulesLookup: Map[IncludeIf, IncludeIf] = includeIfRules.toMap
       val validIfRulesLookup: Map[ValidIf, ValidIf] = validIfRules.toMap
+      val removeItemIfRulesLookup: Map[RemoveItemIf, RemoveItemIf] = removeItemIfRules.toMap
 
-      lazy val disableIncludeIfs: Boolean = formTemplate.overrides.fold(false)(_.disableIncludeIfs.getOrElse(false))
-      lazy val disableValidIfs: Boolean = formTemplate.overrides.fold(false)(_.disableValidIfs.getOrElse(false))
-      lazy val disableContinueIfs = formTemplate.overrides.fold(false)(_.disableContinueIfs.getOrElse(false))
-      lazy val disableUploads = formTemplate.overrides.fold(false)(_.disableUploads.getOrElse(false))
-      lazy val disableRedirects = formTemplate.overrides.fold(false)(_.disableRedirects.getOrElse(false))
+      val disableIncludeIfs: Boolean = formTemplate.overrides.fold(false)(_.disableIncludeIfs.getOrElse(false))
+      val disableValidIfs: Boolean = formTemplate.overrides.fold(false)(_.disableValidIfs.getOrElse(false))
+      val disableContinueIfs = formTemplate.overrides.fold(false)(_.disableContinueIfs.getOrElse(false))
+      val disableUploads = formTemplate.overrides.fold(false)(_.disableUploads.getOrElse(false))
+      val disableRedirects = formTemplate.overrides.fold(false)(_.disableRedirects.getOrElse(false))
 
       def replaceIncludeIf(includeIf: Option[IncludeIf], skipDisabledCheck: Boolean = false): Option[IncludeIf] =
         if (disableIncludeIfs && !skipDisabledCheck) None else includeIf.flatMap(includeIfRulesLookup.get)
 
       def replaceValidIf(validIf: Option[ValidIf]): Option[ValidIf] =
         if (disableValidIfs) None else validIf.flatMap(validIfRulesLookup.get)
+
+      def replaceRemoveItemIf(removeItemIf: Option[RemoveItemIf]): Option[RemoveItemIf] =
+        removeItemIf.flatMap(removeItemIfRulesLookup.get)
 
       def replaceValidator(validator: FormComponentValidator): FormComponentValidator =
         validator.copy(validIf =
@@ -623,30 +643,22 @@ trait Rewriter {
       def replaceContinueIf(maybeContinueIf: Option[ContinueIf]): Option[ContinueIf] =
         if (disableContinueIfs) None else maybeContinueIf
 
+      def updatePage(page: Page): Page = page.copy(
+        includeIf = replaceIncludeIf(page.includeIf),
+        fields = replaceFields(page.fields),
+        redirects = replaceRedirects(page.redirects),
+        confirmation = replaceConfirmation(page.confirmation),
+        dataRetrieve = replaceDataRetrieveIf(page.includeIf, page.dataRetrieve),
+        continueIf = replaceContinueIf(page.continueIf),
+        removeItemIf = replaceRemoveItemIf(page.removeItemIf)
+      )
+
       def updateSection(section: Section): Section =
         section match {
           case s: Section.NonRepeatingPage =>
-            s.copy(
-              page = s.page.copy(
-                includeIf = replaceIncludeIf(s.page.includeIf),
-                fields = replaceFields(s.page.fields),
-                redirects = replaceRedirects(s.page.redirects),
-                confirmation = replaceConfirmation(s.page.confirmation),
-                dataRetrieve = replaceDataRetrieveIf(s.page.includeIf, s.page.dataRetrieve),
-                continueIf = replaceContinueIf(s.page.continueIf)
-              )
-            )
+            s.copy(page = updatePage(s.page))
           case s: Section.RepeatingPage =>
-            s.copy(
-              page = s.page.copy(
-                includeIf = replaceIncludeIf(s.page.includeIf),
-                fields = replaceFields(s.page.fields),
-                redirects = replaceRedirects(s.page.redirects),
-                confirmation = replaceConfirmation(s.page.confirmation),
-                dataRetrieve = replaceDataRetrieveIf(s.page.includeIf, s.page.dataRetrieve),
-                continueIf = replaceContinueIf(s.page.continueIf)
-              )
-            )
+            s.copy(page = updatePage(s.page))
           case s: Section.AddToList =>
             s.copy(
               includeIf = replaceIncludeIf(s.includeIf),
@@ -664,6 +676,7 @@ trait Rewriter {
                 )
               ),
               fields = replaceFieldsNel(s.fields),
+              defaultPage = s.defaultPage.map(page => updatePage(page)),
               cyaPage = s.cyaPage.map(replaceCheckYourAnswersPage)
             )
         }

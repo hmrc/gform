@@ -822,7 +822,8 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
       TextExpression(
         Period(
           DateCtx(DateFormCtxVar(FormCtx("d1"))),
-          DateCtx(DateFormCtxVar(FormCtx("d2")))
+          DateCtx(DateFormCtxVar(FormCtx("d2"))),
+          PeriodFn.Identity
         )
       )
     )
@@ -841,11 +842,9 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
       val res = ValueParser.validate(f)
       res.toOption.value should be(
         TextExpression(
-          PeriodExt(
-            Period(
-              DateCtx(DateFormCtxVar(FormCtx("d1"))),
-              DateCtx(DateFormCtxVar(FormCtx("d2")))
-            ),
+          Period(
+            DateCtx(DateFormCtxVar(FormCtx("d1"))),
+            DateCtx(DateFormCtxVar(FormCtx("d2"))),
             expectedFn
           )
         )
