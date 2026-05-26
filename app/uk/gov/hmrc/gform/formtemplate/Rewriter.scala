@@ -115,6 +115,7 @@ trait Rewriter {
         ) ++ dl.destinations.toList.collect {
           case HmrcDms(_, _, _, _, _, _, IncludeIfValue(includeIf), _, _, _, _, _, _, _, _, _, _, _, _) => includeIf
           case HandlebarsHttpApi(_, _, _, _, _, _, IncludeIfValue(includeIf), _, _, _)                  => includeIf
+          case AsyncHandlebarsHttpApi(_, _, _, _, _, _, IncludeIfValue(includeIf), _, _)                => includeIf
           case StateTransition(_, _, IncludeIfValue(includeIf), _)                                      => includeIf
           case SubmissionConsolidator(_, _, _, _, IncludeIfValue(includeIf), _)                         => includeIf
           case Email(_, _, IncludeIfValue(includeIf), _, _, _)                                          => includeIf
