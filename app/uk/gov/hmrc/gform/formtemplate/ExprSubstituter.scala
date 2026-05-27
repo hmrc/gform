@@ -97,7 +97,11 @@ object ExprSubstituter extends Substituter[ExprSubstitutions, FormTemplate] {
             case Some(DateCtx(dateExpr))                   => dateExpr
             case Some(ctx @ FormCtx(_))                    => DateFormCtxVar(ctx)
             case Some(IfElse(c, DateCtx(f1), DateCtx(f2))) => DateIfElse(c, loop(f1), loop(f2))
-            case here                                      => d
+            case None                                      => d
+            case Some(here) =>
+              throw new Exception(
+                s"Substitution error in $dExpr. Expected '$formComponentId' to be a reference to a date expression, but got $here"
+              )
           }
         case d @ HmrcTaxPeriodCtx(FormCtx(fcId), _) =>
           substitutions.expressions.get(ExpressionId(fcId.value)) match {
