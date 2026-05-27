@@ -17,24 +17,57 @@
 package uk.gov.hmrc.gform.sharedmodel
 
 import cats.implicits._
-import play.api.libs.json.{ Format, JsObject, JsValue, Json }
+import julienrf.json.derived
+import play.api.libs.json._
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.core.parsers.ValueParser
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.formtemplate.AddToListId
 import uk.gov.hmrc.gform.sharedmodel.DataRetrieve.AttrType
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Expr, FormComponentId, IncludeIf }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ ADTFormat, Expr, FormComponentId, IncludeIf }
 
 final case class DataRetrieveDefinitions(
   definitions: List[DataRetrieveDefinition]
 )
+
+sealed trait UrlDestination extends Product with Serializable
+
+object UrlDestination {
+  case object GForm extends UrlDestination
+  case object MDTP extends UrlDestination
+  case object DES extends UrlDestination
+  case object HIP extends UrlDestination
+  case object IF extends UrlDestination
+  case object CompaniesHouse extends UrlDestination
+
+  implicit val format: Format[UrlDestination] =
+    ADTFormat.formatEnumeration(
+      "GForm"           -> GForm,
+      "MDTP"            -> MDTP,
+      "DES"             -> DES,
+      "HIP"             -> HIP,
+      "IF"              -> IF,
+      "Companies House" -> CompaniesHouse
+    )
+}
+
+final case class UrlDescriptor(
+  urlPath: String,
+  pathParameters: List[DataRetrieve.Parameter],
+  destination: UrlDestination
+)
+
+object UrlDescriptor {
+  implicit val format: OFormat[UrlDescriptor] = derived.oformat()
+}
 
 final case class DataRetrieveDefinition(
   tpe: DataRetrieve.Type,
   attributes: Attr,
   parameters: List[DataRetrieve.Parameter],
   attrTypeMapping: Map[DataRetrieve.Attribute, DataRetrieve.AttrType],
-  documentationUrl: Option[String]
+  documentationUrl: Option[String],
+  urlDescriptors: List[UrlDescriptor]
 )
 
 object DataRetrieveDefinitions {
@@ -85,7 +118,14 @@ object DataRetrieveDefinitions {
       Parameter("accountNumber", List("account"))
     ),
     Map.empty,
-    Some("https://github.com/hmrc/bank-account-reputation/blob/main/docs/eiscd/v3/validateBankDetails.md")
+    Some("https://github.com/hmrc/bank-account-reputation/blob/main/docs/eiscd/v3/validateBankDetails.md"),
+    List(
+      UrlDescriptor(
+        urlPath = "/bank-details/validate",
+        pathParameters = Nil,
+        destination = UrlDestination.MDTP
+      )
+    )
   )
 
   val businessBankAccountExistence = DataRetrieveDefinition(
@@ -162,7 +202,14 @@ object DataRetrieveDefinitions {
       Parameter("companyName", List("business"))
     ),
     Map.empty,
-    Some("https://github.com/hmrc/bank-account-reputation/blob/main/public/api/conf/1.0/docs/business/verify.md")
+    Some("https://github.com/hmrc/bank-account-reputation/blob/main/public/api/conf/1.0/docs/business/verify.md"),
+    List(
+      UrlDescriptor(
+        urlPath = "/verify/business",
+        pathParameters = Nil,
+        destination = UrlDestination.MDTP
+      )
+    )
   )
 
   private val personalBankAccountExistenceWithName = DataRetrieveDefinition(
@@ -239,7 +286,14 @@ object DataRetrieveDefinitions {
       Parameter("name", List("subject"))
     ),
     Map.empty,
-    Some("https://github.com/hmrc/bank-account-reputation/blob/main/public/api/conf/1.0/docs/personal/verify.md")
+    Some("https://github.com/hmrc/bank-account-reputation/blob/main/public/api/conf/1.0/docs/personal/verify.md"),
+    List(
+      UrlDescriptor(
+        urlPath = "/verify/personal",
+        pathParameters = Nil,
+        destination = UrlDestination.MDTP
+      )
+    )
   )
 
   val personalBankAccountExistence = DataRetrieveDefinition(
@@ -317,7 +371,14 @@ object DataRetrieveDefinitions {
       Parameter("lastName", List("subject"))
     ),
     Map.empty,
-    Some("https://github.com/hmrc/bank-account-reputation/blob/main/public/api/conf/1.0/docs/personal/verify.md")
+    Some("https://github.com/hmrc/bank-account-reputation/blob/main/public/api/conf/1.0/docs/personal/verify.md"),
+    List(
+      UrlDescriptor(
+        urlPath = "/verify/personal",
+        pathParameters = Nil,
+        destination = UrlDestination.MDTP
+      )
+    )
   )
 
   val companyHouseProfile =
@@ -405,6 +466,18 @@ object DataRetrieveDefinitions {
       ),
       Some(
         "https://developer-specs.company-information.service.gov.uk/companies-house-public-data-api/reference/company-profile/company-profile"
+      ),
+      List(
+        UrlDescriptor(
+          urlPath = "/companieshouse/company/{{companyNumber}}",
+          pathParameters = List(Parameter("companyNumber")),
+          destination = UrlDestination.GForm
+        ),
+        UrlDescriptor(
+          urlPath = "/company/{{companyNumber}}",
+          pathParameters = List(Parameter("companyNumber")),
+          destination = UrlDestination.CompaniesHouse
+        )
       )
     )
 
@@ -437,6 +510,18 @@ object DataRetrieveDefinitions {
       ),
       Some(
         "https://developer-specs.company-information.service.gov.uk/companies-house-public-data-api/reference/officers/list"
+      ),
+      List(
+        UrlDescriptor(
+          urlPath = "/companieshouse/company/{{companyNumber}}/officers",
+          pathParameters = List(Parameter("companyNumber")),
+          destination = UrlDestination.GForm
+        ),
+        UrlDescriptor(
+          urlPath = "/company/{{companyNumber}}/officers",
+          pathParameters = List(Parameter("companyNumber")),
+          destination = UrlDestination.CompaniesHouse
+        )
       )
     )
 
@@ -522,6 +607,18 @@ object DataRetrieveDefinitions {
       ),
       Some(
         "https://developer-specs.company-information.service.gov.uk/companies-house-public-data-api/reference/insolvency/get"
+      ),
+      List(
+        UrlDescriptor(
+          urlPath = "/companieshouse/company/{{companyNumber}}/insolvency",
+          pathParameters = List(Parameter("companyNumber")),
+          destination = UrlDestination.GForm
+        ),
+        UrlDescriptor(
+          urlPath = "/company/{{companyNumber}}/insolvency",
+          pathParameters = List(Parameter("companyNumber")),
+          destination = UrlDestination.CompaniesHouse
+        )
       )
     )
 
@@ -540,7 +637,14 @@ object DataRetrieveDefinitions {
       Parameter("nino")
     ),
     Map(DataRetrieve.Attribute("riskScore") -> DataRetrieve.AttrType.Number),
-    Some("https://github.com/hmrc/nino-gateway/blob/main/public/api/conf/1.0/docs/insights.md")
+    Some("https://github.com/hmrc/nino-gateway/blob/main/public/api/conf/1.0/docs/insights.md"),
+    List(
+      UrlDescriptor(
+        urlPath = "/check/insights",
+        pathParameters = Nil,
+        destination = UrlDestination.MDTP
+      )
+    )
   )
 
   val hmrcTaxRates = DataRetrieveDefinition(
@@ -581,7 +685,14 @@ object DataRetrieveDefinitions {
       DataRetrieve.Attribute("startDate") -> DataRetrieve.AttrType.Date,
       DataRetrieve.Attribute("endDate")   -> DataRetrieve.AttrType.Date
     ),
-    Some("https://github.com/hmrc/gform-frontend/blob/main/conf/lookup/HMRCTaxRates.csv")
+    Some("https://github.com/hmrc/gform-frontend/blob/main/conf/lookup/HMRCTaxRates.csv"),
+    List(
+      UrlDescriptor(
+        urlPath = "HMRCTaxRates.csv",
+        pathParameters = Nil,
+        destination = UrlDestination.GForm
+      )
+    )
   )
 
   val delegatedAgentAuthVat = DataRetrieveDefinition(
@@ -609,6 +720,13 @@ object DataRetrieveDefinitions {
     ),
     Some(
       "https://github.com/hmrc/agent-access-control?tab=readme-ov-file#get-agent-access-controlmtd-vat-authagentagentcodeclientvrn"
+    ),
+    List(
+      UrlDescriptor(
+        urlPath = "/auth/authorise",
+        pathParameters = Nil,
+        destination = UrlDestination.MDTP
+      )
     )
   )
 
@@ -637,6 +755,13 @@ object DataRetrieveDefinitions {
     ),
     Some(
       "https://github.com/hmrc/agent-access-control?tab=readme-ov-file#get-agent-access-controlepaye-authagentagentcodeclientempref"
+    ),
+    List(
+      UrlDescriptor(
+        urlPath = "/auth/authorise",
+        pathParameters = Nil,
+        destination = UrlDestination.MDTP
+      )
     )
   )
 
@@ -656,7 +781,14 @@ object DataRetrieveDefinitions {
       Parameter("accountNumber")
     ),
     Map(DataRetrieve.Attribute("riskScore") -> DataRetrieve.AttrType.Number),
-    Some("https://github.com/hmrc/bank-account-gateway/blob/main/public/api/conf/1.0/docs/insights/insights.md")
+    Some("https://github.com/hmrc/bank-account-gateway/blob/main/public/api/conf/1.0/docs/insights/insights.md"),
+    List(
+      UrlDescriptor(
+        urlPath = "/check/insights",
+        pathParameters = Nil,
+        destination = UrlDestination.MDTP
+      )
+    )
   )
 
   val employments = DataRetrieveDefinition(
@@ -688,7 +820,19 @@ object DataRetrieveDefinitions {
       Parameter("taxYear", List.empty[String], DataRetrieve.ParamType.String)
     ),
     Map(DataRetrieve.Attribute("sequenceNumber") -> DataRetrieve.AttrType.Number),
-    Some("https://admin.tax.service.gov.uk/integration-hub/apis/details/17eeaf42-11ba-44a9-92bb-8ceaf68d260d#details")
+    Some("https://admin.tax.service.gov.uk/integration-hub/apis/details/17eeaf42-11ba-44a9-92bb-8ceaf68d260d#details"),
+    List(
+      UrlDescriptor(
+        urlPath = "/hip/ni-employments/{{nino}}/{{taxYear}}",
+        pathParameters = List(Parameter("nino"), Parameter("taxYear")),
+        destination = UrlDestination.GForm
+      ),
+      UrlDescriptor(
+        urlPath = "/paye/employment/employee/{{nino}}/tax-year/{{taxYear}}/employment-details",
+        pathParameters = List(Parameter("nino"), Parameter("taxYear")),
+        destination = UrlDestination.HIP
+      )
+    )
   )
 
   val hmrcRosmRegistrationCheck = DataRetrieveDefinition(
@@ -727,7 +871,19 @@ object DataRetrieveDefinitions {
       Parameter("utr")
     ),
     Map.empty,
-    None
+    None,
+    List(
+      UrlDescriptor(
+        urlPath = "/des/organisation/{{utr}}",
+        pathParameters = List(Parameter("utr")),
+        destination = UrlDestination.GForm
+      ),
+      UrlDescriptor(
+        urlPath = "/registration/organisation/utr/{{utr}}",
+        pathParameters = List(Parameter("utr")),
+        destination = UrlDestination.DES
+      )
+    )
   )
 
   val agentDetails = DataRetrieveDefinition(
@@ -789,7 +945,19 @@ object DataRetrieveDefinitions {
       Parameter("agentReferenceNumber")
     ),
     Map.empty,
-    Some("https://admin.tax.service.gov.uk/integration-hub/apis/details/ed3bdeb8-6db7-4c20-91c9-8b144aa1736b")
+    Some("https://admin.tax.service.gov.uk/integration-hub/apis/details/ed3bdeb8-6db7-4c20-91c9-8b144aa1736b"),
+    List(
+      UrlDescriptor(
+        urlPath = "/hip/agent-details/{{agentReferenceNumber}}",
+        pathParameters = List(Parameter("agentReferenceNumber")),
+        destination = UrlDestination.GForm
+      ),
+      UrlDescriptor(
+        urlPath = "/etmp/RESTAdapter/generic/agent/subscription/{{agentReferenceNumber}}",
+        pathParameters = List(Parameter("agentReferenceNumber")),
+        destination = UrlDestination.HIP
+      )
+    )
   )
 
   val niRefundClaim = DataRetrieveDefinition(
@@ -829,7 +997,19 @@ object DataRetrieveDefinitions {
       DataRetrieve.Attribute("class3ContributionWeeks") -> DataRetrieve.AttrType.Number,
       DataRetrieve.Attribute("weeksOfCredits")          -> DataRetrieve.AttrType.Number
     ),
-    Some("https://admin.tax.service.gov.uk/integration-hub/apis/details/bb28bb26-29cb-47a1-80f6-026435fd4b43")
+    Some("https://admin.tax.service.gov.uk/integration-hub/apis/details/bb28bb26-29cb-47a1-80f6-026435fd4b43"),
+    List(
+      UrlDescriptor(
+        urlPath = "/hip/ni-claim-validation/{{nino}}/{{claimReference}}",
+        pathParameters = List(Parameter("nino"), Parameter("claimReference")),
+        destination = UrlDestination.GForm
+      ),
+      UrlDescriptor(
+        urlPath = "/ni/contributions/{{nino}}/claim/refund/{{claimReference}}",
+        pathParameters = List(Parameter("nino"), Parameter("claimReference")),
+        destination = UrlDestination.HIP
+      )
+    )
   )
 
   private val pegaCaseStatuses = List(
@@ -916,6 +1096,18 @@ object DataRetrieveDefinitions {
     ),
     Some(
       "https://admin.tax.service.gov.uk/integration-hub/apis/view-specification/61cffebd-1f98-4424-b048-f974e77a64f1/test"
+    ),
+    List(
+      UrlDescriptor(
+        urlPath = "/hip/caseflow-case-details/{{caseId}}",
+        pathParameters = List(Parameter("caseId")),
+        destination = UrlDestination.GForm
+      ),
+      UrlDescriptor(
+        urlPath = "/compliance/civil-investigation-and-avoidance/api/CFSSuite/v1/CaseDetails/{{caseId}}",
+        pathParameters = List(Parameter("caseId")),
+        destination = UrlDestination.HIP
+      )
     )
   )
 
@@ -942,6 +1134,18 @@ object DataRetrieveDefinitions {
     ),
     Some(
       "https://admin.tax.service.gov.uk/integration-hub/apis/view-specification/a62f3c98-ec18-458a-a1a9-f959e6f1051e#section/Service-Description"
+    ),
+    List(
+      UrlDescriptor(
+        urlPath = "/if/fta/manageemails/v1?eori={{eori}}",
+        pathParameters = List(Parameter("eori")),
+        destination = UrlDestination.GForm
+      ),
+      UrlDescriptor(
+        urlPath = "/fta/manage-emails/v1?eori={{eori}}&authtype=INFT",
+        pathParameters = List(Parameter("eori")),
+        destination = UrlDestination.IF
+      )
     )
   )
 
