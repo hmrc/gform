@@ -379,7 +379,11 @@ object TextExtractor {
       Pure(DownField("caption")) :: root,
       Pure(DownField("continueLabel")) :: root,
       Pure(DownField("label")) :: confirmationQuestion,
+      Pure(DownField("shortName")) :: confirmationQuestion,
+      Pure(DownField("errorMessage")) :: confirmationQuestion,
+      Pure(DownField("helpText")) :: confirmationQuestion,
       TraverseArray :: Pure(DownField("choices")) :: confirmationQuestion,
+      Pure(DownField("hint")) :: TraverseArray :: Pure(DownField("choices")) :: confirmationQuestion,
       Pure(DownField("label")) :: addAnotherQuestion,
       Pure(DownField("errorMessage")) :: addAnotherQuestion
     )
