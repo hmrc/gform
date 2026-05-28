@@ -997,6 +997,7 @@ class FormComponentMaker(json: JsValue) {
             case "banner"    => Some(BannerInfo)
             case "noformat"  => Some(NoFormat)
             case "pdflink"   => Some(PdfLink)
+            case "htmllink"  => Some(HtmlLink)
             case _           => None
           }
         case None => Some(StandardInfo)

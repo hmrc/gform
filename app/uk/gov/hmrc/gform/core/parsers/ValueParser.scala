@@ -191,6 +191,8 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
 
   lazy val internalLinkParser: Parser[InternalLink] = "printAcknowledgementPdf" ^^ { _ =>
     InternalLink.printAcknowledgementPdf
+  } | "printAcknowledgementHtml" ^^ { _ =>
+    InternalLink.printAcknowledgementHtml
   } | "printSummaryPdf" ^^ { _ =>
     InternalLink.printSummaryPdf
   } | "printSectionPdf" ^^ { _ =>
