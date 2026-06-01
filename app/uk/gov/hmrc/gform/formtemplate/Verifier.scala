@@ -45,6 +45,8 @@ trait Verifier {
 
     val expressionIds: List[ExpressionId] = expressionsContext.expressions.keys.toList
 
+    val populateAtlValidator = new PopulateAtlFormTemplateValidator(formTemplate)
+
     for {
       _ <- fromOptA(FormTemplateValidator.validateLowercaseIds(formTemplate).toEither)
       _ <- fromOptA(FormTemplateValidator.validateChoiceHelpText(pages).toEither)
@@ -140,7 +142,8 @@ trait Verifier {
            )
       _ <- fromOptA(DestinationsValidator.validateRoboticsAsAttachment(formTemplate.destinations).toEither)
       _ <- fromOptA(AcknowledgementValidator.validateNoPIITitle(formTemplate, allExpressions).toEither)
-      _ <- fromOptA(new PopulateAtlFormTemplateValidator(formTemplate, pages).validate().toEither)
+      _ <- fromOptA(populateAtlValidator.validate(pages).toEither)
+      _ <- fromOptA(populateAtlValidator.formDataRetrieveDoesNotContainPopulateAtl().toEither)
     } yield ()
 
   }

@@ -104,16 +104,18 @@ class IfController(configModule: ConfigModule, wSHttpModule: WSHttpModule, cc: C
               Status(resp.status)(resp.body).as("application/json")
           }
         }
-        .recover(standardErrors)
+        .recover(standardErrors(correlationId))
     }
   }
 
-  private def standardErrors: PartialFunction[Throwable, Result] = {
+  private def standardErrors(correlationId: String): PartialFunction[Throwable, Result] = {
     case e: HttpException =>
-      logger.error(s"Connection with IF failed. Status: ${e.responseCode}. Message: ${e.message}")
+      logger.error(
+        s"Connection with IF failed. Status: ${e.responseCode}. Message: ${e.message}. CorrelationId: $correlationId"
+      )
       Status(e.responseCode)(e.message)
     case e =>
-      logger.error(s"Connection with IF failed. Message: ${e.getMessage}", e)
+      logger.error(s"Connection with IF failed. Message: ${e.getMessage}. CorrelationId: $correlationId", e)
       ServiceUnavailable
   }
 }

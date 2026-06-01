@@ -21,13 +21,13 @@ import uk.gov.hmrc.gform.models.constraints.ReferenceInfo
 import uk.gov.hmrc.gform.sharedmodel.{ Attr, DataRetrieve, DataRetrieveDefinitions }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ DataRetrieveCtx, ExprWithPath, FormTemplate, Page, Section, TemplatePath }
 
-class PopulateAtlFormTemplateValidator(private val formTemplate: FormTemplate, pages: List[Page]) {
+class PopulateAtlFormTemplateValidator(private val formTemplate: FormTemplate) {
 
   private lazy val atlMap = formTemplate.formKind.allSections.collect { case atl: Section.AddToList =>
     atl.pageId.id -> atl
   }.toMap
 
-  def validate(): ValidationResult = {
+  def validate(pages: List[Page]): ValidationResult = {
     val dataRetrieves = pages.flatMap(_.dataRetrieves())
     val errors = dataRetrieves
       .map(validateDataRetrieve)
@@ -107,4 +107,13 @@ class PopulateAtlFormTemplateValidator(private val formTemplate: FormTemplate, p
       }
       .toList
       .flatten
+
+  def formDataRetrieveDoesNotContainPopulateAtl(): ValidationResult =
+    formTemplate.dataRetrieve.toList.flatMap(_.toList).find(_.populateATL.isDefined) match {
+      case Some(dr) =>
+        uk.gov.hmrc.gform.core.Invalid(
+          s"populateAtl parameter for form level dataRetrieve is not supported. You can add another dataRetrieve at page level with populateAtl instead. dataRetrieve to fix: ${dr.id}"
+        )
+      case None => uk.gov.hmrc.gform.core.Valid
+    }
 }
