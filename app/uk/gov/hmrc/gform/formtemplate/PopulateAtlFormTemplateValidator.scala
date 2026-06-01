@@ -112,7 +112,7 @@ class PopulateAtlFormTemplateValidator(private val formTemplate: FormTemplate) {
     formTemplate.dataRetrieve.toList.flatMap(_.toList).find(_.populateATL.isDefined) match {
       case Some(dr) =>
         uk.gov.hmrc.gform.core.Invalid(
-          s"populateAtl parameter for form level dataRetrieve is not supported. You can add another dataRetrieve at page level with populateAtl instead. dataRetrieve to fix: ${dr.id}"
+          s"populateAtl parameter for form level dataRetrieve is not supported. You can add another dataRetrieve at page level with populateAtl instead. dataRetrieve to fix: ${dr.id.value}"
         )
       case None => uk.gov.hmrc.gform.core.Valid
     }
