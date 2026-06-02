@@ -1023,13 +1023,15 @@ object DataRetrieveDefinitions {
 
     def getPopulateAtl(jsonOpt: Option[PopulateAtlJson]): Opt[Option[PopulateATL]] = {
 
-      def getMappings(json: PopulateAtlJson): Either[UnexpectedState, Map[String, Expr]] = {
+      def getMappings(json: PopulateAtlJson): Either[UnexpectedState, Map[FormComponentId, Expr]] = {
         val seqOfOptExpressions = json.mapping.toSeq.map { case (key, value) =>
-          key -> ValueParser.validateWithParser(value, ValueParser.expr)
+          FormComponentId(key) -> ValueParser.validateWithParser(value, ValueParser.expr)
         }
 
         val (errors, exprs) =
-          seqOfOptExpressions.foldLeft((Seq(): Seq[(String, UnexpectedState)], Seq(): Seq[(String, Expr)])) {
+          seqOfOptExpressions.foldLeft(
+            (Seq(): Seq[(FormComponentId, UnexpectedState)], Seq(): Seq[(FormComponentId, Expr)])
+          ) {
             case ((errorsAcc, acc), (key, Left(unexpectedState))) =>
               (errorsAcc :+ (key -> unexpectedState)) -> acc
             case ((errorsAcc, acc), (key, Right(expr))) =>

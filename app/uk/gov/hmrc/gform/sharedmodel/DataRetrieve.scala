@@ -24,7 +24,7 @@ import scala.util.matching.Regex
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.formtemplate.AddToListId
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Expr, IncludeIf, JsonUtils, LeafExpr, OFormatWithTemplateReadFallback, TemplatePath }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Expr, FormComponentId, IncludeIf, JsonUtils, LeafExpr, OFormatWithTemplateReadFallback, TemplatePath }
 
 import java.time.LocalDateTime
 
@@ -103,7 +103,7 @@ object Attr {
 
 case class PopulateATL(
   id: AddToListId,
-  mapping: Map[String, Expr]
+  mapping: Map[FormComponentId, Expr]
 )
 
 object PopulateATL {

@@ -57,10 +57,10 @@ class PopulateAtlFormTemplateValidator(private val formTemplate: FormTemplate) {
         }
 
         val otherErrors = atl.toList.flatMap { atl =>
-          def mappingFieldContainedInAtl(fieldId: String): Boolean =
+          def mappingFieldContainedInAtl(fieldId: FormComponentId): Boolean =
             atl.pages.toList
               .flatMap(_.fields)
-              .map(_.id.value)
+              .map(_.id)
               .contains(fieldId)
 
           val atlIdFieldMissingErrors = mappingFields
