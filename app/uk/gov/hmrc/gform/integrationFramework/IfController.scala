@@ -87,14 +87,27 @@ class IfController(configModule: ConfigModule, wSHttpModule: WSHttpModule, cc: C
 
           respTyped match {
             case JsSuccess(respTyped, path) =>
-              val respSeq = respTyped.secondaryEmails.map { secondaryEmail =>
-                JsObject(
-                  Map(
-                    "primaryEmail"   -> JsString(respTyped.primaryEmail),
-                    "secondaryEmail" -> JsString(secondaryEmail)
+              val respSeq = respTyped.secondaryEmails match {
+                case Seq() =>
+                  Seq(
+                    JsObject(
+                      Map(
+                        "primaryEmail"   -> JsString(respTyped.primaryEmail),
+                        "secondaryEmail" -> JsString("")
+                      )
+                    )
                   )
-                )
+                case seq =>
+                  seq.map { secondaryEmail =>
+                    JsObject(
+                      Map(
+                        "primaryEmail"   -> JsString(respTyped.primaryEmail),
+                        "secondaryEmail" -> JsString(secondaryEmail)
+                      )
+                    )
+                  }
               }
+
               val transformedJsonResp = Json.toJson(respSeq)
               Status(resp.status)(transformedJsonResp).as("application/json")
             case JsError(errors) =>
