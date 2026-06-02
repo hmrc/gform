@@ -19,12 +19,12 @@ package uk.gov.hmrc.gform.formtemplate
 import uk.gov.hmrc.gform.core.ValidationResult
 import uk.gov.hmrc.gform.models.constraints.ReferenceInfo
 import uk.gov.hmrc.gform.sharedmodel.{ Attr, DataRetrieve, DataRetrieveDefinitions }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ DataRetrieveCtx, ExprWithPath, FormTemplate, Page, Section, TemplatePath }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ DataRetrieveCtx, ExprWithPath, FormComponentId, FormTemplate, Page, Section, TemplatePath }
 
 class PopulateAtlFormTemplateValidator(private val formTemplate: FormTemplate) {
 
   private lazy val atlMap = formTemplate.formKind.allSections.collect { case atl: Section.AddToList =>
-    atl.pageId.id -> atl
+    AddToListId(FormComponentId(atl.pageId.id)) -> atl
   }.toMap
 
   def validate(pages: List[Page]): ValidationResult = {

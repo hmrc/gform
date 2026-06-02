@@ -21,8 +21,9 @@ import play.api.libs.json.{ Format, JsObject, JsValue, Json }
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.core.parsers.ValueParser
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
+import uk.gov.hmrc.gform.formtemplate.AddToListId
 import uk.gov.hmrc.gform.sharedmodel.DataRetrieve.AttrType
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Expr, IncludeIf }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Expr, FormComponentId, IncludeIf }
 
 final case class DataRetrieveDefinitions(
   definitions: List[DataRetrieveDefinition]
@@ -1062,7 +1063,7 @@ object DataRetrieveDefinitions {
       def getPopulateAtlOpt(json: PopulateAtlJson) =
         getMappings(json).map { mappings =>
           PopulateATL(
-            json.id,
+            AddToListId(FormComponentId(json.id)),
             mappings
           )
         }

@@ -23,6 +23,7 @@ import play.api.libs.json._
 import scala.util.matching.Regex
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
+import uk.gov.hmrc.gform.formtemplate.AddToListId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Expr, IncludeIf, JsonUtils, LeafExpr, OFormatWithTemplateReadFallback, TemplatePath }
 
 import java.time.LocalDateTime
@@ -101,7 +102,7 @@ object Attr {
 }
 
 case class PopulateATL(
-  id: String,
+  id: AddToListId,
   mapping: Map[String, Expr]
 )
 
