@@ -185,7 +185,8 @@ class SdesModule(
       configModule.controllerComponents,
       sdesService,
       sdesRenotifyService,
-      sdesHistoryService
+      sdesHistoryService,
+      destinationWorkItemService
     )(ex)
 
   val sdesRenotifyQScheduledService = new SdesRenotifyQScheduledService(
@@ -335,6 +336,9 @@ class SdesModule(
       sdesDestination: SdesDestination
     ): FOpt[List[WorkItem[TraceableWorkItem[_]]]] =
       fromFutureA(destinationWorkItemService.findTraceableWorkItemByEnvelopeId(envelopeId, sdesDestination))
+
+    override def dmsWorkItemDestinationMigration(from: String, to: String): FOpt[UpdateResult] =
+      fromFutureA(destinationWorkItemService.dmsWorkItemDestinationMigration(from, to))
   }
 
 }

@@ -19,15 +19,28 @@ package uk.gov.hmrc.gform.objectstore
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.objectstore.client.Path
 
+import scala.util.matching.Regex
+
 trait ObjectStorePaths {
   def permanent: Path.Directory
   def ephemeral: Path.Directory // Deleted on FileProcessed notification from SDES
   def zipFilePrefix: String
 }
 object ObjectStorePaths {
+
+  val endsWith: Regex = "^(.*)[-_]$".r
+
+  def envelopeDirectory(envelopeId: EnvelopeId, maybeSubDirectory: Option[String]): Path.Directory = {
+    val subDir = maybeSubDirectory match {
+      case Some(endsWith(sub)) => s"/$sub"
+      case Some(sub)           => s"/$sub"
+      case None                => ""
+    }
+    Path.Directory(s"envelopes/${envelopeId.value}$subDir")
+  }
+
   def dmsPaths(envelopeId: EnvelopeId, submissionPrefix: Option[String]) = new ObjectStorePaths {
-    val permanent: Path.Directory =
-      Path.Directory(s"envelopes/${envelopeId.value}${submissionPrefix.fold("")(prefix => s"/$prefix")}")
+    val permanent: Path.Directory = envelopeDirectory(envelopeId, submissionPrefix)
     val ephemeral: Path.Directory = Path.Directory("sdes")
     val zipFilePrefix: String = submissionPrefix.getOrElse("")
   }
@@ -50,10 +63,10 @@ object ObjectStorePaths {
     val zipFilePrefix: String = "GFDA_"
   }
 
-  def pegaCaseflowPaths(envelopeId: EnvelopeId) = new ObjectStorePaths {
-    val permanent: Path.Directory = Path.Directory("envelopes/" + envelopeId.value)
-    val ephemeral: Path.Directory = Path.Directory("sdes/pega-caseflow")
-    val zipFilePrefix: String = ""
+  def caseflowPaths(envelopeId: EnvelopeId, submissionPrefix: Option[String]) = new ObjectStorePaths {
+    val permanent: Path.Directory = envelopeDirectory(envelopeId, submissionPrefix)
+    val ephemeral: Path.Directory = Path.Directory("sdes/caseflow")
+    val zipFilePrefix: String = submissionPrefix.getOrElse("")
   }
 
   def dataLakehousePaths(envelopeId: EnvelopeId) = new ObjectStorePaths {

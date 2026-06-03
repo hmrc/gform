@@ -393,169 +393,6 @@ class BuilderControllerSuite extends FunSuite {
     assertEquals(result.spaces2, stringChoicesExpected.spaces2)
   }
 
-  val topLevelHints: Json = json"""
-    {
-      "sections": [
-        {
-          "fields": [
-            {
-              "id": "choice",
-              "type": "choice",
-              "label": "Choice label",
-              "choices": [
-                {
-                  "en": "RDEC",
-                  "value": "projectIsRDEC",
-                  "hint": "inline-hint"
-                },
-                {
-                  "en": "SME",
-                  "value": "projectIsSME"
-                }
-              ],
-              "hints": [
-                {
-                  "en": "Hint 1 en",
-                  "cy": "Hint 1 cy"
-                },
-                {
-                  "en": "Hint 2 en",
-                  "cy": "Hint 2 cy"
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    }"""
-
-  val topLevelHintsExpected: Json = json"""
-    {
-      "sections": [
-        {
-          "fields": [
-            {
-              "id": "choice",
-              "type": "choice",
-              "label": "Choice label",
-              "choices": [
-                {
-                  "en": "RDEC",
-                  "value": "projectIsRDEC",
-                  "hint": {
-                    "en": "Hint 1 en",
-                    "cy": "Hint 1 cy"
-                  }
-                },
-                {
-                  "en": "SME",
-                  "value": "projectIsSME",
-                  "hint": {
-                    "en": "Hint 2 en",
-                    "cy": "Hint 2 cy"
-                  }
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    }"""
-
-  test("Move top level hints to choices (1)") {
-
-    val patch: Json = Json.obj() // Empty patch
-
-    val formComponentId: FormComponentId = FormComponentId("choice")
-
-    val result: Json =
-      BuilderSupport
-        .modifyFormComponentData(
-          topLevelHints,
-          formComponentId,
-          patch
-        )
-
-    assertEquals(result.spaces2, topLevelHintsExpected.spaces2)
-  }
-
-  val topLevelHints2: Json = json"""
-    {
-      "sections": [
-        {
-          "fields": [
-            {
-              "id": "choice",
-              "type": "choice",
-              "label": "Choice label",
-              "choices": [
-                "RDEC",
-                "SME"
-              ],
-              "hints": [
-                {
-                  "en": "Hint 1 en",
-                  "cy": "Hint 1 cy"
-                },
-                {
-                  "en": "Hint 2 en",
-                  "cy": "Hint 2 cy"
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    }"""
-
-  val topLevelHints2Expected: Json = json"""
-    {
-      "sections": [
-        {
-          "fields": [
-            {
-              "id": "choice",
-              "type": "choice",
-              "label": "Choice label",
-              "choices": [
-                {
-                  "en": "RDEC",
-                  "hint": {
-                    "en": "Hint 1 en",
-                    "cy": "Hint 1 cy"
-                  }
-                },
-                {
-                  "en": "SME",
-                  "hint": {
-                    "en": "Hint 2 en",
-                    "cy": "Hint 2 cy"
-                  }
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    }"""
-
-  test("Move top level hints to choices (2)") {
-
-    val patch: Json = Json.obj() // Empty patch
-
-    val formComponentId: FormComponentId = FormComponentId("choice")
-
-    val result: Json =
-      BuilderSupport
-        .modifyFormComponentData(
-          topLevelHints2,
-          formComponentId,
-          patch
-        )
-
-    assertEquals(result.spaces2, topLevelHints2Expected.spaces2)
-  }
-
   val choiceWelshRemovedWhenEnUpdated: Json = json"""
     {
       "sections": [
@@ -1954,7 +1791,8 @@ class BuilderControllerSuite extends FunSuite {
         "footer": {
           "en": "##Now send your form\n\nYou need to submit your form on the next screen.\n\nBefore you do this you can [print or save a PDF copy of your answers (opens in a new window or tab)]($${link.printSummaryPdf}).",
           "cy": "##Nawr anfonwch eich ffurflen\n\nMae angen i chi gyflwyno’ch ffurflen ar y sgrin nesaf.\n\nCyn i chi wneud hyn gallwch [argraffu neu gadw copi PDF o’ch atebion (yn agor ffenestr neu dab newydd)]($${link.printSummaryPdf})."
-        }
+        },
+        "includePrintPageButton": false
       }
     }"""
 
@@ -1986,7 +1824,8 @@ class BuilderControllerSuite extends FunSuite {
         "footer": {
           "en": "##Now send your return\n\nYou need to submit your return on the next screen.\n\nBefore you do this you can [print or save a PDF copy of your answers (opens in a new window or tab)]($${link.printSummaryPdf}).",
           "cy": "##Nawr anfonwch eich datganiad\n\nMae angen i chi gyflwyno’ch datganiad ar y sgrin nesaf.\n\nCyn i chi wneud hyn gallwch [argraffu neu gadw copi PDF o’ch atebion (yn agor ffenestr neu dab newydd)]($${link.printSummaryPdf})."
-        }
+        },
+        "includePrintPageButton": false
       }
     }"""
 

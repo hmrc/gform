@@ -113,12 +113,22 @@ object Substituter {
     ev2: Substituter[A, BooleanExpr]
   ): Substituter[A, OptionData] = (substitutions, t) =>
     t match {
-      case o: OptionData.IndexBased => o.copy(label = o.label(substitutions), includeIf = o.includeIf(substitutions))
+      case o: OptionData.IndexBased =>
+        o.copy(
+          label = o.label(substitutions),
+          hint = o.hint(substitutions),
+          includeIf = o.includeIf(substitutions)
+        )
       case o @ OptionData.ValueBased(_, _, _, _, OptionDataValue.StringBased(_), _, _) =>
-        o.copy(label = o.label(substitutions), includeIf = o.includeIf(substitutions))
+        o.copy(
+          label = o.label(substitutions),
+          hint = o.hint(substitutions),
+          includeIf = o.includeIf(substitutions)
+        )
       case o @ OptionData.ValueBased(_, _, _, _, OptionDataValue.ExprBased(expr), _, _) =>
         o.copy(
           label = o.label(substitutions),
+          hint = o.hint(substitutions),
           includeIf = o.includeIf(substitutions),
           value = OptionDataValue.ExprBased(expr(substitutions))
         )
@@ -130,8 +140,7 @@ object Substituter {
   ): Substituter[A, RevealingChoiceElement] = (substitutions, t) =>
     t.copy(
       choice = t.choice(substitutions),
-      revealingFields = t.revealingFields(substitutions),
-      hint = t.hint(substitutions)
+      revealingFields = t.revealingFields(substitutions)
     )
 
   implicit def miniSummaryListRowSubstituter[A](implicit
@@ -223,7 +232,6 @@ object Substituter {
             options,
             orientation,
             selections,
-            hints,
             optionHelpText,
             dividerPositon,
             dividerText,
@@ -237,7 +245,6 @@ object Substituter {
           options(substitutions),
           orientation,
           selections,
-          hints(substitutions),
           optionHelpText(substitutions),
           dividerPositon,
           dividerText(substitutions),
@@ -540,10 +547,11 @@ object Substituter {
         )
       case d: Destination.SubmissionConsolidator =>
         d.copy(customerId = d.customerId(substitutions), includeIf = d.includeIf(substitutions))
-      case d: Destination.Email             => d.copy(includeIf = d.includeIf(substitutions))
-      case d: Destination.HandlebarsHttpApi => d.copy(includeIf = d.includeIf(substitutions))
-      case d: Destination.StateTransition   => d.copy(includeIf = d.includeIf(substitutions))
-      case d: Destination.PegaApi           => d.copy(caseId = d.caseId(substitutions), includeIf = d.includeIf(substitutions))
+      case d: Destination.Email                  => d.copy(includeIf = d.includeIf(substitutions))
+      case d: Destination.HandlebarsHttpApi      => d.copy(includeIf = d.includeIf(substitutions))
+      case d: Destination.AsyncHandlebarsHttpApi => d.copy(includeIf = d.includeIf(substitutions))
+      case d: Destination.StateTransition        => d.copy(includeIf = d.includeIf(substitutions))
+      case d: Destination.PegaApi                => d.copy(caseId = d.caseId(substitutions), includeIf = d.includeIf(substitutions))
       case d: Destination.NiRefundClaimApi =>
         d.copy(
           includeIf = d.includeIf(substitutions),

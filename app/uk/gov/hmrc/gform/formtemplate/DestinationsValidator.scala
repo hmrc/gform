@@ -94,35 +94,27 @@ object DestinationsValidator {
     case destinationList: Destinations.DestinationList =>
       val dmsList = destinationList.destinations.collect { case d: Destination.HmrcDms => d }
 
-      val caseflows = dmsList.filter(_.isPegaCaseflow)
-      val isDms = dmsList.exists(!_.isPegaCaseflow)
+      val caseflows = dmsList.filter(_.isCaseflow)
+      val isDms = dmsList.exists(!_.isCaseflow)
 
       val mixtureCheck = if (caseflows.nonEmpty && isDms) {
         Invalid(
-          "hmrcDms destinations cannot be a mix of DMS and Pega Caseflow routings."
+          "hmrcDms destinations cannot be a mix of DMS and Caseflow routings."
         )
       } else
         Valid
 
-      val countCheck = if (caseflows.size > 1) {
-        Invalid(
-          "Cannot define more than 1 hmrcDms destination with routing to Pega Caseflow."
-        )
-      } else {
-        Valid
-      }
-
       val attributesCheck = caseflows.map { dest =>
         if (dest.caseId.isEmpty) {
           Invalid(
-            s"Pega Caseflow destination '${dest.id.id}' must have caseId expression defined."
+            s"Caseflow destination '${dest.id.id}' must have caseId expression defined."
           )
         } else {
           Valid
         }
       }
 
-      Monoid[ValidationResult].combineAll(List(mixtureCheck, countCheck) ++ attributesCheck)
+      Monoid[ValidationResult].combineAll(mixtureCheck +: attributesCheck)
     case _ => Valid
   }
 
@@ -135,22 +127,28 @@ object DestinationsValidator {
       val allPrefixes = dmsList.map(_.submissionPrefix.getOrElse(""))
 
       val uniqueCheck = if (hasSubmissionPrefix && allPrefixes.size != allPrefixes.toSet.size) {
-        Invalid(
-          s"hmrcDms destinations must all have a unique submissionPrefix."
-        )
+        Invalid("hmrcDms destinations must all have a unique submissionPrefix.")
       } else {
         Valid
       }
 
       val allOrNone = if (hasSubmissionPrefix && hasNoSubmissionPrefix) {
         Invalid(
-          s"hmrcDms destinations must all have submissionPrefix or all not have submissionPrefix. It cannot be mix of both."
+          "hmrcDms destinations must all have submissionPrefix or all not have submissionPrefix. It cannot be mix of both."
         )
       } else {
         Valid
       }
 
-      Monoid[ValidationResult].combineAll(List(uniqueCheck, allOrNone))
+      val allHaveDefaultIncludeIf = dmsList.forall(_.includeIf === HandlebarValue(true.toString))
+      val allPrefixesEmpty = dmsList.forall(_.submissionPrefix.isEmpty)
+      val moreThanOneWithoutPrefix = if (dmsList.size > 1 && allHaveDefaultIncludeIf && allPrefixesEmpty) {
+        Invalid("Multiple hmrcDms destinations with default includeIf expression must also include a submissionPrefix.")
+      } else {
+        Valid
+      }
+
+      Monoid[ValidationResult].combineAll(List(uniqueCheck, allOrNone, moreThanOneWithoutPrefix))
     case _ => Valid
   }
 

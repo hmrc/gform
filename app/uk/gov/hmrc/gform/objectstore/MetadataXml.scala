@@ -47,7 +47,7 @@ object MetadataXml {
 
     val roboticsAsAttachmentCountOffset = if (roboticsAsAttachment) 1 else 0
 
-    val pegaCaseflowAttributes = if (hmrcDms.isPegaCaseflow) {
+    val caseflowAttributes = if (hmrcDms.isCaseflow) {
       List(
         createAttribute("hm_post_received_date", submission.submittedDate),
         createAttribute("hm_rdc_received_date", ""),
@@ -78,7 +78,7 @@ object MetadataXml {
       createAttribute("classification_type", hmrcDms.classificationType),
       createAttribute("business_area", hmrcDms.businessArea),
       createAttribute("attachment_count", attachmentCount + roboticsAsAttachmentCountOffset)
-    ) ++ attachmentNameAttributes ++ backscan ++ pegaCaseflowAttributes
+    ) ++ attachmentNameAttributes ++ backscan ++ caseflowAttributes
 
     <metadata></metadata>.copy(child = attributes)
   }
@@ -88,7 +88,7 @@ object MetadataXml {
     reconciliationId: ReconciliationId,
     destination: HmrcDms
   ): Elem = {
-    val target = if (destination.isPegaCaseflow) "CASEFLOW" else "DMS"
+    val target = if (destination.isCaseflow) "CASEFLOW" else "DMS"
     <header>
       <title>{submissionRef.withoutHyphens}</title>
       <format>pdf</format>

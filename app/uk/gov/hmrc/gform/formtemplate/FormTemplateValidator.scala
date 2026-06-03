@@ -791,13 +791,6 @@ object FormTemplateValidator {
     validateChoice(sectionsList, check, "Choice components doesn't have equal number of choices and help texts")
   }
 
-  def validateChoiceHints(sectionsList: List[Page]): ValidationResult = {
-    def check(choice: Choice): Boolean =
-      choice.hints.fold(false)(hints => choice.options.size != hints.size)
-
-    validateChoice(sectionsList, check, "Choice components doesn't have equal number of choices and hints")
-  }
-
   def validateChoiceDividerPositionValue(sectionsList: List[Page]): ValidationResult = {
     def check(choice: Choice): Boolean = choice.dividerPosition.exists {
       case DividerPosition.Number(i) => false
@@ -1379,14 +1372,14 @@ object FormTemplateValidator {
 
   @nowarn
   def validate(componentType: ComponentType, formTemplate: FormTemplate): ValidationResult = componentType match {
-    case HasExpr(SingleExpr(expr))                  => validate(expr, formTemplate.formKind.allSections)
-    case HasExpr(MultipleExpr(fields))              => Valid
-    case Date(_, _, _)                              => Valid
-    case CalendarDate                               => Valid
-    case TaxPeriodDate                              => Valid
-    case Address(_, _, _, Some(expr))               => validateAddressValue(expr, formTemplate)
-    case Address(_, _, _, _)                        => Valid
-    case Choice(_, _, _, _, _, _, _, _, _, _, _, _) => Valid
+    case HasExpr(SingleExpr(expr))               => validate(expr, formTemplate.formKind.allSections)
+    case HasExpr(MultipleExpr(fields))           => Valid
+    case Date(_, _, _)                           => Valid
+    case CalendarDate                            => Valid
+    case TaxPeriodDate                           => Valid
+    case Address(_, _, _, Some(expr))            => validateAddressValue(expr, formTemplate)
+    case Address(_, _, _, _)                     => Valid
+    case Choice(_, _, _, _, _, _, _, _, _, _, _) => Valid
     case RevealingChoice(revealingChoiceElements, _) =>
       validate(revealingChoiceElements.toList.flatMap(_.revealingFields.map(_.`type`)), formTemplate)
     case HmrcTaxPeriod(_, _, _)                     => Valid
@@ -1403,15 +1396,16 @@ object FormTemplateValidator {
     case Button(_, _, _, _)                         => Valid
   }
 
-  private def pdfLinkNotAllowed(fc: FormComponent) =
-    s"Field '${fc.id}' is a PdfLink info field. These are only valid in the form's acknowledgement section."
+  private def infoTypeNotAllowed(fc: FormComponent, infoType: InfoType) =
+    s"Field '${fc.id}' is a ${infoType.toString} info field. These are only valid in the form's acknowledgement section."
 
   private def validateInformationMessages(formTemplate: FormTemplate): ValidationResult = {
     val pages = SectionHelper.pages(formTemplate.formKind.allSections)
     pages
       .flatMap(_.fields.map {
-        case fc @ IsInformationMessage(InformationMessage(PdfLink, _, _)) => Invalid(pdfLinkNotAllowed(fc))
-        case _                                                            => Valid
+        case fc @ IsInformationMessage(InformationMessage(PdfLink, _, _))  => Invalid(infoTypeNotAllowed(fc, PdfLink))
+        case fc @ IsInformationMessage(InformationMessage(HtmlLink, _, _)) => Invalid(infoTypeNotAllowed(fc, HtmlLink))
+        case _                                                             => Valid
       })
       .combineAll
   }
@@ -1921,16 +1915,18 @@ object FormTemplateValidator {
       if (summarySection.hideDefaultRows.getOrElse(false)) {
         summarySection.fields.fold(List.empty[ValidationResult])(fields =>
           fields.toList.map {
-            case fc @ IsInformationMessage(i) if i.infoType == PdfLink => Invalid(pdfLinkNotAllowed(fc))
-            case fc                                                    => isViewOnlyComponent(fc, formTemplate, reasonHideAllRows(fc))
+            case fc @ IsInformationMessage(i) if i.infoType == PdfLink  => Invalid(infoTypeNotAllowed(fc, PdfLink))
+            case fc @ IsInformationMessage(i) if i.infoType == HtmlLink => Invalid(infoTypeNotAllowed(fc, HtmlLink))
+            case fc                                                     => isViewOnlyComponent(fc, formTemplate, reasonHideAllRows(fc))
           }
         )
       } else {
         summarySection.fields.fold(List.empty[ValidationResult])(fields =>
           fields.toList.map {
-            case fc @ IsInformationMessage(i) if i.infoType == PdfLink => Invalid(pdfLinkNotAllowed(fc))
-            case IsInformationMessage(_)                               => Valid
-            case fc                                                    => Invalid(reason(fc))
+            case fc @ IsInformationMessage(i) if i.infoType == PdfLink  => Invalid(infoTypeNotAllowed(fc, PdfLink))
+            case fc @ IsInformationMessage(i) if i.infoType == HtmlLink => Invalid(infoTypeNotAllowed(fc, HtmlLink))
+            case IsInformationMessage(_)                                => Valid
+            case fc                                                     => Invalid(reason(fc))
           }
         )
       }
@@ -1981,8 +1977,9 @@ object FormTemplateValidator {
         validateLinks(
           destinationPrint.page.instructions,
           "/submissions/printSection/notificationPdf/",
-          "link.printSectionPdf"
+          "link.printSectionNotificationPdf"
         ) ++
+          validateLinks(destinationPrint.page.instructions, "/submissions/printSection/pdf/", "link.printSectionPdf") ++
           validateLinks(destinationPrint.page.instructions, "/submissions/summary/", "link.summaryPage")
       case _ => List(Valid)
     }).combineAll
@@ -1994,8 +1991,9 @@ object FormTemplateValidator {
         s"All fields in Check Your Answer page for AddToList must be Info or Table or MiniSummary type. Field Id, '${field.id}' is not an info field, table or mini summary."
 
       field match {
-        case IsInformationMessage(InformationMessage(PdfLink, _, _)) => Invalid(pdfLinkNotAllowed(field))
-        case _                                                       => isViewOnlyComponent(field, formTemplate, reason)
+        case IsInformationMessage(InformationMessage(PdfLink, _, _))  => Invalid(infoTypeNotAllowed(field, PdfLink))
+        case IsInformationMessage(InformationMessage(HtmlLink, _, _)) => Invalid(infoTypeNotAllowed(field, HtmlLink))
+        case _                                                        => isViewOnlyComponent(field, formTemplate, reason)
       }
     }
 
@@ -2014,8 +2012,9 @@ object FormTemplateValidator {
         s"All fields in Declaration section for AddToList must be Info or Table or MiniSummary type. Field Id, '${field.id}' is not an info field, table or mini summary."
 
       field match {
-        case IsInformationMessage(InformationMessage(PdfLink, _, _)) => Invalid(pdfLinkNotAllowed(field))
-        case _                                                       => isViewOnlyComponent(field, formTemplate, reason)
+        case IsInformationMessage(InformationMessage(PdfLink, _, _))  => Invalid(infoTypeNotAllowed(field, PdfLink))
+        case IsInformationMessage(InformationMessage(HtmlLink, _, _)) => Invalid(infoTypeNotAllowed(field, HtmlLink))
+        case _                                                        => isViewOnlyComponent(field, formTemplate, reason)
       }
     }
 
@@ -2157,16 +2156,9 @@ object FormTemplateValidator {
     pages: List[Page],
     allExpressions: List[ExprWithPath]
   ): ValidationResult = {
-
-    val referenceInfos: List[DataRetrieveCtxExpr] =
-      allExpressions.collect {
-        case ExprWithPath(path, DataRetrieveCtx(id, attribute)) =>
-          DataRetrieveCtxExpr(path, DataRetrieveCtx(id, attribute))
-        case ExprWithPath(path, DateCtx(DataRetrieveDateCtx(id, attribute))) =>
-          DataRetrieveCtxExpr(path, DataRetrieveCtx(id, attribute))
-        case ExprWithPath(path, IndexOfDataRetrieveCtx(DataRetrieveCtx(id, attribute), _)) =>
-          DataRetrieveCtxExpr(path, DataRetrieveCtx(id, attribute))
-      }
+    val referenceInfos: List[DataRetrieveCtxExpr] = allExpressions
+      .flatMap(_.referenceInfos)
+      .collect { case d @ DataRetrieveCtxExpr(_, _) => d }
 
     val pageDataRetrieves: Map[DataRetrieveId, DataRetrieve] =
       pages.flatMap(p => p.dataRetrieves().map(d => (d.id, d))).toMap
@@ -2313,8 +2305,11 @@ object FormTemplateValidator {
             task.declarationSection
               .map(ds =>
                 ds.fields.map {
-                  case fc @ IsInformationMessage(InformationMessage(PdfLink, _, _)) => Invalid(pdfLinkNotAllowed(fc))
-                  case fc                                                           => isViewOnlyComponent(fc, formTemplate, reason(fc))
+                  case fc @ IsInformationMessage(InformationMessage(PdfLink, _, _)) =>
+                    Invalid(infoTypeNotAllowed(fc, PdfLink))
+                  case fc @ IsInformationMessage(InformationMessage(HtmlLink, _, _)) =>
+                    Invalid(infoTypeNotAllowed(fc, HtmlLink))
+                  case fc => isViewOnlyComponent(fc, formTemplate, reason(fc))
                 }
               )
               .combineAll

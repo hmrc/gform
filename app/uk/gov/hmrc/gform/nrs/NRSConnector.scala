@@ -24,7 +24,7 @@ import uk.gov.hmrc.auth.core.retrieve.Retrieval
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
 import uk.gov.hmrc.gform.core.FOpt
 import uk.gov.hmrc.gform.envelope.EnvelopeAlgebra
-import uk.gov.hmrc.gform.objectstore.ObjectStoreModule
+import uk.gov.hmrc.gform.objectstore.{ ObjectStoreModule, ObjectStorePaths }
 import uk.gov.hmrc.gform.scheduler.nrsOrchestrator.{ NrsOrchestratorAttachmentWorkItem, NrsOrchestratorAttachmentWorkItemRepo, NrsOrchestratorWorkItem, NrsOrchestratorWorkItemRepo }
 import uk.gov.hmrc.gform.sharedmodel.envelope.EnvelopeData
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FormData }
@@ -94,8 +94,8 @@ case class NRSAttachment(
   subDirectory: Option[String]
 ) {
   def getPresignedUrl(objectStoreModule: ObjectStoreModule)(implicit hc: HeaderCarrier): FOpt[PresignedDownloadUrl] = {
-    val path: Path.File = objectStoreModule.objectStoreConnector
-      .directory(envelopeId.value, subDirectory)
+    val path: Path.File = ObjectStorePaths
+      .envelopeDirectory(envelopeId, subDirectory)
       .file(fileName)
     objectStoreModule.foptObjectStoreService.presignedDownloadUrl(path)
   }
