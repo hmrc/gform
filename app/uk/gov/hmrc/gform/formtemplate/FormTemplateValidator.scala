@@ -2048,7 +2048,7 @@ object FormTemplateValidator {
 
     val callOnNoChangeCheck: List[ValidationResult] = pages
       .flatMap(page => page.dataRetrieves().map(dr => (page, dr)))
-      .filter(_._2.callOnNoChange)
+      .filter { case (page, dr) => dr.callOnNoChange || dr.populateATL.isDefined }
       .flatMap { case (page, dr) =>
         dr.params
           .collect { case DataRetrieve.ParamExpr(_, expr) =>
@@ -2066,7 +2066,7 @@ object FormTemplateValidator {
       .map(_._2)
       .map(fcId =>
         Invalid(
-          s"Form component '${fcId.value}' must be on the same page as the data retrieve if 'callOnNoChange' is true."
+          s"Form component '${fcId.value}' must be on the same page as the data retrieve if 'callOnNoChange' is true, or data retrieve has populateAtl parameter."
         )
       )
 
@@ -2078,8 +2078,8 @@ object FormTemplateValidator {
     val allDataRetrieves = formTemplate.dataRetrieve.fold(pageDataRetrieves)(drs => pageDataRetrieves ++ drs.toList)
 
     val invalid = allDataRetrieves.collect {
-      case DataRetrieve(_, id, _, _, _, _, Some(_), None, _) => id
-      case DataRetrieve(_, id, _, _, _, _, None, Some(_), _) => id
+      case DataRetrieve(_, id, _, _, _, _, Some(_), None, _, _) => id
+      case DataRetrieve(_, id, _, _, _, _, None, Some(_), _, _) => id
     }
 
     invalid.isEmpty.validationResult(

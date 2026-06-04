@@ -1585,7 +1585,7 @@ class FormTemplateValidatorSpec
             dataRetrieve = drCallOnChangeTrue
           ),
           Invalid(
-            "Form component 'accountFirstName' must be on the same page as the data retrieve if 'callOnNoChange' is true."
+            "Form component 'accountFirstName' must be on the same page as the data retrieve if 'callOnNoChange' is true, or data retrieve has populateAtl parameter."
           )
         ),
         (
@@ -1604,7 +1604,7 @@ class FormTemplateValidatorSpec
             dataRetrieve = drCallOnChangeTrueComplex
           ),
           Invalid(
-            "Form component 'accountFirstName' must be on the same page as the data retrieve if 'callOnNoChange' is true."
+            "Form component 'accountFirstName' must be on the same page as the data retrieve if 'callOnNoChange' is true, or data retrieve has populateAtl parameter."
           )
         ),
         (

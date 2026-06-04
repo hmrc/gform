@@ -23,7 +23,8 @@ import play.api.libs.json._
 import scala.util.matching.Regex
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Expr, IncludeIf, JsonUtils, LeafExpr, OFormatWithTemplateReadFallback, TemplatePath }
+import uk.gov.hmrc.gform.formtemplate.AddToListId
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Expr, FormComponentId, IncludeIf, JsonUtils, LeafExpr, OFormatWithTemplateReadFallback, TemplatePath }
 
 import java.time.LocalDateTime
 
@@ -100,6 +101,15 @@ object Attr {
   implicit val format: OFormat[Attr] = derived.oformat()
 }
 
+case class PopulateATL(
+  id: AddToListId,
+  mapping: Map[FormComponentId, Expr]
+)
+
+object PopulateATL {
+  implicit val format: Format[PopulateATL] = Json.format
+}
+
 case class DataRetrieve(
   tpe: DataRetrieve.Type,
   id: DataRetrieveId,
@@ -109,7 +119,8 @@ case class DataRetrieve(
   `if`: Option[IncludeIf],
   maxFailedAttempts: Option[Int],
   failureCountResetMinutes: Option[Int],
-  callOnNoChange: Boolean
+  callOnNoChange: Boolean,
+  populateATL: Option[PopulateATL]
 )
 
 object DataRetrieve {

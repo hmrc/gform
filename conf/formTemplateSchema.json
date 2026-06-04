@@ -1859,6 +1859,59 @@
               "parameters"
             ],
             "additionalProperties": false
+          },{
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "ftaManageEmails"
+                ]
+              },
+              "id": {
+                "type": "string"
+              },
+              "if": {
+                "type": "string"
+              },
+              "callOnNoChange": {
+                "type": "boolean"
+              },
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "eori": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "eori"
+                ],
+                "additionalProperties": false
+              },
+              "populateATL": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "mapping": {
+                    "type": "object",
+                    "additionalProperties": true
+                  }
+                },
+                "required": [
+                  "id",
+                  "mapping"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "type",
+              "id",
+              "parameters"
+            ],
+            "additionalProperties": false
           }
         ]
       }
