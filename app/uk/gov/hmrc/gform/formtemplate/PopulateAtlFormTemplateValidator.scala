@@ -23,7 +23,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ DataRetrieveCtx, ExprWithPat
 
 class PopulateAtlFormTemplateValidator(private val formTemplate: FormTemplate) {
 
-  private lazy val atlMap = formTemplate.formKind.allSections.collect { case atl: Section.AddToList =>
+  private val atlMap = formTemplate.formKind.allSections.collect { case atl: Section.AddToList =>
     AddToListId(FormComponentId(atl.pageId.id)) -> atl
   }.toMap
 
