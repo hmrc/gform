@@ -18,11 +18,11 @@ package uk.gov.hmrc.gform.typeclasses
 
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-
 import scala.xml.Elem
 
 sealed trait Attribute[T] {
   def attribute(name: String, values: List[T]): Elem
+  def blankAttribute(name: String): Elem
 
   protected def createAttribute(name: String, tpe: String, values: List[String]): Elem = {
     val attributeElem =
@@ -45,21 +45,29 @@ object Attribute {
   implicit object string extends Attribute[String] {
     def attribute(a: String, c: List[String]): Elem =
       createAttribute(a, "string", c)
+
+    def blankAttribute(name: String): Elem = createAttribute(name, "string", List(""))
   }
 
   implicit object boolean extends Attribute[Boolean] {
     def attribute(a: String, c: List[Boolean]): Elem =
       createAttribute(a, "boolean", c.map(_.toString))
+
+    def blankAttribute(name: String): Elem = createAttribute(name, "boolean", List(""))
   }
 
   implicit object int extends Attribute[Int] {
     def attribute(a: String, c: List[Int]): Elem =
       createAttribute(a, "int", c.map(_.toString))
+
+    def blankAttribute(name: String): Elem = createAttribute(name, "int", List(""))
   }
 
   implicit object long extends Attribute[Long] {
     def attribute(a: String, c: List[Long]): Elem =
       createAttribute(a, "integer", c.map(_.toString))
+
+    def blankAttribute(name: String): Elem = createAttribute(name, "integer", List(""))
   }
 
   implicit object localDateTime extends Attribute[LocalDateTime] {
@@ -67,5 +75,7 @@ object Attribute {
 
     def attribute(a: String, c: List[LocalDateTime]): Elem =
       createAttribute(a, "time", c.map(date => date.format(formatter)))
+
+    def blankAttribute(name: String): Elem = createAttribute(name, "time", List(""))
   }
 }
