@@ -61,8 +61,7 @@ object MetadataXml {
         createAttribute("hm_utr", ""),
         createBlankAttribute[Boolean]("hm_is_returnable_item"),
         createBlankAttribute[Boolean]("hm_is_rescan"),
-        createBlankAttribute[Boolean]("hm_is_internal"),
-        createAttribute("hm_attachment_count", attachmentCount + roboticsAsAttachmentCountOffset)
+        createBlankAttribute[Boolean]("hm_is_internal")
       )
     } else {
       List(
