@@ -122,7 +122,7 @@ class FileUploadService(
 
     def uploadMetadataXmlF: Future[Unit] = {
       val reconciliationId = ReconciliationId.create(submission.submissionRef, None)
-      val metadataXml = MetadataXml.xmlDec + "\n" + MetadataXml
+      val metadataXml = MetadataXml.xmlDec(hmrcDms.isCaseflow) + "\n" + MetadataXml
         .getXml(
           submission,
           reconciliationId,

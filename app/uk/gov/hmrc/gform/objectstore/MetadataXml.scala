@@ -26,7 +26,11 @@ import scala.xml.{ Elem, Utility }
 
 object MetadataXml {
 
-  val xmlDec = """<?xml version="1.0" encoding="UTF-8" standalone="no"?>"""
+  def xmlDec(standalone: Boolean) = {
+    val standaloneValue = if (standalone) "yes" else "no"
+    s"""<?xml version="1.0" encoding="UTF-8" standalone="$standaloneValue"?>"""
+  }
+
   val gForm = "gForm"
 
   private def createMetadata(
@@ -100,7 +104,11 @@ object MetadataXml {
     </header>
   }
 
-  private def createDocument(elems: List[Elem]): Elem =
+  private def createDocument(elems: List[Elem], hmrcDms: HmrcDms): Elem = if (hmrcDms.isCaseflow)
+    <documents xmlns="http://govtalk.gov.uk/hmrc/bit/content/1">
+      {<document></document>.copy(child = elems)}
+    </documents>
+  else
     <documents xmlns="http://govtalk.gov.uk/hmrc/gis/content/1">
       {<document></document>.copy(child = elems)}
     </documents>
@@ -120,7 +128,7 @@ object MetadataXml {
         createMetadata(submission, noOfPages, attachmentCount, hmrcDms, fileAttachmentNames, destinationResult)
       )
 
-    trim(createDocument(body))
+    trim(createDocument(body, hmrcDms))
   }
 
   private def trim(e: Elem): Elem = Utility.trim(e).asInstanceOf[Elem]
