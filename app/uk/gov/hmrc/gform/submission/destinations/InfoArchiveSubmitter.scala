@@ -73,7 +73,9 @@ class InfoArchiveSubmitter(
     val paths: ObjectStorePaths = ObjectStorePaths.infoArchivePaths(envelopeId)
 
     val sip =
-      xmlDec + "\n" + prettyPrinter.formatNodes(InfoArchiveXMLGenerator.generateSip(envelopeId, formattedCurrentTime))
+      xmlDec(false) + "\n" + prettyPrinter.formatNodes(
+        InfoArchiveXMLGenerator.generateSip(envelopeId, formattedCurrentTime)
+      )
 
     for {
       formTemplate <- formTemplateService.get(formTemplateId)
@@ -91,7 +93,7 @@ class InfoArchiveSubmitter(
              ContentType.`application/pdf`
            )
       hash = calcHash(pdfContent)
-      pdi = xmlDec + "\n" + prettyPrinter.formatNodes(
+      pdi = xmlDec(false) + "\n" + prettyPrinter.formatNodes(
               InfoArchiveXMLGenerator.generatePdi(submission, destinationResult, attachmentName, hash)
             )
       _ <- uploadFile(

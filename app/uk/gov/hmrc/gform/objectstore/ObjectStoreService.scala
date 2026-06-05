@@ -355,7 +355,7 @@ class ObjectStoreService(
         preExistingEnvelope.files
           .filter(_.subDirectory.isEmpty)
           .map(_.fileName)
-      val metadataXml = MetadataXml.xmlDec + "\n" + MetadataXml
+      val metadataXml = MetadataXml.xmlDec(hmrcDms.isCaseflow) + "\n" + MetadataXml
         .getXml(
           submission,
           reconciliationId,
