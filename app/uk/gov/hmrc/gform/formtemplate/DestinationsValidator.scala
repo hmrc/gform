@@ -19,7 +19,7 @@ package uk.gov.hmrc.gform.formtemplate
 import cats.Monoid
 import cats.implicits._
 import cats.data.NonEmptyList
-import uk.gov.hmrc.gform.config.NRSConnectorConfig
+import uk.gov.hmrc.gform.config.{ AuthorizationName, ConfigModule, NRSConnectorConfig, ProfileConfiguration }
 import uk.gov.hmrc.gform.core.ValidationResult.{ BooleanToValidationResultSyntax, validationResultMonoid }
 import uk.gov.hmrc.gform.core.{ Invalid, Valid, ValidationResult }
 import uk.gov.hmrc.gform.nrs.{ BusinessId, NRSConnector }
@@ -251,4 +251,38 @@ object DestinationsValidator {
         }.combineAll
       case _ => Valid
     }
+
+  def validateDestinationCredentials(destinations: Destinations, configModule: ConfigModule): ValidationResult = {
+    def check(
+      credential: Option[AuthorizationName],
+      profileConfig: ProfileConfiguration,
+      destinationId: DestinationId
+    ): ValidationResult =
+      credential
+        .map { credential =>
+          val credentialExists = profileConfig.authorizationMap.keys.exists(_ == credential)
+          if (credentialExists) Valid
+          else Invalid(s"""Destination: ${destinationId.id} contain non existent credential "${credential.value}" """)
+        }
+        .getOrElse(Valid)
+    destinations match {
+      case Destinations.DestinationList(destinations, _, _) =>
+        destinations.map {
+          case destination: Destination.AsyncHandlebarsHttpApi =>
+            check(
+              destination.credential,
+              configModule.DestinationsServicesConfig()(destination.profile),
+              destination.id
+            )
+          case destination: Destination.HandlebarsHttpApi =>
+            check(
+              destination.credential,
+              configModule.DestinationsServicesConfig()(destination.profile),
+              destination.id
+            )
+          case _ => Valid
+        }.combineAll
+      case _ => Valid
+    }
+  }
 }

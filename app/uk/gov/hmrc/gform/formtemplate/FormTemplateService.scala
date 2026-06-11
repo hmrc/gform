@@ -19,7 +19,7 @@ package uk.gov.hmrc.gform.formtemplate
 import cats.implicits._
 import org.slf4j.LoggerFactory
 import play.api.libs.json.JsObject
-import uk.gov.hmrc.gform.config.{ AppConfig, NRSConnectorConfig }
+import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.core.{ FOpt, _ }
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.formredirect.FormRedirect
@@ -46,9 +46,8 @@ class FormTemplateService(
   formRedirectRepo: Repo[FormRedirect],
   handlebarsTemplateAlgebra: HandlebarsTemplateAlgebra[FOpt],
   handlebarsSchemaAlgebra: HandlebarsSchemaAlgebra[FOpt],
-  appConfig: AppConfig,
-  nrsConnectorConfig: NRSConnectorConfig,
-  gformFrontendConnector: GformFrontendConnector
+  gformFrontendConnector: GformFrontendConnector,
+  configModule: ConfigModule
 )(implicit
   ec: ExecutionContext
 ) extends Verifier with Rewriter with SubstituteExpressions with SubstituteBooleanExprs
@@ -145,10 +144,11 @@ class FormTemplateService(
         handlebarsSchemaIds <- handlebarsSchemaAlgebra.getAllIds
         _ <- verify(
                formTemplateConfirmationsUpdated,
-               appConfig,
-               nrsConnectorConfig,
+               configModule.appConfig,
+               configModule.nrsConfig,
                handlebarsSchemaIds,
-               booleanExpressionsContextSubstituted
+               booleanExpressionsContextSubstituted,
+               configModule
              )(expressionsContext)
         formTemplateUpdated <- rewrite(formTemplateConfirmationsUpdated)
       } yield formTemplateUpdated
