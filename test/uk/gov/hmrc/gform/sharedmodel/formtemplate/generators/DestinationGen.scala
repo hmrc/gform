@@ -122,6 +122,7 @@ trait DestinationGen {
       includeIf,
       failOnError,
       multiRequestPayload,
+      None,
       None
     )
 

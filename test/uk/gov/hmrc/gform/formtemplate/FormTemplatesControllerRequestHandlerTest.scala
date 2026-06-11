@@ -505,7 +505,14 @@ class FormTemplatesControllerRequestHandlerTest extends AnyWordSpec with Matcher
     val verifySideEffect: Option[FOpt[Unit]] =
       formTemplate.map(formTemplate =>
         new Verifier {}
-          .verify(formTemplate, appConfig, nrsConfig, List.empty[HandlebarsSchemaId], BooleanExprSubstitutions.empty)(
+          .verify(
+            formTemplate,
+            appConfig,
+            nrsConfig,
+            List.empty[HandlebarsSchemaId],
+            BooleanExprSubstitutions.empty,
+            Map()
+          )(
             ExprSubstitutions.empty
           )
       )

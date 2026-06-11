@@ -19,7 +19,7 @@ package uk.gov.hmrc.gform.formtemplate
 import cats.Monoid
 import cats.implicits._
 import cats.data.NonEmptyList
-import uk.gov.hmrc.gform.config.{ AuthorizationName, ConfigModule, NRSConnectorConfig, ProfileConfiguration }
+import uk.gov.hmrc.gform.config.{ AuthorizationName, NRSConnectorConfig, ProfileConfiguration }
 import uk.gov.hmrc.gform.core.ValidationResult.{ BooleanToValidationResultSyntax, validationResultMonoid }
 import uk.gov.hmrc.gform.core.{ Invalid, Valid, ValidationResult }
 import uk.gov.hmrc.gform.nrs.{ BusinessId, NRSConnector }
@@ -27,7 +27,7 @@ import uk.gov.hmrc.gform.sharedmodel.HandlebarsSchemaId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.NRSOrchestrator
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationIncludeIf.{ HandlebarValue, IncludeIfValue }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponent, FormComponentId, FormTemplateId, IsGroup }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationId, Destinations }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationId, Destinations, ProfileName }
 
 object DestinationsValidator {
   def someDestinationIdsAreUsedMoreThanOnce(duplicates: Set[DestinationId]) =
@@ -252,7 +252,10 @@ object DestinationsValidator {
       case _ => Valid
     }
 
-  def validateDestinationCredentials(destinations: Destinations, configModule: ConfigModule): ValidationResult = {
+  def validateDestinationCredentials(
+    destinations: Destinations,
+    profileMap: Map[ProfileName, ProfileConfiguration]
+  ): ValidationResult = {
     def check(
       credential: Option[AuthorizationName],
       profileConfig: ProfileConfiguration,
@@ -271,13 +274,13 @@ object DestinationsValidator {
           case destination: Destination.AsyncHandlebarsHttpApi =>
             check(
               destination.credential,
-              configModule.DestinationsServicesConfig()(destination.profile),
+              profileMap(destination.profile),
               destination.id
             )
           case destination: Destination.HandlebarsHttpApi =>
             check(
               destination.credential,
-              configModule.DestinationsServicesConfig()(destination.profile),
+              profileMap(destination.profile),
               destination.id
             )
           case _ => Valid

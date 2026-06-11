@@ -148,7 +148,7 @@ class FormTemplateService(
                configModule.nrsConfig,
                handlebarsSchemaIds,
                booleanExpressionsContextSubstituted,
-               configModule
+               configModule.DestinationsServicesConfig()
              )(expressionsContext)
         formTemplateUpdated <- rewrite(formTemplateConfirmationsUpdated)
       } yield formTemplateUpdated
