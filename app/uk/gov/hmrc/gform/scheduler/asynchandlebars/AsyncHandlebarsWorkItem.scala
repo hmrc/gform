@@ -47,8 +47,8 @@ object AsyncHandlebarsWorkItem {
           ContentType.oformat.writes(workItem.contentType) ++
           Json.obj(payload -> JsString(jsonCrypto.encrypt(PlainText(workItem.payload)).value)) ++
           workItem.credential
-            .map { credential =>
-              Json.obj(credential.value -> JsString(credential.value))
+            .map { workItemCredential =>
+              Json.obj(credential -> JsString(workItemCredential.value))
             }
             .getOrElse(Json.obj())
 

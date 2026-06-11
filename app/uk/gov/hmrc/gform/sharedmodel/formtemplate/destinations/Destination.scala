@@ -519,7 +519,7 @@ case class UploadableHandlebarsHttpApiDestination(
   includeIf: DestinationIncludeIf,
   failOnError: Option[Boolean],
   multiRequestPayload: Option[Boolean],
-  credential: Option[AuthorizationName]
+  credential: Option[String]
 ) {
   def toHandlebarsHttpApiDestination: Either[String, Destination.HandlebarsHttpApi] =
     for {
@@ -538,7 +538,7 @@ case class UploadableHandlebarsHttpApiDestination(
         failOnError.getOrElse(true),
         multiRequestPayload.getOrElse(false),
         convertSingleQuotes,
-        credential
+        credential.map(AuthorizationName.apply)
       )
 
   def toAsyncHandlebarsHttpApiDestination: Either[String, Destination.AsyncHandlebarsHttpApi] =
@@ -560,7 +560,7 @@ case class UploadableHandlebarsHttpApiDestination(
         cvii,
         failOnError.getOrElse(true),
         convertSingleQuotes,
-        credential
+        credential.map(AuthorizationName.apply)
       )
 
 }

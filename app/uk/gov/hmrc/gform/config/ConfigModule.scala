@@ -144,7 +144,7 @@ class ConfigModule(
       getString(destinationServiceKey, "authorization-token").map(a => Authorization(s"Bearer $a"))
 
     private def authTokenMap(destinationServiceKey: String): Map[AuthorizationName, Authorization] =
-      asStringStringMap(s"${qualifiedDestinationServiceKey(destinationServiceKey)}.authorization-token")
+      asStringStringMap(s"${qualifiedDestinationServiceKey(destinationServiceKey)}.authorization-token-map")
         .getOrElse(Map[String, String]())
         .map { case (key, value) => AuthorizationName(key) -> Authorization(s"Bearer $value") }
 
