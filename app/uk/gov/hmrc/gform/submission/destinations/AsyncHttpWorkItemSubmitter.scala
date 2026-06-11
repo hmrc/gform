@@ -90,7 +90,8 @@ class RealAsyncHttpWorkItemSubmitter(
         uri = uri,
         method = destination.method,
         contentType = contentType,
-        payload = payload
+        payload = payload,
+        credential = destination.credential
       )
     )
 

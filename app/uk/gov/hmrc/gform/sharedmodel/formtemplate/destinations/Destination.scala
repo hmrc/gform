@@ -27,6 +27,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import UploadableConditioning._
 import cats.Eq
 import cats.implicits.catsSyntaxEq
+import uk.gov.hmrc.gform.config.AuthorizationName
 import uk.gov.hmrc.gform.core.parsers.BooleanExprParser
 import uk.gov.hmrc.gform.sharedmodel.form.{ FormId, FormStatus }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationIncludeIf.{ HandlebarValue, IncludeIfValue }
@@ -166,7 +167,8 @@ object Destination {
     includeIf: DestinationIncludeIf,
     failOnError: Boolean,
     multiRequestPayload: Boolean,
-    convertSingleQuotes: Option[Boolean]
+    convertSingleQuotes: Option[Boolean],
+    credential: Option[AuthorizationName]
   ) extends Destination
 
   case class AsyncHandlebarsHttpApi(
@@ -178,7 +180,8 @@ object Destination {
     payloadType: TemplateType,
     includeIf: DestinationIncludeIf,
     failOnError: Boolean,
-    convertSingleQuotes: Option[Boolean]
+    convertSingleQuotes: Option[Boolean],
+    credential: Option[AuthorizationName]
   ) extends Destination
 
   case class StateTransition(
@@ -257,7 +260,7 @@ object Destination {
   val niRefundClaimApi: String = "niRefundClaimApi"
   val nrsOrchestrator: String = "nrsOrchestrator"
 
-  implicit def format: OFormat[Destination] = {
+  implicit val format: OFormat[Destination] = {
     implicit val personalisationReads =
       JsonUtils.formatMap[NotifierPersonalisationFieldId, FormComponentId](NotifierPersonalisationFieldId(_), _.value)
 
@@ -515,7 +518,8 @@ case class UploadableHandlebarsHttpApiDestination(
   convertSingleQuotes: Option[Boolean],
   includeIf: DestinationIncludeIf,
   failOnError: Option[Boolean],
-  multiRequestPayload: Option[Boolean]
+  multiRequestPayload: Option[Boolean],
+  credential: Option[AuthorizationName]
 ) {
   def toHandlebarsHttpApiDestination: Either[String, Destination.HandlebarsHttpApi] =
     for {
@@ -533,7 +537,8 @@ case class UploadableHandlebarsHttpApiDestination(
         cvii,
         failOnError.getOrElse(true),
         multiRequestPayload.getOrElse(false),
-        convertSingleQuotes
+        convertSingleQuotes,
+        credential
       )
 
   def toAsyncHandlebarsHttpApiDestination: Either[String, Destination.AsyncHandlebarsHttpApi] =
@@ -554,7 +559,8 @@ case class UploadableHandlebarsHttpApiDestination(
         payloadType.getOrElse(TemplateType.JSON),
         cvii,
         failOnError.getOrElse(true),
-        convertSingleQuotes
+        convertSingleQuotes,
+        credential
       )
 
 }

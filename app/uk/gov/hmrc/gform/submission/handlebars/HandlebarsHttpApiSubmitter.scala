@@ -18,6 +18,7 @@ package uk.gov.hmrc.gform.submission.handlebars
 
 import org.slf4j.LoggerFactory
 import play.api.libs.json._
+import uk.gov.hmrc.gform.config.AuthorizationName
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations._
 import uk.gov.hmrc.gform.submission.destinations._
@@ -38,7 +39,14 @@ trait HandlebarsHttpApiSubmitter {
 }
 
 class RealHandlebarsHttpApiSubmitter(
-  buildRequest: (ProfileName, EnvelopeId, String, HttpMethod, HeaderCarrier) => RequestBuilder,
+  buildRequest: (
+    ProfileName,
+    EnvelopeId,
+    String,
+    HttpMethod,
+    HeaderCarrier,
+    Option[AuthorizationName]
+  ) => RequestBuilder,
   handlebarsTemplateProcessor: HandlebarsTemplateProcessor = RealHandlebarsTemplateProcessor
 )(implicit ec: ExecutionContext)
     extends HandlebarsHttpApiSubmitter {
@@ -59,7 +67,8 @@ class RealHandlebarsHttpApiSubmitter(
       FocussedHandlebarsModelTree(modelTree),
       TemplateType.Plain
     )
-    val requestBuilder = buildRequest(destination.profile, envelopeId, uri, destination.method, hc)
+    val requestBuilder =
+      buildRequest(destination.profile, envelopeId, uri, destination.method, hc, destination.credential)
 
     val contentType = destination.payloadType match {
       case TemplateType.JSON  => "application/json"
@@ -129,7 +138,7 @@ class RealHandlebarsHttpApiSubmitter(
 
     destination.method match {
       case HttpMethod.GET =>
-        buildRequest(destination.profile, envelopeId, uri, destination.method, hc)
+        buildRequest(destination.profile, envelopeId, uri, destination.method, hc, destination.credential)
           .execute[HttpResponse]
 
       case HttpMethod.POST =>

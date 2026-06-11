@@ -17,6 +17,7 @@
 package uk.gov.hmrc.gform.submission.handlebars
 
 import org.slf4j.LoggerFactory
+import uk.gov.hmrc.gform.config.AuthorizationName
 import uk.gov.hmrc.gform.scheduler.TraceableWorkItem
 import uk.gov.hmrc.gform.scheduler.asynchandlebars.AsyncHandlebarsWorkItem
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
@@ -33,7 +34,14 @@ trait AsyncHandlebarsApiExecutor[F[_]] {
 }
 
 class RealAsyncHandlebarsApiExecutor(
-  buildRequest: (ProfileName, EnvelopeId, String, HttpMethod, HeaderCarrier) => RequestBuilder,
+  buildRequest: (
+    ProfileName,
+    EnvelopeId,
+    String,
+    HttpMethod,
+    HeaderCarrier,
+    Option[AuthorizationName]
+  ) => RequestBuilder,
   workItemHistoryService: WorkItemHistoryAlgebra[Future]
 )(implicit ec: ExecutionContext)
     extends AsyncHandlebarsApiExecutor[Future] {
@@ -47,7 +55,8 @@ class RealAsyncHandlebarsApiExecutor(
       workItem.envelopeId,
       workItem.data.uri,
       workItem.data.method,
-      hc
+      hc,
+      workItem.data.credential
     )
 
     def send(body: String): Future[HttpResponse] =

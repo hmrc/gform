@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.gform.submission.handlebars
 
-import uk.gov.hmrc.gform.config.ConfigModule
+import uk.gov.hmrc.gform.config.{ AuthorizationName, ConfigModule }
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ HttpMethod, ProfileName }
 import uk.gov.hmrc.gform.submission.WorkItemHistoryAlgebra
@@ -54,16 +54,27 @@ class HandlebarsHttpApiModule(
     envelopeId: EnvelopeId,
     uri: String,
     method: HttpMethod,
-    hc: HeaderCarrier
+    hc: HeaderCarrier,
+    authorizationName: Option[AuthorizationName]
   ): RequestBuilder = {
     val profileConfig = configModule.DestinationsServicesConfig()(profile)
     val fullUrl = appendUriSegment(profileConfig.baseUrl, uri)
+
+    val auth = authorizationName
+      .map { authName =>
+        profileConfig.authorizationMap
+          .getOrElse(
+            authName,
+            throw new RuntimeException(s"""Authorization name "$authName" not found for profile "$profile" """)
+          )
+      }
+      .orElse(profileConfig.authorization)
 
     val headers: Seq[(String, String)] = hc.extraHeaders ++ profileConfig.httpHeaders.map {
       case (k, checkToken(v)) => k -> getDynamicHeaderValue(v, envelopeId)
       case (k, v)             => k -> v
     }.toSeq ++
-      profileConfig.authorization
+      auth
         .orElse(hc.authorization)
         .map(auth => "Authorization" -> auth.value)
 
