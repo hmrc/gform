@@ -83,7 +83,7 @@ class IfController(configModule: ConfigModule, wSHttpModule: WSHttpModule, cc: C
 
   def manageEmails(eori: String): Action[AnyContent] = Action.async { implicit req =>
     withCorrelationIdHeader(req) { correlationId =>
-      ifRequest(s"/fta/manageemails/v1?eori=$eori", correlationId, AuthorizationName("ifta")).get.execute
+      ifRequest(s"/fta/manageemails/v1?eori=$eori&authtype=INFT", correlationId, AuthorizationName("ifta")).get.execute
         .map { resp =>
           if (resp.status > 299) {
             logger.error(
