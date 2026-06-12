@@ -94,9 +94,8 @@ class FormTemplateModule(
       formRedirectRepo,
       foptHandlebarsPayloadService,
       foptHandlebarsSchemaService,
-      configModule.appConfig,
-      configModule.nrsConfig,
-      gformFrontendModule.gformFrontendConnector
+      gformFrontendModule.gformFrontendConnector,
+      configModule
     )
   val formRedirectService: FormRedirectService =
     new FormRedirectService(formRedirectRepo)

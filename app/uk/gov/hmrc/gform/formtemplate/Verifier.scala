@@ -16,12 +16,12 @@
 
 package uk.gov.hmrc.gform.formtemplate
 
-import uk.gov.hmrc.gform.config.NRSConnectorConfig
+import uk.gov.hmrc.gform.config.{ AppConfig, NRSConnectorConfig, ProfileConfiguration }
 import uk.gov.hmrc.gform.core.{ FOpt, fromOptA }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import cats.implicits._
-import uk.gov.hmrc.gform.config.AppConfig
 import uk.gov.hmrc.gform.sharedmodel.HandlebarsSchemaId
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.ProfileName
 
 import scala.concurrent.ExecutionContext
 
@@ -31,7 +31,8 @@ trait Verifier {
     appConfig: AppConfig,
     nrsConnectorConfig: NRSConnectorConfig,
     handlebarsSchemaIds: List[HandlebarsSchemaId],
-    booleanExpressionsContextSubstituted: BooleanExprSubstitutions
+    booleanExpressionsContextSubstituted: BooleanExprSubstitutions,
+    profileMap: Map[ProfileName, ProfileConfiguration]
   )(expressionsContext: ExprSubstitutions)(implicit ec: ExecutionContext): FOpt[Unit] = {
 
     val sections = formTemplate.formKind.allSections
@@ -143,6 +144,9 @@ trait Verifier {
       _ <- fromOptA(AcknowledgementValidator.validateNoPIITitle(formTemplate, allExpressions).toEither)
       _ <- fromOptA(populateAtlValidator.validate(pages).toEither)
       _ <- fromOptA(populateAtlValidator.formDataRetrieveDoesNotContainPopulateAtl().toEither)
+      _ <- fromOptA(
+             DestinationsValidator.validateDestinationCredentials(formTemplate.destinations, profileMap).toEither
+           )
     } yield ()
 
   }

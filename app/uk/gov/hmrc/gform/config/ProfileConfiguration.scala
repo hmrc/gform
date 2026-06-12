@@ -16,12 +16,21 @@
 
 package uk.gov.hmrc.gform.config
 
+import play.api.libs.json.{ Format, Json }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.ProfileName
 import uk.gov.hmrc.http.Authorization
+
+case class AuthorizationName(value: String)
+object AuthorizationName {
+  implicit val format: Format[AuthorizationName] = Json.format
+}
 
 case class ProfileConfiguration(
   name: ProfileName,
   baseUrl: String,
-  authorization: Option[Authorization],
+  authorization: Option[
+    Authorization
+  ], //If destination "credential" option is not set, defaults to this value. Otherwise, will use authorizationMap.
+  authorizationMap: Map[AuthorizationName, Authorization],
   httpHeaders: Map[String, String]
 )

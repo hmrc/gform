@@ -17,9 +17,9 @@
 package uk.gov.hmrc.gform.integrationFramework
 
 import org.slf4j.LoggerFactory
-import play.api.libs.json.{ Format, JsError, JsObject, JsString, JsSuccess, Json }
+import play.api.libs.json._
 import play.api.mvc._
-import uk.gov.hmrc.gform.config.ConfigModule
+import uk.gov.hmrc.gform.config.{ AuthorizationName, ConfigModule }
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.ProfileName
 import uk.gov.hmrc.gform.wshttp.WSHttpModule
@@ -51,18 +51,26 @@ class IfController(configModule: ConfigModule, wSHttpModule: WSHttpModule, cc: C
       wSHttpModule.httpClient.post(url"$fullUrl")(hc).setHeader(headers: _*)
   }
 
-  private def ifRequest(path: String, correlationId: String) = {
+  private def ifRequest(path: String, correlationId: String, authorizationName: AuthorizationName) = {
     val profileConfig = configModule.DestinationsServicesConfig()(
       ProfileName("cma")
     ) //TODO: Not sure if it's a good idea to pull config from "cma" profile
     val fullUrl = s"${profileConfig.baseUrl}$path"
 
+    val auth = profileConfig.authorizationMap.getOrElse(
+      authorizationName,
+      throw new RuntimeException(s"""Authorization name: "$authorizationName" is not available for profile "cma" """)
+    )
+
     val headers = Seq(
       "Accept"           -> "application/json",
       "X-Forwarded-Host" -> "MDTP",
       "X-Correlation-Id" -> correlationId,
-      "Date"             -> DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss 'UTC'").format(ZonedDateTime.now(ZoneOffset.UTC))
-    ) ++ profileConfig.authorization.map(key => "Authorization" -> key.value)
+      "Date" -> DateTimeFormatter
+        .ofPattern("EEE, dd MMM yyyy HH:mm:ss 'UTC'")
+        .format(ZonedDateTime.now(ZoneOffset.UTC)),
+      "Authorization" -> auth.value
+    )
 
     new IfRequest(url"$fullUrl", headers)
   }
@@ -75,7 +83,7 @@ class IfController(configModule: ConfigModule, wSHttpModule: WSHttpModule, cc: C
 
   def manageEmails(eori: String): Action[AnyContent] = Action.async { implicit req =>
     withCorrelationIdHeader(req) { correlationId =>
-      ifRequest(s"/fta/manageemails/v1?eori=$eori", correlationId).get.execute
+      ifRequest(s"/fta/manageemails/v1?eori=$eori", correlationId, AuthorizationName("ifta")).get.execute
         .map { resp =>
           if (resp.status > 299) {
             logger.error(

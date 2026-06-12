@@ -92,7 +92,7 @@ class FormComponentRejectSpec extends Spec with TableDrivenPropertyChecks {
       val jsResult = readAsFormTemplate(fileName)
       jsResult match {
         case JsSuccess(formTemplate, _) =>
-          val verificationResult: FOpt[Unit] = new Verifier {}.verify(formTemplate, appConfig, nrsConfig, List.empty[HandlebarsSchemaId], BooleanExprSubstitutions.empty)(ExprSubstitutions.empty)
+          val verificationResult: FOpt[Unit] = new Verifier {}.verify(formTemplate, appConfig, nrsConfig, List.empty[HandlebarsSchemaId], BooleanExprSubstitutions.empty, Map())(ExprSubstitutions.empty)
           verificationResult.value.futureValue shouldBe Left(UnexpectedState(expectedMessage))
         case JsError(errors) => fail("Invalid formTemplate definition: " + errors)
       }
@@ -151,7 +151,8 @@ class FormComponentRejectSpec extends Spec with TableDrivenPropertyChecks {
               appConfig,
               nrsConfig,
               List.empty[HandlebarsSchemaId],
-              BooleanExprSubstitutions.empty
+              BooleanExprSubstitutions.empty,
+              Map()
             )(ExprSubstitutions.empty)
           verificationResult.value.futureValue shouldBe Left(UnexpectedState(expectedMessage))
         case JsError(errors) => fail("Invalid formTemplate definition: " + errors)

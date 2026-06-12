@@ -16,8 +16,10 @@
 
 package uk.gov.hmrc.gform.scheduler.asynchandlebars
 
+import play.api.libs.json.Format.GenericFormat
 import play.api.libs.json._
 import uk.gov.hmrc.crypto.{ Crypted, Decrypter, Encrypter, PlainText }
+import uk.gov.hmrc.gform.config.AuthorizationName
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ HttpMethod, ProfileName }
 
@@ -26,7 +28,8 @@ case class AsyncHandlebarsWorkItem(
   uri: String,
   method: HttpMethod,
   contentType: ContentType,
-  payload: String
+  payload: String,
+  credential: Option[AuthorizationName]
 )
 
 object AsyncHandlebarsWorkItem {
@@ -35,13 +38,19 @@ object AsyncHandlebarsWorkItem {
       private val uri = "uri"
       private val method = "method"
       private val payload = "payload"
+      private val credential = "credential"
 
       override def writes(workItem: AsyncHandlebarsWorkItem): JsObject =
         ProfileName.oformat.writes(workItem.profile) ++
           Json.obj(uri -> workItem.uri) ++
           Json.obj(method -> workItem.method) ++
           ContentType.oformat.writes(workItem.contentType) ++
-          Json.obj(payload -> JsString(jsonCrypto.encrypt(PlainText(workItem.payload)).value))
+          Json.obj(payload -> JsString(jsonCrypto.encrypt(PlainText(workItem.payload)).value)) ++
+          workItem.credential
+            .map { workItemCredential =>
+              Json.obj(credential -> JsString(workItemCredential.value))
+            }
+            .getOrElse(Json.obj())
 
       override def reads(json: JsValue): JsResult[AsyncHandlebarsWorkItem] =
         for {
@@ -50,12 +59,20 @@ object AsyncHandlebarsWorkItem {
           method      <- (json \ method).validate[HttpMethod]
           contentType <- ContentType.oformat.reads(json)
           payload     <- (json \ payload).validate[String].map(payload => jsonCrypto.decrypt(Crypted(payload)).value)
+          credential <- (json \ credential)
+                          .validateOpt[String]
+                          .map(payload =>
+                            payload.map { payload =>
+                              AuthorizationName(payload)
+                            }
+                          )
         } yield AsyncHandlebarsWorkItem(
           profile,
           uri,
           method,
           contentType,
-          payload
+          payload,
+          credential
         )
     }
 }
