@@ -26,7 +26,8 @@ case class DataRetrieveDescription(
   attributeReferences: List[String],
   documentationUrl: Option[String],
   isArrayResult: Boolean,
-  urlDescriptors: List[UrlDescriptor]
+  urlFrontend: UrlDescriptor,
+  urlBackend: Option[UrlDescriptor]
 )
 
 object DataRetrieveDescription {

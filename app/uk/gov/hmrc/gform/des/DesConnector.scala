@@ -65,8 +65,9 @@ class DesConnector(httpClient: HttpClientV2, baseUrl: String, desConfig: DesConn
   ): Future[ServiceCallResponse[DesRegistrationResponse]] = {
 
     logger.info(s"Des registration, UTR: '$utr', ${loggingHelpers.cleanHeaderCarrierHeader(hc)}")
+    val urlPath = DataRetrieveDefinitions.hmrcRosmRegistrationCheck.getFilledPath(Map("utr" -> utr))
 
-    val url = s"$baseUrl${desConfig.basePath}/registration/organisation/utr/$utr"
+    val url = s"$baseUrl${desConfig.basePath}$urlPath"
     httpClient
       .post(url"$url")
       .withBody(Json.toJson(desRegistrationRequest))

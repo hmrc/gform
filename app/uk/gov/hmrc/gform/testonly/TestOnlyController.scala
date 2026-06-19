@@ -184,7 +184,8 @@ class TestOnlyController(
           attrExamples,
           definition.documentationUrl,
           isArrayResult,
-          definition.urlDescriptors
+          definition.urlFrontend,
+          definition.urlBackend
         )
       }
 

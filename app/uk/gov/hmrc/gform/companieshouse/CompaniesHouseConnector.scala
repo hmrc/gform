@@ -16,17 +16,18 @@
 
 package uk.gov.hmrc.gform.companieshouse
 
-import models.OfficersResponse
 import play.api.Logging
 import play.api.libs.json.JsValue
 import uk.gov.hmrc.gform.companieshouse.CompaniesHouseModule.CompaniesHouseAPIConfig
+import uk.gov.hmrc.gform.companieshouse.models.OfficersResponse
+import uk.gov.hmrc.gform.sharedmodel.DataRetrieveDefinitions
+import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{ ForbiddenException, HeaderCarrier, HeaderNames, HttpResponse, InternalServerException, NotFoundException, StringContextOps, UnauthorizedException }
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendHeaderCarrierProvider
 
 import java.net.URI
 import scala.concurrent.{ ExecutionContext, Future }
-import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
 
 class CompaniesHouseConnector(
   http: HttpClientV2,
@@ -37,41 +38,61 @@ class CompaniesHouseConnector(
   private val serviceUrl: URI = config.baseUrl
 
   private val headersWithApiKey = HeaderNames.authorisation -> s"Basic ${config.authorizationToken}"
+  private val companyNumberParam = "companyNumber"
 
-  def getCompany(companyNumber: String): Future[JsValue] =
+  def getCompany(companyNumber: String): Future[JsValue] = {
+    val urlPath = DataRetrieveDefinitions.companyHouseProfile.getFilledPath(
+      Map(companyNumberParam -> companyNumber)
+    )
+    val url = s"$serviceUrl$urlPath"
     http
-      .get(url"$serviceUrl/company/$companyNumber")(HeaderCarrier())
+      .get(url"$url")(HeaderCarrier())
       .setHeader(headersWithApiKey)
       .withProxy
       .execute[HttpResponse]
-      .map { response =>
+      .map {
         handleJsonResponse(
-          response,
+          _,
           "Company profile"
         )
       }
+  }
 
-  def getCompanyOfficers(companyNumber: String): Future[OfficersResponse] =
+  def getCompanyOfficers(companyNumber: String): Future[OfficersResponse] = {
+    val urlPath = DataRetrieveDefinitions.companyHouseActiveOfficers.getFilledPath(
+      Map(companyNumberParam -> companyNumber)
+    )
+    val url = s"$serviceUrl$urlPath"
     http
-      .get(url"$serviceUrl/company/$companyNumber/officers")(HeaderCarrier())
+      .get(url"$url")(HeaderCarrier())
       .setHeader(headersWithApiKey)
       .withProxy
       .execute[HttpResponse]
       .map(handleOfficersResponse)
+  }
 
   def getCompanyOfficersPaged(companyNumber: String)(
     pageIndex: Int
-  ): Future[OfficersResponse] =
+  ): Future[OfficersResponse] = {
+    val urlPath = DataRetrieveDefinitions.companyHouseActiveOfficers.getFilledPath(
+      Map(companyNumberParam -> companyNumber)
+    )
+    val url = s"$serviceUrl$urlPath?items_per_page=100&start_index=$pageIndex"
     http
-      .get(url"$serviceUrl/company/$companyNumber/officers?items_per_page=100&start_index=$pageIndex")(HeaderCarrier())
+      .get(url"$url")(HeaderCarrier())
       .setHeader(headersWithApiKey)
       .withProxy
       .execute[HttpResponse]
       .map(handleOfficersResponse)
+  }
 
-  def getCompanyInsolvency(companyNumber: String): Future[JsValue] =
+  def getCompanyInsolvency(companyNumber: String): Future[JsValue] = {
+    val urlPath = DataRetrieveDefinitions.companyHouseInsolvency.getFilledPath(
+      Map(companyNumberParam -> companyNumber)
+    )
+    val url = s"$serviceUrl$urlPath"
     http
-      .get(url"$serviceUrl/company/$companyNumber/insolvency")(HeaderCarrier())
+      .get(url"$url")(HeaderCarrier())
       .setHeader(headersWithApiKey)
       .withProxy
       .execute[HttpResponse]
@@ -81,6 +102,7 @@ class CompaniesHouseConnector(
           "Company insolvency information"
         )
       )
+  }
 
   private def handleJsonResponse(
     response: HttpResponse,
