@@ -18,16 +18,13 @@ package uk.gov.hmrc.gform.testonly
 
 import julienrf.json.derived
 import play.api.libs.json.{ JsObject, OFormat }
-import uk.gov.hmrc.gform.sharedmodel.UrlDescriptor
 
 case class DataRetrieveDescription(
   tpe: String,
   exampleJson: JsObject,
   attributeReferences: List[String],
   documentationUrl: Option[String],
-  isArrayResult: Boolean,
-  urlFrontend: UrlDescriptor,
-  urlBackend: Option[UrlDescriptor]
+  isArrayResult: Boolean
 )
 
 object DataRetrieveDescription {

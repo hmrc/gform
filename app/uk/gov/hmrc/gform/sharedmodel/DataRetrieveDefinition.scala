@@ -53,7 +53,6 @@ object UrlDestination {
 
 final case class UrlDescriptor(
   urlPath: String,
-  pathParameters: List[DataRetrieve.Parameter],
   destination: UrlDestination
 ) {
   def fill(values: Map[String, String]): String =
@@ -133,8 +132,7 @@ object DataRetrieveDefinitions {
     Map.empty,
     Some("https://github.com/hmrc/bank-account-reputation/blob/main/docs/eiscd/v3/validateBankDetails.md"),
     UrlDescriptor(
-      urlPath = "/bank-details/validate",
-      pathParameters = Nil,
+      urlPath = "/validate/bank-details",
       destination = UrlDestination.MDTP
     ),
     None
@@ -217,7 +215,6 @@ object DataRetrieveDefinitions {
     Some("https://github.com/hmrc/bank-account-reputation/blob/main/public/api/conf/1.0/docs/business/verify.md"),
     UrlDescriptor(
       urlPath = "/verify/business",
-      pathParameters = Nil,
       destination = UrlDestination.MDTP
     ),
     None
@@ -300,7 +297,6 @@ object DataRetrieveDefinitions {
     Some("https://github.com/hmrc/bank-account-reputation/blob/main/public/api/conf/1.0/docs/personal/verify.md"),
     UrlDescriptor(
       urlPath = "/verify/personal",
-      pathParameters = Nil,
       destination = UrlDestination.MDTP
     ),
     None
@@ -384,7 +380,6 @@ object DataRetrieveDefinitions {
     Some("https://github.com/hmrc/bank-account-reputation/blob/main/public/api/conf/1.0/docs/personal/verify.md"),
     UrlDescriptor(
       urlPath = "/verify/personal",
-      pathParameters = Nil,
       destination = UrlDestination.MDTP
     ),
     None
@@ -478,13 +473,11 @@ object DataRetrieveDefinitions {
       ),
       UrlDescriptor(
         urlPath = "/companieshouse/company/{{companyNumber}}",
-        pathParameters = List(Parameter("companyNumber")),
         destination = UrlDestination.GForm
       ),
       Some(
         UrlDescriptor(
           urlPath = "/company/{{companyNumber}}",
-          pathParameters = List(Parameter("companyNumber")),
           destination = UrlDestination.CompaniesHouse
         )
       )
@@ -522,13 +515,11 @@ object DataRetrieveDefinitions {
       ),
       UrlDescriptor(
         urlPath = "/companieshouse/company/{{companyNumber}}/officers",
-        pathParameters = List(Parameter("companyNumber")),
         destination = UrlDestination.GForm
       ),
       Some(
         UrlDescriptor(
           urlPath = "/company/{{companyNumber}}/officers",
-          pathParameters = List(Parameter("companyNumber")),
           destination = UrlDestination.CompaniesHouse
         )
       )
@@ -619,13 +610,11 @@ object DataRetrieveDefinitions {
       ),
       UrlDescriptor(
         urlPath = "/companieshouse/company/{{companyNumber}}/insolvency",
-        pathParameters = List(Parameter("companyNumber")),
         destination = UrlDestination.GForm
       ),
       Some(
         UrlDescriptor(
           urlPath = "/company/{{companyNumber}}/insolvency",
-          pathParameters = List(Parameter("companyNumber")),
           destination = UrlDestination.CompaniesHouse
         )
       )
@@ -649,7 +638,6 @@ object DataRetrieveDefinitions {
     Some("https://github.com/hmrc/nino-gateway/blob/main/public/api/conf/1.0/docs/insights.md"),
     UrlDescriptor(
       urlPath = "/check/insights",
-      pathParameters = Nil,
       destination = UrlDestination.MDTP
     ),
     None
@@ -696,7 +684,6 @@ object DataRetrieveDefinitions {
     Some("https://github.com/hmrc/gform-frontend/blob/main/conf/lookup/HMRCTaxRates.csv"),
     UrlDescriptor(
       urlPath = "HMRCTaxRates.csv",
-      pathParameters = Nil,
       destination = UrlDestination.GForm
     ),
     None
@@ -730,7 +717,6 @@ object DataRetrieveDefinitions {
     ),
     UrlDescriptor(
       urlPath = "/auth/authorise",
-      pathParameters = Nil,
       destination = UrlDestination.MDTP
     ),
     None
@@ -764,7 +750,6 @@ object DataRetrieveDefinitions {
     ),
     UrlDescriptor(
       urlPath = "/auth/authorise",
-      pathParameters = Nil,
       destination = UrlDestination.MDTP
     ),
     None
@@ -789,7 +774,6 @@ object DataRetrieveDefinitions {
     Some("https://github.com/hmrc/bank-account-gateway/blob/main/public/api/conf/1.0/docs/insights/insights.md"),
     UrlDescriptor(
       urlPath = "/check/insights",
-      pathParameters = Nil,
       destination = UrlDestination.MDTP
     ),
     None
@@ -827,13 +811,11 @@ object DataRetrieveDefinitions {
     Some("https://admin.tax.service.gov.uk/integration-hub/apis/details/17eeaf42-11ba-44a9-92bb-8ceaf68d260d#details"),
     UrlDescriptor(
       urlPath = "/hip/ni-employments/{{nino}}/{{taxYear}}",
-      pathParameters = List(Parameter("nino"), Parameter("taxYear")),
       destination = UrlDestination.GForm
     ),
     Some(
       UrlDescriptor(
         urlPath = "/paye/employment/employee/{{nino}}/tax-year/{{taxYear}}/employment-details",
-        pathParameters = List(Parameter("nino"), Parameter("taxYear")),
         destination = UrlDestination.HIP
       )
     )
@@ -878,13 +860,11 @@ object DataRetrieveDefinitions {
     None,
     UrlDescriptor(
       urlPath = "/des/organisation/{{utr}}",
-      pathParameters = List(Parameter("utr")),
       destination = UrlDestination.GForm
     ),
     Some(
       UrlDescriptor(
         urlPath = "/registration/organisation/utr/{{utr}}",
-        pathParameters = List(Parameter("utr")),
         destination = UrlDestination.DES
       )
     )
@@ -952,13 +932,11 @@ object DataRetrieveDefinitions {
     Some("https://admin.tax.service.gov.uk/integration-hub/apis/details/ed3bdeb8-6db7-4c20-91c9-8b144aa1736b"),
     UrlDescriptor(
       urlPath = "/hip/agent-details/{{agentReferenceNumber}}",
-      pathParameters = List(Parameter("agentReferenceNumber")),
       destination = UrlDestination.GForm
     ),
     Some(
       UrlDescriptor(
         urlPath = "/etmp/RESTAdapter/generic/agent/subscription/{{agentReferenceNumber}}",
-        pathParameters = List(Parameter("agentReferenceNumber")),
         destination = UrlDestination.HIP
       )
     )
@@ -1004,13 +982,11 @@ object DataRetrieveDefinitions {
     Some("https://admin.tax.service.gov.uk/integration-hub/apis/details/bb28bb26-29cb-47a1-80f6-026435fd4b43"),
     UrlDescriptor(
       urlPath = "/hip/ni-claim-validation/{{nino}}/{{claimReference}}",
-      pathParameters = List(Parameter("nino"), Parameter("claimReference")),
       destination = UrlDestination.GForm
     ),
     Some(
       UrlDescriptor(
         urlPath = "/ni/contributions/{{nino}}/claim/refund/{{claimReference}}",
-        pathParameters = List(Parameter("nino"), Parameter("claimReference")),
         destination = UrlDestination.HIP
       )
     )
@@ -1103,13 +1079,11 @@ object DataRetrieveDefinitions {
     ),
     UrlDescriptor(
       urlPath = "/hip/caseflow-case-details/{{caseId}}",
-      pathParameters = List(Parameter("caseId")),
       destination = UrlDestination.GForm
     ),
     Some(
       UrlDescriptor(
         urlPath = "/compliance/civil-investigation-and-avoidance/api/CFSSuite/v1/CaseDetails/{{caseId}}",
-        pathParameters = List(Parameter("caseId")),
         destination = UrlDestination.HIP
       )
     )
@@ -1141,13 +1115,11 @@ object DataRetrieveDefinitions {
     ),
     UrlDescriptor(
       urlPath = "/if/fta/manageemails/v1?eori={{eori}}",
-      pathParameters = List(Parameter("eori")),
       destination = UrlDestination.GForm
     ),
     Some(
       UrlDescriptor(
         urlPath = "/fta/manageemails/v1?eori={{eori}}&authtype=INFT",
-        pathParameters = List(Parameter("eori")),
         destination = UrlDestination.IF
       )
     )

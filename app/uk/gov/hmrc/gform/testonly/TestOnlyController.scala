@@ -183,9 +183,7 @@ class TestOnlyController(
           json,
           attrExamples,
           definition.documentationUrl,
-          isArrayResult,
-          definition.urlFrontend,
-          definition.urlBackend
+          isArrayResult
         )
       }
 
