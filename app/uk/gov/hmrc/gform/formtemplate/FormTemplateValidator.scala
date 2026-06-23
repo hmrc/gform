@@ -2078,8 +2078,8 @@ object FormTemplateValidator {
     val allDataRetrieves = formTemplate.dataRetrieve.fold(pageDataRetrieves)(drs => pageDataRetrieves ++ drs.toList)
 
     val invalid = allDataRetrieves.collect {
-      case DataRetrieve(_, id, _, _, _, _, Some(_), None, _, _) => id
-      case DataRetrieve(_, id, _, _, _, _, None, Some(_), _, _) => id
+      case DataRetrieve(_, id, _, _, _, _, Some(_), None, _, _, _, _) => id
+      case DataRetrieve(_, id, _, _, _, _, None, Some(_), _, _, _, _) => id
     }
 
     invalid.isEmpty.validationResult(

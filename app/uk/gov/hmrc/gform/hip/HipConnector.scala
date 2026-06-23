@@ -19,7 +19,7 @@ package uk.gov.hmrc.gform.hip
 import org.slf4j.LoggerFactory
 import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.config.HipConnectorConfig
-import uk.gov.hmrc.gform.sharedmodel.{ CannotRetrieveResponse, NotFound, ServiceCallResponse, ServiceResponse }
+import uk.gov.hmrc.gform.sharedmodel.{ CannotRetrieveResponse, DataRetrieveDefinitions, NotFound, ServiceCallResponse, ServiceResponse }
 import uk.gov.hmrc.http.{ BadRequestException, ForbiddenException, HeaderCarrier, HttpReadsEither, HttpReadsHttpResponse, HttpResponse, InternalServerException, LowPriorityHttpReadsJson, NotFoundException, ServiceUnavailableException, StringContextOps, UnauthorizedException }
 import play.api.http.HeaderNames.AUTHORIZATION
 import play.api.http.Status._
@@ -101,9 +101,6 @@ class HipConnector(http: HttpClientV2, baseUrl: String, hipConfig: HipConnectorC
   private def buildPegaUrl(path: String): String =
     s"$baseUrl${hipConfig.basePath}/pega/prweb/api/application/v2/$path"
 
-  private def buildNiUrl(path: String): String =
-    s"$baseUrl${hipConfig.basePath}/ni/$path"
-
   private def handleResponse[T](
     response: HttpResponse,
     apiName: String,
@@ -173,7 +170,11 @@ class HipConnector(http: HttpClientV2, baseUrl: String, hipConfig: HipConnectorC
       s"validateNIClaimReference called for reference '$claimReference', ${loggingHelpers.cleanHeaderCarrierHeader(hc)}"
     )
 
-    val url = buildNiUrl(s"contributions/$nino/claim/refund/$claimReference")
+    val urlPath = DataRetrieveDefinitions.niRefundClaim.getFilledPath(
+      Map("nino" -> nino, "claimReference" -> claimReference)
+    )
+
+    val url = s"$baseUrl${hipConfig.basePath}$urlPath"
 
     http
       .get(url"$url")
@@ -196,7 +197,7 @@ class HipConnector(http: HttpClientV2, baseUrl: String, hipConfig: HipConnectorC
       s"niClaimUpdateBankDetails called for reference '$refundClaimReference', ${loggingHelpers.cleanHeaderCarrierHeader(hc)}"
     )
 
-    val url = buildNiUrl(s"contributions/$nino/claim/refund/$refundClaimReference/issue-refund")
+    val url = s"$baseUrl${hipConfig.basePath}/ni/contributions/$nino/claim/refund/$refundClaimReference/issue-refund"
     val body = buildBankDetailsBody(bankAccountName, sortCode, accountNumber, rollNumber)
 
     http
@@ -218,7 +219,12 @@ class HipConnector(http: HttpClientV2, baseUrl: String, hipConfig: HipConnectorC
     logger.info(
       s"getEmployments for taxYear $taxYear called, ${loggingHelpers.cleanHeaderCarrierHeader(hc)}"
     )
-    val url = s"$baseUrl${hipConfig.basePath}/paye/employment/employee/$nino/tax-year/$taxYear/employment-details"
+
+    val urlPath = DataRetrieveDefinitions.employments.getFilledPath(
+      Map("nino" -> nino, "taxYear" -> taxYear.toString)
+    )
+
+    val url = s"$baseUrl${hipConfig.basePath}$urlPath"
 
     http
       .get(url"$url")
@@ -230,8 +236,12 @@ class HipConnector(http: HttpClientV2, baseUrl: String, hipConfig: HipConnectorC
 
   def getCaseflowCaseDetails(caseId: String, correlationId: CorrelationId): Future[HttpResponse] = {
     logger.info(s"getCaseflowCaseDetails for caseId $caseId called, ${loggingHelpers.cleanHeaderCarrierHeader(hc)}")
+    val urlPath = DataRetrieveDefinitions.caseflowCaseDetails.getFilledPath(
+      Map("caseId" -> caseId)
+    )
+
     val url =
-      s"$baseUrl${hipConfig.basePath}/compliance/civil-investigation-and-avoidance/api/CFSSuite/v1/CaseDetails/$caseId"
+      s"$baseUrl${hipConfig.basePath}$urlPath"
 
     http
       .get(url"$url")
@@ -241,7 +251,12 @@ class HipConnector(http: HttpClientV2, baseUrl: String, hipConfig: HipConnectorC
 
   def lookupAgentDetails(arn: String, correlationId: CorrelationId): Future[ServiceCallResponse[JsValue]] = {
     logger.info(s"lookupAgentDetails for arn $arn called, ${loggingHelpers.cleanHeaderCarrierHeader(hc)}")
-    val url = s"$baseUrl${hipConfig.basePath}/etmp/RESTAdapter/generic/agent/subscription/$arn"
+
+    val urlPath = DataRetrieveDefinitions.agentDetails.getFilledPath(
+      Map("agentReferenceNumber" -> arn)
+    )
+
+    val url = s"$baseUrl${hipConfig.basePath}$urlPath"
     val receiptDate = DateTimeFormatter
       .ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
       .withZone(ZoneOffset.UTC)

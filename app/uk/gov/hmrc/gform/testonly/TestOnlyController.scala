@@ -178,7 +178,13 @@ class TestOnlyController(
           case Attr.FromArray(insts)  => insts.flatMap(a => examples(dataRetrieveId, a, true))
         }
 
-        DataRetrieveDescription(definition.tpe.name, json, attrExamples, definition.documentationUrl, isArrayResult)
+        DataRetrieveDescription(
+          definition.tpe.name,
+          json,
+          attrExamples,
+          definition.documentationUrl,
+          isArrayResult
+        )
       }
 
       Ok(Json.toJson(dataRetrieveDescriptions)).pure[Future]

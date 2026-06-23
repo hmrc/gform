@@ -120,7 +120,9 @@ case class DataRetrieve(
   maxFailedAttempts: Option[Int],
   failureCountResetMinutes: Option[Int],
   callOnNoChange: Boolean,
-  populateATL: Option[PopulateATL]
+  populateATL: Option[PopulateATL],
+  urlFrontend: UrlDescriptor,
+  urlBackend: Option[UrlDescriptor]
 )
 
 object DataRetrieve {

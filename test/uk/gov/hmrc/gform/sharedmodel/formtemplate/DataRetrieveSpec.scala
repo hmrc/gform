@@ -93,6 +93,11 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
       None,
       None,
       false,
+      None,
+      UrlDescriptor(
+        urlPath = "/validate/bank-details",
+        destination = UrlDestination.MDTP
+      ),
       None
     )
   }
@@ -201,6 +206,11 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
       Some(3),
       Some(1440),
       true,
+      None,
+      UrlDescriptor(
+        urlPath = "/verify/business",
+        destination = UrlDestination.MDTP
+      ),
       None
     )
   }
@@ -351,7 +361,17 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
       None,
       None,
       false,
-      None
+      None,
+      UrlDescriptor(
+        urlPath = "/companieshouse/company/{{companyNumber}}",
+        destination = UrlDestination.GForm
+      ),
+      Some(
+        UrlDescriptor(
+          urlPath = "/company/{{companyNumber}}",
+          destination = UrlDestination.CompaniesHouse
+        )
+      )
     )
   }
 
@@ -400,7 +420,17 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
       None,
       None,
       false,
-      None
+      None,
+      UrlDescriptor(
+        urlPath = "/companieshouse/company/{{companyNumber}}/officers",
+        destination = UrlDestination.GForm
+      ),
+      Some(
+        UrlDescriptor(
+          urlPath = "/company/{{companyNumber}}/officers",
+          destination = UrlDestination.CompaniesHouse
+        )
+      )
     )
   }
 
@@ -502,7 +532,17 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
       None,
       None,
       false,
-      None
+      None,
+      UrlDescriptor(
+        urlPath = "/companieshouse/company/{{companyNumber}}/insolvency",
+        destination = UrlDestination.GForm
+      ),
+      Some(
+        UrlDescriptor(
+          urlPath = "/company/{{companyNumber}}/insolvency",
+          destination = UrlDestination.CompaniesHouse
+        )
+      )
     )
   }
 
@@ -537,6 +577,11 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
       None,
       None,
       false,
+      None,
+      UrlDescriptor(
+        urlPath = "/check/insights",
+        destination = UrlDestination.MDTP
+      ),
       None
     )
   }
@@ -578,6 +623,11 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
       None,
       None,
       false,
+      None,
+      UrlDescriptor(
+        urlPath = "/check/insights",
+        destination = UrlDestination.MDTP
+      ),
       None
     )
   }
@@ -620,6 +670,11 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
       None,
       None,
       false,
+      None,
+      UrlDescriptor(
+        urlPath = "/check/insights",
+        destination = UrlDestination.MDTP
+      ),
       None
     )
   }
@@ -732,6 +787,11 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
       Some(3),
       Some(1440),
       false,
+      None,
+      UrlDescriptor(
+        urlPath = "/verify/personal",
+        destination = UrlDestination.MDTP
+      ),
       None
     )
   }
@@ -797,7 +857,17 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
       None,
       None,
       false,
-      None
+      None,
+      UrlDescriptor(
+        urlPath = "/des/organisation/{{utr}}",
+        destination = UrlDestination.GForm
+      ),
+      Some(
+        UrlDescriptor(
+          urlPath = "/registration/organisation/utr/{{utr}}",
+          destination = UrlDestination.DES
+        )
+      )
     )
   }
 
@@ -880,7 +950,17 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
       None,
       None,
       false,
-      None
+      None,
+      UrlDescriptor(
+        urlPath = "/hip/agent-details/{{agentReferenceNumber}}",
+        destination = UrlDestination.GForm
+      ),
+      Some(
+        UrlDescriptor(
+          urlPath = "/etmp/RESTAdapter/generic/agent/subscription/{{agentReferenceNumber}}",
+          destination = UrlDestination.HIP
+        )
+      )
     )
   }
 
@@ -967,6 +1047,11 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
       None,
       None,
       false,
+      None,
+      UrlDescriptor(
+        urlPath = "HMRCTaxRates.csv",
+        destination = UrlDestination.GForm
+      ),
       None
     )
   }
@@ -1033,7 +1118,17 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
       None,
       None,
       false,
-      None
+      None,
+      UrlDescriptor(
+        urlPath = "/hip/ni-claim-validation/{{nino}}/{{claimReference}}",
+        destination = UrlDestination.GForm
+      ),
+      Some(
+        UrlDescriptor(
+          urlPath = "/ni/contributions/{{nino}}/claim/refund/{{claimReference}}",
+          destination = UrlDestination.HIP
+        )
+      )
     )
   }
 
@@ -1088,6 +1183,11 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
       None,
       None,
       false,
+      None,
+      UrlDescriptor(
+        urlPath = "/auth/authorise",
+        destination = UrlDestination.MDTP
+      ),
       None
     )
   }
@@ -1128,6 +1228,11 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
       None,
       None,
       false,
+      None,
+      UrlDescriptor(
+        urlPath = "/auth/authorise",
+        destination = UrlDestination.MDTP
+      ),
       None
     )
   }

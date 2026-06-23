@@ -21,6 +21,7 @@ import play.api.libs.json._
 import play.api.mvc._
 import uk.gov.hmrc.gform.config.{ AuthorizationName, ConfigModule }
 import uk.gov.hmrc.gform.controllers.BaseController
+import uk.gov.hmrc.gform.sharedmodel.DataRetrieveDefinitions
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.ProfileName
 import uk.gov.hmrc.gform.wshttp.WSHttpModule
 import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
@@ -83,7 +84,11 @@ class IfController(configModule: ConfigModule, wSHttpModule: WSHttpModule, cc: C
 
   def manageEmails(eori: String): Action[AnyContent] = Action.async { implicit req =>
     withCorrelationIdHeader(req) { correlationId =>
-      ifRequest(s"/fta/manageemails/v1?eori=$eori&authtype=INFT", correlationId, AuthorizationName("ifta")).get.execute
+      val urlPath = DataRetrieveDefinitions.ftaManageEmails.getFilledPath(
+        Map("eori" -> eori)
+      )
+
+      ifRequest(urlPath, correlationId, AuthorizationName("ifta")).get.execute
         .map { resp =>
           if (resp.status > 299) {
             logger.error(
