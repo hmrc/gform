@@ -24,7 +24,8 @@ import scala.concurrent.ExecutionContext
 class GformStatsModule(wSHttpModule: WSHttpModule, configModule: ConfigModule)(implicit ec: ExecutionContext) {
 
   private val baseUrl = configModule.serviceConfig.baseUrl("gform-stats")
-  private val enabled = configModule.configuration.getOptional[Boolean]("microservice.services.gform-stats.enabled").getOrElse(false)
+  private val enabled =
+    configModule.configuration.getOptional[Boolean]("microservice.services.gform-stats.enabled").getOrElse(false)
 
   lazy val gformStatsConnector: GformStatsConnector = new GformStatsConnector(wSHttpModule.httpClient, baseUrl, enabled)
 }
