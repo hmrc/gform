@@ -38,6 +38,7 @@ import uk.gov.hmrc.gform.repo.{ Repo, RepoAlgebra }
 import uk.gov.hmrc.gform.sdes.SdesModule
 import uk.gov.hmrc.gform.submission.destinations.{ DataStoreSubmitter, DestinationModule, DestinationSubmitter, DestinationsSubmitter, DestinationsSubmitterAlgebra, DmsSubmitter, InfoArchiveSubmitter, NiRefundSubmitter, PegaSubmitter, RealAsyncHttpWorkItemSubmitter, StateTransitionService }
 import uk.gov.hmrc.gform.submissionconsolidator.SubmissionConsolidatorModule
+import uk.gov.hmrc.gform.gformstats.GformStatsModule
 import uk.gov.hmrc.gform.wshttp.WSHttpModule
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.gform.scheduler.nrsOrchestrator.{ NrsOrchestratorAttachmentWorkItemRepo, NrsOrchestratorWorkItemRepo }
@@ -62,6 +63,7 @@ class SubmissionModule(
   materializer: Materializer,
   hipModule: HipModule,
   wSHttpModule: WSHttpModule,
+  gformStatsModule: GformStatsModule,
   nrsOrchestratorWorkItemRepo: NrsOrchestratorWorkItemRepo,
   nrsOrchestratorAttachmentWorkItemRepo: NrsOrchestratorAttachmentWorkItemRepo,
   workItemHistoryService: WorkItemHistoryAlgebra[Future]
@@ -173,7 +175,8 @@ class SubmissionModule(
     formTemplateModule.formRedirectService,
     emailModule.emailLogic,
     timeModule.timeProvider,
-    sdesModule.foptDestinationWorkItemService
+    sdesModule.foptDestinationWorkItemService,
+    gformStatsModule.gformStatsConnector
   )
 
   val workItemHistoryController =
