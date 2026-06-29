@@ -26,7 +26,7 @@ import scala.concurrent.{ ExecutionContext, Future }
 trait DataAccessAlgebra[F[_]] {
   def save(log: DataAccessLog): F[Unit]
 
-  def page(page: Int, pageSize: Int): F[List[DataAccessLog]]
+  def page(page: Int, pageSize: Int): F[DataAccessLogPageData]
 }
 
 class DataAccessService(logRepo: Repo[DataAccessLog])(implicit
@@ -35,10 +35,14 @@ class DataAccessService(logRepo: Repo[DataAccessLog])(implicit
 
   override def save(log: DataAccessLog): Future[Unit] = logRepo.upsert(log).toFuture
 
-  override def page(page: Int, pageSize: Int): Future[List[DataAccessLog]] = {
+  override def page(page: Int, pageSize: Int): Future[DataAccessLogPageData] = {
     val query = Filters.empty()
     val sort = equal("createdAt", -1)
     val skip = page * pageSize
-    logRepo.page(query, sort, skip, pageSize)
+
+    for {
+      dataAccessLogs <- logRepo.page(query, sort, skip, pageSize)
+      count          <- logRepo.collection.countDocuments(query).toFuture()
+    } yield DataAccessLogPageData(dataAccessLogs, count)
   }
 }
