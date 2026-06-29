@@ -76,6 +76,7 @@ import uk.gov.hmrc.gform.sharedmodel.{ HandlebarsSchema, HandlebarsTemplate }
 import uk.gov.hmrc.gform.shutter.ShutterModule
 import uk.gov.hmrc.gform.submission.{ SubmissionModule, WorkItemHistory, WorkItemHistoryService }
 import uk.gov.hmrc.gform.submission.destinations.DestinationModule
+import uk.gov.hmrc.gform.gformstats.GformStatsModule
 import uk.gov.hmrc.gform.submission.handlebars.HandlebarsHttpApiModule
 import uk.gov.hmrc.gform.submissionconsolidator.SubmissionConsolidatorModule
 import uk.gov.hmrc.gform.testonly.TestOnlyModule
@@ -346,6 +347,8 @@ class ApplicationModule(context: Context)
 
   private val hipModule = new HipModule(configModule, wSHttpModule)
 
+  private val gformStatsModule = new GformStatsModule(wSHttpModule, configModule)
+
   private val submissionModule =
     new SubmissionModule(
       configModule,
@@ -365,6 +368,7 @@ class ApplicationModule(context: Context)
       materializer,
       hipModule,
       wSHttpModule,
+      gformStatsModule,
       nrsOrchestratorNotificationRepository,
       nrsOrchestratorAttachmentNotificationRepository,
       workItemHistoryService
