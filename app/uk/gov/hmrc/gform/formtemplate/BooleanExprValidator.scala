@@ -100,7 +100,7 @@ class BooleanExprValidator(
     case IsFalse | IsTrue | FormPhase(_) | IsLogin(_) => List(Valid)
     case Contains(collection, value)                  => validateExprs(collection, value)
     case In(value, _)                                 => validateValueField(value)
-    case HasAnswer(formCtx, addToListRef)             => validateExprs(formCtx :: addToListRef.allExpressions.toList)
+    case HasAnswer(left, right)                       => validateExprs(left, right)
     case DateBefore(left, right)                      => validateDateExprs(left, right)
     case DateAfter(left, right)                       => validateDateExprs(left, right)
     case MatchRegex(value, _)                         => validateValueField(value)
