@@ -94,10 +94,11 @@ object ExprSubstituter extends Substituter[ExprSubstitutions, FormTemplate] {
       dExpr match {
         case d @ DateFormCtxVar(FormCtx(formComponentId)) =>
           substitutions.expressions.get(ExpressionId(formComponentId.value)) match {
-            case Some(DateCtx(dateExpr))                   => dateExpr
-            case Some(ctx @ FormCtx(_))                    => DateFormCtxVar(ctx)
-            case Some(IfElse(c, DateCtx(f1), DateCtx(f2))) => DateIfElse(c, loop(f1), loop(f2))
-            case None                                      => d
+            case Some(DateCtx(dateExpr))                          => dateExpr
+            case Some(ctx @ FormCtx(_))                           => DateFormCtxVar(ctx)
+            case Some(IfElse(c, DateCtx(f1), DateCtx(f2)))        => DateIfElse(c, loop(f1), loop(f2))
+            case Some(Else(Expr2DateExpr(f1), Expr2DateExpr(f2))) => DateOrElse(loop(f1), loop(f2))
+            case None                                             => d
             case Some(here) =>
               throw new Exception(
                 s"Substitution error in $dExpr. Expected '$formComponentId' to be a reference to a date expression, but got $here"
