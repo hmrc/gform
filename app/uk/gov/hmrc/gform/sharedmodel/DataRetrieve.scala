@@ -134,6 +134,9 @@ object DataRetrieve {
 
   object ParamExpr {
     implicit val format: OFormat[ParamExpr] = derived.oformat()
+
+    implicit val leafExprs: LeafExpr[ParamExpr] = (path: TemplatePath, t: ParamExpr) => LeafExpr(path + "expr", t.expr)
+
   }
 
   sealed trait AttrType extends Product with Serializable
@@ -224,7 +227,8 @@ object DataRetrieve {
   }
 
   implicit val leafExprs: LeafExpr[DataRetrieve] = (path: TemplatePath, t: DataRetrieve) =>
-    LeafExpr(path + "if", t.`if`)
+    LeafExpr(path + "if", t.`if`) ++
+      LeafExpr(path + "params", t.params)
 }
 
 sealed trait RetrieveDataType extends Product with Serializable
