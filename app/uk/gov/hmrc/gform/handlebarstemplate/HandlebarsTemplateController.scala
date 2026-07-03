@@ -53,39 +53,39 @@ class HandlebarsTemplateController(
       formTemplateOpt <- formTemplateService.get(FormTemplateId(formTemplateIdStr)).map(Some(_)).recover {
                            case _: NoSuchElementException => None
                          }
-      _ <- formTemplateOpt match {
-             case Some(formTemplate) => validateHandlebarsTemplate(handleBarsTemplate, formTemplate)
-             case None =>
-               logger.warn(
-                 s"Form template not found for Handlebars template: ${handlebarsTemplateId.value}. Skipping validation."
-               )
-               Future.successful(())
-           }
+      handlebarValidationResult <- formTemplateOpt match {
+                                     case Some(formTemplate) =>
+                                       validateHandlebarsTemplate(handleBarsTemplate, formTemplate)
+                                     case None =>
+                                       Future.successful(
+                                         Some(
+                                           s"$formTemplateIdStr form template not found for handlebars template: ${handlebarsTemplateId.value}. Skipping validation."
+                                         )
+                                       )
+                                   }
       _ <- handlebarsTemplateAlgebra.save(handleBarsTemplate)
       _ <- formTemplateRawOpt match {
              case Some(formTemplateRaw) => doTemplateUpsert(formTemplateRaw)
              case None                  => Future.successful(())
            }
-    } yield NoContent
+    } yield handlebarValidationResult match {
+      case None          => NoContent
+      case Some(warning) => Ok("Handlebars template uploaded successfully, but with a warning: " + warning)
+    }
   }
 
   private def validateHandlebarsTemplate(
     handlebarsTemplate: HandlebarsTemplate,
     formTemplate: FormTemplate
-  ): Future[Unit] = {
+  ): Future[Option[String]] = {
     import HandlebarsValidationHelpers._
-    logger.info(
-      s"Validating Handlebars template for form template: ${formTemplate._id}, handlebars template id: ${handlebarsTemplate._id}"
-    )
-
     try {
       val missingFields: Set[String] = validateHandlebarsPayload(handlebarsTemplate.payload, formTemplate)
       if (missingFields.nonEmpty) {
-        throw new IllegalArgumentException(
-          s"Invalid Handlebars template; fields not found in form: ${missingFields.toList.sorted.mkString(", ")}"
-        )
+        Some(s"Invalid Handlebars template; fields not found in form: ${missingFields.toList.sorted.mkString(", ")}")
+          .pure[Future]
       } else
-        ().pure[Future]
+        None.pure[Future]
     } catch {
       case he: HandlebarsException =>
         Future.failed(new IllegalArgumentException(s"Invalid Handlebars template; error: ${he.getMessage}", he))
