@@ -23,6 +23,7 @@ import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.hip.HipAlgebra
 import uk.gov.hmrc.gform.sharedmodel.DestinationResult
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationId, DestinationResponse, HandlebarsDestinationResponse }
+import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.{ ExecutionContext, Future }
 
@@ -37,7 +38,7 @@ class NiRefundSubmitter(
     d: Destination.NiRefundClaimApi,
     maybeDesRes: Option[DestinationResult],
     submissionInfo: DestinationSubmissionInfo
-  ): FOpt[DestinationResponse] = {
+  )(implicit hc: HeaderCarrier): FOpt[DestinationResponse] = {
     val formId = submissionInfo.formId.value
 
     for {
@@ -89,7 +90,9 @@ class NiRefundSubmitter(
     }
   }
 
-  private def submitToHip(claimDetails: ClaimDetailsData, correlationId: String): FOpt[Int] =
+  private def submitToHip(claimDetails: ClaimDetailsData, correlationId: String)(implicit
+    hc: HeaderCarrier
+  ): FOpt[Int] =
     fromFutureA(
       hipConnectorAlgebra.niClaimUpdateBankDetails(
         claimDetails.nino,

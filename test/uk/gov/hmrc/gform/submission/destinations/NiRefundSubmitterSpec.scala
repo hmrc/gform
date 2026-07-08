@@ -29,12 +29,15 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, De
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponentId, FormCtx, FormTemplateId }
 import uk.gov.hmrc.gform.sharedmodel.{ DestinationResult, SubmissionRef }
 import uk.gov.hmrc.gform.submission.{ DmsMetaData, Submission, SubmissionId }
+import uk.gov.hmrc.http.HeaderCarrier
 
 import java.time.LocalDateTime
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class NiRefundSubmitterSpec extends AnyWordSpecLike with Matchers with MockFactory with ScalaFutures {
+
+  private implicit val hc: HeaderCarrier = HeaderCarrier()
 
   private val mockHipConnector = mock[HipAlgebra[Future]]
   private val submitter = new NiRefundSubmitter(mockHipConnector)
@@ -109,7 +112,16 @@ class NiRefundSubmitterSpec extends AnyWordSpecLike with Matchers with MockFacto
       val destinationResult = createDestinationResult()
       val submissionInfo = createSubmissionInfo(formId, customerId)
 
-      (mockHipConnector.niClaimUpdateBankDetails _)
+      (mockHipConnector
+        .niClaimUpdateBankDetails(
+          _: String,
+          _: String,
+          _: String,
+          _: String,
+          _: Option[String],
+          _: String,
+          _: String
+        )(_: HeaderCarrier))
         .expects(
           "AB123456C",
           "John Doe",
@@ -117,7 +129,8 @@ class NiRefundSubmitterSpec extends AnyWordSpecLike with Matchers with MockFacto
           "12345678",
           None,
           "REF123456",
-          "ENV123"
+          "ENV123",
+          *
         )
         .returning(Future.successful(204))
         .once()
@@ -137,7 +150,16 @@ class NiRefundSubmitterSpec extends AnyWordSpecLike with Matchers with MockFacto
       val destinationResult = createDestinationResult(rollNumber = Some("ROLL123"))
       val submissionInfo = createSubmissionInfo(formId, customerId)
 
-      (mockHipConnector.niClaimUpdateBankDetails _)
+      (mockHipConnector
+        .niClaimUpdateBankDetails(
+          _: String,
+          _: String,
+          _: String,
+          _: String,
+          _: Option[String],
+          _: String,
+          _: String
+        )(_: HeaderCarrier))
         .expects(
           "AB123456C",
           "John Doe",
@@ -145,7 +167,8 @@ class NiRefundSubmitterSpec extends AnyWordSpecLike with Matchers with MockFacto
           "12345678",
           Some("ROLL123"),
           "REF123456",
-          "ENV123"
+          "ENV123",
+          *
         )
         .returning(Future.successful(204))
         .once()
@@ -302,8 +325,17 @@ class NiRefundSubmitterSpec extends AnyWordSpecLike with Matchers with MockFacto
       val submissionInfo = createSubmissionInfo(formId, customerId)
       val expectedException = new RuntimeException("HIP service unavailable")
 
-      (mockHipConnector.niClaimUpdateBankDetails _)
-        .expects(*, *, *, *, *, *, *)
+      (mockHipConnector
+        .niClaimUpdateBankDetails(
+          _: String,
+          _: String,
+          _: String,
+          _: String,
+          _: Option[String],
+          _: String,
+          _: String
+        )(_: HeaderCarrier))
+        .expects(*, *, *, *, *, *, *, *)
         .returning(Future.failed(expectedException))
         .once()
 

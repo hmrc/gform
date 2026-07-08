@@ -193,7 +193,7 @@ class TestOnlyController(
     }
 
   def getFromDes(url: String): Action[AnyContent] =
-    Action.async { request =>
+    Action.async { implicit request =>
       val urlWithQueryString = url + Option(request.rawQueryString)
         .filterNot(_.isEmpty)
         .map(qs => s"?$qs")

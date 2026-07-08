@@ -19,11 +19,12 @@ package uk.gov.hmrc.gform.des
 import cats.Functor
 import uk.gov.hmrc.gform.sharedmodel.ServiceCallResponse
 import uk.gov.hmrc.gform.sharedmodel.des.{ DesRegistrationRequest, DesRegistrationResponse }
+import uk.gov.hmrc.http.HeaderCarrier
 
 class DesService[F[_]: Functor](des: DesAlgebra[F]) {
   def organisation(
     utr: String,
     desRegistrationRequest: DesRegistrationRequest
-  ): F[ServiceCallResponse[DesRegistrationResponse]] =
+  )(implicit hc: HeaderCarrier): F[ServiceCallResponse[DesRegistrationResponse]] =
     des.lookupRegistration(utr, desRegistrationRequest)
 }

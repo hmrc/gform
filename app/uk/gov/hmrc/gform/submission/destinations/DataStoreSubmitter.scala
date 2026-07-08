@@ -175,8 +175,7 @@ class DataStoreSubmitter(
     dataStoreRouting: SdesRouting,
     destination: SdesDestination,
     filePrefix: Option[String]
-  ): FOpt[DestinationResponse] = {
-    implicit val hc = new HeaderCarrier
+  )(implicit hc: HeaderCarrier): FOpt[DestinationResponse] = {
 
     val submission = submissionInfo.submission
 
