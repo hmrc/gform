@@ -230,7 +230,7 @@ class DestinationSubmitter[M[_]](
     d: Destination.PegaApi,
     dr: Option[DestinationResult],
     submissionInfo: DestinationSubmissionInfo
-  ): M[DestinationResponse] =
+  )(implicit hc: HeaderCarrier): M[DestinationResponse] =
     monadError.handleErrorWith(
       pegaSubmitterAlgebra.getAndUpdateCase(d, dr, submissionInfo)
     ) { msg =>
@@ -245,7 +245,7 @@ class DestinationSubmitter[M[_]](
     d: Destination.NiRefundClaimApi,
     dr: Option[DestinationResult],
     submissionInfo: DestinationSubmissionInfo
-  ): M[DestinationResponse] =
+  )(implicit hc: HeaderCarrier): M[DestinationResponse] =
     monadError.handleErrorWith(
       niRefundSubmitterAlgebra.submitBankDetails(d, dr, submissionInfo)
     ) { msg =>
@@ -351,7 +351,7 @@ class DestinationSubmitter[M[_]](
     destinationResult: Option[DestinationResult],
     accumulatedModel: HandlebarsTemplateProcessorModel,
     modelTree: HandlebarsModelTree
-  ): M[DestinationResponse] = {
+  )(implicit hc: HeaderCarrier): M[DestinationResponse] = {
     val payload = dataStore.generatePayload(
       submissionInfo,
       structuredFormData,

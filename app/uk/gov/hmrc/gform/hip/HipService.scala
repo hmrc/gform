@@ -21,14 +21,18 @@ import play.api.libs.json._
 import uk.gov.hmrc.domain.EmpRef
 import uk.gov.hmrc.gform.hip.models.NIEmployments
 import uk.gov.hmrc.gform.sharedmodel.sdes.CorrelationId
+import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.util.{ Failure, Success, Try }
 
 trait HipServiceAlgebra[F[_]] {
-  def validateNIClaimReference(nino: String, claimReference: String, correlationId: CorrelationId): F[JsValue]
+  def validateNIClaimReference(nino: String, claimReference: String, correlationId: CorrelationId)(implicit
+    hc: HeaderCarrier
+  ): F[JsValue]
   def getEmployments(nino: String, taxYear: Int, correlationId: CorrelationId)(implicit
-    ec: ExecutionContext
+    ec: ExecutionContext,
+    hc: HeaderCarrier
   ): F[JsValue]
 }
 
@@ -38,11 +42,14 @@ class HipService(
 
   private val logger = LoggerFactory.getLogger(getClass)
 
-  def validateNIClaimReference(nino: String, claimReference: String, correlationId: CorrelationId): Future[JsValue] =
+  def validateNIClaimReference(nino: String, claimReference: String, correlationId: CorrelationId)(implicit
+    hc: HeaderCarrier
+  ): Future[JsValue] =
     connector.validateNIClaimReference(nino, claimReference, correlationId)
 
   def getEmployments(nino: String, taxYear: Int, correlationId: CorrelationId)(implicit
-    ec: ExecutionContext
+    ec: ExecutionContext,
+    hc: HeaderCarrier
   ): Future[JsValue] =
     connector
       .getEmployments(nino, taxYear, correlationId)

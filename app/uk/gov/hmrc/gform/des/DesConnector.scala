@@ -39,11 +39,13 @@ trait DesAlgebra[F[_]] {
   def lookupRegistration(
     utr: String,
     desRegistrationRequest: DesRegistrationRequest
-  ): F[ServiceCallResponse[DesRegistrationResponse]]
+  )(implicit hc: HeaderCarrier): F[ServiceCallResponse[DesRegistrationResponse]]
 
-  def lookupTaxPeriod(idType: String, idNumber: String, regimeType: String): F[ServiceCallResponse[Obligation]]
+  def lookupTaxPeriod(idType: String, idNumber: String, regimeType: String)(implicit
+    hc: HeaderCarrier
+  ): F[ServiceCallResponse[Obligation]]
 
-  def testOnlyGet(url: String): Future[HttpResponse]
+  def testOnlyGet(url: String)(implicit hc: HeaderCarrier): Future[HttpResponse]
 }
 
 class DesConnector(httpClient: HttpClientV2, baseUrl: String, desConfig: DesConnectorConfig)(implicit
@@ -52,9 +54,8 @@ class DesConnector(httpClient: HttpClientV2, baseUrl: String, desConfig: DesConn
 
   private val logger = LoggerFactory.getLogger(getClass)
 
-  private implicit val hc: HeaderCarrier = HeaderCarrier(
-    extraHeaders = Seq("Environment" -> desConfig.environment)
-  )
+  private val environmentHeader: (String, String) =
+    "Environment" -> desConfig.environment
 
   private val authHeaders: (String, String) =
     "Authorization" -> s"Bearer ${desConfig.authorizationToken}"
@@ -62,7 +63,7 @@ class DesConnector(httpClient: HttpClientV2, baseUrl: String, desConfig: DesConn
   def lookupRegistration(
     utr: String,
     desRegistrationRequest: DesRegistrationRequest
-  ): Future[ServiceCallResponse[DesRegistrationResponse]] = {
+  )(implicit hc: HeaderCarrier): Future[ServiceCallResponse[DesRegistrationResponse]] = {
 
     logger.info(s"Des registration, UTR: '$utr', ${loggingHelpers.cleanHeaderCarrierHeader(hc)}")
     val urlPath = DataRetrieveDefinitions.hmrcRosmRegistrationCheck.getFilledPath(Map("utr" -> utr))
@@ -71,7 +72,7 @@ class DesConnector(httpClient: HttpClientV2, baseUrl: String, desConfig: DesConn
     httpClient
       .post(url"$url")
       .withBody(Json.toJson(desRegistrationRequest))
-      .setHeader(authHeaders)
+      .setHeader(authHeaders, environmentHeader)
       .execute[HttpResponse]
       .map { httpResponse =>
         val status = httpResponse.status
@@ -117,7 +118,9 @@ class DesConnector(httpClient: HttpClientV2, baseUrl: String, desConfig: DesConn
     }
   }
 
-  def lookupTaxPeriod(idType: String, idNumber: String, regimeType: String): Future[ServiceCallResponse[Obligation]] = {
+  def lookupTaxPeriod(idType: String, idNumber: String, regimeType: String)(implicit
+    hc: HeaderCarrier
+  ): Future[ServiceCallResponse[Obligation]] = {
     logger.info(
       s"Des lookup, Tax Periods: '$idType, $idNumber, $regimeType', ${loggingHelpers.cleanHeaderCarrierHeader(hc)}"
     )
@@ -126,7 +129,7 @@ class DesConnector(httpClient: HttpClientV2, baseUrl: String, desConfig: DesConn
 
     httpClient
       .get(URI.create(url).toURL)
-      .setHeader(authHeaders)
+      .setHeader(authHeaders, environmentHeader)
       .execute[Obligation]
       .map(ServiceResponse.apply)
       .recover {
@@ -138,11 +141,11 @@ class DesConnector(httpClient: HttpClientV2, baseUrl: String, desConfig: DesConn
       }
   }
 
-  def testOnlyGet(testUrl: String): Future[HttpResponse] = {
+  def testOnlyGet(testUrl: String)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
     val url = s"$baseUrl${desConfig.basePath}/$testUrl"
     httpClient
       .get(url"$url")
-      .setHeader(authHeaders)
+      .setHeader(authHeaders, environmentHeader)
       .execute[HttpResponse]
   }
 }

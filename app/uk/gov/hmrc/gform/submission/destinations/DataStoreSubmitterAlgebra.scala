@@ -23,6 +23,7 @@ import uk.gov.hmrc.gform.sharedmodel.{ LangADT, UserSession }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.DataStore
 import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
 import uk.gov.hmrc.gform.submission.handlebars.HandlebarsModelTree
+import uk.gov.hmrc.http.HeaderCarrier
 
 trait DataStoreSubmitterAlgebra[F[_]] {
   def submitPayload(
@@ -31,7 +32,7 @@ trait DataStoreSubmitterAlgebra[F[_]] {
     dataStoreRouting: SdesRouting,
     destination: SdesDestination,
     filePrefix: Option[String]
-  ): F[DestinationResponse]
+  )(implicit hc: HeaderCarrier): F[DestinationResponse]
 
   def generatePayload(
     submissionInfo: DestinationSubmissionInfo,
