@@ -19,6 +19,7 @@ package uk.gov.hmrc.gform.hip
 import org.slf4j.LoggerFactory
 import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.config.HipConnectorConfig
+import uk.gov.hmrc.gform.sharedmodel.{ CannotRetrieveResponse, DataRetrieveDefinitions, NotFound, ServiceCallResponse, ServiceResponse }
 import uk.gov.hmrc.http.{ BadRequestException, ForbiddenException, HeaderCarrier, HttpReadsEither, HttpReadsHttpResponse, HttpResponse, InternalServerException, LowPriorityHttpReadsJson, NotFoundException, ServiceUnavailableException, StringContextOps, UnauthorizedException }
 import play.api.http.HeaderNames.AUTHORIZATION
 import play.api.http.Status._
@@ -26,6 +27,9 @@ import play.api.libs.json.{ JsObject, JsValue, Json }
 import uk.gov.hmrc.gform.sharedmodel.sdes.CorrelationId
 import uk.gov.hmrc.http.client.HttpClientV2
 
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
+import java.time.Instant
 import scala.concurrent.{ ExecutionContext, Future }
 
 trait HipAlgebra[F[_]] {
@@ -34,17 +38,17 @@ trait HipAlgebra[F[_]] {
     caseId: String,
     actionId: String,
     correlationId: String
-  ): F[String]
+  )(implicit hc: HeaderCarrier): F[String]
   def pegaChangeToNextStage(
     caseId: String,
     eTag: String,
     correlationId: String
-  ): F[String]
+  )(implicit hc: HeaderCarrier): F[String]
   def validateNIClaimReference(
     nino: String,
     claimReference: String,
     correlationId: CorrelationId
-  ): F[JsValue]
+  )(implicit hc: HeaderCarrier): F[JsValue]
   def niClaimUpdateBankDetails(
     nino: String,
     bankAccountName: String,
@@ -53,14 +57,18 @@ trait HipAlgebra[F[_]] {
     rollNumber: Option[String],
     refundClaimReference: String,
     correlationId: String
-  ): F[Int]
+  )(implicit hc: HeaderCarrier): F[Int]
   def getEmployments(
     nino: String,
     taxYear: Int,
     correlationId: CorrelationId
-  ): F[JsValue]
+  )(implicit hc: HeaderCarrier): F[JsValue]
 
-  def getCaseflowCaseDetails(caseId: String, correlationId: CorrelationId): F[HttpResponse]
+  def getCaseflowCaseDetails(caseId: String, correlationId: CorrelationId)(implicit hc: HeaderCarrier): F[HttpResponse]
+
+  def lookupAgentDetails(arn: String, correlationId: CorrelationId)(implicit
+    hc: HeaderCarrier
+  ): F[ServiceCallResponse[JsValue]]
 }
 
 class HipConnector(http: HttpClientV2, baseUrl: String, hipConfig: HipConnectorConfig)(implicit ec: ExecutionContext)
@@ -79,24 +87,16 @@ class HipConnector(http: HttpClientV2, baseUrl: String, hipConfig: HipConnectorC
     val WebChannel = "Web"
   }
 
-  private implicit val hc: HeaderCarrier = HeaderCarrier(
-    extraHeaders = Seq(
-      Headers.GovUkOriginatorId -> hipConfig.originatorId
-    )
-  )
-
   private def authorization: String =
     s"Basic ${hipConfig.authorizationToken}"
 
   private val authHeaders: Seq[(String, String)] = Seq(
-    AUTHORIZATION -> authorization
+    AUTHORIZATION             -> authorization,
+    Headers.GovUkOriginatorId -> hipConfig.originatorId
   )
 
   private def buildPegaUrl(path: String): String =
     s"$baseUrl${hipConfig.basePath}/pega/prweb/api/application/v2/$path"
-
-  private def buildNiUrl(path: String): String =
-    s"$baseUrl${hipConfig.basePath}/ni/$path"
 
   private def handleResponse[T](
     response: HttpResponse,
@@ -129,7 +129,9 @@ class HipConnector(http: HttpClientV2, baseUrl: String, hipConfig: HipConnectorC
         throw new InternalServerException(s"Unexpected response code from $apiName")
     }
 
-  def getPegaCaseActionDetails(caseId: String, actionId: String, correlationId: String): Future[String] = {
+  def getPegaCaseActionDetails(caseId: String, actionId: String, correlationId: String)(implicit
+    hc: HeaderCarrier
+  ): Future[String] = {
     logger.info(s"getPegaCaseActionDetails called, ${loggingHelpers.cleanHeaderCarrierHeader(hc)}")
 
     val url = buildPegaUrl(s"cases/$caseId/actions/$actionId")
@@ -143,7 +145,9 @@ class HipConnector(http: HttpClientV2, baseUrl: String, hipConfig: HipConnectorC
       .map(response => handleResponse(response, "Pega API", caseId, extractEtag(_, caseId)))
   }
 
-  def pegaChangeToNextStage(caseId: String, eTag: String, correlationId: String): Future[String] = {
+  def pegaChangeToNextStage(caseId: String, eTag: String, correlationId: String)(implicit
+    hc: HeaderCarrier
+  ): Future[String] = {
     logger.info(s"pegaChangeToNextStage called, ${loggingHelpers.cleanHeaderCarrierHeader(hc)}")
 
     val url = buildPegaUrl(s"cases/$caseId/stages/next?viewType=none&cleanupProcesses=false")
@@ -162,12 +166,16 @@ class HipConnector(http: HttpClientV2, baseUrl: String, hipConfig: HipConnectorC
     nino: String,
     claimReference: String,
     correlationId: CorrelationId
-  ): Future[JsValue] = {
+  )(implicit hc: HeaderCarrier): Future[JsValue] = {
     logger.info(
       s"validateNIClaimReference called for reference '$claimReference', ${loggingHelpers.cleanHeaderCarrierHeader(hc)}"
     )
 
-    val url = buildNiUrl(s"contributions/$nino/claim/refund/$claimReference")
+    val urlPath = DataRetrieveDefinitions.niRefundClaim.getFilledPath(
+      Map("nino" -> nino, "claimReference" -> claimReference)
+    )
+
+    val url = s"$baseUrl${hipConfig.basePath}$urlPath"
 
     http
       .get(url"$url")
@@ -185,12 +193,12 @@ class HipConnector(http: HttpClientV2, baseUrl: String, hipConfig: HipConnectorC
     rollNumber: Option[String],
     refundClaimReference: String,
     correlationId: String
-  ): Future[Int] = {
+  )(implicit hc: HeaderCarrier): Future[Int] = {
     logger.info(
       s"niClaimUpdateBankDetails called for reference '$refundClaimReference', ${loggingHelpers.cleanHeaderCarrierHeader(hc)}"
     )
 
-    val url = buildNiUrl(s"contributions/$nino/claim/refund/$refundClaimReference/issue-refund")
+    val url = s"$baseUrl${hipConfig.basePath}/ni/contributions/$nino/claim/refund/$refundClaimReference/issue-refund"
     val body = buildBankDetailsBody(bankAccountName, sortCode, accountNumber, rollNumber)
 
     http
@@ -208,11 +216,16 @@ class HipConnector(http: HttpClientV2, baseUrl: String, hipConfig: HipConnectorC
     nino: String,
     taxYear: Int,
     correlationId: CorrelationId
-  ): Future[JsValue] = {
+  )(implicit hc: HeaderCarrier): Future[JsValue] = {
     logger.info(
       s"getEmployments for taxYear $taxYear called, ${loggingHelpers.cleanHeaderCarrierHeader(hc)}"
     )
-    val url = s"$baseUrl${hipConfig.basePath}/paye/employment/employee/$nino/tax-year/$taxYear/employment-details"
+
+    val urlPath = DataRetrieveDefinitions.employments.getFilledPath(
+      Map("nino" -> nino, "taxYear" -> taxYear.toString)
+    )
+
+    val url = s"$baseUrl${hipConfig.basePath}$urlPath"
 
     http
       .get(url"$url")
@@ -222,15 +235,76 @@ class HipConnector(http: HttpClientV2, baseUrl: String, hipConfig: HipConnectorC
       .map(response => handleResponse(response, "Get Employments", correlationId.value, _.json))
   }
 
-  def getCaseflowCaseDetails(caseId: String, correlationId: CorrelationId): Future[HttpResponse] = {
+  def getCaseflowCaseDetails(caseId: String, correlationId: CorrelationId)(implicit
+    hc: HeaderCarrier
+  ): Future[HttpResponse] = {
     logger.info(s"getCaseflowCaseDetails for caseId $caseId called, ${loggingHelpers.cleanHeaderCarrierHeader(hc)}")
+    val urlPath = DataRetrieveDefinitions.caseflowCaseDetails.getFilledPath(
+      Map("caseId" -> caseId)
+    )
+
     val url =
-      s"$baseUrl${hipConfig.basePath}/compliance/civil-investigation-and-avoidance/api/CFSSuite/v1/CaseDetails/$caseId"
+      s"$baseUrl${hipConfig.basePath}$urlPath"
 
     http
       .get(url"$url")
       .setHeader(authHeaders: _*)
       .execute[HttpResponse]
+  }
+
+  def lookupAgentDetails(arn: String, correlationId: CorrelationId)(implicit
+    hc: HeaderCarrier
+  ): Future[ServiceCallResponse[JsValue]] = {
+    logger.info(s"lookupAgentDetails for arn $arn called, ${loggingHelpers.cleanHeaderCarrierHeader(hc)}")
+
+    val urlPath = DataRetrieveDefinitions.agentDetails.getFilledPath(
+      Map("agentReferenceNumber" -> arn)
+    )
+
+    val url = s"$baseUrl${hipConfig.basePath}$urlPath"
+    val receiptDate = DateTimeFormatter
+      .ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
+      .withZone(ZoneOffset.UTC)
+      .format(Instant.now())
+
+    http
+      .get(url"$url")
+      .setHeader(authHeaders: _*)
+      .setHeader(Headers.CorrelationId -> correlationId.value)
+      .setHeader("X-Originating-System" -> "MDTP-GFORM")
+      .setHeader("X-Receipt-Date" -> receiptDate)
+      .setHeader("X-Transmitting-System" -> "HIP")
+      .execute[HttpResponse]
+      .map { response =>
+        response.status match {
+          case OK => ServiceResponse(response.json)
+          case NOT_FOUND =>
+            logger.info(s"lookupAgentDetails: agent not found for arn $arn")
+            NotFound
+          case UNAUTHORIZED =>
+            logger.error(s"lookupAgentDetails: unauthorized response for arn $arn")
+            CannotRetrieveResponse
+          case FORBIDDEN =>
+            logger.error(s"lookupAgentDetails: forbidden response for arn $arn")
+            CannotRetrieveResponse
+          case UNPROCESSABLE_ENTITY =>
+            logger.error(s"lookupAgentDetails: unprocessable entity response for arn $arn. Body: ${response.body}")
+            CannotRetrieveResponse
+          case INTERNAL_SERVER_ERROR =>
+            logger.error(s"lookupAgentDetails: internal server error for arn $arn. Body: ${response.body}")
+            CannotRetrieveResponse
+          case SERVICE_UNAVAILABLE =>
+            logger.error(s"lookupAgentDetails: service unavailable for arn $arn")
+            CannotRetrieveResponse
+          case status =>
+            logger.error(s"lookupAgentDetails: unexpected status $status for arn $arn. Body: ${response.body}")
+            CannotRetrieveResponse
+        }
+      }
+      .recover { case ex =>
+        logger.error(s"lookupAgentDetails: unknown problem for arn $arn", ex)
+        CannotRetrieveResponse
+      }
   }
 
   private def extractEtag(response: HttpResponse, caseId: String): String =

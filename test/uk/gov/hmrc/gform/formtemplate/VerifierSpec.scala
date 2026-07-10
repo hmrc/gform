@@ -56,7 +56,8 @@ class VerifierSpec extends AnyWordSpecLike with Matchers with ScalaFutures with 
           appConfig,
           nrsConfig,
           List.empty[HandlebarsSchemaId],
-          BooleanExprSubstitutions.empty
+          BooleanExprSubstitutions.empty,
+          Map()
         )(ExprSubstitutions.empty)
 
       result.value.futureValue shouldBe Left(

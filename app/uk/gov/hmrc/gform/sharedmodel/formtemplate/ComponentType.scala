@@ -311,7 +311,6 @@ case class Choice(
   options: NonEmptyList[OptionData],
   orientation: Orientation,
   selections: List[Int],
-  hints: Option[NonEmptyList[SmartString]],
   optionHelpText: Option[NonEmptyList[SmartString]],
   dividerPosition: Option[DividerPosition],
   dividerText: SmartString,
@@ -335,7 +334,6 @@ object ChoiceType {
 case class RevealingChoiceElement(
   choice: OptionData,
   revealingFields: List[FormComponent],
-  hint: Option[SmartString],
   selected: Boolean
 )
 object RevealingChoiceElement {
@@ -343,8 +341,7 @@ object RevealingChoiceElement {
 
   implicit val leafExprs: LeafExpr[RevealingChoiceElement] = (path: TemplatePath, t: RevealingChoiceElement) =>
     LeafExpr(path + "choice", t.choice) ++
-      LeafExpr(path + "revealingFields", t.revealingFields) ++
-      LeafExpr(path + "hint", t.hint)
+      LeafExpr(path + "revealingFields", t.revealingFields)
 
 }
 case class RevealingChoice(options: NonEmptyList[RevealingChoiceElement], multiValue: Boolean) extends ComponentType
@@ -392,6 +389,8 @@ case object BannerInfo extends InfoType
 case object NoFormat extends InfoType
 
 case object PdfLink extends InfoType
+
+case object HtmlLink extends InfoType
 
 object InfoType {
   implicit val format: OFormat[InfoType] = derived.oformat()
@@ -607,9 +606,8 @@ object ComponentType {
       case Address(_, _, _, _)                        => Nil
       case OverseasAddress(_, _, _, Some(expr), _, _) => List(ExprWithPath(path, expr))
       case OverseasAddress(_, _, _, _, _, _)          => Nil
-      case Choice(_, options, _, _, hints, optionHelpText, _, dividerText, _, _, _, _) =>
+      case Choice(_, options, _, _, optionHelpText, _, dividerText, _, _, _, _) =>
         LeafExpr(path + "choices", options) ++
-          LeafExpr(path + "hints", hints) ++
           LeafExpr(path + "optionHelpText", optionHelpText) ++
           LeafExpr(path + "dividerText", dividerText)
       case RevealingChoice(options, _)   => LeafExpr(path, options)

@@ -819,7 +819,6 @@ class TemplateValidatorSpec extends Spec {
           Nil,
           None,
           None,
-          None,
           divider,
           None,
           None,
@@ -865,7 +864,6 @@ class TemplateValidatorSpec extends Spec {
           Nil,
           None,
           None,
-          None,
           divider,
           None,
           None,
@@ -903,7 +901,6 @@ class TemplateValidatorSpec extends Spec {
           Nil,
           None,
           None,
-          None,
           divider,
           None,
           None,
@@ -934,7 +931,6 @@ class TemplateValidatorSpec extends Spec {
           yesNoLocalisedStrings,
           Horizontal,
           Nil,
-          None,
           None,
           None,
           divider,
@@ -977,7 +973,6 @@ class TemplateValidatorSpec extends Spec {
           Nil,
           None,
           None,
-          None,
           divider,
           None,
           None,
@@ -1004,6 +999,31 @@ class TemplateValidatorSpec extends Spec {
     res shouldBe Invalid(
       "All fields in Declaration section for AddToList must be Info or Table or MiniSummary type. Field Id, 'number' is not an info field, table or mini summary."
     )
+  }
+
+  "TemplateValidator.validate" should "disallow HtmlLink info messages in form pages" in {
+    val table = Table(
+      ("fields", "expected"),
+      (
+        List(
+          mkFormComponent("info1", InformationMessage(NoFormat, toSmartString("text"), None)),
+          mkFormComponent("aDate", Date(AnyDate, Offset(0), None))
+        ),
+        Valid
+      ),
+      (
+        List(
+          mkFormComponent("info1", InformationMessage(HtmlLink, toSmartString("text"), None)),
+          mkFormComponent("aDate", Date(AnyDate, Offset(0), None))
+        ),
+        Invalid("Field 'info1' is a HtmlLink info field. These are only valid in the form's acknowledgement section.")
+      )
+    )
+    forAll(table) { (components, expected) =>
+      val newFormTemplate = mkFormTemplate(components)
+      val componentTypes: List[ComponentType] = components.map(_.`type`)
+      FormTemplateValidator.validate(componentTypes, newFormTemplate) shouldBe expected
+    }
   }
 
   "TemplateValidator.validate" should "disallow PdfLink info messages in form pages" in {

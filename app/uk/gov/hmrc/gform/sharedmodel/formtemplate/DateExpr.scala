@@ -109,8 +109,9 @@ object DateExpr {
 
 object Expr2DateExpr {
   def unapply(expr: Expr): Option[DateExpr] = expr match {
-    case DateCtx(dExpr) => Some(dExpr)
-    case e @ FormCtx(_) => Some(DateFormCtxVar(e))
-    case _              => None
+    case DateCtx(dExpr)                               => Some(dExpr)
+    case e @ FormCtx(_)                               => Some(DateFormCtxVar(e))
+    case Else(Expr2DateExpr(lhs), Expr2DateExpr(rhs)) => Some(DateOrElse(lhs, rhs))
+    case _                                            => None
   }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,23 +14,16 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.sharedmodel.formtemplate
+package uk.gov.hmrc.gform.formtemplate
 
-import cats.data.NonEmptyList
+import cats.Eq
 import julienrf.json.derived
 import play.api.libs.json.OFormat
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormComponentId
 
-sealed trait AddToListRef {
-  def allExpressions: NonEmptyList[Expr] = this match {
-    case AddToListRef.Basic(formCtx)     => NonEmptyList.one(formCtx)
-    case AddToListRef.Expanded(formCtxs) => formCtxs
-  }
-}
+case class AddToListId(formComponentId: FormComponentId)
 
-object AddToListRef {
-  case class Basic(formCtx: FormCtx) extends AddToListRef
-  case class Expanded(formCtx: NonEmptyList[FormCtx]) extends AddToListRef
-
-  import JsonUtils._
-  implicit val format: OFormat[AddToListRef] = derived.oformat()
+object AddToListId {
+  implicit val format: OFormat[AddToListId] = derived.oformat()
+  implicit val equal: Eq[AddToListId] = Eq.fromUniversalEquals
 }

@@ -23,7 +23,8 @@ import play.api.libs.json._
 import scala.util.matching.Regex
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Expr, IncludeIf, JsonUtils, LeafExpr, OFormatWithTemplateReadFallback, TemplatePath }
+import uk.gov.hmrc.gform.formtemplate.AddToListId
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Expr, FormComponentId, IncludeIf, JsonUtils, LeafExpr, OFormatWithTemplateReadFallback, TemplatePath }
 
 import java.time.LocalDateTime
 
@@ -100,6 +101,15 @@ object Attr {
   implicit val format: OFormat[Attr] = derived.oformat()
 }
 
+case class PopulateATL(
+  id: AddToListId,
+  mapping: Map[FormComponentId, Expr]
+)
+
+object PopulateATL {
+  implicit val format: Format[PopulateATL] = Json.format
+}
+
 case class DataRetrieve(
   tpe: DataRetrieve.Type,
   id: DataRetrieveId,
@@ -108,7 +118,11 @@ case class DataRetrieve(
   params: List[DataRetrieve.ParamExpr],
   `if`: Option[IncludeIf],
   maxFailedAttempts: Option[Int],
-  failureCountResetMinutes: Option[Int]
+  failureCountResetMinutes: Option[Int],
+  callOnNoChange: Boolean,
+  populateATL: Option[PopulateATL],
+  urlFrontend: UrlDescriptor,
+  urlBackend: Option[UrlDescriptor]
 )
 
 object DataRetrieve {
@@ -120,6 +134,9 @@ object DataRetrieve {
 
   object ParamExpr {
     implicit val format: OFormat[ParamExpr] = derived.oformat()
+
+    implicit val leafExprs: LeafExpr[ParamExpr] = (path: TemplatePath, t: ParamExpr) => LeafExpr(path + "expr", t.expr)
+
   }
 
   sealed trait AttrType extends Product with Serializable
@@ -210,7 +227,8 @@ object DataRetrieve {
   }
 
   implicit val leafExprs: LeafExpr[DataRetrieve] = (path: TemplatePath, t: DataRetrieve) =>
-    LeafExpr(path + "if", t.`if`)
+    LeafExpr(path + "if", t.`if`) ++
+      LeafExpr(path + "params", t.params)
 }
 
 sealed trait RetrieveDataType extends Product with Serializable

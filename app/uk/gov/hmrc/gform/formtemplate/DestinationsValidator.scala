@@ -19,7 +19,7 @@ package uk.gov.hmrc.gform.formtemplate
 import cats.Monoid
 import cats.implicits._
 import cats.data.NonEmptyList
-import uk.gov.hmrc.gform.config.NRSConnectorConfig
+import uk.gov.hmrc.gform.config.{ AuthorizationName, NRSConnectorConfig, ProfileConfiguration }
 import uk.gov.hmrc.gform.core.ValidationResult.{ BooleanToValidationResultSyntax, validationResultMonoid }
 import uk.gov.hmrc.gform.core.{ Invalid, Valid, ValidationResult }
 import uk.gov.hmrc.gform.nrs.{ BusinessId, NRSConnector }
@@ -27,7 +27,7 @@ import uk.gov.hmrc.gform.sharedmodel.HandlebarsSchemaId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.NRSOrchestrator
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationIncludeIf.{ HandlebarValue, IncludeIfValue }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponent, FormComponentId, FormTemplateId, IsGroup }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationId, Destinations }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationId, Destinations, ProfileName }
 
 object DestinationsValidator {
   def someDestinationIdsAreUsedMoreThanOnce(duplicates: Set[DestinationId]) =
@@ -94,44 +94,27 @@ object DestinationsValidator {
     case destinationList: Destinations.DestinationList =>
       val dmsList = destinationList.destinations.collect { case d: Destination.HmrcDms => d }
 
-      val caseflows = dmsList.filter(_.isPegaCaseflow)
-      val isDms = dmsList.exists(!_.isPegaCaseflow)
+      val caseflows = dmsList.filter(_.isCaseflow)
+      val isDms = dmsList.exists(!_.isCaseflow)
 
       val mixtureCheck = if (caseflows.nonEmpty && isDms) {
         Invalid(
-          "hmrcDms destinations cannot be a mix of DMS and Pega Caseflow routings."
+          "hmrcDms destinations cannot be a mix of DMS and Caseflow routings."
         )
       } else
         Valid
 
-      val countCheck = if (caseflows.size > 1) {
-        Invalid(
-          "Cannot define more than 1 hmrcDms destination with routing to Pega Caseflow."
-        )
-      } else {
-        Valid
+      val attributesCheck = caseflows.map { dest =>
+        if (dest.caseId.isEmpty) {
+          Invalid(
+            s"Caseflow destination '${dest.id.id}' must have caseId expression defined."
+          )
+        } else {
+          Valid
+        }
       }
 
-      val attributesCheck = caseflows.flatMap { dest =>
-        List(
-          if (dest.caseId.isEmpty) {
-            Invalid(
-              s"Pega Caseflow destination '${dest.id.id}' must have caseId expression defined."
-            )
-          } else {
-            Valid
-          },
-          if (dest.postalCode.isEmpty) {
-            Invalid(
-              s"Pega Caseflow destination '${dest.id.id}' must have postalCode expression defined."
-            )
-          } else {
-            Valid
-          }
-        )
-      }
-
-      Monoid[ValidationResult].combineAll(List(mixtureCheck, countCheck) ++ attributesCheck)
+      Monoid[ValidationResult].combineAll(mixtureCheck +: attributesCheck)
     case _ => Valid
   }
 
@@ -144,22 +127,28 @@ object DestinationsValidator {
       val allPrefixes = dmsList.map(_.submissionPrefix.getOrElse(""))
 
       val uniqueCheck = if (hasSubmissionPrefix && allPrefixes.size != allPrefixes.toSet.size) {
-        Invalid(
-          s"hmrcDms destinations must all have a unique submissionPrefix."
-        )
+        Invalid("hmrcDms destinations must all have a unique submissionPrefix.")
       } else {
         Valid
       }
 
       val allOrNone = if (hasSubmissionPrefix && hasNoSubmissionPrefix) {
         Invalid(
-          s"hmrcDms destinations must all have submissionPrefix or all not have submissionPrefix. It cannot be mix of both."
+          "hmrcDms destinations must all have submissionPrefix or all not have submissionPrefix. It cannot be mix of both."
         )
       } else {
         Valid
       }
 
-      Monoid[ValidationResult].combineAll(List(uniqueCheck, allOrNone))
+      val allHaveDefaultIncludeIf = dmsList.forall(_.includeIf === HandlebarValue(true.toString))
+      val allPrefixesEmpty = dmsList.forall(_.submissionPrefix.isEmpty)
+      val moreThanOneWithoutPrefix = if (dmsList.size > 1 && allHaveDefaultIncludeIf && allPrefixesEmpty) {
+        Invalid("Multiple hmrcDms destinations with default includeIf expression must also include a submissionPrefix.")
+      } else {
+        Valid
+      }
+
+      Monoid[ValidationResult].combineAll(List(uniqueCheck, allOrNone, moreThanOneWithoutPrefix))
     case _ => Valid
   }
 
@@ -187,6 +176,7 @@ object DestinationsValidator {
           case _: Destination.DataStore              => Destination.dataStore
           case _: Destination.InfoArchive            => Destination.infoArchive
           case _: Destination.HandlebarsHttpApi      => Destination.handlebarsHttpApi
+          case _: Destination.AsyncHandlebarsHttpApi => Destination.asyncHandlebarsHttpApi
           case _: Destination.Email                  => Destination.email
           case _: Destination.StateTransition        => Destination.stateTransition
           case _: Destination.SubmissionConsolidator => Destination.submissionConsolidator
@@ -261,4 +251,41 @@ object DestinationsValidator {
         }.combineAll
       case _ => Valid
     }
+
+  def validateDestinationCredentials(
+    destinations: Destinations,
+    profileMap: Map[ProfileName, ProfileConfiguration]
+  ): ValidationResult = {
+    def check(
+      credential: Option[AuthorizationName],
+      profileConfig: ProfileConfiguration,
+      destinationId: DestinationId
+    ): ValidationResult =
+      credential
+        .map { credential =>
+          val credentialExists = profileConfig.authorizationMap.keys.exists(_ == credential)
+          if (credentialExists) Valid
+          else Invalid(s"""Destination: ${destinationId.id} contain non existent credential "${credential.value}" """)
+        }
+        .getOrElse(Valid)
+    destinations match {
+      case Destinations.DestinationList(destinations, _, _) =>
+        destinations.map {
+          case destination: Destination.AsyncHandlebarsHttpApi =>
+            check(
+              destination.credential,
+              profileMap(destination.profile),
+              destination.id
+            )
+          case destination: Destination.HandlebarsHttpApi =>
+            check(
+              destination.credential,
+              profileMap(destination.profile),
+              destination.id
+            )
+          case _ => Valid
+        }.combineAll
+      case _ => Valid
+    }
+  }
 }

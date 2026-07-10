@@ -20,6 +20,7 @@ import uk.gov.hmrc.gform.core.{ FOpt, fromFutureA }
 import uk.gov.hmrc.gform.hip.HipAlgebra
 import uk.gov.hmrc.gform.sharedmodel.DestinationResult
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationResponse }
+import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.{ ExecutionContext, Future }
 
@@ -32,7 +33,7 @@ class PegaSubmitter(
     d: Destination.PegaApi,
     maybeDesRes: Option[DestinationResult],
     submissionInfo: DestinationSubmissionInfo
-  ): FOpt[DestinationResponse] = {
+  )(implicit hc: HeaderCarrier): FOpt[DestinationResponse] = {
     val formId = submissionInfo.formId.value
     val correlationId = submissionInfo.submission.envelopeId.value
     maybeDesRes match {

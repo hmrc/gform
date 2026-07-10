@@ -97,7 +97,8 @@ object HandlebarsValidationHelpers {
       "submissionRefs",
       "user",
       "enrolledIdentifier",
-      "customerId"
+      "customerId",
+      "envelopeId"
     )
 
   private def extractAllFormFields(formTemplate: FormTemplate): Set[String] =

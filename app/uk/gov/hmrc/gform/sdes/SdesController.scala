@@ -20,6 +20,7 @@ import cats.syntax.all._
 import play.api.libs.json.Json
 import play.api.mvc.ControllerComponents
 import uk.gov.hmrc.gform.controllers.BaseController
+import uk.gov.hmrc.gform.sdes.workitem.DestinationWorkItemAlgebra
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.sdes.{ CorrelationId, SdesFilter, SdesHistoryNotification, SdesHistoryView, SdesSubmissionData }
 
@@ -30,7 +31,8 @@ class SdesController(
   cc: ControllerComponents,
   sdesAlgebra: SdesAlgebra[Future],
   sdesRenotifyService: SdesRenotifyService,
-  sdesHistoryAlgebra: SdesHistoryAlgebra[Future]
+  sdesHistoryAlgebra: SdesHistoryAlgebra[Future],
+  destinationWorkItemAlgebra: DestinationWorkItemAlgebra[Future]
 )(implicit
   ex: ExecutionContext
 ) extends BaseController(cc) {
@@ -91,33 +93,32 @@ class SdesController(
 
   def sdesMigration(from: String, to: String) = Action.async { _ =>
     (from, to) match {
-      case ("DataStore", "DataStoreLegacy") =>
+      case ("PegaCaseflow", "Caseflow") =>
         sdesAlgebra.getSdesSubmissionsDestination().flatMap { stats =>
           stats.find(_.destination === to) match {
             case Some(destination) =>
-              BadRequest(s"Invalid migration. 'DataStoreLegacy' destination already exists: $destination").pure[Future]
+              BadRequest(s"Invalid migration. 'Caseflow' destination already exists: $destination").pure[Future]
             case None => runMigration(from, to)
           }
         }
-      case ("DataStoreLegacy", "DataStore") =>
+      case ("Caseflow", "PegaCaseflow") =>
         sdesAlgebra.getSdesSubmissionsDestination().flatMap { stats =>
           stats.find(_.destination === to) match {
             case Some(destination) =>
-              BadRequest(s"Invalid migration. 'DataStore' destination already exists: $destination").pure[Future]
+              BadRequest(s"Invalid migration. 'PegaCaseflow' destination already exists: $destination").pure[Future]
             case None => runMigration(from, to)
           }
         }
       case _ =>
-        BadRequest("Invalid migration. Only 'DataStore' -> 'DataStoreLegacy' or back is allowed").pure[Future]
+        BadRequest("Invalid migration. Only 'PegaCaseflow' -> 'Caseflow' or back is allowed").pure[Future]
     }
   }
 
   private def runMigration(from: String, to: String) =
-    sdesAlgebra
-      .sdesMigration(from, to)
-      .map { modifiedCount =>
-        Ok(modifiedCount.toString)
-      }
+    for {
+      _             <- destinationWorkItemAlgebra.dmsWorkItemDestinationMigration(from, to)
+      modifiedCount <- sdesAlgebra.sdesMigration(from, to)
+    } yield Ok(modifiedCount.toString)
 
   def historyById(correlationId: CorrelationId) = Action.async { _ =>
     for {

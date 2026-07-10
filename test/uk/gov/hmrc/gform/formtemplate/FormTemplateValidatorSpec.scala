@@ -25,12 +25,10 @@ import uk.gov.hmrc.gform.Helpers.{ toLocalisedString, toSmartString }
 import uk.gov.hmrc.gform.core.parsers.ValueParser
 import uk.gov.hmrc.gform.core.{ Invalid, Opt, Valid, ValidationResult }
 import uk.gov.hmrc.gform.sharedmodel.DataRetrieve.Attribute
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.Expr
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.PageLink
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AnyDate, BulletedList, CalendarDate, Checkbox, Choice, ChoicesAvailable, ChoicesSelected, Constant, DataRetrieveCtx, DataRetrieveDateCtx, Date, DateAfter, DateBefore, DateCtx, DateExprWithOffset, DateFormCtxVar, DateFunction, DateProjection, DateValueExpr, DisplayAsEntered, Dynamic, Equals, ExprWithPath, FormComponent, FormComponentId, FormComponentValidator, FormCtx, FormStartDateExprValue, FormTemplate, GreaterThan, HideZeroDecimals, Horizontal, IfElse, IncludeIf, IndexOf, IndexOfDataRetrieveCtx, InformationMessage, Instruction, IsTrue, LeafExpr, LinkCtx, LookupColumn, Mandatory, Not, NumberedList, Offset, OffsetUnit, OffsetYMD, OptionData, OptionDataValue, Page, PageId, PostcodeLookup, Radio, Section, ShortText, StandardInfo, SummariseGroupAsGrid, TaxPeriodDate, TemplatePath, Text, TextArea, TextWithRestrictions, TodayDateExprValue, TypeAhead, ValidIf, Value, Vertical }
 import uk.gov.hmrc.gform.sharedmodel._
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.PrintSection
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.PageLink
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destinations, PrintSection }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AnyDate, BulletedList, CalendarDate, Checkbox, Choice, ChoicesAvailable, ChoicesSelected, Constant, DataRetrieveCtx, DataRetrieveDateCtx, Date, DateAfter, DateBefore, DateCtx, DateExprWithOffset, DateFormCtxVar, DateFunction, DateProjection, DateValueExpr, DisplayAsEntered, Dynamic, Equals, Expr, ExprWithPath, FormComponent, FormComponentId, FormComponentValidator, FormCtx, FormStartDateExprValue, FormTemplate, GreaterThan, HideZeroDecimals, Horizontal, IfElse, IncludeIf, IndexOf, IndexOfDataRetrieveCtx, InformationMessage, Instruction, IsTrue, LeafExpr, LinkCtx, LookupColumn, Mandatory, Not, NumberedList, Offset, OffsetUnit, OffsetYMD, OptionData, OptionDataValue, Page, PageId, PostcodeLookup, Radio, Section, ShortText, StandardInfo, SummariseGroupAsGrid, TaxPeriodDate, TemplatePath, Text, TextArea, TextWithRestrictions, TodayDateExprValue, TypeAhead, ValidIf, Value, Vertical }
 
 class FormTemplateValidatorSpec
     extends AnyWordSpecLike with Matchers with FormTemplateSupport with TableDrivenPropertyChecks {
@@ -244,13 +242,13 @@ class FormTemplateValidatorSpec
         (
           "${period(startDate, name)}",
           Invalid(
-            "sections.fields.[id=infoField].infoText: Form component 'name' used in period function should be date type"
+            "sections.fields.[id=infoField].infoText: Form component 'name' used in period function should be date like type"
           )
         ),
         (
           "${period(startDate, name).sum}",
           Invalid(
-            "sections.fields.[id=infoField].infoText: Form component 'name' used in period function should be date type"
+            "sections.fields.[id=infoField].infoText: Form component 'name' used in period function should be date like type"
           )
         )
       )
@@ -305,25 +303,25 @@ class FormTemplateValidatorSpec
         (
           "${daysBetween(startDate, name)}",
           Invalid(
-            "sections.fields.[id=infoField].infoText: Form component 'name' used in daysBetween/weeksBetween function should be date type"
+            "sections.fields.[id=infoField].infoText: Form component 'name' used in daysBetween/weeksBetween function should be date like type"
           )
         ),
         (
           "${daysBetween(startDate, name).sum}",
           Invalid(
-            "sections.fields.[id=infoField].infoText: Form component 'name' used in daysBetween/weeksBetween function should be date type"
+            "sections.fields.[id=infoField].infoText: Form component 'name' used in daysBetween/weeksBetween function should be date like type"
           )
         ),
         (
           "${weeksBetween(startDate, name)}",
           Invalid(
-            "sections.fields.[id=infoField].infoText: Form component 'name' used in daysBetween/weeksBetween function should be date type"
+            "sections.fields.[id=infoField].infoText: Form component 'name' used in daysBetween/weeksBetween function should be date like type"
           )
         ),
         (
           "${weeksBetween(startDate, name).sum}",
           Invalid(
-            "sections.fields.[id=infoField].infoText: Form component 'name' used in daysBetween/weeksBetween function should be date type"
+            "sections.fields.[id=infoField].infoText: Form component 'name' used in daysBetween/weeksBetween function should be date like type"
           )
         )
       )
@@ -663,6 +661,72 @@ class FormTemplateValidatorSpec
             )
           ),
           Valid
+        ),
+        (
+          List(
+            mkSectionNonRepeatingPage(
+              name = "page1",
+              formComponents = List(
+                mkInfoMessageComponent("info", "Some info text"),
+                mkFormComponent(
+                  "expressionsField",
+                  InformationMessage(
+                    StandardInfo,
+                    SmartString(toLocalisedString("{0}"), List(FormCtx(FormComponentId("info"))))
+                  ),
+                  false
+                )
+              ),
+              pageId = Some(PageId("page1"))
+            )
+          ),
+          Invalid(
+            "sections.fields.[id=expressionsField].infoText: 'info' is an info, table or miniSummaryList field and cannot be used in an expression"
+          )
+        ),
+        (
+          List(
+            mkSectionNonRepeatingPage(
+              name = "page1",
+              formComponents = List(
+                mkTableComponent("table"),
+                mkFormComponent(
+                  "expressionsField",
+                  InformationMessage(
+                    StandardInfo,
+                    SmartString(toLocalisedString("{0}"), List(FormCtx(FormComponentId("table"))))
+                  ),
+                  false
+                )
+              ),
+              pageId = Some(PageId("page1"))
+            )
+          ),
+          Invalid(
+            "sections.fields.[id=expressionsField].infoText: 'table' is an info, table or miniSummaryList field and cannot be used in an expression"
+          )
+        ),
+        (
+          List(
+            mkSectionNonRepeatingPage(
+              name = "page1",
+              formComponents = List(
+                mkMiniSummaryListComponent("miniSummaryList"),
+                mkFormComponent(
+                  "expressionsField",
+                  InformationMessage(
+                    StandardInfo,
+                    SmartString(toLocalisedString("{0}"), List(FormCtx(FormComponentId("miniSummaryList"))))
+                  ),
+                  false
+                )
+              ),
+              pageId = Some(PageId("page1"))
+            )
+          ),
+          Invalid(
+            "sections.fields.[id=expressionsField].infoText: 'miniSummaryList' is an info, table or miniSummaryList field and cannot be used in an expression"
+          )
         )
       )
       forAll(table) { (sections, expected) =>
@@ -1227,7 +1291,6 @@ class FormTemplateValidatorSpec
                   Nil,
                   None,
                   None,
-                  None,
                   divider,
                   None,
                   None,
@@ -1260,7 +1323,6 @@ class FormTemplateValidatorSpec
                     .map(OptionData.IndexBased(_, None, None, None, None)),
                   Vertical,
                   Nil,
-                  None,
                   None,
                   None,
                   divider,
@@ -1318,7 +1380,6 @@ class FormTemplateValidatorSpec
                   Nil,
                   None,
                   None,
-                  None,
                   divider,
                   None,
                   None,
@@ -1349,7 +1410,6 @@ class FormTemplateValidatorSpec
                   yesNoLocalisedStrings,
                   Vertical,
                   Nil,
-                  None,
                   None,
                   None,
                   divider,
@@ -1448,6 +1508,166 @@ class FormTemplateValidatorSpec
         val pages: List[Page] = SectionHelper.pages(sections)
         val formTemplate = mkFormTemplate(sections)
         FormTemplateValidator.validateAddToListRepeatConfig(formTemplate, pages) shouldBe expected
+      }
+    }
+  }
+
+  "validateDataRetrieve" should {
+    "validate dataRetrieve id duplicates and referencing other pages if callOnNoChange is true" in {
+      val drId = DataRetrieveId("personalBankAccountExistence")
+      val drCallOnChangeTrue: Option[DataRetrieve] =
+        mkPersonalBankAccountExistenceDataRetrieve(drId.value, None, None, true)
+      val drCallOnChangeFalse: Option[DataRetrieve] = mkPersonalBankAccountExistenceDataRetrieve(drId.value, None, None)
+      val drCallOnChangeTrueComplex: Option[DataRetrieve] = mkPersonalBankAccountExistenceDataRetrieve(
+        drId.value,
+        None,
+        None,
+        true,
+        Some(s"""$${if auth.itmpName != '' then auth.itmpName else accountFirstName}""")
+      )
+      val drDuplicate: Option[DataRetrieve] = mkHmrcTaxRatesDataRetrieve(drId.value)
+
+      val fc: FormComponent = mkFormComponent("forwardFormComponent", Date(AnyDate, Offset(0), None), true)
+      val sortCode: FormComponent = mkFormComponent("sortCodePersonal")
+      val accountNum: FormComponent = mkFormComponent("accountNumberPersonal")
+      val firstName: FormComponent = mkFormComponent("accountFirstName")
+      val lastName: FormComponent = mkFormComponent("accountLastName")
+
+      val table = Table(
+        ("page1", "page2", "expectedResult"),
+        (
+          mkSectionNonRepeatingPage(
+            name = "Page 1",
+            formComponents = List(firstName),
+            instruction = None,
+            pageId = None,
+            dataRetrieve = None
+          ),
+          mkSectionNonRepeatingPage(
+            name = "Page 2",
+            formComponents = List(sortCode, accountNum, lastName),
+            instruction = None,
+            pageId = None,
+            dataRetrieve = drCallOnChangeFalse
+          ),
+          Valid
+        ),
+        (
+          mkSectionNonRepeatingPage(
+            name = "Page 1",
+            formComponents = List(fc),
+            instruction = None,
+            pageId = None,
+            dataRetrieve = None
+          ),
+          mkSectionNonRepeatingPage(
+            name = "Page 2",
+            formComponents = List(sortCode, accountNum, firstName, lastName),
+            instruction = None,
+            pageId = None,
+            dataRetrieve = drCallOnChangeTrue
+          ),
+          Valid
+        ),
+        (
+          mkSectionNonRepeatingPage(
+            name = "Page 1",
+            formComponents = List(firstName),
+            instruction = None,
+            pageId = None,
+            dataRetrieve = None
+          ),
+          mkSectionNonRepeatingPage(
+            name = "Page 2",
+            formComponents = List(sortCode, accountNum, lastName),
+            instruction = None,
+            pageId = None,
+            dataRetrieve = drCallOnChangeTrue
+          ),
+          Invalid(
+            "Form component 'accountFirstName' must be on the same page as the data retrieve if 'callOnNoChange' is true, or data retrieve has populateAtl parameter."
+          )
+        ),
+        (
+          mkSectionNonRepeatingPage(
+            name = "Page 1",
+            formComponents = List(firstName),
+            instruction = None,
+            pageId = None,
+            dataRetrieve = None
+          ),
+          mkSectionNonRepeatingPage(
+            name = "Page 2",
+            formComponents = List(sortCode, accountNum, lastName),
+            instruction = None,
+            pageId = None,
+            dataRetrieve = drCallOnChangeTrueComplex
+          ),
+          Invalid(
+            "Form component 'accountFirstName' must be on the same page as the data retrieve if 'callOnNoChange' is true, or data retrieve has populateAtl parameter."
+          )
+        ),
+        (
+          mkSectionNonRepeatingPage(
+            name = "Page 1",
+            formComponents = List(fc),
+            instruction = None,
+            pageId = None,
+            dataRetrieve = None
+          ),
+          mkSectionNonRepeatingPage(
+            name = "Page 2",
+            formComponents = List(sortCode, accountNum, firstName, lastName),
+            instruction = None,
+            pageId = None,
+            dataRetrieve = drCallOnChangeTrueComplex
+          ),
+          Valid
+        ),
+        (
+          mkSectionNonRepeatingPage(
+            name = "Page 1",
+            formComponents = List(fc),
+            instruction = None,
+            pageId = None,
+            dataRetrieve = drDuplicate.map(_.copy(id = DataRetrieveId("different")))
+          ),
+          mkSectionNonRepeatingPage(
+            name = "Page 2",
+            formComponents = List(sortCode, accountNum, firstName, lastName),
+            instruction = None,
+            pageId = None,
+            dataRetrieve = drCallOnChangeFalse
+          ),
+          Valid
+        ),
+        (
+          mkSectionNonRepeatingPage(
+            name = "Page 1",
+            formComponents = List(fc),
+            instruction = None,
+            pageId = None,
+            dataRetrieve = drDuplicate
+          ),
+          mkSectionNonRepeatingPage(
+            name = "Page 2",
+            formComponents = List(sortCode, accountNum, firstName, lastName),
+            instruction = None,
+            pageId = None,
+            dataRetrieve = drCallOnChangeFalse
+          ),
+          Invalid("Some data retrieve ids are defined more than once: List(personalBankAccountExistence)")
+        )
+      )
+
+      forAll(table) { (page1, page2, expectedResult) =>
+        val sections: List[Section] = List(page1, page2)
+        val formTemplate: FormTemplate = mkFormTemplate(sections)
+        val pages: List[Page] = SectionHelper.pages(sections)
+
+        val result: ValidationResult =
+          FormTemplateValidator.validateDataRetrieve(formTemplate, pages)
+        result shouldBe expectedResult
       }
     }
   }
@@ -1598,6 +1818,27 @@ class FormTemplateValidatorSpec
               IndexOfDataRetrieveCtx(
                 DataRetrieveCtx(DataRetrieveId("invalidDrId"), Attribute("somethingElse")),
                 Constant("1")
+              )
+            ),
+            toSmartString("label")
+          ),
+          mkPersonalBankAccountExistenceDataRetrieve(drId.value, None, None),
+          Invalid(
+            "Data retrieve expression at path TemplatePath(sections.fields.[id=fcId].value) refers to non-existent id invalidDrId"
+          )
+        ),
+        (
+          mkFormComponent(
+            "fcId",
+            Text(
+              ShortText.default,
+              IfElse(
+                Equals(
+                  DataRetrieveCtx(DataRetrieveId("invalidDrId"), Attribute("somethingElse")),
+                  Constant("yes")
+                ),
+                Constant("YES"),
+                Constant("NO")
               )
             ),
             toSmartString("label")
@@ -1830,7 +2071,7 @@ class FormTemplateValidatorSpec
               )
             )
           ),
-          Invalid(": Form component 'notADateComponent' used in taxYear function should be date type")
+          Invalid(": Form component 'notADateComponent' used in taxYear function should be date like type")
         ),
         (
           List(
@@ -2154,7 +2395,6 @@ class FormTemplateValidatorSpec
                     Nil,
                     None,
                     None,
-                    None,
                     noDivider,
                     None,
                     None,
@@ -2222,7 +2462,6 @@ class FormTemplateValidatorSpec
                     Nil,
                     None,
                     None,
-                    None,
                     noDivider,
                     None,
                     None,
@@ -2236,7 +2475,7 @@ class FormTemplateValidatorSpec
             )
           ),
           Invalid(
-            "dataRetrieve.dr1.date: Form component 'choiceComp' used with date offset should be date type"
+            "sections.dataRetrieve.params.expr: Form component 'choiceComp' used with date offset should be date type"
           )
         ),
         // Valid: Date field used with offset in dataRetrieve parameter
@@ -2301,7 +2540,6 @@ class FormTemplateValidatorSpec
                     Nil,
                     None,
                     None,
-                    None,
                     noDivider,
                     None,
                     None,
@@ -2364,7 +2602,6 @@ class FormTemplateValidatorSpec
                       .map(OptionData.IndexBased(_, None, None, None, None)),
                     Horizontal,
                     Nil,
-                    None,
                     None,
                     None,
                     noDivider,
@@ -2454,7 +2691,6 @@ class FormTemplateValidatorSpec
                     Nil,
                     None,
                     None,
-                    None,
                     noDivider,
                     None,
                     None,
@@ -2525,7 +2761,6 @@ class FormTemplateValidatorSpec
                     Nil,
                     None,
                     None,
-                    None,
                     noDivider,
                     None,
                     None,
@@ -2588,7 +2823,6 @@ class FormTemplateValidatorSpec
                       Nil,
                       None,
                       None,
-                      None,
                       noDivider,
                       None,
                       None,
@@ -2649,7 +2883,6 @@ class FormTemplateValidatorSpec
             List.empty,
             None,
             None,
-            None,
             noDivider,
             None,
             None,
@@ -2667,7 +2900,6 @@ class FormTemplateValidatorSpec
             ),
             Vertical,
             List.empty,
-            None,
             None,
             None,
             noDivider,
@@ -2699,7 +2931,6 @@ class FormTemplateValidatorSpec
             List.empty,
             None,
             None,
-            None,
             noDivider,
             None,
             None,
@@ -2719,7 +2950,6 @@ class FormTemplateValidatorSpec
             ),
             Vertical,
             List.empty,
-            None,
             None,
             None,
             noDivider,
@@ -2781,7 +3011,6 @@ class FormTemplateValidatorSpec
             List.empty,
             None,
             None,
-            None,
             noDivider,
             None,
             None,
@@ -2809,7 +3038,6 @@ class FormTemplateValidatorSpec
             List.empty,
             None,
             None,
-            None,
             noDivider,
             None,
             None,
@@ -2835,7 +3063,6 @@ class FormTemplateValidatorSpec
             ),
             Vertical,
             List.empty,
-            None,
             None,
             None,
             noDivider,
@@ -2867,7 +3094,6 @@ class FormTemplateValidatorSpec
             List.empty,
             None,
             None,
-            None,
             noDivider,
             None,
             None,
@@ -2895,7 +3121,6 @@ class FormTemplateValidatorSpec
             ),
             Vertical,
             List.empty,
-            None,
             None,
             None,
             noDivider,
@@ -2953,7 +3178,17 @@ class FormTemplateValidatorSpec
       )
       val result = FormTemplateValidator.validatePrintSection(formTemplate)
       result shouldBe Invalid(
-        "`/submissions/printSection/notificationPdf/${form.id}` is invalid. Please use `link.printSectionPdf` instead"
+        "`/submissions/printSection/notificationPdf/${form.id}` is invalid. Please use `link.printSectionNotificationPdf` instead"
+      )
+    }
+
+    "return Invalid when instructions contain manual printSectionPdf path" in {
+      val formTemplate = mkFormTemplateWithPrintSection(
+        toSmartString("Click here /submissions/printSection/pdf/ to download")
+      )
+      val result = FormTemplateValidator.validatePrintSection(formTemplate)
+      result shouldBe Invalid(
+        "`/submissions/printSection/pdf/${form.id}` is invalid. Please use `link.printSectionPdf` instead"
       )
     }
 
@@ -2971,7 +3206,7 @@ class FormTemplateValidatorSpec
       val instructions = SmartString(
         LocalisedString(
           Map(
-            LangADT.En -> "/submissions/printSection/notificationPdf/ and /submissions/summary/"
+            LangADT.En -> "/submissions/printSection/notificationPdf/ and /submissions/summary/ and /submissions/printSection/pdf/"
           )
         ),
         Nil
@@ -2979,7 +3214,7 @@ class FormTemplateValidatorSpec
       val formTemplate = mkFormTemplateWithPrintSection(instructions)
       val result = FormTemplateValidator.validatePrintSection(formTemplate)
       result shouldBe Invalid(
-        "`/submissions/printSection/notificationPdf/${form.id}` is invalid. Please use `link.printSectionPdf` instead"
+        "`/submissions/printSection/notificationPdf/${form.id}` is invalid. Please use `link.printSectionNotificationPdf` instead"
       )
     }
   }
@@ -3019,10 +3254,17 @@ class FormTemplateValidatorSpec
   def mkPersonalBankAccountExistenceDataRetrieve(
     id: String,
     maybeMaxFailed: Option[Int] = None,
-    maybeFailureReset: Option[Int] = None
+    maybeFailureReset: Option[Int] = None,
+    callOnNoChange: Boolean = false,
+    maybeFirstNameExpression: Option[String] = None
   ): Option[DataRetrieve] = {
     val maxFailedAttempts = maybeMaxFailed.fold("")(i => s""""maxFailedAttempts": $i,""")
     val failureReset = maybeFailureReset.fold("")(i => s""""failureCountResetMinutes": $i,""")
+    val firstNameExpr = maybeFirstNameExpression.fold(""""firstName": "${accountFirstName}",""") { expr =>
+      s"""
+         |"firstName": "$expr",
+         |""".stripMargin
+    }
     val dataRetrieve =
       s"""
          |{
@@ -3030,10 +3272,11 @@ class FormTemplateValidatorSpec
          |  "id": "$id",
          |  $maxFailedAttempts
          |  $failureReset
+         |  "callOnNoChange": $callOnNoChange,
          |  "parameters": {
          |    "sortCode": "$${sortCodePersonal}",
          |    "accountNumber": "$${accountNumberPersonal}",
-         |    "firstName": "$${accountFirstName}",
+         |    $firstNameExpr
          |    "lastName": "$${accountLastName}"
          |  }
          |}
@@ -3066,7 +3309,6 @@ class FormTemplateValidatorSpec
         List.empty[Int],
         None,
         None,
-        None,
         divider,
         None,
         None,
@@ -3096,7 +3338,6 @@ class FormTemplateValidatorSpec
         mkChoiceOptionsDynamicDr(),
         Vertical,
         List.empty[Int],
-        None,
         None,
         None,
         divider,

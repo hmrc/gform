@@ -70,10 +70,16 @@ class SdesRenotifyService(
                                                             )
                                                         }
                                         } yield objSummary
-                                      case SdesDestination.Dms | SdesDestination.PegaCaseflow =>
+                                      case SdesDestination.Dms | SdesDestination.Caseflow =>
                                         objectStoreAlgebra.zipFiles(submission.envelopeId, paths)
                                       case SdesDestination.InfoArchive =>
                                         objectStoreAlgebra.zipAndEncrypt(submission.envelopeId, paths)
+                                      case _ =>
+                                        Future.failed(
+                                          new RuntimeException(
+                                            s"Renotify is not supported for destination: ${SdesDestination.fromName(sdesDestination)}"
+                                          )
+                                        )
                                     }
                       res <- sdesAlgebra.renotifySDES(submission, objSummary)
                     } yield res

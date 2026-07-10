@@ -25,7 +25,9 @@ import uk.gov.hmrc.gform.sharedmodel.EmailVerifierService
 import uk.gov.hmrc.gform.sharedmodel.email.LocalisedEmailTemplateId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import UploadableConditioning._
+import cats.Eq
 import cats.implicits.catsSyntaxEq
+import uk.gov.hmrc.gform.config.AuthorizationName
 import uk.gov.hmrc.gform.core.parsers.BooleanExprParser
 import uk.gov.hmrc.gform.sharedmodel.form.{ FormId, FormStatus }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationIncludeIf.{ HandlebarValue, IncludeIfValue }
@@ -40,7 +42,6 @@ sealed trait DestinationWithCustomerId extends Destination {
 sealed trait DestinationWithCustomerCaseflow {
   def customerId(): Expr
   def caseId(): Option[Expr]
-  def postalCode(): Option[Expr]
 }
 
 sealed trait DestinationWithTaxpayerId extends Destination {
@@ -74,6 +75,7 @@ sealed trait DestinationWithNrsOrchestrator extends Destination {
 sealed trait DestinationIncludeIf extends Product with Serializable
 
 object DestinationIncludeIf {
+  implicit val equal: Eq[DestinationIncludeIf] = Eq.fromUniversalEquals
   case class HandlebarValue(value: String) extends DestinationIncludeIf
   case class IncludeIfValue(value: IncludeIf) extends DestinationIncludeIf
   private val templateReads: Reads[DestinationIncludeIf] = Reads {
@@ -113,8 +115,7 @@ object Destination {
     roboticsAsAttachment: Option[Boolean],
     includeAttachmentNames: Option[Boolean],
     submissionPrefix: Option[String],
-    caseId: Option[Expr],
-    postalCode: Option[Expr]
+    caseId: Option[Expr]
   ) extends Destination with DestinationWithCustomerCaseflow {
     def roboticsFileName(fileNamePrefix: String, roboticsFileExtension: String): String =
       if (roboticsAsAttachment.getOrElse(false)) {
@@ -123,7 +124,7 @@ object Destination {
         s"$fileNamePrefix-robotic." + roboticsFileExtension
       }
 
-    def isPegaCaseflow: Boolean = this.routing === SdesDestination.PegaCaseflow
+    def isCaseflow: Boolean = this.routing === SdesDestination.Caseflow
   }
 
   case class DataStore(
@@ -166,7 +167,21 @@ object Destination {
     includeIf: DestinationIncludeIf,
     failOnError: Boolean,
     multiRequestPayload: Boolean,
-    convertSingleQuotes: Option[Boolean]
+    convertSingleQuotes: Option[Boolean],
+    credential: Option[AuthorizationName]
+  ) extends Destination
+
+  case class AsyncHandlebarsHttpApi(
+    id: DestinationId,
+    profile: ProfileName,
+    uri: String,
+    method: HttpMethod,
+    payload: Option[String],
+    payloadType: TemplateType,
+    includeIf: DestinationIncludeIf,
+    failOnError: Boolean,
+    convertSingleQuotes: Option[Boolean],
+    credential: Option[AuthorizationName]
   ) extends Destination
 
   case class StateTransition(
@@ -237,6 +252,7 @@ object Destination {
   val infoArchive: String = "hmrcInfoArchive"
   val submissionConsolidator: String = "submissionConsolidator"
   val handlebarsHttpApi: String = "handlebarsHttpApi"
+  val asyncHandlebarsHttpApi: String = "asyncHandlebarsHttpApi"
   val stateTransition: String = "stateTransition"
   val log: String = "log"
   val email: String = "email"
@@ -244,7 +260,7 @@ object Destination {
   val niRefundClaimApi: String = "niRefundClaimApi"
   val nrsOrchestrator: String = "nrsOrchestrator"
 
-  implicit def format: OFormat[Destination] = {
+  implicit val format: OFormat[Destination] = {
     implicit val personalisationReads =
       JsonUtils.formatMap[NotifierPersonalisationFieldId, FormComponentId](NotifierPersonalisationFieldId(_), _.value)
 
@@ -256,6 +272,7 @@ object Destination {
         infoArchive            -> UploadableInfoArchiveDestination.reads,
         submissionConsolidator -> UploadableSubmissionConsolidator.reads,
         handlebarsHttpApi      -> UploadableHandlebarsHttpApiDestination.reads,
+        asyncHandlebarsHttpApi -> UploadableHandlebarsHttpApiDestination.asyncReads,
         stateTransition        -> UploadableStateTransitionDestination.reads,
         log                    -> UploadableLogDestination.reads,
         email                  -> UploadableEmailDestination.reads,
@@ -272,8 +289,7 @@ object Destination {
       case d: DestinationWithCustomerCaseflow =>
         List(ExprWithPath(path + "customerId", d.customerId())) ++
           List(
-            d.caseId().map(c => ExprWithPath(path + "caseId", c)).toList,
-            d.postalCode().map(pc => ExprWithPath(path + "postalCode", pc)).toList
+            d.caseId().map(c => ExprWithPath(path + "caseId", c)).toList
           ).flatten
       case d: DestinationWithPaymentReference =>
         List(ExprWithPath(path + "paymentReference", d.paymentReference)) ++
@@ -308,8 +324,7 @@ case class UploadableHmrcDmsDestination(
   roboticsAsAttachment: Option[Boolean],
   includeAttachmentNames: Option[Boolean],
   submissionPrefix: Option[String] = None,
-  caseId: Option[TextExpression] = None,
-  postalCode: Option[TextExpression] = None
+  caseId: Option[TextExpression] = None
 ) {
 
   def toHmrcDmsDestination: Either[String, Destination.HmrcDms] =
@@ -334,8 +349,7 @@ case class UploadableHmrcDmsDestination(
       roboticsAsAttachment,
       includeAttachmentNames,
       submissionPrefix,
-      caseId.map(_.expr),
-      postalCode.map(_.expr)
+      caseId.map(_.expr)
     )
 }
 
@@ -504,7 +518,8 @@ case class UploadableHandlebarsHttpApiDestination(
   convertSingleQuotes: Option[Boolean],
   includeIf: DestinationIncludeIf,
   failOnError: Option[Boolean],
-  multiRequestPayload: Option[Boolean]
+  multiRequestPayload: Option[Boolean],
+  credential: Option[String]
 ) {
   def toHandlebarsHttpApiDestination: Either[String, Destination.HandlebarsHttpApi] =
     for {
@@ -522,8 +537,32 @@ case class UploadableHandlebarsHttpApiDestination(
         cvii,
         failOnError.getOrElse(true),
         multiRequestPayload.getOrElse(false),
-        convertSingleQuotes
+        convertSingleQuotes,
+        credential.map(AuthorizationName.apply)
       )
+
+  def toAsyncHandlebarsHttpApiDestination: Either[String, Destination.AsyncHandlebarsHttpApi] =
+    for {
+      cvp   <- addErrorInfo(id, "payload")(conditionAndValidate(convertSingleQuotes, payload))
+      cvii  <- addErrorInfo(id, convertSingleQuotes, includeIf)
+      cvuri <- addErrorInfo(id, "uri")(condition(convertSingleQuotes, uri))
+      _ <- addErrorInfo(id, "multiRequestPayload")(
+             if (multiRequestPayload.nonEmpty) Left("not supported for asyncHandlebarsHttpApi") else ().asRight
+           )
+    } yield Destination
+      .AsyncHandlebarsHttpApi(
+        id,
+        profile,
+        cvuri,
+        method,
+        cvp,
+        payloadType.getOrElse(TemplateType.JSON),
+        cvii,
+        failOnError.getOrElse(true),
+        convertSingleQuotes,
+        credential.map(AuthorizationName.apply)
+      )
+
 }
 
 object UploadableHandlebarsHttpApiDestination {
@@ -531,6 +570,12 @@ object UploadableHandlebarsHttpApiDestination {
     private val d = derived.reads[UploadableHandlebarsHttpApiDestination]()
     override def reads(json: JsValue): JsResult[Destination.HandlebarsHttpApi] =
       d.reads(json).flatMap(_.toHandlebarsHttpApiDestination.fold(JsError(_), JsSuccess(_)))
+  }
+
+  implicit val asyncReads: Reads[Destination.AsyncHandlebarsHttpApi] = new Reads[Destination.AsyncHandlebarsHttpApi] {
+    private val d = derived.reads[UploadableHandlebarsHttpApiDestination]()
+    override def reads(json: JsValue): JsResult[Destination.AsyncHandlebarsHttpApi] =
+      d.reads(json).flatMap(_.toAsyncHandlebarsHttpApiDestination.fold(JsError(_), JsSuccess(_)))
   }
 }
 

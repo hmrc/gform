@@ -25,7 +25,7 @@ import uk.gov.hmrc.gform.core._
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.email.LocalisedEmailTemplateId
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.{ NewForm, NewFormForTemplate, NewSession, PageLink, SignOut }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.{ NewForm, NewFormForTemplate, NewSession, PageLink, PrintAcknowledgementHtml, PrintSectionNotificationPdf, PrintSectionPdf, SignOut }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.UserField.Enrolment
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
@@ -467,7 +467,6 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
             None,
             None,
             None,
-            None,
             None
           )
         ),
@@ -514,6 +513,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
       None,
       LayoutDisplayWidth.M,
       KeyDisplayWidth.S,
+      None,
       None,
       None,
       None,
@@ -823,7 +823,8 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
       TextExpression(
         Period(
           DateCtx(DateFormCtxVar(FormCtx("d1"))),
-          DateCtx(DateFormCtxVar(FormCtx("d2")))
+          DateCtx(DateFormCtxVar(FormCtx("d2"))),
+          PeriodFn.Identity
         )
       )
     )
@@ -842,11 +843,9 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
       val res = ValueParser.validate(f)
       res.toOption.value should be(
         TextExpression(
-          PeriodExt(
-            Period(
-              DateCtx(DateFormCtxVar(FormCtx("d1"))),
-              DateCtx(DateFormCtxVar(FormCtx("d2")))
-            ),
+          Period(
+            DateCtx(DateFormCtxVar(FormCtx("d1"))),
+            DateCtx(DateFormCtxVar(FormCtx("d2"))),
             expectedFn
           )
         )
@@ -920,6 +919,22 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
 
   it should "parse link.signOut as PageLink(SignOut)" in {
     ValueParser.validate("${link.signOut}") shouldBe Right(TextExpression(LinkCtx(SignOut)))
+  }
+
+  it should "parse link.printSectionPdf as PageLink(PrintSectionPdf)" in {
+    ValueParser.validate("${link.printSectionPdf}") shouldBe Right(TextExpression(LinkCtx(PrintSectionPdf)))
+  }
+
+  it should "parse link.printSectionNotificationPdf as PageLink(PrintSectionNotificationPdf)" in {
+    ValueParser.validate("${link.printSectionNotificationPdf}") shouldBe Right(
+      TextExpression(LinkCtx(PrintSectionNotificationPdf))
+    )
+  }
+
+  it should "parse link.printAcknowledgementHtml as PageLink(PrintAcknowledgementHtml)" in {
+    ValueParser.validate("${link.printAcknowledgementHtml}") shouldBe Right(
+      TextExpression(LinkCtx(PrintAcknowledgementHtml))
+    )
   }
 
   it should "parse ${user.enrolments.HMCE-VATDEC-ORG.VATRegNo.xxx} as UserCtx" in {

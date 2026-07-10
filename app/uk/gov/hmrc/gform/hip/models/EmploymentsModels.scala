@@ -20,11 +20,11 @@ import julienrf.json.derived
 import play.api.libs.json.OFormat
 
 case class Employment(
-  payeSchemeOperatorName: String,
-  employerReference: String,
+  payeSchemeOperatorName: Option[String],
+  employerReference: Option[String],
   employmentSequenceNumber: Int,
-  worksNumber: String,
-  directorIdentifier: Boolean
+  worksNumber: Option[String],
+  directorIdentifier: Option[Boolean]
 )
 
 object Employment {

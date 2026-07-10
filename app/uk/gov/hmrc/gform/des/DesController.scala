@@ -35,9 +35,4 @@ class DesController(controllerComponents: ControllerComponents, desService: DesS
     logger.info(s"Get Address from DES, ${loggingHelpers.cleanHeaders(request.headers)}")
     desService.organisation(utr, request.body).map(a => Ok(Json.toJson(a)))
   }
-
-  def agentDetails(idType: String, idNumber: String) = Action.async { implicit request =>
-    logger.info(s"Get Agent Details from DES, ${loggingHelpers.cleanHeaders(request.headers)}")
-    desService.agentDetails(idType, idNumber).map(a => Ok(Json.toJson(a)))
-  }
 }

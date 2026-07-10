@@ -29,12 +29,14 @@ import uk.gov.hmrc.gform.formtemplate.FormTemplateAlgebra
 import uk.gov.hmrc.gform.repo.Repo
 import uk.gov.hmrc.gform.sdes.workitem.DestinationWorkItemAlgebra
 import uk.gov.hmrc.gform.sharedmodel.form._
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DmsDestinationResponse, NrsOrchestratorDestinationResponse, OtherSdesDestinationResponse }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ AsyncHandlebarsDestinationResponse, DestinationResponse, DmsDestinationResponse, HandlebarsDestinationResponse, NrsOrchestratorDestinationResponse, OtherSdesDestinationResponse }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplate, FormTemplateId }
-import uk.gov.hmrc.gform.sharedmodel.{ SubmissionData, SubmissionRef }
+import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination
+import uk.gov.hmrc.gform.sharedmodel.{ LangADT, SubmissionData, SubmissionRef }
 import uk.gov.hmrc.gform.submission.destinations.{ DestinationSubmissionInfo, DestinationsProcessorModelAlgebra, DestinationsSubmitterAlgebra }
 import uk.gov.hmrc.gform.submission.handlebars.HandlebarsModelTree
 import uk.gov.hmrc.gform.time.TimeProvider
+import uk.gov.hmrc.gform.gformstats.GformStatsConnector
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.{ ExecutionContext, Future }
@@ -48,7 +50,8 @@ class SubmissionService(
   formRedirectService: FormRedirectService,
   email: EmailService,
   timeProvider: TimeProvider,
-  destinationWorkItemService: DestinationWorkItemAlgebra[FOpt]
+  destinationWorkItemService: DestinationWorkItemAlgebra[FOpt],
+  gformStatsConnector: GformStatsConnector
 )(implicit ex: ExecutionContext) {
   private val logger = LoggerFactory.getLogger(getClass)
 
@@ -92,15 +95,20 @@ class SubmissionService(
             submissionData.destinationEvaluation,
             submissionData.userSession
           )
-      maybeWorkItems = destinationResponses.map(_.collect {
-                         case d: DmsDestinationResponse       => (d.routing, d.workItemId)
-                         case o: OtherSdesDestinationResponse => (o.routing, o.workItemId)
-                       })
-      _ <- maybeWorkItems.traverse(destinationWorkItemService.ready)
       _ <- destinationResponses
-             .map(_.collect { case d: NrsOrchestratorDestinationResponse => d })
-             .traverse(destinationWorkItemService.readyNrsOrchestrator)
+             .map(_.collect {
+               case d: DmsDestinationResponse       => (d.routing, d.workItemId)
+               case o: OtherSdesDestinationResponse => (o.routing, o.workItemId)
+             })
+             .traverse(destinationWorkItemService.readySdes)
+      _ <- destinationResponses
+             .map(_.collect {
+               case d: AsyncHandlebarsDestinationResponse => d
+               case d: NrsOrchestratorDestinationResponse => d
+             })
+             .traverse(destinationWorkItemService.readyGeneric)
       _ <- formAlgebra.updateFormStatus(submissionInfo.formId, Submitted)
+      _ = sendGformStatsSubmittedEvent(formTemplate, destinationResponses)
       emailAddress = email.getEmailAddress(form, submissionData.maybeEmailAddress)
       _ <- fromFutureA(
              formTemplate.emailTemplateId.fold(().pure[Future])(emailTemplateId =>
@@ -191,5 +199,27 @@ class SubmissionService(
       submissions <- submissionRepo.page(query, sort, skip, pageSize)
       count       <- submissionRepo.count(query)
     } yield SubmissionPageData(submissions, count)
+  }
+
+  private def sendGformStatsSubmittedEvent(
+    formTemplate: FormTemplate,
+    destinationResponses: Option[List[DestinationResponse]]
+  )(implicit hc: HeaderCarrier): Unit = {
+    val destinationTypes = destinationResponses
+      .getOrElse(Nil)
+      .collect {
+        case d: DmsDestinationResponse             => s"DMS - ${d.dmsFormId}"
+        case o: OtherSdesDestinationResponse       => s"SDES - ${SdesDestination.fromName(o.routing)}"
+        case _: HandlebarsDestinationResponse      => "Handlebars API"
+        case _: AsyncHandlebarsDestinationResponse => "Async Handlebars API"
+        case _: NrsOrchestratorDestinationResponse => "NRS"
+      }
+    val destinations = if (destinationTypes.nonEmpty) Some(destinationTypes) else None
+    gformStatsConnector.sendEvent(
+      formTemplate._id.value,
+      formTemplate.formName.value(LangADT.En),
+      "submitted",
+      destinations
+    )
   }
 }

@@ -51,7 +51,12 @@ class TestOnlyFormService(
     maybeDestinations match {
       case JsError(_) => raw
       case JsSuccess(destinations, _) =>
-        if (containTypes(destinations, List(Destination.dataStore, Destination.hmrcDms)))
+        if (
+          containTypes(
+            destinations,
+            List(Destination.dataStore, Destination.hmrcDms, Destination.asyncHandlebarsHttpApi)
+          )
+        )
           replaceDestination(raw)
         else
           raw

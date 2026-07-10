@@ -18,6 +18,7 @@ package uk.gov.hmrc.gform.hip
 
 import cats.implicits.catsSyntaxApplicativeId
 import org.slf4j.LoggerFactory
+import play.api.libs.json.Json
 import play.api.mvc._
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.sharedmodel.sdes.CorrelationId
@@ -66,6 +67,14 @@ class HipController(
           }
           Status(response.status)(response.body)
         }
+    }
+  }
+
+  def agentDetails(arn: String): Action[AnyContent] = Action.async { implicit request =>
+    withCorrelationId("agentDetails") { correlationId =>
+      hipConnector
+        .lookupAgentDetails(arn, correlationId)
+        .map(a => Ok(Json.toJson(a)))
     }
   }
 

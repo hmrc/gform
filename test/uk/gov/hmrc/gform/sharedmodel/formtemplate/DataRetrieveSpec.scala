@@ -91,6 +91,13 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
       ),
       None,
       None,
+      None,
+      false,
+      None,
+      UrlDescriptor(
+        urlPath = "/validate/bank-details",
+        destination = UrlDestination.MDTP
+      ),
       None
     )
   }
@@ -103,6 +110,7 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
                |  "id": "businessBankAccount",
                |  "maxFailedAttempts": 3,
                |  "failureCountResetMinutes": 1440,
+               |  "callOnNoChange": true,
                |  "parameters": {
                |    "sortCode": "${sortCode}",
                |    "accountNumber": "${accountNumber}",
@@ -196,7 +204,14 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
       ),
       None,
       Some(3),
-      Some(1440)
+      Some(1440),
+      true,
+      None,
+      UrlDescriptor(
+        urlPath = "/verify/business",
+        destination = UrlDestination.MDTP
+      ),
+      None
     )
   }
 
@@ -344,7 +359,19 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
       ),
       None,
       None,
-      None
+      None,
+      false,
+      None,
+      UrlDescriptor(
+        urlPath = "/companieshouse/company/{{companyNumber}}",
+        destination = UrlDestination.GForm
+      ),
+      Some(
+        UrlDescriptor(
+          urlPath = "/company/{{companyNumber}}",
+          destination = UrlDestination.CompaniesHouse
+        )
+      )
     )
   }
 
@@ -391,7 +418,19 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
       ),
       None,
       None,
-      None
+      None,
+      false,
+      None,
+      UrlDescriptor(
+        urlPath = "/companieshouse/company/{{companyNumber}}/officers",
+        destination = UrlDestination.GForm
+      ),
+      Some(
+        UrlDescriptor(
+          urlPath = "/company/{{companyNumber}}/officers",
+          destination = UrlDestination.CompaniesHouse
+        )
+      )
     )
   }
 
@@ -491,7 +530,19 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
       ),
       None,
       None,
-      None
+      None,
+      false,
+      None,
+      UrlDescriptor(
+        urlPath = "/companieshouse/company/{{companyNumber}}/insolvency",
+        destination = UrlDestination.GForm
+      ),
+      Some(
+        UrlDescriptor(
+          urlPath = "/company/{{companyNumber}}/insolvency",
+          destination = UrlDestination.CompaniesHouse
+        )
+      )
     )
   }
 
@@ -524,6 +575,13 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
       ),
       None,
       None,
+      None,
+      false,
+      None,
+      UrlDescriptor(
+        urlPath = "/check/insights",
+        destination = UrlDestination.MDTP
+      ),
       None
     )
   }
@@ -563,6 +621,13 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
       ),
       None,
       None,
+      None,
+      false,
+      None,
+      UrlDescriptor(
+        urlPath = "/check/insights",
+        destination = UrlDestination.MDTP
+      ),
       None
     )
   }
@@ -603,6 +668,13 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
       ),
       Some(IncludeIf(IsTrue)),
       None,
+      None,
+      false,
+      None,
+      UrlDescriptor(
+        urlPath = "/check/insights",
+        destination = UrlDestination.MDTP
+      ),
       None
     )
   }
@@ -713,7 +785,14 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
       ),
       None,
       Some(3),
-      Some(1440)
+      Some(1440),
+      false,
+      None,
+      UrlDescriptor(
+        urlPath = "/verify/personal",
+        destination = UrlDestination.MDTP
+      ),
+      None
     )
   }
 
@@ -776,7 +855,19 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
       ),
       None,
       None,
-      None
+      None,
+      false,
+      None,
+      UrlDescriptor(
+        urlPath = "/des/organisation/{{utr}}",
+        destination = UrlDestination.GForm
+      ),
+      Some(
+        UrlDescriptor(
+          urlPath = "/registration/organisation/utr/{{utr}}",
+          destination = UrlDestination.DES
+        )
+      )
     )
   }
 
@@ -798,87 +889,52 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
         List(
           AttributeInstruction(
             DataRetrieve.Attribute("agencyName"),
-            ConstructAttribute.AsIs(Fetch(List("det", "agencyDetails", "agencyName")))
+            ConstructAttribute.AsIs(Fetch(List("det", "success", "name")))
           ),
           AttributeInstruction(
             DataRetrieve.Attribute("address_line_1"),
-            ConstructAttribute.Concat(
-              List(
-                Fetch(List("det", "agencyDetails", "agencyAddress", "UkAddress", "addressLine1")),
-                Fetch(List("det", "agencyDetails", "agencyAddress", "InternationalAddress", "addressLine1"))
-              )
-            )
+            ConstructAttribute.AsIs(Fetch(List("det", "success", "addr1")))
           ),
           AttributeInstruction(
             DataRetrieve.Attribute("address_line_2"),
-            ConstructAttribute.Concat(
-              List(
-                Fetch(List("det", "agencyDetails", "agencyAddress", "UkAddress", "addressLine2")),
-                Fetch(List("det", "agencyDetails", "agencyAddress", "InternationalAddress", "addressLine2"))
-              )
-            )
+            ConstructAttribute.AsIs(Fetch(List("det", "success", "addr2")))
           ),
           AttributeInstruction(
             DataRetrieve.Attribute("locality"),
-            ConstructAttribute.Concat(
-              List(
-                Fetch(List("det", "agencyDetails", "agencyAddress", "UkAddress", "addressLine3")),
-                Fetch(List("det", "agencyDetails", "agencyAddress", "InternationalAddress", "addressLine3"))
-              )
-            )
+            ConstructAttribute.AsIs(Fetch(List("det", "success", "addr3")))
           ),
           AttributeInstruction(
             DataRetrieve.Attribute("region"),
-            ConstructAttribute.Concat(
-              List(
-                Fetch(List("det", "agencyDetails", "agencyAddress", "UkAddress", "addressLine4")),
-                Fetch(List("det", "agencyDetails", "agencyAddress", "InternationalAddress", "addressLine4"))
-              )
-            )
+            ConstructAttribute.AsIs(Fetch(List("det", "success", "addr4")))
           ),
           AttributeInstruction(
             DataRetrieve.Attribute("postal_code"),
-            ConstructAttribute.Concat(
-              List(
-                Fetch(List("det", "agencyDetails", "agencyAddress", "UkAddress", "postalCode")),
-                Fetch(List("det", "agencyDetails", "agencyAddress", "InternationalAddress", "postalCode"))
-              )
-            )
+            ConstructAttribute.AsIs(Fetch(List("det", "success", "postcode")))
           ),
           AttributeInstruction(
             DataRetrieve.Attribute("country"),
-            ConstructAttribute.Concat(
-              List(
-                Fetch(List("det", "agencyDetails", "agencyAddress", "UkAddress", "countryCode")),
-                Fetch(List("det", "agencyDetails", "agencyAddress", "InternationalAddress", "countryCode"))
-              )
-            )
+            ConstructAttribute.AsIs(Fetch(List("det", "success", "country")))
           ),
           AttributeInstruction(
             DataRetrieve.Attribute("agencyAddress"),
             ConstructAttribute.Concat(
               List(
-                Fetch(List("det", "agencyDetails", "agencyAddress", "UkAddress", "addressLine1")),
-                Fetch(List("det", "agencyDetails", "agencyAddress", "UkAddress", "addressLine2")),
-                Fetch(List("det", "agencyDetails", "agencyAddress", "UkAddress", "addressLine3")),
-                Fetch(List("det", "agencyDetails", "agencyAddress", "UkAddress", "addressLine4")),
-                Fetch(List("det", "agencyDetails", "agencyAddress", "UkAddress", "postalCode")),
-                Fetch(List("det", "agencyDetails", "agencyAddress", "InternationalAddress", "addressLine1")),
-                Fetch(List("det", "agencyDetails", "agencyAddress", "InternationalAddress", "addressLine2")),
-                Fetch(List("det", "agencyDetails", "agencyAddress", "InternationalAddress", "addressLine3")),
-                Fetch(List("det", "agencyDetails", "agencyAddress", "InternationalAddress", "addressLine4")),
-                Fetch(List("det", "agencyDetails", "agencyAddress", "InternationalAddress", "postalCode")),
-                Fetch(List("det", "agencyDetails", "agencyAddress", "InternationalAddress", "countryCode"))
+                Fetch(List("det", "success", "addr1")),
+                Fetch(List("det", "success", "addr2")),
+                Fetch(List("det", "success", "addr3")),
+                Fetch(List("det", "success", "addr4")),
+                Fetch(List("det", "success", "postcode")),
+                Fetch(List("det", "success", "country"))
               )
             )
           ),
           AttributeInstruction(
             DataRetrieve.Attribute("agencyEmail"),
-            ConstructAttribute.AsIs(Fetch(List("det", "agencyDetails", "agencyEmail")))
+            ConstructAttribute.AsIs(Fetch(List("det", "success", "email")))
           ),
           AttributeInstruction(
             DataRetrieve.Attribute("agencyPhone"),
-            ConstructAttribute.AsIs(Fetch(List("det", "contactDetails", "phoneNumber")))
+            ConstructAttribute.AsIs(Fetch(List("det", "success", "phone")))
           )
         )
       ),
@@ -892,7 +948,19 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
       ),
       None,
       None,
-      None
+      None,
+      false,
+      None,
+      UrlDescriptor(
+        urlPath = "/hip/agent-details/{{agentReferenceNumber}}",
+        destination = UrlDestination.GForm
+      ),
+      Some(
+        UrlDescriptor(
+          urlPath = "/etmp/RESTAdapter/generic/agent/subscription/{{agentReferenceNumber}}",
+          destination = UrlDestination.HIP
+        )
+      )
     )
   }
 
@@ -977,6 +1045,13 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
       ),
       None,
       None,
+      None,
+      false,
+      None,
+      UrlDescriptor(
+        urlPath = "HMRCTaxRates.csv",
+        destination = UrlDestination.GForm
+      ),
       None
     )
   }
@@ -1041,7 +1116,19 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
       ),
       None,
       None,
-      None
+      None,
+      false,
+      None,
+      UrlDescriptor(
+        urlPath = "/hip/ni-claim-validation/{{nino}}/{{claimReference}}",
+        destination = UrlDestination.GForm
+      ),
+      Some(
+        UrlDescriptor(
+          urlPath = "/ni/contributions/{{nino}}/claim/refund/{{claimReference}}",
+          destination = UrlDestination.HIP
+        )
+      )
     )
   }
 
@@ -1094,6 +1181,13 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
       ),
       None,
       None,
+      None,
+      false,
+      None,
+      UrlDescriptor(
+        urlPath = "/auth/authorise",
+        destination = UrlDestination.MDTP
+      ),
       None
     )
   }
@@ -1132,6 +1226,13 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
       ),
       None,
       None,
+      None,
+      false,
+      None,
+      UrlDescriptor(
+        urlPath = "/auth/authorise",
+        destination = UrlDestination.MDTP
+      ),
       None
     )
   }

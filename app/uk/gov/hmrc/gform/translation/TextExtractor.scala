@@ -301,15 +301,18 @@ class Translator(json: Json, paths: List[List[Instruction]], val topLevelExprDat
     rows.view.distinct.toList.sortBy(_.path)
   }
 
-  val fetchRows: List[Row] = smartStringsRows(smartStringCursors) ++ topLevelExprData.toRows
+  val nonTranslatablePaths = NonTranslatablePaths.findNonTranslatablePaths(json).toSet
 
-  lazy val rowsForTranslation: List[TranslatedRow] = fetchRows
+  val fetchRows: List[Row] =
+    (smartStringsRows(smartStringCursors) ++ topLevelExprData.toRows).filterNot(row => nonTranslatablePaths(row.path))
+
+  val rowsForTranslation: List[TranslatedRow] = fetchRows
     .filterNot(row => ExtractAndTranslate(row.en, Some(row.path)).translateTexts.isEmpty)
     .map(row => TranslatedRow(row.en, row.cy))
     .distinct
     .sortBy(_.en)
 
-  lazy val untranslatedRowsForTranslation: List[EnTextToTranslate] = {
+  val untranslatedRowsForTranslation: List[EnTextToTranslate] = {
 
     def consolidatePaths(list: List[EnTextToTranslate]) = {
       val map = scala.collection.mutable.Map[String, scala.collection.mutable.Set[String]]()
@@ -376,7 +379,11 @@ object TextExtractor {
       Pure(DownField("caption")) :: root,
       Pure(DownField("continueLabel")) :: root,
       Pure(DownField("label")) :: confirmationQuestion,
+      Pure(DownField("shortName")) :: confirmationQuestion,
+      Pure(DownField("errorMessage")) :: confirmationQuestion,
+      Pure(DownField("helpText")) :: confirmationQuestion,
       TraverseArray :: Pure(DownField("choices")) :: confirmationQuestion,
+      Pure(DownField("hint")) :: TraverseArray :: Pure(DownField("choices")) :: confirmationQuestion,
       Pure(DownField("label")) :: addAnotherQuestion,
       Pure(DownField("errorMessage")) :: addAnotherQuestion
     )

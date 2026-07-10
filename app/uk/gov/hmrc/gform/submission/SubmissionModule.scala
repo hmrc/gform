@@ -36,13 +36,14 @@ import uk.gov.hmrc.gform.nrs.NRSConnector
 import uk.gov.hmrc.gform.objectstore.ObjectStoreModule
 import uk.gov.hmrc.gform.repo.{ Repo, RepoAlgebra }
 import uk.gov.hmrc.gform.sdes.SdesModule
-import uk.gov.hmrc.gform.submission.destinations.{ DataStoreSubmitter, DestinationModule, DestinationSubmitter, DestinationsSubmitter, DestinationsSubmitterAlgebra, DmsSubmitter, InfoArchiveSubmitter, NiRefundSubmitter, PegaSubmitter, StateTransitionService }
+import uk.gov.hmrc.gform.submission.destinations.{ DataStoreSubmitter, DestinationModule, DestinationSubmitter, DestinationsSubmitter, DestinationsSubmitterAlgebra, DmsSubmitter, InfoArchiveSubmitter, NiRefundSubmitter, PegaSubmitter, RealAsyncHttpWorkItemSubmitter, StateTransitionService }
 import uk.gov.hmrc.gform.submissionconsolidator.SubmissionConsolidatorModule
+import uk.gov.hmrc.gform.gformstats.GformStatsModule
 import uk.gov.hmrc.gform.wshttp.WSHttpModule
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.gform.scheduler.nrsOrchestrator.{ NrsOrchestratorAttachmentWorkItemRepo, NrsOrchestratorWorkItemRepo }
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ ExecutionContext, Future }
 
 class SubmissionModule(
   configModule: ConfigModule,
@@ -62,8 +63,10 @@ class SubmissionModule(
   materializer: Materializer,
   hipModule: HipModule,
   wSHttpModule: WSHttpModule,
+  gformStatsModule: GformStatsModule,
   nrsOrchestratorWorkItemRepo: NrsOrchestratorWorkItemRepo,
-  nrsOrchestratorAttachmentWorkItemRepo: NrsOrchestratorAttachmentWorkItemRepo
+  nrsOrchestratorAttachmentWorkItemRepo: NrsOrchestratorAttachmentWorkItemRepo,
+  workItemHistoryService: WorkItemHistoryAlgebra[Future]
 )(implicit ex: ExecutionContext) {
 
   //TODO: this should be replaced with save4later for submissions
@@ -101,6 +104,10 @@ class SubmissionModule(
     formTemplateModule.fOptFormTemplateAlgebra,
     sdesModule.foptDestinationWorkItemService,
     formModule.fOptFormService
+  )
+
+  val asyncHttpWorkItemSubmitter = new RealAsyncHttpWorkItemSubmitter(
+    sdesModule.asyncHandlebarsWorkItemRepo
   )
 
   private val pegaSubmitter = new PegaSubmitter(
@@ -149,7 +156,8 @@ class SubmissionModule(
     configModule.sdesConfig,
     pegaSubmitterAlgebra = pegaSubmitter,
     niRefundSubmitterAlgebra = niRefundSubmitter,
-    nrsConnector = nrsConnector
+    nrsConnector = nrsConnector,
+    asyncHttpWorkItemSubmitter = asyncHttpWorkItemSubmitter
   )
 
   private val destinationsSubmitter: DestinationsSubmitterAlgebra[FOpt] = new DestinationsSubmitter(
@@ -166,8 +174,12 @@ class SubmissionModule(
     formTemplateModule.formRedirectService,
     emailModule.emailLogic,
     timeModule.timeProvider,
-    sdesModule.foptDestinationWorkItemService
+    sdesModule.foptDestinationWorkItemService,
+    gformStatsModule.gformStatsConnector
   )
+
+  val workItemHistoryController =
+    new WorkItemHistoryController(configModule.controllerComponents, workItemHistoryService)
 
   val submissionController = new SubmissionController(configModule.controllerComponents, submissionService)
 

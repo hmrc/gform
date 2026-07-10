@@ -17,6 +17,7 @@
 package uk.gov.hmrc.gform.sharedmodel.sdes
 
 import play.api.libs.json.{ Format, Json, OFormat }
+import uk.gov.hmrc.gform.scheduler.TraceableWorkItem
 import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
@@ -60,6 +61,24 @@ object SdesWorkItemData {
     workItem.receivedAt,
     workItem.updatedAt
   )
+
+  def fromTraceableWorkItem(
+    workItem: WorkItem[TraceableWorkItem[_]],
+    destination: SdesDestination,
+    numberOfFiles: Int = 0
+  ) =
+    SdesWorkItemData(
+      workItem.id.toString,
+      workItem.item.envelopeId,
+      destination,
+      workItem.item.formTemplateId,
+      workItem.item.submissionRef,
+      numberOfFiles,
+      workItem.status,
+      workItem.failureCount,
+      workItem.receivedAt,
+      workItem.updatedAt
+    )
 
   implicit val envelopeIdFormat: Format[EnvelopeId] = EnvelopeId.vformat
   implicit val formTemplateIdFormat: Format[FormTemplateId] = FormTemplateId.vformat

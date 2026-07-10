@@ -17,9 +17,9 @@
 package uk.gov.hmrc.gform.sharedmodel.config
 
 import cats.Eq
-import play.api.libs.json.{ Format, JsString }
+import play.api.libs.json.{ Format, JsString, OFormat }
 import uk.gov.hmrc.gform.sharedmodel.ValueClassFormat
-import uk.gov.hmrc.gform.sharedmodel.config.ContentType.{ `application/json`, `application/pdf`, `application/xml`, `application/zip`, `image/jpeg` }
+import uk.gov.hmrc.gform.sharedmodel.config.ContentType.{ `application/json`, `application/pdf`, `application/xml`, `application/zip`, `image/jpeg`, `text/plain` }
 
 case class ContentType(value: String) {
   def extension: String = this match {
@@ -28,6 +28,7 @@ case class ContentType(value: String) {
     case `application/json` => "json"
     case `image/jpeg`       => "jpg"
     case `application/zip`  => "zip"
+    case `text/plain`       => "txt"
     case _                  => "pdf"
   }
 }
@@ -40,6 +41,7 @@ object ContentType {
   val `image/jpeg` = ContentType("image/jpeg")
   val `text/xml` = ContentType("text/xml")
   val `application/zip` = ContentType("application/zip")
+  val `text/plain` = ContentType("text/plain")
 
   /** .xls files
     */
@@ -53,6 +55,8 @@ object ContentType {
 
   implicit val format: Format[ContentType] =
     ValueClassFormat.vformat("contentType", ContentType(_), x => JsString(x.value))
+
+  val oformat: OFormat[ContentType] = ValueClassFormat.oformat("contentType", ContentType.apply, _.value)
 
   implicit val equal: Eq[ContentType] = Eq.fromUniversalEquals
 }

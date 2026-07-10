@@ -26,7 +26,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.PrimitiveGen._
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Constant, Equals, FormComponentId, FormCtx, IncludeIf }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationIncludeIf.{ HandlebarValue, IncludeIfValue }
-import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination.PegaCaseflow
+import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination.Caseflow
 
 class DestinationsValidatorSpec extends Spec with ScalaCheckDrivenPropertyChecks {
   "validateUniqueDestinationIds" should "return an error when there are duplicate ids" in {
@@ -173,6 +173,13 @@ class DestinationsValidatorSpec extends Spec with ScalaCheckDrivenPropertyChecks
           hmrcDms,
           hmrcDms
         ),
+        Invalid("Multiple hmrcDms destinations with default includeIf expression must also include a submissionPrefix.")
+      ),
+      (
+        NonEmptyList.of(
+          hmrcDms.copy(includeIf = HandlebarValue("{{isNotNull empName}}")),
+          hmrcDms.copy(includeIf = HandlebarValue("{{isNull empName}}"))
+        ),
         Valid
       )
     )
@@ -183,47 +190,37 @@ class DestinationsValidatorSpec extends Spec with ScalaCheckDrivenPropertyChecks
     }
   }
 
-  "validateCaseflow" should "validate hmrcDms destinations with Pega Caseflow routing correctly" in {
+  "validateCaseflow" should "validate hmrcDms destinations with Caseflow routing correctly" in {
     val table = Table(
       ("destinations", "expected"),
       (
         NonEmptyList.of(
-          hmrcDms.copy(routing = PegaCaseflow, postalCode = Some(Constant("expr")), caseId = Some(Constant("expr")))
+          hmrcDms.copy(routing = Caseflow, caseId = Some(Constant("expr")))
         ),
         Valid
       ),
       (
         NonEmptyList.of(
-          hmrcDms.copy(routing = PegaCaseflow),
+          hmrcDms.copy(routing = Caseflow, caseId = Some(Constant("expr"))),
           hmrcDms
         ),
         Invalid(
-          "hmrcDms destinations cannot be a mix of DMS and Pega Caseflow routings."
+          "hmrcDms destinations cannot be a mix of DMS and Caseflow routings."
         )
       ),
       (
         NonEmptyList.of(
-          hmrcDms.copy(routing = PegaCaseflow),
-          hmrcDms.copy(routing = PegaCaseflow)
+          hmrcDms.copy(routing = Caseflow, caseId = Some(Constant("expr"))),
+          hmrcDms.copy(routing = Caseflow, caseId = Some(Constant("expr")))
         ),
-        Invalid(
-          "Cannot define more than 1 hmrcDms destination with routing to Pega Caseflow."
-        )
+        Valid
       ),
       (
         NonEmptyList.of(
-          hmrcDms.copy(routing = PegaCaseflow, postalCode = Some(Constant("expr")))
+          hmrcDms.copy(routing = Caseflow)
         ),
         Invalid(
-          "Pega Caseflow destination 'TestHmrcDmsId' must have caseId expression defined."
-        )
-      ),
-      (
-        NonEmptyList.of(
-          hmrcDms.copy(routing = PegaCaseflow, caseId = Some(Constant("expr")))
-        ),
-        Invalid(
-          "Pega Caseflow destination 'TestHmrcDmsId' must have postalCode expression defined."
+          "Caseflow destination 'TestHmrcDmsId' must have caseId expression defined."
         )
       )
     )

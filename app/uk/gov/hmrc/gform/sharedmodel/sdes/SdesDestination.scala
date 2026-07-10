@@ -30,8 +30,12 @@ sealed trait SdesDestination extends Product with Serializable {
     case SdesDestination.DataStoreLegacy => sdesConfig.hmrcIlluminate
     case SdesDestination.Dms             => sdesConfig.dms
     case SdesDestination.InfoArchive     => sdesConfig.infoArchive
-    case SdesDestination.PegaCaseflow    => sdesConfig.pegaCaseflow
+    case SdesDestination.Caseflow        => sdesConfig.caseflow
     case SdesDestination.DataLakehouse   => sdesConfig.dataLakehouse
+    case SdesDestination.AsyncHandlebars =>
+      throw new IllegalArgumentException(
+        s"No SDES routing configuration for destination: ${SdesDestination.fromName(this)}"
+      )
   }
 
   def objectStorePaths(envelopeId: EnvelopeId, submissionPrefix: Option[String]): ObjectStorePaths =
@@ -41,8 +45,12 @@ sealed trait SdesDestination extends Product with Serializable {
       case SdesDestination.DataStoreLegacy => ObjectStorePaths.dataStorePaths(envelopeId)
       case SdesDestination.Dms             => ObjectStorePaths.dmsPaths(envelopeId, submissionPrefix)
       case SdesDestination.InfoArchive     => ObjectStorePaths.infoArchivePaths(envelopeId)
-      case SdesDestination.PegaCaseflow    => ObjectStorePaths.pegaCaseflowPaths(envelopeId)
+      case SdesDestination.Caseflow        => ObjectStorePaths.caseflowPaths(envelopeId, submissionPrefix)
       case SdesDestination.DataLakehouse   => ObjectStorePaths.dataLakehousePaths(envelopeId)
+      case SdesDestination.AsyncHandlebars =>
+        throw new IllegalArgumentException(
+          s"No Object Store paths configuration for destination: ${SdesDestination.fromName(this)}"
+        )
     }
 }
 
@@ -52,8 +60,9 @@ object SdesDestination {
   case object DataStoreLegacy extends SdesDestination // Alias for HmrcIlluminate (deprecated)
   case object DataStore extends SdesDestination
   case object InfoArchive extends SdesDestination
-  case object PegaCaseflow extends SdesDestination
+  case object Caseflow extends SdesDestination
   case object DataLakehouse extends SdesDestination
+  case object AsyncHandlebars extends SdesDestination
 
   implicit val equal: Eq[SdesDestination] = Eq.fromUniversalEquals
   implicit val format: Format[SdesDestination] =
@@ -63,8 +72,9 @@ object SdesDestination {
       "DataStoreLegacy" -> DataStoreLegacy,
       "DataStore"       -> DataStore,
       "InfoArchive"     -> InfoArchive,
-      "PegaCaseflow"    -> PegaCaseflow,
-      "DataLakehouse"   -> DataLakehouse
+      "Caseflow"        -> Caseflow,
+      "DataLakehouse"   -> DataLakehouse,
+      "AsyncHandlebars" -> AsyncHandlebars
     )
 
   def fromName(destination: SdesDestination): String = destination match {
@@ -73,8 +83,9 @@ object SdesDestination {
     case DataStoreLegacy => "DataStoreLegacy"
     case DataStore       => "DataStore"
     case InfoArchive     => "InfoArchive"
-    case PegaCaseflow    => "PegaCaseflow"
+    case Caseflow        => "Caseflow"
     case DataLakehouse   => "DataLakehouse"
+    case AsyncHandlebars => "AsyncHandlebars"
   }
 
   def fromString(destination: String): SdesDestination = destination match {
@@ -83,7 +94,8 @@ object SdesDestination {
     case "DataStoreLegacy" => DataStoreLegacy
     case "DataStore"       => DataStore
     case "InfoArchive"     => InfoArchive
-    case "PegaCaseflow"    => PegaCaseflow
+    case "Caseflow"        => Caseflow
     case "DataLakehouse"   => DataLakehouse
+    case "AsyncHandlebars" => AsyncHandlebars
   }
 }

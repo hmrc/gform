@@ -19,6 +19,7 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations
 import cats.{ Eq, Show }
 import play.api.libs.json.Reads._
 import play.api.libs.json._
+import uk.gov.hmrc.gform.sharedmodel.ValueClassFormat
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
 case class DestinationId(id: String) extends AnyVal
@@ -29,4 +30,6 @@ object DestinationId {
   implicit val equal: Eq[DestinationId] = Eq.fromUniversalEquals
 
   implicit val show: Show[DestinationId] = Show.show(_.id)
+
+  val oformat: OFormat[DestinationId] = ValueClassFormat.oformat("destinationId", DestinationId.apply, _.id)
 }

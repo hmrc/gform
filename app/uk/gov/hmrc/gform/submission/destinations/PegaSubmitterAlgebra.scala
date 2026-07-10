@@ -18,11 +18,12 @@ package uk.gov.hmrc.gform.submission.destinations
 
 import uk.gov.hmrc.gform.sharedmodel.DestinationResult
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationResponse }
+import uk.gov.hmrc.http.HeaderCarrier
 
 trait PegaSubmitterAlgebra[F[_]] {
   def getAndUpdateCase(
     d: Destination.PegaApi,
     maybeDesRes: Option[DestinationResult],
     submissionInfo: DestinationSubmissionInfo
-  ): F[DestinationResponse]
+  )(implicit hc: HeaderCarrier): F[DestinationResponse]
 }

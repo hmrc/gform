@@ -23,7 +23,7 @@ import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FormId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DataOutputFormat, DestinationId, DestinationIncludeIf, InstructionPdfFields, TemplateType }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
-import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination.Dms
+import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination.{ Caseflow, Dms }
 import uk.gov.hmrc.gform.submission._
 
 import scala.xml.{ Elem, Utility }
@@ -68,7 +68,7 @@ class MetadataXmlSpec extends Spec {
       Seq()
     }
 
-    val expected =
+    val expectedDms =
       <documents xmlns="http://govtalk.gov.uk/hmrc/gis/content/1">
         <document>
           <header>
@@ -177,6 +177,107 @@ class MetadataXmlSpec extends Spec {
         </document>
       </documents>
 
+    val expectedCaseflow =
+      <documents xmlns="http://govtalk.gov.uk/hmrc/bit/content/1">
+        <document>
+          <header>
+            <title>somesubmissionref</title>
+            <format>pdf</format>
+            <mime_type>application/pdf</mime_type>
+            <store>true</store>
+            <source>dfs</source>
+            <target>CASEFLOW</target>
+            <reconciliation_id>some-recocilliatin-id</reconciliation_id>
+          </header>
+          <metadata>
+            <attribute>
+              <attribute_name>hm_post_received_date</attribute_name>
+              <attribute_type>time</attribute_type>
+              <attribute_values>
+                <attribute_value>03/12/2012 12:45:00</attribute_value>
+              </attribute_values>
+            </attribute>
+            <attribute>
+              <attribute_name>hm_rdc_received_date</attribute_name>
+              <attribute_type>time</attribute_type>
+              <attribute_values>
+                <attribute_value></attribute_value>
+              </attribute_values>
+            </attribute>
+            <attribute>
+              <attribute_name>hm_scan_date</attribute_name>
+              <attribute_type>time</attribute_type>
+              <attribute_values>
+                <attribute_value></attribute_value>
+              </attribute_values>
+            </attribute>
+            <attribute>
+              <attribute_name>hm_post_code</attribute_name>
+              <attribute_type>string</attribute_type>
+              <attribute_values>
+                <attribute_value>gForm</attribute_value>
+              </attribute_values>
+            </attribute>
+            <attribute>
+              <attribute_name>hm_po_box</attribute_name>
+              <attribute_type>string</attribute_type>
+              <attribute_values>
+                <attribute_value>gForm</attribute_value>
+              </attribute_values>
+            </attribute>
+            <attribute>
+              <attribute_name>hm_unique_doc_id</attribute_name>
+              <attribute_type>string</attribute_type>
+              <attribute_values>
+                <attribute_value>somesubmissionref</attribute_value>
+              </attribute_values>
+            </attribute>
+            <attribute>
+              <attribute_name>hm_number_pages</attribute_name>
+              <attribute_type>integer</attribute_type>
+              <attribute_values>
+                <attribute_value>10</attribute_value>
+              </attribute_values>
+            </attribute>
+            <attribute>
+              <attribute_name>hm_case_id</attribute_name>
+              <attribute_type>string</attribute_type>
+              <attribute_values>
+                <attribute_value>caseflowId</attribute_value>
+              </attribute_values>
+            </attribute>
+            <attribute>
+              <attribute_name>hm_utr</attribute_name>
+              <attribute_type>string</attribute_type>
+              <attribute_values>
+                <attribute_value/>
+              </attribute_values>
+            </attribute>
+            <attribute>
+              <attribute_name>hm_is_returnable_item</attribute_name>
+              <attribute_type>boolean</attribute_type>
+              <attribute_values>
+                <attribute_value/>
+              </attribute_values>
+            </attribute>
+            <attribute>
+              <attribute_name>hm_is_rescan</attribute_name>
+              <attribute_type>boolean</attribute_type>
+              <attribute_values>
+                <attribute_value/>
+              </attribute_values>
+            </attribute>
+            <attribute>
+              <attribute_name>hm_is_internal</attribute_name>
+              <attribute_type>boolean</attribute_type>
+              <attribute_values>
+                <attribute_value/>
+              </attribute_values>
+            </attribute>
+          </metadata>
+        </document>
+      </documents>
+
     val metadataXml = MetadataXml
       .getXml(
         submission,
@@ -185,13 +286,34 @@ class MetadataXmlSpec extends Spec {
         submission.noOfAttachments,
         hmrcDms,
         attachmentNames,
-        None
+        Some(
+          DestinationResult(
+            DestinationId("TestHmrcDmsId"),
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            Some("caseflowId"),
+            None,
+            None,
+            None,
+            None,
+            None,
+            None
+          )
+        )
       )
 
-    metadataXml should equal(Utility.trim(expected).asInstanceOf[Elem])(after being streamlined[Elem])
+    if (hmrcDms.isCaseflow)
+      metadataXml should equal(Utility.trim(expectedCaseflow).asInstanceOf[Elem])(after being streamlined[Elem])
+    else
+      metadataXml should equal(Utility.trim(expectedDms).asInstanceOf[Elem])(after being streamlined[Elem])
   }
 
-  "metadata.xml" should "be generated" in {
+  "metadata.xml" should "be generated for DMS" in {
 
     generateXml(
       HmrcDms(
@@ -213,11 +335,35 @@ class MetadataXmlSpec extends Spec {
         None,
         None,
         None,
-        None,
         None
       )
     )
+  }
 
+  "metadata.xml" should "be generated for Caseflow" in {
+    generateXml(
+      HmrcDms(
+        DestinationId("TestHmrcDmsId"),
+        Caseflow,
+        "some-id",
+        Constant("TestHmrcDmsCustomerId"),
+        "some-classification-type",
+        "some-business-area",
+        DestinationIncludeIf.HandlebarValue(""),
+        true,
+        Some(DataOutputFormat.XML),
+        true,
+        Some(true),
+        Some(InstructionPdfFields.Ordered),
+        None,
+        None,
+        TemplateType.XML,
+        None,
+        None,
+        None,
+        Some(Constant("caseflowId"))
+      )
+    )
   }
 
   "metadata.xml attachment_count" should "be incremented by 1 if roboticsAsAttachment is true" in {
@@ -239,7 +385,6 @@ class MetadataXmlSpec extends Spec {
         None,
         TemplateType.XML,
         Some(true),
-        None,
         None,
         None,
         None
@@ -268,7 +413,6 @@ class MetadataXmlSpec extends Spec {
         None,
         Some(true),
         None,
-        None,
         None
       )
     )
@@ -295,9 +439,18 @@ class MetadataXmlSpec extends Spec {
         Some(true),
         Some(true),
         None,
-        None,
         None
       )
     )
+  }
+
+  "XML declaration" should "be generated as standalone" in {
+    val expected = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>"""
+    MetadataXml.xmlDec(true) shouldBe expected
+  }
+
+  "XML declaration" should "be generated as NOT standalone" in {
+    val expected = """<?xml version="1.0" encoding="UTF-8" standalone="no"?>"""
+    MetadataXml.xmlDec(false) shouldBe expected
   }
 }

@@ -143,6 +143,11 @@ class ConfigModule(
     private def authToken(destinationServiceKey: String): Option[Authorization] =
       getString(destinationServiceKey, "authorization-token").map(a => Authorization(s"Bearer $a"))
 
+    private def authTokenMap(destinationServiceKey: String): Map[AuthorizationName, Authorization] =
+      asStringStringMap(s"${qualifiedDestinationServiceKey(destinationServiceKey)}.authorization-token-map")
+        .getOrElse(Map[String, String]())
+        .map { case (key, value) => AuthorizationName(key) -> Authorization(s"Bearer $value") }
+
     private val enableAuditKey = "enable-audit"
     def auditDestinations: Boolean = getConfBool(s"destination-services.$enableAuditKey", false)
 
@@ -164,6 +169,7 @@ class ConfigModule(
             name,
             baseUrl(destinationServiceKey) + basePath(destinationServiceKey),
             authToken(destinationServiceKey),
+            authTokenMap(destinationServiceKey),
             httpHeaders(destinationServiceKey)
           )
           Some((name, configuration))

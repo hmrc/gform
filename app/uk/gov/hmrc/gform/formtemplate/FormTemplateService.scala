@@ -19,7 +19,7 @@ package uk.gov.hmrc.gform.formtemplate
 import cats.implicits._
 import org.slf4j.LoggerFactory
 import play.api.libs.json.JsObject
-import uk.gov.hmrc.gform.config.{ AppConfig, NRSConnectorConfig }
+import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.core.{ FOpt, _ }
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.formredirect.FormRedirect
@@ -29,7 +29,7 @@ import uk.gov.hmrc.gform.repo.Repo
 import uk.gov.hmrc.gform.sharedmodel.{ HandlebarsSchemaId, HandlebarsTemplateId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DataOutputFormat.HBS
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.{ DataStore, HandlebarsHttpApi, HmrcDms }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.{ AsyncHandlebarsHttpApi, DataStore, HandlebarsHttpApi, HmrcDms }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DestinationId, Destinations, UploadableConditioning }
 
 import scala.concurrent.{ ExecutionContext, Future }
@@ -46,9 +46,8 @@ class FormTemplateService(
   formRedirectRepo: Repo[FormRedirect],
   handlebarsTemplateAlgebra: HandlebarsTemplateAlgebra[FOpt],
   handlebarsSchemaAlgebra: HandlebarsSchemaAlgebra[FOpt],
-  appConfig: AppConfig,
-  nrsConnectorConfig: NRSConnectorConfig,
-  gformFrontendConnector: GformFrontendConnector
+  gformFrontendConnector: GformFrontendConnector,
+  configModule: ConfigModule
 )(implicit
   ec: ExecutionContext
 ) extends Verifier with Rewriter with SubstituteExpressions with SubstituteBooleanExprs
@@ -145,10 +144,11 @@ class FormTemplateService(
         handlebarsSchemaIds <- handlebarsSchemaAlgebra.getAllIds
         _ <- verify(
                formTemplateConfirmationsUpdated,
-               appConfig,
-               nrsConnectorConfig,
+               configModule.appConfig,
+               configModule.nrsConfig,
                handlebarsSchemaIds,
-               booleanExpressionsContextSubstituted
+               booleanExpressionsContextSubstituted,
+               configModule.DestinationsServicesConfig()
              )(expressionsContext)
         formTemplateUpdated <- rewrite(formTemplateConfirmationsUpdated)
       } yield formTemplateUpdated
@@ -158,6 +158,7 @@ class FormTemplateService(
         case destinationList: Destinations.DestinationList =>
           destinationList.destinations.collect {
             case h: HandlebarsHttpApi if h.payload.isEmpty          => h.id
+            case h: AsyncHandlebarsHttpApi if h.payload.isEmpty     => h.id
             case d: DataStore if d.handlebarPayload                 => d.id
             case h: HmrcDms if h.dataOutputFormat.exists(_ === HBS) => h.id
           }
@@ -213,6 +214,9 @@ class FormTemplateService(
             case destinationList: Destinations.DestinationList =>
               destinationList.copy(destinations = destinationList.destinations.map {
                 case h: HandlebarsHttpApi if h.payload.isEmpty =>
+                  val payload = getPayload(h.id, h.convertSingleQuotes)
+                  h.copy(payload = payload)
+                case h: AsyncHandlebarsHttpApi if h.payload.isEmpty =>
                   val payload = getPayload(h.id, h.convertSingleQuotes)
                   h.copy(payload = payload)
                 case h: HmrcDms if h.payload.isEmpty =>

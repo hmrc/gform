@@ -116,12 +116,14 @@ class TestOnlyController(
         .getFormTemplateRaw(formTemplateId)
         .map { rawTemplate =>
           val exprs = for {
-            expressionsContext        <- ExprSubstitutions.from(rawTemplate)
-            booleanExpressionsContext <- BooleanExprSubstitutions.from(rawTemplate)
+            expressionsContext               <- ExprSubstitutions.from(rawTemplate)
+            booleanExpressionsContext        <- BooleanExprSubstitutions.from(rawTemplate)
+            exprSubstitutionsResolved        <- expressionsContext.resolveSelfReferences
+            exprBooleanSubstitutionsResolved <- booleanExpressionsContext.resolveSelfReferences
           } yield {
-            val expressions0: ExprSubstitutions = substituteExpr(expressionsContext)
+            val expressions0: ExprSubstitutions = substituteExpr(exprSubstitutionsResolved)
             val (expressionsSubs, errorMap): (ExprSubstitutions, Map[ExpressionId, String]) =
-              substituteBooleanExprsInExprs(booleanExpressionsContext, expressions0)
+              substituteBooleanExprsInExprs(exprBooleanSubstitutionsResolved, expressions0)
             val expressionsResolved: Either[UnexpectedState, ExprSubstitutions] =
               TopLevelExpressions.resolveReferences(expressionsSubs)
             ExpressionsLookup(
@@ -178,14 +180,20 @@ class TestOnlyController(
           case Attr.FromArray(insts)  => insts.flatMap(a => examples(dataRetrieveId, a, true))
         }
 
-        DataRetrieveDescription(definition.tpe.name, json, attrExamples, definition.documentationUrl, isArrayResult)
+        DataRetrieveDescription(
+          definition.tpe.name,
+          json,
+          attrExamples,
+          definition.documentationUrl,
+          isArrayResult
+        )
       }
 
       Ok(Json.toJson(dataRetrieveDescriptions)).pure[Future]
     }
 
   def getFromDes(url: String): Action[AnyContent] =
-    Action.async { request =>
+    Action.async { implicit request =>
       val urlWithQueryString = url + Option(request.rawQueryString)
         .filterNot(_.isEmpty)
         .map(qs => s"?$qs")
@@ -292,6 +300,18 @@ class TestOnlyController(
                     )
                     Ok(res)
                 }
+              case a: Destination.AsyncHandlebarsHttpApi =>
+                a.payload match {
+                  case None => BadRequest(s"Destination '${a.id.id}' is missing payload data")
+                  case Some(payload) =>
+                    val res = RealHandlebarsTemplateProcessor(
+                      payload,
+                      HandlebarsTemplateProcessorModel.empty,
+                      FocussedHandlebarsModelTree(modelTree),
+                      a.payloadType
+                    )
+                    Ok(res)
+                }
               case h: Destination.HmrcDms =>
                 h.payload match {
                   case None => BadRequest(s"Destination '${h.id.id}' is missing payload data")
@@ -352,10 +372,11 @@ class TestOnlyController(
     destinations match {
       case dl: Destinations.DestinationList =>
         dl.destinations.find {
-          case (d: Destination.HandlebarsHttpApi) if d.id === id => true
-          case (d: Destination.DataStore) if d.id === id         => true
-          case (d: Destination.HmrcDms) if d.id === id           => true
-          case _                                                 => false
+          case (d: Destination.HandlebarsHttpApi) if d.id === id      => true
+          case (d: Destination.AsyncHandlebarsHttpApi) if d.id === id => true
+          case (d: Destination.DataStore) if d.id === id              => true
+          case (d: Destination.HmrcDms) if d.id === id                => true
+          case _                                                      => false
         }
       case _: Destinations.DestinationPrint => None
     }

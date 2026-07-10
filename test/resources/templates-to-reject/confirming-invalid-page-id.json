@@ -31,11 +31,11 @@
         ],
         "redirects": [
           {
-            "if": "${contentInfo = 0}",
+            "if": "${1 = 0}",
             "pageId": "bankAccountPage1"
           },
           {
-            "if": "${contentInfo = 1}",
+            "if": "${0 = 1}",
             "pageId": "bankAccountPage2"
           }
         ]

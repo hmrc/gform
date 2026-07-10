@@ -27,7 +27,7 @@ final case class SdesConfig(
   lockTTL: Long,
   welshDefaults: WelshDefaults,
   infoArchive: SdesRouting,
-  pegaCaseflow: SdesRouting,
+  caseflow: SdesRouting,
   dataLakehouse: SdesRouting
 )
 

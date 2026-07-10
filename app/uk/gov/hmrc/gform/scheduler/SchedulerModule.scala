@@ -31,14 +31,17 @@ import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.FiniteDuration
 import pureconfig.generic.auto._
 import uk.gov.hmrc.gform.nrs.NRSConnector
-import uk.gov.hmrc.gform.scheduler.datalakehouse.{ DataLakehouseQueuePollingService, DataLakehouseQueueService, DataLakehouseWorkItemRepo }
+import uk.gov.hmrc.gform.scheduler.asynchandlebars.{ AsyncHandlebarsQueuePollingService, AsyncHandlebarsQueueService }
+import uk.gov.hmrc.gform.scheduler.datalakehouse.{ DataLakehouseQueuePollingService, DataLakehouseQueueService }
 import uk.gov.hmrc.gform.scheduler.nrsOrchestrator.{ NrsOrchestratorAttachmentQueuePollingService, NrsOrchestratorAttachmentQueueService, NrsOrchestratorAttachmentWorkItemRepo, NrsOrchestratorQueuePollingService, NrsOrchestratorQueueService, NrsOrchestratorWorkItemRepo }
+import uk.gov.hmrc.gform.submission.handlebars.HandlebarsHttpApiModule
 
 class SchedulerModule(
   configModule: ConfigModule,
   mongoModule: MongoModule,
   sdesModule: SdesModule,
   akkaModule: AkkaModule,
+  handlebarsHttpApiModule: HandlebarsHttpApiModule,
   applicationLifecycle: ApplicationLifecycle,
   nrsConnector: NRSConnector,
   nrsOrchestratorNotificationRepository: NrsOrchestratorWorkItemRepo,
@@ -50,7 +53,8 @@ class SchedulerModule(
     dataStore: DestinationConfig,
     infoArchive: DestinationConfig,
     dataLakehouse: DestinationConfig,
-    nrsOrchestrator: DestinationConfig
+    nrsOrchestrator: DestinationConfig,
+    asyncHandlebars: DestinationConfig
   )
   case class DestinationConfig(queue: QueueConfig, poller: PollerConfig)
   case class QueueConfig(retryAfter: FiniteDuration, maxFailureCount: Int)
@@ -115,12 +119,10 @@ class SchedulerModule(
     infoArchiveQueueService
   )
 
-  private val dataLakehouseNotificationRepository = new DataLakehouseWorkItemRepo(mongoModule.mongoComponent)
-
   val dataLakehouseQueueService =
     new DataLakehouseQueueService(
       sdesModule.sdesService,
-      dataLakehouseNotificationRepository,
+      sdesModule.dataLakehouseWorkItemRepo,
       config.dataLakehouse.poller.pollLimit,
       config.dataLakehouse.queue.maxFailureCount,
       config.dataLakehouse.queue.retryAfter.toMillis
@@ -166,6 +168,23 @@ class SchedulerModule(
     config.nrsOrchestrator.poller.interval,
     config.nrsOrchestrator.poller.enabled,
     nrsOrchestratorAttachmentQueueService
+  )
+
+  val asyncHandlebarsQueueService =
+    new AsyncHandlebarsQueueService(
+      handlebarsHttpApiModule.asyncHandlebarsApiExecutor,
+      sdesModule.asyncHandlebarsWorkItemRepo,
+      config.asyncHandlebars.poller.pollLimit,
+      config.asyncHandlebars.queue.maxFailureCount,
+      config.asyncHandlebars.queue.retryAfter.toMillis
+    )
+
+  new AsyncHandlebarsQueuePollingService(
+    akkaModule.actorSystem,
+    config.asyncHandlebars.poller.initialDelay,
+    config.asyncHandlebars.poller.interval,
+    config.asyncHandlebars.poller.enabled,
+    asyncHandlebarsQueueService
   )
 
   new SdesSubmissionAlertJob(

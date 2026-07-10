@@ -457,6 +457,14 @@ class HandlebarsTemplateProcessorHelpers(
     }
   }
 
+  def strEqual(first: Any, second: Any): Boolean = logBoolean("strEqual", first, second) {
+    ifNotNullAsBoolean(first) { f =>
+      ifNotNullAsBoolean(second) { s =>
+        asBoolean(f === s)
+      }
+    }
+  }
+
   def isSigned(options: Options): CharSequence = log("isSigned") {
     hasStatus(options, Signed)
   }
@@ -598,6 +606,8 @@ class HandlebarsTemplateProcessorHelpers(
 
   def stripSpaces(s: Any): CharSequence = log("stripSpaces", s)(ifNotNullAsString(s)(_.replaceAll("\\s", "")))
 
+  def stripHyphens(s: Any): CharSequence = log("stripHyphens", s)(ifNotNullAsString(s)(_.replaceAll("-", "")))
+
   def not(s: Any): CharSequence = log("not", s) {
     ifNotNullAsString(s) { v =>
       (!asBoolean(v)).toString
@@ -641,6 +651,10 @@ class HandlebarsTemplateProcessorHelpers(
           .exists(_ === v)
           .toString
       }
+  }
+
+  def toBoolean(testValue: Any): Boolean = logBoolean("toBoolean", testValue) {
+    asBoolean(testValue)
   }
 
   def plus(first: Any, options: Options): CharSequence = log("plus", first :: options.params.toList: _*) {
@@ -727,6 +741,8 @@ class HandlebarsTemplateProcessorHelpers(
 
   private def ifNotNullAsString(t: Any)(f: String => CharSequence): CharSequence = NullString.ifNotNull(t)(f)
 
+  private def ifNotNullAsBoolean(t: Any)(f: String => Boolean): Boolean = NullString.ifNotNullBoolean(t)(f)
+
   private def ifNotNullAsNumber(t: Any)(f: Double => CharSequence): CharSequence =
     NullString.ifNotNull(t)(v => f(v.replaceAll(",", "").toDouble))
 
@@ -769,6 +785,13 @@ class HandlebarsTemplateProcessorHelpers(
     result
   }
 
+  private def logBoolean(functionName: String, params: Any*)(f: => Boolean): Boolean = {
+    logger.debug(s"$functionName(${logArgs(params: _*)}) called")
+    val result = f
+    logger.debug(s"$functionName(${logArgs(params: _*)}) result is: ${show(result)}")
+    result
+  }
+
   private def show(v: Any): String = v match {
     case null             => "null"
     case cs: CharSequence => s""""$cs": ${cs.getClass.getSimpleName}"""
@@ -787,6 +810,9 @@ object NullString extends CharSequence {
 
   def ifNotNull(t: Any)(f: String => CharSequence): CharSequence =
     if (isNull(t)) NullString else f(t.toString)
+
+  def ifNotNullBoolean(t: Any)(f: String => Boolean): Boolean =
+    if (isNull(t)) false else f(t.toString)
 
   override def length(): Int = 4
   override def charAt(index: Int): Char = "null".charAt(index)

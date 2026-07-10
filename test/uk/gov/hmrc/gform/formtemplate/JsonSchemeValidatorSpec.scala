@@ -286,32 +286,6 @@ class JsonSchemeValidatorSpec extends FunSuite {
   }
 
   test(
-    "validateJson rejects the form gracefully when the property hints is used when the type property is not either of [choice, revealingChoice]"
-  ) {
-    val testProperties =
-      json"""
-          {
-            "id": "testId",
-            "label": "test label",
-            "type": "text",
-            "hints": [
-              "Test hint 1",
-              "Test hint 2"
-            ]
-          }
-        """
-
-    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
-
-    val result = validateJson(jsonTemplate)
-
-    val expectedResult =
-      List("Error at ID <testId>: Property hints can only be used with type: [choice, revealingChoice]")
-
-    runInvalidJsonTest(result, expectedResult)
-  }
-
-  test(
     "validateJson rejects the form gracefully when the property optionHelpText is used when the type property is not either of [choice, revealingChoice]"
   ) {
     val testProperties =
@@ -680,10 +654,6 @@ class JsonSchemeValidatorSpec extends FunSuite {
               "Test choice 2"
             ],
             "multivalue": true,
-            "hints": [
-              "Test hint 1",
-              "Test hint 2"
-            ],
             "optionHelpText": [
               {
                 "en": "Test English optionHelpText",
@@ -709,7 +679,6 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val expectedResult = List(
       "Error at ID <testId>: Property dividerPosition can only be used with type: [choice, revealingChoice]",
-      "Error at ID <testId>: Property hints can only be used with type: [choice, revealingChoice]",
       "Error at ID <testId>: Property noneChoice can only be used with type: [choice, revealingChoice]",
       "Error at ID <testId>: Property multivalue can only be used with type: [choice, revealingChoice]",
       "Error at ID <testId>: Property optionHelpText can only be used with type: [choice, revealingChoice]",
@@ -1314,10 +1283,6 @@ class JsonSchemeValidatorSpec extends FunSuite {
               "Test choice 2"
             ],
             "multivalue": true,
-            "hints": [
-              "Test hint 1",
-              "Test hint 2"
-            ],
             "optionHelpText": [
               {
                 "en": "Test English optionHelpText",
@@ -1343,7 +1308,6 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     val expectedResult = List(
       "Error at ID <testId>: Property dividerPosition can only be used with type: [choice, revealingChoice]",
-      "Error at ID <testId>: Property hints can only be used with type: [choice, revealingChoice]",
       "Error at ID <testId>: Property noneChoice can only be used with type: [choice, revealingChoice]",
       "Error at ID <testId>: Property multivalue can only be used with type: [choice, revealingChoice]",
       "Error at ID <testId>: Property optionHelpText can only be used with type: [choice, revealingChoice]",
@@ -5253,10 +5217,6 @@ class JsonSchemeValidatorSpec extends FunSuite {
               "Test choice 2"
             ],
             "multivalue": true,
-            "hints": [
-              "Test hint 1",
-              "Test hint 2"
-            ],
             "optionHelpText": [
               {
                 "en": "Test English optionHelpText",
@@ -5300,10 +5260,6 @@ class JsonSchemeValidatorSpec extends FunSuite {
               "Test choice 2"
             ],
             "multivalue": true,
-            "hints": [
-              "Test hint 1",
-              "Test hint 2"
-            ],
             "optionHelpText": [
               {
                 "en": "Test English optionHelpText",
