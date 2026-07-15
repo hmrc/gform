@@ -42,15 +42,16 @@ class NrsOrchestratorQueueService(
     nrsConnector
       .submit(
         workItem.envelopeId,
-        workItem.businessId,
-        workItem.notableEvent,
-        workItem.onSubmitHeaders,
-        workItem.destinationResultData,
+        workItem.data.businessId,
+        workItem.data.notableEvent,
+        workItem.data.onSubmitHeaders,
+        workItem.data.destinationResultData,
         workItem.submissionRef,
-        workItem.payload,
-        workItem.userAuthToken,
-        workItem.identityData,
-        workItem.submissionDate
+        workItem.data.payload,
+        workItem.data.userAuthToken,
+        workItem.data.identityData,
+        workItem.data.submissionDate,
+        workItem.formTemplateId
       )
       .flatMap {
         case response if nrsConnector.nrsServerFailure(response) =>

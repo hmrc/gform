@@ -37,14 +37,14 @@ class NrsOrchestratorAttachmentQueueService(
   override def sendWorkItem(nrsWorkItem: WorkItem[NrsOrchestratorAttachmentWorkItem]): Future[Unit] = {
     implicit val hc: HeaderCarrier = HeaderCarrier()
     val workItem = nrsWorkItem.item
-    logger.debug(s"Retry of nrsOrchestrator attachment ${workItem.attachment.id}")
+    logger.debug(s"Retry of nrsOrchestrator attachment ${workItem.data.attachment.id}")
 
     nrsConnector
       .submitObjectStoreAttachment(
-        workItem.nrSubmissionId,
-        workItem.attachment,
-        workItem.businessId,
-        workItem.notableEvent
+        workItem.data.nrSubmissionId,
+        workItem.data.attachment,
+        workItem.data.businessId,
+        workItem.data.notableEvent
       )
       .flatMap {
         case response if nrsConnector.nrsServerFailure(response) =>
