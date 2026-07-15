@@ -36,7 +36,7 @@ final case class NrsOrchestratorWorkItemOld(
   submissionDate: String,
   userAuthToken: String,
   identityData: JsObject
-)  //TODO: This is an old NRS data structure stored in MongoDB. Remove this and fallback below after no instances are left in mongoDB. GFORMS-4103
+) //TODO: This is an old NRS data structure stored in MongoDB. Remove this and fallback below after no instances are left in mongoDB. GFORMS-4103
 
 object NrsOrchestratorWorkItemOld {
   private val format: OFormat[NrsOrchestratorWorkItemOld] = Json.format[NrsOrchestratorWorkItemOld]
