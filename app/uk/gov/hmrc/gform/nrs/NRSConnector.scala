@@ -280,7 +280,7 @@ class NRSConnector(
   }
 
   private def getApiKey(businessId: BusinessId): String =
-    apiKeys.get(businessId).getOrElse(throw new Exception(s"NRS api key not found for $businessId"))
+    apiKeys.getOrElse(businessId, throw new Exception(s"NRS api key not found for $businessId"))
 
   //Documentation: https://confluence.tools.tax.service.gov.uk/display/NR/Attachments+API+specification
   def submitObjectStoreAttachment(
@@ -383,7 +383,6 @@ class NRSConnector(
             notableEvent,
             onSubmitHeaders,
             destinationResultData,
-          submissionRef,
             payload,
             submissionDate,
             userAuthToken,
