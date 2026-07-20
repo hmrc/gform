@@ -26,8 +26,8 @@ import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.config.{ AppConfig, NRSConnectorConfig }
 import uk.gov.hmrc.gform.core.FOpt
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
-import uk.gov.hmrc.gform.formtemplate.{ BooleanExprSubstitutions, ExprSubstitutions, Rewriter, Verifier }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
+import uk.gov.hmrc.gform.formtemplate.{ BooleanExprSubstitutions, ExprSubstitutions, ExpressionId, Rewriter, Verifier }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Constant, FormTemplate }
 
 import scala.util.Using
 
@@ -82,17 +82,29 @@ class FormComponentRejectSpec extends Spec with TableDrivenPropertyChecks {
       ("choice-value-size-expr-wrong-value",        "Expression 'hasDifferentName.baz.size' has wrong value baz. hasDifferentName has these values: foo, bar"),
       ("choice-options-value-expr-not-in-atl",      "The value of 'choiceId' is not valid. The component expression value must be within the scope of an ATL."),
       ("declaration-section-with-enterable-field-in-task-list",     "A declarationSection in a task list cannot contain enterable fields. Field 'text' is not Info or Mini Summary or Table field."),
-      ("declaration-section-without-summary-section-in-task-list",   "A destinationSection requires a summarySection in a task list.")
-
-      // format: on",
+      ("declaration-section-without-summary-section-in-task-list",  "A destinationSection requires a summarySection in a task list."),
+      ("confirmation-disallow-top-level-expression", "Invalid confirmation: 'confirmationQuestion'. Cannot confirm top level expression as a field. Please remove 'companyNameEntered' from 'fieldsConfirmed' and put it in 'expressionsConfirmed' instead.")
+      // format: on
     )
     val appConfig = AppConfig.loadOrThrow(ConfigFactory.load())
     val nrsConfig = NRSConnectorConfig(Map.empty, "", "")
+    val exprSubstitutions = ExprSubstitutions(
+      Map(
+        ExpressionId("companyNameEntered") -> Constant("") // Needed for confirmation-disallow-top-level-expression
+      )
+    )
     forAll(table) { case (fileName, expectedMessage) =>
       val jsResult = readAsFormTemplate(fileName)
       jsResult match {
         case JsSuccess(formTemplate, _) =>
-          val verificationResult: FOpt[Unit] = new Verifier {}.verify(formTemplate, appConfig, nrsConfig, List.empty[HandlebarsSchemaId], BooleanExprSubstitutions.empty, Map())(ExprSubstitutions.empty)
+          val verificationResult: FOpt[Unit] = new Verifier {}.verify(
+            formTemplate,
+            appConfig,
+            nrsConfig,
+            List.empty[HandlebarsSchemaId],
+            BooleanExprSubstitutions.empty,
+            Map()
+          )(exprSubstitutions)
           verificationResult.value.futureValue shouldBe Left(UnexpectedState(expectedMessage))
         case JsError(errors) => fail("Invalid formTemplate definition: " + errors)
       }

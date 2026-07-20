@@ -2209,7 +2209,8 @@ object FormTemplateValidator {
   }
 
   def validateConfirmations(
-    pages: List[Page]
+    pages: List[Page],
+    expressionIds: List[ExpressionId]
   ): ValidationResult = {
 
     val cantConfirmFields: Set[FormComponentId] = pages
@@ -2228,7 +2229,7 @@ object FormTemplateValidator {
     val confirmationValidation =
       confirmationRelatedData.foldLeft(ConfirmationPageValidation(Set.empty, cantConfirmFields, Nil)) {
         case (acc, (Some(pageId), None))    => acc.addPageId(pageId)
-        case (acc, (_, Some(confirmation))) => acc.validateConfirmation(confirmation)
+        case (acc, (_, Some(confirmation))) => acc.validateConfirmation(confirmation, expressionIds)
         case (acc, (None, None))            => acc
       }
 
@@ -2426,7 +2427,9 @@ final case class ConfirmationPageValidation(
   validationResult: List[ValidationResult]
 ) {
   def addPageId(pageId: PageId) = this.copy(pageIds = pageIds + pageId)
-  def validateConfirmation(confirmation: Confirmation) = {
+  def validateConfirmation(confirmation: Confirmation, expressionIds: List[ExpressionId]) = {
+    val expressionIdsAsSet: Set[FormComponentId] =
+      expressionIds.map(expressionId => FormComponentId(expressionId.id)).toSet
     val confirmationId = confirmation.question.id
     val errorPrefix = s"Invalid confirmation: '${confirmationId.value}'."
     val mandatoryFields =
@@ -2453,6 +2456,10 @@ final case class ConfirmationPageValidation(
           if (cantConfirmFields(fcId)) {
             Invalid(
               s"$errorPrefix Cannot confirm field: '$fcId'. Components of types: info, miniSummaryList or table cannot be confirmed."
+            )
+          } else if (expressionIdsAsSet(fcId)) {
+            Invalid(
+              s"$errorPrefix Cannot confirm top level expression as a field. Please remove '$fcId' from 'fieldsConfirmed' and put it in 'expressionsConfirmed' instead."
             )
           } else if (fcId === confirmationId) {
             Invalid(
