@@ -116,8 +116,9 @@ object BooleanExprId {
 }
 
 class SpecimenExprSubstitutions extends ExprSubstitutions(Map.empty[ExpressionId, Expr])
+
 case class ExprSubstitutions(expressions: Map[ExpressionId, Expr]) {
-  def resolveSelfReferences: Either[UnexpectedState, ExprSubstitutions] =
+  private def resolveSelfReferences: Either[UnexpectedState, ExprSubstitutions] =
     TopLevelExpressions.resolveReferences(this)
 }
 
@@ -144,16 +145,26 @@ object ExprSubstitutions extends Substitutions[ExpressionId, Expr] {
       case JsSuccess(expr, _) => Right(expr)
     }
 
-  def from(templateRaw: FormTemplateRaw): Opt[ExprSubstitutions] =
+  private def from(templateRaw: FormTemplateRaw): Opt[ExprSubstitutions] =
     templateRaw.value \ fieldName match {
       case JsDefined(json) =>
         fromJsValue(json)(ExpressionId.apply)(toExpression)(toExpressionFromObj).map(ExprSubstitutions.apply)
       case _: JsUndefined => Right(ExprSubstitutions.empty)
     }
+
+  def resolvedFrom(templateRaw: FormTemplateRaw): Opt[ExprSubstitutions] =
+    from(templateRaw).flatMap(_.resolveSelfReferences)
+
 }
 
 case class BooleanExprSubstitutions(expressions: Map[BooleanExprId, BooleanExpr]) {
-  def resolveSelfReferences: Either[UnexpectedState, BooleanExprSubstitutions] = BooleanExpr.resolveReferences(this)
+  private def resolveSelfReferences: Either[UnexpectedState, BooleanExprSubstitutions] =
+    BooleanExpr.resolveReferences(this)
+
+  def resolveExprRefInBooleanExprs(exprSubstitutions: ExprSubstitutions): BooleanExprSubstitutions =
+    BooleanExprSubstitutions(expressions.map { case (id, beExpr) =>
+      (id, ExprSubstituter.booleanExprSubstituter.substitute(exprSubstitutions, beExpr))
+    })
 }
 object BooleanExprSubstitutions extends Substitutions[BooleanExprId, BooleanExpr] {
 
@@ -165,7 +176,7 @@ object BooleanExprSubstitutions extends Substitutions[BooleanExprId, BooleanExpr
 
   def toBooleanExpression(booleanExpr: String): Opt[BooleanExpr] = BooleanExprParser.validate("${" + booleanExpr + "}")
 
-  def from(templateRaw: FormTemplateRaw): Opt[BooleanExprSubstitutions] =
+  private def from(templateRaw: FormTemplateRaw): Opt[BooleanExprSubstitutions] =
     templateRaw.value \ "booleanExpressions" match {
       case JsDefined(json) =>
         fromJsValue(json)(BooleanExprId.apply)(toBooleanExpression)(obj =>
@@ -177,4 +188,7 @@ object BooleanExprSubstitutions extends Substitutions[BooleanExprId, BooleanExpr
         ).map(BooleanExprSubstitutions.apply)
       case _: JsUndefined => Right(BooleanExprSubstitutions.empty)
     }
+
+  def resolvedFrom(templateRaw: FormTemplateRaw): Opt[BooleanExprSubstitutions] =
+    from(templateRaw).flatMap(_.resolveSelfReferences)
 }

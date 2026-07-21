@@ -42,9 +42,7 @@ class TopLevelExpressionsSuite extends FunSuite {
           assertEquals(
             iterable.toList,
             List(
-              (0, List(ExpressionId("foo"))),
-              (1, List(ExpressionId("bar"))),
-              (2, List(ExpressionId("baz")))
+              (0, List.empty[ExpressionId]) // After substitution there are no references left
             )
           )
       }
@@ -241,24 +239,26 @@ class TopLevelExpressionsSuite extends FunSuite {
     )
   }
 
-  test("TopLevelExpressions (12)") {
-    expressionsContextFromJson(
-      Json.obj(
-        "foo" -> "bar",
-        "bar" -> "baz",
-        "baz" -> "foo"
-      )
-    ) { exprSubstitutions =>
-      TopLevelExpressions.resolveReferences(exprSubstitutions) match {
-        case Left(node) =>
-          assertEquals(
-            node,
-            UnexpectedState(
-              "Cycle detected in top level expressions. Graph contains cycle: Some(Cycle(ExpressionId(bar), ExpressionId(bar)~>ExpressionId(baz), ExpressionId(baz), ExpressionId(baz)~>ExpressionId(foo), ExpressionId(foo), ExpressionId(foo)~>ExpressionId(bar), ExpressionId(bar)))"
-            )
+  test("TopLevelExpressions hee") {
+
+    val json = Json.obj(
+      "foo" -> "bar",
+      "bar" -> "baz",
+      "baz" -> "foo"
+    )
+
+    val templateRaw = FormTemplateRaw(Json.obj("expressions" -> json))
+    val expressionsContextOpt: Opt[ExprSubstitutions] = ExprSubstitutions.resolvedFrom(templateRaw)
+    expressionsContextOpt match {
+      case Left(node) =>
+        assertEquals(
+          node,
+          UnexpectedState(
+            "Cycle detected in top level expressions. Graph contains cycle: Some(Cycle(ExpressionId(bar), ExpressionId(bar)~>ExpressionId(baz), ExpressionId(baz), ExpressionId(baz)~>ExpressionId(foo), ExpressionId(foo), ExpressionId(foo)~>ExpressionId(bar), ExpressionId(bar)))"
           )
-        case Right(iterable) => fail("Failed cycle detection")
-      }
+        )
+      case Right(iterable) =>
+        fail("Failed cycle detection")
     }
   }
 
@@ -439,44 +439,23 @@ class TopLevelExpressionsSuite extends FunSuite {
   }
 
   test("TopLevelExpressions - self-referencing") {
-    expressionsContextFromJson(
-      Json.obj(
-        "foo" -> "bar",
-        "bar" -> "bar",
-        "baz" -> "foo"
-      )
-    ) { exprSubstitutions =>
-      TopLevelExpressions.resolveReferences(exprSubstitutions) match {
-        case Left(node) =>
-          assertEquals(
-            node,
-            UnexpectedState(
-              "The expression bar cannot reference itself"
-            )
-          )
-        case Right(iterable) => fail("Failed self-referencing detection")
-      }
-    }
-  }
+    val json = Json.obj(
+      "foo" -> "bar",
+      "bar" -> "bar",
+      "baz" -> "foo"
+    )
 
-  test("TopLevelExpressions - hideZeroDecimals") {
-    expressionsContextFromJson(
-      Json.obj(
-        "foo" -> "bar",
-        "bar" -> "bar",
-        "baz" -> "foo"
-      )
-    ) { exprSubstitutions =>
-      TopLevelExpressions.resolveReferences(exprSubstitutions) match {
-        case Left(node) =>
-          assertEquals(
-            node,
-            UnexpectedState(
-              "The expression bar cannot reference itself"
-            )
+    val templateRaw = FormTemplateRaw(Json.obj("expressions" -> json))
+    val expressionsContextOpt: Opt[ExprSubstitutions] = ExprSubstitutions.resolvedFrom(templateRaw)
+    expressionsContextOpt match {
+      case Left(node) =>
+        assertEquals(
+          node,
+          UnexpectedState(
+            "The expression bar cannot reference itself"
           )
-        case Right(iterable) => fail("Failed self-referencing detection")
-      }
+        )
+      case Right(iterable) => fail("Failed self-referencing detection")
     }
   }
 
@@ -493,7 +472,7 @@ class TopLevelExpressionsSuite extends FunSuite {
 
   private def expressionsContextFromJson[A](json: JsValue)(f: ExprSubstitutions => A): A = {
     val templateRaw = FormTemplateRaw(Json.obj("expressions" -> json))
-    val expressionsContextOpt: Opt[ExprSubstitutions] = ExprSubstitutions.from(templateRaw)
+    val expressionsContextOpt: Opt[ExprSubstitutions] = ExprSubstitutions.resolvedFrom(templateRaw)
 
     expressionsContextOpt match {
       case Left(UnexpectedState(error)) => fail("Invalid top level expressions " + error)

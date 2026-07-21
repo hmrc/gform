@@ -21,7 +21,6 @@ import org.slf4j.LoggerFactory
 import play.api.libs.json.JsObject
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.core.{ FOpt, _ }
-import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.formredirect.FormRedirect
 import uk.gov.hmrc.gform.gformfrontend.GformFrontendConnector
 import uk.gov.hmrc.gform.handlebarstemplate.{ HandlebarsSchemaAlgebra, HandlebarsTemplateAlgebra }
@@ -118,22 +117,12 @@ class FormTemplateService(
     booleanExpressionsContext: BooleanExprSubstitutions
   ): FOpt[Unit] = {
 
-    val exprSubstitutionsResolved: Either[UnexpectedState, ExprSubstitutions] = expressionsContext.resolveSelfReferences
+    def substitute(template: FormTemplate) = {
 
-    val exprBooleanSubstitutionsResolved: Either[UnexpectedState, BooleanExprSubstitutions] =
-      booleanExpressionsContext.resolveSelfReferences
-
-    def substitute(template: FormTemplate) =
+      val substitutedFormTemplateExprs: FormTemplate = substituteExpressions(template, expressionsContext)
+      val substitutedFormTemplateBooleanExprs: FormTemplate =
+        substituteBooleanExprs(substitutedFormTemplateExprs, booleanExpressionsContext, expressionsContext)
       for {
-        expressionsContextSubstituted        <- fromOptA(exprSubstitutionsResolved)
-        booleanExpressionsContextSubstituted <- fromOptA(exprBooleanSubstitutionsResolved)
-        substitutedFormTemplateExprs = substituteExpressions(template, expressionsContextSubstituted)
-        substitutedFormTemplateBooleanExprs =
-          substituteBooleanExprs(
-            substitutedFormTemplateExprs,
-            booleanExpressionsContextSubstituted,
-            expressionsContextSubstituted
-          )
         substitutedFormTemplate <- substituteDestinations(substitutedFormTemplateBooleanExprs)
         formTemplateWithPageHeadings = PageHeadingHelper.fillBlankPageHeadings(substitutedFormTemplate)
         formTemplateWithMslUpdated = MiniSummaryListHelper.updateAllMslIncludeIfs(formTemplateWithPageHeadings)
@@ -147,11 +136,12 @@ class FormTemplateService(
                configModule.appConfig,
                configModule.nrsConfig,
                handlebarsSchemaIds,
-               booleanExpressionsContextSubstituted,
+               booleanExpressionsContext,
                configModule.DestinationsServicesConfig()
              )(expressionsContext)
         formTemplateUpdated <- rewrite(formTemplateConfirmationsUpdated)
       } yield formTemplateUpdated
+    }
 
     def substituteDestinations(formTemplate: FormTemplate) = {
       val destIds = formTemplate.destinations match {
