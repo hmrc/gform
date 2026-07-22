@@ -199,12 +199,13 @@ object Substituter {
     ev2: Substituter[A, BooleanExpr]
   ): Substituter[A, ComponentType] = (substitutions, t) =>
     t match {
-      case Text(constraint, value, displayWidth, toUpperCase, prefix, suffix, priority) =>
+      case Text(constraint, value, displayWidth, toUpperCase, removeSpaces, prefix, suffix, priority) =>
         Text(
           constraint,
           value(substitutions),
           displayWidth,
           toUpperCase,
+          removeSpaces,
           prefix(substitutions),
           suffix(substitutions),
           priority

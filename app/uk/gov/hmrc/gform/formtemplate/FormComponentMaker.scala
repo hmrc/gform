@@ -122,6 +122,7 @@ class FormComponentMaker(json: JsValue) {
     toOpt((json \ "displayCharCount").validateOpt[Boolean], "/displayCharCount")
   lazy val displayWidth: Option[String] = (json \ "displayWidth").asOpt[String]
   lazy val toUpperCase: UpperCaseBoolean = (json \ "toUpperCase").asOpt[UpperCaseBoolean].getOrElse(IsNotUpperCase)
+  lazy val removeSpaces: Boolean = (json \ "removeSpaces").asOpt[Boolean].getOrElse(false)
   lazy val displayInSummary: DisplayInSummary =
     (json \ "displayInSummary").asOpt[DisplayInSummary].getOrElse(DisplayInSummary(IsFalse))
   lazy val prefix: Option[SmartString] = (json \ "prefix").asOpt[SmartString]
@@ -504,6 +505,7 @@ class FormComponentMaker(json: JsValue) {
                   dataThreshold,
                   displayWidth,
                   toUpperCase,
+                  removeSpaces,
                   prefix,
                   suffix,
                   priority,

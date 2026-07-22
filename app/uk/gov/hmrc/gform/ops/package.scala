@@ -22,24 +22,24 @@ package object ops {
 
   implicit class FormComponentOps(formComponent: FormComponent) {
     def isSterling = formComponent.`type` match {
-      case Text(_: Sterling, _, _, _, _, _, _)  => true
-      case TextArea(_: Sterling, _, _, _, _, _) => true
-      case _                                    => false
+      case Text(_: Sterling, _, _, _, _, _, _, _) => true
+      case TextArea(_: Sterling, _, _, _, _, _)   => true
+      case _                                      => false
     }
     def isWholeSterling = formComponent.`type` match {
-      case Text(_: WholeSterling, _, _, _, _, _, _)  => true
-      case TextArea(_: WholeSterling, _, _, _, _, _) => true
-      case _                                         => false
-    }
-    def isNumber = formComponent.`type` match {
-      case Text(Number(_, _, _, _), _, _, _, _, _, _)  => true
-      case TextArea(Number(_, _, _, _), _, _, _, _, _) => true
+      case Text(_: WholeSterling, _, _, _, _, _, _, _) => true
+      case TextArea(_: WholeSterling, _, _, _, _, _)   => true
       case _                                           => false
     }
+    def isNumber = formComponent.`type` match {
+      case Text(Number(_, _, _, _), _, _, _, _, _, _, _) => true
+      case TextArea(Number(_, _, _, _), _, _, _, _, _)   => true
+      case _                                             => false
+    }
     def isPositiveNumber = formComponent.`type` match {
-      case Text(PositiveNumber(_, _, _, _), _, _, _, _, _, _)  => true
-      case TextArea(PositiveNumber(_, _, _, _), _, _, _, _, _) => true
-      case _                                                   => false
+      case Text(PositiveNumber(_, _, _, _), _, _, _, _, _, _, _) => true
+      case TextArea(PositiveNumber(_, _, _, _), _, _, _, _, _)   => true
+      case _                                                     => false
     }
 
     def isNumeric =
