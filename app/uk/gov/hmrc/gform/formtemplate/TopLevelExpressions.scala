@@ -91,7 +91,7 @@ object TopLevelExpressions {
           ),
         iterable =>
           ExprSubstitutions(
-            iterable.toList.reverse.foldLeft(exprSubstitutions.expressions) { case (acc0, (index, layerNodes)) =>
+            iterable.toList.reverse.foldLeft(exprSubstitutions.expressions) { case (acc0, (_, layerNodes)) =>
               layerNodes.foldLeft(acc0) { case (acc, expr) =>
                 resolveExpr(acc, expr)
               }
@@ -101,110 +101,14 @@ object TopLevelExpressions {
     }
   }
 
-  def resolveExpr(expressions: Map[ExpressionId, Expr], expressionId: ExpressionId): Map[ExpressionId, Expr] = {
+  private def resolveExpr(expressions: Map[ExpressionId, Expr], expressionId: ExpressionId): Map[ExpressionId, Expr] = {
 
-    def loopDateExpr(dateExpr: DateExpr): DateExpr =
-      dateExpr match {
-        case d @ DateValueExpr(_) => d
-        case d @ DateFormCtxVar(FormCtx(formComponentId)) =>
-          expressions.get(ExpressionId(formComponentId.value)).fold[DateExpr](d) {
-            case DateCtx(value)                                             => value
-            case IfElse(cond, Expr2DateExpr(dExpr1), Expr2DateExpr(dExpr2)) => DateIfElse(cond, dExpr1, dExpr2)
-            case Else(Expr2DateExpr(dExpr1), Expr2DateExpr(dExpr2))         => DateOrElse(dExpr1, dExpr2)
-            case FormCtx(fcId)                                              => DateFormCtxVar(FormCtx(fcId))
-            case _                                                          => d
-          }
-        case d @ HmrcTaxPeriodCtx(FormCtx(fcId), _) =>
-          expressions.get(ExpressionId(fcId.value)).fold[DateExpr](d) {
-            case DateCtx(value) => value
-            case _              => d
-          }
-        case d @ DataRetrieveDateCtx(_, _)     => d
-        case DateExprWithOffset(dExpr, offset) => DateExprWithOffset(loopDateExpr(dExpr), offset)
+    import uk.gov.hmrc.gform.formtemplate.ExprSubstituter._
 
-        case DateIfElse(cond, field1, field2) => DateIfElse(cond, loopDateExpr(field1), loopDateExpr(field2))
-        case DateOrElse(dExpr1, dExpr2)       => DateOrElse(loopDateExpr(dExpr1), loopDateExpr(dExpr2))
-        case DateConstructExpr(dm, year)      => DateConstructExpr(dm, loop(year))
-        case EarliestOf(exprs)                => EarliestOf(exprs.map(loopDateExpr))
-        case LatestOf(exprs)                  => LatestOf(exprs.map(loopDateExpr))
-      }
+    val substituter: Substituter[ExprSubstitutions, Expr] = implicitly[Substituter[ExprSubstitutions, Expr]]
 
-    def loopBooleanExpr(t: BooleanExpr): BooleanExpr = t match {
-      case Equals(l, r)                     => Equals(loop(l), loop(r))
-      case GreaterThan(l, r)                => GreaterThan(loop(l), loop(r))
-      case GreaterThanOrEquals(l, r)        => GreaterThanOrEquals(loop(l), loop(r))
-      case LessThan(l, r)                   => LessThan(loop(l), loop(r))
-      case LessThanOrEquals(l, r)           => LessThanOrEquals(loop(l), loop(r))
-      case Not(e)                           => Not(loopBooleanExpr(e))
-      case Or(left, right)                  => Or(loopBooleanExpr(left), loopBooleanExpr(right))
-      case And(left, right)                 => And(loopBooleanExpr(left), loopBooleanExpr(right))
-      case IsTrue                           => IsTrue
-      case IsFalse                          => IsFalse
-      case Contains(multiValueField, value) => Contains(multiValueField, loop(value))
-      case In(value, dataSource)            => In(loop(value), dataSource)
-      case h @ HasAnswer(_, _)              => h
-      case m @ MatchRegex(expr, regex)      => m
-      case d @ DateBefore(l, r)             => DateBefore(loopDateExpr(l), loopDateExpr(r))
-      case d @ DateAfter(l, r)              => DateAfter(loopDateExpr(l), loopDateExpr(r))
-      case f @ FormPhase(value)             => f
-      case tl @ TopLevelRef(id)             => tl
-      case f @ First(_)                     => f
-      case l @ IsLogin(_)                   => l
-      case d @ DuplicateExists(_)           => d
-    }
+    def loop(e: Expr): Expr = substituter.substitute(ExprSubstitutions(expressions), e)
 
-    def loop(e: Expr): Expr =
-      e match {
-        case Else(l, r)                        => Else(loop(l), loop(r))
-        case Add(l, r)                         => Add(loop(l), loop(r))
-        case Multiply(l, r)                    => Multiply(loop(l), loop(r))
-        case Subtraction(l, r)                 => Subtraction(loop(l), loop(r))
-        case Divide(l, r)                      => Divide(loop(l), loop(r))
-        case HideZeroDecimals(l)               => HideZeroDecimals(loop(l))
-        case Period(l, r, pe)                  => Period(loop(l), loop(r), pe)
-        case Between(l, r, m)                  => Between(loop(l), loop(r), m)
-        case Sum(l)                            => Sum(loop(l))
-        case DateCtx(dateExpr)                 => DateCtx(loopDateExpr(dateExpr))
-        case d @ DateFunction(_)               => d
-        case i @ IfElse(cond, l, r)            => IfElse(loopBooleanExpr(cond), loop(l), loop(r))
-        case f @ FormCtx(formComponentId)      => expressions.getOrElse(ExpressionId(formComponentId.value), f)
-        case AddressLens(_, _)                 => e
-        case AuthCtx(_)                        => e
-        case Constant(_)                       => e
-        case Count(_)                          => e
-        case Index(_)                          => e
-        case FormTemplateCtx(_)                => e
-        case LangCtx                           => e
-        case LinkCtx(_)                        => e
-        case ParamCtx(_)                       => e
-        case PeriodValue(_)                    => e
-        case UserCtx(_)                        => e
-        case Value                             => e
-        case DataRetrieveCtx(_, _)             => e
-        case DataRetrieveCount(_)              => e
-        case LookupColumn(_, _)                => e
-        case CsvCountryCountCheck(_, _, _)     => e
-        case Size(_, _)                        => e
-        case Typed(expr, tpe)                  => Typed(loop(expr), tpe)
-        case IndexOf(_, _)                     => e
-        case IndexOfInChoice(_, _)             => e
-        case IndexOfDataRetrieveCtx(ctx, expr) => IndexOfDataRetrieveCtx(ctx, loop(expr))
-        case NumberedList(_)                   => e
-        case BulletedList(_)                   => e
-        case NumberedListChoicesSelected(_, _) => e
-        case BulletedListChoicesSelected(_, _) => e
-        case StringOps(expr, fn)               => StringOps(loop(expr), fn)
-        case Concat(exprs)                     => Concat(exprs.map(loop))
-        case CountryOfItmpAddress              => e
-        case ChoicesRevealedField(_)           => e
-        case ChoicesSelected(_)                => e
-        case ChoicesAvailable(_, _)            => e
-        case CountSelectedChoices(_)           => e
-        case ChoicesCount(_)                   => e
-        case TaskStatus(_)                     => e
-        case DisplayAsEntered(_)               => e
-        case LookupOps(expr, fn)               => LookupOps(loop(expr), fn)
-      }
     expressions.get(expressionId).fold(expressions) { expr =>
       expressions + (expressionId -> loop(expr))
     }
