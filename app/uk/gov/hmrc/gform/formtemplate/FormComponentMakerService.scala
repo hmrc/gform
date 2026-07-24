@@ -78,7 +78,7 @@ object FormComponentMakerService {
     maybePrefix: Option[SmartString],
     maybeSuffix: Option[SmartString],
     maybePriority: Option[Priority],
-    maybeAutocomplete: Option[AutoComplete],
+    maybeAutoComplete: Option[AutoComplete],
     json: JsValue
   ) = (formatExpr, maybeValueExpr, maybeDisplayWidth) match {
     case (TextFormat(f), HasTextExpression(expr), None) =>
@@ -91,10 +91,10 @@ object FormComponentMakerService {
         maybePrefix,
         maybeSuffix,
         maybePriority,
-        maybeAutocomplete
+        maybeAutoComplete
       ).asRight
     case (TextFormat(f), HasTextExpression(expr), HasDisplayWidth(dw)) =>
-      Text(f, expr, dw, toUpperCase, removeSpaces, maybePrefix, maybeSuffix, maybePriority, maybeAutocomplete).asRight
+      Text(f, expr, dw, toUpperCase, removeSpaces, maybePrefix, maybeSuffix, maybePriority, maybeAutoComplete).asRight
     case _ => createError(Some(formatExpr), maybeValueExpr, false, json, None).asLeft
   }
 

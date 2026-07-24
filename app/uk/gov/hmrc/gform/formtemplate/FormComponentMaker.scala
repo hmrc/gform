@@ -500,7 +500,7 @@ class FormComponentMaker(json: JsValue) {
       multiline         <- optMultiline
       displayCharCount  <- optDisplayCharCount
       priority          <- optPriority
-      autocomplete      <- optAutoComplete
+      autoComplete      <- optAutoComplete
       result <- createObject(
                   maybeFormatExpr,
                   maybeValueExpr,
@@ -512,7 +512,7 @@ class FormComponentMaker(json: JsValue) {
                   prefix,
                   suffix,
                   priority,
-                  autocomplete,
+                  autoComplete,
                   rows.getOrElse(TextArea.defaultRows),
                   displayCharCount.getOrElse(true),
                   json
