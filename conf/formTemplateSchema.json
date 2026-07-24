@@ -815,6 +815,9 @@
         "hint": {
           "$ref": "#/$defs/stringOrEnCyObject"
         },
+        "autocomplete": {
+          "type": "string"
+        },
         "uploadAnotherLabel": {
           "$ref": "#/$defs/stringOrEnCyObject"
         },

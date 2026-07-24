@@ -18,6 +18,7 @@ package uk.gov.hmrc.gform.sharedmodel
 
 import play.api.libs.json._
 import uk.gov.hmrc.gform.Spec
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.AutoComplete.{ FamilyName, GivenName, Organization }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponent, ShortText, Text }
 
 class JsonParseTestValue extends Spec {
@@ -77,6 +78,40 @@ class JsonParseTestValue extends Spec {
           case a @ _                                 => fail(s"expected a Text, got $a")
         }
       )
+    }
+  }
+
+  "A component with a valid autocomplete" should "parse correctly" in {
+
+    for {
+      (snippet, expected) <- List(
+                               (""", "autocomplete" : "given-name" }""", GivenName),
+                               (""", "autocomplete" : "family-name" }""", FamilyName),
+                               (""", "autocomplete" : "organization" }""", Organization)
+                             )
+    } {
+      val jsResult = implicitly[Reads[FormComponent]].reads(Json.parse(startOfJson + snippet))
+      jsResult shouldBe a[JsSuccess[_]]
+      jsResult.map(fv =>
+        fv.`type` match {
+          case Text(_, _, _, _, _, _, _, Some(autocomplete)) => autocomplete should equal(expected)
+          case a @ _                                         => fail(s"expected a Text, got $a")
+        }
+      )
+    }
+  }
+
+  "A component with an invalid autocomplete" should "fail to parse" in {
+
+    for {
+      snippet <- List(
+                   """, "autocomplete" : "given-names" }""",
+                   """, "autocomplete" : "first-name" }""",
+                   """, "autocomplete" : "organisation" }"""
+                 )
+    } {
+      val jsResult = implicitly[Reads[FormComponent]].reads(Json.parse(startOfJson + snippet))
+      jsResult shouldBe a[JsError]
     }
   }
 

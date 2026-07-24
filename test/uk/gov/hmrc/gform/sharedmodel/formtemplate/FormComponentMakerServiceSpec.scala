@@ -41,6 +41,7 @@ import uk.gov.hmrc.gform.formtemplate.FormComponentMakerService._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.DisplayWidth._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.TextArea._
 import uk.gov.hmrc.gform.Helpers.toSmartString
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.AutoComplete.FamilyName
 
 class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks {
 
@@ -64,6 +65,7 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
           None,
           None,
           None,
+          None,
           Json.obj()
         ),
         Text(textConstraint, expr).asRight
@@ -75,6 +77,7 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
           None,
           IsUpperCase,
           removeSpaces = false,
+          None,
           None,
           None,
           None,
@@ -92,6 +95,7 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
           None,
           None,
           None,
+          None,
           Json.obj()
         ),
         Text(textConstraint, expr, xsDisplayWidth).asRight
@@ -103,6 +107,7 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
           Some("xs"),
           IsUpperCase,
           removeSpaces = false,
+          None,
           None,
           None,
           None,
@@ -120,6 +125,7 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
           Some(toSmartString("prefixTest")),
           None,
           None,
+          None,
           Json.obj()
         ),
         Text(textConstraint, expr, xsDisplayWidth, prefix = Some(toSmartString("prefixTest"))).asRight
@@ -134,6 +140,7 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
           Some(toSmartString("prefixTest")),
           Some(toSmartString("suffixTest")),
           Some(Uk),
+          None,
           Json.obj()
         ),
         Text(
@@ -143,6 +150,28 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
           prefix = Some(toSmartString("prefixTest")),
           suffix = Some(toSmartString("suffixTest")),
           priority = Some(Uk)
+        ).asRight
+      ),
+      (
+        createTextObject(
+          TextFormat(textConstraint),
+          Some(TextExpression(expr)),
+          Some("xs"),
+          IsNotUpperCase,
+          Some(toSmartString("prefixTest")),
+          Some(toSmartString("suffixTest")),
+          Some(Uk),
+          Some(FamilyName),
+          Json.obj()
+        ),
+        Text(
+          textConstraint,
+          expr,
+          xsDisplayWidth,
+          prefix = Some(toSmartString("prefixTest")),
+          suffix = Some(toSmartString("suffixTest")),
+          priority = Some(Uk),
+          autoComplete = Some(FamilyName)
         ).asRight
       )
     )
@@ -235,6 +264,7 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
         None,
         None,
         None,
+        None,
         defaultRows,
         defaultDisplayCharCount,
         JsObject(Seq("id" -> JsString("text1")))
@@ -256,6 +286,7 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
         None,
         IsNotUpperCase,
         removeSpaces = false,
+        None,
         None,
         None,
         None,
@@ -283,6 +314,7 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
         None,
         None,
         None,
+        None,
         10,
         defaultDisplayCharCount,
         JsObject(Seq("id" -> JsString("text1")))
@@ -303,6 +335,7 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
       None,
       IsNotUpperCase,
       removeSpaces = false,
+      None,
       None,
       None,
       None,
@@ -329,6 +362,7 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
       None,
       None,
       None,
+      None,
       defaultRows,
       defaultDisplayCharCount,
       JsObject(Seq("id" -> JsString("text1")))
@@ -349,6 +383,7 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
       None,
       IsNotUpperCase,
       removeSpaces = false,
+      None,
       None,
       None,
       None,
