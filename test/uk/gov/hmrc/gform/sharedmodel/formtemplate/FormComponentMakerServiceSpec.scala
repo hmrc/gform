@@ -158,6 +158,7 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
           Some(TextExpression(expr)),
           Some("xs"),
           IsNotUpperCase,
+          removeSpaces = false,
           Some(toSmartString("prefixTest")),
           Some(toSmartString("suffixTest")),
           Some(Uk),
