@@ -38,6 +38,7 @@ case class Text(
   value: Expr,
   displayWidth: DisplayWidth = DisplayWidth.DEFAULT,
   toUpperCase: UpperCaseBoolean = IsNotUpperCase,
+  removeSpaces: Boolean = false,
   prefix: Option[SmartString] = None,
   suffix: Option[SmartString] = None,
   priority: Option[Priority] = None
@@ -592,7 +593,7 @@ object ComponentType {
 
   implicit val leafExprs: LeafExpr[ComponentType] = (path: TemplatePath, t: ComponentType) =>
     t match {
-      case Text(constraint, expr, _, _, prefix, suffix, _) =>
+      case Text(constraint, expr, _, _, _, prefix, suffix, _) =>
         ExprWithPath(path + "value", expr) ::
           LeafExpr(path + "prefix", prefix) ++
           LeafExpr(path + "suffix", suffix) ++

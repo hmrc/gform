@@ -32,6 +32,7 @@ object FormComponentMakerService {
     dataThreshold: Option[Int],
     maybeDisplayWidth: Option[String],
     toUpperCase: UpperCaseBoolean,
+    removeSpaces: Boolean,
     maybePrefix: Option[SmartString],
     maybeSuffix: Option[SmartString],
     maybePriority: Option[Priority],
@@ -46,6 +47,7 @@ object FormComponentMakerService {
           maybeValueExpr,
           maybeDisplayWidth,
           toUpperCase,
+          removeSpaces,
           maybePrefix,
           maybeSuffix,
           maybePriority,
@@ -70,15 +72,16 @@ object FormComponentMakerService {
     maybeValueExpr: Option[ValueExpr],
     maybeDisplayWidth: Option[String],
     toUpperCase: UpperCaseBoolean,
+    removeSpaces: Boolean,
     maybePrefix: Option[SmartString],
     maybeSuffix: Option[SmartString],
     maybePriority: Option[Priority],
     json: JsValue
   ) = (formatExpr, maybeValueExpr, maybeDisplayWidth) match {
     case (TextFormat(f), HasTextExpression(expr), None) =>
-      Text(f, expr, DisplayWidth.DEFAULT, toUpperCase, maybePrefix, maybeSuffix, maybePriority).asRight
+      Text(f, expr, DisplayWidth.DEFAULT, toUpperCase, removeSpaces, maybePrefix, maybeSuffix, maybePriority).asRight
     case (TextFormat(f), HasTextExpression(expr), HasDisplayWidth(dw)) =>
-      Text(f, expr, dw, toUpperCase, maybePrefix, maybeSuffix, maybePriority).asRight
+      Text(f, expr, dw, toUpperCase, removeSpaces, maybePrefix, maybeSuffix, maybePriority).asRight
     case _ => createError(Some(formatExpr), maybeValueExpr, false, json, None).asLeft
   }
 

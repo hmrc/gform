@@ -746,6 +746,9 @@
         "toUpperCase": {
           "type": "boolean"
         },
+        "removeSpaces": {
+          "type": "boolean"
+        },
         "displayInSummary": {
           "oneOf": [
             {
