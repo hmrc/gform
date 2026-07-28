@@ -815,6 +815,9 @@
         "hint": {
           "$ref": "#/$defs/stringOrEnCyObject"
         },
+        "autocomplete": {
+          "type": "string"
+        },
         "uploadAnotherLabel": {
           "$ref": "#/$defs/stringOrEnCyObject"
         },
@@ -1388,6 +1391,20 @@
               }
             }
           ]
+        },
+        "autocomplete": {
+          "required": [
+            "type",
+            "format"
+          ],
+          "properties": {
+            "type": {
+              "pattern": "^(text)$"
+            },
+            "format": {
+              "pattern": "^(text(\\(.+\\))?|shortText)$"
+            }
+          }
         }
       }
     },
