@@ -565,23 +565,33 @@ class HandlebarsTemplateProcessorHelpers(
       def get(line: String) =
         fromField.get(index).cast[ObjectNode].flatMap(_.get(line).cast[TextNode]).map(_.asText()).filterNot(_.isEmpty)
 
-      toCompactedDesAddress(get("street1"), get("street2"), get("street3"), get("street4"))
+      toCompactedDesAddress("addressLine", get("street1"), get("street2"), get("street3"), get("street4"))
     }
 
   def toDesAddressWithoutPostcode(address: java.util.Map[String, String]): CharSequence =
     log("toDesAddressWithoutPostcode", address) {
       def get(line: String) = Option(address.get(line)).map(_.trim).filterNot(_.isEmpty)
 
-      toCompactedDesAddress(get("street1"), get("street2"), get("street3"), get("street4"))
+      toCompactedDesAddress("addressLine", get("street1"), get("street2"), get("street3"), get("street4"))
     }
 
-  private def toCompactedDesAddress(lines: Option[String]*): Handlebars.SafeString =
+  def toRcmAddressWithoutPostcode(address: java.util.Map[String, String]): CharSequence =
+    log("toRcmAddressWithoutPostcode", address) {
+      def get(line: String) = Option(address.get(line)).map(_.trim).filterNot(_.isEmpty)
+
+      if (get("street1").isDefined)
+        toCompactedDesAddress("AddressLine", get("street1"), get("street2"), get("street3"), get("street4"))
+      else
+        toCompactedDesAddress("AddressLine", get("line1"), get("line2"), get("line3"), get("town"))
+    }
+
+  private def toCompactedDesAddress(addrLinePrefix: String, lines: Option[String]*): Handlebars.SafeString =
     new Handlebars.SafeString(
       lines
         .collect { case Some(s) => s }
         .padTo(2, " ")
         .zipWithIndex
-        .map { case (l, i) => s""""addressLine${i + 1}": "${condition(l)}"""" }
+        .map { case (l, i) => s""""$addrLinePrefix${i + 1}": "${condition(l)}"""" }
         .mkString(s",${util.Properties.lineSeparator}")
     )
 

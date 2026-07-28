@@ -199,15 +199,17 @@ object Substituter {
     ev2: Substituter[A, BooleanExpr]
   ): Substituter[A, ComponentType] = (substitutions, t) =>
     t match {
-      case Text(constraint, value, displayWidth, toUpperCase, prefix, suffix, priority) =>
+      case Text(constraint, value, displayWidth, toUpperCase, removeSpaces, prefix, suffix, priority, autoComplete) =>
         Text(
           constraint,
           value(substitutions),
           displayWidth,
           toUpperCase,
+          removeSpaces,
           prefix(substitutions),
           suffix(substitutions),
-          priority
+          priority,
+          autoComplete
         )
       case TextArea(constraint, value, displayWidth, rows, displayCharCount, dataThreshold) =>
         TextArea(
@@ -641,6 +643,14 @@ object Substituter {
     ev: Substituter[A, Expr]
   ): Substituter[A, EmailParameter] = (substitutions, t) => t.copy(value = t.value(substitutions))
 
+  implicit def expressionOutputSubstituter[A](implicit
+    ev: Substituter[A, Expr]
+  ): Substituter[A, ExpressionOutput] = (substitutions, t) => {
+    t.copy(
+      lookup = t.lookup.view.mapValues(expr => expr(substitutions)).toMap
+    )
+  }
+
   implicit def formTemplateSubstituter[A](implicit
     ev: Substituter[A, Expr],
     ev2: Substituter[A, BooleanExpr]
@@ -653,7 +663,8 @@ object Substituter {
       dataRetrieve = t.dataRetrieve(substitutions),
       exitPages = t.exitPages(substitutions),
       customSubmissionRef = t.customSubmissionRef(substitutions),
-      emailExpr = t.emailExpr(substitutions)
+      emailExpr = t.emailExpr(substitutions),
+      expressionsOutput = t.expressionsOutput(substitutions)
     )
 
   implicit def redirectSubstituter[A](implicit

@@ -1033,6 +1033,31 @@ class JsonSchemeValidatorSpec extends FunSuite {
   }
 
   test(
+    "validateJson rejects the form gracefully when the property autocomplete is used and the format property is not [text, text(x,y), shortText]"
+  ) {
+    val testProperties =
+      json"""
+          {
+            "id": "testId",
+            "label": "test label",
+            "type": "text",
+            "format": "number",
+            "autocomplete": "given-name"
+          }
+        """
+
+    val jsonTemplate = constructTestOneSectionJsonTemplate(testProperties)
+
+    val result = validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at ID <testId>: Property autocomplete can only be used with type: [text], format: [text(\\(.+\\))?, shortText]"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test(
     "validateJson rejects the form gracefully when the property prefix is used and the format property is [positiveWholeSterling]"
   ) {
     val testProperties =

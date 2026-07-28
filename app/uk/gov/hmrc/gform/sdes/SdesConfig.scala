@@ -35,7 +35,7 @@ final case class SdesKeyAndCredentialsApiConfig(basePath: String)
 
 final case class WelshDefaults(classificationType: String, businessArea: String)
 
-final case class SdesRouting(apiKey: String, informationType: String, recipientOrSender: String)
+final case class SdesRouting(clientId: String, informationType: String, recipientOrSender: String)
 
 final case class SdesAlertConfig(
   enabled: Boolean,

@@ -258,7 +258,7 @@ class SubstituteExpressionsSuite extends FunSuite with FormTemplateSupport {
       case JsSuccess(normalisedJson, _) =>
         val formTemplate: FormTemplate = normalisedJson.as[FormTemplate]
         val maybeSubstitutions: Opt[ExprSubstitutions] =
-          ExprSubstitutions.from(FormTemplateRaw(normalisedJson.as[JsObject]))
+          ExprSubstitutions.resolvedFrom(FormTemplateRaw(normalisedJson.as[JsObject]))
 
         maybeSubstitutions match {
           case Left(unexpectedState) => fail(unexpectedState.error)

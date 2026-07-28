@@ -27,7 +27,7 @@ class ExprSubstitutionsSuite extends FunSuite {
   private def toSubstitutions(jsonStr: String): Opt[ExprSubstitutions] = {
     val json: JsObject = Json.parse(jsonStr).as[JsObject]
 
-    ExprSubstitutions.from(FormTemplateRaw(json))
+    ExprSubstitutions.resolvedFrom(FormTemplateRaw(json))
   }
 
   test(

@@ -39,7 +39,7 @@ class SdesConnector(
   private val logger = LoggerFactory.getLogger(getClass)
 
   private def mkHeaders(sdesRouting: SdesRouting): Seq[(String, String)] = Seq(
-    "x-client-id"  -> sdesRouting.apiKey,
+    "x-client-id"  -> sdesRouting.clientId,
     "Content-Type" -> "application/json"
   )
 

@@ -29,9 +29,8 @@ import uk.gov.hmrc.gform.BuildInfo
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.core.FOpt
 import uk.gov.hmrc.gform.des.DesAlgebra
-import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.form.FormAlgebra
-import uk.gov.hmrc.gform.formtemplate.{ BooleanExprId, BooleanExprSubstitutions, ExprSubstitutions, ExpressionId, FormTemplateAlgebra, RequestHandlerAlg, Substituter, TopLevelExpressions }
+import uk.gov.hmrc.gform.formtemplate.{ BooleanExprId, BooleanExprSubstituter, BooleanExprSubstitutions, ExprSubstitutions, FormTemplateAlgebra, RequestHandlerAlg }
 import uk.gov.hmrc.gform.repo.Repo
 import uk.gov.hmrc.gform.sharedmodel._
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FormId }
@@ -66,48 +65,31 @@ class TestOnlyController(
 
   private val formTemplatesRepo = new Repo[FormTemplate]("formTemplate", mongoComponent, _._id.value)
 
-  private def substituteExpr(exprSubstitutions: ExprSubstitutions): ExprSubstitutions = {
-    import uk.gov.hmrc.gform.formtemplate.ExprSubstituter._
-    val substituter = implicitly[Substituter[ExprSubstitutions, Expr]]
-    ExprSubstitutions(exprSubstitutions.expressions.map { case (id, expr) =>
-      id -> substituter.substitute(exprSubstitutions, expr)
-    })
-  }
-
-  private def substituteBooleanExprsInExprs(
+  private def eliminateTopLevelReferences(
     booleanExprSubstitutions: BooleanExprSubstitutions,
     exprSubstitutions: ExprSubstitutions
-  ): (ExprSubstitutions, Map[ExpressionId, String]) = {
-    import uk.gov.hmrc.gform.formtemplate.BooleanExprSubstituter._
-    val substituter = implicitly[Substituter[BooleanExprSubstitutions, Expr]]
+  ): ExpressionsLookup = {
+
+    val updBooleanExprSubstitutions: BooleanExprSubstitutions =
+      booleanExprSubstitutions.resolveExprRefInBooleanExprs(exprSubstitutions)
+
     val (errors, successes) = exprSubstitutions.expressions.partitionMap { case (id, expr) =>
       Either
-        .catchOnly[NoSuchElementException](substituter.substitute(booleanExprSubstitutions, expr))
+        .catchOnly[NoSuchElementException](
+          BooleanExprSubstituter.booleanExprSubstituterForExpr.substitute(updBooleanExprSubstitutions, expr)
+        )
         .fold(
           error => Left(id -> error.getMessage),
           success => Right(id -> success)
         )
     }
-    (ExprSubstitutions(successes.toMap), errors.toMap)
-  }
 
-  private def substituteBooleanExpr(
-    booleanExprSubstitutions: BooleanExprSubstitutions,
-    exprSubstitutions: ExprSubstitutions
-  ): Map[BooleanExprId, BooleanExpr] = {
-    import uk.gov.hmrc.gform.formtemplate.BooleanExprSubstituter._
-
-    val substituter = implicitly[Substituter[BooleanExprSubstitutions, BooleanExpr]]
-    import uk.gov.hmrc.gform.formtemplate.Substituter.SubstituterSyntax
-    import uk.gov.hmrc.gform.formtemplate.ExprSubstituter.booleanExprSubstituter
-
-    val booleanExprs = booleanExprSubstitutions.expressions.map { case (id, beExpr) =>
-      id -> beExpr(exprSubstitutions)
+    val updBooleanExprSubstitutions2: Map[BooleanExprId, BooleanExpr] = updBooleanExprSubstitutions.expressions.map {
+      case (id, beExpr) =>
+        id -> BooleanExprSubstituter.booleanExprSubstituterTopLevel.substitute(updBooleanExprSubstitutions, beExpr)
     }
 
-    booleanExprs.map { case (id, expr) =>
-      id -> substituter.substitute(booleanExprSubstitutions, expr)
-    }
+    ExpressionsLookup(successes.toMap, updBooleanExprSubstitutions2, errors.toMap)
   }
 
   def getExpressions(formTemplateId: FormTemplateRawId): Action[AnyContent] =
@@ -116,25 +98,9 @@ class TestOnlyController(
         .getFormTemplateRaw(formTemplateId)
         .map { rawTemplate =>
           val exprs = for {
-            expressionsContext               <- ExprSubstitutions.from(rawTemplate)
-            booleanExpressionsContext        <- BooleanExprSubstitutions.from(rawTemplate)
-            exprSubstitutionsResolved        <- expressionsContext.resolveSelfReferences
-            exprBooleanSubstitutionsResolved <- booleanExpressionsContext.resolveSelfReferences
-          } yield {
-            val expressions0: ExprSubstitutions = substituteExpr(exprSubstitutionsResolved)
-            val (expressionsSubs, errorMap): (ExprSubstitutions, Map[ExpressionId, String]) =
-              substituteBooleanExprsInExprs(exprBooleanSubstitutionsResolved, expressions0)
-            val expressionsResolved: Either[UnexpectedState, ExprSubstitutions] =
-              TopLevelExpressions.resolveReferences(expressionsSubs)
-            ExpressionsLookup(
-              expressionsResolved match {
-                case Right(resolved) => resolved.expressions
-                case Left(_)         => expressionsSubs.expressions
-              },
-              substituteBooleanExpr(booleanExpressionsContext, expressionsSubs),
-              errorMap
-            )
-          }
+            exprSubstitutions        <- ExprSubstitutions.resolvedFrom(rawTemplate)
+            booleanExprSubstitutions <- BooleanExprSubstitutions.resolvedFrom(rawTemplate)
+          } yield eliminateTopLevelReferences(booleanExprSubstitutions, exprSubstitutions)
 
           exprs match {
             case Right(el) => Ok(Json.toJson(el))

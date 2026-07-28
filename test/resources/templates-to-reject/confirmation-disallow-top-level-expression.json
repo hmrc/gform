@@ -1,0 +1,58 @@
+{
+  "_id": "confirmation-disallow-top-level-expression",
+  "formName": "Confirmation page",
+  "version": 1,
+  "description": "",
+  "authConfig": {
+    "authModule": "anonymous"
+  },
+  "expressions": {
+    "companyNameEntered": "companyName"
+  },
+  "sections": [
+    {
+      "title": "Company name",
+      "fields": [
+        {
+          "id": "companyName",
+          "type": "text",
+          "format": "text"
+        }
+      ]
+    },
+    {
+      "title": "Confirmation page",
+      "fields": [
+        {
+          "id": "contentInfo",
+          "label": "",
+          "type": "info",
+          "infoType": "noformat",
+          "infoText": "Company name: **${companyName}**"
+        }
+      ],
+      "confirmation": {
+        "question": {
+          "id": "confirmationQuestion",
+          "type": "choice",
+          "label": "I confirm that entered detail are correct",
+          "format": "yesno"
+        },
+        "fieldsConfirmed": [
+          "companyNameEntered"
+        ]
+      }
+    }
+  ],
+  "acknowledgementSection": {
+    "title": "",
+    "fields": []
+  },
+  "destinations": [
+    {
+      "id": "transitionToSubmitted",
+      "type": "stateTransition",
+      "requiredState": "Submitted"
+    }
+  ]
+}

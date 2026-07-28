@@ -44,28 +44,26 @@ class FormTemplatesControllerRequestHandler[F[_]](
   val futureInterpreter = new RequestHandlerAlg[FOpt] {
     override def handleRequest(templateRaw: FormTemplateRaw, updateHistory: Boolean): FOpt[Unit] = {
 
-      val expressionsContextOpt: Opt[ExprSubstitutions] = ExprSubstitutions.from(templateRaw)
-
-      val booleanExpressionsContextOpt: Opt[BooleanExprSubstitutions] =
-        BooleanExprSubstitutions.from(templateRaw)
-
       val formTemplateOpt: Opt[FormTemplate] = FormTemplate
         .transformAndReads(templateRaw.value)
         .fold(errors => UnexpectedState(errors.toString()).asLeft, valid => valid.asRight)
 
       val formTemplateWithSubstitutions = for {
-        expressionsContext        <- expressionsContextOpt
-        booleanExpressionsContext <- booleanExpressionsContextOpt
-        _                         <- rejectUnusedBooleanExpr(booleanExpressionsContext)
-        formTemplate              <- formTemplateOpt
+        exprSubstitutions        <- ExprSubstitutions.resolvedFrom(templateRaw)
+        booleanExprSubstitutions <- BooleanExprSubstitutions.resolvedFrom(templateRaw)
+        _                        <- rejectUnusedBooleanExpr(booleanExprSubstitutions)
+        formTemplate             <- formTemplateOpt
         expressionsOutput <-
-          substituteExpressionsOutput(formTemplate.expressionsOutput, expressionsContext, booleanExpressionsContext)
+          substituteExpressionsOutput(
+            formTemplate.expressionsOutput,
+            exprSubstitutions
+          )
       } yield {
-        val email = expressionsContext.expressions.get(ExpressionId("email"))
+        val email = exprSubstitutions.expressions.get(ExpressionId("email"))
         (
           formTemplate.copy(emailExpr = email, expressionsOutput = expressionsOutput),
-          expressionsContext,
-          booleanExpressionsContext
+          exprSubstitutions,
+          booleanExprSubstitutions
         )
       }
 
@@ -74,11 +72,11 @@ class FormTemplatesControllerRequestHandler[F[_]](
   }
 
   private def rejectUnusedBooleanExpr(
-    booleanExpressionsContext: BooleanExprSubstitutions
+    booleanExprSubstitutions: BooleanExprSubstitutions
   ): Opt[List[Unit]] = {
-    val lookup = booleanExpressionsContext.expressions.keys.toSet
+    val lookup = booleanExprSubstitutions.expressions.keys.toSet
 
-    booleanExpressionsContext.expressions.toList.traverse { case (expressionId, booleanExpr) =>
+    booleanExprSubstitutions.expressions.toList.traverse { case (expressionId, booleanExpr) =>
       val topLevelRefs = booleanExpr.topLevelRefs
       val maybeUnknowTopLevelRefs: Option[NonEmptyList[TopLevelRef]] =
         NonEmptyList.fromList(topLevelRefs.filter(topLevelExpr => !lookup(topLevelExpr.booleanExprId)))
@@ -95,33 +93,24 @@ class FormTemplatesControllerRequestHandler[F[_]](
 
   private def substituteExpressionsOutput(
     maybeExpressionsOutput: Option[ExpressionOutput],
-    exprSubstitutions: ExprSubstitutions,
-    booleanExprSubstitutions: BooleanExprSubstitutions
+    exprSubstitutions: ExprSubstitutions
   ): Opt[Option[ExpressionOutput]] = maybeExpressionsOutput.traverse[Opt, ExpressionOutput] { expressionOutput =>
-    import uk.gov.hmrc.gform.formtemplate.ExprSubstituter._
-    import uk.gov.hmrc.gform.formtemplate.BooleanExprSubstituter._
-    val eSubstituter = implicitly[Substituter[ExprSubstitutions, Expr]]
-    val beSubstituter = implicitly[Substituter[BooleanExprSubstitutions, Expr]]
-    exprSubstitutions.resolveSelfReferences.flatMap { resolveSelfReferences =>
-      val lookup = resolveSelfReferences.expressions
-      expressionOutput.lookup.toList
-        .traverse { case (expressionId, _) =>
-          lookup
-            .get(expressionId)
-            .fold[Opt[(ExpressionId, Expr)]](
-              Left(
-                UnexpectedState(
-                  s"ExpressionId: '${expressionId.id}' defined in expressionsOutput doesn't exist in expressions"
-                )
+    val lookup = exprSubstitutions.expressions
+    expressionOutput.lookup.toList
+      .traverse { case (expressionId, _) =>
+        lookup
+          .get(expressionId)
+          .fold[Opt[(ExpressionId, Expr)]](
+            Left(
+              UnexpectedState(
+                s"ExpressionId: '${expressionId.id}' defined in expressionsOutput doesn't exist in expressions"
               )
-            ) { expr =>
-              val exprSubs0: Expr = eSubstituter.substitute(exprSubstitutions, expr)
-              val exprSubs: Expr = beSubstituter.substitute(booleanExprSubstitutions, exprSubs0)
-              Right(expressionId -> exprSubs)
-            }
-        }
-        .map(tuples => ExpressionOutput(tuples.toMap))
-    }
+            )
+          ) { expr =>
+            Right(expressionId -> expr)
+          }
+      }
+      .map(tuples => ExpressionOutput(tuples.toMap))
   }
 
   private def processAndPersistTemplate(

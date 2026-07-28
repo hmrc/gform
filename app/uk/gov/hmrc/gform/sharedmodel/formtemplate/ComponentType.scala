@@ -38,9 +38,11 @@ case class Text(
   value: Expr,
   displayWidth: DisplayWidth = DisplayWidth.DEFAULT,
   toUpperCase: UpperCaseBoolean = IsNotUpperCase,
+  removeSpaces: Boolean = false,
   prefix: Option[SmartString] = None,
   suffix: Option[SmartString] = None,
-  priority: Option[Priority] = None
+  priority: Option[Priority] = None,
+  autoComplete: Option[AutoComplete] = None
 ) extends ComponentType
 
 sealed trait UpperCaseBoolean
@@ -55,6 +57,20 @@ object UpperCaseBoolean {
     case invalid => JsError("toUpperCase needs to be 'true' or 'false', got " + invalid)
   }
   implicit val format: OFormat[UpperCaseBoolean] = OFormatWithTemplateReadFallback(templateReads)
+}
+
+sealed trait AutoComplete
+
+object AutoComplete {
+  case object GivenName extends AutoComplete
+  case object FamilyName extends AutoComplete
+  case object Organization extends AutoComplete
+
+  implicit val format: Format[AutoComplete] = ADTFormat.formatEnumeration(
+    "given-name"   -> GivenName,
+    "family-name"  -> FamilyName,
+    "organization" -> Organization
+  )
 }
 
 case class TextArea(
@@ -592,7 +608,7 @@ object ComponentType {
 
   implicit val leafExprs: LeafExpr[ComponentType] = (path: TemplatePath, t: ComponentType) =>
     t match {
-      case Text(constraint, expr, _, _, prefix, suffix, _) =>
+      case Text(constraint, expr, _, _, _, prefix, suffix, _, _) =>
         ExprWithPath(path + "value", expr) ::
           LeafExpr(path + "prefix", prefix) ++
           LeafExpr(path + "suffix", suffix) ++

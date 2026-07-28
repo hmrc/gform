@@ -104,9 +104,9 @@ class SubstituteBooleanExprsSuite extends FunSuite with FormTemplateSupport {
       case JsSuccess(normalisedJson, _) =>
         val formTemplate: FormTemplate = normalisedJson.as[FormTemplate]
         val maybeBooleanExprSubstitutions: Opt[BooleanExprSubstitutions] =
-          BooleanExprSubstitutions.from(FormTemplateRaw(normalisedJson.as[JsObject]))
+          BooleanExprSubstitutions.resolvedFrom(FormTemplateRaw(normalisedJson.as[JsObject]))
         val maybeExprSubstitutions: Opt[ExprSubstitutions] =
-          ExprSubstitutions.from(FormTemplateRaw(normalisedJson.as[JsObject]))
+          ExprSubstitutions.resolvedFrom(FormTemplateRaw(normalisedJson.as[JsObject]))
 
         (for {
           booleanExprSubstitutions <- maybeBooleanExprSubstitutions

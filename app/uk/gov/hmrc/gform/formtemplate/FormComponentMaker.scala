@@ -51,6 +51,8 @@ class FormComponentMaker(json: JsValue) {
   lazy val id: FormComponentId = (json \ "id").as[FormComponentId]
   lazy val `type`: Option[ComponentTypeRaw] = (json \ "type").asOpt[ComponentTypeRaw]
   lazy val optLabel: Opt[Option[SmartString]] = toOpt((json \ "label").validateOpt[SmartString], "/label")
+  lazy val optAutoComplete: Opt[Option[AutoComplete]] =
+    toOpt((json \ "autocomplete").validateOpt[AutoComplete], "/autocomplete")
 
   lazy val optMaybeValueExpr: Opt[Option[ValueExpr]] = parse("value", ValueParser.validate)
 
@@ -122,6 +124,7 @@ class FormComponentMaker(json: JsValue) {
     toOpt((json \ "displayCharCount").validateOpt[Boolean], "/displayCharCount")
   lazy val displayWidth: Option[String] = (json \ "displayWidth").asOpt[String]
   lazy val toUpperCase: UpperCaseBoolean = (json \ "toUpperCase").asOpt[UpperCaseBoolean].getOrElse(IsNotUpperCase)
+  lazy val removeSpaces: Boolean = (json \ "removeSpaces").asOpt[Boolean].getOrElse(false)
   lazy val displayInSummary: DisplayInSummary =
     (json \ "displayInSummary").asOpt[DisplayInSummary].getOrElse(DisplayInSummary(IsFalse))
   lazy val prefix: Option[SmartString] = (json \ "prefix").asOpt[SmartString]
@@ -497,6 +500,7 @@ class FormComponentMaker(json: JsValue) {
       multiline         <- optMultiline
       displayCharCount  <- optDisplayCharCount
       priority          <- optPriority
+      autoComplete      <- optAutoComplete
       result <- createObject(
                   maybeFormatExpr,
                   maybeValueExpr,
@@ -504,9 +508,11 @@ class FormComponentMaker(json: JsValue) {
                   dataThreshold,
                   displayWidth,
                   toUpperCase,
+                  removeSpaces,
                   prefix,
                   suffix,
                   priority,
+                  autoComplete,
                   rows.getOrElse(TextArea.defaultRows),
                   displayCharCount.getOrElse(true),
                   json

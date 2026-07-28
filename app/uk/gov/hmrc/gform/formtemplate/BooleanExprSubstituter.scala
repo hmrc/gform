@@ -78,7 +78,7 @@ object BooleanExprSubstituter extends Substituter[BooleanExprSubstitutions, Form
       }
     }
 
-  implicit val booleanExprSubstituter: Substituter[BooleanExprSubstitutions, BooleanExpr] =
+  implicit val booleanExprSubstituterTopLevel: Substituter[BooleanExprSubstitutions, BooleanExpr] =
     new Substituter[BooleanExprSubstitutions, BooleanExpr] {
       def substitute(substitutions: BooleanExprSubstitutions, t: BooleanExpr): BooleanExpr = t match {
         case Equals(l, r)                     => Equals(l(substitutions), r(substitutions))
@@ -115,18 +115,14 @@ object BooleanExprSubstituter extends Substituter[BooleanExprSubstitutions, Form
 }
 
 trait SubstituteBooleanExprs {
-  import uk.gov.hmrc.gform.formtemplate.Substituter.SubstituterSyntax
-  import uk.gov.hmrc.gform.formtemplate.ExprSubstituter.booleanExprSubstituter
-
   def substituteBooleanExprs(
     formTemplate: FormTemplate,
     substitutions: BooleanExprSubstitutions,
     exprSubstitutions: ExprSubstitutions
   ): FormTemplate = {
-    val substitutedBooleanExpressions = substitutions.expressions.map { case (id, boolExpr) =>
-      (id, boolExpr(exprSubstitutions))
-    }
-    BooleanExprSubstituter.substitute(BooleanExprSubstitutions(substitutedBooleanExpressions), formTemplate)
+    val substitutedBooleanExpressions = substitutions.resolveExprRefInBooleanExprs(exprSubstitutions)
+
+    BooleanExprSubstituter.substitute(substitutedBooleanExpressions, formTemplate)
   }
 
 }

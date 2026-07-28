@@ -20,7 +20,7 @@ import munit.FunSuite
 import play.api.libs.json.{ JsValue, Json }
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ BooleanExpr, FormTemplateRaw }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateRaw
 
 class BooleanExpressionsSuite extends FunSuite {
 
@@ -31,27 +31,22 @@ class BooleanExpressionsSuite extends FunSuite {
         "bar" -> "bar",
         "baz" -> "foo"
       )
-    ) { booleanExprSubstitutions =>
-      BooleanExpr.resolveReferences(booleanExprSubstitutions) match {
-        case Left(node) =>
-          assertEquals(
-            node,
-            UnexpectedState(
-              "The booleanExpression bar cannot reference itself"
-            )
-          )
-        case Right(iterable) => fail("Failed self-referencing detection")
-      }
-    }
+    )
   }
 
-  private def booleanExpressionsContextFromJson[A](json: JsValue)(f: BooleanExprSubstitutions => A): A = {
+  private def booleanExpressionsContextFromJson(json: JsValue): Unit = {
     val templateRaw = FormTemplateRaw(Json.obj("booleanExpressions" -> json))
-    val booleanExpressionsContextOpt: Opt[BooleanExprSubstitutions] = BooleanExprSubstitutions.from(templateRaw)
+    val booleanExpressionsContextOpt: Opt[BooleanExprSubstitutions] = BooleanExprSubstitutions.resolvedFrom(templateRaw)
 
     booleanExpressionsContextOpt match {
-      case Left(UnexpectedState(error))    => fail("Invalid boolean expressions " + error)
-      case Right(booleanExprSubstitutions) => f(booleanExprSubstitutions)
+      case Left(node) =>
+        assertEquals(
+          node,
+          UnexpectedState(
+            "The booleanExpression bar cannot reference itself"
+          )
+        )
+      case Right(booleanExprSubstitutions) => fail("Failed self-referencing detection")
     }
   }
 }
