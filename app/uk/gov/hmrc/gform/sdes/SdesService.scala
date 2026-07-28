@@ -478,6 +478,8 @@ class SdesService(
         objectStoreAlgebra.zipAndEncrypt(envelopeId, paths)
       case SdesDestination.AsyncHandlebars =>
         Future.failed(new RuntimeException(s"Unsupported SDES destination: ${SdesDestination.fromName(destination)}"))
+      case SdesDestination.NRSOrchestrator =>
+        Future.failed(new RuntimeException(s"Unsupported SDES destination: ${SdesDestination.fromName(destination)}"))
     }
   }
 

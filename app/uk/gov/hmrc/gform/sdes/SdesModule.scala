@@ -117,6 +117,7 @@ class SdesModule(
       infoArchiveWorkItemRepo,
       dataLakehouseWorkItemRepo,
       nrsOrchestratorWorkItemRepo,
+      nrsOrchestratorAttachmentWorkItemRepo,
       asyncHandlebarsWorkItemRepo
     )
 
