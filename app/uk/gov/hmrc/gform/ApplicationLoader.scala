@@ -459,7 +459,8 @@ class ApplicationModule(context: Context)
     applicationLifecycle,
     submissionModule.nrsConnector,
     nrsOrchestratorNotificationRepository,
-    nrsOrchestratorAttachmentNotificationRepository
+    nrsOrchestratorAttachmentNotificationRepository,
+    workItemHistoryService
   )
 
   private val builderModule =

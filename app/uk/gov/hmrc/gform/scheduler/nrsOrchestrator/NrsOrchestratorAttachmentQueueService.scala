@@ -17,9 +17,9 @@
 package uk.gov.hmrc.gform.scheduler.nrsOrchestrator
 
 import org.slf4j.{ Logger, LoggerFactory }
-import uk.gov.hmrc.gform.core.FutureSyntax
 import uk.gov.hmrc.gform.nrs.NRSConnector
 import uk.gov.hmrc.gform.scheduler.{ QueueAlgebra, TraceableWorkItem, WorkItemRepo }
+import uk.gov.hmrc.gform.submission.{ WorkItemHistory, WorkItemHistoryAlgebra }
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.mongo.workitem.WorkItem
 
@@ -28,10 +28,11 @@ import scala.concurrent.{ ExecutionContext, Future }
 class NrsOrchestratorAttachmentQueueService(
   nrsConnector: NRSConnector,
   notificationRepository: NrsOrchestratorAttachmentWorkItemRepo,
+  workItemHistoryService: WorkItemHistoryAlgebra[Future],
   pollerLimit: Int,
   nrsMaxFailureCount: Int,
   nrsRetryIntervalMillis: Long
-)(implicit ec: ExecutionContext)
+)(ec: ExecutionContext)
     extends QueueAlgebra[TraceableWorkItem[NrsOrchestratorAttachmentWorkItemData]] {
 
   override def sendWorkItem(
@@ -41,15 +42,25 @@ class NrsOrchestratorAttachmentQueueService(
     val workItem = nrsWorkItem.item
     logger.debug(s"Retry of nrsOrchestrator attachment ${workItem.data.attachment.id}")
 
-    nrsConnector
-      .submitObjectStoreAttachment(
-        workItem.data.nrSubmissionId,
-        workItem.data.attachment,
-        workItem.data.businessId,
-        workItem.data.notableEvent
-      )
-      .flatMap {
-        case response if nrsConnector.nrsServerFailure(response) =>
+    for {
+      response <- nrsConnector
+                    .submitObjectStoreAttachment(
+                      workItem.data.nrSubmissionId,
+                      workItem.data.attachment,
+                      workItem.data.businessId,
+                      workItem.data.notableEvent
+                    )
+      history = WorkItemHistory.create(
+                  workItem.envelopeId,
+                  workItem.formTemplateId,
+                  workItem.submissionRef,
+                  workItem.destinationId,
+                  response.status,
+                  response.body
+                )
+      _ <- workItemHistoryService.save(history)
+      _ <-
+        if (nrsConnector.nrsServerFailure(response)) {
           Future.failed(
             new RuntimeException(
               s"""NRS Orchestrator attachment work-item failed due to NRS server failure.
@@ -58,19 +69,21 @@ class NrsOrchestratorAttachmentQueueService(
                  |WorkItem Id: ${nrsWorkItem.id}""".stripMargin
             )
           )
-        case response if response.status != 202 =>
-          Future.failed( //TODO: Work item should not retry in cases where gform fails. Future.failed response will trigger a retry of work-item.
-            new RuntimeException(
-              s"""NRS Orchestrator attachment work-item failed.
-                 | Non 202, 422, 5xx response from NRS suggest gform failure.
-                 | NRS Response status: ${response.status}.
-                 | NRS response body: ${response.body}.
-                 | workItem id: ${nrsWorkItem.id}.""".stripMargin
+        } else if (response.status != 202) {
+          Future
+            .failed( //TODO: Work item should not retry in cases where gform fails. Future.failed response will trigger a retry of work-item.
+              new RuntimeException(
+                s"""NRS Orchestrator attachment work-item failed.
+                   | Non 202, 422, 5xx response from NRS suggest gform failure.
+                   | NRS Response status: ${response.status}.
+                   | NRS response body: ${response.body}.
+                   | workItem id: ${nrsWorkItem.id}.""".stripMargin
+              )
             )
-          )
-        case response => Future.successful(response)
-      }(ec)
-      .void(ec)
+        } else {
+          Future.unit
+        }
+    } yield ()
   }
 
   override val repo: WorkItemRepo[TraceableWorkItem[NrsOrchestratorAttachmentWorkItemData]] = notificationRepository

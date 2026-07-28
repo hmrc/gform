@@ -34,6 +34,7 @@ import uk.gov.hmrc.gform.nrs.NRSConnector
 import uk.gov.hmrc.gform.scheduler.asynchandlebars.{ AsyncHandlebarsQueuePollingService, AsyncHandlebarsQueueService }
 import uk.gov.hmrc.gform.scheduler.datalakehouse.{ DataLakehouseQueuePollingService, DataLakehouseQueueService }
 import uk.gov.hmrc.gform.scheduler.nrsOrchestrator.{ NrsOrchestratorAttachmentQueuePollingService, NrsOrchestratorAttachmentQueueService, NrsOrchestratorAttachmentWorkItemRepo, NrsOrchestratorQueuePollingService, NrsOrchestratorQueueService, NrsOrchestratorWorkItemRepo }
+import uk.gov.hmrc.gform.submission.WorkItemHistoryAlgebra
 import uk.gov.hmrc.gform.submission.handlebars.HandlebarsHttpApiModule
 
 class SchedulerModule(
@@ -45,7 +46,8 @@ class SchedulerModule(
   applicationLifecycle: ApplicationLifecycle,
   nrsConnector: NRSConnector,
   nrsOrchestratorNotificationRepository: NrsOrchestratorWorkItemRepo,
-  nrsOrchestratorAttachmentNotificationRepository: NrsOrchestratorAttachmentWorkItemRepo
+  nrsOrchestratorAttachmentNotificationRepository: NrsOrchestratorAttachmentWorkItemRepo,
+  workItemHistoryService: WorkItemHistoryAlgebra[scala.concurrent.Future]
 )(implicit ex: ExecutionContext) {
 
   case class SdesConfig(
@@ -140,19 +142,21 @@ class SchedulerModule(
     new NrsOrchestratorQueueService(
       nrsConnector,
       nrsOrchestratorNotificationRepository,
+      workItemHistoryService,
       config.nrsOrchestrator.poller.pollLimit,
       config.nrsOrchestrator.queue.maxFailureCount,
       config.nrsOrchestrator.queue.retryAfter.toMillis
-    )
+    )(ex)
 
   val nrsOrchestratorAttachmentQueueService =
     new NrsOrchestratorAttachmentQueueService(
       nrsConnector,
       nrsOrchestratorAttachmentNotificationRepository,
+      workItemHistoryService,
       config.nrsOrchestrator.poller.pollLimit,
       config.nrsOrchestrator.queue.maxFailureCount,
       config.nrsOrchestrator.queue.retryAfter.toMillis
-    )
+    )(ex)
 
   new NrsOrchestratorQueuePollingService(
     akkaModule.actorSystem,
