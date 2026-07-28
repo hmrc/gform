@@ -20,7 +20,7 @@ import cats.implicits.toFunctorOps
 import org.bson.types.ObjectId
 import org.mongodb.scala.model.Filters.equal
 import uk.gov.hmrc.crypto.{ Decrypter, Encrypter }
-import uk.gov.hmrc.gform.scheduler.WorkItemRepo
+import uk.gov.hmrc.gform.scheduler.{ TraceableWorkItem, WorkItemRepo }
 import uk.gov.hmrc.mongo.MongoComponent
 
 import scala.concurrent.{ ExecutionContext, Future }
@@ -28,7 +28,7 @@ import scala.concurrent.{ ExecutionContext, Future }
 class NrsOrchestratorWorkItemRepo(mongoComponent: MongoComponent)(implicit
   ec: ExecutionContext,
   jsonCrypto: Encrypter with Decrypter
-) extends WorkItemRepo[NrsOrchestratorWorkItem](
+) extends WorkItemRepo[TraceableWorkItem[NrsOrchestratorWorkItemData]](
       mongoComponent,
       "nrsOrchestratorWorkItem",
       extraIndexes = Seq()

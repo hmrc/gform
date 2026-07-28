@@ -25,10 +25,12 @@ import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
 import uk.gov.hmrc.gform.core.FOpt
 import uk.gov.hmrc.gform.envelope.EnvelopeAlgebra
 import uk.gov.hmrc.gform.objectstore.{ ObjectStoreModule, ObjectStorePaths }
-import uk.gov.hmrc.gform.scheduler.nrsOrchestrator.{ NrsOrchestratorAttachmentWorkItem, NrsOrchestratorAttachmentWorkItemData, NrsOrchestratorAttachmentWorkItemRepo, NrsOrchestratorWorkItem, NrsOrchestratorWorkItemData, NrsOrchestratorWorkItemRepo }
+import uk.gov.hmrc.gform.scheduler.TraceableWorkItem
+import uk.gov.hmrc.gform.scheduler.nrsOrchestrator.{ NrsOrchestratorAttachmentWorkItemData, NrsOrchestratorAttachmentWorkItemRepo, NrsOrchestratorWorkItemData, NrsOrchestratorWorkItemRepo }
 import uk.gov.hmrc.gform.sharedmodel.envelope.EnvelopeData
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FormData }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationId
 import uk.gov.hmrc.gform.sharedmodel.{ LangADT, NRSOrchestratorDestinationResultData, SubmissionRef }
 import uk.gov.hmrc.gform.submission.Submission
 import uk.gov.hmrc.http.HttpReads.Implicits._
@@ -259,14 +261,16 @@ class NRSConnector(
     notableEvent: String,
     envelopeId: EnvelopeId,
     formTemplateId: FormTemplateId,
-    submissionRef: SubmissionRef
+    submissionRef: SubmissionRef,
+    destinationId: DestinationId
   ) = {
 
     val workItem = nrsOrchestratorAttachmentWorkItemRepo.pushNew(
-      NrsOrchestratorAttachmentWorkItem(
+      TraceableWorkItem(
         envelopeId,
         formTemplateId,
         submissionRef,
+        destinationId,
         NrsOrchestratorAttachmentWorkItemData(nrSubmissionId, attachment, businessId, notableEvent)
       )
     )
@@ -370,14 +374,16 @@ class NRSConnector(
     userAuthToken: String,
     identityData: JsObject,
     submissionDate: String,
-    formTemplateId: FormTemplateId
-  ): Future[WorkItem[NrsOrchestratorWorkItem]] =
+    formTemplateId: FormTemplateId,
+    destinationId: DestinationId
+  ): Future[WorkItem[TraceableWorkItem[NrsOrchestratorWorkItemData]]] =
     nrsOrchestratorWorkItemRepo
       .pushNew(
-        NrsOrchestratorWorkItem(
+        TraceableWorkItem(
           envelopeId,
           formTemplateId,
           submissionRef,
+          destinationId,
           NrsOrchestratorWorkItemData(
             businessId,
             notableEvent,
@@ -403,7 +409,8 @@ class NRSConnector(
     userAuthToken: String,
     identityData: JsObject,
     submissionDate: String,
-    formTemplateId: FormTemplateId
+    formTemplateId: FormTemplateId,
+    destinationId: DestinationId
   )(implicit hc: HeaderCarrier): Future[HttpResponse] = {
 
     def getAttachments(envelope: EnvelopeData): List[NRSAttachment] =
@@ -427,7 +434,7 @@ class NRSConnector(
     def issueAttachmentWorkItems(
       submissionResponse: HttpResponse,
       attachments: List[NRSAttachment]
-    ): Future[List[WorkItem[NrsOrchestratorAttachmentWorkItem]]] =
+    ): Future[List[WorkItem[TraceableWorkItem[NrsOrchestratorAttachmentWorkItemData]]]] =
       if (submissionResponse.status == 202) {
         val submissionId = Json
           .parse(submissionResponse.body)
@@ -447,7 +454,8 @@ class NRSConnector(
               notableEvent,
               envelopeId,
               formTemplateId,
-              submissionRef
+              submissionRef,
+              destinationId
             )
           }
         )

@@ -22,10 +22,12 @@ import play.api.libs.json.{ Format, Json }
 import uk.gov.hmrc.crypto.{ Decrypter, Encrypter }
 import uk.gov.hmrc.crypto.SymmetricCryptoFactory.{ aesCrypto, composeCrypto }
 import uk.gov.hmrc.gform.nrs.{ BusinessId, NRSAttachment }
+import uk.gov.hmrc.gform.scheduler.TraceableWorkItem
 import uk.gov.hmrc.gform.save4later.EncryptedFormat
 import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationId
 
 class NrsOrchestratorAttachmentWorkItemRepoSpec extends AnyFlatSpec with Matchers {
   private implicit val jsonCrypto: Encrypter with Decrypter = composeCrypto(
@@ -33,10 +35,11 @@ class NrsOrchestratorAttachmentWorkItemRepoSpec extends AnyFlatSpec with Matcher
     Seq()
   )
   "NrsOrchestratorAttachmentWorkItemRepoSpec" should "serialise and de-serialise into the same value" in {
-    val obj = NrsOrchestratorAttachmentWorkItem(
+    val obj = TraceableWorkItem(
       EnvelopeId("test"),
       FormTemplateId("test"),
       SubmissionRef("test"),
+      DestinationId("test"),
       NrsOrchestratorAttachmentWorkItemData(
         "test",
         NRSAttachment(
@@ -54,7 +57,7 @@ class NrsOrchestratorAttachmentWorkItemRepoSpec extends AnyFlatSpec with Matcher
 
     obj shouldBe Json
       .toJson(obj)(NrsOrchestratorAttachmentWorkItem.formatEncrypted)
-      .as[NrsOrchestratorAttachmentWorkItem](NrsOrchestratorAttachmentWorkItem.formatEncrypted)
+      .as[TraceableWorkItem[NrsOrchestratorAttachmentWorkItemData]](NrsOrchestratorAttachmentWorkItem.formatEncrypted)
   }
 
   "NrsOrchestratorAttachmentWorkItemRepoSpec" should "be able to de-serialise old work-item. All missing data should be replaced with empty strings" in {
@@ -75,11 +78,12 @@ class NrsOrchestratorAttachmentWorkItemRepoSpec extends AnyFlatSpec with Matcher
       EncryptedFormat.formatEncrypted(jsonCrypto)(Json.format[NrsOrchestratorAttachmentWorkItemOld])
     val readJsonValue = Json
       .toJson(oldWorkItem)
-      .as[NrsOrchestratorAttachmentWorkItem](NrsOrchestratorAttachmentWorkItem.formatEncrypted)
-    val expected = NrsOrchestratorAttachmentWorkItem(
+      .as[TraceableWorkItem[NrsOrchestratorAttachmentWorkItemData]](NrsOrchestratorAttachmentWorkItem.formatEncrypted)
+    val expected = TraceableWorkItem(
       EnvelopeId(""),
       FormTemplateId(""),
       SubmissionRef(""),
+      DestinationId(""),
       NrsOrchestratorAttachmentWorkItemData(
         "test",
         NRSAttachment(

@@ -20,9 +20,11 @@ import org.slf4j.LoggerFactory
 import play.api.libs.json._
 import uk.gov.hmrc.crypto.{ Decrypter, Encrypter }
 import uk.gov.hmrc.gform.nrs.{ BusinessId, NrsPayload }
+import uk.gov.hmrc.gform.scheduler.TraceableWorkItem
 import uk.gov.hmrc.gform.save4later.EncryptedFormat
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationId
 import uk.gov.hmrc.gform.sharedmodel.{ NRSOrchestratorDestinationResultData, SubmissionRef }
 
 final case class NrsOrchestratorWorkItemOld(
@@ -55,31 +57,28 @@ final case class NrsOrchestratorWorkItemData(
   identityData: JsObject
 )
 
-final case class NrsOrchestratorWorkItem(
-  envelopeId: EnvelopeId,
-  formTemplateId: FormTemplateId,
-  submissionRef: SubmissionRef,
-  data: NrsOrchestratorWorkItemData
-)
-
 object NrsOrchestratorWorkItem {
   private val logger = LoggerFactory.getLogger(getClass)
-  implicit val envelopeIdFormat: Format[EnvelopeId] = EnvelopeId.vformat
-  implicit val formTemplateIdFormat: Format[FormTemplateId] = FormTemplateId.vformat
-  implicit val submissionRefFormat: Format[SubmissionRef] = SubmissionRef.vformat
-  def formatEncrypted(implicit jsonCrypto: Encrypter with Decrypter): Format[NrsOrchestratorWorkItem] = {
+
+  def formatEncrypted(implicit
+    jsonCrypto: Encrypter with Decrypter
+  ): Format[TraceableWorkItem[NrsOrchestratorWorkItemData]] = {
     implicit val encryptedDataFormat: Format[NrsOrchestratorWorkItemData] =
       EncryptedFormat.formatEncrypted(jsonCrypto)(Json.format[NrsOrchestratorWorkItemData])
-    new Format[NrsOrchestratorWorkItem] {
-      override def reads(json: JsValue): JsResult[NrsOrchestratorWorkItem] =
-        Json.reads[NrsOrchestratorWorkItem].reads(json) match {
+    val traceableFormat: OFormat[TraceableWorkItem[NrsOrchestratorWorkItemData]] =
+      TraceableWorkItem.format[NrsOrchestratorWorkItemData]
+
+    new Format[TraceableWorkItem[NrsOrchestratorWorkItemData]] {
+      override def reads(json: JsValue): JsResult[TraceableWorkItem[NrsOrchestratorWorkItemData]] =
+        traceableFormat.reads(json) match {
           case JsError(errors) =>
             logger.warn(s"NrsOrchestratorWorkItem old json serialization fallback. errors: $errors")
             NrsOrchestratorWorkItemOld.readsEncrypted.reads(json).map { workItem =>
-              NrsOrchestratorWorkItem(
+              TraceableWorkItem(
                 workItem.envelopeId,
                 FormTemplateId(""),
                 workItem.submissionRef,
+                DestinationId(""),
                 NrsOrchestratorWorkItemData(
                   workItem.businessId,
                   workItem.notableEvent,
@@ -92,9 +91,9 @@ object NrsOrchestratorWorkItem {
                 )
               )
             } //TODO: This is a fallback for old workItem structure, remove this and NrsOrchestratorWorkItemOld when database is cleaned-up. GFORMS-4103
-          case success: JsSuccess[NrsOrchestratorWorkItem] => success
+          case success: JsSuccess[TraceableWorkItem[NrsOrchestratorWorkItemData]] => success
         }
-      override def writes(o: NrsOrchestratorWorkItem): JsValue = Json.writes[NrsOrchestratorWorkItem].writes(o)
+      override def writes(o: TraceableWorkItem[NrsOrchestratorWorkItemData]): JsValue = traceableFormat.writes(o)
     }
   }
 }

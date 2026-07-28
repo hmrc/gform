@@ -19,7 +19,7 @@ package uk.gov.hmrc.gform.scheduler.nrsOrchestrator
 import org.slf4j.{ Logger, LoggerFactory }
 import uk.gov.hmrc.gform.core.FutureSyntax
 import uk.gov.hmrc.gform.nrs.NRSConnector
-import uk.gov.hmrc.gform.scheduler.{ QueueAlgebra, WorkItemRepo }
+import uk.gov.hmrc.gform.scheduler.{ QueueAlgebra, TraceableWorkItem, WorkItemRepo }
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.mongo.workitem.WorkItem
 
@@ -32,9 +32,11 @@ class NrsOrchestratorAttachmentQueueService(
   nrsMaxFailureCount: Int,
   nrsRetryIntervalMillis: Long
 )(implicit ec: ExecutionContext)
-    extends QueueAlgebra[NrsOrchestratorAttachmentWorkItem] {
+    extends QueueAlgebra[TraceableWorkItem[NrsOrchestratorAttachmentWorkItemData]] {
 
-  override def sendWorkItem(nrsWorkItem: WorkItem[NrsOrchestratorAttachmentWorkItem]): Future[Unit] = {
+  override def sendWorkItem(
+    nrsWorkItem: WorkItem[TraceableWorkItem[NrsOrchestratorAttachmentWorkItemData]]
+  ): Future[Unit] = {
     implicit val hc: HeaderCarrier = HeaderCarrier()
     val workItem = nrsWorkItem.item
     logger.debug(s"Retry of nrsOrchestrator attachment ${workItem.data.attachment.id}")
@@ -71,7 +73,7 @@ class NrsOrchestratorAttachmentQueueService(
       .void(ec)
   }
 
-  override val repo: WorkItemRepo[NrsOrchestratorAttachmentWorkItem] = notificationRepository
+  override val repo: WorkItemRepo[TraceableWorkItem[NrsOrchestratorAttachmentWorkItemData]] = notificationRepository
   override val pollLimit: Int = pollerLimit
   override implicit val executionContext: ExecutionContext = ec
   override val maxFailureCount: Int = nrsMaxFailureCount

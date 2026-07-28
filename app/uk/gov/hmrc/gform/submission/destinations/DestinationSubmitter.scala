@@ -36,7 +36,8 @@ import uk.gov.hmrc.gform.wshttp.HttpResponseSyntax
 import uk.gov.hmrc.gform.core.FOpt
 import uk.gov.hmrc.gform.core.fromFutureA
 import uk.gov.hmrc.gform.nrs.NRSConnector
-import uk.gov.hmrc.gform.scheduler.nrsOrchestrator.NrsOrchestratorWorkItem
+import uk.gov.hmrc.gform.scheduler.TraceableWorkItem
+import uk.gov.hmrc.gform.scheduler.nrsOrchestrator.NrsOrchestratorWorkItemData
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.HandlebarsDestinationResponse
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 import uk.gov.hmrc.mongo.workitem.WorkItem
@@ -506,23 +507,25 @@ class DestinationSubmitter[M[_]](
         }
     }
 
-    val workItem: M[WorkItem[NrsOrchestratorWorkItem]] = liftToM(nrsConnector.getRetrievals()).flatMap { identityData =>
-      liftToM(
-        nrsConnector.issueSubmissionWorkItem(
-          envelopeId,
-          d.businessId,
-          d.notableEvent,
-          userSession.onSubmitHeaders,
-          nrsDestinationResult.data,
-          submissionInfo.submission.submissionRef,
-          payload,
-          userAuthToken,
-          identityData,
-          submissionDate,
-          submissionInfo.submission.dmsMetaData.formTemplateId
+    val workItem: M[WorkItem[TraceableWorkItem[NrsOrchestratorWorkItemData]]] =
+      liftToM(nrsConnector.getRetrievals()).flatMap { identityData =>
+        liftToM(
+          nrsConnector.issueSubmissionWorkItem(
+            envelopeId,
+            d.businessId,
+            d.notableEvent,
+            userSession.onSubmitHeaders,
+            nrsDestinationResult.data,
+            submissionInfo.submission.submissionRef,
+            payload,
+            userAuthToken,
+            identityData,
+            submissionDate,
+            submissionInfo.submission.dmsMetaData.formTemplateId,
+            d.id
+          )
         )
-      )
-    }
+      }
 
     val response: M[DestinationResponse] = workItem.map(workItem => NrsOrchestratorDestinationResponse(workItem.id))
 
