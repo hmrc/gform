@@ -30,10 +30,16 @@ class WorkItemHistoryController(
   ex: ExecutionContext
 ) extends BaseController(controllerComponents) {
 
-  def search(page: Int, pageSize: Int, envelopeId: Option[EnvelopeId], formTemplateId: Option[FormTemplateId]) =
+  def search(
+    page: Int,
+    pageSize: Int,
+    envelopeId: Option[EnvelopeId],
+    formTemplateId: Option[FormTemplateId],
+    showFailuresOnly: Option[Boolean]
+  ) =
     Action.async { _ =>
       workItemHistoryService
-        .search(page, pageSize, envelopeId, formTemplateId)
+        .search(page, pageSize, envelopeId, formTemplateId, showFailuresOnly)
         .map(pageData => Ok(play.api.libs.json.Json.toJson(pageData)))
     }
 }
