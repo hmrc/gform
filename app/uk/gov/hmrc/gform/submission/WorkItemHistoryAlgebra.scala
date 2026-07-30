@@ -35,7 +35,8 @@ trait WorkItemHistoryAlgebra[F[_]] {
     page: Int,
     pageSize: Int,
     envelopeId: Option[EnvelopeId],
-    formTemplateId: Option[FormTemplateId]
+    formTemplateId: Option[FormTemplateId],
+    showFailuresOnly: Option[Boolean]
   ): F[WorkItemHistoryPageData]
 
 }
@@ -53,17 +54,30 @@ class WorkItemHistoryService(repo: Repo[WorkItemHistory])(implicit ec: Execution
     page: Int,
     pageSize: Int,
     envelopeId: Option[EnvelopeId],
-    formTemplateId: Option[FormTemplateId]
+    formTemplateId: Option[FormTemplateId],
+    showFailuresOnly: Option[Boolean]
   ): Future[WorkItemHistoryPageData] = {
     val sort: Bson = equal("createdAt", -1)
 
     val skip: Int = page * pageSize
 
-    val queryByEnvelopeId = envelopeId.fold(Filters.empty())(e => Filters.equal("envelopeId", e.value))
+    val queryByEnvelopeId = envelopeId.map(e => Filters.equal("envelopeId", e.value))
 
-    val query = formTemplateId.fold(queryByEnvelopeId)(f =>
-      Filters.and(queryByEnvelopeId, Filters.equal("formTemplateId", f.value))
-    )
+    val queryByFailure = showFailuresOnly.flatMap { showFailures =>
+      if (showFailures) Some(Filters.or(Filters.lt[Int]("responseStatus", 200), Filters.gt[Int]("responseStatus", 299)))
+      else None
+    }
+
+    val queryByTemplateId = formTemplateId.map(f => Filters.equal("formTemplateId", f.value))
+
+    val query = List(
+      queryByEnvelopeId,
+      queryByFailure,
+      queryByTemplateId
+    ).filter(_.isDefined).map(_.get) match {
+      case Nil     => Filters.empty()
+      case filters => Filters.and(filters: _*)
+    }
 
     for {
       workItems <- repo.collection

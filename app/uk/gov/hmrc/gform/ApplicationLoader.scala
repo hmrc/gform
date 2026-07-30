@@ -17,8 +17,8 @@
 package uk.gov.hmrc.gform
 
 import cats.instances.future._
-import org.mongodb.scala.model.Indexes.{ ascending, compoundIndex }
-import org.mongodb.scala.model.{ IndexModel, IndexOptions }
+import org.mongodb.scala.model.Indexes.{ ascending, compoundIndex, descending }
+import org.mongodb.scala.model.{ IndexModel, IndexOptions, Indexes }
 import org.slf4j.LoggerFactory
 import play.api.ApplicationLoader.Context
 import play.api._
@@ -330,10 +330,22 @@ class ApplicationModule(context: Context)
       _._id.toString,
       indexes = Seq(
         IndexModel(
-          compoundIndex(ascending("envelopeId"), ascending("destinationId")),
+          Indexes.descending("createdAt"),
           IndexOptions()
             .background(false)
-            .name("envelopeAndDestinationIdx")
+            .name("createdAtIdx")
+        ),
+        IndexModel(
+          Indexes.ascending("envelopeId"),
+          IndexOptions()
+            .background(false)
+            .name("envelopeIdIdx")
+        ),
+        IndexModel(
+          compoundIndex(ascending("responseStatus"), descending("createdAt")),
+          IndexOptions()
+            .background(false)
+            .name("responseCreatedAtIdx")
         )
       ),
       replaceIndexes = true
