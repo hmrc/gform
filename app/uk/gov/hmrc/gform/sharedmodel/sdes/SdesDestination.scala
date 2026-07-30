@@ -36,6 +36,10 @@ sealed trait SdesDestination extends Product with Serializable {
       throw new IllegalArgumentException(
         s"No SDES routing configuration for destination: ${SdesDestination.fromName(this)}"
       )
+    case SdesDestination.NRSOrchestrator =>
+      throw new IllegalArgumentException(
+        s"No SDES routing configuration for destination: ${SdesDestination.fromName(this)}"
+      )
   }
 
   def objectStorePaths(envelopeId: EnvelopeId, submissionPrefix: Option[String]): ObjectStorePaths =
@@ -51,6 +55,10 @@ sealed trait SdesDestination extends Product with Serializable {
         throw new IllegalArgumentException(
           s"No Object Store paths configuration for destination: ${SdesDestination.fromName(this)}"
         )
+      case SdesDestination.NRSOrchestrator =>
+        throw new IllegalArgumentException(
+          s"No Object Store paths configuration for destination: ${SdesDestination.fromName(this)}"
+        )
     }
 }
 
@@ -63,6 +71,7 @@ object SdesDestination {
   case object Caseflow extends SdesDestination
   case object DataLakehouse extends SdesDestination
   case object AsyncHandlebars extends SdesDestination
+  case object NRSOrchestrator extends SdesDestination
 
   implicit val equal: Eq[SdesDestination] = Eq.fromUniversalEquals
   implicit val format: Format[SdesDestination] =
@@ -74,7 +83,8 @@ object SdesDestination {
       "InfoArchive"     -> InfoArchive,
       "Caseflow"        -> Caseflow,
       "DataLakehouse"   -> DataLakehouse,
-      "AsyncHandlebars" -> AsyncHandlebars
+      "AsyncHandlebars" -> AsyncHandlebars,
+      "NRSOrchestrator" -> NRSOrchestrator
     )
 
   def fromName(destination: SdesDestination): String = destination match {
@@ -86,6 +96,7 @@ object SdesDestination {
     case Caseflow        => "Caseflow"
     case DataLakehouse   => "DataLakehouse"
     case AsyncHandlebars => "AsyncHandlebars"
+    case NRSOrchestrator => "NRSOrchestrator"
   }
 
   def fromString(destination: String): SdesDestination = destination match {
@@ -97,5 +108,6 @@ object SdesDestination {
     case "Caseflow"        => Caseflow
     case "DataLakehouse"   => DataLakehouse
     case "AsyncHandlebars" => AsyncHandlebars
+    case "NRSOrchestrator" => NRSOrchestrator
   }
 }

@@ -17,7 +17,7 @@
 package uk.gov.hmrc.gform.scheduler.nrsOrchestrator
 
 import org.apache.pekko.actor.ActorSystem
-import uk.gov.hmrc.gform.scheduler.PollingService
+import uk.gov.hmrc.gform.scheduler.{ PollingService, TraceableWorkItem }
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.FiniteDuration
@@ -29,7 +29,11 @@ class NrsOrchestratorAttachmentQueuePollingService(
   pollerToggle: Boolean,
   queueService: NrsOrchestratorAttachmentQueueService
 )(implicit ec: ExecutionContext)
-    extends PollingService[NrsOrchestratorAttachmentWorkItem](actorSystem, queueService, pollerToggle) {
+    extends PollingService[TraceableWorkItem[NrsOrchestratorAttachmentWorkItemData]](
+      actorSystem,
+      queueService,
+      pollerToggle
+    ) {
 
   override def name: String = "NrsOrchestratorAttachmentPollingService"
 

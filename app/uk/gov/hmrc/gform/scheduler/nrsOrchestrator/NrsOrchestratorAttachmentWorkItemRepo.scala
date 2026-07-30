@@ -17,7 +17,7 @@
 package uk.gov.hmrc.gform.scheduler.nrsOrchestrator
 
 import uk.gov.hmrc.crypto.{ Decrypter, Encrypter }
-import uk.gov.hmrc.gform.scheduler.WorkItemRepo
+import uk.gov.hmrc.gform.scheduler.{ TraceableWorkItem, WorkItemRepo }
 import uk.gov.hmrc.mongo.MongoComponent
 
 import scala.concurrent.ExecutionContext
@@ -25,7 +25,7 @@ import scala.concurrent.ExecutionContext
 class NrsOrchestratorAttachmentWorkItemRepo(mongoComponent: MongoComponent)(implicit
   ec: ExecutionContext,
   jsonCrypto: Encrypter with Decrypter
-) extends WorkItemRepo[NrsOrchestratorAttachmentWorkItem](
+) extends WorkItemRepo[TraceableWorkItem[NrsOrchestratorAttachmentWorkItemData]](
       mongoComponent,
       "nrsOrchestratorAttachmentWorkItem",
       extraIndexes = Seq()

@@ -23,7 +23,7 @@ import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.AsyncHandlebarsDestinationResponse
-import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination.AsyncHandlebars
+import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination.{ AsyncHandlebars, NRSOrchestrator }
 import uk.gov.hmrc.gform.sharedmodel.sdes.{ SdesDestination, SdesWorkItem, SdesWorkItemData }
 import uk.gov.hmrc.mongo.workitem.{ ProcessingStatus, WorkItem, WorkItemFields }
 
@@ -56,7 +56,7 @@ class DestinationWorkItemController(
 
   def get(id: String, sdesDestination: SdesDestination) = Action.async { _ =>
     sdesDestination match {
-      case AsyncHandlebars =>
+      case AsyncHandlebars | NRSOrchestrator =>
         destinationWorkItemAlgebra.findTraceableWorkItem(id, sdesDestination).flatMap {
           case Some(w) => Future.successful(Ok(Json.toJson(SdesWorkItemData.fromTraceableWorkItem(w, sdesDestination))))
           case None    => Future.failed(new RuntimeException(s"Object id [$id] not found in mongo collection"))
@@ -87,7 +87,7 @@ class DestinationWorkItemController(
     WorkItem.formatForFields[SdesWorkItem](WorkItemFields.default)
   def getByEnvelopeId(envelopeId: EnvelopeId, sdesDestination: SdesDestination) = Action.async { _ =>
     sdesDestination match {
-      case AsyncHandlebars =>
+      case AsyncHandlebars | NRSOrchestrator =>
         destinationWorkItemAlgebra.findTraceableWorkItemByEnvelopeId(envelopeId, sdesDestination).map {
           case Nil =>
             Ok(

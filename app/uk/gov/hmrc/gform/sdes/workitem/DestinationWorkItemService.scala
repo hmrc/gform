@@ -30,7 +30,7 @@ import uk.gov.hmrc.gform.scheduler.datalakehouse.DataLakehouseWorkItemRepo
 import uk.gov.hmrc.gform.scheduler.datastore.DataStoreWorkItemRepo
 import uk.gov.hmrc.gform.scheduler.dms.DmsWorkItemRepo
 import uk.gov.hmrc.gform.scheduler.infoarchive.InfoArchiveWorkItemRepo
-import uk.gov.hmrc.gform.scheduler.nrsOrchestrator.NrsOrchestratorWorkItemRepo
+import uk.gov.hmrc.gform.scheduler.nrsOrchestrator.{ NrsOrchestratorAttachmentWorkItemRepo, NrsOrchestratorWorkItemRepo }
 import uk.gov.hmrc.gform.scheduler.{ TraceableWorkItem, WorkItemRepo }
 import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
@@ -93,6 +93,7 @@ class DestinationWorkItemService(
   infoArchiveWorkItemRepo: InfoArchiveWorkItemRepo,
   dataLakehouseWorkItemRepo: DataLakehouseWorkItemRepo,
   nrsOrchestratorWorkItemRepo: NrsOrchestratorWorkItemRepo,
+  nrsOrchestratorAttachmentWorkItemRepo: NrsOrchestratorAttachmentWorkItemRepo,
   asyncHandlebarsWorkItemRepo: AsyncHandlebarsWorkItemRepo
 )(implicit ec: ExecutionContext)
     extends DestinationWorkItemAlgebra[Future] {
@@ -134,6 +135,9 @@ class DestinationWorkItemService(
       case SdesDestination.AsyncHandlebars =>
         logger.error(s"Unsupported SDES destination: $sdesDestination")
         Future.failed(new IllegalArgumentException(s"Unsupported SDES destination: $sdesDestination"))
+      case SdesDestination.NRSOrchestrator =>
+        logger.error(s"Unsupported SDES destination: $sdesDestination")
+        Future.failed(new IllegalArgumentException(s"Unsupported SDES destination: $sdesDestination"))
     }
   }
 
@@ -148,6 +152,11 @@ class DestinationWorkItemService(
           dataStoreWorkItemRepo.markAs(oid, ToDo)
         case (SdesDestination.InfoArchive, oid)   => infoArchiveWorkItemRepo.markAs(oid, ToDo)
         case (SdesDestination.DataLakehouse, oid) => dataLakehouseWorkItemRepo.markAs(oid, ToDo)
+        case (SdesDestination.NRSOrchestrator, _) =>
+          logger.error(
+            s"Unsupported SDES destination in readySdes: ${SdesDestination.fromName(SdesDestination.NRSOrchestrator)})"
+          )
+          Future.unit
         case (other, _) =>
           logger.error(s"Unsupported SDES destination in readySdes: ${SdesDestination.fromName(other)})")
           Future.unit
@@ -169,8 +178,9 @@ class DestinationWorkItemService(
     val skip: Int = page * pageSize
 
     sdesDestination match {
-      case AsyncHandlebars => searchAsyncHandlebars(query, sort, skip, pageSize)
-      case _               => searchSdesDestination(sdesDestination, query, sort, skip, pageSize)
+      case AsyncHandlebars                 => searchAsyncHandlebars(query, sort, skip, pageSize)
+      case SdesDestination.NRSOrchestrator => searchNrsOrchestrator(query, sort, skip, pageSize)
+      case _                               => searchSdesDestination(sdesDestination, query, sort, skip, pageSize)
     }
   }
 
@@ -206,6 +216,40 @@ class DestinationWorkItemService(
       count <- asyncHandlebarsWorkItemRepo.collection.countDocuments(query).toFuture()
     } yield SdesWorkItemPageData(workItemData, count)
 
+  private def searchNrsOrchestrator(query: Bson, sort: Bson, skip: Int, pageSize: Int): Future[SdesWorkItemPageData] = {
+    val upperBound = skip + pageSize
+    for {
+      nrsWorkItems <-
+        nrsOrchestratorWorkItemRepo.collection
+          .find(query)
+          .sort(sort)
+          .limit(upperBound)
+          .toFuture()
+          .map(_.toList)
+          .map(_.map(_.asInstanceOf[WorkItem[TraceableWorkItem[_]]]))
+      nrsAttachmentWorkItems <-
+        nrsOrchestratorAttachmentWorkItemRepo.collection
+          .find(query)
+          .sort(sort)
+          .limit(upperBound)
+          .toFuture()
+          .map(_.toList)
+          .map(_.map(_.asInstanceOf[WorkItem[TraceableWorkItem[_]]]))
+      nrsWorkItemData = nrsWorkItems.map(workItem =>
+                          SdesWorkItemData.fromTraceableWorkItem(workItem, SdesDestination.NRSOrchestrator, 1)
+                        )
+      nrsAttachmentWorkItemData = nrsAttachmentWorkItems.map(workItem =>
+                                    SdesWorkItemData.fromTraceableWorkItem(workItem, SdesDestination.NRSOrchestrator, 1)
+                                  )
+      mergedPageData =
+        (nrsWorkItemData ++ nrsAttachmentWorkItemData)
+          .sortBy(_.receivedAt)(Ordering[java.time.Instant].reverse)
+          .slice(skip, upperBound)
+      nrsCount           <- nrsOrchestratorWorkItemRepo.collection.countDocuments(query).toFuture()
+      nrsAttachmentCount <- nrsOrchestratorAttachmentWorkItemRepo.collection.countDocuments(query).toFuture()
+    } yield SdesWorkItemPageData(mergedPageData, nrsCount + nrsAttachmentCount)
+  }
+
   private def findCollection(sdesDestination: SdesDestination): MongoCollection[WorkItem[SdesWorkItem]] =
     sdesDestination match {
       case SdesDestination.Dms | SdesDestination.Caseflow => dmsWorkItemRepo.collection
@@ -214,6 +258,9 @@ class DestinationWorkItemService(
       case SdesDestination.InfoArchive   => infoArchiveWorkItemRepo.collection
       case SdesDestination.DataLakehouse => dataLakehouseWorkItemRepo.collection
       case SdesDestination.AsyncHandlebars =>
+        logger.error(s"Unsupported SDES destination: $sdesDestination")
+        throw new IllegalArgumentException(s"Unsupported SDES destination: $sdesDestination")
+      case SdesDestination.NRSOrchestrator =>
         logger.error(s"Unsupported SDES destination: $sdesDestination")
         throw new IllegalArgumentException(s"Unsupported SDES destination: $sdesDestination")
     }
@@ -226,6 +273,20 @@ class DestinationWorkItemService(
           .toFuture()
           .map(_.getDeletedCount > 0)
           .void
+      case SdesDestination.NRSOrchestrator =>
+        nrsOrchestratorWorkItemRepo.collection
+          .deleteOne(equal("_id", new ObjectId(id)))
+          .toFuture()
+          .map(_.getDeletedCount > 0)
+          .flatMap { deletedInNrs =>
+            if (deletedInNrs) Future.unit
+            else
+              nrsOrchestratorAttachmentWorkItemRepo.collection
+                .deleteOne(equal("_id", new ObjectId(id)))
+                .toFuture()
+                .map(_.getDeletedCount > 0)
+                .void
+          }
       case _ =>
         findCollection(sdesDestination)
           .deleteOne(equal("_id", new ObjectId(id)))
@@ -245,6 +306,11 @@ class DestinationWorkItemService(
         dataLakehouseWorkItemRepo.markAs(new ObjectId(id), ProcessingStatus.ToDo).void
       case SdesDestination.AsyncHandlebars =>
         asyncHandlebarsWorkItemRepo.markAs(new ObjectId(id), ProcessingStatus.ToDo).void
+      case SdesDestination.NRSOrchestrator =>
+        nrsOrchestratorWorkItemRepo.markAs(new ObjectId(id), ProcessingStatus.ToDo).flatMap { markedInNrs =>
+          if (markedInNrs) Future.unit
+          else nrsOrchestratorAttachmentWorkItemRepo.markAs(new ObjectId(id), ProcessingStatus.ToDo).void
+        }
     }
 
   override def find(id: String, sdesDestination: SdesDestination): Future[Option[WorkItem[SdesWorkItem]]] =
@@ -258,6 +324,9 @@ class DestinationWorkItemService(
       case SdesDestination.AsyncHandlebars =>
         logger.error(s"Unsupported SDES destination: $sdesDestination")
         Future.failed(new IllegalArgumentException(s"Unsupported SDES destination: $sdesDestination"))
+      case SdesDestination.NRSOrchestrator =>
+        logger.error(s"Unsupported SDES destination: $sdesDestination")
+        Future.failed(new IllegalArgumentException(s"Unsupported SDES destination: $sdesDestination"))
     }
 
   override def findTraceableWorkItem(
@@ -269,6 +338,16 @@ class DestinationWorkItemService(
         asyncHandlebarsWorkItemRepo
           .findById(new ObjectId(id))
           .map(_.map(_.asInstanceOf[WorkItem[TraceableWorkItem[_]]]))
+      case SdesDestination.NRSOrchestrator =>
+        nrsOrchestratorWorkItemRepo
+          .findById(new ObjectId(id))
+          .flatMap {
+            case some @ Some(_) => Future.successful(some.map(_.asInstanceOf[WorkItem[TraceableWorkItem[_]]]))
+            case None =>
+              nrsOrchestratorAttachmentWorkItemRepo
+                .findById(new ObjectId(id))
+                .map(_.map(_.asInstanceOf[WorkItem[TraceableWorkItem[_]]]))
+          }
       case _ =>
         logger.error(s"Unsupported SDES destination for traceable work item: $sdesDestination")
         Future.failed(
@@ -315,11 +394,34 @@ class DestinationWorkItemService(
     sdesDestination: SdesDestination
   ): Future[List[WorkItem[TraceableWorkItem[_]]]] = {
     val query = Filters.equal("item.envelopeId", envelopeId.value)
-    asyncHandlebarsWorkItemRepo.collection
-      .find(query)
-      .toFuture()
-      .map(_.toList)
-      .map(_.map(_.asInstanceOf[WorkItem[TraceableWorkItem[_]]]))
+    sdesDestination match {
+      case AsyncHandlebars =>
+        asyncHandlebarsWorkItemRepo.collection
+          .find(query)
+          .toFuture()
+          .map(_.toList)
+          .map(_.map(_.asInstanceOf[WorkItem[TraceableWorkItem[_]]]))
+      case SdesDestination.NRSOrchestrator =>
+        for {
+          nrsWorkItems <- nrsOrchestratorWorkItemRepo.collection
+                            .find(query)
+                            .toFuture()
+                            .map(_.toList)
+                            .map(_.map(_.asInstanceOf[WorkItem[TraceableWorkItem[_]]]))
+          nrsAttachmentWorkItems <- nrsOrchestratorAttachmentWorkItemRepo.collection
+                                      .find(query)
+                                      .toFuture()
+                                      .map(_.toList)
+                                      .map(_.map(_.asInstanceOf[WorkItem[TraceableWorkItem[_]]]))
+        } yield nrsWorkItems ++ nrsAttachmentWorkItems
+      case _ =>
+        logger.error(s"Unsupported SDES destination for traceable work item by envelopeId: $sdesDestination")
+        Future.failed(
+          new IllegalArgumentException(
+            s"Unsupported SDES destination for traceable work item by envelopeId: $sdesDestination"
+          )
+        )
+    }
   }
 
   def dmsWorkItemDestinationMigration(from: String, to: String): Future[UpdateResult] = {
