@@ -64,7 +64,7 @@ class WorkItemHistoryService(repo: Repo[WorkItemHistory])(implicit ec: Execution
     val queryByEnvelopeId = envelopeId.map(e => Filters.equal("envelopeId", e.value))
 
     val queryByFailure = showFailuresOnly.flatMap { showFailures =>
-      if (showFailures) Some(Filters.ne[Int]("responseStatus", 200))
+      if (showFailures) Some(Filters.or(Filters.lt[Int]("responseStatus", 200), Filters.gt[Int]("responseStatus", 299)))
       else None
     }
 
