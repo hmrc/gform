@@ -18,6 +18,7 @@ package uk.gov.hmrc.gform.sdes
 
 import com.mongodb.client.result.UpdateResult
 import org.bson.types.ObjectId
+import org.mongodb.scala.model.Indexes.{ ascending, compoundIndex, descending }
 import org.mongodb.scala.model.{ IndexModel, IndexOptions, Indexes }
 import uk.gov.hmrc.crypto.{ Decrypter, Encrypter }
 import uk.gov.hmrc.gform.akka.AkkaModule
@@ -84,6 +85,12 @@ class SdesModule(
           IndexOptions()
             .background(false)
             .name("isProcessed")
+        ),
+        IndexModel(
+          compoundIndex(descending("createdAt"), ascending("_id")),
+          IndexOptions()
+            .background(false)
+            .name("createdAtDesc")
         )
       )
     )

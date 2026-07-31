@@ -17,6 +17,6 @@ dist
 /RUNNING_PID
 /.settings
 *.iws
-.metals/metals.lock.db
+.metals/*
 
     
