@@ -296,6 +296,18 @@ class ApplicationModule(context: Context)
           IndexOptions()
             .background(false)
             .name("statusLastUpdatedIdx")
+        ),
+        IndexModel(
+          ascending("data.form.userId"),
+          IndexOptions()
+            .background(false)
+            .name("userIdIdx")
+        ),
+        IndexModel(
+          ascending("data.form.envelopeId"),
+          IndexOptions()
+            .background(false)
+            .name("envelopeIdIdx")
         )
       )
       MongoUtils.ensureIndexes(this.collection, indexes, true)
