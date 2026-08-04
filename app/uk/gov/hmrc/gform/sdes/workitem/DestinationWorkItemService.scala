@@ -373,8 +373,8 @@ class DestinationWorkItemService(
       .flatMap {
         case Some(workItem) =>
           logger.warn(
-            s"Updating async handlebars payload for submission ref ${workItemData.submissionRef.value}, envelope id ${workItemData.envelopeId.value}, destination id ${workItemData.destinationId}, by username: ${workItemData.username
-              .getOrElse("unknown")}"
+            s"Async handlebars payload for submission ref: '${workItemData.submissionRef.value}', envelope id: '${workItemData.envelopeId.value}' and destination id: '${workItemData.destinationId}', updated by username: '${workItemData.username
+              .getOrElse("unknown")}'"
           )
           val updated =
             workItem.copy(

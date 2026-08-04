@@ -16,16 +16,15 @@
 
 package uk.gov.hmrc.gform.sharedmodel.sdes
 
+import io.circe.Printer
 import julienrf.json.derived
-import play.api.libs.json.{ Format, Json, OFormat }
+import play.api.libs.json.{ Format, OFormat }
 import uk.gov.hmrc.gform.scheduler.TraceableWorkItem
 import uk.gov.hmrc.gform.scheduler.asynchandlebars.AsyncHandlebarsWorkItem
 import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.mongo.workitem.WorkItem
-
-import scala.util.Try
 
 case class AsyncWorkItemData(
   id: String,
@@ -35,9 +34,7 @@ case class AsyncWorkItemData(
   submissionRef: SubmissionRef,
   uri: String,
   method: String,
-  contentType: String,
   payload: String,
-  credential: Option[String],
   username: Option[String]
 )
 
@@ -45,6 +42,12 @@ object AsyncWorkItemData {
   implicit val envelopeIdFormat: Format[EnvelopeId] = EnvelopeId.vformat
   implicit val submissionRefFormat: Format[SubmissionRef] = SubmissionRef.vformat
   implicit val format: OFormat[AsyncWorkItemData] = derived.oformat()
+
+  private val printer = Printer.spaces2
+    .copy(
+      colonLeft = "",
+      lrbracketsEmpty = ""
+    )
 
   def fromAsyncWorkItem(
     workItem: WorkItem[TraceableWorkItem[AsyncHandlebarsWorkItem]]
@@ -57,9 +60,7 @@ object AsyncWorkItemData {
       workItem.item.submissionRef,
       workItem.item.data.uri,
       workItem.item.data.method.toString,
-      workItem.item.data.contentType.value,
-      Try(Json.parse(workItem.item.data.payload)).toOption.fold(workItem.item.data.payload)(Json.prettyPrint),
-      workItem.item.data.credential.map(_.value),
+      io.circe.parser.parse(workItem.item.data.payload).toOption.fold(workItem.item.data.payload)(printer.print),
       None
     )
 }
