@@ -294,12 +294,6 @@ class ApplicationModule(context: Context)
   private def formsIndexes(expiryDays: Int, createdExpiryDays: Int, submittedExpiryHours: Int) =
     formsAndSnapshotsCommonIndexes(expiryDays, createdExpiryDays, submittedExpiryHours) ++ Seq(
       IndexModel(
-        ascending("data.form.userId"),
-        IndexOptions()
-          .background(false)
-          .name("userIdIdx")
-      ),
-      IndexModel(
         ascending("data.form.envelopeId"),
         IndexOptions()
           .background(false)
