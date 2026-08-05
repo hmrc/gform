@@ -553,6 +553,10 @@ class HandlebarsTemplateProcessorHelpers(
     ifNotNullAsString(s)(identity).toString.capitalize
   }
 
+  def truncate(maxLen: Int, options: Options): CharSequence = log("truncate", maxLen) {
+    ifNotNullAsString(options.fn())(identity).toString.take(maxLen)
+  }
+
   def indexedLookup(index: Any, options: Options): CharSequence =
     log("indexedLookup", index :: options.params.toList: _*) {
       ifNotNullAsString(index) { s =>
