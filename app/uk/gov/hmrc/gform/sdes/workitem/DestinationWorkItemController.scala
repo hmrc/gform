@@ -18,13 +18,13 @@ package uk.gov.hmrc.gform.sdes.workitem
 
 import org.bson.types.ObjectId
 import play.api.libs.json.{ Format, Json }
-import play.api.mvc.ControllerComponents
+import play.api.mvc.{ Action, ControllerComponents }
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.AsyncHandlebarsDestinationResponse
 import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination.{ AsyncHandlebars, NRSOrchestrator }
-import uk.gov.hmrc.gform.sharedmodel.sdes.{ SdesDestination, SdesWorkItem, SdesWorkItemData }
+import uk.gov.hmrc.gform.sharedmodel.sdes.{ AsyncWorkItemData, SdesDestination, SdesWorkItem, SdesWorkItemData }
 import uk.gov.hmrc.mongo.workitem.{ ProcessingStatus, WorkItem, WorkItemFields }
 
 import scala.concurrent.{ ExecutionContext, Future }
@@ -68,6 +68,22 @@ class DestinationWorkItemController(
         }
     }
   }
+
+  def getAsyncWorkItem(id: String) = Action.async { _ =>
+    destinationWorkItemAlgebra.getAsyncHandlebarsWorkItem(id).flatMap {
+      case Some(w) => Future.successful(Ok(Json.toJson(AsyncWorkItemData.fromAsyncWorkItem(w))))
+      case None    => Future.failed(new RuntimeException(s"Object id [$id] not found in async handlebars collection"))
+    }
+  }
+
+  def updateAsyncWorkItemPayload(): Action[AsyncWorkItemData] =
+    Action.async(parse.json[AsyncWorkItemData]) { request =>
+      destinationWorkItemAlgebra
+        .updateAsyncHandlebarsWorkItemPayload(request.body)
+        .map { success =>
+          if (success) Ok else InternalServerError("Failed to update async handlebars work item payload")
+        }
+    }
 
   def delete(id: String, sdesDestination: SdesDestination) = Action.async { _ =>
     sdesDestination match {

@@ -25,7 +25,7 @@ import org.mongodb.scala.bson.conversions.Bson
 import org.mongodb.scala.model.{ Aggregates, Field, Filters }
 import org.mongodb.scala.model.Filters.equal
 import org.slf4j.LoggerFactory
-import uk.gov.hmrc.gform.scheduler.asynchandlebars.AsyncHandlebarsWorkItemRepo
+import uk.gov.hmrc.gform.scheduler.asynchandlebars.{ AsyncHandlebarsWorkItem, AsyncHandlebarsWorkItemRepo }
 import uk.gov.hmrc.gform.scheduler.datalakehouse.DataLakehouseWorkItemRepo
 import uk.gov.hmrc.gform.scheduler.datastore.DataStoreWorkItemRepo
 import uk.gov.hmrc.gform.scheduler.dms.DmsWorkItemRepo
@@ -41,6 +41,7 @@ import uk.gov.hmrc.gform.sharedmodel.sdes._
 import uk.gov.hmrc.mongo.workitem.ProcessingStatus.ToDo
 import uk.gov.hmrc.mongo.workitem.{ ProcessingStatus, WorkItem }
 
+import java.time.Instant
 import java.util.UUID
 import scala.concurrent.{ ExecutionContext, Future }
 
@@ -85,6 +86,12 @@ trait DestinationWorkItemAlgebra[F[_]] {
   def deleteGeneric(response: DestinationResponse): F[Unit]
 
   def dmsWorkItemDestinationMigration(from: String, to: String): F[UpdateResult]
+
+  def getAsyncHandlebarsWorkItem(
+    id: String
+  ): F[Option[WorkItem[TraceableWorkItem[AsyncHandlebarsWorkItem]]]]
+
+  def updateAsyncHandlebarsWorkItemPayload(workItemData: AsyncWorkItemData): F[Boolean]
 }
 
 class DestinationWorkItemService(
@@ -354,6 +361,35 @@ class DestinationWorkItemService(
           new IllegalArgumentException(s"Unsupported SDES destination for traceable work item: $sdesDestination")
         )
     }
+
+  override def getAsyncHandlebarsWorkItem(
+    id: String
+  ): Future[Option[WorkItem[TraceableWorkItem[AsyncHandlebarsWorkItem]]]] =
+    asyncHandlebarsWorkItemRepo.findById(new ObjectId(id))
+
+  override def updateAsyncHandlebarsWorkItemPayload(workItemData: AsyncWorkItemData): Future[Boolean] =
+    asyncHandlebarsWorkItemRepo
+      .findById(new ObjectId(workItemData.id))
+      .flatMap {
+        case Some(workItem) =>
+          logger.warn(
+            s"Async handlebars payload for submission ref: '${workItemData.submissionRef.value}', envelope id: '${workItemData.envelopeId.value}' and destination id: '${workItemData.destinationId}', updated by username: '${workItemData.username
+              .getOrElse("unknown")}'"
+          )
+          val updated =
+            workItem.copy(
+              item = workItem.item.copy(data = workItem.item.data.copy(payload = workItemData.payload)),
+              updatedAt = Instant.now()
+            )
+          asyncHandlebarsWorkItemRepo.collection
+            .replaceOne(equal("_id", new ObjectId(workItemData.id)), updated)
+            .toFuture()
+            .map(_.getModifiedCount > 0)
+        case None =>
+          Future.failed(
+            new RuntimeException(s"Work item with id ${workItemData.id} not found in async handlebars collection")
+          )
+      }
 
   override def findByEnvelopeId(
     envelopeId: EnvelopeId,

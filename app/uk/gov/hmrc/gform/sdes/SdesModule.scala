@@ -29,7 +29,7 @@ import uk.gov.hmrc.gform.mongo.MongoModule
 import uk.gov.hmrc.gform.objectstore.ObjectStoreModule
 import uk.gov.hmrc.gform.repo.Repo
 import uk.gov.hmrc.gform.scheduler.TraceableWorkItem
-import uk.gov.hmrc.gform.scheduler.asynchandlebars.AsyncHandlebarsWorkItemRepo
+import uk.gov.hmrc.gform.scheduler.asynchandlebars.{ AsyncHandlebarsWorkItem, AsyncHandlebarsWorkItemRepo }
 import uk.gov.hmrc.gform.scheduler.datalakehouse.DataLakehouseWorkItemRepo
 import uk.gov.hmrc.gform.scheduler.datastore.DataStoreWorkItemRepo
 import uk.gov.hmrc.gform.scheduler.dms.DmsWorkItemRepo
@@ -340,6 +340,14 @@ class SdesModule(
 
     override def dmsWorkItemDestinationMigration(from: String, to: String): FOpt[UpdateResult] =
       fromFutureA(destinationWorkItemService.dmsWorkItemDestinationMigration(from, to))
+
+    override def getAsyncHandlebarsWorkItem(
+      id: String
+    ): FOpt[Option[WorkItem[TraceableWorkItem[AsyncHandlebarsWorkItem]]]] =
+      fromFutureA(destinationWorkItemService.getAsyncHandlebarsWorkItem(id))
+
+    override def updateAsyncHandlebarsWorkItemPayload(workItemData: AsyncWorkItemData): FOpt[Boolean] =
+      fromFutureA(destinationWorkItemService.updateAsyncHandlebarsWorkItemPayload(workItemData))
   }
 
 }
