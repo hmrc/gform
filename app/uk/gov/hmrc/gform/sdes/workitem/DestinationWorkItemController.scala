@@ -54,6 +54,15 @@ class DestinationWorkItemController(
     }
   }
 
+  def regenerate(id: String) = Action.async { _ =>
+    destinationWorkItemAlgebra
+      .regenerate(id)
+      .map(_ => Ok)
+      .recover { case err: IllegalArgumentException =>
+        BadRequest(err.getMessage)
+      }
+  }
+
   def get(id: String, sdesDestination: SdesDestination) = Action.async { _ =>
     sdesDestination match {
       case AsyncHandlebars | NRSOrchestrator =>

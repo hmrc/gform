@@ -25,6 +25,7 @@ import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.core.{ FOpt, fromFutureA }
 import uk.gov.hmrc.gform.email.EmailModule
 import uk.gov.hmrc.gform.envelope.EnvelopeModule
+import uk.gov.hmrc.gform.formtemplate.FormTemplateAlgebra
 import uk.gov.hmrc.gform.mongo.MongoModule
 import uk.gov.hmrc.gform.objectstore.ObjectStoreModule
 import uk.gov.hmrc.gform.repo.Repo
@@ -62,6 +63,7 @@ class SdesModule(
   emailModule: EmailModule,
   nrsOrchestratorWorkItemRepo: NrsOrchestratorWorkItemRepo,
   nrsOrchestratorAttachmentWorkItemRepo: NrsOrchestratorAttachmentWorkItemRepo,
+  formTemplateService: FormTemplateAlgebra[Future],
   jsonCrypto: Encrypter with Decrypter
 )(implicit ex: ExecutionContext) {
 
@@ -118,7 +120,8 @@ class SdesModule(
       dataLakehouseWorkItemRepo,
       nrsOrchestratorWorkItemRepo,
       nrsOrchestratorAttachmentWorkItemRepo,
-      asyncHandlebarsWorkItemRepo
+      asyncHandlebarsWorkItemRepo,
+      formTemplateService
     )
 
   val destinationWorkItemController: DestinationWorkItemController =
@@ -304,6 +307,9 @@ class SdesModule(
 
     override def enqueue(id: String, sdesDestination: SdesDestination): FOpt[Unit] =
       fromFutureA(destinationWorkItemService.enqueue(id, sdesDestination))
+
+    override def regenerate(id: String): FOpt[Unit] =
+      fromFutureA(destinationWorkItemService.regenerate(id))
 
     override def find(id: String, sdesDestination: SdesDestination): FOpt[Option[WorkItem[SdesWorkItem]]] =
       fromFutureA(destinationWorkItemService.find(id, sdesDestination))

@@ -214,6 +214,7 @@ class ApplicationModule(context: Context)
       emailModule,
       nrsOrchestratorNotificationRepository,
       nrsOrchestratorAttachmentNotificationRepository,
+      formTemplateModule.formTemplateService,
       jsonCrypto
     )
 

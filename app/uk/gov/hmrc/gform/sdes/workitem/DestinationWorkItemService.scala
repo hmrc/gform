@@ -25,19 +25,22 @@ import org.mongodb.scala.bson.conversions.Bson
 import org.mongodb.scala.model.{ Aggregates, Field, Filters }
 import org.mongodb.scala.model.Filters.equal
 import org.slf4j.LoggerFactory
-import uk.gov.hmrc.gform.scheduler.asynchandlebars.{ AsyncHandlebarsWorkItem, AsyncHandlebarsWorkItemRepo }
+import uk.gov.hmrc.gform.formtemplate.FormTemplateAlgebra
+import uk.gov.hmrc.gform.scheduler.asynchandlebars.{ AsyncHandlebarsRenderSnapshot, AsyncHandlebarsWorkItem, AsyncHandlebarsWorkItemRepo }
 import uk.gov.hmrc.gform.scheduler.datalakehouse.DataLakehouseWorkItemRepo
 import uk.gov.hmrc.gform.scheduler.datastore.DataStoreWorkItemRepo
 import uk.gov.hmrc.gform.scheduler.dms.DmsWorkItemRepo
 import uk.gov.hmrc.gform.scheduler.infoarchive.InfoArchiveWorkItemRepo
 import uk.gov.hmrc.gform.scheduler.nrsOrchestrator.{ NrsOrchestratorAttachmentWorkItemRepo, NrsOrchestratorWorkItemRepo }
 import uk.gov.hmrc.gform.scheduler.{ TraceableWorkItem, WorkItemRepo }
+import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ AsyncHandlebarsDestinationResponse, DestinationResponse, NrsOrchestratorDestinationResponse }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplate, FormTemplateId }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ AsyncHandlebarsDestinationResponse, Destination, DestinationId, DestinationResponse, Destinations, NrsOrchestratorDestinationResponse, TemplateType }
 import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination.AsyncHandlebars
 import uk.gov.hmrc.gform.sharedmodel.sdes._
+import uk.gov.hmrc.gform.submission.handlebars.{ FocussedHandlebarsModelTree, HandlebarsModelTree, RealHandlebarsTemplateProcessor }
 import uk.gov.hmrc.mongo.workitem.ProcessingStatus.ToDo
 import uk.gov.hmrc.mongo.workitem.{ ProcessingStatus, WorkItem }
 
@@ -67,6 +70,8 @@ trait DestinationWorkItemAlgebra[F[_]] {
   def readySdes(workItems: List[(SdesDestination, ObjectId)]): F[Unit]
 
   def enqueue(id: String, sdesDestination: SdesDestination): F[Unit]
+
+  def regenerate(id: String): F[Unit]
 
   def find(id: String, sdesDestination: SdesDestination): F[Option[WorkItem[SdesWorkItem]]]
 
@@ -101,11 +106,14 @@ class DestinationWorkItemService(
   dataLakehouseWorkItemRepo: DataLakehouseWorkItemRepo,
   nrsOrchestratorWorkItemRepo: NrsOrchestratorWorkItemRepo,
   nrsOrchestratorAttachmentWorkItemRepo: NrsOrchestratorAttachmentWorkItemRepo,
-  asyncHandlebarsWorkItemRepo: AsyncHandlebarsWorkItemRepo
+  asyncHandlebarsWorkItemRepo: AsyncHandlebarsWorkItemRepo,
+  formTemplateService: FormTemplateAlgebra[Future]
 )(implicit ec: ExecutionContext)
     extends DestinationWorkItemAlgebra[Future] {
 
   private val logger = LoggerFactory.getLogger(getClass)
+  private val reProcessableStatuses: Set[ProcessingStatus] =
+    Set(ProcessingStatus.PermanentlyFailed, ProcessingStatus.Ignored, ProcessingStatus.Deferred)
 
   override def pushWorkItem(
     envelopeId: EnvelopeId,
@@ -319,6 +327,119 @@ class DestinationWorkItemService(
           else nrsOrchestratorAttachmentWorkItemRepo.markAs(new ObjectId(id), ProcessingStatus.ToDo).void
         }
     }
+
+  override def regenerate(id: String): Future[Unit] = {
+    val objectId = new ObjectId(id)
+    for {
+      workItem <- asyncHandlebarsWorkItemRepo
+                    .findById(objectId)
+                    .map(_.getOrElse(throw new IllegalArgumentException(s"AsyncHandlebars work item [$id] not found")))
+      _ = if (!reProcessableStatuses.contains(workItem.status))
+            throw new IllegalArgumentException(
+              s"AsyncHandlebars work item [$id] cannot be regenerated from status [${workItem.status.name}]"
+            )
+      snapshot <- workItem.item.data.renderSnapshot match {
+                    case Some(snapshot) => Future.successful(snapshot)
+                    case None =>
+                      Future.failed(
+                        new IllegalArgumentException(
+                          s"AsyncHandlebars work item [$id] cannot be regenerated because it has no render snapshot"
+                        )
+                      )
+                  }
+      formTemplate <- formTemplateService.get(workItem.item.formTemplateId)
+      destination <- Future.fromTry(
+                       scala.util.Try(
+                         findAsyncHandlebarsDestination(formTemplate.destinations, workItem.item.destinationId)
+                       )
+                     )
+      _ = rejectBundledImportHelper(destination)
+      regeneratedData = regenerateData(destination, formTemplate, snapshot)
+      updatedWorkItem = workItem.copy(
+                          item = workItem.item.copy(data = regeneratedData),
+                          failureCount = 0
+                        )
+      _ <- asyncHandlebarsWorkItemRepo.collection.replaceOne(equal("_id", objectId), updatedWorkItem).toFuture().void
+      _ <- asyncHandlebarsWorkItemRepo.markAs(objectId, ToDo).void
+    } yield ()
+  }
+
+  private def findAsyncHandlebarsDestination(
+    destinations: Destinations,
+    destinationId: DestinationId
+  ): Destination.AsyncHandlebarsHttpApi =
+    destinations match {
+      case destinationList: Destinations.DestinationList =>
+        destinationList.destinations.toList
+          .collectFirst {
+            case destination: Destination.AsyncHandlebarsHttpApi if destination.id == destinationId =>
+              destination
+          }
+          .getOrElse(
+            throw new IllegalArgumentException(
+              s"Cannot find AsyncHandlebars destination [${destinationId.id}] in the latest form template"
+            )
+          )
+      case _ =>
+        throw new IllegalArgumentException(
+          "Cannot regenerate AsyncHandlebars work item for a template without destinations"
+        )
+    }
+
+  private def rejectBundledImportHelper(destination: Destination.AsyncHandlebarsHttpApi): Unit = {
+    val templates = destination.uri :: destination.payload.toList
+    if (templates.exists(_.contains("importBySubmissionReference")))
+      throw new IllegalArgumentException(
+        "Cannot regenerate AsyncHandlebars work item because the corrected template uses importBySubmissionReference, which requires a bundled-form tree snapshot"
+      )
+  }
+
+  private def regenerateData(
+    destination: Destination.AsyncHandlebarsHttpApi,
+    formTemplate: FormTemplate,
+    snapshot: AsyncHandlebarsRenderSnapshot
+  ): AsyncHandlebarsWorkItem = {
+    val modelTree = HandlebarsModelTree(
+      snapshot.formId,
+      snapshot.submissionRef,
+      formTemplate,
+      snapshot.pdfData,
+      snapshot.instructionPdfData,
+      snapshot.structuredFormData,
+      snapshot.model
+    )
+
+    val contentType = destination.payloadType match {
+      case TemplateType.JSON  => ContentType.`application/json`
+      case TemplateType.XML   => ContentType.`application/xml`
+      case TemplateType.Plain => ContentType.`text/plain`
+    }
+
+    val uri = RealHandlebarsTemplateProcessor(
+      destination.uri,
+      snapshot.accumulatedModel,
+      FocussedHandlebarsModelTree(modelTree),
+      TemplateType.Plain
+    )
+    val payload = destination.payload.fold("") { body =>
+      RealHandlebarsTemplateProcessor(
+        body,
+        snapshot.accumulatedModel,
+        FocussedHandlebarsModelTree(modelTree),
+        destination.payloadType
+      )
+    }
+
+    AsyncHandlebarsWorkItem(
+      profile = destination.profile,
+      uri = uri,
+      method = destination.method,
+      contentType = contentType,
+      payload = payload,
+      credential = destination.credential,
+      renderSnapshot = Some(snapshot)
+    )
+  }
 
   override def find(id: String, sdesDestination: SdesDestination): Future[Option[WorkItem[SdesWorkItem]]] =
     sdesDestination match {

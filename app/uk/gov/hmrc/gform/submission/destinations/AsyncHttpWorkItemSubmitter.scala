@@ -19,7 +19,7 @@ package uk.gov.hmrc.gform.submission.destinations
 import org.slf4j.LoggerFactory
 import uk.gov.hmrc.gform.core.{ FOpt, fromFutureA }
 import uk.gov.hmrc.gform.scheduler.TraceableWorkItem
-import uk.gov.hmrc.gform.scheduler.asynchandlebars.{ AsyncHandlebarsWorkItem, AsyncHandlebarsWorkItemRepo }
+import uk.gov.hmrc.gform.scheduler.asynchandlebars.{ AsyncHandlebarsRenderSnapshot, AsyncHandlebarsWorkItem, AsyncHandlebarsWorkItemRepo }
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations._
 import uk.gov.hmrc.gform.submission.handlebars.{ FocussedHandlebarsModelTree, HandlebarsModelTree, HandlebarsTemplateProcessor }
@@ -91,7 +91,18 @@ class RealAsyncHttpWorkItemSubmitter(
         method = destination.method,
         contentType = contentType,
         payload = payload,
-        credential = destination.credential
+        credential = destination.credential,
+        renderSnapshot = Some(
+          AsyncHandlebarsRenderSnapshot(
+            accumulatedModel = accumulatedModel,
+            model = modelTree.value.model,
+            pdfData = modelTree.value.pdfData,
+            instructionPdfData = modelTree.value.instructionPdfData,
+            structuredFormData = modelTree.value.structuredFormData,
+            formId = modelTree.value.formId,
+            submissionRef = modelTree.value.submissionRef
+          )
+        )
       )
     )
 
