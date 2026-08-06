@@ -25,7 +25,7 @@ import org.mongodb.scala.model.Filters.{ and, equal, gte, lte, notEqual }
 import org.mongodb.scala.model.Projections.{ computed, excludeId }
 import org.mongodb.scala.model.Sorts.{ ascending, descending }
 import uk.gov.hmrc.gform.formtemplate.FormTemplateService
-import uk.gov.hmrc.gform.sharedmodel.form.{ AllSavedVersions, SavedFormDetail, Signed, SignedFormDetails, Submitted, VersionStats }
+import uk.gov.hmrc.gform.sharedmodel.form.{ SavedFormDetail, Signed, SignedFormDetails, Submitted, VersionStats }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplateId, NotPermitted }
 import uk.gov.hmrc.mongo.cache.MongoCacheRepository
 import uk.gov.hmrc.mongo.play.json.Codecs
@@ -35,7 +35,6 @@ import java.time.{ LocalDate, ZoneId }
 import scala.concurrent.{ ExecutionContext, Future }
 
 trait FormStatisticsAlgebra[F[_]] {
-  def getAllSavedVersions(): F[AllSavedVersions]
   def getSavedFormCount(formTemplateId: FormTemplateId): F[Seq[VersionStats]]
   def getSavedFormDetails(formTemplateId: FormTemplateId): F[Seq[SavedFormDetail]]
   def getSignedFormDetails(): F[Seq[SignedFormDetails]]
@@ -47,67 +46,6 @@ class FormStatisticsService(
 )(implicit
   ec: ExecutionContext
 ) extends FormStatisticsAlgebra[Future] {
-  override def getAllSavedVersions(): Future[AllSavedVersions] = {
-    // db.forms.aggregate([
-    //   {
-    //     "$match": {
-    //       "data.form.userId": {
-    //         "$regex": "^(?!anonymous-session).*"
-    //       }
-    //     }
-    //   },
-    //   {
-    //     "$group": {
-    //       "_id": {
-    //         "version": "$data.form.version"
-    //       }
-    //     }
-    //   },
-    //   {
-    //     "$sort": {
-    //       "_id.version": -1
-    //     }
-    //   },
-    //   {
-    //     "$group": {
-    //       "_id": null,
-    //       "stats": {
-    //         "$push": "$_id.version"
-    //       }
-    //     }
-    //   },
-    //   {
-    //     "$unset": [
-    //       "_id"
-    //     ]
-    //   }
-    //])
-
-    val matchStage = Aggregates.filter(
-      Filters.regex("data.form.userId", "^(?!anonymous-session).*")
-    )
-
-    val groupStage = Aggregates.group(
-      equal("version", "$data.form.version")
-    )
-
-    val sortStage = Aggregates.sort(descending("_id.version"))
-
-    val groupStage2 = Aggregates.group(
-      null,
-      Accumulators.push("stats", "$_id.version")
-    )
-
-    val unsetStage = BsonDocument("$unset" -> BsonArray("_id"))
-
-    val pipeline: List[Bson] =
-      List(matchStage, groupStage, sortStage, groupStage2, unsetStage)
-
-    aggregate(pipeline)
-      .map(_.map(Codecs.fromBson[AllSavedVersions]).headOption.getOrElse(AllSavedVersions.empty))
-
-  }
-
   override def getSavedFormCount(formTemplateId: FormTemplateId): Future[Seq[VersionStats]] = {
     //db.forms.aggregate([
     //  {

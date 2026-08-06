@@ -21,13 +21,6 @@ import play.api.libs.json.{ Format, JsString, JsValue, Json, OFormat, Reads, Wri
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
-final case class AllSavedVersions(stats: Seq[JsValue])
-
-object AllSavedVersions {
-  val empty = AllSavedVersions(Seq.empty[JsValue])
-  implicit val format: OFormat[AllSavedVersions] = Json.format
-}
-
 final case class VersionStats(
   version: JsValue, // TODO change to Long, once we don't have version of type String in mongodb
   stats: List[CountData]
