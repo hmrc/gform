@@ -1609,10 +1609,13 @@ object FormTemplateValidator {
   def validateEmailParameter(formTemplate: FormTemplate): ValidationResult =
     formTemplate.emailParameters.fold[ValidationResult](Valid) { emailParams =>
       val ids = fieldIds(formTemplate.formKind.allSections)
-      emailParams
-        .collect {
-          case EmailParameter(_, FormCtx(value)) if !ids.contains(value) => value
-        } match {
+      emailParams.collect { case EmailParameter(_, expr) =>
+        implicitly[LeafExpr[Expr]]
+          .exprs(TemplatePath.root, expr)
+          .flatMap(_.referenceInfos)
+          .collect { case ReferenceInfo.FormCtxExpr(_, FormCtx(fcId)) => fcId }
+          .filterNot(ids.contains(_))
+      }.flatten match {
         case Nil => Valid
         case invalidFields =>
           Invalid(
