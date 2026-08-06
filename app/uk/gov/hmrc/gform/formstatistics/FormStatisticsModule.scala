@@ -19,7 +19,7 @@ package uk.gov.hmrc.gform.formstatistics
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.core.{ FOpt, fromFutureA }
 import uk.gov.hmrc.gform.formtemplate.FormTemplateModule
-import uk.gov.hmrc.gform.sharedmodel.form.{ AllSavedVersions, SavedFormDetail, SignedFormDetails, VersionStats }
+import uk.gov.hmrc.gform.sharedmodel.form.{ SavedFormDetail, SignedFormDetails, VersionStats }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.mongo.cache.MongoCacheRepository
 
@@ -39,8 +39,6 @@ class FormStatisticsModule(
     new FormStatisticsController(configModule.controllerComponents, formStatisticsService)
 
   val foptFormStatisticsService: FormStatisticsAlgebra[FOpt] = new FormStatisticsAlgebra[FOpt] {
-    override def getAllSavedVersions(): FOpt[AllSavedVersions] =
-      fromFutureA(formStatisticsService.getAllSavedVersions())
 
     override def getSavedFormCount(formTemplateId: FormTemplateId): FOpt[Seq[VersionStats]] =
       fromFutureA(formStatisticsService.getSavedFormCount(formTemplateId))
