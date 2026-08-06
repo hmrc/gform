@@ -143,6 +143,8 @@ POST          /destination-work-item/enqueue/:id                                
 GET           /destination-work-item/:id                                                                uk.gov.hmrc.gform.sdes.workitem.DestinationWorkItemController.get(id: String, destination: SdesDestination)
 GET           /destination-work-item/envelopeId/:envelopeId                                             uk.gov.hmrc.gform.sdes.workitem.DestinationWorkItemController.getByEnvelopeId(envelopeId: EnvelopeId, destination: SdesDestination)
 DELETE        /destination-work-item/:id                                                                uk.gov.hmrc.gform.sdes.workitem.DestinationWorkItemController.delete(id: String, destination: SdesDestination)
+GET           /destination-work-item/async-handlebars/:id                                               uk.gov.hmrc.gform.sdes.workitem.DestinationWorkItemController.getAsyncWorkItem(id: String)
+POST          /destination-work-item/async-handlebars/update                                            uk.gov.hmrc.gform.sdes.workitem.DestinationWorkItemController.updateAsyncWorkItemPayload()
 
 GET           /work-item-history/search/:page/:pageSize                                                 uk.gov.hmrc.gform.submission.WorkItemHistoryController.search(page: Int, pageSize: Int, envelopeId: Option[EnvelopeId], formTemplateId: Option[FormTemplateId], failuresOnly: Option[Boolean])
 
