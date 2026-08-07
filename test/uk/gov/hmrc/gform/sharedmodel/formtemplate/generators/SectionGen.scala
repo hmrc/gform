@@ -186,6 +186,7 @@ trait SectionGen {
       pages                 <- PrimitiveGen.oneOrMoreGen(pageGen)
       repeatsUntil          <- Gen.option(IncludeIfGen.includeIfGen)
       repeatsWhile          <- Gen.option(IncludeIfGen.includeIfGen)
+      repeatsWhileError     <- Gen.option(smartStringGen)
       repeaterContinueLabel <- Gen.option(smartStringGen)
       formComponent         <- FormComponentGen.formComponentGen(0)
       choice                <- ComponentTypeGen.choiceGen
@@ -210,6 +211,7 @@ trait SectionGen {
         pages,
         repeatsUntil,
         repeatsWhile,
+        repeatsWhileError,
         repeaterContinueLabel,
         formComponent.copy(`type` = choice),
         instruction,

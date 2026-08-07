@@ -1034,6 +1034,7 @@ class TemplateValidatorSpec extends Spec {
       None,
       None,
       None,
+      None,
       addAnotherQuestion,
       None,
       None,

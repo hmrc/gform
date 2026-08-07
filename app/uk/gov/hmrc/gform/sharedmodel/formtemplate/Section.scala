@@ -62,6 +62,7 @@ object Section {
     pages: NonEmptyList[Page],
     repeatsUntil: Option[IncludeIf],
     repeatsWhile: Option[IncludeIf],
+    repeatsWhileError: Option[SmartString],
     repeaterContinueLabel: Option[SmartString],
     addAnotherQuestion: FormComponent,
     instruction: Option[Instruction],

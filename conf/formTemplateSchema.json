@@ -518,6 +518,9 @@
         "repeatsWhile": {
           "type": "string"
         },
+        "repeatsWhileError": {
+          "$ref": "#/$defs/stringOrEnCyObject"
+        },
         "repeaterContinueLabel": {
           "$ref": "#/$defs/stringOrEnCyObject"
         },
@@ -1879,7 +1882,8 @@
               "parameters"
             ],
             "additionalProperties": false
-          },{
+          },
+          {
             "properties": {
               "type": {
                 "type": "string",
