@@ -84,7 +84,7 @@ trait Rewriter {
         case (acc, Section.RepeatingPage(page, _)) => acc ++ lookupFromPage(page.fields) ++ questionFcid(page)
         case (
               acc,
-              Section.AddToList(_, _, _, _, _, _, _, _, pages, _, _, _, _, _, _, _, _, _, _, _, _, _, maybeDec, _, _)
+              Section.AddToList(_, _, _, _, _, _, _, _, pages, _, _, _, _, _, _, _, _, _, _, _, _, _, _, maybeDec, _, _)
             ) =>
           acc ++ pages.toList.flatMap(page => lookupFromPage(page.fields) ++ questionFcid(page)) ++ maybeDec.toList
             .flatMap(dec => lookupFromPage(dec.fields))
@@ -101,7 +101,7 @@ trait Rewriter {
         case Section.NonRepeatingPage(page) => page.fields.flatMap(f)
         case Section.RepeatingPage(page, _) => page.fields.flatMap(f)
         case Section
-              .AddToList(_, _, _, _, _, _, _, _, pages, _, _, _, _, _, _, _, _, _, defaultPage, _, _, _, _, _, _) =>
+              .AddToList(_, _, _, _, _, _, _, _, pages, _, _, _, _, _, _, _, _, _, _, defaultPage, _, _, _, _, _, _) =>
           (pages.toList ++ defaultPage.toList).flatMap(page => page.fields.flatMap(f))
       }
 
@@ -183,7 +183,7 @@ trait Rewriter {
     val pages: List[Page] = formTemplate.formKind.allSections.flatMap {
       case Section.NonRepeatingPage(page) => List(page)
       case Section.RepeatingPage(page, _) => List(page)
-      case Section.AddToList(_, _, _, _, _, _, _, _, pages, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) =>
+      case Section.AddToList(_, _, _, _, _, _, _, _, pages, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) =>
         pages.toList
     }
 
@@ -216,6 +216,7 @@ trait Rewriter {
             pages,
             repeatsUntil,
             repeatsWhile,
+            _,
             _,
             _,
             _,

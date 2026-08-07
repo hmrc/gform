@@ -349,6 +349,7 @@ trait FormTemplateSupport {
       repeatsUntil,
       repeatsWhile,
       None,
+      None,
       addAnotherQuestion,
       None,
       None,

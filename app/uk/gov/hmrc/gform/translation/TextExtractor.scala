@@ -375,6 +375,8 @@ object TextExtractor {
       TraverseArray :: Pure(DownField("key")) :: descriptionTotal,
       TraverseArray :: Pure(DownField("value")) :: descriptionTotal,
       Pure(DownField("summaryDescription")) :: root,
+      Pure(DownField("repeatsWhileError")) :: root,
+      Pure(DownField("repeaterContinueLabel")) :: root,
       Pure(DownField("removePageContent")) :: root,
       Pure(DownField("caption")) :: root,
       Pure(DownField("continueLabel")) :: root,

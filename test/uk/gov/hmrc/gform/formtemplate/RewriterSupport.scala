@@ -82,6 +82,7 @@ trait RewriterSupport {
     pages = pages,
     repeatsUntil = None,
     repeatsWhile = None,
+    repeatsWhileError = None,
     repeaterContinueLabel = None,
     addAnotherQuestion = simpleFormComponent,
     instruction = None,

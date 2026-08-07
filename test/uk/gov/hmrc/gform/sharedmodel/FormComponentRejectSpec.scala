@@ -83,7 +83,9 @@ class FormComponentRejectSpec extends Spec with TableDrivenPropertyChecks {
       ("choice-options-value-expr-not-in-atl",      "The value of 'choiceId' is not valid. The component expression value must be within the scope of an ATL."),
       ("declaration-section-with-enterable-field-in-task-list",     "A declarationSection in a task list cannot contain enterable fields. Field 'text' is not Info or Mini Summary or Table field."),
       ("declaration-section-without-summary-section-in-task-list",  "A destinationSection requires a summarySection in a task list."),
-      ("confirmation-disallow-top-level-expression", "Invalid confirmation: 'confirmationQuestion'. Cannot confirm top level expression as a field. Please remove 'companyNameEntered' from 'fieldsConfirmed' and put it in 'expressionsConfirmed' instead.")
+      ("confirmation-disallow-top-level-expression", "Invalid confirmation: 'confirmationQuestion'. Cannot confirm top level expression as a field. Please remove 'companyNameEntered' from 'fieldsConfirmed' and put it in 'expressionsConfirmed' instead."),
+      ("repeats-while-error-missing",                "AddToList 'addOther' repeatsWhile condition needs to be accompanied by 'repeatsWhileError' error message. This error message will be displayed on Summary page in case user tries to bypass repeatsWhile condition."),
+      ("repeats-while-error-standalone",             "AddToList 'addOther' repeatsWhileError can't be used without 'repeatsWhile' condition.")
       // format: on
     )
     val appConfig = AppConfig.loadOrThrow(ConfigFactory.load())

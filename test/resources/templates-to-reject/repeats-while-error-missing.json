@@ -1,0 +1,50 @@
+{
+  "_id": "repeats-while-error-missing",
+  "formName": "",
+  "description": "",
+  "version": 1,
+  "authConfig": {
+    "authModule": "anonymous"
+  },
+  "sections": [
+    {
+      "type": "addToList",
+      "title": "Amounts you have added ${amount.sum}",
+      "summaryName": "Amount",
+      "shortName": "Amount",
+      "description": "$n - ${amount}",
+      "summaryDescription": "${amount}",
+      "repeatsWhile": "${amount.sum > 10000}",
+      "addAnotherQuestion": {
+        "id": "addOther",
+        "type": "choice",
+        "label": "Do you want to add another value?",
+        "format": "yesno"
+      },
+      "pages": [
+        {
+          "title": "Amount $n",
+          "fields": [
+            {
+              "id": "amount",
+              "type": "text",
+              "notPII": true,
+              "format": "sterling"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "acknowledgementSection": {
+    "title": "Confirmation page ",
+    "fields": []
+  },
+  "destinations": [
+    {
+      "id": "transitionToSubmitted",
+      "type": "stateTransition",
+      "requiredState": "Submitted"
+    }
+  ]
+}

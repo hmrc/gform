@@ -1852,6 +1852,20 @@ object FormTemplateValidator {
       addToList.repeatsWhile.fold(List.empty[ValidationResult])(incIf => checkBooleanExpr(incIf.booleanExpr, invalid))
     }
 
+    def checkRepeatsWhileError(addToList: Section.AddToList): ValidationResult =
+      (addToList.repeatsWhile, addToList.repeatsWhileError) match {
+        case (Some(_), Some(_)) => Valid
+        case (None, Some(_)) =>
+          Invalid(
+            s"AddToList '${addToList.addAnotherQuestion.id}' repeatsWhileError can't be used without 'repeatsWhile' condition."
+          )
+        case (Some(_), None) =>
+          Invalid(
+            s"AddToList '${addToList.addAnotherQuestion.id}' repeatsWhile condition needs to be accompanied by 'repeatsWhileError' error message. This error message will be displayed on Summary page in case user tries to bypass repeatsWhile condition."
+          )
+        case (None, None) => Valid
+      }
+
     def checkBooleanExpr(bExpr: BooleanExpr, invalid: Invalid): List[ValidationResult] =
       bExpr match {
         case Not(Equals(ChoicesSelected(FormComponentId(value)), ChoicesAvailable(FormComponentId(_), _))) =>
@@ -1871,7 +1885,9 @@ object FormTemplateValidator {
 
     val isATLChoiceOptionsValid: List[ValidationResult] =
       formTemplate.formKind.allSections.collect { case atl: Section.AddToList =>
-        checkRepeatsUntil(atl).appendedAll(checkRepeatsWhile(atl))
+        checkRepeatsUntil(atl)
+          .appendedAll(checkRepeatsWhile(atl))
+          .appended(checkRepeatsWhileError(atl))
       }.flatten
 
     isATLChoiceOptionsValid.combineAll
