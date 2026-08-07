@@ -70,7 +70,6 @@ trait Verifier {
       _ <- fromOptA(FormTemplateValidator.validateDependencyGraph(formTemplate).toEither)
       _ <- fromOptA(FormTemplateValidator.validateEnrolmentSection(formTemplate).toEither)
       _ <- fromOptA(FormTemplateValidator.validateRegimeId(formTemplate).toEither)
-      _ <- fromOptA(FormTemplateValidator.validateEmailParameter(formTemplate).toEither)
       _ <- fromOptA(FormTemplateValidator.validateEnrolmentIdentifier(formTemplate).toEither)
       _ <- fromOptA(FormTemplateValidator.validateDates(formTemplate).toEither)
       _ <- fromOptA(FormTemplateValidator.validateGroup(formTemplate).toEither)

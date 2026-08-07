@@ -35,6 +35,9 @@ object EmailParameter {
 
     OFormat(reads, mongoFormat)
   }
+
+  implicit val leafExprs: LeafExpr[EmailParameter] = (path: TemplatePath, t: EmailParameter) =>
+    LeafExpr(path + "value", t.value)
 }
 
 case class EmailTemplateVariable(emailTemplateVariableId: String) extends AnyVal
