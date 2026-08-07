@@ -90,6 +90,7 @@ object FormTemplate {
     LeafExpr(path + "sections", t.formKind) ++
       LeafExpr(path + "emailExpr", t.emailExpr) ++
       LeafExpr(path + "customSubmissionRef", t.customSubmissionRef) ++
+      LeafExpr(path + "emailParameters", t.emailParameters) ++
       leafExprsNoSections.exprs(path, t)
 
   val leafExprsNoSections: LeafExpr[FormTemplate] = (path: TemplatePath, t: FormTemplate) =>

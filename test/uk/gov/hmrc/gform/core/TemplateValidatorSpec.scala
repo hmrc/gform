@@ -26,7 +26,6 @@ import uk.gov.hmrc.gform.formtemplate.FormTemplateValidator
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.DataSource.SeissEligible
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DestinationList
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.FormComponentGen._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.PrimitiveGen._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.SectionGen._
@@ -174,122 +173,6 @@ class TemplateValidatorSpec extends Spec {
 
     val res = FormTemplateValidator.validateDependencyGraph(formTemplateWithOneSection)
     res should be(Invalid("Graph contains cycle Some(Cycle(a, a~>b, b, b~>a, a))"))
-
-  }
-
-  "TemplateValidator.validateEmailParameters" should "return Valid" in {
-
-    val formComponents = List(mkFormComponent("directorFullName", Value), mkFormComponent("directorEmail", Value))
-    val newFormTemplate = mkFormTemplate(formComponents)
-
-    val res = FormTemplateValidator.validateEmailParameter(newFormTemplate)
-    res should be(Valid)
-
-  }
-
-  "TemplateValidator.validateEmailParameters using fields contained in declaration section" should "return Invalid" in {
-
-    val formComponents = List(
-      mkFormComponent("fieldContainedInFormTemplate", Value)
-    )
-
-    val newEmailParameters = Some(
-      NonEmptyList.of(
-        EmailParameter("fullName", FormCtx(FormComponentId("declarationFullName")))
-      )
-    )
-
-    val newDestinationsSection: Destinations =
-      DestinationList(
-        NonEmptyList.of(hmrcDms),
-        ackSection,
-        Some(
-          DeclarationSection(
-            toSmartString("Declaration"),
-            None,
-            None,
-            None,
-            None,
-            Some(toSmartString("ContinueLabel")),
-            List(mkFormComponent("declarationFullName", Value)),
-            None
-          )
-        )
-      )
-
-    val newFormTemplate = mkFormTemplate(formComponents, newEmailParameters, destinations = newDestinationsSection)
-
-    val res = FormTemplateValidator.validateEmailParameter(newFormTemplate)
-    res should be(
-      Invalid("The following email parameters are not fields in the form template's sections: declarationFullName")
-    )
-
-  }
-
-  "TemplateValidator.validateEmailParameters with non-existent fields" should "return Invalid" in {
-
-    val formComponents = List(mkFormComponent("fieldNotContainedInFormTemplate", Value))
-    val newFormTemplate = mkFormTemplate(formComponents)
-
-    val res = FormTemplateValidator.validateEmailParameter(newFormTemplate)
-    res should be(
-      Invalid(
-        "The following email parameters are not fields in the form template's sections: directorFullName, directorEmail"
-      )
-    )
-
-  }
-
-  "TemplateValidator.validateEmailParameters with field in acknowledgement section" should "return Invalid" in {
-
-    val formComponent = List(mkFormComponent("fieldInAcknowledgementSections", Value))
-
-    val newEmailParameters = Some(
-      NonEmptyList.of(
-        EmailParameter("fieldEmailTemplateId", FormCtx(FormComponentId("fieldInAcknowledgementSection")))
-      )
-    )
-    val newFormTemplate =
-      mkFormTemplate(formComponent, newEmailParameters)
-
-    val res = FormTemplateValidator.validateEmailParameter(newFormTemplate)
-    res should be(
-      Invalid(
-        "The following email parameters are not fields in the form template's sections: fieldInAcknowledgementSection"
-      )
-    )
-
-  }
-
-  "TemplateValidator.validateEmailParameters with new params" should "return Valid" in {
-
-    val formComponents = List(mkFormComponent("fieldContainedInFormTemplate", Value))
-    val newEmailParameters =
-      Some(
-        NonEmptyList.of(EmailParameter("templateIdVariable", FormCtx(FormComponentId("fieldContainedInFormTemplate"))))
-      )
-
-    val newFormTemplate = mkFormTemplate(formComponents, newEmailParameters)
-
-    val res = FormTemplateValidator.validateEmailParameter(newFormTemplate)
-    res should be(Valid)
-
-  }
-
-  "TemplateValidator.validateEmailParameters with multiple sections" should "return Valid" in {
-
-    val formComponents = List(mkFormComponent("fieldContainedInFormTemplate", Value))
-    val newSection = mkSection("example", formComponents)
-    val newEmailParameters =
-      Some(
-        NonEmptyList.of(EmailParameter("templateIdVariable", FormCtx(FormComponentId("fieldContainedInFormTemplate"))))
-      )
-
-    val newFormTemplate =
-      formTemplate.copy(formKind = FormKind.Classic(List(newSection, newSection)), emailParameters = newEmailParameters)
-
-    val res = FormTemplateValidator.validateEmailParameter(newFormTemplate)
-    res should be(Valid)
 
   }
 
