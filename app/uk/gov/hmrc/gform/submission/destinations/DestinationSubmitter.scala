@@ -210,6 +210,12 @@ class DestinationSubmitter[M[_]](
         submitToSubmissionConsolidator(d, submissionInfo, accumulatedModel, modelTree, formData)
       case d: Destination.PegaApi =>
         submitToPega(d, destinationEvaluation.evaluation.find(_.destinationId === d.id), submissionInfo)
+      case d: Destination.PegaCreateCase =>
+        submitToPegaCreateCase(
+          d,
+          destinationEvaluation.evaluation.find(_.destinationId === d.id),
+          submissionInfo
+        )
       case d: Destination.NiRefundClaimApi =>
         submitToNiRefunds(
           d,
@@ -234,6 +240,21 @@ class DestinationSubmitter[M[_]](
   )(implicit hc: HeaderCarrier): M[DestinationResponse] =
     monadError.handleErrorWith(
       pegaSubmitterAlgebra.getAndUpdateCase(d, dr, submissionInfo)
+    ) { msg =>
+      if (d.failOnError)
+        raiseDestinationError(submissionInfo.formId, d.id, msg)
+      else {
+        logInfoInMonad(submissionInfo.formId, d.id, "Failed execution but has 'failOnError' set to false. Ignoring.")
+      }
+    }
+
+  private def submitToPegaCreateCase(
+    d: Destination.PegaCreateCase,
+    dr: Option[DestinationResult],
+    submissionInfo: DestinationSubmissionInfo
+  )(implicit hc: HeaderCarrier): M[DestinationResponse] =
+    monadError.handleErrorWith(
+      pegaSubmitterAlgebra.createCase(d, dr, submissionInfo)
     ) { msg =>
       if (d.failOnError)
         raiseDestinationError(submissionInfo.formId, d.id, msg)

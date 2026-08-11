@@ -26,4 +26,10 @@ trait PegaSubmitterAlgebra[F[_]] {
     maybeDesRes: Option[DestinationResult],
     submissionInfo: DestinationSubmissionInfo
   )(implicit hc: HeaderCarrier): F[DestinationResponse]
+
+  def createCase(
+    d: Destination.PegaCreateCase,
+    maybeDesRes: Option[DestinationResult],
+    submissionInfo: DestinationSubmissionInfo
+  )(implicit hc: HeaderCarrier): F[DestinationResponse]
 }

@@ -56,6 +56,15 @@ object NRSOrchestratorDestinationResultData {
   implicit val format: Format[NRSOrchestratorDestinationResultData] = Json.format
 }
 
+case class PegaCreateCaseDestinationResultData(
+  targetApplication: String,
+  caseTypeId: String
+)
+
+object PegaCreateCaseDestinationResultData {
+  implicit val format: Format[PegaCreateCaseDestinationResultData] = Json.format
+}
+
 case class NRSOrchestratorDestinationResult(
   id: DestinationId,
   includeIf: Option[Boolean],
@@ -70,6 +79,28 @@ object NRSOrchestratorDestinationResult {
         val data = dataJson.validate[NRSOrchestratorDestinationResultData]
         data.map { data =>
           NRSOrchestratorDestinationResult(
+            destinationResult.destinationId,
+            destinationResult.includeIf,
+            data
+          )
+        }
+      }
+      .getOrElse(JsError("destination result has no data object"))
+}
+
+case class PegaCreateCaseDestinationResult(
+  id: DestinationId,
+  includeIf: Option[Boolean],
+  data: PegaCreateCaseDestinationResultData
+)
+
+object PegaCreateCaseDestinationResult {
+  def fromDestinationResult(destinationResult: DestinationResult): JsResult[PegaCreateCaseDestinationResult] =
+    destinationResult.data
+      .map { dataJson =>
+        val data = dataJson.validate[PegaCreateCaseDestinationResultData]
+        data.map { data =>
+          PegaCreateCaseDestinationResult(
             destinationResult.destinationId,
             destinationResult.includeIf,
             data

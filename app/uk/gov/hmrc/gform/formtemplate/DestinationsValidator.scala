@@ -182,6 +182,7 @@ object DestinationsValidator {
           case _: Destination.SubmissionConsolidator => Destination.submissionConsolidator
           case _: Destination.Log                    => Destination.log
           case _: Destination.PegaApi                => Destination.pegaApi
+          case _: Destination.PegaCreateCase         => Destination.pegaCreateCase
           case _: Destination.NiRefundClaimApi       => Destination.niRefundClaimApi
           case _: Destination.NRSOrchestrator        => Destination.nrsOrchestrator
         }

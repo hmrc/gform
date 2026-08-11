@@ -554,6 +554,12 @@ object Substituter {
       case d: Destination.AsyncHandlebarsHttpApi => d.copy(includeIf = d.includeIf(substitutions))
       case d: Destination.StateTransition        => d.copy(includeIf = d.includeIf(substitutions))
       case d: Destination.PegaApi                => d.copy(caseId = d.caseId(substitutions), includeIf = d.includeIf(substitutions))
+      case d: Destination.PegaCreateCase =>
+        d.copy(
+          includeIf = d.includeIf(substitutions),
+          targetApplication = d.targetApplication(substitutions),
+          caseTypeId = d.caseTypeId(substitutions)
+        )
       case d: Destination.NiRefundClaimApi =>
         d.copy(
           includeIf = d.includeIf(substitutions),

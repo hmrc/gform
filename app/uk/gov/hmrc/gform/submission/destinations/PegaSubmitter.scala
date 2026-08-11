@@ -16,9 +16,10 @@
 
 package uk.gov.hmrc.gform.submission.destinations
 
+import play.api.libs.json.{ JsError, JsSuccess }
 import uk.gov.hmrc.gform.core.{ FOpt, fromFutureA }
 import uk.gov.hmrc.gform.hip.HipAlgebra
-import uk.gov.hmrc.gform.sharedmodel.DestinationResult
+import uk.gov.hmrc.gform.sharedmodel.{ DestinationResult, PegaCreateCaseDestinationResult }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationResponse }
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -47,6 +48,35 @@ class PegaSubmitter(
           case None =>
             throw new IllegalArgumentException(
               s"Pega case ID not evaluated for destination ID: ${d.id}, Form ID: $formId"
+            )
+        }
+      case None =>
+        throw new IllegalArgumentException(s"Destination result missing for destination ID: ${d.id}, Form ID: $formId")
+    }
+  }
+
+  override def createCase(
+    d: Destination.PegaCreateCase,
+    maybeDesRes: Option[DestinationResult],
+    submissionInfo: DestinationSubmissionInfo
+  )(implicit hc: HeaderCarrier): FOpt[DestinationResponse] = {
+    val formId = submissionInfo.formId.value
+    val correlationId = submissionInfo.submission.envelopeId.value
+    maybeDesRes match {
+      case Some(dr) =>
+        PegaCreateCaseDestinationResult.fromDestinationResult(dr) match {
+          case JsSuccess(createCaseData, _) =>
+            fromFutureA(
+              hipConnectorAlgebra.pegaCreateCase(
+                createCaseData.data.targetApplication,
+                createCaseData.data.caseTypeId,
+                correlationId
+              )
+            ).map(_ => DestinationResponse.NoResponse)
+          case JsError(errors) =>
+            throw new IllegalArgumentException(
+              s"Pega Create Case destination data is invalid for destination ID: ${d.id}, Form ID: $formId. Validation errors: ${JsError
+                .toJson(errors)}"
             )
         }
       case None =>

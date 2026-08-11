@@ -34,6 +34,12 @@ import scala.concurrent.{ ExecutionContext, Future }
 
 trait HipAlgebra[F[_]] {
 
+  def pegaCreateCase(
+    targetApplication: String,
+    caseTypeId: String,
+    correlationId: String
+  )(implicit hc: HeaderCarrier): F[String]
+
   def getPegaCaseActionDetails(
     caseId: String,
     actionId: String,
@@ -78,7 +84,10 @@ class HipConnector(http: HttpClientV2, baseUrl: String, hipConfig: HipConnectorC
 
   private object Headers {
     val CorrelationId = "correlationId"
+    val CorrelationIdLower = "correlationid"
     val GovUkOriginatorId = "gov-uk-originator-id"
+    val Originator = "x-originator"
+    val TargetApplication = "x-target-application"
     val OriginChannel = "x-origin-channel"
     val IfMatch = "if-match"
   }
@@ -98,6 +107,9 @@ class HipConnector(http: HttpClientV2, baseUrl: String, hipConfig: HipConnectorC
   private def buildPegaUrl(path: String): String =
     s"$baseUrl${hipConfig.basePath}/pega/prweb/api/application/v2/$path"
 
+  private def buildPegaCreateCaseUrl: String =
+    s"$baseUrl${hipConfig.basePath}/customer-management-and-engagement/customer-relationship-management/prweb/api/servicehub/v1/case"
+
   private def handleResponse[T](
     response: HttpResponse,
     apiName: String,
@@ -105,10 +117,13 @@ class HipConnector(http: HttpClientV2, baseUrl: String, hipConfig: HipConnectorC
     successHandler: HttpResponse => T
   ): T =
     response.status match {
-      case OK | NO_CONTENT => successHandler(response)
+      case OK | ACCEPTED | NO_CONTENT => successHandler(response)
       case BAD_REQUEST =>
         logger.error(s"Received bad request response from $apiName: ${response.body}")
         throw new BadRequestException(s"Bad request response from $apiName for identifier: $identifier")
+      case UNPROCESSABLE_ENTITY =>
+        logger.error(s"Received unprocessable entity response from $apiName: ${response.body}")
+        throw new BadRequestException(s"Unprocessable entity response from $apiName for identifier: $identifier")
       case UNAUTHORIZED =>
         logger.error(s"Received unauthorized response from $apiName: ${response.body}")
         throw new UnauthorizedException(s"Unauthorized request to $apiName")
@@ -143,6 +158,34 @@ class HipConnector(http: HttpClientV2, baseUrl: String, hipConfig: HipConnectorC
       .setHeader(Headers.CorrelationId -> correlationId)
       .execute[HttpResponse]
       .map(response => handleResponse(response, "Pega API", caseId, extractEtag(_, caseId)))
+  }
+
+  def pegaCreateCase(targetApplication: String, caseTypeId: String, correlationId: String)(implicit
+    hc: HeaderCarrier
+  ): Future[String] = {
+    logger.info(s"pegaCreateCase called, ${loggingHelpers.cleanHeaderCarrierHeader(hc)}")
+
+    val requestBody = Json.obj(
+      "caseTypeId" -> caseTypeId,
+      "content"    -> Json.obj()
+    )
+
+    http
+      .post(url"$buildPegaCreateCaseUrl")
+      .setHeader(AUTHORIZATION -> authorization)
+      .setHeader(Headers.Originator -> hipConfig.originatorId)
+      .setHeader(Headers.TargetApplication -> targetApplication)
+      .setHeader(Headers.CorrelationIdLower -> correlationId)
+      .withBody(requestBody)
+      .execute[HttpResponse]
+      .map(response =>
+        handleResponse(
+          response,
+          "Pega Create Case API",
+          correlationId,
+          extractServiceCaseId(_, correlationId)
+        )
+      )
   }
 
   def pegaChangeToNextStage(caseId: String, eTag: String, correlationId: String)(implicit
@@ -312,6 +355,15 @@ class HipConnector(http: HttpClientV2, baseUrl: String, hipConfig: HipConnectorC
       .header("etag")
       .getOrElse(
         throw new InternalServerException(s"etag not found in Pega response for Case ID: $caseId")
+      )
+
+  private def extractServiceCaseId(response: HttpResponse, correlationId: String): String =
+    (response.json \ "serviceCaseId")
+      .asOpt[String]
+      .getOrElse(
+        throw new InternalServerException(
+          s"serviceCaseId not found in Pega Create Case response for correlationId: $correlationId"
+        )
       )
 
   private def buildBankDetailsBody(

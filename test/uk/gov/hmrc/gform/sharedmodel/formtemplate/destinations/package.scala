@@ -157,6 +157,16 @@ package object destinations {
           |  "caseId": ${TextExpression.format.writes(TextExpression(pegaApi.caseId))},
           |  "${Destination.typeDiscriminatorFieldName}": "${Destination.pegaApi}"
           |}""".stripMargin
+    case pegaCreateCase: Destination.PegaCreateCase =>
+      import pegaCreateCase._
+      s"""|{
+          |  "id": "${id.id}",
+          |  "includeIf":  "${getHandlebarValue(destination.includeIf)}",
+          |  ${optionalField("failOnError", Option(destination.failOnError), true)}
+          |  "targetApplication": ${TextExpression.format.writes(TextExpression(pegaCreateCase.targetApplication))},
+          |  "caseTypeId": ${TextExpression.format.writes(TextExpression(pegaCreateCase.caseTypeId))},
+          |  "${Destination.typeDiscriminatorFieldName}": "${Destination.pegaCreateCase}"
+          |}""".stripMargin
     case niRefundClaimApi: Destination.NiRefundClaimApi =>
       import niRefundClaimApi._
       s"""|{
