@@ -57,7 +57,7 @@ class DestinationWorkItemController(
   def regenerate(id: String) = Action.async { _ =>
     destinationWorkItemAlgebra
       .regenerate(id)
-      .map(_ => Ok)
+      .map(_ => NoContent)
       .recover { case err: IllegalArgumentException =>
         BadRequest(err.getMessage)
       }

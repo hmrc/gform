@@ -26,6 +26,11 @@ import uk.gov.hmrc.gform.sharedmodel.form.FormId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ HandlebarsTemplateProcessorModel, HttpMethod, ProfileName }
 import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
 
+/** AsyncHandlebarsRenderSnapshot Captures the submit-time render context for forward-only AsyncHandlebars regeneration.
+  *
+  * Regeneration reuses this captured model; it does not recompute expressionOutput or other form-template JSON changes
+  * that would alter the resolved model. It is intended to pick up corrected AsyncHandlebars destination payload changes.
+  */
 case class AsyncHandlebarsRenderSnapshot(
   accumulatedModel: HandlebarsTemplateProcessorModel,
   model: HandlebarsTemplateProcessorModel,

@@ -26,21 +26,20 @@ import org.mongodb.scala.model.{ Aggregates, Field, Filters }
 import org.mongodb.scala.model.Filters.equal
 import org.slf4j.LoggerFactory
 import uk.gov.hmrc.gform.formtemplate.FormTemplateAlgebra
-import uk.gov.hmrc.gform.scheduler.asynchandlebars.{ AsyncHandlebarsRenderSnapshot, AsyncHandlebarsWorkItem, AsyncHandlebarsWorkItemRepo }
+import uk.gov.hmrc.gform.scheduler.asynchandlebars.{ AsyncHandlebarsRenderSnapshot, AsyncHandlebarsWorkItem, AsyncHandlebarsWorkItemBuilder, AsyncHandlebarsWorkItemRepo }
 import uk.gov.hmrc.gform.scheduler.datalakehouse.DataLakehouseWorkItemRepo
 import uk.gov.hmrc.gform.scheduler.datastore.DataStoreWorkItemRepo
 import uk.gov.hmrc.gform.scheduler.dms.DmsWorkItemRepo
 import uk.gov.hmrc.gform.scheduler.infoarchive.InfoArchiveWorkItemRepo
 import uk.gov.hmrc.gform.scheduler.nrsOrchestrator.{ NrsOrchestratorAttachmentWorkItemRepo, NrsOrchestratorWorkItemRepo }
 import uk.gov.hmrc.gform.scheduler.{ TraceableWorkItem, WorkItemRepo }
-import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplate, FormTemplateId }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ AsyncHandlebarsDestinationResponse, Destination, DestinationId, DestinationResponse, Destinations, NrsOrchestratorDestinationResponse, TemplateType }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ AsyncHandlebarsDestinationResponse, Destination, DestinationId, DestinationResponse, Destinations, NrsOrchestratorDestinationResponse }
 import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination.AsyncHandlebars
 import uk.gov.hmrc.gform.sharedmodel.sdes._
-import uk.gov.hmrc.gform.submission.handlebars.{ FocussedHandlebarsModelTree, HandlebarsModelTree, RealHandlebarsTemplateProcessor }
+import uk.gov.hmrc.gform.submission.handlebars.{ HandlebarsModelTree, RealHandlebarsTemplateProcessor }
 import uk.gov.hmrc.mongo.workitem.ProcessingStatus.ToDo
 import uk.gov.hmrc.mongo.workitem.{ ProcessingStatus, WorkItem }
 
@@ -353,7 +352,6 @@ class DestinationWorkItemService(
                          findAsyncHandlebarsDestination(formTemplate.destinations, workItem.item.destinationId)
                        )
                      )
-      _ = rejectBundledImportHelper(destination)
       regeneratedData = regenerateData(destination, formTemplate, snapshot)
       updatedWorkItem = workItem.copy(
                           item = workItem.item.copy(data = regeneratedData),
@@ -386,14 +384,6 @@ class DestinationWorkItemService(
         )
     }
 
-  private def rejectBundledImportHelper(destination: Destination.AsyncHandlebarsHttpApi): Unit = {
-    val templates = destination.uri :: destination.payload.toList
-    if (templates.exists(_.contains("importBySubmissionReference")))
-      throw new IllegalArgumentException(
-        "Cannot regenerate AsyncHandlebars work item because the corrected template uses importBySubmissionReference, which requires a bundled-form tree snapshot"
-      )
-  }
-
   private def regenerateData(
     destination: Destination.AsyncHandlebarsHttpApi,
     formTemplate: FormTemplate,
@@ -409,35 +399,12 @@ class DestinationWorkItemService(
       snapshot.model
     )
 
-    val contentType = destination.payloadType match {
-      case TemplateType.JSON  => ContentType.`application/json`
-      case TemplateType.XML   => ContentType.`application/xml`
-      case TemplateType.Plain => ContentType.`text/plain`
-    }
-
-    val uri = RealHandlebarsTemplateProcessor(
-      destination.uri,
+    AsyncHandlebarsWorkItemBuilder.build(
+      destination,
       snapshot.accumulatedModel,
-      FocussedHandlebarsModelTree(modelTree),
-      TemplateType.Plain
-    )
-    val payload = destination.payload.fold("") { body =>
-      RealHandlebarsTemplateProcessor(
-        body,
-        snapshot.accumulatedModel,
-        FocussedHandlebarsModelTree(modelTree),
-        destination.payloadType
-      )
-    }
-
-    AsyncHandlebarsWorkItem(
-      profile = destination.profile,
-      uri = uri,
-      method = destination.method,
-      contentType = contentType,
-      payload = payload,
-      credential = destination.credential,
-      renderSnapshot = Some(snapshot)
+      modelTree,
+      Some(snapshot),
+      RealHandlebarsTemplateProcessor
     )
   }
 
