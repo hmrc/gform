@@ -17,16 +17,8 @@
 package uk.gov.hmrc.gform.scheduler.asynchandlebars
 
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{
-  Destination,
-  HandlebarsTemplateProcessorModel,
-  TemplateType
-}
-import uk.gov.hmrc.gform.submission.handlebars.{
-  FocussedHandlebarsModelTree,
-  HandlebarsModelTree,
-  HandlebarsTemplateProcessor
-}
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, HandlebarsTemplateProcessorModel, TemplateType }
+import uk.gov.hmrc.gform.submission.handlebars.{ FocussedHandlebarsModelTree, HandlebarsModelTree, HandlebarsTemplateProcessor }
 
 object AsyncHandlebarsWorkItemBuilder {
 
