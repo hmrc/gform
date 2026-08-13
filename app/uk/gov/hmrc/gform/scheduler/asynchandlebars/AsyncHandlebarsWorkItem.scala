@@ -20,8 +20,32 @@ import play.api.libs.json.Format.GenericFormat
 import play.api.libs.json._
 import uk.gov.hmrc.crypto.{ Crypted, Decrypter, Encrypter, PlainText }
 import uk.gov.hmrc.gform.config.AuthorizationName
+import uk.gov.hmrc.gform.sharedmodel.{ PdfContent, SubmissionRef }
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ HttpMethod, ProfileName }
+import uk.gov.hmrc.gform.sharedmodel.form.FormId
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ HandlebarsTemplateProcessorModel, HttpMethod, ProfileName }
+import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
+
+/** AsyncHandlebarsRenderSnapshot Captures the submit-time render context for forward-only AsyncHandlebars regeneration.
+  *
+  * Regeneration reuses this captured model; it does not recompute expressionOutput or other form-template JSON changes
+  * that would alter the resolved model. It is intended to pick up corrected AsyncHandlebars destination payload changes.
+  */
+case class AsyncHandlebarsRenderSnapshot(
+  accumulatedModel: HandlebarsTemplateProcessorModel,
+  model: HandlebarsTemplateProcessorModel,
+  pdfData: PdfContent,
+  instructionPdfData: Option[PdfContent],
+  structuredFormData: StructuredFormValue.ObjectStructure,
+  formId: FormId,
+  submissionRef: SubmissionRef
+)
+
+object AsyncHandlebarsRenderSnapshot {
+  implicit val formIdFormat: Format[FormId] = FormId.vformat
+  implicit val submissionRefFormat: Format[SubmissionRef] = SubmissionRef.vformat
+  implicit val format: OFormat[AsyncHandlebarsRenderSnapshot] = Json.format[AsyncHandlebarsRenderSnapshot]
+}
 
 case class AsyncHandlebarsWorkItem(
   profile: ProfileName,
@@ -29,7 +53,8 @@ case class AsyncHandlebarsWorkItem(
   method: HttpMethod,
   contentType: ContentType,
   payload: String,
-  credential: Option[AuthorizationName]
+  credential: Option[AuthorizationName],
+  renderSnapshot: Option[AsyncHandlebarsRenderSnapshot] = None
 )
 
 object AsyncHandlebarsWorkItem {
@@ -39,16 +64,28 @@ object AsyncHandlebarsWorkItem {
       private val method = "method"
       private val payload = "payload"
       private val credential = "credential"
+      private val renderSnapshot = "renderSnapshot"
+
+      private def encrypt(value: String): JsString =
+        JsString(jsonCrypto.encrypt(PlainText(value)).value)
+
+      private def decrypt(value: String): String =
+        jsonCrypto.decrypt(Crypted(value)).value
 
       override def writes(workItem: AsyncHandlebarsWorkItem): JsObject =
         ProfileName.oformat.writes(workItem.profile) ++
           Json.obj(uri -> workItem.uri) ++
           Json.obj(method -> workItem.method) ++
           ContentType.oformat.writes(workItem.contentType) ++
-          Json.obj(payload -> JsString(jsonCrypto.encrypt(PlainText(workItem.payload)).value)) ++
+          Json.obj(payload -> encrypt(workItem.payload)) ++
           workItem.credential
             .map { workItemCredential =>
               Json.obj(credential -> JsString(workItemCredential.value))
+            }
+            .getOrElse(Json.obj()) ++
+          workItem.renderSnapshot
+            .map { snapshot =>
+              Json.obj(renderSnapshot -> encrypt(Json.toJson(snapshot).toString))
             }
             .getOrElse(Json.obj())
 
@@ -58,7 +95,7 @@ object AsyncHandlebarsWorkItem {
           uri         <- (json \ uri).validate[String]
           method      <- (json \ method).validate[HttpMethod]
           contentType <- ContentType.oformat.reads(json)
-          payload     <- (json \ payload).validate[String].map(payload => jsonCrypto.decrypt(Crypted(payload)).value)
+          payload     <- (json \ payload).validate[String].map(decrypt)
           credential <- (json \ credential)
                           .validateOpt[String]
                           .map(payload =>
@@ -66,13 +103,17 @@ object AsyncHandlebarsWorkItem {
                               AuthorizationName(payload)
                             }
                           )
+          renderSnapshot <- (json \ renderSnapshot)
+                              .validateOpt[String]
+                              .map(_.map(encrypted => Json.parse(decrypt(encrypted)).as[AsyncHandlebarsRenderSnapshot]))
         } yield AsyncHandlebarsWorkItem(
           profile,
           uri,
           method,
           contentType,
           payload,
-          credential
+          credential,
+          renderSnapshot
         )
     }
 }

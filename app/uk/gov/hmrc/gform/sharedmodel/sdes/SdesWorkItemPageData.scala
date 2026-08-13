@@ -18,6 +18,7 @@ package uk.gov.hmrc.gform.sharedmodel.sdes
 
 import play.api.libs.json.{ Format, Json, OFormat }
 import uk.gov.hmrc.gform.scheduler.TraceableWorkItem
+import uk.gov.hmrc.gform.scheduler.asynchandlebars.AsyncHandlebarsWorkItem
 import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
@@ -44,10 +45,14 @@ case class SdesWorkItemData(
   status: ProcessingStatus,
   failureCount: Int,
   receivedAt: Instant,
-  updatedAt: Instant
+  updatedAt: Instant,
+  canRegenerate: Boolean = false
 )
 
 object SdesWorkItemData {
+
+  private val reProcessableStatuses: Set[ProcessingStatus] =
+    Set(ProcessingStatus.PermanentlyFailed, ProcessingStatus.Ignored, ProcessingStatus.Deferred)
 
   def fromWorkItem(workItem: WorkItem[SdesWorkItem], numberOfFiles: Int = 0) = SdesWorkItemData(
     workItem.id.toString,
@@ -66,7 +71,13 @@ object SdesWorkItemData {
     workItem: WorkItem[TraceableWorkItem[_]],
     destination: SdesDestination,
     numberOfFiles: Int = 0
-  ) =
+  ) = {
+    val canRegenerate = workItem.item.data match {
+      case asyncHandlebars: AsyncHandlebarsWorkItem =>
+        asyncHandlebars.renderSnapshot.isDefined && reProcessableStatuses.contains(workItem.status)
+      case _ => false
+    }
+
     SdesWorkItemData(
       workItem.id.toString,
       workItem.item.envelopeId,
@@ -77,8 +88,10 @@ object SdesWorkItemData {
       workItem.status,
       workItem.failureCount,
       workItem.receivedAt,
-      workItem.updatedAt
+      workItem.updatedAt,
+      canRegenerate
     )
+  }
 
   implicit val envelopeIdFormat: Format[EnvelopeId] = EnvelopeId.vformat
   implicit val formTemplateIdFormat: Format[FormTemplateId] = FormTemplateId.vformat

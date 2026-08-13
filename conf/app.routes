@@ -140,6 +140,7 @@ GET           /sdes/history/:correlationId                                      
 
 GET           /destination-work-item/search/:page/:pageSize                                             uk.gov.hmrc.gform.sdes.workitem.DestinationWorkItemController.search(page: Int, pageSize: Int, destination: SdesDestination, formTemplateId: Option[FormTemplateId], status: Option[ProcessingStatus])
 POST          /destination-work-item/enqueue/:id                                                        uk.gov.hmrc.gform.sdes.workitem.DestinationWorkItemController.enqueue(id: String, destination: SdesDestination)
+POST          /destination-work-item/regenerate/:id                                                     uk.gov.hmrc.gform.sdes.workitem.DestinationWorkItemController.regenerate(id: String)
 GET           /destination-work-item/:id                                                                uk.gov.hmrc.gform.sdes.workitem.DestinationWorkItemController.get(id: String, destination: SdesDestination)
 GET           /destination-work-item/envelopeId/:envelopeId                                             uk.gov.hmrc.gform.sdes.workitem.DestinationWorkItemController.getByEnvelopeId(envelopeId: EnvelopeId, destination: SdesDestination)
 DELETE        /destination-work-item/:id                                                                uk.gov.hmrc.gform.sdes.workitem.DestinationWorkItemController.delete(id: String, destination: SdesDestination)

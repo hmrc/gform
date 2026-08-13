@@ -19,10 +19,9 @@ package uk.gov.hmrc.gform.submission.destinations
 import org.slf4j.LoggerFactory
 import uk.gov.hmrc.gform.core.{ FOpt, fromFutureA }
 import uk.gov.hmrc.gform.scheduler.TraceableWorkItem
-import uk.gov.hmrc.gform.scheduler.asynchandlebars.{ AsyncHandlebarsWorkItem, AsyncHandlebarsWorkItemRepo }
-import uk.gov.hmrc.gform.sharedmodel.config.ContentType
+import uk.gov.hmrc.gform.scheduler.asynchandlebars.{ AsyncHandlebarsWorkItem, AsyncHandlebarsWorkItemBuilder, AsyncHandlebarsWorkItemRepo }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations._
-import uk.gov.hmrc.gform.submission.handlebars.{ FocussedHandlebarsModelTree, HandlebarsModelTree, HandlebarsTemplateProcessor }
+import uk.gov.hmrc.gform.submission.handlebars.{ HandlebarsModelTree, HandlebarsTemplateProcessor }
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.mongo.workitem.ProcessingStatus
 
@@ -54,44 +53,19 @@ class RealAsyncHttpWorkItemSubmitter(
     submissionInfo: DestinationSubmissionInfo,
     handlebarsTemplateProcessor: HandlebarsTemplateProcessor
   )(implicit hc: HeaderCarrier): FOpt[DestinationResponse] = {
-    val uri = handlebarsTemplateProcessor(
-      destination.uri,
-      accumulatedModel,
-      FocussedHandlebarsModelTree(modelTree),
-      TemplateType.Plain
-    )
-
-    val contentType = destination.payloadType match {
-      case TemplateType.JSON  => ContentType.`application/json`
-      case TemplateType.XML   => ContentType.`application/xml`
-      case TemplateType.Plain => ContentType.`text/plain`
-    }
-
-    def processPayload(template: String): String =
-      handlebarsTemplateProcessor(
-        template,
-        accumulatedModel,
-        FocussedHandlebarsModelTree(modelTree),
-        destination.payloadType
-      )
-
-    val payload: String = destination.payload match {
-      case Some(body) => processPayload(body)
-      case None       => ""
-    }
+    val renderSnapshot = AsyncHandlebarsWorkItemBuilder.createRenderSnapshot(accumulatedModel, modelTree)
 
     val workItem = TraceableWorkItem[AsyncHandlebarsWorkItem](
       envelopeId = submissionInfo.submission.envelopeId,
       formTemplateId = submissionInfo.submission.dmsMetaData.formTemplateId,
       submissionRef = submissionInfo.submission.submissionRef,
       destinationId = destination.id,
-      data = AsyncHandlebarsWorkItem(
-        profile = destination.profile,
-        uri = uri,
-        method = destination.method,
-        contentType = contentType,
-        payload = payload,
-        credential = destination.credential
+      data = AsyncHandlebarsWorkItemBuilder.build(
+        destination,
+        accumulatedModel,
+        modelTree,
+        Some(renderSnapshot),
+        handlebarsTemplateProcessor
       )
     )
 
