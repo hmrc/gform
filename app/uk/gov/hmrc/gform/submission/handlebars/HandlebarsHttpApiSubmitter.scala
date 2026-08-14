@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory
 import play.api.libs.json._
 import uk.gov.hmrc.gform.config.AuthorizationName
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
+import uk.gov.hmrc.gform.sharedmodel.DestinationResult
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations._
 import uk.gov.hmrc.gform.submission.destinations._
 import uk.gov.hmrc.http.client.RequestBuilder
@@ -32,6 +33,7 @@ import scala.util.Try
 trait HandlebarsHttpApiSubmitter {
   def apply(
     destination: Destination.HandlebarsHttpApi,
+    destinationHttpHeaders: Map[String, String],
     accumulatedModel: HandlebarsTemplateProcessorModel,
     modelTree: HandlebarsModelTree,
     submissionInfo: DestinationSubmissionInfo
@@ -45,7 +47,8 @@ class RealHandlebarsHttpApiSubmitter(
     String,
     HttpMethod,
     HeaderCarrier,
-    Option[AuthorizationName]
+    Option[AuthorizationName],
+    Map[String, String]
   ) => RequestBuilder,
   handlebarsTemplateProcessor: HandlebarsTemplateProcessor = RealHandlebarsTemplateProcessor
 )(implicit ec: ExecutionContext)
@@ -55,6 +58,7 @@ class RealHandlebarsHttpApiSubmitter(
 
   def apply(
     destination: Destination.HandlebarsHttpApi,
+    destinationHttpHeaders: Map[String, String],
     accumulatedModel: HandlebarsTemplateProcessorModel,
     modelTree: HandlebarsModelTree,
     submissionInfo: DestinationSubmissionInfo
@@ -68,7 +72,15 @@ class RealHandlebarsHttpApiSubmitter(
       TemplateType.Plain
     )
     val requestBuilder =
-      buildRequest(destination.profile, envelopeId, uri, destination.method, hc, destination.credential)
+      buildRequest(
+        destination.profile,
+        envelopeId,
+        uri,
+        destination.method,
+        hc,
+        destination.credential,
+        destinationHttpHeaders
+      )
 
     val contentType = destination.payloadType match {
       case TemplateType.JSON  => "application/json"
@@ -138,7 +150,15 @@ class RealHandlebarsHttpApiSubmitter(
 
     destination.method match {
       case HttpMethod.GET =>
-        buildRequest(destination.profile, envelopeId, uri, destination.method, hc, destination.credential)
+        buildRequest(
+          destination.profile,
+          envelopeId,
+          uri,
+          destination.method,
+          hc,
+          destination.credential,
+          destinationHttpHeaders
+        )
           .execute[HttpResponse]
 
       case HttpMethod.POST =>

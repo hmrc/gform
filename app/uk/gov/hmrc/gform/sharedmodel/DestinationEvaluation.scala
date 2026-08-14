@@ -56,6 +56,37 @@ object NRSOrchestratorDestinationResultData {
   implicit val format: Format[NRSOrchestratorDestinationResultData] = Json.format
 }
 
+case class HandlebarsHttpApiDestinationResultData(
+  httpHeaders: Map[String, String]
+)
+
+object HandlebarsHttpApiDestinationResultData {
+  implicit val format: Format[HandlebarsHttpApiDestinationResultData] = Json.format
+}
+
+case class HandlebarsHttpApiDestinationResult(
+  id: DestinationId,
+  includeIf: Option[Boolean],
+  data: HandlebarsHttpApiDestinationResultData
+)
+
+object HandlebarsHttpApiDestinationResult {
+  implicit val dataFormat: Format[HandlebarsHttpApiDestinationResultData] = Json.format
+  def fromDestinationResult(destinationResult: DestinationResult): JsResult[HandlebarsHttpApiDestinationResult] =
+    destinationResult.data
+      .map { dataJson =>
+        val data = dataJson.validate[HandlebarsHttpApiDestinationResultData]
+        data.map { data =>
+          HandlebarsHttpApiDestinationResult(
+            destinationResult.destinationId,
+            destinationResult.includeIf,
+            data
+          )
+        }
+      }
+      .getOrElse(JsError("destination result has no data object"))
+}
+
 case class NRSOrchestratorDestinationResult(
   id: DestinationId,
   includeIf: Option[Boolean],

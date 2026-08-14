@@ -54,6 +54,7 @@ case class AsyncHandlebarsWorkItem(
   contentType: ContentType,
   payload: String,
   credential: Option[AuthorizationName],
+  httpHeaders: Map[String, String] = Map.empty,
   renderSnapshot: Option[AsyncHandlebarsRenderSnapshot] = None
 )
 
@@ -64,6 +65,7 @@ object AsyncHandlebarsWorkItem {
       private val method = "method"
       private val payload = "payload"
       private val credential = "credential"
+      private val httpHeaders = "httpHeaders"
       private val renderSnapshot = "renderSnapshot"
 
       private def encrypt(value: String): JsString =
@@ -83,6 +85,7 @@ object AsyncHandlebarsWorkItem {
               Json.obj(credential -> JsString(workItemCredential.value))
             }
             .getOrElse(Json.obj()) ++
+          Json.obj(httpHeaders -> workItem.httpHeaders) ++
           workItem.renderSnapshot
             .map { snapshot =>
               Json.obj(renderSnapshot -> encrypt(Json.toJson(snapshot).toString))
@@ -103,6 +106,7 @@ object AsyncHandlebarsWorkItem {
                               AuthorizationName(payload)
                             }
                           )
+          httpHeaders <- (json \ httpHeaders).validateOpt[Map[String, String]].map(_.getOrElse(Map.empty))
           renderSnapshot <- (json \ renderSnapshot)
                               .validateOpt[String]
                               .map(_.map(encrypted => Json.parse(decrypt(encrypted)).as[AsyncHandlebarsRenderSnapshot]))
@@ -113,6 +117,7 @@ object AsyncHandlebarsWorkItem {
           contentType,
           payload,
           credential,
+          httpHeaders,
           renderSnapshot
         )
     }

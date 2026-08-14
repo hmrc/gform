@@ -30,6 +30,7 @@ import scala.concurrent.ExecutionContext
 trait AsyncHttpWorkItemSubmitter[F[_]] {
   def apply(
     destination: Destination.AsyncHandlebarsHttpApi,
+    destinationHttpHeaders: Map[String, String],
     accumulatedModel: HandlebarsTemplateProcessorModel,
     modelTree: HandlebarsModelTree,
     submissionInfo: DestinationSubmissionInfo,
@@ -48,6 +49,7 @@ class RealAsyncHttpWorkItemSubmitter(
 
   def apply(
     destination: Destination.AsyncHandlebarsHttpApi,
+    destinationHttpHeaders: Map[String, String],
     accumulatedModel: HandlebarsTemplateProcessorModel,
     modelTree: HandlebarsModelTree,
     submissionInfo: DestinationSubmissionInfo,
@@ -62,6 +64,7 @@ class RealAsyncHttpWorkItemSubmitter(
       destinationId = destination.id,
       data = AsyncHandlebarsWorkItemBuilder.build(
         destination,
+        destinationHttpHeaders,
         accumulatedModel,
         modelTree,
         Some(renderSnapshot),

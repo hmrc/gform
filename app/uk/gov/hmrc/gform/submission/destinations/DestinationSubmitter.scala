@@ -26,7 +26,7 @@ import play.api.libs.json._
 import uk.gov.hmrc.auth.core.MissingBearerToken
 import uk.gov.hmrc.gform.notifier.NotifierAlgebra
 import uk.gov.hmrc.gform.sdes.SdesConfig
-import uk.gov.hmrc.gform.sharedmodel.{ DestinationEvaluation, DestinationResult, EmailVerifierService, LangADT, NRSOrchestratorDestinationResult, UserSession }
+import uk.gov.hmrc.gform.sharedmodel.{ DestinationEvaluation, DestinationResult, EmailVerifierService, HandlebarsHttpApiDestinationResult, LangADT, NRSOrchestratorDestinationResult, UserSession }
 import uk.gov.hmrc.gform.sharedmodel.form.{ FormData, FormId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations._
 import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
@@ -198,9 +198,22 @@ class DestinationSubmitter[M[_]](
           d,
           l
         )
-      case d: Destination.HandlebarsHttpApi => submitToHandlebars(d, accumulatedModel, modelTree, submissionInfo)
+      case d: Destination.HandlebarsHttpApi =>
+        submitToHandlebars(
+          d,
+          destinationEvaluation.evaluation.find(_.destinationId === d.id),
+          accumulatedModel,
+          modelTree,
+          submissionInfo
+        )
       case d: Destination.AsyncHandlebarsHttpApi =>
-        submitToAsyncHandlebars(d, accumulatedModel, modelTree, submissionInfo)
+        submitToAsyncHandlebars(
+          d,
+          destinationEvaluation.evaluation.find(_.destinationId === d.id),
+          accumulatedModel,
+          modelTree,
+          submissionInfo
+        )
       case d: Destination.StateTransition =>
         stateTransitionAlgebra(d, submissionInfo.formId).map(_ => DestinationResponse.NoResponse)
       case d: Destination.Log => log(d, accumulatedModel, modelTree).map(_ => DestinationResponse.NoResponse)
@@ -416,11 +429,14 @@ class DestinationSubmitter[M[_]](
 
   private def submitToHandlebars(
     d: Destination.HandlebarsHttpApi,
+    destinationResult: Option[DestinationResult],
     accumulatedModel: HandlebarsTemplateProcessorModel,
     modelTree: HandlebarsModelTree,
     submissionInfo: DestinationSubmissionInfo
   )(implicit hc: HeaderCarrier): M[DestinationResponse] =
-    liftToM(handlebars(d, accumulatedModel, modelTree, submissionInfo))
+    liftToM(
+      handlebars(d, extractDestinationHttpHeaders(destinationResult), accumulatedModel, modelTree, submissionInfo)
+    )
       .flatMap { response =>
         if (response.isSuccess)
           createSuccessResponse(d, response)
@@ -438,12 +454,20 @@ class DestinationSubmitter[M[_]](
 
   private def submitToAsyncHandlebars(
     d: Destination.AsyncHandlebarsHttpApi,
+    destinationResult: Option[DestinationResult],
     accumulatedModel: HandlebarsTemplateProcessorModel,
     modelTree: HandlebarsModelTree,
     submissionInfo: DestinationSubmissionInfo
   )(implicit hc: HeaderCarrier): M[DestinationResponse] =
     monadError.handleErrorWith(
-      asyncHttpWorkItemSubmitter(d, accumulatedModel, modelTree, submissionInfo, handlebarsTemplateProcessor)
+      asyncHttpWorkItemSubmitter(
+        d,
+        extractDestinationHttpHeaders(destinationResult),
+        accumulatedModel,
+        modelTree,
+        submissionInfo,
+        handlebarsTemplateProcessor
+      )
     ) { msg =>
       if (d.failOnError)
         raiseDestinationError(submissionInfo.formId, d.id, msg)
@@ -451,6 +475,12 @@ class DestinationSubmitter[M[_]](
         logErrorInMonad(submissionInfo.formId, d.id, "Failed execution but has 'failOnError' set to false. Ignoring.")
       }
     }
+
+  private def extractDestinationHttpHeaders(destinationResult: Option[DestinationResult]): Map[String, String] =
+    destinationResult
+      .flatMap(result => HandlebarsHttpApiDestinationResult.fromDestinationResult(result).asOpt)
+      .map(_.data.httpHeaders)
+      .getOrElse(Map.empty)
 
   private def submitToNrsOrchestrator(
     d: Destination.NRSOrchestrator,
