@@ -37,6 +37,7 @@ import scala.concurrent.{ ExecutionContext, Future }
 class HandlebarsHttpApiSubmitterSpec
     extends Spec with ScalaCheckDrivenPropertyChecks with DestinationSubmissionInfoGen {
   private implicit val hc: HeaderCarrier = HeaderCarrier()
+  private val destinationHttpHeaders: Map[String, String] = Map.empty
 
   private def submissionInfoGen: Gen[DestinationSubmissionInfo] =
     DestinationSubmissionInfoGen.destinationSubmissionInfoGen.map { si =>
@@ -53,7 +54,7 @@ class HandlebarsHttpApiSubmitterSpec
     val mockRequestBuilder = mock[RequestBuilder]
     val buildRequest = mockFunction[ProfileName, EnvelopeId, String, HttpMethod, HeaderCarrier, Option[
       AuthorizationName
-    ], RequestBuilder]
+    ], Map[String, String], RequestBuilder]
     val handlebarsTemplateProcessor = mock[HandlebarsTemplateProcessor]
     val expectedResponse = mock[HttpResponse]
 
@@ -66,7 +67,7 @@ class HandlebarsHttpApiSubmitterSpec
       .anyNumberOfTimes()
 
     buildRequest
-      .expects(destination.profile, EnvelopeId("envId"), expectedUri, HttpMethod.GET, hc, None)
+      .expects(destination.profile, EnvelopeId("envId"), expectedUri, HttpMethod.GET, hc, None, destinationHttpHeaders)
       .returning(mockRequestBuilder)
       .anyNumberOfTimes()
 
@@ -76,7 +77,8 @@ class HandlebarsHttpApiSubmitterSpec
       .returning(Future.successful(expectedResponse))
       .anyNumberOfTimes()
 
-    val result = await(submitter.apply(destination, processorModel, tree(processorModel), submissionInfo))
+    val result =
+      await(submitter.apply(destination, destinationHttpHeaders, processorModel, tree(processorModel), submissionInfo))
     result shouldBe expectedResponse
 
   }
@@ -94,7 +96,7 @@ class HandlebarsHttpApiSubmitterSpec
     val mockRequestBuilder = mock[RequestBuilder]
     val buildRequest = mockFunction[ProfileName, EnvelopeId, String, HttpMethod, HeaderCarrier, Option[
       AuthorizationName
-    ], RequestBuilder]
+    ], Map[String, String], RequestBuilder]
     val handlebarsTemplateProcessor = mock[HandlebarsTemplateProcessor]
     val expectedResponse = mock[HttpResponse]
 
@@ -110,7 +112,7 @@ class HandlebarsHttpApiSubmitterSpec
       .returning(expectedBody)
 
     buildRequest
-      .expects(destination.profile, EnvelopeId("envId"), expectedUri, HttpMethod.POST, hc, None)
+      .expects(destination.profile, EnvelopeId("envId"), expectedUri, HttpMethod.POST, hc, None, destinationHttpHeaders)
       .returning(mockRequestBuilder)
 
     (mockRequestBuilder
@@ -128,7 +130,8 @@ class HandlebarsHttpApiSubmitterSpec
       .expects(*, *)
       .returning(Future.successful(expectedResponse))
 
-    val result = await(submitter.apply(destination, processorModel, tree(processorModel), submissionInfo))
+    val result =
+      await(submitter.apply(destination, destinationHttpHeaders, processorModel, tree(processorModel), submissionInfo))
     result shouldBe expectedResponse
 
   }
@@ -144,7 +147,7 @@ class HandlebarsHttpApiSubmitterSpec
     val mockRequestBuilder = mock[RequestBuilder]
     val buildRequest = mockFunction[ProfileName, EnvelopeId, String, HttpMethod, HeaderCarrier, Option[
       AuthorizationName
-    ], RequestBuilder]
+    ], Map[String, String], RequestBuilder]
     val handlebarsTemplateProcessor = mock[HandlebarsTemplateProcessor]
     val expectedResponse = mock[HttpResponse]
 
@@ -156,7 +159,7 @@ class HandlebarsHttpApiSubmitterSpec
       .returning(expectedUri)
 
     buildRequest
-      .expects(destination.profile, EnvelopeId("envId"), expectedUri, HttpMethod.POST, hc, None)
+      .expects(destination.profile, EnvelopeId("envId"), expectedUri, HttpMethod.POST, hc, None, destinationHttpHeaders)
       .returning(mockRequestBuilder)
 
     (mockRequestBuilder
@@ -174,7 +177,8 @@ class HandlebarsHttpApiSubmitterSpec
       .expects(*, *)
       .returning(Future.successful(expectedResponse))
 
-    val result = await(submitter.apply(destination, processorModel, tree(processorModel), submissionInfo))
+    val result =
+      await(submitter.apply(destination, destinationHttpHeaders, processorModel, tree(processorModel), submissionInfo))
     result shouldBe expectedResponse
 
   }
@@ -192,7 +196,7 @@ class HandlebarsHttpApiSubmitterSpec
     val mockRequestBuilder = mock[RequestBuilder]
     val buildRequest = mockFunction[ProfileName, EnvelopeId, String, HttpMethod, HeaderCarrier, Option[
       AuthorizationName
-    ], RequestBuilder]
+    ], Map[String, String], RequestBuilder]
     val handlebarsTemplateProcessor = mock[HandlebarsTemplateProcessor]
     val expectedResponse = mock[HttpResponse]
 
@@ -208,7 +212,7 @@ class HandlebarsHttpApiSubmitterSpec
       .returning(expectedBody)
 
     buildRequest
-      .expects(destination.profile, EnvelopeId("envId"), expectedUri, HttpMethod.PUT, hc, None)
+      .expects(destination.profile, EnvelopeId("envId"), expectedUri, HttpMethod.PUT, hc, None, destinationHttpHeaders)
       .returning(mockRequestBuilder)
 
     (mockRequestBuilder
@@ -226,7 +230,8 @@ class HandlebarsHttpApiSubmitterSpec
       .expects(*, *)
       .returning(Future.successful(expectedResponse))
 
-    val result = await(submitter.apply(destination, processorModel, tree(processorModel), submissionInfo))
+    val result =
+      await(submitter.apply(destination, destinationHttpHeaders, processorModel, tree(processorModel), submissionInfo))
     result shouldBe expectedResponse
 
   }
@@ -247,7 +252,7 @@ class HandlebarsHttpApiSubmitterSpec
     val mockRequestBuilder = mock[RequestBuilder]
     val buildRequest = mockFunction[ProfileName, EnvelopeId, String, HttpMethod, HeaderCarrier, Option[
       AuthorizationName
-    ], RequestBuilder]
+    ], Map[String, String], RequestBuilder]
     val handlebarsTemplateProcessor = mock[HandlebarsTemplateProcessor]
     val expectedResponse = mock[HttpResponse]
 
@@ -267,7 +272,7 @@ class HandlebarsHttpApiSubmitterSpec
       .returning("processed2")
 
     buildRequest
-      .expects(destination.profile, EnvelopeId("envId"), expectedUri, HttpMethod.POST, hc, None)
+      .expects(destination.profile, EnvelopeId("envId"), expectedUri, HttpMethod.POST, hc, None, destinationHttpHeaders)
       .returning(mockRequestBuilder)
       .once()
 
@@ -293,7 +298,8 @@ class HandlebarsHttpApiSubmitterSpec
       .returning(Future.successful(expectedResponse))
       .twice()
 
-    val result = await(submitter.apply(destination, processorModel, tree(processorModel), submissionInfo))
+    val result =
+      await(submitter.apply(destination, destinationHttpHeaders, processorModel, tree(processorModel), submissionInfo))
     result shouldBe expectedResponse
 
   }

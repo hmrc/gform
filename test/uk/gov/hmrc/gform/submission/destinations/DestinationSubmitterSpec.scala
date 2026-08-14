@@ -1008,13 +1008,14 @@ class DestinationSubmitterSpec
       (handlebarsSubmitter
         .apply(
           _: Destination.HandlebarsHttpApi,
+          _: Map[String, String],
           _: HandlebarsTemplateProcessorModel,
           _: HandlebarsModelTree,
           _: DestinationSubmissionInfo
         )(
           _: HeaderCarrier
         ))
-        .expects(handlebarsHttpApi, accumulatedModel, tree, sdi, hc)
+        .expects(handlebarsHttpApi, Map.empty[String, String], accumulatedModel, tree, sdi, hc)
         .returning(Future(response))
       this
     }
