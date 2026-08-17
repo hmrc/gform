@@ -17,14 +17,19 @@
 package uk.gov.hmrc.gform.objectstore
 
 import org.apache.pekko.stream.Materializer
+import org.apache.pekko.stream.scaladsl.StreamConverters
+import org.apache.poi.xssf.usermodel.XSSFWorkbook
+import play.api.libs.json.Json
 import play.api.mvc.{ ControllerComponents, Results }
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
 import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.gform.spreadsheet.{ SpreadsheetData, SpreadsheetReader }
 
 import scala.concurrent.{ ExecutionContext, Future }
+import uk.gov.hmrc.objectstore.client.Path
 
 class ObjectStoreController(controllerComponents: ControllerComponents, objectStoreAlgebra: ObjectStoreAlgebra[Future])(
   implicit
@@ -73,6 +78,19 @@ class ObjectStoreController(controllerComponents: ControllerComponents, objectSt
   def downloadDataLakehouseFile(envelopeId: EnvelopeId) = Action.async { implicit request =>
     val paths = SdesDestination.DataLakehouse.objectStorePaths(envelopeId, None)
     downloadJsonFile(paths, envelopeId)
+  }
+
+  def downloadDataFile(envelopeId: EnvelopeId, fileName: String) = Action.async { implicit request =>
+    val directory: Path.Directory = Path.Directory(s"envelopes/${envelopeId.value}")
+    objectStoreAlgebra.getFile(directory, fileName).map {
+      case Some(objectSource) =>
+        val reader = objectSource.content.runWith(StreamConverters.asInputStream())
+        val workbook = new XSSFWorkbook(reader)
+        val spreadsheetData: SpreadsheetData = SpreadsheetReader.readDataFromSpreadsheet(workbook)
+
+        Ok(Json.toJson(spreadsheetData))
+      case None => BadRequest(s"File $directory/$fileName not found")
+    }
   }
 
   def downloadInfoArchiveFiles(envelopeId: EnvelopeId) = Action.async { implicit request =>

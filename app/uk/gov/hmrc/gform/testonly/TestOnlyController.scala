@@ -19,12 +19,16 @@ package uk.gov.hmrc.gform.testonly
 import cats.implicits._
 import com.fasterxml.jackson.databind.JsonNode
 import com.typesafe.config.{ ConfigFactory, ConfigRenderOptions }
+import java.io.{ ByteArrayInputStream, ByteArrayOutputStream }
 import org.apache.commons.text.StringEscapeUtils
+import org.apache.pekko.stream.scaladsl.StreamConverters
 import org.apache.pekko.util.ByteString
+import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import org.slf4j.LoggerFactory
 import play.api.http.HttpEntity
 import play.api.libs.json._
 import play.api.mvc._
+import scala.util.{ Failure, Success }
 import uk.gov.hmrc.gform.BuildInfo
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.core.FOpt
@@ -471,6 +475,52 @@ class TestOnlyController(
         _ => throw new Exception(s"Unable to delete the generated files for the envelope '${envelopeId.value}'"),
         _ => NoContent
       )
+  }
+
+  def generatePowerUserSpreadsheet(formTemplateId: FormTemplateId): Action[List[String]] =
+    Action.async(parse.json[List[String]]) { implicit request =>
+      Future.successful(
+        Ok.chunked(
+          StreamConverters.fromInputStream(() => generateXlsx(request.body.map(x => List(x))))
+        ).withHeaders(
+          CONTENT_TYPE        -> "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          CONTENT_DISPOSITION -> s"""attachment; filename="${formTemplateId.value}.xlsx""""
+        )
+      )
+    }
+
+  def generateXlsx(rows: List[List[String]]) = {
+    val workbookTry = Try {
+      val workBook = new XSSFWorkbook()
+      val sheet = workBook.createSheet("translations")
+      sheet.setColumnWidth(0, 100 * 256)
+      sheet.setColumnWidth(1, 100 * 256)
+      sheet.setColumnWidth(2, 100 * 256)
+      val style = workBook.createCellStyle()
+      style.setWrapText(true)
+
+      def processRow(rowValues: List[String], rowNumber: Int): Unit = {
+        val row = sheet.createRow(rowNumber)
+        rowValues.zipWithIndex.foreach { case (value, idx) =>
+          val cell = row.createCell(idx)
+          cell.setCellStyle(style)
+          cell.setCellValue(value)
+        }
+      }
+
+      rows.zipWithIndex.foreach { case (values, idx) => processRow(values, idx) }
+
+      val byteArrayOutputStream = new ByteArrayOutputStream()
+      workBook.write(byteArrayOutputStream)
+      workBook.close()
+
+      new ByteArrayInputStream(byteArrayOutputStream.toByteArray)
+    }
+
+    workbookTry match {
+      case Success(inputStream) => inputStream
+      case Failure(e)           => throw new Exception("Failed to generate XLSX", e)
+    }
   }
 
   def reloadTemplates(): Future[Unit] =

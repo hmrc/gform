@@ -1380,7 +1380,7 @@ object FormTemplateValidator {
       validate(revealingChoiceElements.toList.flatMap(_.revealingFields.map(_.`type`)), formTemplate)
     case HmrcTaxPeriod(_, _, _)                     => Valid
     case Group(fvs, _, _, _, _)                     => validate(fvs.map(_.`type`), formTemplate)
-    case FileUpload(_, _)                           => Valid
+    case FileUpload(_, _, _)                        => Valid
     case mf @ MultiFileUpload(_, _, _, _, _, _, _)  => validateMultiFileUpload(mf)
     case InformationMessage(_, _, _)                => validateInformationMessages(formTemplate)
     case Time(_, _)                                 => Valid

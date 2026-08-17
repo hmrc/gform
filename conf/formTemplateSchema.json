@@ -1048,6 +1048,9 @@
         "fileSizeLimit": {
           "type": "integer"
         },
+        "dataUpload": {
+          "type": "boolean"
+        },
         "minFiles": {
           "$ref": "#/$defs/fileCount"
         },
@@ -1109,6 +1112,16 @@
           "properties": {
             "type": {
               "pattern": "^(info)$"
+            }
+          }
+        },
+        "dataUpload": {
+          "required": [
+            "type"
+          ],
+          "properties": {
+            "type": {
+              "pattern": "^(file)$"
             }
           }
         },

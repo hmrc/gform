@@ -813,7 +813,8 @@ class FormComponentMaker(json: JsValue) {
   private lazy val fileUploadOpt: Opt[FileUpload] = for {
     maybeFileSizeLimit    <- toOpt((json \ "fileSizeLimit").validateOpt[Int], "/fileSizeLimit")
     maybeAllowedFileTypes <- toOpt((json \ "allowedFileTypes").validateOpt[AllowedFileTypes], "/allowedFileTypes")
-  } yield FileUpload(maybeFileSizeLimit, maybeAllowedFileTypes)
+    maybeDataUpload       <- toOpt((json \ "dataUpload").validateOpt[Boolean], "/dataUpload")
+  } yield FileUpload(maybeFileSizeLimit, maybeAllowedFileTypes, maybeDataUpload.getOrElse(false))
 
   lazy val minFiles: Option[TextExpression] =
     (json \ "minFiles").toOption.flatMap {

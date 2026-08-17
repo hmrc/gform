@@ -276,7 +276,7 @@ object Substituter {
 
       case InformationMessage(infoType, infoText, summaryValue) =>
         InformationMessage(infoType, infoText(substitutions), summaryValue(substitutions))
-      case f @ FileUpload(_, _) => f
+      case f @ FileUpload(_, _, _) => f
       case f @ MultiFileUpload(_, _, _, _, _, _, _) =>
         MultiFileUpload(
           fileSizeLimit = f.fileSizeLimit,

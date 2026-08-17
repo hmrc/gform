@@ -425,7 +425,8 @@ case class InformationMessage(infoType: InfoType, infoText: SmartString, summary
 
 case class FileUpload(
   fileSizeLimit: Option[Int],
-  allowedFileTypes: Option[AllowedFileTypes]
+  allowedFileTypes: Option[AllowedFileTypes],
+  dataUpload: Boolean
 ) extends ComponentType
 
 case class MultiFileUpload(
@@ -634,7 +635,7 @@ object ComponentType {
           LeafExpr(path + "repeatAddAnotherText", addAnotherText)
       case InformationMessage(_, infoText, summaryValue) =>
         LeafExpr(path + "infoText", infoText) ++ LeafExpr(path + "summaryValue", summaryValue)
-      case FileUpload(_, _) => Nil
+      case FileUpload(_, _, _) => Nil
       case MultiFileUpload(_, _, hint, uploadAnotherLabel, continueText, minFiles, maxFiles) =>
         LeafExpr(path + "hint", hint) ++
           LeafExpr(path + "uploadAnotherLabel", uploadAnotherLabel) ++
