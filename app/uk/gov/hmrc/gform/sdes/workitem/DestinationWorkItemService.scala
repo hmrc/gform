@@ -352,7 +352,7 @@ class DestinationWorkItemService(
                          findAsyncHandlebarsDestination(formTemplate.destinations, workItem.item.destinationId)
                        )
                      )
-      regeneratedData = regenerateData(destination, formTemplate, snapshot)
+      regeneratedData = regenerateData(destination, formTemplate, snapshot, workItem.item.data.httpHeaders)
       updatedWorkItem = workItem.copy(
                           item = workItem.item.copy(data = regeneratedData),
                           failureCount = 0
@@ -387,7 +387,8 @@ class DestinationWorkItemService(
   private def regenerateData(
     destination: Destination.AsyncHandlebarsHttpApi,
     formTemplate: FormTemplate,
-    snapshot: AsyncHandlebarsRenderSnapshot
+    snapshot: AsyncHandlebarsRenderSnapshot,
+    destinationHttpHeaders: Map[String, String]
   ): AsyncHandlebarsWorkItem = {
     val modelTree = HandlebarsModelTree(
       snapshot.formId,
@@ -401,6 +402,7 @@ class DestinationWorkItemService(
 
     AsyncHandlebarsWorkItemBuilder.build(
       destination,
+      destinationHttpHeaders,
       snapshot.accumulatedModel,
       modelTree,
       Some(snapshot),

@@ -168,7 +168,8 @@ object Destination {
     failOnError: Boolean,
     multiRequestPayload: Boolean,
     convertSingleQuotes: Option[Boolean],
-    credential: Option[AuthorizationName]
+    credential: Option[AuthorizationName],
+    httpHeaders: Map[String, Expr]
   ) extends Destination
 
   case class AsyncHandlebarsHttpApi(
@@ -181,7 +182,8 @@ object Destination {
     includeIf: DestinationIncludeIf,
     failOnError: Boolean,
     convertSingleQuotes: Option[Boolean],
-    credential: Option[AuthorizationName]
+    credential: Option[AuthorizationName],
+    httpHeaders: Map[String, Expr]
   ) extends Destination
 
   case class StateTransition(
@@ -299,6 +301,14 @@ object Destination {
             d.postalCode.map(pc => ExprWithPath(path + "postalCode", pc)).toList
           ).flatten
       case d: DestinationWithPegaCaseId => List(ExprWithPath(path + "caseId", d.caseId))
+      case d: Destination.HandlebarsHttpApi =>
+        d.httpHeaders.toList.map { case (name, expr) =>
+          ExprWithPath(path + "httpHeaders" + name, expr)
+        }
+      case d: Destination.AsyncHandlebarsHttpApi =>
+        d.httpHeaders.toList.map { case (name, expr) =>
+          ExprWithPath(path + "httpHeaders" + name, expr)
+        }
       case d: DestinationWithNrsOrchestrator =>
         d.searchKeys.toList.map { case (searchKey, expr) =>
           ExprWithPath(path + "searchKeys" + searchKey, expr)
@@ -519,7 +529,8 @@ case class UploadableHandlebarsHttpApiDestination(
   includeIf: DestinationIncludeIf,
   failOnError: Option[Boolean],
   multiRequestPayload: Option[Boolean],
-  credential: Option[String]
+  credential: Option[String],
+  `http-headers`: Option[Map[String, TextExpression]]
 ) {
   def toHandlebarsHttpApiDestination: Either[String, Destination.HandlebarsHttpApi] =
     for {
@@ -538,7 +549,8 @@ case class UploadableHandlebarsHttpApiDestination(
         failOnError.getOrElse(true),
         multiRequestPayload.getOrElse(false),
         convertSingleQuotes,
-        credential.map(AuthorizationName.apply)
+        credential.map(AuthorizationName.apply),
+        `http-headers`.getOrElse(Map.empty).view.mapValues(_.expr).toMap
       )
 
   def toAsyncHandlebarsHttpApiDestination: Either[String, Destination.AsyncHandlebarsHttpApi] =
@@ -560,7 +572,8 @@ case class UploadableHandlebarsHttpApiDestination(
         cvii,
         failOnError.getOrElse(true),
         convertSingleQuotes,
-        credential.map(AuthorizationName.apply)
+        credential.map(AuthorizationName.apply),
+        `http-headers`.getOrElse(Map.empty).view.mapValues(_.expr).toMap
       )
 
 }

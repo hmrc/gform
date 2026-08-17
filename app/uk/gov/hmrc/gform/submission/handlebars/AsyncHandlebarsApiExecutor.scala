@@ -40,7 +40,8 @@ class RealAsyncHandlebarsApiExecutor(
     String,
     HttpMethod,
     HeaderCarrier,
-    Option[AuthorizationName]
+    Option[AuthorizationName],
+    Map[String, String]
   ) => RequestBuilder,
   workItemHistoryService: WorkItemHistoryAlgebra[Future]
 )(implicit ec: ExecutionContext)
@@ -56,7 +57,8 @@ class RealAsyncHandlebarsApiExecutor(
       workItem.data.uri,
       workItem.data.method,
       hc,
-      workItem.data.credential
+      workItem.data.credential,
+      workItem.data.httpHeaders
     )
 
     def send(body: String): Future[HttpResponse] =

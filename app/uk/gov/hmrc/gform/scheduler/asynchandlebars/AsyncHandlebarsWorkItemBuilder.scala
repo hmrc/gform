@@ -38,6 +38,7 @@ object AsyncHandlebarsWorkItemBuilder {
 
   def build(
     destination: Destination.AsyncHandlebarsHttpApi,
+    destinationHttpHeaders: Map[String, String],
     accumulatedModel: HandlebarsTemplateProcessorModel,
     modelTree: HandlebarsModelTree,
     renderSnapshot: Option[AsyncHandlebarsRenderSnapshot],
@@ -65,6 +66,7 @@ object AsyncHandlebarsWorkItemBuilder {
       contentType = contentType(destination.payloadType),
       payload = destination.payload.fold("")(processPayload),
       credential = destination.credential,
+      httpHeaders = destinationHttpHeaders,
       renderSnapshot = renderSnapshot
     )
   }

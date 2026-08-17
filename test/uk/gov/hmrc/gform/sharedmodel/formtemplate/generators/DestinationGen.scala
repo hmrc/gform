@@ -123,7 +123,8 @@ trait DestinationGen {
       failOnError,
       multiRequestPayload,
       None,
-      None
+      None,
+      Map.empty
     )
 
   def sdesDestinationGen = Gen.oneOf(List(Dms, HmrcIlluminate, DataStoreLegacy, DataStore, InfoArchive, Caseflow))
