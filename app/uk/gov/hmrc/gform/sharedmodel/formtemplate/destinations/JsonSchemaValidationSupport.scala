@@ -94,9 +94,11 @@ object JsonSchemaValidationSupport {
   def validatePayload(destination: Destination, payload: String): Either[String, Unit] =
     schemaValidationConfig(destination) match {
       case Some(config) if config.validateHandlebarPayload =>
+        val schemaName = config.jsonSchemaName.map(_.trim).filter(_.nonEmpty).getOrElse("<formTemplateId>")
+
         if (config.payloadType != TemplateType.JSON) {
           Left(
-            s"JSON schema validation is not supported for payloadType '${config.payloadType.toString}'. Destination '${config.destinationId.id}' requires payloadType 'JSON'."
+            s"JSON schema validation is not supported for payloadType '${config.payloadType.toString}'. Destination '${config.destinationId.id}' requires payloadType 'JSON'. Schema: '$schemaName'."
           )
         } else {
           config.jsonSchema match {
@@ -108,11 +110,11 @@ object JsonSchemaValidationSupport {
               ) match {
                 case Left(validationEx) =>
                   val errors = Json.prettyPrint(validationEx.errors)
-                  Left(s"JSON schema validation is failed. JSON validation errors: $errors")
+                  Left(s"JSON schema validation is failed for schema '$schemaName'. JSON validation errors: $errors")
                 case Right(value) => Right(value)
               }
             case None =>
-              Left(s"JSON schema does not exist for the destination '${config.destinationId.id}'")
+              Left(s"JSON schema '$schemaName' does not exist for the destination '${config.destinationId.id}'")
           }
         }
       case _ => Right(())
