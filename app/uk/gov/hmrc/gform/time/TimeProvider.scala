@@ -19,6 +19,7 @@ import java.time._
 
 class TimeProvider {
   def localDateTime(): LocalDateTime = LocalDateTime.now(ZoneId.of("Europe/London"))
+  def localDateTimeUTC(): LocalDateTime = LocalDateTime.ofInstant(Instant.now, ZoneOffset.UTC)
   def instant(): Instant = Instant.now
 }
 
