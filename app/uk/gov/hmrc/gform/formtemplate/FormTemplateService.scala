@@ -29,7 +29,7 @@ import uk.gov.hmrc.gform.sharedmodel.{ HandlebarsSchemaId, HandlebarsTemplateId 
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DataOutputFormat.HBS
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.{ AsyncHandlebarsHttpApi, DataStore, HandlebarsHttpApi, HmrcDms }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DestinationId, Destinations, UploadableConditioning }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationId, Destinations, JsonSchemaValidationSupport, UploadableConditioning }
 
 import scala.concurrent.{ ExecutionContext, Future }
 import java.time.Instant
@@ -155,12 +155,14 @@ class FormTemplateService(
         case _ => List.empty[DestinationId]
       }
 
-      val schemaValidationReqDestIds = formTemplate.destinations match {
+      val schemaValidationRequests = formTemplate.destinations match {
         case destinationList: Destinations.DestinationList =>
-          destinationList.destinations.collect {
-            case d: DataStore if d.validateHandlebarPayload => d.id
+          destinationList.destinations.toList.flatMap { destination =>
+            JsonSchemaValidationSupport
+              .resolvedSchemaId(formTemplate._id, destination)
+              .map(schemaId => destination.id -> schemaId)
           }
-        case _ => List.empty[DestinationId]
+        case _ => List.empty[(DestinationId, HandlebarsSchemaId)]
       }
 
       for {
@@ -177,8 +179,7 @@ class FormTemplateService(
                                       )
                                       .map(r => destId -> r.payload)
                                   }
-        jsonValidators <- schemaValidationReqDestIds.traverse { destId =>
-                            val handlebarsSchemaId = HandlebarsSchemaId(formTemplate._id.value)
+        jsonValidators <- schemaValidationRequests.traverse { case (destId, handlebarsSchemaId) =>
                             handlebarsSchemaAlgebra
                               .get(handlebarsSchemaId)
                               .map(
@@ -198,6 +199,16 @@ class FormTemplateService(
             .get(destinationId)
             .map(payload => UploadableConditioning.conditionAndValidate(convertSingleQuotes, payload).getOrElse(""))
 
+        def attachJsonSchemaIfEnabled(destination: Destination): Destination =
+          JsonSchemaValidationSupport
+            .resolvedSchemaId(formTemplate._id, destination)
+            .fold(destination) { _ =>
+              jsonValidators.toMap.get(destination.id) match {
+                case Some(schema) => JsonSchemaValidationSupport.withResolvedSchema(destination, schema)
+                case None         => throw new Exception(s"Couldn't find handlebars schema for ${destination.id}")
+              }
+            }
+
         if (destIds.size === 0) formTemplate
         else
           formTemplate.copy(destinations = formTemplate.destinations match {
@@ -205,10 +216,14 @@ class FormTemplateService(
               destinationList.copy(destinations = destinationList.destinations.map {
                 case h: HandlebarsHttpApi if h.payload.isEmpty =>
                   val payload = getPayload(h.id, h.convertSingleQuotes)
-                  h.copy(payload = payload)
+                  attachJsonSchemaIfEnabled(h.copy(payload = payload))
+                case h: HandlebarsHttpApi =>
+                  attachJsonSchemaIfEnabled(h)
                 case h: AsyncHandlebarsHttpApi if h.payload.isEmpty =>
                   val payload = getPayload(h.id, h.convertSingleQuotes)
-                  h.copy(payload = payload)
+                  attachJsonSchemaIfEnabled(h.copy(payload = payload))
+                case h: AsyncHandlebarsHttpApi =>
+                  attachJsonSchemaIfEnabled(h)
                 case h: HmrcDms if h.payload.isEmpty =>
                   val payload = getPayload(h.id, h.convertSingleQuotes)
                   h.copy(payload = payload)
@@ -216,13 +231,9 @@ class FormTemplateService(
                   val payload = getPayload(d.id, d.convertSingleQuotes)
                   if (payload.isEmpty) {
                     throw new Exception(s"Couldn't find handlebars payload for ${d.id}")
-                  } else if (d.validateHandlebarPayload) {
-                    val jsonSchema = jsonValidators.toMap.get(d.id)
-
-                    if (jsonSchema.isEmpty) {
-                      throw new Exception(s"Couldn't find handlebars schema for ${d.id}")
-                    } else d.copy(jsonSchema = jsonSchema, payload = payload)
-                  } else d.copy(payload = payload)
+                  } else attachJsonSchemaIfEnabled(d.copy(payload = payload))
+                case d: DataStore =>
+                  attachJsonSchemaIfEnabled(d)
                 case otherDestination => otherDestination
               })
             case otherDestinationList => otherDestinationList

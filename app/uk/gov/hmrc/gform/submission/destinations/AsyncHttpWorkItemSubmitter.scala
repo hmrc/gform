@@ -72,6 +72,14 @@ class RealAsyncHttpWorkItemSubmitter(
       )
     )
 
+    JsonSchemaValidationSupport
+      .validatePayload(destination, workItem.data.payload)
+      .fold(
+        message =>
+          throw new RuntimeException(s"Schema validation failed for destination '${destination.id.id}': $message"),
+        _ => ()
+      )
+
     logger.debug(
       s"Submitting async HTTP work item for form template ${workItem.formTemplateId.value}, destination id ${workItem.destinationId.id}, URI: ${workItem.data.uri}, method: ${workItem.data.method}, content type: ${workItem.data.contentType.value}"
     )
