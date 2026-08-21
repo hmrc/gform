@@ -24,6 +24,7 @@ import scala.util.Try
 import uk.gov.hmrc.gform.core.FOpt
 import uk.gov.hmrc.gform.sdes.SdesRouting
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DestinationId, DestinationResponse, HandlebarsTemplateProcessorModel, OtherSdesDestinationResponse, TemplateType }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.JsonSchemaValidationSupport
 import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination
 import uk.gov.hmrc.gform.sharedmodel.{ DataStoreMetaData, LangADT, UserSession }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.DataStore
@@ -33,7 +34,6 @@ import uk.gov.hmrc.gform.submission.{ DataStoreFileGenerator, RoboticsXMLGenerat
 import org.json4s.native.JsonMethods
 import org.json4s.native.Printer.compact
 import org.slf4j.LoggerFactory
-import uk.gov.hmrc.gform.formtemplate.{ HandlebarsSchemaErrorParser, JsonSchemaValidator }
 import uk.gov.hmrc.gform.objectstore.ObjectStoreAlgebra
 import uk.gov.hmrc.gform.sdes.workitem.DestinationWorkItemAlgebra
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
@@ -114,25 +114,12 @@ class DataStoreSubmitter(
   override def validateSchema(
     dataStore: DataStore,
     payload: String
-  ): Either[String, Unit] =
-    if (dataStore.validateHandlebarPayload) {
-      dataStore.jsonSchema match {
-        case Some(schema) =>
-          logger.debug(s"Validating json schema for payload: ${replacePII(payload)}, schema: ${schema.toString}")
-          JsonSchemaValidator.checkSchema(
-            payload,
-            schema.toString,
-            HandlebarsSchemaErrorParser.parseErrorMessages
-          ) match {
-            case Left(validationEx) =>
-              val errors = Json.prettyPrint(validationEx.errors)
-              Left(s"JSON schema validation is failed. JSON validation errors: $errors")
-            case Right(value) => Right(value)
-          }
-        case _ =>
-          Left(s"JSON schema does not exist for the destination '${dataStore.id.id}'")
-      }
-    } else Right(())
+  ): Either[String, Unit] = {
+    if (dataStore.validateHandlebarPayload)
+      logger.debug(s"Validating json schema for payload: ${replacePII(payload)}")
+
+    JsonSchemaValidationSupport.validatePayload(dataStore, payload)
+  }
 
   private def replacePII(value: String): String = {
     val stringRegex: Regex = """"[^:"]*":\s*".*"""".r
