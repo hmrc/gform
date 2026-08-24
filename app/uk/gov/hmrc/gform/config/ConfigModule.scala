@@ -140,13 +140,24 @@ class ConfigModule(
     private def profileName(destinationServiceKey: String): ProfileName =
       ProfileName(getString(destinationServiceKey, "name").getOrElse(destinationServiceKey))
 
+    private def authorizationScheme(destinationServiceKey: String): String =
+      getString(destinationServiceKey, "authorization-scheme")
+        .map(_.trim)
+        .filter(_.nonEmpty)
+        .getOrElse("Bearer")
+
+    private def toAuthorization(destinationServiceKey: String, token: String): Authorization =
+      Authorization(s"${authorizationScheme(destinationServiceKey)} $token")
+
     private def authToken(destinationServiceKey: String): Option[Authorization] =
-      getString(destinationServiceKey, "authorization-token").map(a => Authorization(s"Bearer $a"))
+      getString(destinationServiceKey, "authorization-token").map(token =>
+        toAuthorization(destinationServiceKey, token)
+      )
 
     private def authTokenMap(destinationServiceKey: String): Map[AuthorizationName, Authorization] =
       asStringStringMap(s"${qualifiedDestinationServiceKey(destinationServiceKey)}.authorization-token-map")
         .getOrElse(Map[String, String]())
-        .map { case (key, value) => AuthorizationName(key) -> Authorization(s"Bearer $value") }
+        .map { case (key, value) => AuthorizationName(key) -> toAuthorization(destinationServiceKey, value) }
 
     private val enableAuditKey = "enable-audit"
     def auditDestinations: Boolean = getConfBool(s"destination-services.$enableAuditKey", false)
