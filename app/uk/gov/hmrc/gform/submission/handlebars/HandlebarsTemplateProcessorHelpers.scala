@@ -426,12 +426,24 @@ class HandlebarsTemplateProcessorHelpers(
   def isNotSuccessCode(code: Integer): CharSequence = log("isNotSuccessCode", code)(condition(!isSuccCode(code)))
   private def isSuccCode(code: Integer): Boolean = code != null && code >= 200 && code <= 299
 
-  def desCurrentDate: CharSequence = condition(DateTimeFormatter.ISO_LOCAL_DATE.format(timeProvider.localDateTime()))
-  def currentDate: CharSequence = condition(DateTimeFormatter.BASIC_ISO_DATE.format(timeProvider.localDateTime()))
-  def currentTimestamp: CharSequence = condition(
-    DateTimeFormatter.ISO_INSTANT.format(timeProvider.instant().truncatedTo(ChronoUnit.MILLIS))
+  def desCurrentDate: CharSequence =
+    log("desCurrentDate")(condition(DateTimeFormatter.ISO_LOCAL_DATE.format(timeProvider.localDateTime())))
+  def desCurrentDateUTC: CharSequence = log("desCurrentDateUTC")(
+    condition(
+      DateTimeFormatter.ISO_LOCAL_DATE.format(timeProvider.localDateTimeUTC())
+    )
   )
-  def currentMonth(): CharSequence = condition(timeProvider.localDateTime().getMonthValue)
+  def currentDate: CharSequence =
+    log("currentDate")(condition(DateTimeFormatter.BASIC_ISO_DATE.format(timeProvider.localDateTime())))
+  def currentDateUTC: CharSequence =
+    log("currentDateUTC")(condition(DateTimeFormatter.BASIC_ISO_DATE.format(timeProvider.localDateTimeUTC())))
+  def currentTimestamp: CharSequence = log("currentTimestamp")(
+    condition(
+      DateTimeFormatter.ISO_INSTANT.format(timeProvider.instant().truncatedTo(ChronoUnit.MILLIS))
+    )
+  )
+  def currentMonth(): CharSequence = log("currentMonth")(condition(timeProvider.localDateTime().getMonthValue))
+  def currentMonthUTC(): CharSequence = log("currentMonthUTC")(condition(timeProvider.localDateTimeUTC().getMonthValue))
 
   def greaterThan(first: Any, second: Any): CharSequence = log("greaterThan", first, second) {
     ifNotNullAsNumber(first) { f =>
