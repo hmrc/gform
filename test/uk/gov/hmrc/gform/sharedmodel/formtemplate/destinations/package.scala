@@ -69,6 +69,7 @@ package object destinations {
           |  ${optionalField("convertSingleQuotes", Option(convertSingleQuotes))}
           |  ${optionalField("payload", Option(payload))}
           |  ${optionalField("validateHandlebarPayload", Option(validateHandlebarPayload))}
+          |  ${optionalField("jsonSchemaName", jsonSchemaName)}
           |  ${optionalField("jsonSchema", Option(jsonSchema))}
           |}""".stripMargin
 
@@ -109,6 +110,9 @@ package object destinations {
           |  "profile": ${write(profile)},
           |  "uri": "$uri",
           |  ${optionalField("multiRequestPayload", Option(handlebars.multiRequestPayload), false)}
+          |  ${optionalField("validateHandlebarPayload", Option(handlebars.validateHandlebarPayload))}
+          |  ${optionalField("jsonSchemaName", handlebars.jsonSchemaName)}
+          |  ${optionalField("jsonSchema", handlebars.jsonSchema)}
           |  "method": ${write(method)}
           |}""".stripMargin
 
@@ -124,6 +128,9 @@ package object destinations {
           |  "${Destination.typeDiscriminatorFieldName}": "${Destination.asyncHandlebarsHttpApi}",
           |  "profile": ${write(profile)},
           |  "uri": "$uri",
+          |  ${optionalField("validateHandlebarPayload", Option(asyncHandlebars.validateHandlebarPayload))}
+          |  ${optionalField("jsonSchemaName", asyncHandlebars.jsonSchemaName)}
+          |  ${optionalField("jsonSchema", asyncHandlebars.jsonSchema)}
           |  "method": ${write(method)}
           |}""".stripMargin
 

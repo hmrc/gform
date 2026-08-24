@@ -110,6 +110,15 @@ class RealHandlebarsHttpApiSubmitter(
         .withBody(body)
         .execute[HttpResponse]
 
+    def validateBody(body: String): Unit =
+      JsonSchemaValidationSupport
+        .validatePayload(destination, body)
+        .fold(
+          message =>
+            throw new RuntimeException(s"Schema validation failed for destination '${destination.id.id}': $message"),
+          _ => ()
+        )
+
     def sendMultipleRequests(bodies: List[String]): Future[HttpResponse] =
       if (bodies.isEmpty) {
         send("")
@@ -145,6 +154,10 @@ class RealHandlebarsHttpApiSubmitter(
       case Some(body) if destination.multiRequestPayload => parseAndProcessAsList(body)
       case Some(body)                                    => List(processPayload(body))
       case None                                          => List("")
+    }
+
+    if (destination.validateHandlebarPayload) {
+      payloads.foreach(validateBody)
     }
 
     destination.method match {

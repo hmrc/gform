@@ -19,6 +19,7 @@ package uk.gov.hmrc.gform.submission.handlebars
 import izumi.reflect.Tag
 import org.scalacheck.Gen
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
+import play.api.libs.json.Json
 import play.api.libs.ws.BodyWritable
 import play.api.test.Helpers.{ await, defaultAwaitTimeout }
 import uk.gov.hmrc.gform.sharedmodel.PdfContent
@@ -302,6 +303,46 @@ class HandlebarsHttpApiSubmitterSpec
       await(submitter.apply(destination, destinationHttpHeaders, processorModel, tree(processorModel), submissionInfo))
     result shouldBe expectedResponse
 
+  }
+
+  it should "fail before HTTP execution when schema validation fails" in {
+    val payloadTemplate = "test-payload"
+    val renderedPayload = "{\"bar\":\"value\"}"
+    val destination = destinationGen(HttpMethod.POST).sample.get.copy(
+      payload = Some(payloadTemplate),
+      payloadType = TemplateType.JSON,
+      validateHandlebarPayload = true,
+      jsonSchema = Some(Json.parse("""{"type":"object","required":["foo"]}"""))
+    )
+    val submissionInfo = submissionInfoGen.sample.get
+    val expectedUri = "test-uri"
+
+    val mockRequestBuilder = mock[RequestBuilder]
+    val buildRequest = mockFunction[ProfileName, EnvelopeId, String, HttpMethod, HeaderCarrier, Option[
+      AuthorizationName
+    ], Map[String, String], RequestBuilder]
+    val handlebarsTemplateProcessor = mock[HandlebarsTemplateProcessor]
+
+    val submitter = new RealHandlebarsHttpApiSubmitter(buildRequest, handlebarsTemplateProcessor)
+    val processorModel = HandlebarsTemplateProcessorModel.empty
+
+    (handlebarsTemplateProcessor.apply _)
+      .expects(*, processorModel, *, *)
+      .returning(expectedUri)
+
+    (handlebarsTemplateProcessor.apply _)
+      .expects(payloadTemplate, processorModel, *, *)
+      .returning(renderedPayload)
+
+    buildRequest
+      .expects(destination.profile, EnvelopeId("envId"), expectedUri, HttpMethod.POST, hc, None, destinationHttpHeaders)
+      .returning(mockRequestBuilder)
+
+    val ex = intercept[RuntimeException] {
+      await(submitter.apply(destination, destinationHttpHeaders, processorModel, tree(processorModel), submissionInfo))
+    }
+
+    ex.getMessage should include("Schema validation failed")
   }
 
   private def destinationGen(method: HttpMethod): Gen[Destination.HandlebarsHttpApi] =

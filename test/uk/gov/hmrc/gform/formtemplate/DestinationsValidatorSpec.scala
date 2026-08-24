@@ -21,10 +21,12 @@ import cats.syntax.eq._
 import org.scalatest.prop.Tables.Table
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.core.{ Invalid, Valid }
+import uk.gov.hmrc.gform.sharedmodel.HandlebarsSchemaId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.PrimitiveGen._
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Constant, Equals, FormComponentId, FormCtx, IncludeIf }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, HttpMethod, ProfileName, TemplateType }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationIncludeIf.{ HandlebarValue, IncludeIfValue }
 import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination.Caseflow
 
@@ -229,6 +231,72 @@ class DestinationsValidatorSpec extends Spec with ScalaCheckDrivenPropertyChecks
       val result = DestinationsValidator.validateCaseflow(destinationList.copy(destinations = destinations))
       result should be(expected)
     }
+  }
+
+  "validateHandlebarSchemaCheck" should "use formTemplateId as fallback schema name when jsonSchemaName is missing" in {
+    val formTemplateId = uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId("fallback-form")
+    val destination = Destination.HandlebarsHttpApi(
+      id = destinationIdGen.sample.get,
+      profile = ProfileName("hip"),
+      uri = "/some-uri",
+      method = HttpMethod.POST,
+      payload = Some("{}"),
+      payloadType = TemplateType.JSON,
+      includeIf = HandlebarValue("true"),
+      failOnError = true,
+      multiRequestPayload = false,
+      convertSingleQuotes = None,
+      credential = None,
+      httpHeaders = Map.empty,
+      validateHandlebarPayload = true,
+      jsonSchemaName = None,
+      jsonSchema = None
+    )
+
+    val result = DestinationsValidator.validateHandlebarSchemaCheck(
+      formTemplateId,
+      destinationList.copy(destinations = NonEmptyList.of(destination)),
+      List(HandlebarsSchemaId(formTemplateId.value))
+    )
+
+    result should be(Valid)
+  }
+
+  it should "use jsonSchemaName override when provided" in {
+    val formTemplateId = uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId("fallback-form")
+    val schemaName = "custom-schema-name"
+    val destination = Destination.AsyncHandlebarsHttpApi(
+      id = destinationIdGen.sample.get,
+      profile = ProfileName("hip"),
+      uri = "/some-uri",
+      method = HttpMethod.POST,
+      payload = Some("{}"),
+      payloadType = TemplateType.JSON,
+      includeIf = HandlebarValue("true"),
+      failOnError = true,
+      convertSingleQuotes = None,
+      credential = None,
+      httpHeaders = Map.empty,
+      validateHandlebarPayload = true,
+      jsonSchemaName = Some(schemaName),
+      jsonSchema = None
+    )
+
+    val validResult = DestinationsValidator.validateHandlebarSchemaCheck(
+      formTemplateId,
+      destinationList.copy(destinations = NonEmptyList.of(destination)),
+      List(HandlebarsSchemaId(schemaName))
+    )
+    validResult should be(Valid)
+
+    val invalidResult = DestinationsValidator.validateHandlebarSchemaCheck(
+      formTemplateId,
+      destinationList.copy(destinations = NonEmptyList.of(destination)),
+      List(HandlebarsSchemaId(formTemplateId.value))
+    )
+    invalidResult should be(
+      Invalid(s"The destination '${destination.id.id}' is not valid. The schema '$schemaName' does not exist.")
+    )
   }
 
 }

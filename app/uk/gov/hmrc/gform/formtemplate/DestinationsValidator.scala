@@ -27,7 +27,7 @@ import uk.gov.hmrc.gform.sharedmodel.HandlebarsSchemaId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.NRSOrchestrator
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationIncludeIf.{ HandlebarValue, IncludeIfValue }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponent, FormComponentId, FormTemplateId, IsGroup }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationId, Destinations, ProfileName }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationId, Destinations, JsonSchemaValidationSupport, ProfileName, TemplateType }
 
 object DestinationsValidator {
   def someDestinationIdsAreUsedMoreThanOnce(duplicates: Set[DestinationId]) =
@@ -209,20 +209,51 @@ object DestinationsValidator {
   ): ValidationResult =
     destinations match {
       case destinationList: Destinations.DestinationList =>
+        val availableSchemaIds = handlebarsSchemaIds.map(_.value).toSet
+
         destinationList.destinations.map {
-          case ds: Destination.DataStore =>
-            if (ds.validateHandlebarPayload && (ds.validateHandlebarPayload =!= ds.handlebarPayload))
-              Invalid(
-                s"The destination '${ds.id.id}' is not valid. Once the property 'validateHandlebarPayload' is set to true, the required property 'handlebarPayload' must be true."
-              )
-            else if (ds.validateHandlebarPayload && !handlebarsSchemaIds.map(_.value).contains(formTemplateId.value))
-              Invalid(
-                s"The destination '${ds.id.id}' is not valid. The schema '${formTemplateId.value}' does not exist."
-              )
-            else Valid
+          case d: Destination.DataStore => validateSchemaConfigForDestination(d, formTemplateId, availableSchemaIds)
+          case d: Destination.HandlebarsHttpApi =>
+            validateSchemaConfigForDestination(d, formTemplateId, availableSchemaIds)
+          case d: Destination.AsyncHandlebarsHttpApi =>
+            validateSchemaConfigForDestination(d, formTemplateId, availableSchemaIds)
           case _ => Valid
         }.combineAll
       case _ => Valid
+    }
+
+  private def validateSchemaConfigForDestination(
+    destination: Destination,
+    formTemplateId: FormTemplateId,
+    availableSchemaIds: Set[String]
+  ): ValidationResult =
+    destination match {
+      case ds: Destination.DataStore if ds.validateHandlebarPayload && !ds.handlebarPayload =>
+        Invalid(
+          s"The destination '${ds.id.id}' is not valid. Once the property 'validateHandlebarPayload' is set to true, the required property 'handlebarPayload' must be true."
+        )
+      case _ =>
+        JsonSchemaValidationSupport.schemaValidationConfig(destination) match {
+          case Some(config) if config.validateHandlebarPayload =>
+            val schemaName = JsonSchemaValidationSupport.resolvedSchemaName(formTemplateId.value, config.jsonSchemaName)
+
+            if (!availableSchemaIds.contains(schemaName)) {
+              Invalid(
+                s"The destination '${config.destinationId.id}' is not valid. The schema '$schemaName' does not exist."
+              )
+            } else if (config.payloadType != TemplateType.JSON) {
+              Invalid(
+                s"The destination '${config.destinationId.id}' is not valid. 'validateHandlebarPayload' is only supported with payloadType 'json'."
+              )
+            } else if (config.payload.forall(_.trim.isEmpty)) {
+              Invalid(
+                s"The destination '${config.destinationId.id}' is not valid. Once the property 'validateHandlebarPayload' is set to true, a non-empty payload is required."
+              )
+            } else {
+              Valid
+            }
+          case _ => Valid
+        }
     }
 
   def extractGroupComponentId(fcs: List[FormComponent]): Option[FormComponentId] =

@@ -126,6 +126,9 @@ class UploadableDestinationSpec extends Spec with ScalaCheckDrivenPropertyChecks
       Some(failOnError),
       Some(multiRequestPayload),
       None,
+      None,
+      Some(false),
+      None,
       None
     )
   }

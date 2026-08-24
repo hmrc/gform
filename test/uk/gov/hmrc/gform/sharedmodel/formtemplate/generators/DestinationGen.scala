@@ -124,7 +124,10 @@ trait DestinationGen {
       multiRequestPayload,
       None,
       None,
-      Map.empty
+      Map.empty,
+      false,
+      None,
+      None
     )
 
   def sdesDestinationGen = Gen.oneOf(List(Dms, HmrcIlluminate, DataStoreLegacy, DataStore, InfoArchive, Caseflow))
@@ -158,6 +161,7 @@ trait DestinationGen {
         None,
         None,
         validateHandlebarPayload,
+        None,
         None,
         None
       )
