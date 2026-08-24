@@ -86,6 +86,15 @@ class HandlebarsTemplateProcessorHelpers(
       }
     }
 
+  def toLegacyDfsDate(date: java.util.Map[String, String]): CharSequence =
+    log("toLegacyDfsDate", date) {
+      ifNotNull(date) { df =>
+        extractDateFields(df) { (day, month, year) =>
+          condition(s"$day/$month/$year")
+        }.getOrElse(NullString)
+      }
+    }
+
   def toISO8601Date(date: java.util.Map[String, String]): CharSequence =
     log("toIso8601Date", date) {
       ifNotNull(date) { df =>
