@@ -101,6 +101,7 @@ object Section {
           LeafExpr(path + "pages", a.pages) ++
           LeafExpr(path + "repeatsUntil", a.repeatsUntil) ++
           LeafExpr(path + "repeatsWhile", a.repeatsWhile) ++
+          LeafExpr(path + "repeatsWhileError", a.repeatsWhileError) ++
           LeafExpr(path + "repeaterContinueLabel", a.repeaterContinueLabel) ++
           LeafExpr(path + "addAnotherQuestion", a.addAnotherQuestion) ++
           LeafExpr(path + "instruction", a.instruction) ++
