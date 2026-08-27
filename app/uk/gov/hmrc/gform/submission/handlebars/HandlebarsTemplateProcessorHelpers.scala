@@ -578,6 +578,14 @@ class HandlebarsTemplateProcessorHelpers(
     ifNotNullAsString(options.fn())(identity).toString.take(maxLen)
   }
 
+  def notEmpty(options: Options): CharSequence = log("notEmpty") {
+    val mainBlock = ifNotNullAsString(options.fn())(identity)
+    if (mainBlock.toString.isBlank || mainBlock == "null") {
+      logger.debug("notEmpty: main template block is empty or null, executing else block")
+      ifNotNullAsString(options.inverse())(identity)
+    } else mainBlock
+  }
+
   def indexedLookup(index: Any, options: Options): CharSequence =
     log("indexedLookup", index :: options.params.toList: _*) {
       ifNotNullAsString(index) { s =>
