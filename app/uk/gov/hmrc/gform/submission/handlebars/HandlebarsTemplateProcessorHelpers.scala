@@ -580,7 +580,7 @@ class HandlebarsTemplateProcessorHelpers(
 
   def notEmpty(options: Options): CharSequence = log("notEmpty") {
     val mainBlock = ifNotNullAsString(options.fn())(identity)
-    if (mainBlock.toString.isBlank || mainBlock == "null") {
+    if (mainBlock.toString.isBlank || mainBlock == NullString) {
       logger.debug("notEmpty: main template block is empty or null, executing else block")
       ifNotNullAsString(options.inverse())(identity)
     } else mainBlock
