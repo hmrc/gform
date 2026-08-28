@@ -19,4 +19,6 @@ dist
 *.iws
 .metals/*
 .bsp/*
-    
+.bloop/*
+.github/*
+.DS_Store
