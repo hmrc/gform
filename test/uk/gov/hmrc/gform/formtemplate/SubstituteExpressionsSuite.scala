@@ -20,7 +20,7 @@ import munit.FunSuite
 import play.api.libs.json.{ JsError, JsObject, JsSuccess, Json }
 import scala.language.implicitConversions
 import uk.gov.hmrc.gform.core.Opt
-import uk.gov.hmrc.gform.sharedmodel.{ LangADT, LocalisedString, SmartString }
+import uk.gov.hmrc.gform.sharedmodel.{ DataRetrieve, DataRetrieveId, LangADT, LocalisedString, SmartString }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._, OffsetUnit.Year, OffsetUnit.Day, OffsetUnit.Month
 
 class SubstituteExpressionsSuite extends FunSuite with FormTemplateSupport {
@@ -197,6 +197,90 @@ class SubstituteExpressionsSuite extends FunSuite with FormTemplateSupport {
           assertEquals(page.title.internals.flatMap(_.interpolations), expected)
         case unexpectedSection => fail(s"Unexpected Section $unexpectedSection")
       }
+    }
+  }
+
+  test("SubstituteExpressions should substitute aliases in choice option summaryValue") {
+    val jsonStr =
+      """|{
+         |  "_id": "summary-value-expression-substitution",
+         |  "formName": "Summary value substitution",
+         |  "version": 1,
+         |  "description": "",
+         |  "emailTemplateId": "",
+         |  "authConfig": {
+         |    "authModule": "anonymous"
+         |  },
+         |  "expressions": {
+         |    "ASAemail": "dataRetrieve.agencyInfo.agencyEmail"
+         |  },
+         |  "sections": [
+         |    {
+         |      "title": "Email",
+         |      "fields": [
+         |        {
+         |          "id": "individualEmail",
+         |          "type": "choice",
+         |          "choices": [
+         |            {
+         |              "en": "To ${ASAemail}",
+         |              "value": "Known",
+         |              "summaryValue": "${ASAemail}"
+         |            }
+         |          ]
+         |        }
+         |      ]
+         |    }
+         |  ],
+         |  "dataRetrieve": [
+         |    {
+         |      "type": "agentDetails",
+         |      "id": "agencyInfo",
+         |      "parameters": {
+         |        "agentReferenceNumber": "${'XARN1234567'}"
+         |      }
+         |    }
+         |  ],
+         |  "declarationSection": {
+         |    "title": "Declaration",
+         |    "fields": []
+         |  },
+         |  "acknowledgementSection": {
+         |    "title": "Confirmation page",
+         |    "fields": []
+         |  },
+         |  "destinations": [
+         |    {
+         |      "id": "transitionToSubmitted",
+         |      "type": "stateTransition",
+         |      "requiredState": "Submitted"
+         |    }
+         |  ]
+         |}""".stripMargin
+
+    toFormTemplateAndSubstitutions(jsonStr) { (formTemplate, substitutions) =>
+      val substituted = substituteExpressions.substituteExpressions(formTemplate, substitutions)
+
+      val optionSummaryValueInterpolation = substituted.formKind.allSections.head match {
+        case Section.NonRepeatingPage(page) =>
+          page.fields.head match {
+            case IsChoice(Choice(_, options, _, _, _, _, _, _, _, _, _)) =>
+              options.head match {
+                case OptionData.IndexBased(_, _, _, _, summaryValue) =>
+                  summaryValue.flatMap(_.internals.flatMap(_.interpolations).headOption)
+                case OptionData.ValueBased(_, _, _, _, _, summaryValue, _) =>
+                  summaryValue.flatMap(_.internals.flatMap(_.interpolations).headOption)
+              }
+            case unexpectedField =>
+              fail(s"Unexpected field: $unexpectedField")
+          }
+        case unexpectedSection => fail(s"Unexpected section: $unexpectedSection")
+      }
+
+      assertEquals(
+        optionSummaryValueInterpolation,
+        Some[Expr](DataRetrieveCtx(DataRetrieveId("agencyInfo"), DataRetrieve.Attribute("agencyEmail")))
+      )
     }
   }
 
