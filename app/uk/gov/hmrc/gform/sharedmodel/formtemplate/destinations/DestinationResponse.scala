@@ -41,6 +41,8 @@ object DestinationResponse {
   implicit val objectIdFormat: Format[ObjectId] = Format(objectIdReads, objectIdWrites)
 
   case object NoResponse extends DestinationResponse
+  case object PegaResponse extends DestinationResponse
+  case object StateTransitionResponse extends DestinationResponse
 }
 
 case class DmsDestinationResponse(

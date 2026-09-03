@@ -30,7 +30,7 @@ class SubmissionConsolidatorConnector(httpClient: HttpClientV2, baseUrl: String)
 
   implicit val reads: HttpReads[Either[String, DestinationResponse]] = (_: String, _: String, response: HttpResponse) =>
     response.status match {
-      case 200 => Right(DestinationResponse.NoResponse)
+      case 200 => Right(DestinationResponse.PegaResponse)
       case _   => Left(Try(Json.parse(response.body).as[SCError].formatted).getOrElse(response.body))
     }
 

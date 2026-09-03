@@ -47,8 +47,8 @@ class DestinationsSubmitter[M[_]: Monad](
     l: LangADT,
     destinationEvaluation: DestinationEvaluation,
     userSession: UserSession
-  )(implicit hc: HeaderCarrier): M[Option[List[DestinationResponse]]] =
-    modelTree.value.formTemplate.destinations match {
+  )(implicit hc: HeaderCarrier): M[Option[List[DestinationResponse]]] = {
+    val res = modelTree.value.formTemplate.destinations match {
       case list: Destinations.DestinationList =>
         submitToList(
           list.destinations,
@@ -59,10 +59,39 @@ class DestinationsSubmitter[M[_]: Monad](
           l,
           destinationEvaluation,
           userSession
-        )
+        ).map {
+          _.map { responseList =>
+            val responsesWithoutNrsOrNoResult: List[DestinationResponse] = responseList.filterNot {
+              case _: NrsOrchestratorDestinationResponse => true
+              case DestinationResponse.NoResponse        => true
+              case _                                     => false
+            }
+
+            responsesWithoutNrsOrNoResult match {
+              case Nil => throw new Exception("No destination responses were returned from the submission process")
+              case _   => responsesWithoutNrsOrNoResult
+            }
+          }
+        }
 
       case _ => Option.empty[List[DestinationResponse]].pure[M]
     }
+
+    monadError.onError(res) { err =>
+      logger.error(s"Critical error occurred during destination submission, cleaning up work items", err)
+
+      res.flatMap {
+        case Some(updatedResponseList) =>
+          for {
+            _ <- cleanUp(updatedResponseList)
+            _ <- cleanUpGenericWorkItems(updatedResponseList)
+          } yield ()
+        case None => ().pure[M]
+      }
+    }
+
+    res
+  }
 
   def submitToList(
     destinations: NonEmptyList[Destination],
