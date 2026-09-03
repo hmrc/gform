@@ -47,8 +47,8 @@ class DestinationsSubmitter[M[_]: Monad](
     l: LangADT,
     destinationEvaluation: DestinationEvaluation,
     userSession: UserSession
-  )(implicit hc: HeaderCarrier): M[Option[List[DestinationResponse]]] = {
-    val res = modelTree.value.formTemplate.destinations match {
+  )(implicit hc: HeaderCarrier): M[Option[List[DestinationResponse]]] =
+    modelTree.value.formTemplate.destinations match {
       case list: Destinations.DestinationList =>
         submitToList(
           list.destinations,
@@ -59,38 +59,34 @@ class DestinationsSubmitter[M[_]: Monad](
           l,
           destinationEvaluation,
           userSession
-        ).map {
-          _.map { responseList =>
-            val responsesWithoutNrsOrNoResult: List[DestinationResponse] = responseList.filterNot {
-              case _: NrsOrchestratorDestinationResponse => true
-              case DestinationResponse.NoResponse        => true
-              case _                                     => false
-            }
-
-            responsesWithoutNrsOrNoResult match {
-              case Nil => throw new Exception("No destination responses were returned from the submission process")
-              case _   => responsesWithoutNrsOrNoResult
-            }
-          }
+        ).flatMap {
+          case Some(responses) if !responses.exists(_.countsTowardsSuccessfulSubmission) =>
+            failSubmission(submissionInfo, list.destinations, responses)
+          case responses => responses.pure[M]
         }
 
       case _ => Option.empty[List[DestinationResponse]].pure[M]
     }
 
-    monadError.onError(res) { err =>
-      logger.error(s"Critical error occurred during destination submission, cleaning up work items", err)
+  /* A submission is only successful if at least one destination which sends the form data onwards has fired.
+   * Destinations such as nrsOrchestrator and log do not qualify on their own.
+   */
+  private def failSubmission(
+    submissionInfo: DestinationSubmissionInfo,
+    destinations: NonEmptyList[Destination],
+    responses: List[DestinationResponse]
+  ): M[Option[List[DestinationResponse]]] = {
+    val message =
+      s"No destination which counts towards a successful submission fired for form ${submissionInfo.formId.value}. " +
+        s"Destinations evaluated: ${destinations.toList.map(_.id.id).mkString(", ")}. Failing the submission."
 
-      res.flatMap {
-        case Some(updatedResponseList) =>
-          for {
-            _ <- cleanUp(updatedResponseList)
-            _ <- cleanUpGenericWorkItems(updatedResponseList)
-          } yield ()
-        case None => ().pure[M]
-      }
-    }
+    logger.error(message)
 
-    res
+    for {
+      _      <- cleanUp(responses)
+      _      <- cleanUpGenericWorkItems(responses)
+      failed <- monadError.raiseError[Option[List[DestinationResponse]]](new Exception(message))
+    } yield failed
   }
 
   def submitToList(

@@ -215,7 +215,7 @@ class DestinationSubmitter[M[_]](
           submissionInfo
         )
       case d: Destination.StateTransition =>
-        stateTransitionAlgebra(d, submissionInfo.formId).map(_ => DestinationResponse.StateTransitionResponse)
+        stateTransitionAlgebra(d, submissionInfo.formId).map(_ => DestinationResponse.SubmittedResponse)
       case d: Destination.Log => log(d, accumulatedModel, modelTree).map(_ => DestinationResponse.NoResponse)
       case d: Destination.Email =>
         submitToEmail(d, submissionInfo, modelTree.value.structuredFormData, l)

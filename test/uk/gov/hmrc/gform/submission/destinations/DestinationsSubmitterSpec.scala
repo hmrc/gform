@@ -19,16 +19,18 @@ package uk.gov.hmrc.gform.submission.destinations
 import cats.{ Applicative, Id, Monad, MonadError, StackSafeMonad }
 import cats.data.NonEmptyList
 import cats.syntax.applicative._
+import org.bson.types.ObjectId
 import org.scalacheck.Gen
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import play.api.libs.json._
 import uk.gov.hmrc.gform.Spec
 
+import uk.gov.hmrc.gform.nrs.BusinessId
 import uk.gov.hmrc.gform.sdes.workitem.DestinationWorkItemAlgebra
 import uk.gov.hmrc.gform.sharedmodel.{ DestinationEvaluation, FrontEndSubmissionVariables, LangADT, PdfContent, SubmissionRef, UserSession }
 import uk.gov.hmrc.gform.sharedmodel.form.FormData
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationResponse, Destinations, HandlebarsDestinationResponse, HandlebarsTemplateProcessorModel }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationId, DestinationIncludeIf, DestinationResponse, Destinations, HandlebarsDestinationResponse, HandlebarsTemplateProcessorModel, NrsOrchestratorDestinationResponse }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.{ DestinationGen, DestinationsGen }
 import uk.gov.hmrc.gform.sharedmodel.generators.{ PdfDataGen, StructuredFormValueGen }
 import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
@@ -65,7 +67,7 @@ class DestinationsSubmitterSpec
             submissionInfo,
             HandlebarsTemplateProcessorModel.empty,
             destinationModel,
-            DestinationResponse.NoResponse,
+            DestinationResponse.SubmittedResponse,
             formData,
             DestinationEvaluation.empty
           )
@@ -154,6 +156,104 @@ class DestinationsSubmitterSpec
     }
   }
 
+  "A submission where no destination counts towards a successful submission" should "fail and clean up work items" in {
+    forAll(submissionInfoGen, destinationGen, pdfDataGen, instructionPdfDataGen, structureFormValueObjectStructureGen) {
+      (submissionInfo, destination, pdfData, instructionPdfData, structuredFormValue) =>
+        val destinationModel = DestinationsProcessorModelAlgebra.createFormId(submissionInfo.formId)
+        val parts = createSubmitter[Id]()
+          .expectDestinationSubmitterSubmitIfIncludeIf(
+            destination,
+            submissionInfo,
+            HandlebarsTemplateProcessorModel.empty,
+            destinationModel,
+            NrsOrchestratorDestinationResponse(new ObjectId()),
+            formData,
+            DestinationEvaluation.empty
+          )
+          .expectCleanUpOfGenericWorkItems(1)
+
+        an[Exception] should be thrownBy parts.submitter
+          .send(
+            submissionInfo,
+            HandlebarsModelTree(
+              submissionInfo.formId,
+              SubmissionRef(""),
+              exampleTemplateWithDestinations(destination),
+              pdfData,
+              instructionPdfData,
+              structuredFormValue,
+              destinationModel
+            ),
+            Some(formData),
+            LangADT.En,
+            DestinationEvaluation.empty,
+            UserSession.empty
+          )
+    }
+  }
+
+  "A submission where at least one destination counts towards a successful submission" should "return every response, including the ones which do not count" in {
+    forAll(
+      submissionInfoGen,
+      handlebarsHttpApiGen,
+      pdfDataGen,
+      instructionPdfDataGen,
+      structureFormValueObjectStructureGen
+    ) { (submissionInfo, handlebarsHttpApi, pdfData, instructionPdfData, structuredFormValue) =>
+      val destinationModel = DestinationsProcessorModelAlgebra.createFormId(submissionInfo.formId)
+      val nrsOrchestrator = Destination.NRSOrchestrator(
+        DestinationId("nrsOrchestrator"),
+        DestinationIncludeIf.HandlebarValue("true"),
+        failOnError = true,
+        BusinessId("businessId"),
+        "notableEvent",
+        Map.empty
+      )
+      val nrsResponse = NrsOrchestratorDestinationResponse(new ObjectId())
+      val handlebarsResponse =
+        HandlebarsDestinationResponse(handlebarsHttpApi, HttpResponse(200, JsNull, Map.empty[String, Seq[String]]))
+
+      val result = createSubmitter[Id]()
+        .expectDestinationSubmitterSubmitIfIncludeIf(
+          nrsOrchestrator,
+          submissionInfo,
+          HandlebarsTemplateProcessorModel.empty,
+          destinationModel,
+          nrsResponse,
+          formData,
+          DestinationEvaluation.empty
+        )
+        .expectDestinationSubmitterSubmitIfIncludeIf(
+          handlebarsHttpApi,
+          submissionInfo,
+          HandlebarsTemplateProcessorModel.empty,
+          destinationModel,
+          handlebarsResponse,
+          formData,
+          DestinationEvaluation.empty
+        )
+        .submitter
+        .send(
+          submissionInfo,
+          HandlebarsModelTree(
+            submissionInfo.formId,
+            SubmissionRef(""),
+            exampleTemplateWithDestinations(nrsOrchestrator, handlebarsHttpApi),
+            pdfData,
+            instructionPdfData,
+            structuredFormValue,
+            destinationModel
+          ),
+          Some(formData),
+          LangADT.En,
+          DestinationEvaluation.empty,
+          UserSession.empty
+        )
+
+      result.map(_.toSet) shouldBe Some(Set[DestinationResponse](nrsResponse, handlebarsResponse))
+    }
+  }
+
   "createResponseModel" should "build the appropriate JSON" in {
     forAll(handlebarsHttpApiGen, Gen.chooseNum(100, 599)) { (destination, responseCode) =>
       val responseBody = JsObject(
@@ -213,8 +313,18 @@ class DestinationsSubmitterSpec
 
   case class SubmitterParts[F[_]: Applicative](
     submitter: DestinationsSubmitter[F],
-    destinationSubmitter: DestinationSubmitterAlgebra[F]
+    destinationSubmitter: DestinationSubmitterAlgebra[F],
+    workItemService: DestinationWorkItemAlgebra[F]
   ) {
+
+    def expectCleanUpOfGenericWorkItems(times: Int): SubmitterParts[F] = {
+      (workItemService
+        .deleteGeneric(_: DestinationResponse))
+        .expects(*)
+        .returning(().pure[F])
+        .repeat(times)
+      this
+    }
 
     def expectDestinationSubmitterSubmitIfIncludeIf(
       destination: Destination,
@@ -285,6 +395,6 @@ class DestinationsSubmitterSpec
     val workItemService: DestinationWorkItemAlgebra[M] = mock[DestinationWorkItemAlgebra[M]]
     val submitter = new DestinationsSubmitter[M](destinationSubmitter, workItemService)
 
-    SubmitterParts(submitter, destinationSubmitter)
+    SubmitterParts(submitter, destinationSubmitter, workItemService)
   }
 }

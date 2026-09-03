@@ -24,7 +24,13 @@ import uk.gov.hmrc.http.HttpResponse
 
 import scala.util.Try
 
-sealed trait DestinationResponse
+sealed trait DestinationResponse {
+
+  /** Whether this destination is one of those that make a submission count as successful. `NoResponse` covers
+    * destinations that never fired (skipped includeIf, or a failure swallowed by `failOnError: false`).
+    */
+  def countsTowardsSuccessfulSubmission: Boolean = true
+}
 
 object DestinationResponse {
   val objectIdReads: Reads[ObjectId] = Reads {
@@ -40,9 +46,12 @@ object DestinationResponse {
 
   implicit val objectIdFormat: Format[ObjectId] = Format(objectIdReads, objectIdWrites)
 
-  case object NoResponse extends DestinationResponse
-  case object PegaResponse extends DestinationResponse
-  case object StateTransitionResponse extends DestinationResponse
+  case object NoResponse extends DestinationResponse {
+    override val countsTowardsSuccessfulSubmission: Boolean = false
+  }
+
+  /** A destination which fired successfully but has no payload to return. */
+  case object SubmittedResponse extends DestinationResponse
 }
 
 case class DmsDestinationResponse(
@@ -82,5 +91,8 @@ object HandlebarsDestinationResponse {
     }
 }
 
-case class NrsOrchestratorDestinationResponse(workItemId: ObjectId) extends DestinationResponse
+case class NrsOrchestratorDestinationResponse(workItemId: ObjectId) extends DestinationResponse {
+  override val countsTowardsSuccessfulSubmission: Boolean = false
+}
+
 case class AsyncHandlebarsDestinationResponse(workItemId: ObjectId) extends DestinationResponse

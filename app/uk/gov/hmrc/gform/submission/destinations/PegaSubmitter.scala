@@ -43,7 +43,7 @@ class PegaSubmitter(
             for {
               eTag <- fromFutureA(hipConnectorAlgebra.getPegaCaseActionDetails(caseId, "pyChangeStage", correlationId))
               _    <- fromFutureA(hipConnectorAlgebra.pegaChangeToNextStage(caseId, eTag, correlationId))
-            } yield DestinationResponse.NoResponse
+            } yield DestinationResponse.SubmittedResponse
           case None =>
             throw new IllegalArgumentException(
               s"Pega case ID not evaluated for destination ID: ${d.id}, Form ID: $formId"
