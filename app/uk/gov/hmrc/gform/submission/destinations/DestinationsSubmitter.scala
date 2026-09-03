@@ -64,6 +64,24 @@ class DestinationsSubmitter[M[_]: Monad](
       case _ => Option.empty[List[DestinationResponse]].pure[M]
     }
 
+  private def failSubmission(
+    submissionInfo: DestinationSubmissionInfo,
+    destinations: NonEmptyList[Destination],
+    responses: List[DestinationResponse]
+  ): M[Option[List[DestinationResponse]]] = {
+    val message =
+      s"No destination which counts towards a successful submission fired for form ${submissionInfo.formId.value}. " +
+        s"Destinations evaluated: ${destinations.toList.map(_.id.id).mkString(", ")}. Failing the submission."
+
+    logger.error(message)
+
+    for {
+      _      <- cleanUp(responses)
+      _      <- cleanUpGenericWorkItems(responses)
+      failed <- monadError.raiseError[Option[List[DestinationResponse]]](new Exception(message))
+    } yield failed
+  }
+
   def submitToList(
     destinations: NonEmptyList[Destination],
     submissionInfo: DestinationSubmissionInfo,
@@ -77,12 +95,15 @@ class DestinationsSubmitter[M[_]: Monad](
     case class TailRecParameter(
       remainingDestinations: List[Destination],
       accumulatedModel: HandlebarsTemplateProcessorModel,
-      accumulatedResponses: List[DestinationResponse]
+      accumulatedResponses: List[DestinationResponse],
+      anyQualifyingDestinationFired: Boolean
     )
 
-    TailRecParameter(destinations.toList, accumulatedModel, Nil).tailRecM {
-      case TailRecParameter(Nil, _, responses) => Option(responses).asRight[TailRecParameter].pure[M]
-      case TailRecParameter(head :: rest, updatedAccumulatedModel, updatedResponseList) =>
+    TailRecParameter(destinations.toList, accumulatedModel, Nil, false).tailRecM {
+      case TailRecParameter(Nil, _, responses, false) =>
+        failSubmission(submissionInfo, destinations, responses).map(_.asRight[TailRecParameter])
+      case TailRecParameter(Nil, _, responses, true) => Option(responses).asRight[TailRecParameter].pure[M]
+      case TailRecParameter(head :: rest, updatedAccumulatedModel, updatedResponseList, qualifyingFired) =>
         val step: M[Either[TailRecParameter, Option[List[DestinationResponse]]]] = destinationSubmitter
           .submitIfIncludeIf(
             head,
@@ -103,7 +124,8 @@ class DestinationsSubmitter[M[_]: Monad](
                   DestinationsProcessorModelAlgebra.createDestinationResponse(h) + updatedAccumulatedModel
                 case _ => updatedAccumulatedModel
               },
-              submitterResult +: updatedResponseList
+              submitterResult +: updatedResponseList,
+              qualifyingFired || (head.countsTowardsSuccessfulSubmission && submitterResult.hasFired)
             ).asLeft
           )
 

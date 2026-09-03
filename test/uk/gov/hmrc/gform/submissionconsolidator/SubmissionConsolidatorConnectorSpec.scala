@@ -85,7 +85,7 @@ class SubmissionConsolidatorConnectorSpec
 
     //then
     whenReady(future) { result =>
-      result shouldBe Right(DestinationResponse.NoResponse)
+      result shouldBe Right(DestinationResponse.SubmittedResponse)
       verify(
         postRequestedFor(urlEqualTo("/submission-consolidator/form"))
           .withRequestBody(equalTo(Json.toJson(form).toString))

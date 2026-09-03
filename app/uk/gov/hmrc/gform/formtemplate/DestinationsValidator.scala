@@ -46,6 +46,19 @@ object DestinationsValidator {
       duplicates.isEmpty.validationResult(someDestinationIdsAreUsedMoreThanOnce(duplicates))
   }
 
+  val noDestinationCountsTowardsSuccessfulSubmission =
+    "At least one destination which counts towards a successful submission is required. Destinations of type 'log' and 'nrsOrchestrator' do not count on their own."
+
+  def validateSuccessfulSubmissionDestinations(destinations: Destinations): ValidationResult = destinations match {
+
+    case _: Destinations.DestinationPrint => Valid
+
+    case destinationList: Destinations.DestinationList =>
+      destinationList.destinations
+        .exists(_.countsTowardsSuccessfulSubmission)
+        .validationResult(noDestinationCountsTowardsSuccessfulSubmission)
+  }
+
   def validateNrs(destinations: Destinations, appConfig: NRSConnectorConfig): ValidationResult = {
     val allowedBusinessIds: Set[BusinessId] = appConfig.authorizationTokens.keys.toSet
 

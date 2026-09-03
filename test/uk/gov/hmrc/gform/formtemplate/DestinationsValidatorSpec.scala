@@ -26,11 +26,22 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.PrimitiveGen._
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Constant, Equals, FormComponentId, FormCtx, IncludeIf }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, HttpMethod, ProfileName, TemplateType }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationId, HttpMethod, ProfileName, TemplateType }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationIncludeIf.{ HandlebarValue, IncludeIfValue }
 import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination.Caseflow
+import uk.gov.hmrc.gform.nrs.BusinessId
 
 class DestinationsValidatorSpec extends Spec with ScalaCheckDrivenPropertyChecks {
+
+  private val nrsOrchestrator = Destination.NRSOrchestrator(
+    DestinationId("nrsOrchestrator"),
+    HandlebarValue("true"),
+    failOnError = true,
+    BusinessId("vap"),
+    "notableEvent",
+    Map.empty
+  )
+
   "validateUniqueDestinationIds" should "return an error when there are duplicate ids" in {
     forAll(destinationIdGen, destinationIdGen) { (id1, id2) =>
       whenever(id1 =!= id2) {
@@ -75,6 +86,22 @@ class DestinationsValidatorSpec extends Spec with ScalaCheckDrivenPropertyChecks
         ) should be(Valid)
       }
     }
+  }
+
+  "validateSuccessfulSubmissionDestinations" should "return an error when only log and nrsOrchestrator destinations are defined" in {
+    val destinations = NonEmptyList.of(Destination.Log(DestinationId("log")), nrsOrchestrator)
+
+    DestinationsValidator.validateSuccessfulSubmissionDestinations(
+      destinationList.copy(destinations = destinations)
+    ) shouldBe Invalid(DestinationsValidator.noDestinationCountsTowardsSuccessfulSubmission)
+  }
+
+  it should "pass validation when a destination which counts towards a successful submission is defined" in {
+    val destinations = NonEmptyList.of(Destination.Log(DestinationId("log")), nrsOrchestrator, hmrcDms)
+
+    DestinationsValidator.validateSuccessfulSubmissionDestinations(
+      destinationList.copy(destinations = destinations)
+    ) shouldBe Valid
   }
 
   "validateNoGroupInDeclaration" should "return an error when there is a Group component in Declaration section" in {

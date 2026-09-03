@@ -87,7 +87,7 @@ class SubmissionConsolidatorServiceSpec
           (mockSubmissionConsolidatorConnector
             .sendForm(_: SCForm)(_: HeaderCarrier))
             .expects(expectedAPIForm(destinationSubmissionInfo, submissionConsolidator, expectedScFormFields), hc)
-            .returns(Future.successful(Right(DestinationResponse.NoResponse)))
+            .returns(Future.successful(Right(DestinationResponse.SubmittedResponse)))
           (mockFormService
             .updateFormStatus(_: FormId, _: FormStatus)(_: HeaderCarrier))
             .expects(destinationSubmissionInfo.formId, Submitted, hc)
@@ -96,7 +96,7 @@ class SubmissionConsolidatorServiceSpec
             .submit(submissionConsolidator, destinationSubmissionInfo, model, modelTree, Some(formData))
             .value
 
-          future.futureValue shouldBe Right(DestinationResponse.NoResponse)
+          future.futureValue shouldBe Right(DestinationResponse.SubmittedResponse)
         }
       }
 
@@ -107,7 +107,7 @@ class SubmissionConsolidatorServiceSpec
           (mockSubmissionConsolidatorConnector
             .sendForm(_: SCForm)(_: HeaderCarrier))
             .expects(expectedAPIForm(destinationSubmissionInfo, submissionConsolidator), hc)
-            .returns(Future.successful(Right(DestinationResponse.NoResponse)))
+            .returns(Future.successful(Right(DestinationResponse.SubmittedResponse)))
           (mockFormService
             .updateFormStatus(_: FormId, _: FormStatus)(_: HeaderCarrier))
             .expects(destinationSubmissionInfo.formId, Submitted, hc)
@@ -122,7 +122,7 @@ class SubmissionConsolidatorServiceSpec
             )
             .value
 
-          future.futureValue shouldBe Right(DestinationResponse.NoResponse)
+          future.futureValue shouldBe Right(DestinationResponse.SubmittedResponse)
         }
       }
     }
@@ -144,7 +144,7 @@ class SubmissionConsolidatorServiceSpec
           (mockSubmissionConsolidatorConnector
             .sendForm(_: SCForm)(_: HeaderCarrier))
             .expects(expectedAPIForm(destinationSubmissionInfo, destination, expectedSCFormFields), hc)
-            .returns(Future.successful(Right(DestinationResponse.NoResponse)))
+            .returns(Future.successful(Right(DestinationResponse.SubmittedResponse)))
           (mockFormService
             .updateFormStatus(_: FormId, _: FormStatus)(_: HeaderCarrier))
             .expects(destinationSubmissionInfo.formId, Submitted, hc)
@@ -153,7 +153,7 @@ class SubmissionConsolidatorServiceSpec
             .submit(destination, destinationSubmissionInfo, model, modelTree, Some(formData))
             .value
 
-          future.futureValue shouldBe Right(DestinationResponse.NoResponse)
+          future.futureValue shouldBe Right(DestinationResponse.SubmittedResponse)
         }
       }
 
@@ -168,7 +168,7 @@ class SubmissionConsolidatorServiceSpec
           (mockSubmissionConsolidatorConnector
             .sendForm(_: SCForm)(_: HeaderCarrier))
             .expects(expectedAPIForm(destinationSubmissionInfo, destination), hc)
-            .returns(Future.successful(Right(DestinationResponse.NoResponse)))
+            .returns(Future.successful(Right(DestinationResponse.SubmittedResponse)))
           (mockFormService
             .updateFormStatus(_: FormId, _: FormStatus)(_: HeaderCarrier))
             .expects(destinationSubmissionInfo.formId, Submitted, hc)
@@ -177,7 +177,7 @@ class SubmissionConsolidatorServiceSpec
             .submit(destination, destinationSubmissionInfo, model, modelTree, Some(formData))
             .value
 
-          future.futureValue shouldBe Right(DestinationResponse.NoResponse)
+          future.futureValue shouldBe Right(DestinationResponse.SubmittedResponse)
         }
       }
     }
@@ -190,7 +190,7 @@ class SubmissionConsolidatorServiceSpec
           (mockSubmissionConsolidatorConnector
             .sendForm(_: SCForm)(_: HeaderCarrier))
             .expects(*, *)
-            .returns(Future.successful(Right(DestinationResponse.NoResponse)))
+            .returns(Future.successful(Right(DestinationResponse.SubmittedResponse)))
             .never()
 
           val future = submissionConsolidatorService
