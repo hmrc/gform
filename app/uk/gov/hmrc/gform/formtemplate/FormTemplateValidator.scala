@@ -1606,6 +1606,26 @@ object FormTemplateValidator {
     }
   }
 
+  def validateEmailParameter(formTemplate: FormTemplate): ValidationResult =
+    formTemplate.emailParameters.fold[ValidationResult](Valid) { emailParams =>
+      val allFormComponentIds =
+        (fieldIds(formTemplate.formKind.allSections) ++ formTemplate.destinations.allFormComponents.map(_.id)).toSet
+
+      emailParams.collect { case EmailParameter(_, expr) =>
+        implicitly[LeafExpr[Expr]]
+          .exprs(TemplatePath.root, expr)
+          .flatMap(_.referenceInfos)
+          .collect { case ReferenceInfo.FormCtxExpr(_, FormCtx(fcId)) => fcId }
+          .filterNot(allFormComponentIds.contains)
+      }.flatten match {
+        case Nil => Valid
+        case invalidFields =>
+          Invalid(
+            s"The following email parameters are not fields in the form template's sections: ${invalidFields.mkString(", ")}"
+          )
+      }
+    }
+
   def validateDates(formTemplate: FormTemplate): ValidationResult =
     getAllDates(formTemplate)
       .map {
