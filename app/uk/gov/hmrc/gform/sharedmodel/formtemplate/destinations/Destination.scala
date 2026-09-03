@@ -93,6 +93,12 @@ sealed trait Destination extends Product with Serializable {
   def id: DestinationId
   def includeIf: DestinationIncludeIf
   def failOnError: Boolean
+
+  /** Whether firing this destination makes a submission count as successful. */
+  def countsTowardsSuccessfulSubmission: Boolean = this match {
+    case _: Destination.Log | _: Destination.NRSOrchestrator => false
+    case _                                                   => true
+  }
 }
 
 object Destination {

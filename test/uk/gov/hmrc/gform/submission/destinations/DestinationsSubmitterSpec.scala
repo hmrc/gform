@@ -57,37 +57,51 @@ class DestinationsSubmitterSpec
       si.copy(submission = si.submission.copy(_id = si.submission._id.copy(formId = form._id)))
     }
 
+  private val nrsOrchestrator = Destination.NRSOrchestrator(
+    DestinationId("nrsOrchestrator"),
+    DestinationIncludeIf.HandlebarValue("true"),
+    failOnError = true,
+    BusinessId("businessId"),
+    "notableEvent",
+    Map.empty
+  )
+
   "Every Destination" should "be sent to the DestinationSubmitter" in {
-    forAll(submissionInfoGen, destinationGen, pdfDataGen, instructionPdfDataGen, structureFormValueObjectStructureGen) {
-      (submissionInfo, destination, pdfData, instructionPdfData, structuredFormValue) =>
-        val destinationModel = DestinationsProcessorModelAlgebra.createFormId(submissionInfo.formId)
-        createSubmitter[Id]()
-          .expectDestinationSubmitterSubmitIfIncludeIf(
-            destination,
-            submissionInfo,
-            HandlebarsTemplateProcessorModel.empty,
-            destinationModel,
-            DestinationResponse.SubmittedResponse,
-            formData,
-            DestinationEvaluation.empty
-          )
-          .submitter
-          .send(
-            submissionInfo,
-            HandlebarsModelTree(
-              submissionInfo.formId,
-              SubmissionRef(""),
-              exampleTemplateWithDestinations(destination),
-              pdfData,
-              instructionPdfData,
-              structuredFormValue,
-              destinationModel
-            ),
-            Some(formData),
-            LangADT.En,
-            DestinationEvaluation.empty,
-            UserSession.empty
-          )
+    forAll(
+      submissionInfoGen,
+      destinationGen.filter(_.countsTowardsSuccessfulSubmission),
+      pdfDataGen,
+      instructionPdfDataGen,
+      structureFormValueObjectStructureGen
+    ) { (submissionInfo, destination, pdfData, instructionPdfData, structuredFormValue) =>
+      val destinationModel = DestinationsProcessorModelAlgebra.createFormId(submissionInfo.formId)
+      createSubmitter[Id]()
+        .expectDestinationSubmitterSubmitIfIncludeIf(
+          destination,
+          submissionInfo,
+          HandlebarsTemplateProcessorModel.empty,
+          destinationModel,
+          DestinationResponse.SubmittedResponse,
+          formData,
+          DestinationEvaluation.empty
+        )
+        .submitter
+        .send(
+          submissionInfo,
+          HandlebarsModelTree(
+            submissionInfo.formId,
+            SubmissionRef(""),
+            exampleTemplateWithDestinations(destination),
+            pdfData,
+            instructionPdfData,
+            structuredFormValue,
+            destinationModel
+          ),
+          Some(formData),
+          LangADT.En,
+          DestinationEvaluation.empty,
+          UserSession.empty
+        )
     }
   }
 
@@ -157,12 +171,13 @@ class DestinationsSubmitterSpec
   }
 
   "A submission where no destination counts towards a successful submission" should "fail and clean up work items" in {
-    forAll(submissionInfoGen, destinationGen, pdfDataGen, instructionPdfDataGen, structureFormValueObjectStructureGen) {
-      (submissionInfo, destination, pdfData, instructionPdfData, structuredFormValue) =>
+    forAll(submissionInfoGen, pdfDataGen, instructionPdfDataGen, structureFormValueObjectStructureGen) {
+      (submissionInfo, pdfData, instructionPdfData, structuredFormValue) =>
         val destinationModel = DestinationsProcessorModelAlgebra.createFormId(submissionInfo.formId)
+        val log = Destination.Log(DestinationId("log"))
         val parts = createSubmitter[Id]()
           .expectDestinationSubmitterSubmitIfIncludeIf(
-            destination,
+            nrsOrchestrator,
             submissionInfo,
             HandlebarsTemplateProcessorModel.empty,
             destinationModel,
@@ -170,7 +185,16 @@ class DestinationsSubmitterSpec
             formData,
             DestinationEvaluation.empty
           )
-          .expectCleanUpOfGenericWorkItems(1)
+          .expectDestinationSubmitterSubmitIfIncludeIf(
+            log,
+            submissionInfo,
+            HandlebarsTemplateProcessorModel.empty,
+            destinationModel,
+            DestinationResponse.NoResponse,
+            formData,
+            DestinationEvaluation.empty
+          )
+          .expectCleanUpOfGenericWorkItems(2)
 
         an[Exception] should be thrownBy parts.submitter
           .send(
@@ -178,7 +202,7 @@ class DestinationsSubmitterSpec
             HandlebarsModelTree(
               submissionInfo.formId,
               SubmissionRef(""),
-              exampleTemplateWithDestinations(destination),
+              exampleTemplateWithDestinations(nrsOrchestrator, log),
               pdfData,
               instructionPdfData,
               structuredFormValue,
@@ -201,14 +225,6 @@ class DestinationsSubmitterSpec
       structureFormValueObjectStructureGen
     ) { (submissionInfo, handlebarsHttpApi, pdfData, instructionPdfData, structuredFormValue) =>
       val destinationModel = DestinationsProcessorModelAlgebra.createFormId(submissionInfo.formId)
-      val nrsOrchestrator = Destination.NRSOrchestrator(
-        DestinationId("nrsOrchestrator"),
-        DestinationIncludeIf.HandlebarValue("true"),
-        failOnError = true,
-        BusinessId("businessId"),
-        "notableEvent",
-        Map.empty
-      )
       val nrsResponse = NrsOrchestratorDestinationResponse(new ObjectId())
       val handlebarsResponse =
         HandlebarsDestinationResponse(handlebarsHttpApi, HttpResponse(200, JsNull, Map.empty[String, Seq[String]]))

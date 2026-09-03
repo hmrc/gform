@@ -26,10 +26,8 @@ import scala.util.Try
 
 sealed trait DestinationResponse {
 
-  /** Whether this destination is one of those that make a submission count as successful. `NoResponse` covers
-    * destinations that never fired (skipped includeIf, or a failure swallowed by `failOnError: false`).
-    */
-  def countsTowardsSuccessfulSubmission: Boolean = true
+  /** `NoResponse` means the destination did not run: skipped by its includeIf, or it failed and `failOnError` is false. */
+  def hasFired: Boolean = this != DestinationResponse.NoResponse
 }
 
 object DestinationResponse {
@@ -46,9 +44,7 @@ object DestinationResponse {
 
   implicit val objectIdFormat: Format[ObjectId] = Format(objectIdReads, objectIdWrites)
 
-  case object NoResponse extends DestinationResponse {
-    override val countsTowardsSuccessfulSubmission: Boolean = false
-  }
+  case object NoResponse extends DestinationResponse
 
   /** A destination which fired successfully but has no payload to return. */
   case object SubmittedResponse extends DestinationResponse
@@ -91,8 +87,6 @@ object HandlebarsDestinationResponse {
     }
 }
 
-case class NrsOrchestratorDestinationResponse(workItemId: ObjectId) extends DestinationResponse {
-  override val countsTowardsSuccessfulSubmission: Boolean = false
-}
+case class NrsOrchestratorDestinationResponse(workItemId: ObjectId) extends DestinationResponse
 
 case class AsyncHandlebarsDestinationResponse(workItemId: ObjectId) extends DestinationResponse

@@ -129,6 +129,7 @@ trait Verifier {
       _ <- fromOptA(FormTemplateValidator.validateIncludeIfForTaskStatus(formTemplate, sections).toEither)
       _ <- fromOptA(FormTemplateValidator.validateDraftRetrieval(formTemplate).toEither)
       _ <- fromOptA(DestinationsValidator.validateUniqueDestinationIds(formTemplate.destinations).toEither)
+      _ <- fromOptA(DestinationsValidator.validateSuccessfulSubmissionDestinations(formTemplate.destinations).toEither)
       _ <- fromOptA(DestinationsValidator.validateNoGroupInDeclaration(formTemplate.destinations).toEither)
       _ <- fromOptA(DestinationsValidator.validateDestinationIncludeIfs(formTemplate.destinations).toEither)
       _ <- fromOptA(DestinationsValidator.validateSubmissionPrefix(formTemplate.destinations).toEither)

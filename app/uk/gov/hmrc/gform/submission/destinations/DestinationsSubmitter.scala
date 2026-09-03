@@ -59,18 +59,11 @@ class DestinationsSubmitter[M[_]: Monad](
           l,
           destinationEvaluation,
           userSession
-        ).flatMap {
-          case Some(responses) if !responses.exists(_.countsTowardsSuccessfulSubmission) =>
-            failSubmission(submissionInfo, list.destinations, responses)
-          case responses => responses.pure[M]
-        }
+        )
 
       case _ => Option.empty[List[DestinationResponse]].pure[M]
     }
 
-  /* A submission is only successful if at least one destination which sends the form data onwards has fired.
-   * Destinations such as nrsOrchestrator and log do not qualify on their own.
-   */
   private def failSubmission(
     submissionInfo: DestinationSubmissionInfo,
     destinations: NonEmptyList[Destination],
@@ -102,12 +95,15 @@ class DestinationsSubmitter[M[_]: Monad](
     case class TailRecParameter(
       remainingDestinations: List[Destination],
       accumulatedModel: HandlebarsTemplateProcessorModel,
-      accumulatedResponses: List[DestinationResponse]
+      accumulatedResponses: List[DestinationResponse],
+      anyQualifyingDestinationFired: Boolean
     )
 
-    TailRecParameter(destinations.toList, accumulatedModel, Nil).tailRecM {
-      case TailRecParameter(Nil, _, responses) => Option(responses).asRight[TailRecParameter].pure[M]
-      case TailRecParameter(head :: rest, updatedAccumulatedModel, updatedResponseList) =>
+    TailRecParameter(destinations.toList, accumulatedModel, Nil, false).tailRecM {
+      case TailRecParameter(Nil, _, responses, false) =>
+        failSubmission(submissionInfo, destinations, responses).map(_.asRight[TailRecParameter])
+      case TailRecParameter(Nil, _, responses, true) => Option(responses).asRight[TailRecParameter].pure[M]
+      case TailRecParameter(head :: rest, updatedAccumulatedModel, updatedResponseList, qualifyingFired) =>
         val step: M[Either[TailRecParameter, Option[List[DestinationResponse]]]] = destinationSubmitter
           .submitIfIncludeIf(
             head,
@@ -128,7 +124,8 @@ class DestinationsSubmitter[M[_]: Monad](
                   DestinationsProcessorModelAlgebra.createDestinationResponse(h) + updatedAccumulatedModel
                 case _ => updatedAccumulatedModel
               },
-              submitterResult +: updatedResponseList
+              submitterResult +: updatedResponseList,
+              qualifyingFired || (head.countsTowardsSuccessfulSubmission && submitterResult.hasFired)
             ).asLeft
           )
 
