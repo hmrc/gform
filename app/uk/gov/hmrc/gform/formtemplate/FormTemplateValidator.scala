@@ -750,10 +750,10 @@ object FormTemplateValidator {
 
     def validateExpr(expr: Expr, path: TemplatePath): ValidationResult =
       expr match {
-        case FormCtx(_) =>
+        case FormCtx(formComponentId) =>
           validateFormComponentTypeVrn(
             path,
-            expr.cast[FormCtx].get.formComponentId,
+            formComponentId,
             fcIdToComponentType
           )
         case AuthCtx(AuthInfo.Vrn)                           => Valid
@@ -800,10 +800,10 @@ object FormTemplateValidator {
 
     def validateExpr(expr: Expr, path: TemplatePath): ValidationResult =
       expr match {
-        case FormCtx(_) =>
+        case FormCtx(formComponentId) =>
           validateFormComponentTypeUtr(
             path,
-            expr.cast[FormCtx].get.formComponentId,
+            formComponentId,
             fcIdToComponentType
           )
         case Constant(_)                                     => Valid
