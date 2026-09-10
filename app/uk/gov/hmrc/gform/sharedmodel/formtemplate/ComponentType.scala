@@ -604,7 +604,29 @@ object ComponentType {
   implicit def writesNonEmptyList[T: Writes]: Writes[NonEmptyList[T]] = Writes[NonEmptyList[T]] { v =>
     JsArray((v.head :: v.tail).map(Json.toJson(_)))
   }
-  implicit val format: OFormat[ComponentType] = derived.oformat()
+  implicit val format: OFormat[ComponentType] = {
+    val base: OFormat[ComponentType] = derived.oformat()
+    val fillDefaults = PersistedDefaults.tagged(
+      Map(
+        "Text" -> Seq(
+          "displayWidth" -> Json.toJson(DisplayWidth.DEFAULT),
+          "toUpperCase"  -> Json.toJson[UpperCaseBoolean](IsNotUpperCase),
+          "removeSpaces" -> JsBoolean(false)
+        ),
+        "TextArea" -> Seq(
+          "displayWidth"     -> Json.toJson(DisplayWidth.DEFAULT),
+          "rows"             -> JsNumber(TextArea.defaultRows),
+          "displayCharCount" -> JsBoolean(TextArea.defaultDisplayCharCount)
+        ),
+        "TableComp" -> Seq(
+          "captionClasses"    -> JsString(""),
+          "classes"           -> JsString(""),
+          "firstCellIsHeader" -> JsBoolean(false)
+        )
+      )
+    )
+    OFormat(PersistedDefaults.reads(fillDefaults)(base), base)
+  }
 
   implicit val leafExprs: LeafExpr[ComponentType] = (path: TemplatePath, t: ComponentType) =>
     t match {

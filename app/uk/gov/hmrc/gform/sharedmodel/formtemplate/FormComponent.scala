@@ -90,7 +90,17 @@ object FormComponent {
   private val templateReads: Reads[FormComponent] =
     Reads(json => new FormComponentMaker(json).optFieldValue() fold (us => JsError(us.toString), fv => JsSuccess(fv)))
 
-  implicit val format: OFormat[FormComponent] = OFormatWithTemplateReadFallback(templateReads)
+  implicit val format: OFormat[FormComponent] = {
+    val base = OFormatWithTemplateReadFallback(templateReads)
+    val fillDefaults = PersistedDefaults.flat(
+      Seq(
+        "onlyShowOnSummary" -> JsBoolean(false),
+        "validators"        -> JsArray.empty,
+        "notPII"            -> JsBoolean(false)
+      )
+    )
+    OFormat(PersistedDefaults.reads(fillDefaults)(base), base)
+  }
 
   implicit val leafExprs: LeafExpr[FormComponent] = (path: TemplatePath, t: FormComponent) =>
     LeafExpr(path + s"[id=${t.id}]", t.`type`) ++

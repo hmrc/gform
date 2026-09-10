@@ -196,7 +196,17 @@ object TextConstraint {
   val defaultWholeDigits = 11
   val defaultFractionalDigits = 2
 
-  implicit val format: OFormat[TextConstraint] = derived.oformat()
+  implicit val format: OFormat[TextConstraint] = {
+    val base: OFormat[TextConstraint] = derived.oformat()
+    val numberDefaults = Seq(
+      "maxWholeDigits"      -> JsNumber(defaultWholeDigits),
+      "maxFractionalDigits" -> JsNumber(defaultFractionalDigits),
+      "roundingMode"        -> Json.toJson(RoundingMode.defaultRoundingMode)
+    )
+    val fillDefaults =
+      PersistedDefaults.tagged(Map("Number" -> numberDefaults, "PositiveNumber" -> numberDefaults))
+    OFormat(PersistedDefaults.reads(fillDefaults)(base), base)
+  }
 
   def filterNumberValue(s: String): String = s.filterNot(c => (c == '£' || c == ','))
 

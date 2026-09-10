@@ -273,7 +273,7 @@ object Destination {
     implicit val personalisationReads =
       JsonUtils.formatMap[NotifierPersonalisationFieldId, FormComponentId](NotifierPersonalisationFieldId(_), _.value)
 
-    OFormatWithTemplateReadFallback(
+    val base = OFormatWithTemplateReadFallback(
       ADTFormat.adtRead[Destination](
         typeDiscriminatorFieldName,
         hmrcDms                -> UploadableHmrcDmsDestination.reads,
@@ -290,6 +290,16 @@ object Destination {
         nrsOrchestrator        -> UploadableNrsOrchestratorDestination.reads
       )
     )
+
+    val validateHandlebarPayload = Seq("validateHandlebarPayload" -> JsBoolean(false))
+    val fillDefaults = PersistedDefaults.tagged(
+      Map(
+        "DataStore"              -> validateHandlebarPayload,
+        "HandlebarsHttpApi"      -> validateHandlebarPayload,
+        "AsyncHandlebarsHttpApi" -> validateHandlebarPayload
+      )
+    )
+    OFormat(PersistedDefaults.reads(fillDefaults)(base), base)
   }
 
   implicit val leafExprs: LeafExpr[Destination] = (path: TemplatePath, t: Destination) =>
