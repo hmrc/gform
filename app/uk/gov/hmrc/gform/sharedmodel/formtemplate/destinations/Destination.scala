@@ -269,11 +269,26 @@ object Destination {
   val niRefundClaimApi: String = "niRefundClaimApi"
   val nrsOrchestrator: String = "nrsOrchestrator"
 
+  // Documents persisted before validateHandlebarPayload was added to the handlebars destinations lack the field. GFORMS-4884
+  private val persistedHandlebarsTags = List("HandlebarsHttpApi", "AsyncHandlebarsHttpApi")
+
+  private def defaultPersistedValidateHandlebarPayload(json: JsValue): JsValue = json match {
+    case jsObject: JsObject =>
+      persistedHandlebarsTags.foldLeft(jsObject) { (acc, tag) =>
+        (acc \ tag).asOpt[JsObject] match {
+          case Some(destination) if !destination.keys.contains("validateHandlebarPayload") =>
+            acc + (tag -> (destination + ("validateHandlebarPayload" -> JsFalse)))
+          case _ => acc
+        }
+      }
+    case other => other
+  }
+
   implicit val format: OFormat[Destination] = {
     implicit val personalisationReads =
       JsonUtils.formatMap[NotifierPersonalisationFieldId, FormComponentId](NotifierPersonalisationFieldId(_), _.value)
 
-    OFormatWithTemplateReadFallback(
+    val base = OFormatWithTemplateReadFallback(
       ADTFormat.adtRead[Destination](
         typeDiscriminatorFieldName,
         hmrcDms                -> UploadableHmrcDmsDestination.reads,
@@ -290,6 +305,8 @@ object Destination {
         nrsOrchestrator        -> UploadableNrsOrchestratorDestination.reads
       )
     )
+
+    OFormat(Reads(json => base.reads(defaultPersistedValidateHandlebarPayload(json))), base)
   }
 
   implicit val leafExprs: LeafExpr[Destination] = (path: TemplatePath, t: Destination) =>
