@@ -291,7 +291,7 @@ object Destination {
     implicit val personalisationReads =
       JsonUtils.formatMap[NotifierPersonalisationFieldId, FormComponentId](NotifierPersonalisationFieldId(_), _.value)
 
-    val base = OFormatWithTemplateReadFallback(
+    OFormatWithTemplateReadFallback(
       ADTFormat.adtRead[Destination](
         typeDiscriminatorFieldName,
         hmrcDms                -> UploadableHmrcDmsDestination.reads,
@@ -308,8 +308,6 @@ object Destination {
         nrsOrchestrator        -> UploadableNrsOrchestratorDestination.reads
       )
     )
-
-    base
   }
 
   implicit val leafExprs: LeafExpr[Destination] = (path: TemplatePath, t: Destination) =>
