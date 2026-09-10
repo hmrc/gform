@@ -407,6 +407,12 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
     | "concat(" ~ _expr1 ~ (("," ~> _expr1) *) ~ ")" ^^ { case _ ~ expr ~ exprs ~ _ =>
       Concat(expr +: exprs)
     }
+    | "showAsVrn(" ~ _expr1 ~ ")" ^^ { case _ ~ value ~ _ =>
+      StringOps(value, StringFnc.ShowAsVrn)
+    }
+    | "showAsUtr(" ~ _expr1 ~ ")" ^^ { case _ ~ value ~ _ =>
+      StringOps(value, StringFnc.ShowAsUtr)
+    }
     | "choice(" ~ FormComponentId.unanchoredIdValidation ~ ")" ^^ { case _ ~ value ~ _ =>
       Concat(FormCtx(FormComponentId(value)) :: Nil)
     }

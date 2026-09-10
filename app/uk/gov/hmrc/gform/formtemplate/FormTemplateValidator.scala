@@ -32,6 +32,8 @@ import uk.gov.hmrc.gform.sharedmodel.DataRetrieve.Attribute
 import uk.gov.hmrc.gform.sharedmodel._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.Dynamic.DataRetrieveBased
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.PageLink
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.StringFnc.{ ShowAsUtr, ShowAsVrn }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.UserField.Enrolment
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DestinationPrint
 import uk.gov.hmrc.gform.sharedmodel.graph.DependencyGraph._
@@ -720,6 +722,108 @@ object FormTemplateValidator {
       case BetweenExpr(path, Between(expr1, expr2, _)) => List(validateExpr(expr1, path), validateExpr(expr2, path))
       case SumExpr(path, Sum(Between(dateCtx1, dateCtx2, _))) =>
         List(validateExpr(dateCtx1, path), validateExpr(dateCtx2, path))
+    }
+    Monoid.combineAll(validations.flatten)
+  }
+
+  private def validateFormComponentTypeVrn(
+    path: TemplatePath,
+    formComponentId: FormComponentId,
+    fcIdToComponentType: Map[FormComponentId, ComponentType]
+  ) =
+    fcIdToComponentType
+      .get(formComponentId)
+      .fold[ValidationResult](Invalid(s"${path.path}: Form component $formComponentId is invalid")) { componentType =>
+        val errorPrefix = s"${path.path}: Form component '$formComponentId' used in showAsVrn function"
+        componentType match {
+          case (Text(UkVrn, _, _, _, _, _, _, _, _)) => Valid
+          case _                                     => Invalid(errorPrefix + " should be of ukVrn format")
+        }
+      }
+
+  def validateVrnFunReferenceConstraints(
+    formTemplate: FormTemplate,
+    allExpressions: List[ExprWithPath]
+  ): ValidationResult = {
+
+    val fcIdToComponentType: Map[FormComponentId, ComponentType] = mkFcIdToComponentType(formTemplate)
+
+    def validateExpr(expr: Expr, path: TemplatePath): ValidationResult =
+      expr match {
+        case FormCtx(formComponentId) =>
+          validateFormComponentTypeVrn(
+            path,
+            formComponentId,
+            fcIdToComponentType
+          )
+        case AuthCtx(AuthInfo.Vrn)                           => Valid
+        case UserCtx(Enrolment(_, IdentifierName("VRN"), _)) => Valid
+        case _ =>
+          Invalid(
+            s"${path.path}: Form component '$expr' used in showAsVrn function" + " should be of vrn format"
+          )
+      }
+
+    val referenceInfos = allExpressions.flatMap(_.referenceInfos)
+    val validations = referenceInfos.collect {
+      case StringOpsExpr(path, expr1) if expr1.stringFnc == ShowAsVrn =>
+        expr1.field1 match {
+          case Else(f1, f2)      => List(validateExpr(f1, path)) ++ List(validateExpr(f2, path))
+          case IfElse(_, f1, f2) => List(validateExpr(f1, path)) ++ List(validateExpr(f2, path))
+          case _                 => List(validateExpr(expr1.field1, path))
+        }
+    }
+    Monoid.combineAll(validations.flatten)
+  }
+
+  private def validateFormComponentTypeUtr(
+    path: TemplatePath,
+    formComponentId: FormComponentId,
+    fcIdToComponentType: Map[FormComponentId, ComponentType]
+  ) =
+    fcIdToComponentType
+      .get(formComponentId)
+      .fold[ValidationResult](Invalid(s"${path.path}: Form component $formComponentId is invalid")) { componentType =>
+        val errorPrefix = s"${path.path}: Form component '$formComponentId' used in showAsUtr function"
+        componentType match {
+          case (Text(CtUTR, _, _, _, _, _, _, _, _)) => Valid
+          case _                                     => Invalid(errorPrefix + " should be of utr format")
+        }
+      }
+
+  def validateUtrFunReferenceConstraints(
+    formTemplate: FormTemplate,
+    allExpressions: List[ExprWithPath]
+  ): ValidationResult = {
+
+    val fcIdToComponentType: Map[FormComponentId, ComponentType] = mkFcIdToComponentType(formTemplate)
+
+    def validateExpr(expr: Expr, path: TemplatePath): ValidationResult =
+      expr match {
+        case FormCtx(formComponentId) =>
+          validateFormComponentTypeUtr(
+            path,
+            formComponentId,
+            fcIdToComponentType
+          )
+        case Constant(_)                                     => Valid
+        case AuthCtx(AuthInfo.SaUtr)                         => Valid
+        case AuthCtx(AuthInfo.CtUtr)                         => Valid
+        case UserCtx(Enrolment(_, IdentifierName("UTR"), _)) => Valid
+        case _ =>
+          Invalid(
+            s"${path.path}: Form component '$expr' used in showAsUtr function" + " should be of utr format"
+          )
+      }
+
+    val referenceInfos = allExpressions.flatMap(_.referenceInfos)
+    val validations = referenceInfos.collect {
+      case StringOpsExpr(path, expr1) if expr1.stringFnc == ShowAsUtr =>
+        expr1.field1 match {
+          case Else(f1, f2)      => List(validateExpr(f1, path)) ++ List(validateExpr(f2, path))
+          case IfElse(_, f1, f2) => List(validateExpr(f1, path)) ++ List(validateExpr(f2, path))
+          case _                 => List(validateExpr(expr1.field1, path))
+        }
     }
     Monoid.combineAll(validations.flatten)
   }

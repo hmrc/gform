@@ -320,6 +320,8 @@ object StringFnc {
   case object CapitalizeAll extends StringFnc
   case object UpperCase extends StringFnc
   case object LowerCase extends StringFnc
+  case object ShowAsVrn extends StringFnc
+  case object ShowAsUtr extends StringFnc
   case object RemoveSpaces extends StringFnc
   case object LowerCaseFirst extends StringFnc
   case class SubString(beginIndex: Int, endIndex: Int) extends StringFnc
