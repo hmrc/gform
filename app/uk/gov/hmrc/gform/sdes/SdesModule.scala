@@ -46,11 +46,9 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationResponse
 import uk.gov.hmrc.gform.sharedmodel.notifier.NotifierEmailAddress
 import uk.gov.hmrc.gform.sharedmodel.sdes._
-import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 import uk.gov.hmrc.mongo.CurrentTimestampSupport
 import uk.gov.hmrc.mongo.lock.MongoLockRepository
 import uk.gov.hmrc.mongo.workitem.{ ProcessingStatus, WorkItem }
-import uk.gov.hmrc.objectstore.client.ObjectSummaryWithMd5
 
 import scala.concurrent.{ ExecutionContext, Future }
 
@@ -130,6 +128,11 @@ class SdesModule(
   val sdesHistoryService: SdesHistoryService =
     new SdesHistoryService(repoSdesHistory)
 
+  private val lockRepo: MongoLockRepository = new MongoLockRepository(
+    mongoModule.mongoComponent,
+    new CurrentTimestampSupport()
+  )
+
   val sdesService: SdesAlgebra[Future] =
     new SdesService(
       objectStoreModule.sdesConnector,
@@ -139,13 +142,9 @@ class SdesModule(
       configModule.sdesConfig,
       sdesHistoryService,
       objectStoreModule.objectStoreService,
-      fileLocationUrl
+      fileLocationUrl,
+      lockRepo
     )(ex, akkaModule.materializer)
-
-  private val lockRepoSdesAlert: MongoLockRepository = new MongoLockRepository(
-    mongoModule.mongoComponent,
-    new CurrentTimestampSupport()
-  )
 
   val sdesSubmissionAlertService = new SdesSubmissionAlertService(
     configModule.sdesAlertConfig.destination.map(_.map(SdesDestination.fromString)),
@@ -153,7 +152,7 @@ class SdesModule(
     EmailTemplateId(configModule.sdesAlertConfig.emailTemplateId),
     emailModule.emailLogic,
     repoSdesSubmission,
-    lockRepoSdesAlert,
+    lockRepo,
     configModule.sdesAlertConfig.lockDuration
   )
 
@@ -164,13 +163,8 @@ class SdesModule(
     dmsWorkItemRepo,
     dataStoreWorkItemRepo,
     dataLakehouseWorkItemRepo,
-    lockRepoSdesAlert,
+    lockRepo,
     configModule.workItemAlertConfig.lockDuration
-  )
-
-  private val lockRepoRenotify: MongoLockRepository = new MongoLockRepository(
-    mongoModule.mongoComponent,
-    new CurrentTimestampSupport()
   )
 
   val sdesCallbackController: SdesCallbackController =
@@ -197,81 +191,10 @@ class SdesModule(
     configModule.sdesRenotifyConfig.destinations.map(SdesDestination.fromString),
     sdesRenotifyService,
     sdesService,
-    lockRepoRenotify,
+    lockRepo,
     configModule.sdesRenotifyConfig.lockDuration,
     Some(configModule.sdesRenotifyConfig.showBeforeSubmittedAt)
   )
-
-  val foptSdesService: SdesAlgebra[FOpt] = new SdesAlgebra[FOpt] {
-
-    override def notifySDES(
-      correlationId: CorrelationId,
-      envelopeId: EnvelopeId,
-      formTemplateId: FormTemplateId,
-      submissionRef: SubmissionRef,
-      destination: SdesDestination,
-      filePrefix: Option[String],
-      submissionPrefix: Option[String]
-    )(implicit
-      hc: HeaderCarrier
-    ): FOpt[HttpResponse] =
-      fromFutureA(
-        sdesService.notifySDES(
-          correlationId,
-          envelopeId,
-          formTemplateId,
-          submissionRef,
-          destination,
-          filePrefix,
-          submissionPrefix
-        )
-      )
-
-    override def renotifySDES(sdesSubmission: SdesSubmission, objWithSummary: ObjectSummaryWithMd5)(implicit
-      hc: HeaderCarrier
-    ): FOpt[HttpResponse] =
-      fromFutureA(sdesService.renotifySDES(sdesSubmission, objWithSummary))
-
-    override def saveSdesSubmission(sdesSubmission: SdesSubmission): FOpt[Unit] =
-      fromFutureA(sdesService.saveSdesSubmission(sdesSubmission))
-
-    override def findSdesSubmission(correlationId: CorrelationId): FOpt[Option[SdesSubmission]] =
-      fromFutureA(sdesService.findSdesSubmission(correlationId))
-
-    override def findSdesSubmissionByEnvelopeId(envelopeId: EnvelopeId): FOpt[List[SdesSubmission]] =
-      fromFutureA(sdesService.findSdesSubmissionByEnvelopeId(envelopeId))
-
-    override def searchAll(
-      processed: Option[Boolean],
-      searchKey: Option[String],
-      status: Option[NotificationStatus],
-      destination: Option[SdesDestination],
-      beforeSubmittedAt: Option[Int]
-    ): FOpt[SdesSubmissionPageData] =
-      fromFutureA(
-        sdesService.searchAll(processed, searchKey, status, destination, beforeSubmittedAt)
-      )
-
-    override def search(sdesFilter: SdesFilter): FOpt[SdesSubmissionPageData] =
-      fromFutureA(
-        sdesService.search(sdesFilter)
-      )
-
-    override def updateAsManualConfirmed(correlation: CorrelationId): FOpt[Unit] =
-      fromFutureA(sdesService.updateAsManualConfirmed(correlation))
-
-    override def getSdesSubmissionsDestination(): FOpt[Seq[SdesSubmissionsStats]] =
-      fromFutureA(sdesService.getSdesSubmissionsDestination())
-
-    override def sdesMigration(from: String, to: String): FOpt[UpdateResult] =
-      fromFutureA(sdesService.sdesMigration(from, to))
-
-    override def update(notification: CallBackNotification)(implicit hc: HeaderCarrier): FOpt[Unit] =
-      fromFutureA(sdesService.update(notification))
-
-    override def resend(correlationId: CorrelationId)(implicit hc: HeaderCarrier): FOpt[Unit] =
-      fromFutureA(sdesService.resend(correlationId))
-  }
 
   val foptDestinationWorkItemService: DestinationWorkItemAlgebra[FOpt] = new DestinationWorkItemAlgebra[FOpt] {
     override def pushWorkItem(

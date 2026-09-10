@@ -20,31 +20,33 @@ import org.apache.pekko.actor.Scheduler
 import org.slf4j.LoggerFactory
 import play.api.mvc.{ Action, ControllerComponents }
 import uk.gov.hmrc.gform.controllers.BaseController
-import uk.gov.hmrc.gform.fileupload.Retrying
-import uk.gov.hmrc.gform.sharedmodel.sdes.NotificationStatus.fromName
 import uk.gov.hmrc.gform.sharedmodel.sdes.CallBackNotification
 
-import scala.concurrent.duration.DurationInt
 import scala.concurrent.{ ExecutionContext, Future }
 
 class SdesCallbackController(
   cc: ControllerComponents,
   sdesAlgebra: SdesAlgebra[Future]
 )(implicit ex: ExecutionContext, schduler: Scheduler)
-    extends BaseController(cc) with Retrying {
+    extends BaseController(cc) {
   private val logger = LoggerFactory.getLogger(getClass)
   def callback: Action[CallBackNotification] = Action.async(parse.json[CallBackNotification]) { implicit request =>
     val notification: CallBackNotification = request.body
-    logger.info(
-      s"SDES: Received callback for fileName: ${notification.filename}, correlationId: ${notification.correlationID}, status: ${fromName(
-        notification.notification
-      )} and possible failedReason: ${notification.failureReason.getOrElse("")}"
-    )
+    val commonMsgPart =
+      s"${notification.notification} callback for fileName: ${notification.filename}, correlationId: ${notification.correlationID} and possible failedReason: ${notification.failureReason
+        .getOrElse("")}"
+    logger.info(s"SDES: Received $commonMsgPart")
 
-    retry(
-      sdesAlgebra.update(notification),
-      List(100.milliseconds, 1.seconds, 2.seconds),
-      s"SDES correlation id : ${notification.correlationID}"
-    ).map(_ => Ok)
+    sdesAlgebra.update(notification).map {
+      case Right(_) =>
+        logger.info(s"SDES: Successfully updated $commonMsgPart")
+        Ok
+      case Left(unexpected) =>
+        logger.error(
+          s"SDES: Failed to update $commonMsgPart with error: ${unexpected.error}",
+          new RuntimeException(unexpected.error)
+        )
+        Ok
+    }
   }
 }
