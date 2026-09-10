@@ -150,12 +150,24 @@ final case class Number(
   unit: Option[LocalisedString] = None
 ) extends TextConstraint
 
+object Number {
+  implicit val format: OFormat[Number] = PersistedDefaults.oformat(
+    Json.using[Json.WithDefaultValues].reads[Number]
+  )
+}
+
 final case class PositiveNumber(
   maxWholeDigits: Int = TextConstraint.defaultWholeDigits,
   maxFractionalDigits: Int = TextConstraint.defaultFractionalDigits,
   roundingMode: RoundingMode = RoundingMode.defaultRoundingMode,
   unit: Option[LocalisedString] = None
 ) extends TextConstraint
+
+object PositiveNumber {
+  implicit val format: OFormat[PositiveNumber] = PersistedDefaults.oformat(
+    Json.using[Json.WithDefaultValues].reads[PositiveNumber]
+  )
+}
 
 case class ShortText(min: Int, max: Int) extends TextConstraint
 object ShortText { val default = ShortText(0, 1000) }
