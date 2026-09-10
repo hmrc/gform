@@ -59,4 +59,12 @@ class PersistedDefaultsSpec extends AnyFlatSpec with Matchers {
     val number: TextConstraint = PositiveNumber()
     decodes(number, "maxWholeDigits", "maxFractionalDigits", "roundingMode")
   }
+
+  // Captured from the derived format before the defaults-aware reads were introduced. Guards against the persisted
+  // shape drifting, which would silently rewrite every stored document.
+  "the persisted shape of Text" should "be unchanged" in {
+    Json.toJson[ComponentType](Text(ShortText.default, Constant("any text"))) shouldBe Json.parse(
+      """{"Text":{"removeSpaces":false,"displayWidth":"DEFAULT","constraint":{"ShortText":{"min":0,"max":1000}},"toUpperCase":{"IsNotUpperCase":{}},"value":{"Constant":{"value":"any text"}}}}"""
+    )
+  }
 }

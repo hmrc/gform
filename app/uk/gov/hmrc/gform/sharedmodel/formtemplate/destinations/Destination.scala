@@ -141,11 +141,17 @@ object Destination {
     formDataPayload: Boolean,
     convertSingleQuotes: Option[Boolean],
     payload: Option[String],
-    validateHandlebarPayload: Boolean,
+    validateHandlebarPayload: Boolean = false,
     jsonSchemaName: Option[String],
     jsonSchema: Option[JsValue],
     filePrefix: Option[String]
   ) extends Destination with DestinationWithTaxpayerId
+
+  object DataStore {
+    implicit val format: OFormat[DataStore] = PersistedDefaults.oformat(
+      Json.using[Json.WithDefaultValues].reads[DataStore]
+    )
+  }
 
   case class InfoArchive(
     id: DestinationId,
@@ -171,10 +177,16 @@ object Destination {
     convertSingleQuotes: Option[Boolean],
     credential: Option[AuthorizationName],
     httpHeaders: Map[String, Expr],
-    validateHandlebarPayload: Boolean,
+    validateHandlebarPayload: Boolean = false,
     jsonSchemaName: Option[String],
     jsonSchema: Option[JsValue]
   ) extends Destination
+
+  object HandlebarsHttpApi {
+    implicit val format: OFormat[HandlebarsHttpApi] = PersistedDefaults.oformat(
+      Json.using[Json.WithDefaultValues].reads[HandlebarsHttpApi]
+    )
+  }
 
   case class AsyncHandlebarsHttpApi(
     id: DestinationId,
@@ -188,10 +200,16 @@ object Destination {
     convertSingleQuotes: Option[Boolean],
     credential: Option[AuthorizationName],
     httpHeaders: Map[String, Expr],
-    validateHandlebarPayload: Boolean,
+    validateHandlebarPayload: Boolean = false,
     jsonSchemaName: Option[String],
     jsonSchema: Option[JsValue]
   ) extends Destination
+
+  object AsyncHandlebarsHttpApi {
+    implicit val format: OFormat[AsyncHandlebarsHttpApi] = PersistedDefaults.oformat(
+      Json.using[Json.WithDefaultValues].reads[AsyncHandlebarsHttpApi]
+    )
+  }
 
   case class StateTransition(
     id: DestinationId,
@@ -291,15 +309,7 @@ object Destination {
       )
     )
 
-    val validateHandlebarPayload = Seq("validateHandlebarPayload" -> JsBoolean(false))
-    val fillDefaults = PersistedDefaults.tagged(
-      Map(
-        "DataStore"              -> validateHandlebarPayload,
-        "HandlebarsHttpApi"      -> validateHandlebarPayload,
-        "AsyncHandlebarsHttpApi" -> validateHandlebarPayload
-      )
-    )
-    OFormat(PersistedDefaults.reads(fillDefaults)(base), base)
+    base
   }
 
   implicit val leafExprs: LeafExpr[Destination] = (path: TemplatePath, t: Destination) =>

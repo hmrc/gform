@@ -16,36 +16,24 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
-import play.api.libs.json.{ JsObject, JsValue, Reads }
+import julienrf.json.derived
+import julienrf.json.derived.{ DerivedOWrites, TypeTag }
+import play.api.libs.json.{ OFormat, Reads }
+import shapeless.Lazy
 
 /** julienrf.json.derived ignores Scala default arguments, so a field added to a persisted case class with a default is
-  * mandatory on read. Documents written before that field existed then fail to decode. These helpers re-supply the
-  * default when the field is absent.
+  * mandatory on read and documents written before it existed stop decoding.
+  *
+  * Pairing a defaults-aware `Reads` (play-json's `WithDefaultValues` macro reads the defaults off the constructor) with
+  * the derived `OWrites` keeps reads tolerant while leaving the persisted shape byte-identical.
+  *
+  * julienrf prefers an implicit instance for a member of a sealed hierarchy over deriving one structurally, so
+  * declaring the result in the case class companion is enough.
   */
 object PersistedDefaults {
 
-  type Defaults = Seq[(String, JsValue)]
-
-  /** For ADTs persisted as `{"Tag": { ... }}`. */
-  def tagged(defaultsByTag: Map[String, Defaults]): JsValue => JsValue = {
-    case jsObject: JsObject =>
-      defaultsByTag.foldLeft(jsObject) { case (acc, (tag, defaults)) =>
-        (acc \ tag).asOpt[JsObject].fold(acc)(inner => acc + (tag -> withDefaults(inner, defaults)))
-      }
-    case other => other
-  }
-
-  /** For case classes persisted as a flat object. */
-  def flat(defaults: Defaults): JsValue => JsValue = {
-    case jsObject: JsObject => withDefaults(jsObject, defaults)
-    case other              => other
-  }
-
-  def reads[A](fill: JsValue => JsValue)(underlying: Reads[A]): Reads[A] =
-    Reads(json => underlying.reads(fill(json)))
-
-  private def withDefaults(jsObject: JsObject, defaults: Defaults): JsObject =
-    defaults.foldLeft(jsObject) { case (acc, (field, default)) =>
-      if (acc.keys.contains(field)) acc else acc + (field -> default)
-    }
+  def oformat[A](
+    reads: Reads[A]
+  )(implicit derivedOWrites: Lazy[DerivedOWrites[A, TypeTag.ShortClassName]]): OFormat[A] =
+    OFormat(reads, derived.owrites[A]())
 }

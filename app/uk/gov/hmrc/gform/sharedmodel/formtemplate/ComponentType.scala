@@ -45,6 +45,10 @@ case class Text(
   autoComplete: Option[AutoComplete] = None
 ) extends ComponentType
 
+object Text {
+  implicit val format: OFormat[Text] = PersistedDefaults.oformat(Json.using[Json.WithDefaultValues].reads[Text])
+}
+
 sealed trait UpperCaseBoolean
 
 case object IsUpperCase extends UpperCaseBoolean
@@ -85,6 +89,10 @@ case class TextArea(
 object TextArea {
   val defaultRows = 5
   val defaultDisplayCharCount = true
+
+  implicit val format: OFormat[TextArea] = PersistedDefaults.oformat(
+    Json.using[Json.WithDefaultValues].reads[TextArea]
+  )
 }
 
 case class Date(
@@ -578,7 +586,9 @@ case class TableComp(
 ) extends ComponentType
 
 object TableComp {
-  implicit val format: Format[TableComp] = derived.oformat()
+  implicit val format: OFormat[TableComp] = PersistedDefaults.oformat(
+    Json.using[Json.WithDefaultValues].reads[TableComp]
+  )
 }
 
 case class Button(
@@ -604,29 +614,7 @@ object ComponentType {
   implicit def writesNonEmptyList[T: Writes]: Writes[NonEmptyList[T]] = Writes[NonEmptyList[T]] { v =>
     JsArray((v.head :: v.tail).map(Json.toJson(_)))
   }
-  implicit val format: OFormat[ComponentType] = {
-    val base: OFormat[ComponentType] = derived.oformat()
-    val fillDefaults = PersistedDefaults.tagged(
-      Map(
-        "Text" -> Seq(
-          "displayWidth" -> Json.toJson(DisplayWidth.DEFAULT),
-          "toUpperCase"  -> Json.toJson[UpperCaseBoolean](IsNotUpperCase),
-          "removeSpaces" -> JsBoolean(false)
-        ),
-        "TextArea" -> Seq(
-          "displayWidth"     -> Json.toJson(DisplayWidth.DEFAULT),
-          "rows"             -> JsNumber(TextArea.defaultRows),
-          "displayCharCount" -> JsBoolean(TextArea.defaultDisplayCharCount)
-        ),
-        "TableComp" -> Seq(
-          "captionClasses"    -> JsString(""),
-          "classes"           -> JsString(""),
-          "firstCellIsHeader" -> JsBoolean(false)
-        )
-      )
-    )
-    OFormat(PersistedDefaults.reads(fillDefaults)(base), base)
-  }
+  implicit val format: OFormat[ComponentType] = derived.oformat()
 
   implicit val leafExprs: LeafExpr[ComponentType] = (path: TemplatePath, t: ComponentType) =>
     t match {
