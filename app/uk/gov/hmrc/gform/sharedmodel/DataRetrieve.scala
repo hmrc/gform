@@ -220,10 +220,26 @@ object DataRetrieve {
       case _: JsUndefined => Right(None)
     }
 
+  /** Documents persisted before v0.1445.0 predate urlFrontend/urlBackend; both are recoverable from the static
+    * definition for the retrieve's type, which is the same source the template read uses.
+    */
+  private def withDefinitionUrls(json: JsValue): JsValue = json match {
+    case obj: JsObject if (obj \ "urlFrontend").toOption.isEmpty =>
+      (obj \ "tpe")
+        .asOpt[DataRetrieve.Type]
+        .flatMap(DataRetrieveDefinitions.findDefinition)
+        .fold[JsValue](obj) { definition =>
+          obj ++ Json.obj("urlFrontend" -> Json.toJson(definition.urlFrontend)) ++
+            definition.urlBackend.fold(Json.obj())(u => Json.obj("urlBackend" -> Json.toJson(u)))
+        }
+    case other => other
+  }
+
   implicit val format: OFormat[DataRetrieve] = {
     implicit val attrTypeMappingFormat: Format[Map[DataRetrieve.Attribute, DataRetrieve.AttrType]] =
       JsonUtils.formatMap[DataRetrieve.Attribute, DataRetrieve.AttrType](DataRetrieve.Attribute.apply, _.name)
-    OFormatWithTemplateReadFallback(reads)
+    val derivedReads: Reads[DataRetrieve] = derived.oformat[DataRetrieve]()
+    OFormatWithTemplateReadFallback(Reads(json => derivedReads.reads(withDefinitionUrls(json))), reads)
   }
 
   implicit val leafExprs: LeafExpr[DataRetrieve] = (path: TemplatePath, t: DataRetrieve) =>

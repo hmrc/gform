@@ -1148,7 +1148,7 @@ object DataRetrieveDefinitions {
     )
   )
 
-  private def findDefinition(tpe: DataRetrieve.Type): Option[DataRetrieveDefinition] =
+  def findDefinition(tpe: DataRetrieve.Type): Option[DataRetrieveDefinition] =
     staticDefinitions.definitions.find(_.tpe == tpe)
 
   def dataRetrieveDateAttrs(): List[String] =

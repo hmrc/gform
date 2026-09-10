@@ -18,11 +18,24 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
-import play.api.libs.json.{ JsError, JsPath, Json, JsonValidationError }
+import org.scalatest.matchers.{ MatchResult, Matcher }
+import play.api.libs.json.{ JsError, JsObject, JsPath, JsResult, JsSuccess, Json, JsonValidationError }
 import uk.gov.hmrc.gform.sharedmodel._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.AuthInfo.PayeNino
 
 class DataRetrieveSpec extends AnyFlatSpec with Matchers {
+
+  // The persisted-format error is retained alongside the template one, so assert on presence rather than equality.
+  private def failWith(message: String) = Matcher[JsResult[_]] {
+    case JsError(errors) =>
+      val messages = errors.flatMap { case (_, es) => es.flatMap(_.messages) }
+      MatchResult(
+        messages.contains(message),
+        s"$messages did not contain '$message'",
+        s"$messages contained '$message'"
+      )
+    case other => MatchResult(false, s"$other was not a JsError", s"$other was a JsError")
+  }
 
   "Json.parse" should "parse json as ValidateBankDetails" in {
     Json
@@ -227,7 +240,7 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
                |  }
                |}
                |""".stripMargin)
-      .validateOpt[DataRetrieve] shouldBe JsError(
+      .validateOpt[DataRetrieve] should failWith(
       s"Type of value is invalid for attribute 'type' [error=${List((JsPath(), Seq(JsonValidationError(Seq("error.expected.jsstring")))))}]"
     )
   }
@@ -243,7 +256,7 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
                |  }
                |}
                |""".stripMargin)
-      .validateOpt[DataRetrieve] shouldBe JsError("'id' attribute missing")
+      .validateOpt[DataRetrieve] should failWith("'id' attribute missing")
   }
 
   it should "return error when 'type' is missing" in {
@@ -257,7 +270,26 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
                |  }
                |}
                |""".stripMargin)
-      .validateOpt[DataRetrieve] shouldBe JsError("'type' attribute missing")
+      .validateOpt[DataRetrieve] should failWith("'type' attribute missing")
+  }
+
+  it should "recover urlFrontend and urlBackend when reading a document persisted before they existed" in {
+    val dataRetrieve = Json
+      .parse("""
+               |{
+               |  "type": "companyHouseProfile",
+               |  "id": "companyRegistration",
+               |  "parameters": {
+               |    "companyNumber": "${companyNumber}"
+               |  }
+               |}
+               |""".stripMargin)
+      .as[DataRetrieve]
+
+    val persisted = Json.toJson(dataRetrieve).as[JsObject]
+    val preV0_1445 = JsObject(persisted.value.toMap - "urlFrontend" - "urlBackend")
+
+    preV0_1445.validate[DataRetrieve] shouldBe JsSuccess(dataRetrieve)
   }
 
   it should "parse json as CompanyHouseProfile" in {
@@ -976,7 +1008,7 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
                |  }
                |}
                |""".stripMargin)
-      .validateOpt[DataRetrieve] shouldBe JsError("'firstName' attribute missing")
+      .validateOpt[DataRetrieve] should failWith("'firstName' attribute missing")
   }
 
   it should "parse json as hmrcTaxRates with" in {
@@ -1144,7 +1176,7 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
                |  }
                |}
                |""".stripMargin)
-      .validateOpt[DataRetrieve] shouldBe JsError("'code' attribute missing")
+      .validateOpt[DataRetrieve] should failWith("'code' attribute missing")
   }
 
   it should "parse json as delegatedAgentAuthVat" in {

@@ -31,10 +31,11 @@ object OFormatWithTemplateReadFallback {
       (js: JsValue) =>
         readsA.reads(js) match {
           case successA @ JsSuccess(_, _) => successA
-          case JsError(_) => // ignore first read error
+          case JsError(errorA) =>
             readsB.reads(js) match {
               case successB @ JsSuccess(_, _) => successB
-              case JsError(errorB)            => JsError(errorB)
+              // the template error reads better, but the persisted one names the real field
+              case JsError(errorB) => JsError(errorB ++ errorA)
             }
         }
 
