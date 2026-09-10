@@ -22,3 +22,8 @@ dist
 .bloop/*
 .github/*
 .DS_Store
+# the patterns above are anchored to the repo root, so nested copies need these
+**/.metals/
+**/.bsp/
+**/.bloop/
+**/metals.sbt
