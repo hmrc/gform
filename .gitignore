@@ -22,3 +22,5 @@ dist
 .bloop/*
 .github/*
 .DS_Store
+project/.bloop
+project/metals.sbt
