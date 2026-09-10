@@ -91,9 +91,18 @@ class IfController(configModule: ConfigModule, wSHttpModule: WSHttpModule, cc: C
       ifRequest(urlPath, correlationId, AuthorizationName("ifta")).get.execute
         .map { resp =>
           if (resp.status > 299) {
-            logger.error(
-              s"non 2xx response from IF manageemails. Response code: ${resp.status}. Body: ${resp.body}"
-            )
+            // GFORMS-4768 - reduce app error messages for 400 and 404 responses from IF manageemails API call, as these
+            // are expected for some scenarios (e.g. when the user has no emails or the user isn't found). Log these as
+            // warnings instead of errors.
+            val msg = s"non 2xx response from IF manageemails. Response code: ${resp.status}. Body: ${resp.body}"
+            if (
+              resp.status == 500 && (resp.body
+                .contains("with statusCode: 400") || resp.body.contains("with statusCode: 404"))
+            ) {
+              logger.warn(msg)
+            } else {
+              logger.error(msg)
+            }
           }
 
           val respTyped = resp.json.validate[ManageEmailsResponse]
@@ -124,9 +133,6 @@ class IfController(configModule: ConfigModule, wSHttpModule: WSHttpModule, cc: C
               val transformedJsonResp = Json.toJson(respSeq)
               Status(resp.status)(transformedJsonResp).as("application/json")
             case JsError(errors) =>
-              logger.error(
-                s"IF server returned an unexpected type for manageEmails API call. Json validation errors: $errors"
-              )
               Status(resp.status)(resp.body).as("application/json")
           }
         }
