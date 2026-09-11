@@ -52,12 +52,6 @@ class HandlebarsTemplateController(
                             }
       formTemplateOpt <- formTemplateService.get(FormTemplateId(formTemplateIdStr)).map(Some(_)).recover {
                            case _: NoSuchElementException => None
-                           case e =>
-                             logger.error(
-                               s"Could not read form template $formTemplateIdStr while validating handlebars template ${handlebarsTemplateId.value}",
-                               e
-                             )
-                             throw e
                          }
       handlebarValidationResult <- formTemplateOpt match {
                                      case Some(formTemplate) =>

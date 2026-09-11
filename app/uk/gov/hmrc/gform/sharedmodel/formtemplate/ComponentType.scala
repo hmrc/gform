@@ -45,10 +45,6 @@ case class Text(
   autoComplete: Option[AutoComplete] = None
 ) extends ComponentType
 
-object Text {
-  implicit val format: OFormat[Text] = PersistedDefaults.oformat(Json.using[Json.WithDefaultValues].reads[Text])
-}
-
 sealed trait UpperCaseBoolean
 
 case object IsUpperCase extends UpperCaseBoolean
@@ -89,10 +85,6 @@ case class TextArea(
 object TextArea {
   val defaultRows = 5
   val defaultDisplayCharCount = true
-
-  implicit val format: OFormat[TextArea] = PersistedDefaults.oformat(
-    Json.using[Json.WithDefaultValues].reads[TextArea]
-  )
 }
 
 case class Date(
@@ -586,9 +578,7 @@ case class TableComp(
 ) extends ComponentType
 
 object TableComp {
-  implicit val format: OFormat[TableComp] = PersistedDefaults.oformat(
-    Json.using[Json.WithDefaultValues].reads[TableComp]
-  )
+  implicit val format: Format[TableComp] = derived.oformat()
 }
 
 case class Button(

@@ -18,7 +18,6 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
 import cats.instances.list._
 import cats.syntax.foldable._
-import julienrf.json.derived
 import play.api.libs.json._
 import shapeless.syntax.typeable._
 import uk.gov.hmrc.gform.formtemplate.FormComponentMaker
@@ -91,19 +90,7 @@ object FormComponent {
   private val templateReads: Reads[FormComponent] =
     Reads(json => new FormComponentMaker(json).optFieldValue() fold (us => JsError(us.toString), fv => JsSuccess(fv)))
 
-  // Over 22 fields means no unapply, so the WithDefaultValues macro cannot be used; the defaults are filled in as JSON.
-  private val constructorDefaults =
-    Json.obj("onlyShowOnSummary" -> false, "validators" -> JsArray.empty, "notPII" -> false)
-
-  private val persistedReads: Reads[FormComponent] = {
-    val derivedReads = derived.reads[FormComponent]()
-    Reads {
-      case jsObject: JsObject => derivedReads.reads(constructorDefaults ++ jsObject)
-      case other              => derivedReads.reads(other)
-    }
-  }
-
-  implicit val format: OFormat[FormComponent] = OFormatWithTemplateReadFallback(persistedReads, templateReads)
+  implicit val format: OFormat[FormComponent] = OFormatWithTemplateReadFallback(templateReads)
 
   implicit val leafExprs: LeafExpr[FormComponent] = (path: TemplatePath, t: FormComponent) =>
     LeafExpr(path + s"[id=${t.id}]", t.`type`) ++

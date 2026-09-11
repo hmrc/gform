@@ -141,17 +141,11 @@ object Destination {
     formDataPayload: Boolean,
     convertSingleQuotes: Option[Boolean],
     payload: Option[String],
-    validateHandlebarPayload: Boolean = false,
+    validateHandlebarPayload: Boolean,
     jsonSchemaName: Option[String],
     jsonSchema: Option[JsValue],
     filePrefix: Option[String]
   ) extends Destination with DestinationWithTaxpayerId
-
-  object DataStore {
-    implicit val format: OFormat[DataStore] = PersistedDefaults.oformat(
-      Json.using[Json.WithDefaultValues].reads[DataStore]
-    )
-  }
 
   case class InfoArchive(
     id: DestinationId,
@@ -177,16 +171,10 @@ object Destination {
     convertSingleQuotes: Option[Boolean],
     credential: Option[AuthorizationName],
     httpHeaders: Map[String, Expr],
-    validateHandlebarPayload: Boolean = false,
+    validateHandlebarPayload: Boolean,
     jsonSchemaName: Option[String],
     jsonSchema: Option[JsValue]
   ) extends Destination
-
-  object HandlebarsHttpApi {
-    implicit val format: OFormat[HandlebarsHttpApi] = PersistedDefaults.oformat(
-      Json.using[Json.WithDefaultValues].reads[HandlebarsHttpApi]
-    )
-  }
 
   case class AsyncHandlebarsHttpApi(
     id: DestinationId,
@@ -200,16 +188,10 @@ object Destination {
     convertSingleQuotes: Option[Boolean],
     credential: Option[AuthorizationName],
     httpHeaders: Map[String, Expr],
-    validateHandlebarPayload: Boolean = false,
+    validateHandlebarPayload: Boolean,
     jsonSchemaName: Option[String],
     jsonSchema: Option[JsValue]
   ) extends Destination
-
-  object AsyncHandlebarsHttpApi {
-    implicit val format: OFormat[AsyncHandlebarsHttpApi] = PersistedDefaults.oformat(
-      Json.using[Json.WithDefaultValues].reads[AsyncHandlebarsHttpApi]
-    )
-  }
 
   case class StateTransition(
     id: DestinationId,
