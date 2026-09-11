@@ -49,10 +49,4 @@ object OFormatWithTemplateReadFallback {
     val reads = (basic: Reads[A]) | templateReads
     OFormat(reads, basic)
   }
-
-  /** Variant taking the persisted reads explicitly, for case classes whose constructor defaults must survive a read. */
-  def apply[A](persistedReads: Reads[A], templateReads: Reads[A])(implicit
-    derivedOWrites: Lazy[DerivedOWrites[A, TypeTag.ShortClassName]]
-  ): OFormat[A] =
-    OFormat(persistedReads | templateReads, derived.owrites[A]())
 }
