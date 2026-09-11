@@ -33,8 +33,8 @@ import org.scalatestplus.mockito.MockitoSugar
 import scala.concurrent.Future
 
 class HandlebarsTemplateControllerSpec
-  extends AnyWordSpec with Matchers with OptionValues with HeaderNames with Status with MimeTypes
-  with DefaultAwaitTimeout with ResultExtractors with Writeables with FutureAwaits with MockitoSugar {
+    extends AnyWordSpec with Matchers with OptionValues with HeaderNames with Status with MimeTypes
+    with DefaultAwaitTimeout with ResultExtractors with Writeables with FutureAwaits with MockitoSugar {
 
   implicit val ec: scala.concurrent.ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
 
