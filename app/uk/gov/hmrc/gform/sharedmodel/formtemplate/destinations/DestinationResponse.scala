@@ -24,7 +24,11 @@ import uk.gov.hmrc.http.HttpResponse
 
 import scala.util.Try
 
-sealed trait DestinationResponse
+sealed trait DestinationResponse {
+
+  /** `NoResponse` means the destination did not run: skipped by its includeIf, or it failed and `failOnError` is false. */
+  def hasFired: Boolean = this != DestinationResponse.NoResponse
+}
 
 object DestinationResponse {
   val objectIdReads: Reads[ObjectId] = Reads {
@@ -41,6 +45,9 @@ object DestinationResponse {
   implicit val objectIdFormat: Format[ObjectId] = Format(objectIdReads, objectIdWrites)
 
   case object NoResponse extends DestinationResponse
+
+  /** A destination which fired successfully but has no payload to return. */
+  case object SubmittedResponse extends DestinationResponse
 }
 
 case class DmsDestinationResponse(
@@ -81,4 +88,5 @@ object HandlebarsDestinationResponse {
 }
 
 case class NrsOrchestratorDestinationResponse(workItemId: ObjectId) extends DestinationResponse
+
 case class AsyncHandlebarsDestinationResponse(workItemId: ObjectId) extends DestinationResponse
