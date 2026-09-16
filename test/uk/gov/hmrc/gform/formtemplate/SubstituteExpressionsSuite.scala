@@ -22,8 +22,11 @@ import scala.language.implicitConversions
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.sharedmodel.{ DataRetrieve, DataRetrieveId, LangADT, LocalisedString, SmartString }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._, OffsetUnit.Year, OffsetUnit.Day, OffsetUnit.Month
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationId, DestinationIncludeIf, HttpMethod, ProfileName, TemplateType }
 
 class SubstituteExpressionsSuite extends FunSuite with FormTemplateSupport {
+
+  import ExprSubstituter._
 
   implicit def stringToFormComponentId(str: String): FormComponentId = FormComponentId(str)
 
@@ -65,6 +68,47 @@ class SubstituteExpressionsSuite extends FunSuite with FormTemplateSupport {
     val substituted = substituteExpressions.substituteExpressions(formTemplate, substitutions)
 
     assertEquals(substituted.formKind, formTemplateExpected.formKind)
+  }
+
+  test("SubstituteExpressions should substitute internal expressions in HTTP headers") {
+    val destination = Destination.HandlebarsHttpApi(
+      id = DestinationId("api"),
+      profile = ProfileName("hip"),
+      uri = "/some-uri",
+      method = HttpMethod.POST,
+      payload = None,
+      payloadType = TemplateType.JSON,
+      includeIf = DestinationIncludeIf.HandlebarValue("true"),
+      failOnError = true,
+      multiRequestPayload = false,
+      convertSingleQuotes = None,
+      credential = None,
+      httpHeaders = Map(
+        "x-originator"         -> Constant("gForm"),
+        "x-target-application" -> FormCtx(FormComponentId("xTargetApplication")),
+        "correlationid"        -> Constant("{envelopeId}")
+      ),
+      validateHandlebarPayload = false,
+      jsonSchemaName = None,
+      jsonSchema = None
+    )
+    val substitutions = ExprSubstitutions(Map(ExpressionId("xTargetApplication") -> Constant("RES1")))
+
+    val substituted = Substituter[ExprSubstitutions, Destination].substitute(substitutions, destination)
+
+    substituted match {
+      case substitutedDestination: Destination.HandlebarsHttpApi =>
+        assertEquals(
+          substitutedDestination.httpHeaders,
+          Map(
+            "x-originator"         -> Constant("gForm"),
+            "x-target-application" -> Constant("RES1"),
+            "correlationid"        -> Constant("{envelopeId}")
+          )
+        )
+      case unexpectedDestination =>
+        fail(s"Unexpected destination: $unexpectedDestination")
+    }
   }
 
   test("SubstituteExpressions should allow alias DateExpr fragments") {

@@ -553,11 +553,19 @@ object Substituter {
         )
       case d: Destination.SubmissionConsolidator =>
         d.copy(customerId = d.customerId(substitutions), includeIf = d.includeIf(substitutions))
-      case d: Destination.Email                  => d.copy(includeIf = d.includeIf(substitutions))
-      case d: Destination.HandlebarsHttpApi      => d.copy(includeIf = d.includeIf(substitutions))
-      case d: Destination.AsyncHandlebarsHttpApi => d.copy(includeIf = d.includeIf(substitutions))
-      case d: Destination.StateTransition        => d.copy(includeIf = d.includeIf(substitutions))
-      case d: Destination.PegaApi                => d.copy(caseId = d.caseId(substitutions), includeIf = d.includeIf(substitutions))
+      case d: Destination.Email => d.copy(includeIf = d.includeIf(substitutions))
+      case d: Destination.HandlebarsHttpApi =>
+        d.copy(
+          includeIf = d.includeIf(substitutions),
+          httpHeaders = d.httpHeaders.map { case (key, value) => key -> value(substitutions) }
+        )
+      case d: Destination.AsyncHandlebarsHttpApi =>
+        d.copy(
+          includeIf = d.includeIf(substitutions),
+          httpHeaders = d.httpHeaders.map { case (key, value) => key -> value(substitutions) }
+        )
+      case d: Destination.StateTransition => d.copy(includeIf = d.includeIf(substitutions))
+      case d: Destination.PegaApi         => d.copy(caseId = d.caseId(substitutions), includeIf = d.includeIf(substitutions))
       case d: Destination.NiRefundClaimApi =>
         d.copy(
           includeIf = d.includeIf(substitutions),
