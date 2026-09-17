@@ -98,17 +98,22 @@ class HipConnector(http: HttpClientV2, baseUrl: String, hipConfig: HipConnectorC
   private def buildPegaUrl(path: String): String =
     s"$baseUrl${hipConfig.basePath}/pega/prweb/api/application/v2/$path"
 
+  private def badRequestHandler[T](apiName: String, identifier: String, response: HttpResponse): T = {
+    logger.error(s"Received bad request response from $apiName: ${response.body}")
+    throw new BadRequestException(s"Bad request response from $apiName for identifier: $identifier")
+  }
+
   private def handleResponse[T](
     response: HttpResponse,
     apiName: String,
     identifier: String,
-    successHandler: HttpResponse => T
+    successHandler: HttpResponse => T,
+    badRequestHandler: (String, String, HttpResponse) => T = badRequestHandler(_: String, _: String, _: HttpResponse)
   ): T =
     response.status match {
       case OK | NO_CONTENT => successHandler(response)
       case BAD_REQUEST =>
-        logger.error(s"Received bad request response from $apiName: ${response.body}")
-        throw new BadRequestException(s"Bad request response from $apiName for identifier: $identifier")
+        badRequestHandler(apiName, identifier, response)
       case UNAUTHORIZED =>
         logger.error(s"Received unauthorized response from $apiName: ${response.body}")
         throw new UnauthorizedException(s"Unauthorized request to $apiName")
@@ -116,7 +121,7 @@ class HipConnector(http: HttpClientV2, baseUrl: String, hipConfig: HipConnectorC
         logger.error(s"Received forbidden response from $apiName: ${response.body}")
         throw new ForbiddenException(s"Forbidden request to $apiName")
       case NOT_FOUND =>
-        throw new NotFoundException(s"$apiName returned identifier: $identifier not found")
+        throw new NotFoundException(s"${apiName.capitalize} returned identifier: $identifier not found")
       case INTERNAL_SERVER_ERROR =>
         logger.error(s"Received internal server error response from $apiName: ${response.body}")
         throw new InternalServerException(s"Internal server error response from $apiName")
@@ -167,6 +172,13 @@ class HipConnector(http: HttpClientV2, baseUrl: String, hipConfig: HipConnectorC
     claimReference: String,
     correlationId: CorrelationId
   )(implicit hc: HeaderCarrier): Future[JsValue] = {
+
+    def customBadRequestHandler(apiName: String, identifier: String, response: HttpResponse): JsValue =
+      // Treat validation failure BadRequests from this API as not found so front end handles gracefully
+      if (response.body.toLowerCase contains "failed validation")
+        throw new NotFoundException(s"${apiName.capitalize} returned identifier: $identifier invalid")
+      else badRequestHandler(apiName, identifier, response)
+
     logger.info(
       s"validateNIClaimReference called for reference '$claimReference', ${loggingHelpers.cleanHeaderCarrierHeader(hc)}"
     )
@@ -182,7 +194,9 @@ class HipConnector(http: HttpClientV2, baseUrl: String, hipConfig: HipConnectorC
       .setHeader(authHeaders: _*)
       .setHeader(Headers.CorrelationId -> correlationId.value)
       .execute[HttpResponse]
-      .map(response => handleResponse(response, "Validate NI Claim Reference", claimReference, _.json))
+      .map(response =>
+        handleResponse(response, "validate NI Claim Reference", claimReference, _.json, customBadRequestHandler)
+      )
   }
 
   def niClaimUpdateBankDetails(
