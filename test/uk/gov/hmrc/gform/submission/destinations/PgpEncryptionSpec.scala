@@ -16,33 +16,61 @@
 
 package uk.gov.hmrc.gform.submission.destinations
 
+import java.io.ByteArrayOutputStream
+import java.nio.charset.StandardCharsets.UTF_8
+import java.security.KeyPairGenerator
+import java.util.Date
+
+import org.bouncycastle.bcpg.{ ArmoredOutputStream, PublicKeyAlgorithmTags, PublicKeyPacket }
+import org.bouncycastle.jce.provider.BouncyCastleProvider
+import org.bouncycastle.openpgp.{ PGPEncryptedDataList, PGPLiteralData, PGPObjectFactory, PGPPublicKey, PGPPublicKeyEncryptedData }
+import org.bouncycastle.openpgp.operator.jcajce.{ JcaKeyFingerprintCalculator, JcaPGPKeyPair, JcePublicKeyDataDecryptorFactoryBuilder }
+import org.bouncycastle.util.io.Streams
 import uk.gov.hmrc.gform.Spec
 
 class PgpEncryptionSpec extends Spec {
   "createEncryptedData" should "load the correct public key and encrypt the input" in {
-    val input: Array[Byte] = "test".getBytes
-    val keyString = """-----BEGIN PGP PUBLIC KEY BLOCK-----
-                      |Version: BCPG v1.58
-                      |
-                      |mQENBF4d4acBCAC7LjbaStGwNf3QgIPsIY8ViA1pC1CBMxd4ThIKv6FR26ugwzmK
-                      |g1bVaQAvWoXmEddS8kNkZZmQXFNS+y++tNM9fcl70AacCO9p0E/lsKtaCmBzVJ7z
-                      |WpJtFTryCgq4uXr1p5LWm6kILrryitRVG9/xpldFCOUy++gi7BiSwV5h0SroKVgm
-                      |h7aCYiE1dSDWPSVSs8W9F6zCBVj8WyIG0Fo+g4mUk8OWcLw4WjqszF0F2gFcXBzy
-                      |/Rb9gwUJNx/59p0BKWwuaHAc5okG4P6cHfLG6a2tTAYg4SYUQEpnovx8d4OYfmq8
-                      |GZkE6KiEM5FM0QPmgmmfCJK0MD9zkRJp3ugLABEBAAG0JlNERVMtSU5URVJOQUwg
-                      |PFNERVMtSU5URVJOQUxAc2Rlcy5jb20+iQEcBBABCgAGBQJeHeGnAAoJEJRngiqx
-                      |h7hQv6AH/R/myUJK5uOVcHF3KhxakMMMxYvaDxsZ+GXz5UyrNs1RtdZmIhzIqIqw
-                      |bKCNPkelQ6c7xzzMLo+k6v3rCwRywgJqguaUWA2Og0NrnDaXgIxXTMTY5663wwHd
-                      |HMnvpFv5ouQt0h7T8/hVoDllZLR9fldch/PPrFH7G8oYPcHx7qNs0hEl+jCIZ06g
-                      |WHqjA8UHu2B3uaOZKZB+FtjBFomncsbxS2BHL8WhFxk6StAWq3FnWWKWwBM4WLTg
-                      |9VjzmQQuGchm2KFTcIzhPhjSD8RvC4yz81DQG03xvenjeskidPRa8IJqT2F56sVL
-                      |4NAhEQy51I3pyKDwTn8UFgSWDsv+Ijw=
-                      |=w56m
-                      |-----END PGP PUBLIC KEY BLOCK-----""".stripMargin
+    val input = "test".getBytes(UTF_8)
+    val pgpKeyPair = createPgpKeyPair()
+    val encryptedData = PgpEncryption.createEncryptedData(armor(pgpKeyPair.getPublicKey), input)
 
-    val encryptedData = PgpEncryption.createEncryptedData(keyString, input)
+    encryptedData.toSeq should not equal input.toSeq
 
-    encryptedData.length shouldBe 334
+    val encryptedDataList = new PGPObjectFactory(encryptedData, new JcaKeyFingerprintCalculator())
+      .nextObject()
+      .asInstanceOf[PGPEncryptedDataList]
+    val publicKeyEncryptedData = encryptedDataList.getEncryptedDataObjects
+      .next()
+      .asInstanceOf[PGPPublicKeyEncryptedData]
+    val decryptor = new JcePublicKeyDataDecryptorFactoryBuilder()
+      .setProvider(new BouncyCastleProvider())
+      .build(pgpKeyPair.getPrivateKey)
+    val clearData = publicKeyEncryptedData.getDataStream(decryptor)
+    val literalData = new PGPObjectFactory(clearData, new JcaKeyFingerprintCalculator())
+      .nextObject()
+      .asInstanceOf[PGPLiteralData]
+    val decryptedData = Streams.readAll(literalData.getInputStream)
 
+    decryptedData.toSeq shouldBe input.toSeq
+    publicKeyEncryptedData.verify() shouldBe true
+  }
+
+  private def createPgpKeyPair(): JcaPGPKeyPair = {
+    val keyPairGenerator = KeyPairGenerator.getInstance("RSA", new BouncyCastleProvider())
+    keyPairGenerator.initialize(2048)
+    new JcaPGPKeyPair(
+      PublicKeyPacket.VERSION_4,
+      PublicKeyAlgorithmTags.RSA_GENERAL,
+      keyPairGenerator.generateKeyPair(),
+      new Date()
+    )
+  }
+
+  private def armor(publicKey: PGPPublicKey): String = {
+    val output = new ByteArrayOutputStream()
+    val armoredOutput = new ArmoredOutputStream(output)
+    publicKey.encode(armoredOutput)
+    armoredOutput.close()
+    output.toString(UTF_8.name())
   }
 }
