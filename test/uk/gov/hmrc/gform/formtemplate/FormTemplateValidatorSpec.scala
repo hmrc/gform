@@ -28,7 +28,7 @@ import uk.gov.hmrc.gform.sharedmodel.DataRetrieve.Attribute
 import uk.gov.hmrc.gform.sharedmodel._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.PageLink
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destinations, PrintSection }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AnyDate, BulletedList, CalendarDate, Checkbox, Choice, ChoicesAvailable, ChoicesSelected, Constant, DataRetrieveCtx, DataRetrieveDateCtx, Date, DateAfter, DateBefore, DateCtx, DateExprWithOffset, DateFormCtxVar, DateFunction, DateProjection, DateValueExpr, DisplayAsEntered, Dynamic, Equals, Expr, ExprWithPath, FormComponent, FormComponentId, FormComponentValidator, FormCtx, FormStartDateExprValue, FormTemplate, GreaterThan, HideZeroDecimals, Horizontal, IfElse, IncludeIf, IndexOf, IndexOfDataRetrieveCtx, InformationMessage, Instruction, IsTrue, LeafExpr, LinkCtx, LookupColumn, Mandatory, Not, NumberedList, Offset, OffsetUnit, OffsetYMD, OptionData, OptionDataValue, Page, PageId, PostcodeLookup, Radio, Section, ShortText, StandardInfo, SummariseGroupAsGrid, TaxPeriodDate, TemplatePath, Text, TextArea, TextWithRestrictions, TodayDateExprValue, TypeAhead, ValidIf, Value, Vertical }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AnyDate, BulletedList, CalendarDate, Checkbox, Choice, ChoicesAvailable, ChoicesSelected, Constant, CtUTR, DataRetrieveCtx, DataRetrieveDateCtx, Date, DateAfter, DateBefore, DateCtx, DateExprWithOffset, DateFormCtxVar, DateFunction, DateProjection, DateValueExpr, DisplayAsEntered, Dynamic, Equals, Expr, ExprWithPath, FormComponent, FormComponentId, FormComponentValidator, FormCtx, FormStartDateExprValue, FormTemplate, GreaterThan, HideZeroDecimals, Horizontal, IfElse, IncludeIf, IndexOf, IndexOfDataRetrieveCtx, InformationMessage, Instruction, IsTrue, LeafExpr, LinkCtx, LookupColumn, Mandatory, Not, NumberedList, Offset, OffsetUnit, OffsetYMD, OptionData, OptionDataValue, Page, PageId, PostcodeLookup, Radio, Section, ShortText, StandardInfo, SummariseGroupAsGrid, TaxPeriodDate, TemplatePath, Text, TextArea, TextWithRestrictions, TodayDateExprValue, TypeAhead, UkVrn, ValidIf, Value, Vertical }
 
 class FormTemplateValidatorSpec
     extends AnyWordSpecLike with Matchers with FormTemplateSupport with TableDrivenPropertyChecks {
@@ -228,6 +228,130 @@ class FormTemplateValidatorSpec
         val result = FormTemplateValidator.validateInstructions(pages)
 
         result shouldBe Invalid("One or more section fields have instruction attribute with negative order")
+      }
+    }
+  }
+
+  "validateShowAsVrnFunReferenceConstraints" should {
+
+    "validate references in showAsVrn function" in {
+
+      val table = Table(
+        ("expression", "expectedResult"),
+        ("${showAsVrn(vrn)}", Valid),
+        ("${showAsVrn(auth.vrn)}", Valid),
+        ("${showAsVrn(user.enrolments.HMRC-MTD-VAT.VRN.1)}", Valid),
+        ("${showAsVrn(if (2 > 3) auth.vrn then vrn)}", Valid),
+        ("${showAsVrn(auth.vrn orElse user.enrolments.HMRC-MTD-VAT.VRN.1)}", Valid),
+        (
+          "${showAsVrn('123456789')}",
+          Invalid(
+            "sections.fields.[id=infoField].infoText: Form component 'Constant(123456789)' used in showAsVrn function should be of vrn format"
+          )
+        ),
+        (
+          "${showAsVrn(firstName)}",
+          Invalid(
+            "sections.fields.[id=infoField].infoText: Form component 'firstName' used in showAsVrn function should be of ukVrn format"
+          )
+        ),
+        (
+          "${showAsVrn(vrn orElse firstName)}",
+          Invalid(
+            "sections.fields.[id=infoField].infoText: Form component 'firstName' used in showAsVrn function should be of ukVrn format"
+          )
+        )
+      )
+
+      forAll(table) { (expression, expectedResult) =>
+        val formTemplate = mkFormTemplate(
+          List(
+            mkSectionNonRepeatingPage(
+              name = "section1",
+              formComponents = List(
+                mkFormComponent("vrn", Text(UkVrn, Value), editable = true),
+                mkFormComponent("firstName", Text(ShortText.default, Value), editable = true)
+              )
+            ),
+            mkSectionNonRepeatingPage(
+              name = "section2",
+              formComponents = List(
+                mkFormComponent(
+                  "infoField",
+                  InformationMessage(
+                    StandardInfo,
+                    SmartString(
+                      LocalisedString(Map(LangADT.En -> "{0}")),
+                      ValueParser.validateWithParser(expression, ValueParser.expr).toOption.toSeq.toList
+                    )
+                  ),
+                  true
+                )
+              )
+            )
+          )
+        )
+        val allExpressions: List[ExprWithPath] = LeafExpr(TemplatePath.root, formTemplate)
+
+        val result = FormTemplateValidator.validateVrnFunReferenceConstraints(formTemplate, allExpressions)
+        result shouldBe expectedResult
+      }
+    }
+  }
+
+  "validateShowAsUtrFunReferenceConstraints" should {
+
+    "validate references in showAsUtr function" in {
+
+      val table = Table(
+        ("expression", "expectedResult"),
+        ("${showAsUtr(utr)}", Valid),
+        ("${showAsUtr(auth.sautr)}", Valid),
+        ("${showAsUtr(auth.ctutr)}", Valid),
+        ("${showAsUtr(user.enrolments.IR-CT.UTR.1)}", Valid),
+        ("${showAsUtr('1234567890')}", Valid),
+        ("${showAsUtr(auth.ctutr orElse auth.sautr)}", Valid),
+        ("${showAsUtr(if (1 > 2) then auth.ctutr else auth.sautr)}", Valid),
+        (
+          "${showAsUtr(firstName)}",
+          Invalid(
+            "sections.fields.[id=infoField].infoText: Form component 'firstName' used in showAsUtr function should be of utr format"
+          )
+        )
+      )
+
+      forAll(table) { (expression, expectedResult) =>
+        val formTemplate = mkFormTemplate(
+          List(
+            mkSectionNonRepeatingPage(
+              name = "section1",
+              formComponents = List(
+                mkFormComponent("utr", Text(CtUTR, Value), editable = true),
+                mkFormComponent("firstName", Text(ShortText.default, Value), editable = true)
+              )
+            ),
+            mkSectionNonRepeatingPage(
+              name = "section2",
+              formComponents = List(
+                mkFormComponent(
+                  "infoField",
+                  InformationMessage(
+                    StandardInfo,
+                    SmartString(
+                      LocalisedString(Map(LangADT.En -> "{0}")),
+                      ValueParser.validateWithParser(expression, ValueParser.expr).toOption.toSeq.toList
+                    )
+                  ),
+                  true
+                )
+              )
+            )
+          )
+        )
+        val allExpressions: List[ExprWithPath] = LeafExpr(TemplatePath.root, formTemplate)
+
+        val result = FormTemplateValidator.validateUtrFunReferenceConstraints(formTemplate, allExpressions)
+        result shouldBe expectedResult
       }
     }
   }

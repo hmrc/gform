@@ -147,6 +147,8 @@ trait Verifier {
       _ <- fromOptA(
              DestinationsValidator.validateDestinationCredentials(formTemplate.destinations, profileMap).toEither
            )
+      _ <- fromOptA(FormTemplateValidator.validateVrnFunReferenceConstraints(formTemplate, allExpressions).toEither)
+      _ <- fromOptA(FormTemplateValidator.validateUtrFunReferenceConstraints(formTemplate, allExpressions).toEither)
     } yield ()
 
   }
