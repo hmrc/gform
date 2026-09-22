@@ -16,20 +16,24 @@
 
 package uk.gov.hmrc.gform.sdes
 
+import cats.data.EitherT
 import cats.syntax.eq._
-import cats.syntax.traverse._
 import cats.syntax.functor._
 import cats.syntax.show._
+import cats.syntax.traverse._
 import com.mongodb.client.result.UpdateResult
+import org.apache.pekko.actor.Scheduler
 import org.apache.pekko.stream.Materializer
 import org.apache.pekko.util.ByteString
 import org.mongodb.scala.bson.{ BsonArray, BsonDocument }
-import org.mongodb.scala.model.{ Accumulators, Aggregates, Field, Filters, Sorts }
 import org.mongodb.scala.model.Filters.{ equal, lt }
+import org.mongodb.scala.model._
 import org.slf4j.LoggerFactory
 import play.api.libs.json.{ Json, OFormat }
 import uk.gov.hmrc.gform.core._
 import uk.gov.hmrc.gform.envelope.EnvelopeAlgebra
+import uk.gov.hmrc.gform.exceptions.UnexpectedState
+import uk.gov.hmrc.gform.fileupload.Retrying
 import uk.gov.hmrc.gform.history.DateFilter
 import uk.gov.hmrc.gform.objectstore.{ ObjectStoreAlgebra, ObjectStoreService }
 import uk.gov.hmrc.gform.repo.Repo
@@ -38,14 +42,16 @@ import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
-import uk.gov.hmrc.gform.sharedmodel.sdes.NotificationStatus.{ FileProcessed, FileReady, Replaced, fromName }
+import uk.gov.hmrc.gform.sharedmodel.sdes.NotificationStatus.{ FileProcessed, FileReady, Replaced, fromName, priority }
 import uk.gov.hmrc.gform.sharedmodel.sdes._
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
+import uk.gov.hmrc.mongo.lock.{ LockService, MongoLockRepository }
 import uk.gov.hmrc.mongo.play.json.Codecs
 import uk.gov.hmrc.objectstore.client.ObjectSummaryWithMd5
 
 import java.time.{ Instant, LocalDateTime }
 import java.util.Base64
+import scala.concurrent.duration.{ Duration, DurationInt }
 import scala.concurrent.{ ExecutionContext, Future }
 
 trait SdesAlgebra[F[_]] {
@@ -88,7 +94,9 @@ trait SdesAlgebra[F[_]] {
 
   def sdesMigration(from: String, to: String): F[UpdateResult]
 
-  def update(notification: CallBackNotification)(implicit hc: HeaderCarrier): F[Unit]
+  def update(
+    notification: CallBackNotification
+  )(implicit hc: HeaderCarrier, s: Scheduler): F[Either[UnexpectedState, Unit]]
 
   def resend(correlationId: CorrelationId)(implicit hc: HeaderCarrier): F[Unit]
 }
@@ -101,11 +109,12 @@ class SdesService(
   sdesConfig: SdesConfig,
   sdesHistoryAlgebra: SdesHistoryAlgebra[Future],
   objectStoreAlgebra: ObjectStoreAlgebra[Future],
-  fileLocationUrl: String
+  fileLocationUrl: String,
+  lockRepositoryProvider: MongoLockRepository
 )(implicit
   ec: ExecutionContext,
   m: Materializer
-) extends SdesAlgebra[Future] {
+) extends SdesAlgebra[Future] with Retrying {
   private val logger = LoggerFactory.getLogger(getClass)
 
   override def notifySDES(
@@ -357,61 +366,87 @@ class SdesService(
   override def sdesMigration(from: String, to: String): Future[UpdateResult] =
     repoSdesSubmission.sdesMigration(from, to)
 
-  override def update(notification: CallBackNotification)(implicit hc: HeaderCarrier): Future[Unit] = {
+  override def update(
+    notification: CallBackNotification
+  )(implicit hc: HeaderCarrier, s: Scheduler): Future[Either[UnexpectedState, Unit]] = {
+    val sdesCallbackTask = s"SdesCallbackTask-${notification.correlationID}"
+
+    val lockKeeper = LockService(
+      lockRepository = lockRepositoryProvider,
+      lockId = sdesCallbackTask,
+      ttl = Duration(sdesConfig.lockTTL, "millis")
+    )
+
+    retryEitherT[Unit](
+      EitherT.fromOptionF(
+        lockKeeper.withLock(processCallback(notification)),
+        UnexpectedState(s"$sdesCallbackTask locked because it might be running in another thread or instance")
+      ),
+      List(100.milliseconds, 200.milliseconds, 500.milliseconds, 1.seconds, 2.seconds, 3.seconds),
+      s"SDES ${notification.notification} callback for correlation id: ${notification.correlationID}"
+    ).value
+  }
+
+  private def processCallback(notification: CallBackNotification)(implicit hc: HeaderCarrier): Future[Unit] = {
     val CallBackNotification(responseStatus, fileName, correlationID, responseFailureReason) = notification
 
     repoSdesSubmission
       .find(correlationID)
       .flatMap(
-        _.map(submission =>
-          if (isLocked(submission)) {
-            Future.failed(new RuntimeException(s"Correlation Id: $correlationID is locked"))
-          } else {
-            val envelopeId = submission.envelopeId
-            val withSubmissionPrefix = submission.submissionPrefix.fold("")(p => s", with submission prefix: $p")
-            logger.info(
-              s"Received callback for envelopeId: ${envelopeId.value}$withSubmissionPrefix, destination: ${submission.destination
+        _.map { submission =>
+          val envelopeId = submission.envelopeId
+          val withSubmissionPrefix = submission.submissionPrefix.fold("")(p => s", with submission prefix: $p")
+          logger.info(
+            s"Received callback for envelopeId: ${envelopeId.value}$withSubmissionPrefix, destination: ${submission.destination
+              .getOrElse("dms")}"
+          )
+          if (submission.status === Replaced) {
+            logger.error(
+              s"Received callback for a replaced submission: correlation id: $correlationID, envelope id ${envelopeId.value}$withSubmissionPrefix, destination: ${submission.destination
                 .getOrElse("dms")}"
             )
-            if (submission.status === Replaced) {
-              logger.error(
-                s"Received callback for a replaced submission: correlation id: $correlationID, envelope id ${envelopeId.value}$withSubmissionPrefix, destination: ${submission.destination
-                  .getOrElse("dms")}"
-              )
-              Future.failed(new IllegalStateException(s"Correlation ID [$correlationID] has already been replaced"))
-            } else {
-              for {
-                _ <- saveSdesSubmission(submission.copy(lockedAt = Some(Instant.now()))) // lock the record
-                updatedSdesSubmission = submission.copy(
-                                          isProcessed = responseStatus === FileProcessed,
-                                          status = responseStatus,
-                                          confirmedAt = Some(Instant.now),
-                                          failureReason = responseFailureReason,
-                                          lockedAt = None
-                                        )
-                _ <- if (!submission.isProcessed) {
-                       for {
-                         _ <- saveSdesSubmission(updatedSdesSubmission)
-                         _ <- if (responseStatus === FileProcessed) {
-                                deleteFiles(submission, fileName)
-                              } else Future.unit
-                       } yield ()
-                     } else saveSdesSubmission(submission.copy(lockedAt = None))
-                sdesHistory = SdesHistory.create(
-                                envelopeId,
-                                CorrelationId(correlationID),
-                                responseStatus,
-                                fileName,
-                                responseFailureReason,
-                                None
-                              )
-                _ <- sdesHistoryAlgebra.save(sdesHistory)
-              } yield ()
-            }
+            Future.failed(new IllegalStateException(s"Correlation ID [$correlationID] has already been replaced"))
+          } else {
+            val (updateStatus, updateFailureReason) =
+              if (priority(responseStatus) > priority(submission.status))
+                (responseStatus, responseFailureReason)
+              else {
+                logger.warn(
+                  s"Received callback for correlation id: $correlationID, envelope id ${envelopeId.value}$withSubmissionPrefix, destination: ${submission.destination
+                    .getOrElse("dms")}, with status: $responseStatus which is lower priority than the current status: ${submission.status}. Keeping the current status."
+                )
+                (submission.status, submission.failureReason)
+              }
+
+            val updatedSdesSubmission = submission.copy(
+              isProcessed = updateStatus === FileProcessed,
+              status = updateStatus,
+              confirmedAt =
+                if (updateStatus === FileProcessed && submission.confirmedAt.isEmpty) Some(Instant.now)
+                else submission.confirmedAt,
+              failureReason = updateFailureReason
+            )
+
+            for {
+              _ <- saveSdesSubmission(updatedSdesSubmission)
+              _ <- if (!submission.isProcessed && updatedSdesSubmission.isProcessed) {
+                     deleteFiles(submission, fileName)
+                   } else Future.unit
+              sdesHistory = SdesHistory.create(
+                              envelopeId,
+                              CorrelationId(correlationID),
+                              responseStatus,
+                              fileName,
+                              responseFailureReason,
+                              None
+                            )
+              _ <- sdesHistoryAlgebra.save(sdesHistory)
+            } yield ()
           }
-        ).getOrElse(
-          Future.failed(new RuntimeException(s"Correlation id [$correlationID] not found in mongo collection"))
-        )
+        }
+          .getOrElse(
+            Future.failed(new RuntimeException(s"Correlation id [$correlationID] not found in mongo collection"))
+          )
       )
   }
   private def deleteFiles(submission: SdesSubmission, fileName: String)(implicit hc: HeaderCarrier): Future[Unit] = {
@@ -429,9 +464,6 @@ class SdesService(
         Future.unit
     }
   }
-
-  private def isLocked(submission: SdesSubmission): Boolean =
-    submission.lockedAt.exists(_.isAfter(Instant.now().minusMillis(sdesConfig.lockTTL)))
 
   private def prepareFileForNotification(
     envelopeId: EnvelopeId,

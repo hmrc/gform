@@ -74,4 +74,13 @@ object NotificationStatus {
     case FileProcessedManualConfirmed => "FileProcessedManualConfirmed"
     case Replaced                     => "Replaced"
   }
+
+  def priority(notificationStatus: NotificationStatus): Int = notificationStatus match {
+    case FileReady                    => 1
+    case FileReceived                 => 2
+    case FileProcessingFailure        => 3
+    case FileProcessed                => 4
+    case FileProcessedManualConfirmed => 5
+    case Replaced                     => 6
+  }
 }

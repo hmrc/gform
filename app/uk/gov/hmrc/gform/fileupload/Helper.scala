@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.gform.fileupload
 
+import cats.data.EitherT
+
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import org.apache.pekko.actor.Scheduler
@@ -23,6 +25,7 @@ import org.apache.pekko.pattern.after
 import org.slf4j.LoggerFactory
 import play.api.http.HeaderNames.LOCATION
 import play.api.libs.json.{ JsObject, Json }
+import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.objectstore.{ FUConfig, SpoiltLocationHeader }
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AllowedFileTypes, FormTemplateId, JsonUtils }
@@ -80,5 +83,42 @@ trait Retrying {
           logger.warn(s"Retrying after $delay: $msg")
           after(delay, s)(retry(f, rest, msg))
       }
+    }
+
+  def retryEitherT[T](f: => EitherT[Future, UnexpectedState, T], delays: List[FiniteDuration], msg: String)(implicit
+    ec: ExecutionContext,
+    s: Scheduler
+  ): EitherT[Future, UnexpectedState, T] =
+    EitherT {
+      f.value
+        .recoverWith { case t =>
+          delays match {
+            case Nil =>
+              logger.warn(s"Giving up: $msg")
+              Future.failed(t)
+            case delay :: rest =>
+              logger.warn(s"Retrying after $delay: $msg")
+              after(delay, s)(retryEitherT(f, rest, msg).value)
+          }
+        }
+        .flatMap {
+          case right @ Right(_) => Future.successful(right)
+          case left @ Left(_)   => retryEitherTResult(left, f, delays, msg)
+        }
+    }
+
+  private def retryEitherTResult[T](
+    result: Either[UnexpectedState, T],
+    f: => EitherT[Future, UnexpectedState, T],
+    delays: List[FiniteDuration],
+    msg: String
+  )(implicit ec: ExecutionContext, s: Scheduler): Future[Either[UnexpectedState, T]] =
+    delays match {
+      case Nil =>
+        logger.warn(s"Giving up: $msg")
+        Future.successful(result)
+      case delay :: rest =>
+        logger.warn(s"Retrying after $delay: $msg")
+        after(delay, s)(retryEitherT(f, rest, msg).value)
     }
 }
