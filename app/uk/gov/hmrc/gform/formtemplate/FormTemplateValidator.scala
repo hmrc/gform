@@ -787,6 +787,7 @@ object FormTemplateValidator {
         val errorPrefix = s"${path.path}: Form component '$formComponentId' used in showAsUtr function"
         componentType match {
           case (Text(CtUTR, _, _, _, _, _, _, _, _)) => Valid
+          case (Text(SaUTR, _, _, _, _, _, _, _, _)) => Valid
           case _                                     => Invalid(errorPrefix + " should be of utr format")
         }
       }

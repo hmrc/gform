@@ -28,7 +28,7 @@ import uk.gov.hmrc.gform.sharedmodel.DataRetrieve.Attribute
 import uk.gov.hmrc.gform.sharedmodel._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.PageLink
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destinations, PrintSection }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AnyDate, BulletedList, CalendarDate, Checkbox, Choice, ChoicesAvailable, ChoicesSelected, Constant, CtUTR, DataRetrieveCtx, DataRetrieveDateCtx, Date, DateAfter, DateBefore, DateCtx, DateExprWithOffset, DateFormCtxVar, DateFunction, DateProjection, DateValueExpr, DisplayAsEntered, Dynamic, Equals, Expr, ExprWithPath, FormComponent, FormComponentId, FormComponentValidator, FormCtx, FormStartDateExprValue, FormTemplate, GreaterThan, HideZeroDecimals, Horizontal, IfElse, IncludeIf, IndexOf, IndexOfDataRetrieveCtx, InformationMessage, Instruction, IsTrue, LeafExpr, LinkCtx, LookupColumn, Mandatory, Not, NumberedList, Offset, OffsetUnit, OffsetYMD, OptionData, OptionDataValue, Page, PageId, PostcodeLookup, Radio, Section, ShortText, StandardInfo, SummariseGroupAsGrid, TaxPeriodDate, TemplatePath, Text, TextArea, TextWithRestrictions, TodayDateExprValue, TypeAhead, UkVrn, ValidIf, Value, Vertical }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AnyDate, BulletedList, CalendarDate, Checkbox, Choice, ChoicesAvailable, ChoicesSelected, Constant, CtUTR, DataRetrieveCtx, DataRetrieveDateCtx, Date, DateAfter, DateBefore, DateCtx, DateExprWithOffset, DateFormCtxVar, DateFunction, DateProjection, DateValueExpr, DisplayAsEntered, Dynamic, Equals, Expr, ExprWithPath, FormComponent, FormComponentId, FormComponentValidator, FormCtx, FormStartDateExprValue, FormTemplate, GreaterThan, HideZeroDecimals, Horizontal, IfElse, IncludeIf, IndexOf, IndexOfDataRetrieveCtx, InformationMessage, Instruction, IsTrue, LeafExpr, LinkCtx, LookupColumn, Mandatory, Not, NumberedList, Offset, OffsetUnit, OffsetYMD, OptionData, OptionDataValue, Page, PageId, PostcodeLookup, Radio, SaUTR, Section, ShortText, StandardInfo, SummariseGroupAsGrid, TaxPeriodDate, TemplatePath, Text, TextArea, TextWithRestrictions, TodayDateExprValue, TypeAhead, UkVrn, ValidIf, Value, Vertical }
 
 class FormTemplateValidatorSpec
     extends AnyWordSpecLike with Matchers with FormTemplateSupport with TableDrivenPropertyChecks {
@@ -306,6 +306,7 @@ class FormTemplateValidatorSpec
       val table = Table(
         ("expression", "expectedResult"),
         ("${showAsUtr(utr)}", Valid),
+        ("${showAsUtr(sautr)}", Valid),
         ("${showAsUtr(auth.sautr)}", Valid),
         ("${showAsUtr(auth.ctutr)}", Valid),
         ("${showAsUtr(user.enrolments.IR-CT.UTR.1)}", Valid),
@@ -326,6 +327,7 @@ class FormTemplateValidatorSpec
             mkSectionNonRepeatingPage(
               name = "section1",
               formComponents = List(
+                mkFormComponent("sautr", Text(SaUTR, Value), editable = true),
                 mkFormComponent("utr", Text(CtUTR, Value), editable = true),
                 mkFormComponent("firstName", Text(ShortText.default, Value), editable = true)
               )
