@@ -195,11 +195,12 @@ class ObjectStoreService(
 
   override def zipFiles(
     envelopeId: EnvelopeId,
-    objectStorePaths: ObjectStorePaths
+    objectStorePaths: ObjectStorePaths,
+    maybeRetentionPeriod: Option[RetentionPeriod]
   )(implicit
     hc: HeaderCarrier
   ): Future[ObjectSummaryWithMd5] =
-    objectStoreConnector.zipFiles(envelopeId, objectStorePaths)
+    objectStoreConnector.zipFiles(envelopeId, objectStorePaths, maybeRetentionPeriod)
 
   override def deleteZipFile(
     envelopeId: EnvelopeId,
@@ -409,7 +410,7 @@ class ObjectStoreService(
     hc: HeaderCarrier,
     m: Materializer
   ): Future[ObjectSummaryWithMd5] = for {
-    _           <- zipFiles(envelopeId, objectStorePaths)
+    _           <- zipFiles(envelopeId, objectStorePaths, None)
     maybeSource <- getZipFile(envelopeId, objectStorePaths)
     publicKey   <- sdesConnector.getPublicKey()
     objSummary <- maybeSource match {

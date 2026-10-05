@@ -31,6 +31,7 @@ sealed trait SdesDestination extends Product with Serializable {
     case SdesDestination.Dms             => sdesConfig.dms
     case SdesDestination.InfoArchive     => sdesConfig.infoArchive
     case SdesDestination.Caseflow        => sdesConfig.caseflow
+    case SdesDestination.Pega            => sdesConfig.pega
     case SdesDestination.DataLakehouse   => sdesConfig.dataLakehouse
     case SdesDestination.AsyncHandlebars =>
       throw new IllegalArgumentException(
@@ -50,6 +51,7 @@ sealed trait SdesDestination extends Product with Serializable {
       case SdesDestination.Dms             => ObjectStorePaths.dmsPaths(envelopeId, submissionPrefix)
       case SdesDestination.InfoArchive     => ObjectStorePaths.infoArchivePaths(envelopeId)
       case SdesDestination.Caseflow        => ObjectStorePaths.caseflowPaths(envelopeId, submissionPrefix)
+      case SdesDestination.Pega            => ObjectStorePaths.pegaPaths(envelopeId, submissionPrefix)
       case SdesDestination.DataLakehouse   => ObjectStorePaths.dataLakehousePaths(envelopeId)
       case SdesDestination.AsyncHandlebars =>
         throw new IllegalArgumentException(
@@ -69,6 +71,7 @@ object SdesDestination {
   case object DataStore extends SdesDestination
   case object InfoArchive extends SdesDestination
   case object Caseflow extends SdesDestination
+  case object Pega extends SdesDestination
   case object DataLakehouse extends SdesDestination
   case object AsyncHandlebars extends SdesDestination
   case object NRSOrchestrator extends SdesDestination
@@ -82,6 +85,7 @@ object SdesDestination {
       "DataStore"       -> DataStore,
       "InfoArchive"     -> InfoArchive,
       "Caseflow"        -> Caseflow,
+      "Pega"            -> Pega,
       "DataLakehouse"   -> DataLakehouse,
       "AsyncHandlebars" -> AsyncHandlebars,
       "NRSOrchestrator" -> NRSOrchestrator
@@ -94,6 +98,7 @@ object SdesDestination {
     case DataStore       => "DataStore"
     case InfoArchive     => "InfoArchive"
     case Caseflow        => "Caseflow"
+    case Pega            => "Pega"
     case DataLakehouse   => "DataLakehouse"
     case AsyncHandlebars => "AsyncHandlebars"
     case NRSOrchestrator => "NRSOrchestrator"
@@ -106,6 +111,7 @@ object SdesDestination {
     case "DataStore"       => DataStore
     case "InfoArchive"     => InfoArchive
     case "Caseflow"        => Caseflow
+    case "Pega"            => Pega
     case "DataLakehouse"   => DataLakehouse
     case "AsyncHandlebars" => AsyncHandlebars
     case "NRSOrchestrator" => NRSOrchestrator

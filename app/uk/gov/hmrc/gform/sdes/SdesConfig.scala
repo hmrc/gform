@@ -28,6 +28,7 @@ final case class SdesConfig(
   welshDefaults: WelshDefaults,
   infoArchive: SdesRouting,
   caseflow: SdesRouting,
+  pega: SdesRouting,
   dataLakehouse: SdesRouting
 )
 

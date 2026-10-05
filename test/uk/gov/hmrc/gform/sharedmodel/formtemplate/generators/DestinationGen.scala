@@ -23,7 +23,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationInclud
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DataOutputFormat, Destination, DestinationId, DestinationIncludeIf, ProjectId, TemplateType }
 import uk.gov.hmrc.gform.sharedmodel.notifier.{ NotifierPersonalisationFieldId, NotifierTemplateId }
 import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination
-import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination.{ Caseflow, DataStore, DataStoreLegacy, Dms, HmrcIlluminate, InfoArchive }
+import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination.{ Caseflow, DataStore, DataStoreLegacy, Dms, HmrcIlluminate, InfoArchive, Pega }
 
 trait DestinationGen {
   def destinationIdGen: Gen[DestinationId] =
@@ -38,7 +38,7 @@ trait DestinationGen {
   def businessAreaGen: Gen[String] = PrimitiveGen.nonEmptyAlphaNumStrGen
   def signatureGen: Gen[String] = PrimitiveGen.nonEmptyAsciiPrintableString
   def projectIdGen: Gen[ProjectId] = PrimitiveGen.nonEmptyAlphaNumStrGen.map(ProjectId(_))
-  def dmsSdesDestinationGen: Gen[SdesDestination] = Gen.frequency(9 -> Dms, 1 -> Caseflow)
+  def dmsSdesDestinationGen: Gen[SdesDestination] = Gen.frequency(8 -> Dms, 1 -> Caseflow, 1 -> Pega)
 
   def hmrcDmsGen: Gen[Destination.HmrcDms] =
     for {
@@ -130,7 +130,7 @@ trait DestinationGen {
       None
     )
 
-  def sdesDestinationGen = Gen.oneOf(List(Dms, HmrcIlluminate, DataStoreLegacy, DataStore, InfoArchive, Caseflow))
+  def sdesDestinationGen = Gen.oneOf(List(Dms, HmrcIlluminate, DataStoreLegacy, DataStore, InfoArchive, Caseflow, Pega))
   def taxpayerIdGen: Gen[Expr] = ExprGen.exprGen()
 
   def dataStoreGen: Gen[Destination.DataStore] =

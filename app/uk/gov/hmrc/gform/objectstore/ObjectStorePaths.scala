@@ -69,6 +69,12 @@ object ObjectStorePaths {
     val zipFilePrefix: String = submissionPrefix.getOrElse("")
   }
 
+  def pegaPaths(envelopeId: EnvelopeId, submissionPrefix: Option[String]) = new ObjectStorePaths {
+    val permanent: Path.Directory = envelopeDirectory(envelopeId, submissionPrefix)
+    val ephemeral: Path.Directory = Path.Directory("sdes/pega")
+    val zipFilePrefix: String = submissionPrefix.getOrElse("")
+  }
+
   def dataLakehousePaths(envelopeId: EnvelopeId) = new ObjectStorePaths {
     val permanent: Path.Directory = Path.Directory("data-lakehouse/envelopes/" + envelopeId.value)
     val ephemeral: Path.Directory = Path.Directory("sdes/data-lakehouse")

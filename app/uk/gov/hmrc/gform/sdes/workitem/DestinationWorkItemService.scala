@@ -138,7 +138,7 @@ class DestinationWorkItemService(
     val initialState: SdesWorkItem => ProcessingStatus = if (readyImmediately) todo else deferred
 
     sdesDestination match {
-      case SdesDestination.Dms | SdesDestination.Caseflow =>
+      case SdesDestination.Dms | SdesDestination.Caseflow | SdesDestination.Pega =>
         dmsWorkItemRepo.pushNew(sdesWorkItem, initialState = initialState).map(_.id)
       case SdesDestination.HmrcIlluminate | SdesDestination.DataStore | SdesDestination.DataStoreLegacy =>
         dataStoreWorkItemRepo.pushNew(sdesWorkItem, initialState = initialState).map(_.id)
@@ -161,7 +161,8 @@ class DestinationWorkItemService(
   override def readySdes(workItems: List[(SdesDestination, ObjectId)]): Future[Unit] =
     workItems
       .traverse {
-        case (SdesDestination.Dms | SdesDestination.Caseflow, oid) => dmsWorkItemRepo.markAs(oid, ToDo)
+        case (SdesDestination.Dms | SdesDestination.Caseflow | SdesDestination.Pega, oid) =>
+          dmsWorkItemRepo.markAs(oid, ToDo)
         case (SdesDestination.HmrcIlluminate | SdesDestination.DataStore | SdesDestination.DataStoreLegacy, oid) =>
           dataStoreWorkItemRepo.markAs(oid, ToDo)
         case (SdesDestination.InfoArchive, oid)   => infoArchiveWorkItemRepo.markAs(oid, ToDo)
@@ -266,7 +267,7 @@ class DestinationWorkItemService(
 
   private def findCollection(sdesDestination: SdesDestination): MongoCollection[WorkItem[SdesWorkItem]] =
     sdesDestination match {
-      case SdesDestination.Dms | SdesDestination.Caseflow => dmsWorkItemRepo.collection
+      case SdesDestination.Dms | SdesDestination.Caseflow | SdesDestination.Pega => dmsWorkItemRepo.collection
       case SdesDestination.HmrcIlluminate | SdesDestination.DataStore | SdesDestination.DataStoreLegacy =>
         dataStoreWorkItemRepo.collection
       case SdesDestination.InfoArchive   => infoArchiveWorkItemRepo.collection
@@ -311,7 +312,7 @@ class DestinationWorkItemService(
 
   override def enqueue(id: String, sdesDestination: SdesDestination): Future[Unit] =
     sdesDestination match {
-      case SdesDestination.Dms | SdesDestination.Caseflow =>
+      case SdesDestination.Dms | SdesDestination.Caseflow | SdesDestination.Pega =>
         dmsWorkItemRepo.markAs(new ObjectId(id), ProcessingStatus.ToDo).void
       case SdesDestination.HmrcIlluminate | SdesDestination.DataStore | SdesDestination.DataStoreLegacy =>
         dataStoreWorkItemRepo.markAs(new ObjectId(id), ProcessingStatus.ToDo).void
@@ -412,7 +413,7 @@ class DestinationWorkItemService(
 
   override def find(id: String, sdesDestination: SdesDestination): Future[Option[WorkItem[SdesWorkItem]]] =
     sdesDestination match {
-      case SdesDestination.Dms | SdesDestination.Caseflow =>
+      case SdesDestination.Dms | SdesDestination.Caseflow | SdesDestination.Pega =>
         dmsWorkItemRepo.findById(new ObjectId(id))
       case SdesDestination.HmrcIlluminate | SdesDestination.DataStore | SdesDestination.DataStoreLegacy =>
         dataStoreWorkItemRepo.findById(new ObjectId(id))

@@ -92,7 +92,11 @@ object MetadataXml {
     reconciliationId: ReconciliationId,
     destination: HmrcDms
   ): Elem = {
-    val target = if (destination.isCaseflow) "CASEFLOW" else "DMS"
+    val target = (destination.isCaseflow, destination.isPega) match {
+      case (true, _) => "CASEFLOW"
+      case (_, true) => "PEGA"
+      case _         => "DMS"
+    }
     <header>
       <title>{submissionRef.withoutHyphens}</title>
       <format>pdf</format>

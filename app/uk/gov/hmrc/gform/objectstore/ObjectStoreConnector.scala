@@ -135,13 +135,24 @@ class ObjectStoreConnector(
       path = directory.file(fileName)
     )
 
-  def zipFiles(envelopeId: EnvelopeId, objectStorePaths: ObjectStorePaths)(implicit
+  def zipFiles(
+    envelopeId: EnvelopeId,
+    objectStorePaths: ObjectStorePaths,
+    maybeRetentionPeriod: Option[RetentionPeriod]
+  )(implicit
     hc: HeaderCarrier
-  ): Future[ObjectSummaryWithMd5] =
+  ): Future[ObjectSummaryWithMd5] = maybeRetentionPeriod.fold {
     objectStoreClient.zip(
       from = objectStorePaths.permanent,
       to = objectStorePaths.ephemeral.file(s"${objectStorePaths.zipFilePrefix}${envelopeId.value}$zipExtension")
     )
+  } { retentionPeriod =>
+    objectStoreClient.zip(
+      from = objectStorePaths.permanent,
+      to = objectStorePaths.ephemeral.file(s"${objectStorePaths.zipFilePrefix}${envelopeId.value}$zipExtension"),
+      retentionPeriod = retentionPeriod
+    )
+  }
 
   def deleteZipFile(envelopeId: EnvelopeId, objectStorePaths: ObjectStorePaths)(implicit
     hc: HeaderCarrier

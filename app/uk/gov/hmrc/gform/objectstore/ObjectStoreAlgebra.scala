@@ -35,7 +35,7 @@ import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination
 import uk.gov.hmrc.gform.submission.{ PdfAndXmlSummaries, Submission }
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.objectstore.client
-import uk.gov.hmrc.objectstore.client.{ ObjectSummaryWithMd5, Path, PresignedDownloadUrl }
+import uk.gov.hmrc.objectstore.client.{ ObjectSummaryWithMd5, Path, PresignedDownloadUrl, RetentionPeriod }
 
 trait ObjectStoreAlgebra[F[_]] {
 
@@ -96,7 +96,11 @@ trait ObjectStoreAlgebra[F[_]] {
     hc: HeaderCarrier
   ): F[Option[client.Object[Source[ByteString, NotUsed]]]]
 
-  def zipFiles(envelopeId: EnvelopeId, objectStorePaths: ObjectStorePaths)(implicit
+  def zipFiles(
+    envelopeId: EnvelopeId,
+    objectStorePaths: ObjectStorePaths,
+    maybeRetentionPeriod: Option[RetentionPeriod]
+  )(implicit
     hc: HeaderCarrier
   ): F[ObjectSummaryWithMd5]
 
