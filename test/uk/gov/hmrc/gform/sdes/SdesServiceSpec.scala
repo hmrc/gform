@@ -197,6 +197,7 @@ class SdesServiceSpec extends AnyFlatSpec with Matchers with MockitoSugar with S
     welshDefaults = WelshDefaults("classification", "business-area"),
     infoArchive = routing,
     caseflow = routing,
+    pega = routing,
     dataLakehouse = routing
   )
 }

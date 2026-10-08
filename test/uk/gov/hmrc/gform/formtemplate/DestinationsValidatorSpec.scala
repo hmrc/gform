@@ -28,7 +28,7 @@ import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Constant, Equals, FormComponentId, FormCtx, IncludeIf }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationId, HttpMethod, ProfileName, TemplateType }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationIncludeIf.{ HandlebarValue, IncludeIfValue }
-import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination.Caseflow
+import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination.{ Caseflow, Pega }
 import uk.gov.hmrc.gform.nrs.BusinessId
 
 class DestinationsValidatorSpec extends Spec with ScalaCheckDrivenPropertyChecks {
@@ -206,12 +206,56 @@ class DestinationsValidatorSpec extends Spec with ScalaCheckDrivenPropertyChecks
       ),
       (
         NonEmptyList.of(
+          hmrcDms,
+          hmrcDms.copy(routing = Caseflow, caseId = Some(Constant("expr")))
+        ),
+        Invalid(
+          "hmrcDms destinations must all have submissionPrefix if there is a mixture of Caseflow, Pega and DMS routings."
+        )
+      ),
+      (
+        NonEmptyList.of(
+          hmrcDms.copy(routing = Pega),
+          hmrcDms.copy(routing = Caseflow, caseId = Some(Constant("expr")))
+        ),
+        Invalid(
+          "hmrcDms destinations must all have submissionPrefix if there is a mixture of Caseflow, Pega and DMS routings."
+        )
+      ),
+      (
+        NonEmptyList.of(
+          hmrcDms,
+          hmrcDms.copy(routing = Pega)
+        ),
+        Invalid(
+          "hmrcDms destinations must all have submissionPrefix if there is a mixture of Caseflow, Pega and DMS routings."
+        )
+      ),
+      (
+        NonEmptyList.of(
+          hmrcDms.copy(routing = Pega, submissionPrefix = Some("P1")),
+          hmrcDms.copy(routing = Caseflow, caseId = Some(Constant("expr")))
+        ),
+        Invalid(
+          "hmrcDms destinations must all have submissionPrefix if there is a mixture of Caseflow, Pega and DMS routings."
+        )
+      ),
+      (
+        NonEmptyList.of(
+          hmrcDms.copy(submissionPrefix = Some("P1")),
+          hmrcDms.copy(routing = Pega, submissionPrefix = Some("P2")),
+          hmrcDms.copy(routing = Caseflow, caseId = Some(Constant("expr")), submissionPrefix = Some("P3"))
+        ),
+        Valid
+      ),
+      (
+        NonEmptyList.of(
           hmrcDms.copy(includeIf = HandlebarValue("{{isNotNull empName}}")),
           hmrcDms.copy(includeIf = HandlebarValue("{{isNull empName}}"))
         ),
         Valid
       )
-    )
+    ) // TODO
 
     org.scalatest.prop.TableDrivenPropertyChecks.forAll(table) { (destinations, expected) =>
       val result = DestinationsValidator.validateSubmissionPrefix(destinationList.copy(destinations = destinations))
@@ -233,9 +277,7 @@ class DestinationsValidatorSpec extends Spec with ScalaCheckDrivenPropertyChecks
           hmrcDms.copy(routing = Caseflow, caseId = Some(Constant("expr"))),
           hmrcDms
         ),
-        Invalid(
-          "hmrcDms destinations cannot be a mix of DMS and Caseflow routings."
-        )
+        Valid
       ),
       (
         NonEmptyList.of(

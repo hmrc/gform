@@ -22,7 +22,9 @@ import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
 import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination
+import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination.{ Caseflow, Dms, Pega }
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.objectstore.client.RetentionPeriod.OneWeek
 
 import scala.concurrent.{ ExecutionContext, Future }
 
@@ -40,25 +42,34 @@ class ObjectStoreController(controllerComponents: ControllerComponents, objectSt
     objectStoreAlgebra.deleteFiles(envelopeId, request.body).asNoContent
   }
 
-  def downloadDmsFiles(envelopeId: EnvelopeId, prefix: Option[String]) = Action.async { implicit request =>
-    val paths = SdesDestination.Dms.objectStorePaths(envelopeId, prefix)
-    val fileName = s"${prefix.getOrElse("")}${envelopeId.value}.zip"
-    for {
-      _            <- objectStoreAlgebra.zipFiles(envelopeId, paths)
-      objectSource <- objectStoreAlgebra.getZipFile(envelopeId, paths)
-    } yield objectSource match {
-      case Some(objectSource) =>
-        Ok.streamed(
-          objectSource.content,
-          contentLength = Some(objectSource.metadata.contentLength),
-          contentType = Some(objectSource.metadata.contentType)
-        ).as(ContentType.`application/zip`.value)
-          .withHeaders(
-            Results.contentDispositionHeader(inline = false, name = Some(fileName)).toList: _*
-          )
-      case None => BadRequest(s"File ${paths.ephemeral.value}/$fileName not found")
+  def downloadDmsFiles(envelopeId: EnvelopeId, prefix: Option[String]) = downloadDmsStyleFiles(envelopeId, Dms, prefix)
+
+  def downloadPegaFiles(envelopeId: EnvelopeId, prefix: Option[String]) =
+    downloadDmsStyleFiles(envelopeId, Pega, prefix)
+
+  def downloadCaseflowFiles(envelopeId: EnvelopeId, prefix: Option[String]) =
+    downloadDmsStyleFiles(envelopeId, Caseflow, prefix)
+
+  private def downloadDmsStyleFiles(envelopeId: EnvelopeId, destination: SdesDestination, prefix: Option[String]) =
+    Action.async { implicit request =>
+      val paths = destination.objectStorePaths(envelopeId, prefix)
+      val fileName = s"${prefix.getOrElse("")}${envelopeId.value}.zip"
+      for {
+        _            <- objectStoreAlgebra.zipFiles(envelopeId, paths, Some(OneWeek))
+        objectSource <- objectStoreAlgebra.getZipFile(envelopeId, paths)
+      } yield objectSource match {
+        case Some(objectSource) =>
+          Ok.streamed(
+            objectSource.content,
+            contentLength = Some(objectSource.metadata.contentLength),
+            contentType = Some(objectSource.metadata.contentType)
+          ).as(ContentType.`application/zip`.value)
+            .withHeaders(
+              Results.contentDispositionHeader(inline = false, name = Some(fileName)).toList: _*
+            )
+        case None => BadRequest(s"File ${paths.ephemeral.value}/$fileName not found")
+      }
     }
-  }
 
   def downloadDataStoreFile(envelopeId: EnvelopeId) = Action.async { implicit request =>
     val paths = SdesDestination.DataStore.objectStorePaths(envelopeId, None)
@@ -79,7 +90,7 @@ class ObjectStoreController(controllerComponents: ControllerComponents, objectSt
     val paths = SdesDestination.InfoArchive.objectStorePaths(envelopeId, None)
     val fileName = s"${paths.zipFilePrefix}${envelopeId.value}.zip"
     for {
-      _            <- objectStoreAlgebra.zipFiles(envelopeId, paths)
+      _            <- objectStoreAlgebra.zipFiles(envelopeId, paths, Some(OneWeek))
       objectSource <- objectStoreAlgebra.getZipFile(envelopeId, paths)
     } yield objectSource match {
       case Some(objectSource) =>

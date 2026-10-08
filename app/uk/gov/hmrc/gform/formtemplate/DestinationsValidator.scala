@@ -108,14 +108,6 @@ object DestinationsValidator {
       val dmsList = destinationList.destinations.collect { case d: Destination.HmrcDms => d }
 
       val caseflows = dmsList.filter(_.isCaseflow)
-      val isDms = dmsList.exists(!_.isCaseflow)
-
-      val mixtureCheck = if (caseflows.nonEmpty && isDms) {
-        Invalid(
-          "hmrcDms destinations cannot be a mix of DMS and Caseflow routings."
-        )
-      } else
-        Valid
 
       val attributesCheck = caseflows.map { dest =>
         if (dest.caseId.isEmpty) {
@@ -127,7 +119,7 @@ object DestinationsValidator {
         }
       }
 
-      Monoid[ValidationResult].combineAll(mixtureCheck +: attributesCheck)
+      Monoid[ValidationResult].combineAll(attributesCheck)
     case _ => Valid
   }
 
@@ -141,6 +133,19 @@ object DestinationsValidator {
 
       val uniqueCheck = if (hasSubmissionPrefix && allPrefixes.size != allPrefixes.toSet.size) {
         Invalid("hmrcDms destinations must all have a unique submissionPrefix.")
+      } else {
+        Valid
+      }
+
+      val isCaseflow = dmsList.exists(_.isCaseflow)
+      val isPega = dmsList.exists(_.isPega)
+      val isDms = dmsList.exists(_.isDms)
+
+      val isMixture = (isCaseflow && isDms) || (isPega && isDms) || (isCaseflow && isPega)
+      val mixtureCheck = if (isMixture && hasNoSubmissionPrefix) {
+        Invalid(
+          "hmrcDms destinations must all have submissionPrefix if there is a mixture of Caseflow, Pega and DMS routings."
+        )
       } else {
         Valid
       }
@@ -161,7 +166,7 @@ object DestinationsValidator {
         Valid
       }
 
-      Monoid[ValidationResult].combineAll(List(uniqueCheck, allOrNone, moreThanOneWithoutPrefix))
+      Monoid[ValidationResult].combineAll(List(uniqueCheck, mixtureCheck, allOrNone, moreThanOneWithoutPrefix))
     case _ => Valid
   }
 

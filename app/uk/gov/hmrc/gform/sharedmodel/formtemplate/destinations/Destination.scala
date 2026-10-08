@@ -131,6 +131,8 @@ object Destination {
       }
 
     def isCaseflow: Boolean = this.routing === SdesDestination.Caseflow
+    def isPega: Boolean = this.routing === SdesDestination.Pega
+    def isDms: Boolean = this.routing === SdesDestination.Dms
   }
 
   case class DataStore(
