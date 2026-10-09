@@ -41,7 +41,7 @@ import uk.gov.hmrc.gform.submission.{ PdfAndXmlSummaries, Submission }
 import uk.gov.hmrc.gform.time.TimeProvider
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.objectstore.client
-import uk.gov.hmrc.objectstore.client.{ ObjectSummaryWithMd5, Path, PresignedDownloadUrl, RetentionPeriod }
+import uk.gov.hmrc.objectstore.client.{ ObjectListing, ObjectSummaryWithMd5, Path, PresignedDownloadUrl, RetentionPeriod }
 
 import java.net.URL
 import java.time.format.DateTimeFormatter
@@ -436,6 +436,9 @@ class ObjectStoreService(
                       )
                   }
   } yield objSummary
+
+  override def listFiles(path: String)(implicit hc: HeaderCarrier): Future[ObjectListing] =
+    objectStoreConnector.listFiles(path)
 }
 
 object ObjectStoreService {

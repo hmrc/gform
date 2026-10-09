@@ -147,4 +147,11 @@ class SdesController(
         )
       } else NotFound
   }
+
+  def verifyEnvelopeFiles(envelopeId: EnvelopeId) = Action.async { implicit request =>
+    sdesAlgebra.verifyEnvelopeAndSubmissionFiles(envelopeId).map { envelopeVerification =>
+      Ok(Json.toJson(envelopeVerification))
+    }
+  }
+
 }

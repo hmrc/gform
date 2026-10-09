@@ -28,7 +28,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.objectstore.client
 import uk.gov.hmrc.objectstore.client.play.Implicits._
 import uk.gov.hmrc.objectstore.client.play.PlayObjectStoreClient
-import uk.gov.hmrc.objectstore.client.{ ObjectSummaryWithMd5, Path, PresignedDownloadUrl, RetentionPeriod }
+import uk.gov.hmrc.objectstore.client.{ ObjectListing, ObjectSummaryWithMd5, Path, PresignedDownloadUrl, RetentionPeriod }
 
 import scala.concurrent.{ ExecutionContext, Future }
 
@@ -173,4 +173,9 @@ class ObjectStoreConnector(
     hc: HeaderCarrier
   ): Future[ObjectSummaryWithMd5] =
     objectStoreClient.uploadFromUrl(from, to = ObjectStorePaths.envelopeDirectory(envelopeId, None).file(fileName))
+
+  def listFiles(path: String)(implicit
+    hc: HeaderCarrier
+  ): Future[ObjectListing] =
+    objectStoreClient.listObjects(Path.Directory(path))
 }

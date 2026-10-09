@@ -39,7 +39,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.objectstore.client
 import uk.gov.hmrc.objectstore.client.config.ObjectStoreClientConfig
 import uk.gov.hmrc.objectstore.client.play.PlayObjectStoreClient
-import uk.gov.hmrc.objectstore.client.{ ObjectSummaryWithMd5, Path, PresignedDownloadUrl, RetentionPeriod }
+import uk.gov.hmrc.objectstore.client.{ ObjectListing, ObjectSummaryWithMd5, Path, PresignedDownloadUrl, RetentionPeriod }
 
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.jdk.CollectionConverters._
@@ -207,5 +207,8 @@ class ObjectStoreModule(
 
     override def presignedDownloadUrl(path: Path.File)(implicit hc: HeaderCarrier): FOpt[PresignedDownloadUrl] =
       fromFutureA(objectStoreService.presignedDownloadUrl(path))
+
+    override def listFiles(path: String)(implicit hc: HeaderCarrier): FOpt[ObjectListing] =
+      fromFutureA(objectStoreService.listFiles(path))
   }
 }
