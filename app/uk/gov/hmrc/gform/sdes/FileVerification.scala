@@ -16,7 +16,8 @@
 
 package uk.gov.hmrc.gform.sdes
 
-import play.api.libs.json.{ Json, OFormat }
+import play.api.libs.json.{ Format, Json, OFormat }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.ADTFormat
 
 import java.time.Instant
 
@@ -29,7 +30,7 @@ case class FileVerification(
   contentLength: Option[Long] = None,
   contentType: Option[String] = None,
   lastModified: Option[Instant] = None,
-  source: String
+  source: FileVerificationSource
 )
 
 object FileVerification {
@@ -43,4 +44,21 @@ case class EnvelopeVerification(
 
 object EnvelopeVerification {
   implicit val format: OFormat[EnvelopeVerification] = Json.format[EnvelopeVerification]
+}
+
+sealed trait FileVerificationSource
+
+object FileVerificationSource {
+  case object Envelope extends FileVerificationSource
+  case object SdesSubmission extends FileVerificationSource
+  case object WorkItem extends FileVerificationSource
+  case object ObjectStore extends FileVerificationSource
+
+  implicit val format: Format[FileVerificationSource] =
+    ADTFormat.formatEnumeration(
+      "Envelope"       -> Envelope,
+      "SdesSubmission" -> SdesSubmission,
+      "WorkItem"       -> WorkItem,
+      "ObjectStore"    -> ObjectStore
+    )
 }

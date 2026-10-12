@@ -39,6 +39,7 @@ import uk.gov.hmrc.gform.fileupload.Retrying
 import uk.gov.hmrc.gform.history.DateFilter
 import uk.gov.hmrc.gform.objectstore.{ ObjectStoreAlgebra, ObjectStorePaths, ObjectStoreService }
 import uk.gov.hmrc.gform.repo.Repo
+import uk.gov.hmrc.gform.sdes.FileVerificationSource.{ Envelope, ObjectStore, WorkItem }
 import uk.gov.hmrc.gform.sdes.workitem.DestinationWorkItemAlgebra
 import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
@@ -568,7 +569,7 @@ class SdesService(
     envelopeId: EnvelopeId
   )(implicit hc: HeaderCarrier): Future[EnvelopeVerification] = {
     def matchFile(
-      source: String,
+      source: FileVerificationSource,
       filename: String,
       directory: String,
       fileOption: Option[client.Object[Source[ByteString, NotUsed]]],
@@ -611,7 +612,7 @@ class SdesService(
                              val directory = ObjectStorePaths.envelopeDirectory(envelopeId, envelopeFile.subDirectory)
                              objectStoreAlgebra.getFile(directory, envelopeFile.fileName).map { fileOption =>
                                matchFile(
-                                 "envelope",
+                                 Envelope,
                                  envelopeFile.fileName,
                                  directory.value,
                                  fileOption,
@@ -630,7 +631,7 @@ class SdesService(
                                    val filename = s"${envelopeId.value}.json"
                                    objectStoreAlgebra.getFile(paths.permanent, filename).map { fileOption =>
                                      matchFile(
-                                       "sdesSubmission",
+                                       FileVerificationSource.SdesSubmission,
                                        filename,
                                        paths.permanent.value,
                                        fileOption,
@@ -651,7 +652,7 @@ class SdesService(
                                        val filename = s"${envelopeId.value}.json"
                                        objectStoreAlgebra.getFile(paths.permanent, filename).map { fileOption =>
                                          matchFile(
-                                           "workItem",
+                                           WorkItem,
                                            filename,
                                            paths.permanent.value,
                                            fileOption,
@@ -661,26 +662,45 @@ class SdesService(
                                          )
                                        }
                                      }
-      allFiles <- objectStoreAlgebra.listFiles("sdes")
-      ephemeralFiles <-
-        allFiles.objectSummaries.filter(_.location.fileName.contains(envelopeId.value)).traverse { objSummary =>
-          val directory = Path.Directory(objSummary.location.directory.value.replaceAll("^gform/", ""))
-          objectStoreAlgebra.getFile(directory, objSummary.location.fileName).map { fileOption =>
-            println(s"fileOption: $fileOption")
-            matchFile(
-              "ephemeral",
-              objSummary.location.fileName,
-              directory.value,
-              fileOption,
-              None,
-              None,
-              None
-            )
+      allEnvelopeFiles <- objectStoreAlgebra.listFiles(s"envelopes/${envelopeId.value}")
+      unindexedEnvelopeFiles <-
+        allEnvelopeFiles.objectSummaries
+          .filter(o => !envelope.files.exists(_.fileName === o.location.fileName))
+          .traverse { objSummary =>
+            val directory = Path.Directory(objSummary.location.directory.value.replaceAll("^gform/", ""))
+            objectStoreAlgebra.getFile(directory, objSummary.location.fileName).map { fileOption =>
+              matchFile(
+                ObjectStore,
+                objSummary.location.fileName,
+                directory.value,
+                fileOption,
+                None,
+                None,
+                None
+              )
+            }
+
           }
+      allEphemeralFiles <- objectStoreAlgebra.listFiles("sdes")
+      ephemeralFiles <-
+        allEphemeralFiles.objectSummaries.filter(_.location.fileName.contains(envelopeId.value)).traverse {
+          objSummary =>
+            val directory = Path.Directory(objSummary.location.directory.value.replaceAll("^gform/", ""))
+            objectStoreAlgebra.getFile(directory, objSummary.location.fileName).map { fileOption =>
+              matchFile(
+                ObjectStore,
+                objSummary.location.fileName,
+                directory.value,
+                fileOption,
+                None,
+                None,
+                None
+              )
+            }
         }
     } yield EnvelopeVerification(
       envelopeId.value,
-      fileVerifications ++ sdesFileVerifications ++ workItemFileVerifications ++ ephemeralFiles
+      fileVerifications ++ sdesFileVerifications ++ workItemFileVerifications ++ ephemeralFiles ++ unindexedEnvelopeFiles
     )
   }
 }
