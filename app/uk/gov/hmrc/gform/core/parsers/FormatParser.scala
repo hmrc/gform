@@ -141,6 +141,7 @@ trait FormatParser extends ValueParser {
       "intentBigPurchase" ^^^ Register.IntentBigPurchase |
       "intent" ^^^ Register.Intent |
       "sicCode" ^^^ Register.SicCode |
+      "goodsCode" ^^^ Register.GoodsCode |
       "sdltReliefType" ^^^ Register.SdltReliefType |
       "localAuthority" ^^^ Register.LocalAuthority |
       "vfrsTradeSector" ^^^ Register.VfrsTradeSector
