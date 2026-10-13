@@ -27,9 +27,9 @@ case class FileVerification(
   directory: String,
   fileName: String,
   exists: Boolean,
-  contentLength: Option[Long] = None,
-  contentType: Option[String] = None,
-  lastModified: Option[Instant] = None,
+  contentLength: Option[Long],
+  contentType: Option[String],
+  lastModified: Option[Instant],
   source: FileVerificationSource
 )
 
