@@ -232,6 +232,7 @@ object Register {
   case object IntentOther extends Register
   case object IntentLivingCostsAndFees extends Register
   case object SicCode extends Register
+  case object GoodsCode extends Register
   case object SdltReliefType extends Register
   case object LocalAuthority extends Register
   case object VfrsTradeSector extends Register
