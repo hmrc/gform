@@ -711,8 +711,16 @@ class FormComponentMaker(json: JsValue) {
                                        |""".stripMargin
                                  ).asLeft
                              }
-      result <- oChoice
-    } yield result
+      result            <- oChoice
+      remainingInfoJson <- toOpt((json \ "whenOnlyOneChoiceRemains").validateOpt[JsValue], "/whenOnlyOneChoiceRemains")
+      remainingInfo     <- remainingInfoJson.traverse(value => new FormComponentMaker(value).optFieldValue())
+      _ <-
+        if (remainingInfo.isDefined && !hideChoicesSelected)
+          UnexpectedState("'whenOnlyOneChoiceRemains' requires 'hideChoicesSelected: true'").asLeft
+        else if (remainingInfo.exists(component => !component.`type`.isInstanceOf[InformationMessage]))
+          UnexpectedState("'whenOnlyOneChoiceRemains' must be an info component").asLeft
+        else ().asRight
+    } yield result.copy(whenOnlyOneChoiceRemains = remainingInfo)
   }
 
   private lazy val revealingChoiceOpt: Opt[RevealingChoice] = for {
@@ -997,14 +1005,14 @@ class FormComponentMaker(json: JsValue) {
       arg match {
         case Some(infoTypeString) =>
           infoTypeString.toLowerCase match {
-            case "standard"  => Some(StandardInfo)
-            case "long"      => Some(LongInfo)
-            case "important" => Some(ImportantInfo)
-            case "banner"    => Some(BannerInfo)
-            case "noformat"  => Some(NoFormat)
-            case "pdflink"   => Some(PdfLink)
-            case "htmllink"  => Some(HtmlLink)
-            case _           => None
+            case "standard" | "info" => Some(StandardInfo)
+            case "long"              => Some(LongInfo)
+            case "important"         => Some(ImportantInfo)
+            case "banner"            => Some(BannerInfo)
+            case "noformat"          => Some(NoFormat)
+            case "pdflink"           => Some(PdfLink)
+            case "htmllink"          => Some(HtmlLink)
+            case _                   => None
           }
         case None => Some(StandardInfo)
       }

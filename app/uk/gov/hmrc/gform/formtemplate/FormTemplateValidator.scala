@@ -338,6 +338,8 @@ object FormTemplateValidator {
       case ReferenceInfo.ChoicesAvailableExpr(path, ChoicesAvailable(formComponentId, _))
           if !allChoiceIds(formComponentId) =>
         Invalid(s"${path.path}: $formComponentId is not a Choice in the form")
+      case ReferenceInfo.LastOptionExpr(path, LastOption(formComponentId)) if !allChoiceIds(formComponentId) =>
+        Invalid(s"${path.path}: $formComponentId is not a Choice in the form")
       case ReferenceInfo.ChoicesCountExpr(path, ChoicesCount(formComponentId)) if !allChoiceIds(formComponentId) =>
         Invalid(s"${path.path}: $formComponentId is not a Choice in the form")
       case ReferenceInfo.TaskStatusExpr(path, TaskStatus(taskId)) if !allTaskIds(taskId) =>
@@ -1045,7 +1047,7 @@ object FormTemplateValidator {
       } else false
 
     def checkHideChoicesSelectedNonDynamicOptions(choice: Choice): Boolean =
-      if (choice.hideChoicesSelected) {
+      if (choice.hideChoicesSelected && choice.whenOnlyOneChoiceRemains.isEmpty) {
         areChoiceOptionsDataRetrievedBased(Option(choice))
       } else false
 
@@ -1473,14 +1475,14 @@ object FormTemplateValidator {
 
   @nowarn
   def validate(componentType: ComponentType, formTemplate: FormTemplate): ValidationResult = componentType match {
-    case HasExpr(SingleExpr(expr))               => validate(expr, formTemplate.formKind.allSections)
-    case HasExpr(MultipleExpr(fields))           => Valid
-    case Date(_, _, _)                           => Valid
-    case CalendarDate                            => Valid
-    case TaxPeriodDate                           => Valid
-    case Address(_, _, _, Some(expr))            => validateAddressValue(expr, formTemplate)
-    case Address(_, _, _, _)                     => Valid
-    case Choice(_, _, _, _, _, _, _, _, _, _, _) => Valid
+    case HasExpr(SingleExpr(expr))     => validate(expr, formTemplate.formKind.allSections)
+    case HasExpr(MultipleExpr(fields)) => Valid
+    case Date(_, _, _)                 => Valid
+    case CalendarDate                  => Valid
+    case TaxPeriodDate                 => Valid
+    case Address(_, _, _, Some(expr))  => validateAddressValue(expr, formTemplate)
+    case Address(_, _, _, _)           => Valid
+    case _: Choice                     => Valid
     case RevealingChoice(revealingChoiceElements, _) =>
       validate(revealingChoiceElements.toList.flatMap(_.revealingFields.map(_.`type`)), formTemplate)
     case HmrcTaxPeriod(_, _, _)                     => Valid
@@ -1703,6 +1705,7 @@ object FormTemplateValidator {
       case ChoicesRevealedField(_)             => Valid
       case ChoicesSelected(_)                  => Valid
       case ChoicesAvailable(_, _)              => Valid
+      case LastOption(_)                       => Valid
       case DisplayAsEntered(_)                 => Valid
       case CountSelectedChoices(_)             => Valid
       case ChoicesCount(_)                     => Valid

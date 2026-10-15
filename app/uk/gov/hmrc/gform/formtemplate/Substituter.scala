@@ -243,7 +243,8 @@ object Substituter {
             noneChoice,
             noneChoiceError,
             hideChoicesSelected,
-            noDuplicates
+            noDuplicates,
+            remainingInfo
           ) =>
         Choice(
           tpe,
@@ -256,7 +257,8 @@ object Substituter {
           noneChoice,
           noneChoiceError,
           hideChoicesSelected,
-          noDuplicates
+          noDuplicates,
+          remainingInfo(substitutions)
         )
 
       case RevealingChoice(options, multiValue) =>

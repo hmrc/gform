@@ -28,6 +28,51 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
 class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemplateSupport {
 
+  private val lastChoiceJson = Json.obj(
+    "id"                  -> "producedAlcohol",
+    "type"                -> "choice",
+    "label"               -> "Alcohol type",
+    "hideChoicesSelected" -> true,
+    "choices"             -> Json.arr(Json.obj("label" -> "Beer", "value" -> "beer")),
+    "whenOnlyOneChoiceRemains" -> Json.obj(
+      "id"       -> "lastAlcohol",
+      "type"     -> "info",
+      "infoType" -> "info",
+      "infoText" -> "You need to tell us about ${lastOption(producedAlcohol)}."
+    )
+  )
+
+  "whenOnlyOneChoiceRemains" should "decode and retain an info component and its expression" in {
+    val component = new FormComponentMaker(lastChoiceJson).optFieldValue().toOption.get
+    val info = component.`type`.asInstanceOf[Choice].whenOnlyOneChoiceRemains.get
+    info.id shouldBe FormComponentId("lastAlcohol")
+    info.`type` shouldBe InformationMessage(
+      StandardInfo,
+      SmartString(
+        LocalisedString(Map(LangADT.En -> "You need to tell us about {0}.")),
+        List(LastOption(FormComponentId("producedAlcohol")))
+      ),
+      None
+    )
+    Json.toJson(component).as[FormComponent] shouldBe component
+  }
+
+  it should "require hideChoicesSelected" in {
+    new FormComponentMaker(lastChoiceJson + ("hideChoicesSelected" -> Json.toJson(false))).optFieldValue() shouldBe
+      Left(UnexpectedState("'whenOnlyOneChoiceRemains' requires 'hideChoicesSelected: true'"))
+  }
+
+  it should "reject a non-info replacement" in {
+    val replacement = Json.obj("id" -> "lastAlcohol", "type" -> "text", "label" -> "Alcohol", "format" -> "text")
+    new FormComponentMaker(lastChoiceJson + ("whenOnlyOneChoiceRemains" -> replacement)).optFieldValue() shouldBe
+      Left(UnexpectedState("'whenOnlyOneChoiceRemains' must be an info component"))
+  }
+
+  it should "keep legacy choices without replacement info unchanged" in {
+    val component = new FormComponentMaker(lastChoiceJson - "whenOnlyOneChoiceRemains").optFieldValue().toOption.get
+    component.`type`.asInstanceOf[Choice].whenOnlyOneChoiceRemains shouldBe None
+  }
+
   "optMaybeFormatExpr" should "parse and validate format expression" in {
     val formComponentMaker = new FormComponentMaker(Json.parse("""
                                                                  |{
