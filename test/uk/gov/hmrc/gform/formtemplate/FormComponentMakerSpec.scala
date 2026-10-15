@@ -37,7 +37,7 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
     "whenOnlyOneChoiceRemains" -> Json.obj(
       "id"       -> "lastAlcohol",
       "type"     -> "info",
-      "infoType" -> "info",
+      "infoType" -> "noformat",
       "infoText" -> "You need to tell us about ${lastOption(producedAlcohol)}."
     )
   )
@@ -47,7 +47,7 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
     val info = component.`type`.asInstanceOf[Choice].whenOnlyOneChoiceRemains.get
     info.id shouldBe FormComponentId("lastAlcohol")
     info.`type` shouldBe InformationMessage(
-      StandardInfo,
+      NoFormat,
       SmartString(
         LocalisedString(Map(LangADT.En -> "You need to tell us about {0}.")),
         List(LastOption(FormComponentId("producedAlcohol")))
