@@ -1005,14 +1005,14 @@ class FormComponentMaker(json: JsValue) {
       arg match {
         case Some(infoTypeString) =>
           infoTypeString.toLowerCase match {
-            case "standard" | "info" => Some(StandardInfo)
-            case "long"              => Some(LongInfo)
-            case "important"         => Some(ImportantInfo)
-            case "banner"            => Some(BannerInfo)
-            case "noformat"          => Some(NoFormat)
-            case "pdflink"           => Some(PdfLink)
-            case "htmllink"          => Some(HtmlLink)
-            case _                   => None
+            case "standard"  => Some(StandardInfo)
+            case "long"      => Some(LongInfo)
+            case "important" => Some(ImportantInfo)
+            case "banner"    => Some(BannerInfo)
+            case "noformat"  => Some(NoFormat)
+            case "pdflink"   => Some(PdfLink)
+            case "htmllink"  => Some(HtmlLink)
+            case _           => None
           }
         case None => Some(StandardInfo)
       }

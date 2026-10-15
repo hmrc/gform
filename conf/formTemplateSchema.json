@@ -942,7 +942,6 @@
           "type": "string",
           "enum": [
             "standard",
-            "info",
             "noformat",
             "long",
             "important",
