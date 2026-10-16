@@ -18,7 +18,6 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
 import cats.data.NonEmptyList
 import julienrf.json.derived
-import play.api.libs.functional.syntax._
 import play.api.libs.json.{ JsError, OFormat, Reads }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.JsonUtils._
 import uk.gov.hmrc.gform.sharedmodel.SmartString
@@ -56,15 +55,13 @@ object FormKind {
       case Some("taskList") => (json \ "sections").validate[NonEmptyList[TaskSection]].map(FormKind.TaskList.apply)
       case Some("classic")  => (json \ "sections").validate[List[Section]].map(FormKind.Classic.apply)
       case unknown =>
-        JsError(s"Internal gform error: unknown kind. Expected 'taskList' or 'classic', but got: $unknown")
+        JsError(
+          s"Internal gform error: unknown kind. Expected 'taskList' or 'classic', but got: $unknown. Please re-upload the json template."
+        )
     }
   }
 
-  private val derivedFormat: OFormat[FormKind] = derived.oformat()
-
-  // Unlike OFormatWithTemplateReadFallback, the derived (persisted-shape) error is kept rather than
-  // discarded, so a Mongo decode failure reports the real field instead of "unknown kind ... got: None".
-  implicit val format: OFormat[FormKind] = OFormat((derivedFormat: Reads[FormKind]) | templateReads, derivedFormat)
+  implicit val format: OFormat[FormKind] = OFormatWithTemplateReadFallback(templateReads)
 
   implicit val leafExprs: LeafExpr[FormKind] = (path: TemplatePath, t: FormKind) =>
     t match {
