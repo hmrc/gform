@@ -208,7 +208,7 @@ class SubmissionService(
     val destinationTypes = destinationResponses
       .getOrElse(Nil)
       .collect {
-        case d: DmsDestinationResponse             => s"DMS - ${d.dmsFormId}"
+        case d: DmsDestinationResponse             => s"${SdesDestination.fromName(d.routing).toUpperCase} - ${d.dmsFormId}"
         case o: OtherSdesDestinationResponse       => s"SDES - ${SdesDestination.fromName(o.routing)}"
         case _: HandlebarsDestinationResponse      => "Handlebars API"
         case _: AsyncHandlebarsDestinationResponse => "Async Handlebars API"
