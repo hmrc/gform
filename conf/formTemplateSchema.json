@@ -456,6 +456,9 @@
         "noPIITitle": {
           "$ref": "#/$defs/stringOrEnCyObject"
         },
+        "validators": {
+          "type": "array"
+        },
         "includeIf": {
           "type": "string"
         },

@@ -42,7 +42,8 @@ case class Page(
   hideSaveAndComeBackButton: Option[Boolean],
   removeItemIf: Option[RemoveItemIf],
   displayWidth: Option[LayoutDisplayWidth] = None,
-  specimenNote: Option[String] = None
+  specimenNote: Option[String] = None,
+  validators: Option[List[PageComponentValidator]] = None
 ) {
   lazy val expandedFormComponents: List[FormComponent] = fields.flatMap(_.expandedFormComponents)
 
@@ -65,6 +66,7 @@ case class Page(
 
   def dataRetrieves(): List[DataRetrieve] = dataRetrieve.toList.flatMap(_.toList)
 }
+
 object Page {
 
   import JsonUtils._
@@ -85,6 +87,7 @@ object Page {
       LeafExpr(path + "confirmation", t.confirmation) ++
       LeafExpr(path + "redirects", t.redirects) ++
       LeafExpr(path + "dataRetrieve", t.dataRetrieve) ++
-      LeafExpr(path + "removeItemIf", t.removeItemIf)
+      LeafExpr(path + "removeItemIf", t.removeItemIf) ++
+      LeafExpr(path + "validators", t.validators)
 
 }

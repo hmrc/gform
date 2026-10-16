@@ -30,3 +30,16 @@ object FormComponentValidator {
     LeafExpr(path + "validIf", t.validIf) ++ LeafExpr(path + "errorMessage", t.errorMessage)
 
 }
+
+case class PageComponentValidator(validIf: ValidIf, fieldIds: List[SmartString], errorMessage: SmartString)
+
+object PageComponentValidator {
+
+  implicit val format: OFormat[PageComponentValidator] = derived.oformat()
+
+  implicit val leafExprs: LeafExpr[PageComponentValidator] = (path: TemplatePath, t: PageComponentValidator) =>
+    LeafExpr(path + "validIf", t.validIf) ++
+      LeafExpr(path + "fieldIds", t.fieldIds) ++
+      LeafExpr(path + "errorMessage", t.errorMessage)
+
+}
