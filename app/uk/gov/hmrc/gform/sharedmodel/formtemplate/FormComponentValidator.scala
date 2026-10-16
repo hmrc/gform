@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
+import cats.data.NonEmptyList
 import julienrf.json.derived
 import play.api.libs.json.OFormat
 import uk.gov.hmrc.gform.sharedmodel.SmartString
@@ -28,5 +29,19 @@ object FormComponentValidator {
 
   implicit val leafExprs: LeafExpr[FormComponentValidator] = (path: TemplatePath, t: FormComponentValidator) =>
     LeafExpr(path + "validIf", t.validIf) ++ LeafExpr(path + "errorMessage", t.errorMessage)
+
+}
+
+case class PageValidator(validIf: ValidIf, fieldIds: NonEmptyList[FormComponentId], errorMessage: SmartString)
+
+object PageValidator {
+
+  import JsonUtils._
+
+  implicit val format: OFormat[PageValidator] = derived.oformat()
+
+  implicit val leafExprs: LeafExpr[PageValidator] = (path: TemplatePath, t: PageValidator) =>
+    LeafExpr(path + "validIf", t.validIf) ++
+      LeafExpr(path + "errorMessage", t.errorMessage)
 
 }
