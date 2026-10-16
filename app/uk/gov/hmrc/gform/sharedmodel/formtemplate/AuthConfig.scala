@@ -19,7 +19,6 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate
 import cats.data.NonEmptyList
 import julienrf.json.derived
 import play.api.libs.json._
-import play.api.libs.functional.syntax._
 import uk.gov.hmrc.gform.sharedmodel.email.LocalisedEmailTemplateId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.JsonUtils.nelFormat
 import uk.gov.hmrc.gform.sharedmodel.{ EmailVerifierService, LocalisedString, ValueClassFormat }
@@ -362,10 +361,7 @@ object AuthConfig {
       } yield authConfig
     }
 
-    val writes: OWrites[AuthConfig] = derived.owrites()
-    val reads: Reads[AuthConfig] = derived.reads()
-
-    OFormat(reads | rawTemplateReads, writes)
+    OFormatWithTemplateReadFallback(rawTemplateReads)
   }
 }
 

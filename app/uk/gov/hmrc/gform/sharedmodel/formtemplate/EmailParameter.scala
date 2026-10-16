@@ -16,14 +16,12 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
-import play.api.libs.functional.syntax._
 import play.api.libs.json._
 import uk.gov.hmrc.gform.sharedmodel.LocalisedString
 
 case class EmailParameter(emailTemplateVariable: String, value: Expr)
 object EmailParameter {
   implicit val format: OFormat[EmailParameter] = {
-    val mongoFormat = Json.format[EmailParameter]
 
     val uploadTemplateReads: Reads[EmailParameter] =
       for {
@@ -31,9 +29,7 @@ object EmailParameter {
         value                 <- (JsPath \ "value").read[TextExpression].map(_.expr)
       } yield EmailParameter(emailTemplateVariable, value)
 
-    val reads: Reads[EmailParameter] = uploadTemplateReads | mongoFormat
-
-    OFormat(reads, mongoFormat)
+    OFormatWithTemplateReadFallback(uploadTemplateReads)
   }
 
   implicit val leafExprs: LeafExpr[EmailParameter] = (path: TemplatePath, t: EmailParameter) =>
