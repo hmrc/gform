@@ -78,9 +78,10 @@ object AddToListExpressionHelper {
             updateOptionalSmartString(confirmAddressLabel),
             updateOptionalSmartString(enterAddressLabel)
           )
-        case c @ Choice(_, _, _, _, optionHelpText, _, _, _, _, _, _) =>
+        case c @ Choice(_, _, _, _, optionHelpText, _, _, _, _, _, _, remainingInfo) =>
           c.copy(
-            optionHelpText = optionHelpText.map(nel => nel.map(ss => updateSmartString(ss)))
+            optionHelpText = optionHelpText.map(nel => nel.map(ss => updateSmartString(ss))),
+            whenOnlyOneChoiceRemains = remainingInfo.map(component => updateFields(List(component)).head)
           )
         case r @ RevealingChoice(options, _) =>
           r.copy(options =

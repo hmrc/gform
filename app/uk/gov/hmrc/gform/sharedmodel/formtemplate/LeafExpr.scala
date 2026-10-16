@@ -89,6 +89,7 @@ final case class ExprWithPath(path: TemplatePath, expr: Expr) {
     case c @ ChoicesRevealedField(_)              => ReferenceInfo.ChoicesRevealedFieldExpr(path, c) :: Nil
     case c @ ChoicesSelected(_)                   => ReferenceInfo.ChoicesSelectedExpr(path, c) :: Nil
     case c @ ChoicesAvailable(_, _)               => ReferenceInfo.ChoicesAvailableExpr(path, c) :: Nil
+    case lastOption @ LastOption(_)               => ReferenceInfo.LastOptionExpr(path, lastOption) :: Nil
     case s @ CountSelectedChoices(_)              => ReferenceInfo.CountSelectedChoicesExpr(path, s) :: Nil
     case c @ ChoicesCount(_)                      => ReferenceInfo.ChoicesCountExpr(path, c) :: Nil
     case t @ TaskStatus(_)                        => ReferenceInfo.TaskStatusExpr(path, t) :: Nil

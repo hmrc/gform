@@ -711,8 +711,16 @@ class FormComponentMaker(json: JsValue) {
                                        |""".stripMargin
                                  ).asLeft
                              }
-      result <- oChoice
-    } yield result
+      result            <- oChoice
+      remainingInfoJson <- toOpt((json \ "whenOnlyOneChoiceRemains").validateOpt[JsValue], "/whenOnlyOneChoiceRemains")
+      remainingInfo     <- remainingInfoJson.traverse(value => new FormComponentMaker(value).optFieldValue())
+      _ <-
+        if (remainingInfo.isDefined && !hideChoicesSelected)
+          UnexpectedState("'whenOnlyOneChoiceRemains' requires 'hideChoicesSelected: true'").asLeft
+        else if (remainingInfo.exists(component => !component.`type`.isInstanceOf[InformationMessage]))
+          UnexpectedState("'whenOnlyOneChoiceRemains' must be an info component").asLeft
+        else ().asRight
+    } yield result.copy(whenOnlyOneChoiceRemains = remainingInfo)
   }
 
   private lazy val revealingChoiceOpt: Opt[RevealingChoice] = for {

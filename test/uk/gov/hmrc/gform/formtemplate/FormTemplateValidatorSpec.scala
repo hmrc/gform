@@ -1190,6 +1190,21 @@ class FormTemplateValidatorSpec
           "'hideChoicesSelected: true' for ATL cannot be used with dynamic choice options from a data retrieve: choiceDrOptions."
         )
       }
+
+      "allow value-based dynamic options when replacement info is configured" in {
+        val component = mkChoiceWithDynamicDrOptions()
+        val info = mkFormComponent(
+          "remainingInfo",
+          uk.gov.hmrc.gform.sharedmodel.formtemplate.InformationMessage(
+            uk.gov.hmrc.gform.sharedmodel.formtemplate.StandardInfo,
+            toSmartString("You need to tell us about the remaining approval")
+          ),
+          false
+        )
+        val choice = component.`type`.asInstanceOf[Choice].copy(whenOnlyOneChoiceRemains = Some(info))
+        val sections = List(mkSectionNonRepeatingPage(formComponents = List(component.copy(`type` = choice))))
+        FormTemplateValidator.validateChoiceOptions(SectionHelper.pages(sections)) shouldBe Valid
+      }
     }
   }
 

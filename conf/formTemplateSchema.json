@@ -864,6 +864,15 @@
         "hideChoicesSelected": {
           "type": "boolean"
         },
+        "whenOnlyOneChoiceRemains": {
+          "allOf": [
+            { "$ref": "#/$defs/fields" },
+            {
+              "properties": { "type": { "enum": ["info"] } },
+              "required": ["type", "infoText"]
+            }
+          ]
+        },
         "noDuplicates": {
           "type": "boolean"
         },
