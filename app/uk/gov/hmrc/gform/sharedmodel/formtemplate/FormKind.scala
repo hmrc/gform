@@ -18,7 +18,8 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
 import cats.data.NonEmptyList
 import julienrf.json.derived
-import play.api.libs.json.{ JsError, JsSuccess, OFormat, Reads }
+import play.api.libs.functional.syntax._
+import play.api.libs.json.{ JsError, OFormat, Reads }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.JsonUtils._
 import uk.gov.hmrc.gform.sharedmodel.SmartString
 
@@ -63,20 +64,7 @@ object FormKind {
 
   // Unlike OFormatWithTemplateReadFallback, the derived (persisted-shape) error is kept rather than
   // discarded, so a Mongo decode failure reports the real field instead of "unknown kind ... got: None".
-  implicit val format: OFormat[FormKind] =
-    OFormat(
-      Reads { json =>
-        derivedFormat.reads(json) match {
-          case success: JsSuccess[FormKind] => success
-          case JsError(derivedErrors) =>
-            templateReads.reads(json) match {
-              case success: JsSuccess[FormKind] => success
-              case JsError(templateErrors)      => JsError(templateErrors ++ derivedErrors)
-            }
-        }
-      },
-      derivedFormat
-    )
+  implicit val format: OFormat[FormKind] = OFormat((derivedFormat: Reads[FormKind]) | templateReads, derivedFormat)
 
   implicit val leafExprs: LeafExpr[FormKind] = (path: TemplatePath, t: FormKind) =>
     t match {
