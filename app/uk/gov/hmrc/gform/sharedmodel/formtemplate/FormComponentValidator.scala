@@ -31,13 +31,13 @@ object FormComponentValidator {
 
 }
 
-case class PageComponentValidator(validIf: ValidIf, fieldIds: List[SmartString], errorMessage: SmartString)
+case class PageCustomValidator(validIf: ValidIf, fieldIds: List[SmartString], errorMessage: SmartString)
 
-object PageComponentValidator {
+object PageCustomValidator {
 
-  implicit val format: OFormat[PageComponentValidator] = derived.oformat()
+  implicit val format: OFormat[PageCustomValidator] = derived.oformat()
 
-  implicit val leafExprs: LeafExpr[PageComponentValidator] = (path: TemplatePath, t: PageComponentValidator) =>
+  implicit val leafExprs: LeafExpr[PageCustomValidator] = (path: TemplatePath, t: PageCustomValidator) =>
     LeafExpr(path + "validIf", t.validIf) ++
       LeafExpr(path + "fieldIds", t.fieldIds) ++
       LeafExpr(path + "errorMessage", t.errorMessage)

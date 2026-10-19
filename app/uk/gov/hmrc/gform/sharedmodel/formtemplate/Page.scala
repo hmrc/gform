@@ -43,7 +43,7 @@ case class Page(
   removeItemIf: Option[RemoveItemIf],
   displayWidth: Option[LayoutDisplayWidth] = None,
   specimenNote: Option[String] = None,
-  validators: Option[List[PageComponentValidator]] = None
+  validators: Option[List[PageCustomValidator]] = None
 ) {
   lazy val expandedFormComponents: List[FormComponent] = fields.flatMap(_.expandedFormComponents)
 
