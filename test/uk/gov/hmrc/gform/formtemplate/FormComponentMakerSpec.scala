@@ -62,15 +62,14 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
       Left(UnexpectedState("'whenOnlyOneChoiceRemains' requires 'hideChoicesSelected: true'"))
   }
 
-  it should "evaluate choice constructor fields before validating replacement info" in {
+  it should "validate replacement info before evaluating choice constructor fields" in {
     val invalidJson = lastChoiceJson ++ Json.obj(
       "dividerPosition"     -> BigDecimal("1.5"),
       "hideChoicesSelected" -> false
     )
 
-    intercept[ArithmeticException] {
-      new FormComponentMaker(invalidJson).optFieldValue()
-    }
+    new FormComponentMaker(invalidJson).optFieldValue() shouldBe
+      Left(UnexpectedState("'whenOnlyOneChoiceRemains' requires 'hideChoicesSelected: true'"))
   }
 
   it should "reject a non-info replacement" in {

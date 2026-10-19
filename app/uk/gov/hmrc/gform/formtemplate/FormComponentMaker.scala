@@ -671,23 +671,22 @@ class FormComponentMaker(json: JsValue) {
       _                        <- noTopLevelHintsOpt
       hideChoicesSelected = maybeHideChoicesSelected.getOrElse(false)
       noDuplicates = maybeNoDuplicates.getOrElse(false)
-      shape <- resolveChoiceShape(maybeFormatExpr, choices, multivalue, maybeValueExpr, typeAhead)
-      result = Choice(
-                 shape.choiceType,
-                 shape.options,
-                 shape.orientation,
-                 shape.selections,
-                 optionHelpText,
-                 dividerPositon,
-                 dividerText,
-                 noneChoice,
-                 noneChoiceError,
-                 hideChoicesSelected,
-                 noDuplicates,
-                 None
-               )
+      shape         <- resolveChoiceShape(maybeFormatExpr, choices, multivalue, maybeValueExpr, typeAhead)
       remainingInfo <- remainingInfoOpt(hideChoicesSelected)
-    } yield result.copy(whenOnlyOneChoiceRemains = remainingInfo)
+    } yield Choice(
+      shape.choiceType,
+      shape.options,
+      shape.orientation,
+      shape.selections,
+      optionHelpText,
+      dividerPositon,
+      dividerText,
+      noneChoice,
+      noneChoiceError,
+      hideChoicesSelected,
+      noDuplicates,
+      remainingInfo
+    )
 
   private case class ChoiceShape(
     choiceType: ChoiceType,
