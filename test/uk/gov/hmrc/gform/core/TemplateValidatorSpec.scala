@@ -880,7 +880,8 @@ class TemplateValidatorSpec extends Spec {
           None,
           None,
           false,
-          false
+          false,
+          None
         )
       )
     val referenceToAddAnotherQuestion = mkFormComponent("fieldC", Count(FormComponentId("addAnother")))
@@ -925,7 +926,8 @@ class TemplateValidatorSpec extends Spec {
           None,
           None,
           false,
-          false
+          false,
+          None
         )
       )
     val outsideAddToList = mkFormComponent("fieldD", Value)
@@ -962,7 +964,8 @@ class TemplateValidatorSpec extends Spec {
           None,
           None,
           false,
-          false
+          false,
+          None
         )
       )
     val referenceToAddAnotherQuestion = mkFormComponent("fieldC", Count(FormComponentId("addAnother")))
@@ -994,7 +997,8 @@ class TemplateValidatorSpec extends Spec {
           None,
           None,
           false,
-          false
+          false,
+          None
         )
       )
     val referenceToAddAnotherQuestion = mkFormComponent("fieldC", Count(FormComponentId("addAnother")))
@@ -1034,7 +1038,8 @@ class TemplateValidatorSpec extends Spec {
           None,
           None,
           false,
-          false
+          false,
+          None
         )
       )
     val referenceToAddAnotherQuestion = mkFormComponent("fieldC", Count(FormComponentId("addAnother")))

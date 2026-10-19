@@ -1190,6 +1190,75 @@ class FormTemplateValidatorSpec
           "'hideChoicesSelected: true' for ATL cannot be used with dynamic choice options from a data retrieve: choiceDrOptions."
         )
       }
+
+      "allow value-based dynamic options when replacement info is configured" in {
+        val component = mkChoiceWithDynamicDrOptions()
+        val info = mkFormComponent(
+          "remainingInfo",
+          uk.gov.hmrc.gform.sharedmodel.formtemplate.InformationMessage(
+            uk.gov.hmrc.gform.sharedmodel.formtemplate.StandardInfo,
+            toSmartString("You need to tell us about the remaining approval")
+          ),
+          false
+        )
+        val choice = component.`type`.asInstanceOf[Choice].copy(whenOnlyOneChoiceRemains = Some(info))
+        val sections = List(mkSectionNonRepeatingPage(formComponents = List(component.copy(`type` = choice))))
+        FormTemplateValidator.validateChoiceOptions(SectionHelper.pages(sections)) shouldBe Valid
+      }
+    }
+  }
+
+  "validate - whenOnlyOneChoiceRemains" should {
+    "validate replacement component constraints" in {
+      val info = mkFormComponent(
+        "remainingInfo",
+        InformationMessage(StandardInfo, toSmartString("Remaining approval")),
+        false
+      )
+      val pdfInfo = info.copy(`type` =
+        InformationMessage(
+          uk.gov.hmrc.gform.sharedmodel.formtemplate.PdfLink,
+          toSmartString("Download PDF")
+        )
+      )
+      val htmlInfo = info.copy(`type` =
+        InformationMessage(
+          uk.gov.hmrc.gform.sharedmodel.formtemplate.HtmlLink,
+          toSmartString("Download HTML")
+        )
+      )
+      val table = Table(
+        ("replacement", "hideChoicesSelected", "expectedResult"),
+        (Option.empty[FormComponent], false, Valid),
+        (Option.empty[FormComponent], true, Valid),
+        (Some(info), true, Valid),
+        (Some(info), false, Invalid("'whenOnlyOneChoiceRemains' requires 'hideChoicesSelected: true'")),
+        (Some(mkFormComponent("notInfo")), true, Invalid("'whenOnlyOneChoiceRemains' must be an info component")),
+        (
+          Some(pdfInfo),
+          true,
+          Invalid(
+            "Field 'remainingInfo' is a PdfLink info field. These are only valid in the form's acknowledgement section."
+          )
+        ),
+        (
+          Some(htmlInfo),
+          true,
+          Invalid(
+            "Field 'remainingInfo' is a HtmlLink info field. These are only valid in the form's acknowledgement section."
+          )
+        )
+      )
+
+      forAll(table) { (replacement, hideChoicesSelected, expectedResult) =>
+        val choice = mkChoiceWithDynamicDrOptions().`type`
+          .asInstanceOf[Choice]
+          .copy(
+            hideChoicesSelected = hideChoicesSelected,
+            whenOnlyOneChoiceRemains = replacement
+          )
+        FormTemplateValidator.validate(choice, mkFormTemplate(Nil)) shouldBe expectedResult
+      }
     }
   }
 
@@ -1421,7 +1490,8 @@ class FormTemplateValidatorSpec
                   None,
                   None,
                   false,
-                  false
+                  false,
+                  None
                 ),
                 false
               )
@@ -1455,7 +1525,8 @@ class FormTemplateValidatorSpec
                   None,
                   None,
                   false,
-                  false
+                  false,
+                  None
                 ),
                 false
               )
@@ -1510,7 +1581,8 @@ class FormTemplateValidatorSpec
                   None,
                   None,
                   false,
-                  false
+                  false,
+                  None
                 ),
                 false
               )
@@ -1542,7 +1614,8 @@ class FormTemplateValidatorSpec
                   None,
                   None,
                   false,
-                  false
+                  false,
+                  None
                 ),
                 false
               )
@@ -2525,7 +2598,8 @@ class FormTemplateValidatorSpec
                     None,
                     None,
                     false,
-                    false
+                    false,
+                    None
                   ),
                   false
                 )
@@ -2592,7 +2666,8 @@ class FormTemplateValidatorSpec
                     None,
                     None,
                     false,
-                    false
+                    false,
+                    None
                   ),
                   false
                 )
@@ -2670,7 +2745,8 @@ class FormTemplateValidatorSpec
                     None,
                     None,
                     false,
-                    false
+                    false,
+                    None
                   ),
                   false
                 )
@@ -2734,7 +2810,8 @@ class FormTemplateValidatorSpec
                     None,
                     None,
                     false,
-                    false
+                    false,
+                    None
                   ),
                   false
                 )
@@ -2821,7 +2898,8 @@ class FormTemplateValidatorSpec
                     None,
                     None,
                     false,
-                    false
+                    false,
+                    None
                   ),
                   false
                 ),
@@ -2891,7 +2969,8 @@ class FormTemplateValidatorSpec
                     None,
                     None,
                     false,
-                    false
+                    false,
+                    None
                   ),
                   false
                 ),
@@ -2953,7 +3032,8 @@ class FormTemplateValidatorSpec
                       None,
                       None,
                       false,
-                      false
+                      false,
+                      None
                     ),
                     false
                   )
@@ -3013,7 +3093,8 @@ class FormTemplateValidatorSpec
             None,
             None,
             false,
-            false
+            false,
+            None
           ),
           Valid
         ),
@@ -3032,7 +3113,8 @@ class FormTemplateValidatorSpec
             None,
             None,
             false,
-            false
+            false,
+            None
           ),
           Invalid(
             "TypeAhead choice validation failed: dutyType. TypeAhead choices must use ValueBased options only"
@@ -3061,7 +3143,8 @@ class FormTemplateValidatorSpec
             None,
             None,
             false,
-            false
+            false,
+            None
           ),
           Invalid(
             "TypeAhead choice validation failed: dutyType. TypeAhead choices cannot use dynamic options"
@@ -3082,7 +3165,8 @@ class FormTemplateValidatorSpec
             None,
             None,
             false,
-            false
+            false,
+            None
           ),
           Valid
         )
@@ -3141,7 +3225,8 @@ class FormTemplateValidatorSpec
             None,
             None,
             false,
-            false
+            false,
+            None
           ),
           Valid
         ),
@@ -3168,7 +3253,8 @@ class FormTemplateValidatorSpec
             None,
             None,
             false,
-            false
+            false,
+            None
           ),
           Valid
         ),
@@ -3195,7 +3281,8 @@ class FormTemplateValidatorSpec
             None,
             None,
             false,
-            false
+            false,
+            None
           ),
           Invalid(
             "keyWord property can only be used with TypeAhead choices: dutyType. keyWord property can only be used with TypeAhead choices. Found in options: 'Option 1' (keyWord: keyword1)"
@@ -3224,7 +3311,8 @@ class FormTemplateValidatorSpec
             None,
             None,
             false,
-            false
+            false,
+            None
           ),
           Invalid(
             "keyWord property can only be used with TypeAhead choices: dutyType. keyWord property can only be used with TypeAhead choices. Found in options: 'Option 1' (keyWord: keyword1)"
@@ -3253,7 +3341,8 @@ class FormTemplateValidatorSpec
             None,
             None,
             false,
-            false
+            false,
+            None
           ),
           Valid
         )
@@ -3439,7 +3528,8 @@ class FormTemplateValidatorSpec
         None,
         None,
         false,
-        false
+        false,
+        None
       ),
       toSmartString("Select the tax type"),
       false,
@@ -3470,7 +3560,8 @@ class FormTemplateValidatorSpec
         None,
         None,
         true,
-        false
+        false,
+        None
       ),
       toSmartString("Nothing"),
       false,

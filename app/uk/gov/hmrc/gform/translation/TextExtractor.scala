@@ -429,7 +429,7 @@ object TextExtractor {
       List(TraverseArray, Pure(DownField("hints"))) ++ root,
       Pure(DownField("key")) :: miniSummaryList,
       Pure(DownField("value")) :: miniSummaryList
-    )
+    ) ++ pathForInfoOnlyField(Pure(DownField("whenOnlyOneChoiceRemains")) :: root)
   }
 
   def pathForCyaPage(root: List[Instruction]): List[List[Instruction]] =

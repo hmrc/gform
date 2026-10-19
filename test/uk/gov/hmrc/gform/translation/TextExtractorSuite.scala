@@ -26,6 +26,56 @@ import TextExtractor.gformPaths
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.Constant
 
 class TextExtractorSuite extends FunSuite {
+  private val remainingChoiceTemplate = json"""{
+    "sections": [{
+      "pages": [{
+        "fields": [{
+          "id": "approvalType",
+          "type": "choice",
+          "hideChoicesSelected": true,
+          "whenOnlyOneChoiceRemains": {
+            "id": "remainingInfo",
+            "type": "info",
+            "label": "Remaining choice",
+            "infoText": {
+              "en": "Tell us about $${lastOption(approvalType)}.",
+              "cy": "Rhowch wybod am $${lastOption(approvalType)}."
+            }
+          }
+        }]
+      }]
+    }]
+  }"""
+
+  test("Extract whenOnlyOneChoiceRemains content") {
+    val rows = Translator(remainingChoiceTemplate, gformPaths).fetchRows
+    assertEquals(
+      rows,
+      List(
+        Row(
+          ".sections[0].pages[0].fields[0].whenOnlyOneChoiceRemains.infoText",
+          "Tell us about ${lastOption(approvalType)}.",
+          "Rhowch wybod am ${lastOption(approvalType)}."
+        ),
+        Row(".sections[0].pages[0].fields[0].whenOnlyOneChoiceRemains.label", "Remaining choice", "")
+      )
+    )
+  }
+
+  test("Annotate whenOnlyOneChoiceRemains content") {
+    val annotated = Translator(remainingChoiceTemplate, gformPaths).translateJsonDebug
+    val rows = Translator(annotated, gformPaths).fetchRows
+    assertEquals(rows.map(_.en), List.fill(2)("\u2705"))
+  }
+
+  test("Import Welsh whenOnlyOneChoiceRemains content") {
+    val translator = Translator(remainingChoiceTemplate, gformPaths)
+    val rows = translator.fetchRows.map(_.copy(cy = "Test Welsh translation"))
+    val translatedRows = Translator(translator.translateJson(rows), gformPaths).fetchRows
+    assertEquals(translatedRows.size, 2)
+    assertEquals(translatedRows, rows)
+  }
+
   test("Annotate top level field") {
     val json =
       json"""

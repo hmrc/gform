@@ -333,7 +333,8 @@ case class Choice(
   noneChoice: Option[NoneChoice],
   noneChoiceError: Option[LocalisedString],
   hideChoicesSelected: Boolean,
-  noDuplicates: Boolean
+  noDuplicates: Boolean,
+  whenOnlyOneChoiceRemains: Option[FormComponent]
 ) extends ComponentType
 
 sealed trait ChoiceType
@@ -622,10 +623,11 @@ object ComponentType {
       case Address(_, _, _, _)                        => Nil
       case OverseasAddress(_, _, _, Some(expr), _, _) => List(ExprWithPath(path, expr))
       case OverseasAddress(_, _, _, _, _, _)          => Nil
-      case Choice(_, options, _, _, optionHelpText, _, dividerText, _, _, _, _) =>
+      case Choice(_, options, _, _, optionHelpText, _, dividerText, _, _, _, _, remainingInfo) =>
         LeafExpr(path + "choices", options) ++
           LeafExpr(path + "optionHelpText", optionHelpText) ++
-          LeafExpr(path + "dividerText", dividerText)
+          LeafExpr(path + "dividerText", dividerText) ++
+          LeafExpr(path + "whenOnlyOneChoiceRemains", remainingInfo)
       case RevealingChoice(options, _)   => LeafExpr(path, options)
       case HmrcTaxPeriod(_, idNumber, _) => List(ExprWithPath(path, idNumber))
       case Group(fields, _, _, repeatLabel, addAnotherText) =>

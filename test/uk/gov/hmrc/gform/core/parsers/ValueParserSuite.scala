@@ -24,6 +24,13 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
 class ValueParserSuite extends FunSuite {
 
+  test("lastOption parses a choice reference") {
+    assertEquals(
+      ValueParser.validate("${lastOption(producedAlcohol)}"),
+      Right(TextExpression(LastOption(FormComponentId("producedAlcohol"))))
+    )
+  }
+
   implicit def implicitToFormComponentId(str: String): FormComponentId = FormComponentId(str)
 
   implicit def liftToFormCtx(s: String): FormCtx = FormCtx(s)

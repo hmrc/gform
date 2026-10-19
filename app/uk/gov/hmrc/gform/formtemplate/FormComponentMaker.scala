@@ -657,12 +657,7 @@ class FormComponentMaker(json: JsValue) {
   private def toSmartString(stringEn: String, stringCy: String) =
     SmartString(LocalisedString(Map(LangADT.En -> stringEn, LangADT.Cy -> stringCy)), Nil)
 
-  private lazy val choiceOpt: Opt[Choice] = {
-    val yesNo =
-      NonEmptyList
-        .of(toSmartString("Yes", "Iawn"), toSmartString("No", "Na"))
-        .map(OptionData.IndexBased(_, None, None, None, None))
-
+  private lazy val choiceOpt: Opt[Choice] =
     for {
       emailVerification        <- optEmailVerification
       selectionCriteria        <- optSelectionCriteria
@@ -673,47 +668,87 @@ class FormComponentMaker(json: JsValue) {
       typeAhead                <- optTypeAhead
       maybeHideChoicesSelected <- optHideChoicesSelected
       maybeNoDuplicates        <- optNoDuplicates
-      _ <-
-        if (optionHints.isDefined)
-          Left(
-            UnexpectedState(
-              "Top-level 'hints' array is no longer supported. Use inline 'hint' on individual choice options instead."
-            )
-          )
-        else Right(())
+      _                        <- noTopLevelHintsOpt
       hideChoicesSelected = maybeHideChoicesSelected.getOrElse(false)
       noDuplicates = maybeNoDuplicates.getOrElse(false)
-      oChoice: Opt[Choice] = (maybeFormatExpr, choices, multivalue, maybeValueExpr, typeAhead) match {
-                               // format: off
-        case (_,                                    Some(x :: xs), _,                           Selections(selections), IsTypeAhead(TypeAheadYes)) => Choice(TypeAhead, NonEmptyList(x, xs),          Vertical,   selections, optionHelpText, dividerPositon, dividerText, noneChoice, noneChoiceError, hideChoicesSelected, noDuplicates).asRight
-        case (IsOrientation(VerticalOrientation),   Some(x :: xs), IsMultivalue(MultivalueYes), Selections(selections), IsTypeAhead(TypeAheadNo))  => Choice(Checkbox,  NonEmptyList(x, xs),          Vertical,   selections, optionHelpText, dividerPositon, dividerText, noneChoice, noneChoiceError, hideChoicesSelected, noDuplicates).asRight
-        case (IsOrientation(VerticalOrientation),   Some(x :: xs), IsMultivalue(MultivalueNo),  Selections(selections), IsTypeAhead(TypeAheadNo))  => Choice(Radio,     NonEmptyList(x, xs),          Vertical,   selections, optionHelpText, dividerPositon, dividerText, noneChoice, noneChoiceError, hideChoicesSelected, noDuplicates).asRight
-        case (IsOrientation(HorizontalOrientation), Some(x :: xs), IsMultivalue(MultivalueYes), Selections(selections), IsTypeAhead(TypeAheadNo))  => Choice(Checkbox,  NonEmptyList(x, xs),          Horizontal, selections, optionHelpText, dividerPositon, dividerText, noneChoice, noneChoiceError, hideChoicesSelected, noDuplicates).asRight
-        case (IsOrientation(HorizontalOrientation), Some(x :: xs), IsMultivalue(MultivalueNo),  Selections(selections), IsTypeAhead(TypeAheadNo))  => Choice(Radio,     NonEmptyList(x, xs),          Horizontal, selections, optionHelpText, dividerPositon, dividerText, noneChoice, noneChoiceError, hideChoicesSelected, noDuplicates).asRight
-        case (IsOrientation(YesNoOrientation),      None,          IsMultivalue(MultivalueNo),  Selections(selections), IsTypeAhead(TypeAheadNo))  => Choice(YesNo,    yesNo, Horizontal, selections, optionHelpText, dividerPositon, dividerText, noneChoice, noneChoiceError, hideChoicesSelected, noDuplicates).asRight
-        case (IsOrientation(YesNoOrientation),      _,             _,                           Selections(selections), IsTypeAhead(TypeAheadNo))  => Choice(YesNo,    yesNo, Horizontal, selections, optionHelpText, dividerPositon, dividerText, noneChoice, noneChoiceError, hideChoicesSelected, noDuplicates).asRight
-        // format: on
-                               case (
-                                     invalidFormat,
-                                     invalidChoices,
-                                     invalidMultivalue,
-                                     invalidValue,
-                                     invalidTypeAhead
-                                   ) =>
-                                 UnexpectedState(
-                                   s"""|Unsupported combination of 'format, choices, multivalue and value':
-                                       |Format     : $invalidFormat
-                                       |Choices    : $invalidChoices
-                                       |Multivalue : $invalidMultivalue
-                                       |Multivalue : $invalidTypeAhead
-                                       |Value      : $invalidValue
-                                       |optionHelpText: $optionHelpText
-                                       |""".stripMargin
-                                 ).asLeft
-                             }
-      result <- oChoice
-    } yield result
+      shape         <- resolveChoiceShape(maybeFormatExpr, choices, multivalue, maybeValueExpr, typeAhead)
+      remainingInfo <- remainingInfoOpt(hideChoicesSelected)
+    } yield Choice(
+      shape.choiceType,
+      shape.options,
+      shape.orientation,
+      shape.selections,
+      optionHelpText,
+      dividerPositon,
+      dividerText,
+      noneChoice,
+      noneChoiceError,
+      hideChoicesSelected,
+      noDuplicates,
+      remainingInfo
+    )
+
+  private case class ChoiceShape(
+    choiceType: ChoiceType,
+    options: NonEmptyList[OptionData],
+    orientation: Orientation,
+    selections: List[Int]
+  )
+
+  private def resolveChoiceShape(
+    maybeFormatExpr: Option[FormatExpr],
+    choices: Option[List[OptionData]],
+    multivalue: Option[Boolean],
+    maybeValueExpr: Option[ValueExpr],
+    typeAhead: Option[Boolean]
+  ): Opt[ChoiceShape] = {
+    val yesNo =
+      NonEmptyList
+        .of(toSmartString("Yes", "Iawn"), toSmartString("No", "Na"))
+        .map(OptionData.IndexBased(_, None, None, None, None))
+
+    (maybeFormatExpr, choices, multivalue, maybeValueExpr, typeAhead) match {
+      // format: off
+      case (_,                                    Some(first :: rest), _,                            Selections(selections), IsTypeAhead(TypeAheadYes)) => ChoiceShape(TypeAhead, NonEmptyList(first, rest), Vertical,   selections).asRight
+      case (IsOrientation(VerticalOrientation),   Some(first :: rest), IsMultivalue(MultivalueYes), Selections(selections), IsTypeAhead(TypeAheadNo))  => ChoiceShape(Checkbox,  NonEmptyList(first, rest), Vertical,   selections).asRight
+      case (IsOrientation(VerticalOrientation),   Some(first :: rest), IsMultivalue(MultivalueNo),  Selections(selections), IsTypeAhead(TypeAheadNo))  => ChoiceShape(Radio,     NonEmptyList(first, rest), Vertical,   selections).asRight
+      case (IsOrientation(HorizontalOrientation), Some(first :: rest), IsMultivalue(MultivalueYes), Selections(selections), IsTypeAhead(TypeAheadNo))  => ChoiceShape(Checkbox,  NonEmptyList(first, rest), Horizontal, selections).asRight
+      case (IsOrientation(HorizontalOrientation), Some(first :: rest), IsMultivalue(MultivalueNo),  Selections(selections), IsTypeAhead(TypeAheadNo))  => ChoiceShape(Radio,     NonEmptyList(first, rest), Horizontal, selections).asRight
+      case (IsOrientation(YesNoOrientation),      None,                IsMultivalue(MultivalueNo),  Selections(selections), IsTypeAhead(TypeAheadNo))  => ChoiceShape(YesNo, yesNo, Horizontal, selections).asRight
+      case (IsOrientation(YesNoOrientation),      _,                   _,                            Selections(selections), IsTypeAhead(TypeAheadNo))  => ChoiceShape(YesNo, yesNo, Horizontal, selections).asRight
+      // format: on
+      case (invalidFormat, invalidChoices, invalidMultivalue, invalidValue, invalidTypeAhead) =>
+        UnexpectedState(
+          s"""|Unsupported combination of 'format, choices, multivalue and value':
+              |Format     : $invalidFormat
+              |Choices    : $invalidChoices
+              |Multivalue : $invalidMultivalue
+              |Multivalue : $invalidTypeAhead
+              |Value      : $invalidValue
+              |optionHelpText: $optionHelpText
+              |""".stripMargin
+        ).asLeft
+    }
   }
+
+  private lazy val noTopLevelHintsOpt: Opt[Unit] =
+    if (optionHints.isDefined)
+      UnexpectedState(
+        "Top-level 'hints' array is no longer supported. Use inline 'hint' on individual choice options instead."
+      ).asLeft
+    else ().asRight
+
+  private def remainingInfoOpt(hideChoicesSelected: Boolean): Opt[Option[FormComponent]] =
+    for {
+      remainingInfoJson <- toOpt((json \ "whenOnlyOneChoiceRemains").validateOpt[JsValue], "/whenOnlyOneChoiceRemains")
+      remainingInfo     <- remainingInfoJson.traverse(value => new FormComponentMaker(value).optFieldValue())
+      _ <-
+        if (remainingInfo.isDefined && !hideChoicesSelected)
+          UnexpectedState("'whenOnlyOneChoiceRemains' requires 'hideChoicesSelected: true'").asLeft
+        else if (remainingInfo.exists(component => !component.`type`.isInstanceOf[InformationMessage]))
+          UnexpectedState("'whenOnlyOneChoiceRemains' must be an info component").asLeft
+        else ().asRight
+    } yield remainingInfo
 
   private lazy val revealingChoiceOpt: Opt[RevealingChoice] = for {
     maybeValueExpr <- optMaybeValueExpr
@@ -725,13 +760,7 @@ class FormComponentMaker(json: JsValue) {
     val maybeRevealingFields: Option[Opt[List[List[FormComponent]]]] =
       revealingFields.map(_.traverse(_.traverse(_.optFieldValue())))
 
-    if (optionHints.isDefined) {
-      Left(
-        UnexpectedState(
-          "Top-level 'hints' array is no longer supported. Use inline 'hint' on individual choice options instead."
-        )
-      )
-    } else
+    noTopLevelHintsOpt.flatMap { _ =>
       choicesOpt.flatMap { choices =>
         (choices, maybeValueExpr, maybeRevealingFields) match {
           case (Some(options), Selections(selections), Some(Right(revealingFields))) =>
@@ -798,6 +827,7 @@ class FormComponentMaker(json: JsValue) {
                                 |revealingFields: $maybeRevealingFields""".stripMargin).asLeft
         }
       }
+    }
   }
 
   private lazy val hmrcTaxPeriodOpt: Opt[HmrcTaxPeriod] = (idType, idNumber, regimeType) match {

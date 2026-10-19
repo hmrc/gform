@@ -308,7 +308,7 @@ class SubstituteExpressionsSuite extends FunSuite with FormTemplateSupport {
       val optionSummaryValueInterpolation = substituted.formKind.allSections.head match {
         case Section.NonRepeatingPage(page) =>
           page.fields.head match {
-            case IsChoice(Choice(_, options, _, _, _, _, _, _, _, _, _)) =>
+            case IsChoice(Choice(_, options, _, _, _, _, _, _, _, _, _, _)) =>
               options.head match {
                 case OptionData.IndexBased(_, _, _, _, summaryValue) =>
                   summaryValue.flatMap(_.internals.flatMap(_.interpolations).headOption)

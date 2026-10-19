@@ -338,6 +338,8 @@ object FormTemplateValidator {
       case ReferenceInfo.ChoicesAvailableExpr(path, ChoicesAvailable(formComponentId, _))
           if !allChoiceIds(formComponentId) =>
         Invalid(s"${path.path}: $formComponentId is not a Choice in the form")
+      case ReferenceInfo.LastOptionExpr(path, LastOption(formComponentId)) if !allChoiceIds(formComponentId) =>
+        Invalid(s"${path.path}: $formComponentId is not a Choice in the form")
       case ReferenceInfo.ChoicesCountExpr(path, ChoicesCount(formComponentId)) if !allChoiceIds(formComponentId) =>
         Invalid(s"${path.path}: $formComponentId is not a Choice in the form")
       case ReferenceInfo.TaskStatusExpr(path, TaskStatus(taskId)) if !allTaskIds(taskId) =>
@@ -1045,7 +1047,7 @@ object FormTemplateValidator {
       } else false
 
     def checkHideChoicesSelectedNonDynamicOptions(choice: Choice): Boolean =
-      if (choice.hideChoicesSelected) {
+      if (choice.hideChoicesSelected && choice.whenOnlyOneChoiceRemains.isEmpty) {
         areChoiceOptionsDataRetrievedBased(Option(choice))
       } else false
 
@@ -1473,14 +1475,14 @@ object FormTemplateValidator {
 
   @nowarn
   def validate(componentType: ComponentType, formTemplate: FormTemplate): ValidationResult = componentType match {
-    case HasExpr(SingleExpr(expr))               => validate(expr, formTemplate.formKind.allSections)
-    case HasExpr(MultipleExpr(fields))           => Valid
-    case Date(_, _, _)                           => Valid
-    case CalendarDate                            => Valid
-    case TaxPeriodDate                           => Valid
-    case Address(_, _, _, Some(expr))            => validateAddressValue(expr, formTemplate)
-    case Address(_, _, _, _)                     => Valid
-    case Choice(_, _, _, _, _, _, _, _, _, _, _) => Valid
+    case HasExpr(SingleExpr(expr))     => validate(expr, formTemplate.formKind.allSections)
+    case HasExpr(MultipleExpr(fields)) => Valid
+    case Date(_, _, _)                 => Valid
+    case CalendarDate                  => Valid
+    case TaxPeriodDate                 => Valid
+    case Address(_, _, _, Some(expr))  => validateAddressValue(expr, formTemplate)
+    case Address(_, _, _, _)           => Valid
+    case choice: Choice                => validateWhenOnlyOneChoiceRemains(choice)
     case RevealingChoice(revealingChoiceElements, _) =>
       validate(revealingChoiceElements.toList.flatMap(_.revealingFields.map(_.`type`)), formTemplate)
     case HmrcTaxPeriod(_, _, _)                     => Valid
@@ -1499,6 +1501,22 @@ object FormTemplateValidator {
 
   private def infoTypeNotAllowed(fc: FormComponent, infoType: InfoType) =
     s"Field '${fc.id}' is a ${infoType.toString} info field. These are only valid in the form's acknowledgement section."
+
+  private def validateWhenOnlyOneChoiceRemains(choice: Choice): ValidationResult =
+    choice.whenOnlyOneChoiceRemains.fold[ValidationResult](Valid) { component =>
+      if (!choice.hideChoicesSelected) {
+        Invalid("'whenOnlyOneChoiceRemains' requires 'hideChoicesSelected: true'")
+      } else {
+        component match {
+          case IsInformationMessage(InformationMessage(PdfLink, _, _)) =>
+            Invalid(infoTypeNotAllowed(component, PdfLink))
+          case IsInformationMessage(InformationMessage(HtmlLink, _, _)) =>
+            Invalid(infoTypeNotAllowed(component, HtmlLink))
+          case IsInformationMessage(_) => Valid
+          case _                       => Invalid("'whenOnlyOneChoiceRemains' must be an info component")
+        }
+      }
+    }
 
   private def validateInformationMessages(formTemplate: FormTemplate): ValidationResult = {
     val pages = SectionHelper.pages(formTemplate.formKind.allSections)
@@ -1703,6 +1721,7 @@ object FormTemplateValidator {
       case ChoicesRevealedField(_)             => Valid
       case ChoicesSelected(_)                  => Valid
       case ChoicesAvailable(_, _)              => Valid
+      case LastOption(_)                       => Valid
       case DisplayAsEntered(_)                 => Valid
       case CountSelectedChoices(_)             => Valid
       case ChoicesCount(_)                     => Valid

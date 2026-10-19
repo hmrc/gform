@@ -425,6 +425,9 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
     | "choicesAvailable(" ~ FormComponentId.unanchoredIdValidation ~ ")" ^^ { case _ ~ value ~ _ =>
       ChoicesAvailable(FormComponentId(value), None)
     }
+    | "lastOption(" ~ FormComponentId.unanchoredIdValidation ~ ")" ^^ { case _ ~ value ~ _ =>
+      LastOption(FormComponentId(value))
+    }
     | "choicesCount(" ~ FormComponentId.unanchoredIdValidation ~ ")" ^^ { case _ ~ value ~ _ =>
       ChoicesCount(FormComponentId(value))
     }

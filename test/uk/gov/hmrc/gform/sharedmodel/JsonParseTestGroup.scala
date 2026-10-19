@@ -79,7 +79,8 @@ class JsonParseTestGroup extends Spec {
                 None,
                 None,
                 false,
-                false
+                false,
+                None
               ),
               toSmartString("clabel"),
               false,
@@ -175,7 +176,8 @@ class JsonParseTestGroup extends Spec {
                 None,
                 None,
                 false,
-                false
+                false,
+                None
               ),
               toSmartString("clabel"),
               false,
