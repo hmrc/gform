@@ -334,7 +334,7 @@ case class Choice(
   noneChoiceError: Option[LocalisedString],
   hideChoicesSelected: Boolean,
   noDuplicates: Boolean,
-  whenOnlyOneChoiceRemains: Option[FormComponent] = None
+  whenOnlyOneChoiceRemains: Option[FormComponent]
 ) extends ComponentType
 
 sealed trait ChoiceType

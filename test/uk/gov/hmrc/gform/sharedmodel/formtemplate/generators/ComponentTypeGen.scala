@@ -92,7 +92,8 @@ trait ComponentTypeGen {
       None,
       None,
       false,
-      false
+      false,
+      None
     )
 
   def revealingChoiceElementGen: Gen[RevealingChoiceElement] =

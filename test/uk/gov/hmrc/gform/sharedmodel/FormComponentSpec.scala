@@ -476,7 +476,8 @@ class FormComponentSpec extends Spec {
           None,
           None,
           false,
-          false
+          false,
+          None
         ),
         toSmartString("Gas tax type?"),
         false,
@@ -739,7 +740,8 @@ class FormComponentSpec extends Spec {
           None,
           None,
           false,
-          false
+          false,
+          None
         ),
         toSmartString("Select the tax type"),
         false,
@@ -787,7 +789,8 @@ class FormComponentSpec extends Spec {
           None,
           None,
           false,
-          false
+          false,
+          None
         ),
         toSmartString("Select the tax type"),
         false,
@@ -836,7 +839,8 @@ class FormComponentSpec extends Spec {
           None,
           None,
           false,
-          false
+          false,
+          None
         ),
         toSmartString("Select the tax type"),
         false,
@@ -885,7 +889,8 @@ class FormComponentSpec extends Spec {
           None,
           None,
           false,
-          false
+          false,
+          None
         ),
         toSmartString("Select the tax type"),
         false,
@@ -933,7 +938,8 @@ class FormComponentSpec extends Spec {
           None,
           None,
           false,
-          false
+          false,
+          None
         ),
         toSmartString("Select the tax type"),
         false,
@@ -982,7 +988,8 @@ class FormComponentSpec extends Spec {
           None,
           None,
           false,
-          false
+          false,
+          None
         ),
         toSmartString("Select the tax type"),
         false,
@@ -1031,7 +1038,8 @@ class FormComponentSpec extends Spec {
           None,
           None,
           false,
-          false
+          false,
+          None
         ),
         toSmartString("Select the tax type"),
         false,
@@ -1071,7 +1079,8 @@ class FormComponentSpec extends Spec {
           None,
           None,
           false,
-          false
+          false,
+          None
         ),
         toSmartString("Gas tax type?"),
         false,
@@ -1112,7 +1121,8 @@ class FormComponentSpec extends Spec {
           None,
           None,
           false,
-          false
+          false,
+          None
         ),
         toSmartString("Gas tax type?"),
         false,
@@ -1153,7 +1163,8 @@ class FormComponentSpec extends Spec {
           None,
           None,
           false,
-          false
+          false,
+          None
         ),
         toSmartString("Gas tax type?"),
         false,
@@ -1201,7 +1212,8 @@ class FormComponentSpec extends Spec {
           None,
           None,
           false,
-          false
+          false,
+          None
         ),
         toSmartString("Gas tax type?"),
         false,
@@ -1241,7 +1253,8 @@ class FormComponentSpec extends Spec {
           None,
           None,
           false,
-          false
+          false,
+          None
         ),
         toSmartString("Gas tax type?"),
         false,
@@ -1697,7 +1710,8 @@ class FormComponentSpec extends Spec {
           None,
           None,
           false,
-          false
+          false,
+          None
         ),
         toSmartString("Original invoice from the supplier"),
         false,

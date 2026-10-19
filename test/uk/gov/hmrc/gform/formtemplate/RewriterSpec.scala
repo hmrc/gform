@@ -45,7 +45,8 @@ class RewriterSpec extends FunSuite with FormTemplateSupport with RewriterSuppor
       None,
       None,
       false,
-      false
+      false,
+      None
     )
 
     val fcChoice = mkFormComponent("a", choice, false)
@@ -110,7 +111,8 @@ class RewriterSpec extends FunSuite with FormTemplateSupport with RewriterSuppor
         None,
         None,
         false,
-        false
+        false,
+        None
       )
 
       val fcChoice = mkFormComponent("a", choice, false)

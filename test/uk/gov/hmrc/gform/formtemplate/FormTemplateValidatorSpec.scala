@@ -1490,7 +1490,8 @@ class FormTemplateValidatorSpec
                   None,
                   None,
                   false,
-                  false
+                  false,
+                  None
                 ),
                 false
               )
@@ -1524,7 +1525,8 @@ class FormTemplateValidatorSpec
                   None,
                   None,
                   false,
-                  false
+                  false,
+                  None
                 ),
                 false
               )
@@ -1579,7 +1581,8 @@ class FormTemplateValidatorSpec
                   None,
                   None,
                   false,
-                  false
+                  false,
+                  None
                 ),
                 false
               )
@@ -1611,7 +1614,8 @@ class FormTemplateValidatorSpec
                   None,
                   None,
                   false,
-                  false
+                  false,
+                  None
                 ),
                 false
               )
@@ -2594,7 +2598,8 @@ class FormTemplateValidatorSpec
                     None,
                     None,
                     false,
-                    false
+                    false,
+                    None
                   ),
                   false
                 )
@@ -2661,7 +2666,8 @@ class FormTemplateValidatorSpec
                     None,
                     None,
                     false,
-                    false
+                    false,
+                    None
                   ),
                   false
                 )
@@ -2739,7 +2745,8 @@ class FormTemplateValidatorSpec
                     None,
                     None,
                     false,
-                    false
+                    false,
+                    None
                   ),
                   false
                 )
@@ -2803,7 +2810,8 @@ class FormTemplateValidatorSpec
                     None,
                     None,
                     false,
-                    false
+                    false,
+                    None
                   ),
                   false
                 )
@@ -2890,7 +2898,8 @@ class FormTemplateValidatorSpec
                     None,
                     None,
                     false,
-                    false
+                    false,
+                    None
                   ),
                   false
                 ),
@@ -2960,7 +2969,8 @@ class FormTemplateValidatorSpec
                     None,
                     None,
                     false,
-                    false
+                    false,
+                    None
                   ),
                   false
                 ),
@@ -3022,7 +3032,8 @@ class FormTemplateValidatorSpec
                       None,
                       None,
                       false,
-                      false
+                      false,
+                      None
                     ),
                     false
                   )
@@ -3082,7 +3093,8 @@ class FormTemplateValidatorSpec
             None,
             None,
             false,
-            false
+            false,
+            None
           ),
           Valid
         ),
@@ -3101,7 +3113,8 @@ class FormTemplateValidatorSpec
             None,
             None,
             false,
-            false
+            false,
+            None
           ),
           Invalid(
             "TypeAhead choice validation failed: dutyType. TypeAhead choices must use ValueBased options only"
@@ -3130,7 +3143,8 @@ class FormTemplateValidatorSpec
             None,
             None,
             false,
-            false
+            false,
+            None
           ),
           Invalid(
             "TypeAhead choice validation failed: dutyType. TypeAhead choices cannot use dynamic options"
@@ -3151,7 +3165,8 @@ class FormTemplateValidatorSpec
             None,
             None,
             false,
-            false
+            false,
+            None
           ),
           Valid
         )
@@ -3210,7 +3225,8 @@ class FormTemplateValidatorSpec
             None,
             None,
             false,
-            false
+            false,
+            None
           ),
           Valid
         ),
@@ -3237,7 +3253,8 @@ class FormTemplateValidatorSpec
             None,
             None,
             false,
-            false
+            false,
+            None
           ),
           Valid
         ),
@@ -3264,7 +3281,8 @@ class FormTemplateValidatorSpec
             None,
             None,
             false,
-            false
+            false,
+            None
           ),
           Invalid(
             "keyWord property can only be used with TypeAhead choices: dutyType. keyWord property can only be used with TypeAhead choices. Found in options: 'Option 1' (keyWord: keyword1)"
@@ -3293,7 +3311,8 @@ class FormTemplateValidatorSpec
             None,
             None,
             false,
-            false
+            false,
+            None
           ),
           Invalid(
             "keyWord property can only be used with TypeAhead choices: dutyType. keyWord property can only be used with TypeAhead choices. Found in options: 'Option 1' (keyWord: keyword1)"
@@ -3322,7 +3341,8 @@ class FormTemplateValidatorSpec
             None,
             None,
             false,
-            false
+            false,
+            None
           ),
           Valid
         )
@@ -3508,7 +3528,8 @@ class FormTemplateValidatorSpec
         None,
         None,
         false,
-        false
+        false,
+        None
       ),
       toSmartString("Select the tax type"),
       false,
@@ -3539,7 +3560,8 @@ class FormTemplateValidatorSpec
         None,
         None,
         true,
-        false
+        false,
+        None
       ),
       toSmartString("Nothing"),
       false,

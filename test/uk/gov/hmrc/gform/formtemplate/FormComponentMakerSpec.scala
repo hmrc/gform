@@ -1057,7 +1057,8 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
         None,
         None,
         false,
-        false
+        false,
+        None
       )
     )
   }
