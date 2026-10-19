@@ -35,7 +35,7 @@ import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
 import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination
-import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination.fromName
+import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination.{ Pega, fromName }
 import uk.gov.hmrc.gform.submission.destinations.PgpEncryption
 import uk.gov.hmrc.gform.submission.{ PdfAndXmlSummaries, Submission }
 import uk.gov.hmrc.gform.time.TimeProvider
@@ -390,14 +390,20 @@ class ObjectStoreService(
       case _ => Future.unit
     }
 
-    for {
-      _ <- duplicateUserFilesF
-      _ <- uploadPfdF
-      _ <- uploadInstructionPdfF
-      _ <- uploadFormDataF
-      _ <- uploadRoboticsContentF
-      _ <- uploadMetadataXmlF
-    } yield ()
+    if (hmrcDms.routing === Pega)
+      for {
+        _ <- duplicateUserFilesF
+        _ <- uploadMetadataXmlF
+      } yield ()
+    else
+      for {
+        _ <- duplicateUserFilesF
+        _ <- uploadPfdF
+        _ <- uploadInstructionPdfF
+        _ <- uploadFormDataF
+        _ <- uploadRoboticsContentF
+        _ <- uploadMetadataXmlF
+      } yield ()
   }
 
   private def getContentType(contentType: String) = contentType match {
