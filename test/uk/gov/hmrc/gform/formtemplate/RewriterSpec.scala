@@ -73,6 +73,28 @@ class RewriterSpec extends FunSuite with FormTemplateSupport with RewriterSuppor
   }
 
   private val fcA = FormCtx(FormComponentId("a"))
+
+  test("Rewrite page validators when Equals refers to a choice component") {
+    val choice = Choice(YesNo, yesNoLocalisedStrings, Horizontal, Nil, None, None, divider, None, None, false, false)
+    val section = mkSectionNonRepeatingPage(mkFormComponent("a", choice, false))
+    val validator = PageCustomValidator(
+      ValidIf(Equals(fcA, Constant("1"))),
+      List("a", "b"),
+      toSmartString("Check both answers")
+    )
+    val withValidator = section.copy(page =
+      section.page.copy(fields = section.page.fields :+ mkFormComponent("b", Value), validators = Some(List(validator)))
+    )
+    val template = mkFormTemplate(List(withValidator))
+    val expected = withValidator.copy(page =
+      withValidator.page.copy(validators = Some(List(validator.copy(validIf = ValidIf(Contains(fcA, Constant("1")))))))
+    )
+
+    rewriter
+      .rewrite(template)
+      .value
+      .map(obtained => assertEquals(obtained.map(_.formKind.allSections.head), Right(expected)))
+  }
   private val invalidIfElseTable: List[(IfElse, String)] = List(
     (
       IfElse(Equals(fcA, Constant("1")), Constant("foo"), Constant("bar")),

@@ -380,6 +380,7 @@ object TextExtractor {
       Pure(DownField("removePageContent")) :: root,
       Pure(DownField("caption")) :: root,
       Pure(DownField("continueLabel")) :: root,
+      List(Pure(DownField("errorMessage")), TraverseArray, Pure(DownField("validators"))) ++ root,
       Pure(DownField("label")) :: confirmationQuestion,
       Pure(DownField("shortName")) :: confirmationQuestion,
       Pure(DownField("errorMessage")) :: confirmationQuestion,

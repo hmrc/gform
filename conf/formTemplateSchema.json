@@ -457,7 +457,28 @@
           "$ref": "#/$defs/stringOrEnCyObject"
         },
         "validators": {
-          "type": "array"
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["validIf", "fieldIds", "errorMessage"],
+            "properties": {
+              "validIf": {
+                "type": "string"
+              },
+              "fieldIds": {
+                "type": "array",
+                "minItems": 2,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string"
+                }
+              },
+              "errorMessage": {
+                "$ref": "#/$defs/stringOrEnCyObject"
+              }
+            }
+          }
         },
         "includeIf": {
           "type": "string"

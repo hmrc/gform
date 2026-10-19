@@ -65,6 +65,13 @@ trait Verifier {
       _ <- fromOptA(FormTemplateValidator.validateRevealingChoiceOptions(pages).toEither)
       _ <- fromOptA(FormTemplateValidator.validateUniqueFields(sections, expressionIds).toEither)
       _ <- fromOptA(FormTemplateValidator.validateUniquePageIds(sections).toEither)
+      _ <- fromOptA(
+             FormTemplateValidator
+               .validatePageCustomValidators(pages ++ sections.collect { case atl: Section.AddToList =>
+                 atl.defaultPage
+               }.flatten)
+               .toEither
+           )
       _ <- fromOptA(FormTemplateValidator.validateForwardReference(sections).toEither)
       _ <- fromOptA(FormTemplateValidator.validate(componentTypes, formTemplate).toEither)
       _ <- fromOptA(FormTemplateValidator.validateDependencyGraph(formTemplate).toEither)

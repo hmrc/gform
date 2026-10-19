@@ -36,6 +36,41 @@ class FormTemplateValidatorSpec
   private val divider = toSmartString("or", "neu")
   private val noDivider = SmartString(LocalisedString(Map()), List.empty[Expr])
 
+  "validatePageCustomValidators" should {
+    def page(groups: List[List[String]]): Page =
+      mkSectionNonRepeatingPage(formComponents =
+        List("first", "second", "third", "fourth").map(id => mkFormComponent(id = id))
+      ).page.copy(validators =
+        Some(
+          groups.map(ids =>
+            uk.gov.hmrc.gform.sharedmodel.formtemplate.PageCustomValidator(
+              ValidIf(Equals(Constant("a"), Constant("b"))),
+              ids,
+              toSmartString("Shared error")
+            )
+          )
+        )
+      )
+
+    "allow adjacent members in either declared order and separate groups" in {
+      FormTemplateValidator.validatePageCustomValidators(
+        List(page(List(List("second", "first"), List("third", "fourth"))))
+      ) shouldBe Valid
+    }
+
+    List(
+      List(List("first")),
+      List(List("first", "first")),
+      List(List("first", "missing")),
+      List(List("first", "third")),
+      List(List("first", "second"), List("second", "third"))
+    ).foreach { groups =>
+      s"reject invalid or overlapping groups $groups" in {
+        FormTemplateValidator.validatePageCustomValidators(List(page(groups))) shouldBe a[Invalid]
+      }
+    }
+  }
+
   "validate - for DateCtx" when {
     "expression refers to existing Form field" should {
       "return Valid" in {

@@ -45,6 +45,33 @@ import scala.util.{ Failure, Success, Try }
 
 object FormTemplateValidator {
 
+  def validatePageCustomValidators(pages: List[Page]): ValidationResult =
+    Monoid.combineAll(pages.map { page =>
+      val validators = page.validators.toList.flatten
+      val allMemberIds = validators.flatMap(_.fieldIds)
+      val eligibleIds = page.fields
+        .filterNot(field =>
+          field.derived || field.onlyShowOnSummary || (field.`type` match {
+            case _: Group | _: InformationMessage | _: MiniSummaryList | _: TableComp | _: Button => true
+            case _                                                                                => false
+          })
+        )
+        .map(_.id.value)
+      val fieldOrder = page.fields.map(_.id.value)
+      val validGroups = validators.forall { validator =>
+        val members = validator.fieldIds
+        val positions = members.map(fieldOrder.indexOf).sorted
+        members.size >= 2 &&
+        members.distinct.size == members.size &&
+        members.forall(eligibleIds.contains) &&
+        positions == (positions.head until positions.head + positions.size).toList
+      }
+      (validGroups && allMemberIds.distinct.size == allMemberIds.size).validationResult(
+        s"Page validators must reference at least two distinct adjacent input fields on the same page, " +
+          s"with no overlapping groups. Found fieldIds: ${allMemberIds.mkString(", ")}"
+      )
+    })
+
   def validateLowercaseIds(
     formTemplate: FormTemplate
   ): ValidationResult = {

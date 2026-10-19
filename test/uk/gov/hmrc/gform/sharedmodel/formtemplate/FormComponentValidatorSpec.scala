@@ -17,6 +17,7 @@
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
+import play.api.libs.json.Json
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.Helpers.toSmartString
 import uk.gov.hmrc.gform.sharedmodel.generators.FormComponentValidatorGen
@@ -34,5 +35,20 @@ class FormComponentValidatorSpec extends Spec with ScalaCheckDrivenPropertyCheck
     val validator =
       FormComponentValidator(ValidIf(Equals(FormCtx(FormComponentId("hallo")), Constant("goobye"))), errorMessage)
     verifyRead(validator, json)
+  }
+
+  "PageCustomValidator" should "serialize member IDs as strings and preserve the localized error message" in {
+    val validator = PageCustomValidator(
+      ValidIf(Equals(FormCtx(FormComponentId("first")), FormCtx(FormComponentId("second")))),
+      List("first", "second"),
+      toSmartString("The values must match", "Rhaid cyfateb")
+    )
+    val json = Json.toJson(validator)
+    (json \ "fieldIds").as[List[String]] shouldBe List("first", "second")
+    json.as[PageCustomValidator] shouldBe validator
+    verifyRead(
+      validator,
+      """{"validIf":"${first=second}","fieldIds":["first","second"],"errorMessage":{"en":"The values must match","cy":"Rhaid cyfateb"}}"""
+    )
   }
 }

@@ -31,7 +31,7 @@ object FormComponentValidator {
 
 }
 
-case class PageCustomValidator(validIf: ValidIf, fieldIds: List[SmartString], errorMessage: SmartString)
+case class PageCustomValidator(validIf: ValidIf, fieldIds: List[String], errorMessage: SmartString)
 
 object PageCustomValidator {
 
@@ -39,7 +39,6 @@ object PageCustomValidator {
 
   implicit val leafExprs: LeafExpr[PageCustomValidator] = (path: TemplatePath, t: PageCustomValidator) =>
     LeafExpr(path + "validIf", t.validIf) ++
-      LeafExpr(path + "fieldIds", t.fieldIds) ++
       LeafExpr(path + "errorMessage", t.errorMessage)
 
 }
