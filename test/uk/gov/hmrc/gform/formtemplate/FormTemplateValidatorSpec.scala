@@ -1208,6 +1208,60 @@ class FormTemplateValidatorSpec
     }
   }
 
+  "validate - whenOnlyOneChoiceRemains" should {
+    "validate replacement component constraints" in {
+      val info = mkFormComponent(
+        "remainingInfo",
+        InformationMessage(StandardInfo, toSmartString("Remaining approval")),
+        false
+      )
+      val pdfInfo = info.copy(`type` =
+        InformationMessage(
+          uk.gov.hmrc.gform.sharedmodel.formtemplate.PdfLink,
+          toSmartString("Download PDF")
+        )
+      )
+      val htmlInfo = info.copy(`type` =
+        InformationMessage(
+          uk.gov.hmrc.gform.sharedmodel.formtemplate.HtmlLink,
+          toSmartString("Download HTML")
+        )
+      )
+      val table = Table(
+        ("replacement", "hideChoicesSelected", "expectedResult"),
+        (Option.empty[FormComponent], false, Valid),
+        (Option.empty[FormComponent], true, Valid),
+        (Some(info), true, Valid),
+        (Some(info), false, Invalid("'whenOnlyOneChoiceRemains' requires 'hideChoicesSelected: true'")),
+        (Some(mkFormComponent("notInfo")), true, Invalid("'whenOnlyOneChoiceRemains' must be an info component")),
+        (
+          Some(pdfInfo),
+          true,
+          Invalid(
+            "Field 'remainingInfo' is a PdfLink info field. These are only valid in the form's acknowledgement section."
+          )
+        ),
+        (
+          Some(htmlInfo),
+          true,
+          Invalid(
+            "Field 'remainingInfo' is a HtmlLink info field. These are only valid in the form's acknowledgement section."
+          )
+        )
+      )
+
+      forAll(table) { (replacement, hideChoicesSelected, expectedResult) =>
+        val choice = mkChoiceWithDynamicDrOptions().`type`
+          .asInstanceOf[Choice]
+          .copy(
+            hideChoicesSelected = hideChoicesSelected,
+            whenOnlyOneChoiceRemains = replacement
+          )
+        FormTemplateValidator.validate(choice, mkFormTemplate(Nil)) shouldBe expectedResult
+      }
+    }
+  }
+
   "date construct function" should {
     "validate against using 29th February" in {
       val table = Table(

@@ -1482,7 +1482,7 @@ object FormTemplateValidator {
     case TaxPeriodDate                 => Valid
     case Address(_, _, _, Some(expr))  => validateAddressValue(expr, formTemplate)
     case Address(_, _, _, _)           => Valid
-    case _: Choice                     => Valid
+    case choice: Choice                => validateWhenOnlyOneChoiceRemains(choice)
     case RevealingChoice(revealingChoiceElements, _) =>
       validate(revealingChoiceElements.toList.flatMap(_.revealingFields.map(_.`type`)), formTemplate)
     case HmrcTaxPeriod(_, _, _)                     => Valid
@@ -1501,6 +1501,22 @@ object FormTemplateValidator {
 
   private def infoTypeNotAllowed(fc: FormComponent, infoType: InfoType) =
     s"Field '${fc.id}' is a ${infoType.toString} info field. These are only valid in the form's acknowledgement section."
+
+  private def validateWhenOnlyOneChoiceRemains(choice: Choice): ValidationResult =
+    choice.whenOnlyOneChoiceRemains.fold[ValidationResult](Valid) { component =>
+      if (!choice.hideChoicesSelected) {
+        Invalid("'whenOnlyOneChoiceRemains' requires 'hideChoicesSelected: true'")
+      } else {
+        component match {
+          case IsInformationMessage(InformationMessage(PdfLink, _, _)) =>
+            Invalid(infoTypeNotAllowed(component, PdfLink))
+          case IsInformationMessage(InformationMessage(HtmlLink, _, _)) =>
+            Invalid(infoTypeNotAllowed(component, HtmlLink))
+          case IsInformationMessage(_) => Valid
+          case _                       => Invalid("'whenOnlyOneChoiceRemains' must be an info component")
+        }
+      }
+    }
 
   private def validateInformationMessages(formTemplate: FormTemplate): ValidationResult = {
     val pages = SectionHelper.pages(formTemplate.formKind.allSections)
