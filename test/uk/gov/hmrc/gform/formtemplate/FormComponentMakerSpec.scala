@@ -62,6 +62,17 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
       Left(UnexpectedState("'whenOnlyOneChoiceRemains' requires 'hideChoicesSelected: true'"))
   }
 
+  it should "evaluate choice constructor fields before validating replacement info" in {
+    val invalidJson = lastChoiceJson ++ Json.obj(
+      "dividerPosition"     -> BigDecimal("1.5"),
+      "hideChoicesSelected" -> false
+    )
+
+    intercept[ArithmeticException] {
+      new FormComponentMaker(invalidJson).optFieldValue()
+    }
+  }
+
   it should "reject a non-info replacement" in {
     val replacement = Json.obj("id" -> "lastAlcohol", "type" -> "text", "label" -> "Alcohol", "format" -> "text")
     new FormComponentMaker(lastChoiceJson + ("whenOnlyOneChoiceRemains" -> replacement)).optFieldValue() shouldBe
@@ -1061,6 +1072,38 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
         None
       )
     )
+  }
+
+  it should "preserve choice shapes and matching precedence" in {
+    val baseJson = (lastChoiceJson - "whenOnlyOneChoiceRemains") ++ Json.obj("noDuplicates" -> true)
+    val original = new FormComponentMaker(baseJson).optFieldValue().toOption.get.`type`.asInstanceOf[Choice]
+    val yesNoOptions = NonEmptyList
+      .of(
+        SmartString(LocalisedString(Map(LangADT.En -> "Yes", LangADT.Cy -> "Iawn")), Nil),
+        SmartString(LocalisedString(Map(LangADT.En -> "No", LangADT.Cy -> "Na")), Nil)
+      )
+      .map(OptionData.IndexBased(_, None, None, None, None))
+    val cases = List(
+      (Json.obj(), Radio, Vertical, original.options),
+      (Json.obj("multivalue" -> true), Checkbox, Vertical, original.options),
+      (Json.obj("format" -> "horizontal"), Radio, Horizontal, original.options),
+      (Json.obj("format" -> "horizontal", "multivalue" -> true), Checkbox, Horizontal, original.options),
+      (Json.obj("format" -> "yesno", "choices" -> Json.arr()), YesNo, Horizontal, yesNoOptions),
+      (Json.obj("format" -> "yesno", "multivalue" -> true), YesNo, Horizontal, yesNoOptions),
+      (Json.obj("typeAhead" -> true), TypeAhead, Vertical, original.options),
+      (Json.obj("format" -> "yesno", "typeAhead" -> true), TypeAhead, Vertical, original.options)
+    )
+
+    cases.foreach { case (overrides, choiceType, orientation, options) =>
+      withClue(s"Choice configuration: $overrides: ") {
+        val result = new FormComponentMaker(baseJson ++ overrides).optFieldValue().map(_.`type`)
+        result shouldBe Right(original.copy(`type` = choiceType, orientation = orientation, options = options))
+      }
+    }
+
+    val withoutChoices = (baseJson - "choices") ++ Json.obj("format" -> "yesno")
+    new FormComponentMaker(withoutChoices).optFieldValue().map(_.`type`) shouldBe
+      Right(original.copy(`type` = YesNo, orientation = Horizontal, options = yesNoOptions))
   }
 
   "revealingChoiceOpt" should "return error when top-level hints array is used" in {
