@@ -76,6 +76,7 @@ object Page {
 
   val leafExprsNoFields: LeafExpr[Page] = (path: TemplatePath, t: Page) =>
     LeafExpr(path + "title", t.title) ++
+      LeafExpr(path + "noPIITitle", t.noPIITitle) ++
       LeafExpr(path + "description", t.description) ++
       LeafExpr(path + "shortName", t.shortName) ++
       LeafExpr(path + "caption", t.caption) ++
