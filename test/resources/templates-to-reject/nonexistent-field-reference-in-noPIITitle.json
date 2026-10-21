@@ -1,0 +1,33 @@
+{
+  "_id": "nonexistent-field-reference-in-noPIITitle",
+  "formName": "Invalid expression in No PII Title",
+  "description": "",
+  "version": 1,
+  "authConfig": {
+    "authModule": "anonymous"
+  },
+  "sections": [
+    {
+      "title": "Text",
+      "noPIITitle": "Text ${invalid}",
+      "fields": [
+        {
+          "id": "text",
+          "type": "text",
+          "format": "text",
+          "label": "text"
+        }
+      ]
+    }
+  ],
+  "acknowledgementSection": {
+    "fields": []
+  },
+  "destinations": [
+    {
+      "id": "transitionToSubmitted",
+      "type": "stateTransition",
+      "requiredState": "Submitted"
+    }
+  ]
+}
