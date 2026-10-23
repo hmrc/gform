@@ -42,7 +42,9 @@ package object ops {
       case _                                                        => false
     }
 
-    def isNumeric =
-      formComponent.isNumber || formComponent.isPositiveNumber || formComponent.isSterling || formComponent.isWholeSterling
+    def isNumeric = {
+      val fc = formComponent
+      fc.isNumber || fc.isPositiveNumber || fc.isSterling || fc.isWholeSterling
+    }
   }
 }
