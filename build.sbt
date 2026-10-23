@@ -1,5 +1,4 @@
 import Dependencies.appDependencies
-import org.scalafmt.sbt.ScalafmtPlugin
 import play.sbt.PlayImport.PlayKeys
 import play.sbt.routes.RoutesKeys.routesImport
 import sbt.Keys.{ resolvers, _ }
@@ -7,12 +6,11 @@ import sbt._
 import uk.gov.hmrc.DefaultBuildSettings.{ addTestReportOption, defaultSettings, scalaSettings }
 import uk.gov.hmrc.DefaultBuildSettings
 import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin
-import uk.gov.hmrc.versioning.SbtGitVersioning
 import uk.gov.hmrc.versioning.SbtGitVersioning.autoImport.majorVersion
 
 ThisBuild / majorVersion := 0
 
-ThisBuild / scalaVersion := "2.13.16"
+ThisBuild / scalaVersion := "2.13.18"
 
 ThisBuild / libraryDependencySchemes ++= Seq(
   "org.scala-lang.modules" %% "scala-xml" % VersionScheme.Always
@@ -53,9 +51,9 @@ lazy val microservice = (project in file("."))
         case sbt.Tests.Argument(None, args) => sbt.Tests.Argument(Some(TestFrameworks.ScalaTest), args)
         case otherwise                      => otherwise
       }
-      .toSet
-      .toSeq, // get rid of duplicates
+      .distinct, // get rid of duplicates
     libraryDependencies ++= appDependencies,
+    dependencyOverrides ++= Dependencies.dependencyOverrides,
     routesImport ++= Seq(
       "uk.gov.hmrc.crypto.Crypted",
       "uk.gov.hmrc.gform.builder.SectionPath",
