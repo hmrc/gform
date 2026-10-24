@@ -16,8 +16,10 @@
 
 package uk.gov.hmrc.gform.formtemplate
 
+import cats.data.NonEmptyList
 import munit.FunSuite
 import play.api.libs.json.{ JsError, JsObject, JsSuccess, Json }
+
 import scala.language.implicitConversions
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
@@ -27,6 +29,40 @@ class SubstituteBooleanExprsSuite extends FunSuite with FormTemplateSupport {
   implicit def stringToFormComponentId(str: String): FormComponentId = FormComponentId(str)
 
   val substituteBooleanEpxrs = new SubstituteBooleanExprs {}
+
+  test("SubstituteBooleanExprs should substitute page validator conditions and conditional error messages") {
+    val condition = TopLevelRef(BooleanExprId("sharedCheck"))
+    val resolved = GreaterThan(FormCtx("first"), Constant("10"))
+    val validator = PageValidator(
+      ValidIf(condition),
+      NonEmptyList.of(FormComponentId("first"), FormComponentId("second")),
+      uk.gov.hmrc.gform.sharedmodel.SmartString.SmartStringCond(
+        List(condition -> uk.gov.hmrc.gform.Helpers.toSmartString("Shared error").internals.head),
+        uk.gov.hmrc.gform.Helpers.toSmartString("Other error").internals.head
+      )
+    )
+    val section = mkSectionNonRepeatingPage(formComponents = List(mkFormComponent("first"), mkFormComponent("second")))
+    val formTemplate = mkFormTemplate(
+      List(section.copy(page = section.page.copy(validators = Some(NonEmptyList.one(validator)))))
+    )
+
+    val substituted = substituteBooleanEpxrs.substituteBooleanExprs(
+      formTemplate,
+      BooleanExprSubstitutions(Map(BooleanExprId("sharedCheck") -> resolved)),
+      ExprSubstitutions.empty
+    )
+    val result = SectionHelper.pages(substituted.formKind.allSections).head.validators.get.head
+
+    assertEquals(result.validIf, ValidIf(resolved))
+    assertEquals(result.fieldIds, validator.fieldIds)
+    assertEquals(
+      result.errorMessage,
+      uk.gov.hmrc.gform.sharedmodel.SmartString.SmartStringCond(
+        List(resolved -> validator.errorMessage.internals.head),
+        validator.errorMessage.internals.last
+      )
+    )
+  }
 
   test("SubstituteBooleanExprs should substitute includeIf") {
     val jsonStr =

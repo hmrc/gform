@@ -15,7 +15,7 @@ The destinations that are currently supported are as follows.
 - API within HMRC core systems. Calls can be made via EIS - DES, HIP etc.
 - Date Store as a json file containing all of the data in the submission (this can be configured with a json schema to define the contract between Gform and the conduming system)
 - Info Archive as a PDF file
- 
+
 ## License
 
 This code is open source software licensed under the [Apache 2.0 License](http://www.apache.org/licenses/LICENSE-2.0.html).

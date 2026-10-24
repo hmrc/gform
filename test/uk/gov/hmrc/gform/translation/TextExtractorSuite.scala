@@ -76,6 +76,24 @@ class TextExtractorSuite extends FunSuite {
     assertEquals(translatedRows, rows)
   }
 
+  test("Translate page validator messages without translating member field IDs") {
+    val json = json"""{
+      "sections": [{
+        "title": "Question",
+        "validators": [{
+          "validIf": "$${first = second}",
+          "fieldIds": ["first", "second"],
+          "errorMessage": "The values must match"
+        }]
+      }]
+    }"""
+    val translated = Translator(json, gformPaths).translateJsonDebug
+    val validator = translated.hcursor.downField("sections").downArray.downField("validators").downArray
+    assertEquals(validator.get[String]("errorMessage"), Right("✅"))
+    assertEquals(validator.get[List[String]]("fieldIds"), Right(List("first", "second")))
+    assertEquals(validator.get[String]("validIf"), Right("${first = second}"))
+  }
+
   test("Annotate top level field") {
     val json =
       json"""

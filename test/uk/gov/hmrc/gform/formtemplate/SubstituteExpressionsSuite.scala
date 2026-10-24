@@ -18,10 +18,15 @@ package uk.gov.hmrc.gform.formtemplate
 
 import munit.FunSuite
 import play.api.libs.json.{ JsError, JsObject, JsSuccess, Json }
+
 import scala.language.implicitConversions
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.sharedmodel.{ DataRetrieve, DataRetrieveId, LangADT, LocalisedString, SmartString }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate._, OffsetUnit.Year, OffsetUnit.Day, OffsetUnit.Month
+import uk.gov.hmrc.gform.sharedmodel.formtemplate._
+import OffsetUnit.Year
+import OffsetUnit.Day
+import OffsetUnit.Month
+import cats.data.NonEmptyList
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationId, DestinationIncludeIf, HttpMethod, ProfileName, TemplateType }
 
 class SubstituteExpressionsSuite extends FunSuite with FormTemplateSupport {
@@ -108,6 +113,65 @@ class SubstituteExpressionsSuite extends FunSuite with FormTemplateSupport {
         )
       case unexpectedDestination =>
         fail(s"Unexpected destination: $unexpectedDestination")
+    }
+  }
+
+  test("Page validators should resolve top-level expressions before checking PII in their error messages") {
+    val jsonStr =
+      """{
+        |  "_id": "page-validators",
+        |  "formName": "Page validators",
+        |  "version": 1,
+        |  "description": "",
+        |  "authConfig": { "authModule": "anonymous" },
+        |  "expressions": { "total": "first + second" },
+        |  "sections": [{
+        |    "title": "Shared validation",
+        |    "fields": [
+        |      { "id": "first", "type": "text", "label": "Tax", "format": "sterling" },
+        |      { "id": "second", "type": "text", "label": "Tax 2", "format": "sterling" }
+        |    ],
+        |    "validators": [{
+        |      "validIf": "${total > 10}",
+        |      "fieldIds": ["second", "first"],
+        |      "errorMessage": "Total must be more than 10. It was ${total}"
+        |    }]
+        |  }],
+        |  "acknowledgementSection": { "fields": [] },
+        |  "destinations": [{
+        |    "id": "transitionToSubmitted",
+        |    "type": "stateTransition",
+        |    "requiredState": "Submitted"
+        |  }]
+        |}""".stripMargin
+
+    toFormTemplateAndSubstitutions(jsonStr) { (formTemplate, substitutions) =>
+      val substituted = substituteExpressions.substituteExpressions(formTemplate, substitutions)
+      val page = SectionHelper.pages(substituted.formKind.allSections).head
+      val validator = page.validators.get.head
+      val total = Add(FormCtx("first"), FormCtx("second"))
+
+      assert(page.fields.forall(!_.notPII))
+      assertEquals(validator.validIf, ValidIf(GreaterThan(total, Constant("10"))))
+      assertEquals(validator.fieldIds, NonEmptyList.of(FormComponentId("second"), FormComponentId("first")))
+      assertEquals(validator.errorMessage.internals.flatMap(_.interpolations), List(total))
+      assertEquals(
+        FormTemplateValidator.validateErrorMessageConstraints(
+          substituted,
+          LeafExpr(TemplatePath.root, substituted)
+        ),
+        uk.gov.hmrc.gform.core.Invalid("sections.validators.errorMessage contains PII fcId: first")
+      )
+
+      val nonPiiPage = page.copy(fields = page.fields.map(_.copy(notPII = true)))
+      val nonPiiTemplate = mkFormTemplate(List(Section.NonRepeatingPage(nonPiiPage)))
+      assertEquals(
+        FormTemplateValidator.validateErrorMessageConstraints(
+          nonPiiTemplate,
+          LeafExpr(TemplatePath.root, nonPiiTemplate)
+        ),
+        uk.gov.hmrc.gform.core.Valid
+      )
     }
   }
 

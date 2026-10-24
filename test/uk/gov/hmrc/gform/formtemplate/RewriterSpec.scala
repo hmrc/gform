@@ -74,6 +74,35 @@ class RewriterSpec extends FunSuite with FormTemplateSupport with RewriterSuppor
   }
 
   private val fcA = FormCtx(FormComponentId("a"))
+
+  test("Rewrite page validators when Equals refers to a choice component") {
+    val choice =
+      Choice(YesNo, yesNoLocalisedStrings, Horizontal, Nil, None, None, divider, None, None, false, false, None)
+    val section = mkSectionNonRepeatingPage(mkFormComponent("a", choice, false))
+    val validator = PageValidator(
+      ValidIf(Equals(fcA, Constant("1"))),
+      NonEmptyList.of(FormComponentId("a"), FormComponentId("b")),
+      toSmartString("Check both answers")
+    )
+    val withValidator = section.copy(page =
+      section.page.copy(
+        fields = section.page.fields :+ mkFormComponent("b", Value),
+        validators = Some(NonEmptyList.one(validator))
+      )
+    )
+    val template = mkFormTemplate(List(withValidator))
+    val expected = withValidator.copy(page =
+      withValidator.page.copy(validators =
+        Some(NonEmptyList.one(validator.copy(validIf = ValidIf(Contains(fcA, Constant("1"))))))
+      )
+    )
+
+    rewriter
+      .rewrite(template)
+      .value
+      .map(obtained => assertEquals(obtained.map(_.formKind.allSections.head), Right(expected)))
+  }
+
   private val invalidIfElseTable: List[(IfElse, String)] = List(
     (
       IfElse(Equals(fcA, Constant("1")), Constant("foo"), Constant("bar")),
@@ -313,6 +342,11 @@ class RewriterSpec extends FunSuite with FormTemplateSupport with RewriterSuppor
       redirects = redirects
     )
 
+    val pageValidator = PageValidator(
+      ValidIf(Equals(FormCtx(FormComponentId("fc2")), Constant("1"))),
+      NonEmptyList.of(FormComponentId("fc2"), FormComponentId("fc2")),
+      toSmartString("Check both answers")
+    )
     val pageTitle2 = SmartString(localised = LocalisedString(m = Map(LangADT.En -> "English page title 2")), Nil)
     val page2 = simplePage.copy(
       title = pageTitle2,
@@ -331,7 +365,8 @@ class RewriterSpec extends FunSuite with FormTemplateSupport with RewriterSuppor
             )
           )
         )
-      )
+      ),
+      validators = Some(NonEmptyList.one(pageValidator))
     )
 
     val formTemplate = mkFormTemplate(
@@ -353,6 +388,9 @@ class RewriterSpec extends FunSuite with FormTemplateSupport with RewriterSuppor
       assertEquals(firstPage.fields.head.mandatory, Mandatory.False)
       assertEquals(secondPage.fields.head.includeIf, None)
       assertEquals(secondPage.fields.head.validIf, None)
+      secondPage.validators.map(validators =>
+        validators.map(validator => assertEquals(validator.validIf, ValidIf(IsTrue)))
+      )
       secondPage.fields.head.validators.map(validator => assertEquals(validator.validIf, ValidIf(IsTrue)))
     })
   }

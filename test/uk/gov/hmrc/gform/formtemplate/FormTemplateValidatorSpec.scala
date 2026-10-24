@@ -36,6 +36,130 @@ class FormTemplateValidatorSpec
   private val divider = toSmartString("or", "neu")
   private val noDivider = SmartString(LocalisedString(Map()), List.empty[Expr])
 
+  "validatePageValidators" should {
+    def page(groups: List[List[String]]): Page =
+      mkSectionNonRepeatingPage(formComponents =
+        List("first", "second", "third", "fourth").map(id => mkFormComponent(id = id))
+      ).page.copy(validators =
+        NonEmptyList.fromList(
+          groups.map(ids =>
+            uk.gov.hmrc.gform.sharedmodel.formtemplate.PageValidator(
+              ValidIf(Equals(Constant("a"), Constant("b"))),
+              NonEmptyList.fromListUnsafe(ids.map(FormComponentId.apply)),
+              toSmartString("Shared error")
+            )
+          )
+        )
+      )
+
+    "allow adjacent members in either declared order and separate groups" in {
+      FormTemplateValidator.validatePageValidators(
+        List(page(List(List("second", "first"), List("third", "fourth"))))
+      ) shouldBe Valid
+    }
+
+    List(
+      List(List("first", "second"), List("first", "second")),
+      List(List("first", "second"), List("second", "first")),
+      List(List("first", "second", "third"), List("third", "first", "second")),
+      List(List("first", "second"), List("third", "fourth"), List("second", "first"), List("fourth", "third"))
+    ).foreach { groups =>
+      s"reject repeated identical adjacent groups regardless of member order $groups" in {
+        FormTemplateValidator.validatePageValidators(List(page(groups))) shouldBe a[Invalid]
+      }
+    }
+
+    "reject duplicate groups even when their conditions and error messages differ" in {
+      val original = page(List(List("first", "second")))
+      val validator = original.validators.get.head
+      val duplicate = validator.copy(
+        validIf = ValidIf(IsTrue),
+        errorMessage = toSmartString("Another error")
+      )
+      FormTemplateValidator.validatePageValidators(
+        List(original.copy(validators = Some(NonEmptyList.of(validator, duplicate))))
+      ) shouldBe a[Invalid]
+    }
+
+    "check group uniqueness separately for each page" in {
+      val groups = List(List("first", "second"))
+      FormTemplateValidator.validatePageValidators(List(page(groups), page(groups))) shouldBe Valid
+    }
+
+    "report the cause and offending fieldIds or validator number" in {
+      val cases = Table(
+        ("groups", "message"),
+        (List(List("first")), "Page validator 1 must reference at least two fieldIds."),
+        (
+          List(List("first", "second"), List("third")),
+          "Page validator 2 must reference at least two fieldIds."
+        ),
+        (List(List("first", "first")), "Page validator 1 contains duplicate fieldId: first."),
+        (List(List("first", "missing")), "Page validator 1 references unknown fieldId: missing."),
+        (
+          List(List("first", "third")),
+          "Page validator 1 references non-adjacent fieldIds: first, third."
+        ),
+        (
+          List(List("first", "second"), List("second", "third")),
+          "fieldId: second is used in page validators 1, 2."
+        ),
+        (
+          List(List("first", "second"), List("second", "first")),
+          "fieldId: first is used in page validators 1, 2."
+        )
+      )
+      forAll(cases) { (groups, message) =>
+        FormTemplateValidator.validatePageValidators(List(page(groups))) shouldBe Invalid(message)
+      }
+    }
+
+    "identify an existing but ineligible field" in {
+      val original = page(List(List("first", "second")))
+      val ineligibleFields = List(
+        original.fields.head.copy(derived = true),
+        original.fields.head.copy(onlyShowOnSummary = true),
+        original.fields.head.copy(`type` = InformationMessage(StandardInfo, toSmartString("Heading")))
+      )
+      ineligibleFields.foreach { field =>
+        FormTemplateValidator.validatePageValidators(
+          List(original.copy(fields = field :: original.fields.tail))
+        ) shouldBe Invalid(
+          "Page validator 1 references fieldId: first, which is not an eligible input field."
+        )
+      }
+    }
+
+    "allow pages without validators" in {
+      FormTemplateValidator.validatePageValidators(List(page(Nil))) shouldBe Valid
+    }
+
+    List(
+      List(List("first", "second"), List("second", "third")),
+      List(List("first", "second", "third"), List("second", "third")),
+      List(List("first", "second"), List("first", "second", "third")),
+      List(List("first", "second", "third"), List("second", "third", "fourth")),
+      List(List("first", "second"), List("second", "first"), List("second", "third"))
+    ).foreach { groups =>
+      s"reject different overlapping adjacent groups $groups" in {
+        FormTemplateValidator.validatePageValidators(List(page(groups))) shouldBe a[Invalid]
+      }
+    }
+
+    List(
+      List(List("first")),
+      List(List("first", "first")),
+      List(List("first", "missing")),
+      List(List("first", "third")),
+      List(List("first", "second"), List("second", "fourth")),
+      List(List("first", "second"), List("second", "second", "third"))
+    ).foreach { groups =>
+      s"reject invalid groups $groups" in {
+        FormTemplateValidator.validatePageValidators(List(page(groups))) shouldBe a[Invalid]
+      }
+    }
+  }
+
   "validate - for DateCtx" when {
     "expression refers to existing Form field" should {
       "return Valid" in {
@@ -888,6 +1012,28 @@ class FormTemplateValidatorSpec
   }
 
   "validateErrorMessageConstraints" should {
+
+    "restrict PII in validator error messages across page locations" in {
+      val paths = List(
+        "sections.validators.errorMessage",
+        "sections.tasks.sections.validators.errorMessage",
+        "sections.pages.validators.errorMessage",
+        "sections.defaultPage.validators.errorMessage",
+        "sections.pages.fields.[id=second].validators.errorMessage"
+      )
+
+      List(false, true).foreach { notPII =>
+        val formTemplate = mkFormTemplate(
+          List(mkSectionNonRepeatingPage(formComponents = List(mkFormComponentWithNotPII("first", notPII))))
+        )
+        paths.foreach { path =>
+          FormTemplateValidator.validateErrorMessageConstraints(
+            formTemplate,
+            List(ExprWithPath(TemplatePath(path), FormCtx(FormComponentId("first"))))
+          ) shouldBe (if (notPII) Valid else Invalid(s"$path contains PII fcId: first"))
+        }
+      }
+    }
 
     "errorMessage in NonRepeatingPage when noPII is false" in {
 

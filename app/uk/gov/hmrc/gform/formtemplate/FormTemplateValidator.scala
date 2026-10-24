@@ -45,6 +45,51 @@ import scala.util.{ Failure, Success, Try }
 
 object FormTemplateValidator {
 
+  def validatePageValidators(pages: List[Page]): ValidationResult =
+    Monoid.combineAll(pages.map { page =>
+      val validators = page.validators.toList.flatMap(_.toList)
+      val allMemberIds = validators.flatMap(_.fieldIds.toList)
+      val eligibleIds = page.fields
+        .filterNot(field =>
+          field.derived || field.onlyShowOnSummary || (field.`type` match {
+            case _: Group | _: InformationMessage | _: MiniSummaryList | _: TableComp | _: Button => true
+            case _                                                                                => false
+          })
+        )
+        .map(_.id)
+      val fieldOrder = page.fields.map(_.id)
+      val groupResults = validators.zipWithIndex.map { case (validator, index) =>
+        val members = validator.fieldIds.toList
+        val positions = members.map(fieldOrder.indexOf).sorted
+        val prefix = s"Page validator ${index + 1}"
+        val duplicate = members.diff(members.distinct).headOption
+        val unknown = members.find(id => !fieldOrder.contains(id))
+        val ineligible = members.find(id => fieldOrder.contains(id) && !eligibleIds.contains(id))
+        Monoid.combineAll(
+          List(
+            (members.size >= 2).validationResult(s"$prefix must reference at least two fieldIds."),
+            duplicate.fold[ValidationResult](Valid)(id => Invalid(s"$prefix contains duplicate fieldId: ${id.value}.")),
+            unknown.fold[ValidationResult](Valid)(id => Invalid(s"$prefix references unknown fieldId: ${id.value}.")),
+            ineligible.fold[ValidationResult](Valid)(id =>
+              Invalid(s"$prefix references fieldId: ${id.value}, which is not an eligible input field.")
+            ),
+            positions.headOption
+              .forall(start => positions == (start until start + positions.size).toList)
+              .validationResult(s"$prefix references non-adjacent fieldIds: ${members.map(_.value).mkString(", ")}.")
+          )
+        )
+      }
+      val sharedFieldResults = allMemberIds.distinct.map { id =>
+        val validatorNumbers = validators.zipWithIndex.collect {
+          case (validator, index) if validator.fieldIds.toList.contains(id) => index + 1
+        }
+        (validatorNumbers.size <= 1).validationResult(
+          s"fieldId: ${id.value} is used in page validators ${validatorNumbers.mkString(", ")}."
+        )
+      }
+      Monoid.combineAll(groupResults ++ sharedFieldResults)
+    })
+
   def validateLowercaseIds(
     formTemplate: FormTemplate
   ): ValidationResult = {
