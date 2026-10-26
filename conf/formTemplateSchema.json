@@ -462,7 +462,11 @@
           "items": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["validIf", "fieldIds", "errorMessage"],
+            "required": [
+              "validIf",
+              "fieldIds",
+              "errorMessage"
+            ],
             "properties": {
               "validIf": {
                 "type": "string"
@@ -891,10 +895,21 @@
         },
         "whenOnlyOneChoiceRemains": {
           "allOf": [
-            { "$ref": "#/$defs/fields" },
             {
-              "properties": { "type": { "enum": ["info"] } },
-              "required": ["type", "infoText"]
+              "$ref": "#/$defs/fields"
+            },
+            {
+              "properties": {
+                "type": {
+                  "enum": [
+                    "info"
+                  ]
+                }
+              },
+              "required": [
+                "type",
+                "infoText"
+              ]
             }
           ]
         },
