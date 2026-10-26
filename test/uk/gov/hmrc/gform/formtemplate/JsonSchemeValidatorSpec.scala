@@ -192,6 +192,27 @@ class JsonSchemeValidatorSpec extends FunSuite {
     JsonSchemaValidator.checkSchema(json.toString, schema, JsonSchemaErrorParser.parseErrorMessages)
   }
 
+  test("validateJson allows a single page validator fieldId for cause-specific form processing validation") {
+    val jsonTemplate = json"""
+      {
+        "_id": "page-validator",
+        "formName": "Page validator",
+        "version": 1,
+        "description": "",
+        "sections": [{
+          "title": "Page",
+          "fields": [{ "id": "first", "type": "text", "label": "First" }],
+          "validators": [{
+            "validIf": "$${first > 10}",
+            "fieldIds": ["first"],
+            "errorMessage": "Enter more than 10"
+          }]
+        }]
+      }"""
+
+    assertEquals(validateJson(jsonTemplate), Right(()))
+  }
+
   test(
     "validateJson rejects the form gracefully when the property infoType is used and the type property is not [info]"
   ) {

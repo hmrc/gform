@@ -319,6 +319,15 @@ object Substituter {
       errorMessage = t.errorMessage(substitutions)
     )
 
+  implicit def pageValidatorSubstituter[A](implicit
+    ev: Substituter[A, Expr],
+    ev2: Substituter[A, BooleanExpr]
+  ): Substituter[A, PageValidator] = (substitutions, t) =>
+    t.copy(
+      validIf = t.validIf(substitutions),
+      errorMessage = t.errorMessage(substitutions)
+    )
+
   implicit def instructionSubstituter[A](implicit
     ev: Substituter[A, Expr],
     ev2: Substituter[A, BooleanExpr]
@@ -369,7 +378,8 @@ object Substituter {
       redirects = t.redirects(substitutions),
       dataRetrieve = t.dataRetrieve(substitutions),
       removeItemIf = t.removeItemIf(substitutions),
-      confirmation = t.confirmation(substitutions)
+      confirmation = t.confirmation(substitutions),
+      validators = t.validators(substitutions)
     )
 
   implicit def dataRetrieveSubstituter[A](implicit

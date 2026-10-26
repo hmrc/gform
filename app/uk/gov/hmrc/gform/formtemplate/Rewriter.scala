@@ -105,7 +105,10 @@ trait Rewriter {
           (pages.toList ++ defaultPage.toList).flatMap(page => page.fields.flatMap(f))
       }
 
-    val validIfs: List[ValidIf] = traverseFormComponents(formComponentValidIf) ++ validIfsDeclaration
+    val pageValidIfs = SectionHelper
+      .pages(formTemplate.formKind.allSections)
+      .flatMap(_.validators.toList.flatMap(_.toList).map(_.validIf))
+    val validIfs: List[ValidIf] = traverseFormComponents(formComponentValidIf) ++ validIfsDeclaration ++ pageValidIfs
 
     val fieldsIncludeIfs: List[IncludeIf] = traverseFormComponents(formComponentIncludeIf)
 
@@ -513,6 +516,16 @@ trait Rewriter {
           if (disableValidIfs) ValidIf(IsTrue) else validIfRulesLookup.getOrElse(validator.validIf, validator.validIf)
         )
 
+      def replacePageValidators(page: Page): Option[NonEmptyList[PageValidator]] =
+        page.validators.map(
+          _.map(validator =>
+            validator.copy(validIf =
+              if (disableValidIfs) ValidIf(IsTrue)
+              else validIfRulesLookup.getOrElse(validator.validIf, validator.validIf)
+            )
+          )
+        )
+
       def replaceFormComponentNested(formComponent: FormComponent): FormComponent = formComponent match {
         case IsGroup(group) =>
           replaceFormComponent(formComponent).copy(
@@ -652,7 +665,8 @@ trait Rewriter {
         confirmation = replaceConfirmation(page.confirmation),
         dataRetrieve = replaceDataRetrieveIf(page.includeIf, page.dataRetrieve),
         continueIf = replaceContinueIf(page.continueIf),
-        removeItemIf = replaceRemoveItemIf(page.removeItemIf)
+        removeItemIf = replaceRemoveItemIf(page.removeItemIf),
+        validators = replacePageValidators(page)
       )
 
       def updateSection(section: Section): Section =
@@ -674,7 +688,8 @@ trait Rewriter {
                   confirmation = replaceConfirmation(page.confirmation),
                   caption = page.caption.orElse(s.caption),
                   dataRetrieve = replaceDataRetrieveIf(page.includeIf, page.dataRetrieve),
-                  continueIf = replaceContinueIf(page.continueIf)
+                  continueIf = replaceContinueIf(page.continueIf),
+                  validators = replacePageValidators(page)
                 )
               ),
               fields = replaceFieldsNel(s.fields),

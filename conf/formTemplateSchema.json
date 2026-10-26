@@ -456,6 +456,35 @@
         "noPIITitle": {
           "$ref": "#/$defs/stringOrEnCyObject"
         },
+        "validators": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "validIf",
+              "fieldIds",
+              "errorMessage"
+            ],
+            "properties": {
+              "validIf": {
+                "type": "string"
+              },
+              "fieldIds": {
+                "type": "array",
+                "minItems": 1,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string"
+                }
+              },
+              "errorMessage": {
+                "$ref": "#/$defs/stringOrEnCyObject"
+              }
+            }
+          }
+        },
         "includeIf": {
           "type": "string"
         },
@@ -866,10 +895,21 @@
         },
         "whenOnlyOneChoiceRemains": {
           "allOf": [
-            { "$ref": "#/$defs/fields" },
             {
-              "properties": { "type": { "enum": ["info"] } },
-              "required": ["type", "infoText"]
+              "$ref": "#/$defs/fields"
+            },
+            {
+              "properties": {
+                "type": {
+                  "enum": [
+                    "info"
+                  ]
+                }
+              },
+              "required": [
+                "type",
+                "infoText"
+              ]
             }
           ]
         },
