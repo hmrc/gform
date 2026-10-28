@@ -1,9 +1,23 @@
 <?xml version="1.0"?>
 <fop version="1.0">
+    <fonts>
+        <referenced-fonts>
+            <!-- Match the frontend: load Arial without embedding it. -->
+            <match font-family="Arial"/>
+        </referenced-fonts>
+    </fonts>
     <accessibility>true</accessibility>
     <renderers>
         <renderer mime="application/pdf">
            <version>1.4</version>
+           <fonts>
+               <font kerning="yes" embed-url="fonts/arial.ttf" encoding-mode="single-byte">
+                   <font-triplet name="Arial" style="normal" weight="normal"/>
+               </font>
+               <font kerning="yes" embed-url="fonts/arial-bold.ttf" encoding-mode="single-byte">
+                   <font-triplet name="Arial" style="normal" weight="bold"/>
+               </font>
+           </fonts>
         </renderer>
     </renderers>
 </fop>
