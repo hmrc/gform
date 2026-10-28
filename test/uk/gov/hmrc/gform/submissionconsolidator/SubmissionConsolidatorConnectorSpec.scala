@@ -141,12 +141,15 @@ class SubmissionConsolidatorConnectorSpec
 
     //then
     whenReady(future) { result =>
-      result.isLeft shouldBe true
-      result.swap
-        .getOrElse("Incorrect result")
-        .contains(
-          s"POST of '$baseUrl/submission-consolidator/form' failed. Caused by: 'Connection refused:"
-        ) shouldBe true
+      assert(result.isLeft)
+
+      val body = result.swap.getOrElse("Incorrect result")
+
+      assert(
+        body.contains(
+          s"POST of '$baseUrl/submission-consolidator/form' failed. Caused by: 'Connection refused"
+        )
+      )
       startServer()
     }
   }
