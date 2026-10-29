@@ -29,7 +29,7 @@ import scala.util.Using
 class FopServiceSpec extends Spec {
   private val service = new FopService(new Environment(new File("."), getClass.getClassLoader, Mode.Test))
   private val sample =
-    "Arial ABCDEFG abcdefg 0123456789 P\u0159\u00edli\u0161 \u017elu\u0165ou\u010dk\u00fd k\u016f\u0148 \u0218\u0219\u021a\u021b"
+    "Arial ABCDEFG abcdefg 0123456789 Příliš žluťoučký kůň ȘșȚț"
 
   Seq("normal" -> "ArialMT", "bold" -> "Arial-BoldMT").foreach { case (weight, fontName) =>
     "render" should s"use non-embedded $fontName and preserve Czech and Romanian accented characters" in {
