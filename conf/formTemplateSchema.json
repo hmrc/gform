@@ -27,7 +27,7 @@
     },
     "developmentPhase": {
       "type": "string",
-      "pattern": "^(alpha|research|live)$"
+      "pattern": "^(alpha|beta|live|discovery)$"
     },
     "allowedFileTypes": {
       "type": "array"
