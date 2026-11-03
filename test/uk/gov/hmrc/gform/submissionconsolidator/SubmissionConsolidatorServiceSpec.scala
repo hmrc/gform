@@ -199,7 +199,7 @@ class SubmissionConsolidatorServiceSpec
 
           future.futureValue shouldBe Left(
             UnexpectedState(
-              "Unrecognized token 'invalid_template': was expecting (JSON String, Number, Array, Object or token 'null', 'true' or 'false')\n at [Source: (String)\"invalid_template\"; line: 1, column: 17]"
+              "Unrecognized token 'invalid_template': was expecting (JSON String, Number, Array, Object or token 'null', 'true' or 'false')\n at [Source: REDACTED (`StreamReadFeature.INCLUDE_SOURCE_IN_LOCATION` disabled); line: 1, column: 1]"
             )
           )
         }

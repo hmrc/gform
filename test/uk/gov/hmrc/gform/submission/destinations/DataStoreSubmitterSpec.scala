@@ -44,11 +44,11 @@ class DataStoreSubmitterSpec extends AnyWordSpecLike with Matchers with MockFact
     val errorStart: String =
       s"""Data store destination 'dataStoreIlluminate' error, failed to parse handlebar payload into a json:
          |$specificError
-         | at [Source: (String)"""".stripMargin
+         | at [Source: REDACTED (`StreamReadFeature.INCLUDE_SOURCE_IN_LOCATION` disabled)""".stripMargin
 
-    val errorEnd: String = s""""; line: $errorLine, column: $errorColumn], full json:\n$incorrectJson"""
+    val errorEnd: String = s"""; line: $errorLine, column: ${errorColumn - 1}], full json:\n$incorrectJson"""
 
-    errorStart + incorrectJson + errorEnd
+    errorStart + errorEnd
   }
 
   ".convertToJson" should {
