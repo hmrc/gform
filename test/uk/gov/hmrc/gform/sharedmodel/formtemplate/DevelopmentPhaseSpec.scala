@@ -16,18 +16,18 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
-import play.api.libs.json.{ JsString, Json }
-import uk.gov.hmrc.gform.Spec
+import play.api.libs.json.{ JsString, JsSuccess, Json }
+import munit.FunSuite
 
-class DevelopmentPhaseSpec extends Spec {
+class DevelopmentPhaseSpec extends FunSuite {
 
-  "DiscoveryBanner" should "use discovery as its banner value and JSON representation" in {
-    DiscoveryBanner.banner shouldBe "discovery"
-    Json.toJson[DevelopmentPhase](DiscoveryBanner) shouldBe JsString("discovery")
-    Json.fromJson[DevelopmentPhase](JsString("discovery")) shouldBe play.api.libs.json.JsSuccess(DiscoveryBanner)
+  test("DiscoveryBanner uses discovery as its banner value and JSON representation") {
+    assertEquals(DiscoveryBanner.banner, "discovery")
+    assertEquals(Json.toJson[DevelopmentPhase](DiscoveryBanner), JsString("discovery"))
+    assertEquals(Json.fromJson[DevelopmentPhase](JsString("discovery")), JsSuccess(DiscoveryBanner))
   }
 
-  it should "reject research as a development phase" in {
-    Json.fromJson[DevelopmentPhase](JsString("research")).isError shouldBe true
+  test("research is rejected as a development phase") {
+    assertEquals(Json.fromJson[DevelopmentPhase](JsString("research")).isError, true)
   }
 }

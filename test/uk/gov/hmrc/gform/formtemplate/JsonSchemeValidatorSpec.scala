@@ -214,7 +214,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
   }
 
   test("validateJson accepts supported developmentPhase values and rejects unsupported values") {
-    val supportedPhases = List("alpha", "beta", "live", "discovery")
+    val supportedPhases = List("alpha", "live", "discovery")
 
     supportedPhases.foreach { developmentPhase =>
       val jsonTemplate = json"""
