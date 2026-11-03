@@ -17,7 +17,8 @@
 package uk.gov.hmrc.gform.submission.handlebars
 
 import cats.Endo
-import com.github.jknack.handlebars.{ Context, EscapingStrategy, Handlebars, JsonNodeValueResolver }
+import com.github.jknack.handlebars.jackson.JsonNodeValueResolver
+import com.github.jknack.handlebars.{ Context, EscapingStrategy, Handlebars }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ HandlebarsTemplateProcessorModel, TemplateType }
 
 trait HandlebarsTemplateProcessor {

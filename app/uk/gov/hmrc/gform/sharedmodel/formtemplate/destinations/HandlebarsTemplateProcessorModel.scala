@@ -25,7 +25,7 @@ import scala.jdk.CollectionConverters._
 case class HandlebarsTemplateProcessorModel(model: JsonNode) extends AnyVal {
   def +(that: HandlebarsTemplateProcessorModel): HandlebarsTemplateProcessorModel =
     HandlebarsTemplateProcessorModel(fieldMap ++ that.fieldMap)
-  private def fieldMap: Map[String, JsonNode] = model.fields.asScala.map(e => e.getKey -> e.getValue).toMap
+  private def fieldMap: Map[String, JsonNode] = model.properties().asScala.map(e => e.getKey -> e.getValue).toMap
 }
 
 object HandlebarsTemplateProcessorModel {

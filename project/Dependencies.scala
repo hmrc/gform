@@ -7,7 +7,7 @@ object Dependencies {
   lazy val appDependencies: Seq[ModuleID] = compile ++ test()
 
   val parsebackVersion = "0.3"
-  val handlebarsVersion = "4.3.1"
+  val handlebarsVersion = "4.5.8"
   val hmrcMongoVersion = "2.14.0"
   val bootstrapVersion = "10.8.0"
   val json4sVersion = "4.0.4"
@@ -28,7 +28,7 @@ object Dependencies {
     "com.chuusai"                  %% "shapeless"                         % "2.3.13",
     "org.scala-graph"              %% "graph-core"                        % "1.13.6",
     "com.github.jknack"             % "handlebars"                        % handlebarsVersion,
-    "com.github.jknack"             % "handlebars-jackson2"               % handlebarsVersion,
+    "com.github.jknack"             % "handlebars-jackson"                % handlebarsVersion,
     "com.softwaremill.quicklens"   %% "quicklens"                         % "1.9.15",
     "uk.gov.service.notify"         % "notifications-java-client"         % "6.2.1-RELEASE",
     "org.apache.commons"            % "commons-text"                      % "1.15.0",
@@ -42,7 +42,7 @@ object Dependencies {
     "org.json4s"                   %% "json4s-core"                       % json4sVersion,
     "org.json4s"                   %% "json4s-native"                     % json4sVersion,
     "org.json4s"                   %% "json4s-xml"                        % json4sVersion,
-    "com.fasterxml.jackson.module" %% "jackson-module-scala"              % "2.12.2",
+    "com.fasterxml.jackson.module" %% "jackson-module-scala"              % "2.22.4",
     "io.github.samueleresca"       %% "pekko-quartz-scheduler"            % "1.2.0-pekko-1.0.x",
     "org.apache.xmlgraphics"        % "fop"                               % "2.12",
     "org.jsoup"                     % "jsoup"                             % "1.23.2",
