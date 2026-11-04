@@ -122,7 +122,8 @@ case class DataRetrieve(
   callOnNoChange: Boolean,
   populateATL: Option[PopulateATL],
   urlFrontend: UrlDescriptor,
-  urlBackend: Option[UrlDescriptor]
+  urlBackend: Option[UrlDescriptor],
+  manualFallbackIsDesigned: Boolean = false
 )
 
 object DataRetrieve {
@@ -173,6 +174,7 @@ object DataRetrieve {
   val failureIsBlockedAttribute: Attribute = Attribute("isBlocked")
   val failureResetTimeAttribute: Attribute = Attribute("unblockTime")
   val failureResetDateAttribute: Attribute = Attribute("unblockDate")
+  val hasFailedAttribute: Attribute = Attribute("hasFailed")
   val reservedAttributes: List[Attribute] =
     List(failureCountAttribute, failureIsBlockedAttribute, failureResetTimeAttribute, failureResetDateAttribute)
 
@@ -223,7 +225,15 @@ object DataRetrieve {
   implicit val format: OFormat[DataRetrieve] = {
     implicit val attrTypeMappingFormat: Format[Map[DataRetrieve.Attribute, DataRetrieve.AttrType]] =
       JsonUtils.formatMap[DataRetrieve.Attribute, DataRetrieve.AttrType](DataRetrieve.Attribute.apply, _.name)
-    OFormatWithTemplateReadFallback(reads)
+    val format = OFormatWithTemplateReadFallback(reads)
+    OFormat(
+      Reads {
+        case json: JsObject if !json.keys.contains("manualFallbackIsDesigned") =>
+          format.reads(json + ("manualFallbackIsDesigned" -> JsBoolean(false)))
+        case json => format.reads(json)
+      },
+      format
+    )
   }
 
   implicit val leafExprs: LeafExpr[DataRetrieve] = (path: TemplatePath, t: DataRetrieve) =>
@@ -244,7 +254,8 @@ case class DataRetrieveResult(
   requestParams: JsValue,
   failureCount: Option[Int],
   failureMaxAttempts: Option[Int],
-  failureCountResetTime: Option[LocalDateTime]
+  failureCountResetTime: Option[LocalDateTime],
+  hasFailed: Boolean = false
 )
 
 object DataRetrieveResult {
@@ -274,5 +285,15 @@ object DataRetrieveResult {
 
     Format[RetrieveDataType](reads, writes)
   }
-  implicit val format: Format[DataRetrieveResult] = derived.oformat()
+  implicit val format: Format[DataRetrieveResult] = {
+    val format: OFormat[DataRetrieveResult] = derived.oformat()
+    OFormat(
+      Reads {
+        case json: JsObject if !json.keys.contains("hasFailed") =>
+          format.reads(json + ("hasFailed" -> JsBoolean(false)))
+        case json => format.reads(json)
+      },
+      format
+    )
+  }
 }

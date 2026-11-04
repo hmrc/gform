@@ -18,11 +18,72 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
-import play.api.libs.json.{ JsError, JsPath, Json, JsonValidationError }
+import play.api.libs.json.{ JsBoolean, JsError, JsNull, JsNumber, JsObject, JsPath, JsString, Json, JsonValidationError }
 import uk.gov.hmrc.gform.sharedmodel._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.AuthInfo.PayeNino
 
 class DataRetrieveSpec extends AnyFlatSpec with Matchers {
+
+  private val manualFallbackJson = Json.obj(
+    "type" -> "validateBankDetails",
+    "id"   -> "bankDetails",
+    "parameters" -> Json.obj(
+      "sortCode"      -> "${sortCodeExpr}",
+      "accountNumber" -> "${accountNumberExpr}"
+    )
+  )
+
+  "manualFallbackIsDesigned" should "default to false in template and persisted JSON" in {
+    val dataRetrieve = manualFallbackJson.as[DataRetrieve]
+    dataRetrieve.manualFallbackIsDesigned shouldBe false
+    val persisted = Json.toJson(dataRetrieve).as[JsObject]
+    (persisted \ "manualFallbackIsDesigned").as[Boolean] shouldBe false
+    (persisted - "manualFallbackIsDesigned").as[DataRetrieve] shouldBe dataRetrieve
+  }
+
+  it should "read and write both boolean values" in {
+    List(false, true).foreach { flag =>
+      val dataRetrieve = (manualFallbackJson + ("manualFallbackIsDesigned" -> JsBoolean(flag))).as[DataRetrieve]
+      dataRetrieve.manualFallbackIsDesigned shouldBe flag
+      Json.toJson(dataRetrieve).as[DataRetrieve] shouldBe dataRetrieve
+      (Json.toJson(dataRetrieve) \ "manualFallbackIsDesigned").as[Boolean] shouldBe flag
+    }
+  }
+
+  it should "reject null and non-boolean values in template and persisted JSON" in {
+    val persisted = Json.toJson(manualFallbackJson.as[DataRetrieve]).as[JsObject]
+    List(JsNull, JsString("true"), JsNumber(1)).foreach { invalid =>
+      (manualFallbackJson + ("manualFallbackIsDesigned" -> invalid)).validate[DataRetrieve].isError shouldBe true
+      (persisted + ("manualFallbackIsDesigned" -> invalid)).validate[DataRetrieve].isError shouldBe true
+    }
+  }
+
+  "DataRetrieveResult.hasFailed" should "default to false when reading old JSON and always be written" in {
+    val json = Json.obj(
+      "id"            -> "bankDetails",
+      "data"          -> Json.obj("isValid" -> "yes"),
+      "requestParams" -> Json.obj()
+    )
+    val result = json.as[DataRetrieveResult]
+    result.hasFailed shouldBe false
+    result shouldBe DataRetrieveResult(
+      DataRetrieveId("bankDetails"),
+      RetrieveDataType.ObjectType(Map(DataRetrieve.Attribute("isValid") -> "yes")),
+      Json.obj(),
+      None,
+      None,
+      None
+    )
+    (Json.toJson(result) \ "hasFailed").as[Boolean] shouldBe false
+    List(false, true).foreach { hasFailed =>
+      val updated = result.copy(hasFailed = hasFailed)
+      Json.toJson(updated).as[DataRetrieveResult] shouldBe updated
+      (Json.toJson(updated) \ "hasFailed").as[Boolean] shouldBe hasFailed
+    }
+    List(JsNull, JsString("false"), JsNumber(0)).foreach { invalid =>
+      (json + ("hasFailed" -> invalid)).validate[DataRetrieveResult].isError shouldBe true
+    }
+  }
 
   "Json.parse" should "parse json as ValidateBankDetails" in {
     Json
