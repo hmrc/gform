@@ -22,7 +22,7 @@ import uk.gov.hmrc.gform.config.FileInfoConfig
 import uk.gov.hmrc.gform.objectstore.RouteEnvelopeRequest
 import uk.gov.hmrc.gform.sharedmodel.email.LocalisedEmailTemplateId
 import uk.gov.hmrc.gform.sharedmodel.form._
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AccessibilityUrl, AcknowledgementSection, Anonymous, AnyDate, ChatRoomId, Constant, ContinueOrDeletePage, CustomSubmissionRef, Date, DeclarationSection, Default, EmailParameter, EmailParameterValue, EmailParametersRecalculated, EmailTemplateVariable, Expr, FileUpload, FormComponent, FormComponentId, FormCtx, FormKind, FormTemplate, FormTemplateId, FormTemplateVersion, Group, IncludeIf, InformationMessage, KeyDisplayWidth, LayoutDisplayWidth, Mandatory, NoFormat, Number, Offset, OnePerUser, Page, PdfCtx, RegimeId, ResearchBanner, Section, ServiceId, ServiceStartPageUrl, ShortText, SummarySection, TemplateName, Text, UserResearchUrl, Value, WebChat }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AccessibilityUrl, AcknowledgementSection, Anonymous, AnyDate, BetaBanner, ChatRoomId, Constant, ContinueOrDeletePage, CustomSubmissionRef, Date, DeclarationSection, Default, EmailParameter, EmailParameterValue, EmailParametersRecalculated, EmailTemplateVariable, Expr, FileUpload, FormComponent, FormComponentId, FormCtx, FormKind, FormTemplate, FormTemplateId, FormTemplateVersion, Group, IncludeIf, InformationMessage, KeyDisplayWidth, LayoutDisplayWidth, Mandatory, NoFormat, Number, Offset, OnePerUser, Page, PdfCtx, RegimeId, Section, ServiceId, ServiceStartPageUrl, ShortText, SummarySection, TemplateName, Text, UserResearchUrl, Value, WebChat }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.{ DataStore, HmrcDms }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DestinationList
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DataOutputFormat, DestinationId, DestinationIncludeIf, InstructionPdfFields, TemplateType }
@@ -534,7 +534,7 @@ trait ExampleFormTemplate {
     FormTemplateVersion(1),
     legacyFormIds,
     formName,
-    Some(ResearchBanner),
+    Some(BetaBanner),
     Default,
     OnePerUser(ContinueOrDeletePage.Show),
     None,

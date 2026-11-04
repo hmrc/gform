@@ -213,6 +213,36 @@ class JsonSchemeValidatorSpec extends FunSuite {
     assertEquals(validateJson(jsonTemplate), Right(()))
   }
 
+  test("validateJson accepts supported developmentPhase values and rejects unsupported values") {
+    val supportedPhases = List("alpha", "live", "discovery")
+
+    supportedPhases.foreach { developmentPhase =>
+      val jsonTemplate = json"""
+        {
+          "_id": "development-phase",
+          "formName": "Development phase",
+          "version": 1,
+          "description": "",
+          "developmentPhase": ${Json.fromString(developmentPhase)},
+          "sections": []
+        }"""
+
+      assertEquals(validateJson(jsonTemplate), Right(()), s"Expected $developmentPhase to be accepted")
+    }
+
+    val unsupportedPhaseTemplate = json"""
+      {
+        "_id": "development-phase",
+        "formName": "Development phase",
+        "version": 1,
+        "description": "",
+        "developmentPhase": "research",
+        "sections": []
+      }"""
+
+    assert(validateJson(unsupportedPhaseTemplate).isLeft, "Expected research to be rejected")
+  }
+
   test(
     "validateJson rejects the form gracefully when the property infoType is used and the type property is not [info]"
   ) {

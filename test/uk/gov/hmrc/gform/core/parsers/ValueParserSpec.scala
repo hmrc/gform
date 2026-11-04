@@ -441,7 +441,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
       )
     ),
     toLocalisedString("Insurance Premium Tax Return"),
-    Some(ResearchBanner),
+    Some(BetaBanner),
     Default,
     OnePerUser(ContinueOrDeletePage.Show),
     None,
