@@ -39,8 +39,8 @@ class DataRetrieveControllerSpec extends AnyWordSpec with Matchers with MockitoS
   "HIP agentDetails" should {
     val responses: List[(ServiceCallResponse[JsValue], Int)] = List(
       ServiceResponse(Json.obj("agencyDetails" -> Json.obj("name" -> "Agency"))) -> OK,
-      NotFound                                                               -> NOT_FOUND,
-      CannotRetrieveResponse                                                 -> SERVICE_UNAVAILABLE
+      NotFound               -> NOT_FOUND,
+      CannotRetrieveResponse -> SERVICE_UNAVAILABLE
     )
     responses.foreach { case (response, expectedStatus) =>
       s"return $expectedStatus for $response without changing the response envelope" in {
