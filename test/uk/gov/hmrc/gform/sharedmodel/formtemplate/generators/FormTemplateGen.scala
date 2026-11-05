@@ -27,7 +27,7 @@ trait FormTemplateGen {
   def legacyFromIdListGen: Gen[Option[NonEmptyList[FormTemplateId]]] =
     Gen.option(PrimitiveGen.oneOrMoreGen(PrimitiveGen.nonEmptyAlphaNumStrGen.map(FormTemplateId(_))))
   def formNameGen: Gen[LocalisedString] = LocalisedStringGen.localisedStringGen
-  def developmentPhaseGen: Gen[DevelopmentPhase] =
+  def phaseBannerGen: Gen[DevelopmentPhase] =
     Gen.oneOf(AlphaBanner, BetaBanner, LiveBanner, DiscoveryBanner)
   def formCategoryGen: Gen[FormCategory] = Gen.oneOf(HMRCReturnForm, HMRCClaimForm, Default)
 
@@ -105,7 +105,7 @@ trait FormTemplateGen {
       version                  <- FormTemplateVersionGen.formTemplateVersionGen
       legacyFormIds            <- legacyFromIdListGen
       name                     <- formNameGen
-      developmentPhase         <- Gen.option(developmentPhaseGen)
+      phaseBanner              <- Gen.option(phaseBannerGen)
       category                 <- formCategoryGen
       draftRetrievalMethod     <- draftRetrievalMethodGen
       draftRetrieval           <- Gen.option(draftRetrievalGen)
@@ -131,7 +131,7 @@ trait FormTemplateGen {
       version,
       legacyFormIds,
       name,
-      developmentPhase,
+      phaseBanner,
       category,
       draftRetrievalMethod,
       draftRetrieval,
