@@ -33,26 +33,28 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
     )
   )
 
-  "manualFallbackIsDesigned" should "default to false in template and persisted JSON" in {
+  "manualFallbackIsDesigned" should "default to None in template and persisted JSON" in {
     val dataRetrieve = manualFallbackJson.as[DataRetrieve]
-    dataRetrieve.manualFallbackIsDesigned shouldBe false
+    dataRetrieve.manualFallbackIsDesigned shouldBe None
     val persisted = Json.toJson(dataRetrieve).as[JsObject]
-    (persisted \ "manualFallbackIsDesigned").as[Boolean] shouldBe false
+    (persisted \ "manualFallbackIsDesigned").asOpt[Boolean] shouldBe None
     (persisted - "manualFallbackIsDesigned").as[DataRetrieve] shouldBe dataRetrieve
   }
 
   it should "read and write both boolean values" in {
     List(false, true).foreach { flag =>
       val dataRetrieve = (manualFallbackJson + ("manualFallbackIsDesigned" -> JsBoolean(flag))).as[DataRetrieve]
-      dataRetrieve.manualFallbackIsDesigned shouldBe flag
+      dataRetrieve.manualFallbackIsDesigned shouldBe Some(flag)
       Json.toJson(dataRetrieve).as[DataRetrieve] shouldBe dataRetrieve
       (Json.toJson(dataRetrieve) \ "manualFallbackIsDesigned").as[Boolean] shouldBe flag
     }
   }
 
-  it should "reject null and non-boolean values in template and persisted JSON" in {
+  it should "reject null in template JSON and non-boolean values in both formats" in {
     val persisted = Json.toJson(manualFallbackJson.as[DataRetrieve]).as[JsObject]
-    List(JsNull, JsString("true"), JsNumber(1)).foreach { invalid =>
+    (manualFallbackJson + ("manualFallbackIsDesigned" -> JsNull)).validate[DataRetrieve].isError shouldBe true
+    (persisted + ("manualFallbackIsDesigned" -> JsNull)).as[DataRetrieve].manualFallbackIsDesigned shouldBe None
+    List(JsString("true"), JsNumber(1)).foreach { invalid =>
       (manualFallbackJson + ("manualFallbackIsDesigned" -> invalid)).validate[DataRetrieve].isError shouldBe true
       (persisted + ("manualFallbackIsDesigned" -> invalid)).validate[DataRetrieve].isError shouldBe true
     }
@@ -159,7 +161,8 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
         urlPath = "/validate/bank-details",
         destination = UrlDestination.MDTP
       ),
-      None
+      None,
+      manualFallbackIsDesigned = None
     )
   }
 
@@ -272,7 +275,8 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
         urlPath = "/verify/business",
         destination = UrlDestination.MDTP
       ),
-      None
+      None,
+      manualFallbackIsDesigned = None
     )
   }
 
@@ -432,7 +436,8 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
           urlPath = "/company/{{companyNumber}}",
           destination = UrlDestination.CompaniesHouse
         )
-      )
+      ),
+      manualFallbackIsDesigned = None
     )
   }
 
@@ -491,7 +496,8 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
           urlPath = "/company/{{companyNumber}}/officers",
           destination = UrlDestination.CompaniesHouse
         )
-      )
+      ),
+      manualFallbackIsDesigned = None
     )
   }
 
@@ -603,7 +609,8 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
           urlPath = "/company/{{companyNumber}}/insolvency",
           destination = UrlDestination.CompaniesHouse
         )
-      )
+      ),
+      manualFallbackIsDesigned = None
     )
   }
 
@@ -643,7 +650,8 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
         urlPath = "/check/insights",
         destination = UrlDestination.MDTP
       ),
-      None
+      None,
+      manualFallbackIsDesigned = None
     )
   }
 
@@ -689,7 +697,8 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
         urlPath = "/check/insights",
         destination = UrlDestination.MDTP
       ),
-      None
+      None,
+      manualFallbackIsDesigned = None
     )
   }
 
@@ -736,7 +745,8 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
         urlPath = "/check/insights",
         destination = UrlDestination.MDTP
       ),
-      None
+      None,
+      manualFallbackIsDesigned = None
     )
   }
 
@@ -853,7 +863,8 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
         urlPath = "/verify/personal",
         destination = UrlDestination.MDTP
       ),
-      None
+      None,
+      manualFallbackIsDesigned = None
     )
   }
 
@@ -928,7 +939,8 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
           urlPath = "/registration/organisation/utr/{{utr}}",
           destination = UrlDestination.DES
         )
-      )
+      ),
+      manualFallbackIsDesigned = None
     )
   }
 
@@ -1021,7 +1033,8 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
           urlPath = "/etmp/RESTAdapter/generic/agent/subscription/{{agentReferenceNumber}}",
           destination = UrlDestination.HIP
         )
-      )
+      ),
+      manualFallbackIsDesigned = None
     )
   }
 
@@ -1113,7 +1126,8 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
         urlPath = "HMRCTaxRates.csv",
         destination = UrlDestination.GForm
       ),
-      None
+      None,
+      manualFallbackIsDesigned = None
     )
   }
 
@@ -1189,7 +1203,8 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
           urlPath = "/ni/contributions/{{nino}}/claim/refund/{{claimReference}}",
           destination = UrlDestination.HIP
         )
-      )
+      ),
+      manualFallbackIsDesigned = None
     )
   }
 
@@ -1249,7 +1264,8 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
         urlPath = "/auth/authorise",
         destination = UrlDestination.MDTP
       ),
-      None
+      None,
+      manualFallbackIsDesigned = None
     )
   }
 
@@ -1294,7 +1310,8 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
         urlPath = "/auth/authorise",
         destination = UrlDestination.MDTP
       ),
-      None
+      None,
+      manualFallbackIsDesigned = None
     )
   }
 

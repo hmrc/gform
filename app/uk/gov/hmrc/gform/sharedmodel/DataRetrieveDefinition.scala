@@ -1241,8 +1241,8 @@ object DataRetrieveDefinitions {
       failureResetMinutes <- DataRetrieve.optOption[Int](json, "failureCountResetMinutes")
       callOnNoChange      <- DataRetrieve.optOption[Boolean](json, "callOnNoChange").map(_.getOrElse(false))
       manualFallbackIsDesigned <- (json \ "manualFallbackIsDesigned" match {
-                                    case _: JsUndefined => Right(false)
-                                    case _              => DataRetrieve.opt[Boolean](json, "manualFallbackIsDesigned")
+                                    case _: JsUndefined => Right(None)
+                                    case _              => DataRetrieve.opt[Boolean](json, "manualFallbackIsDesigned").map(Some(_))
                                   })
       populateAtlJson <- DataRetrieve.optOption[PopulateAtlJson](json, "populateATL")
       populateAtl     <- getPopulateAtl(populateAtlJson)

@@ -2379,7 +2379,7 @@ object FormTemplateValidator {
           d.attributes.attributes :++ ((d.maxFailedAttempts, d.failureCountResetMinutes) match {
             case (Some(_), Some(_)) => DataRetrieve.reservedAttributes
             case _                  => List.empty[Attribute]
-          }) ++ Option.when(d.manualFallbackIsDesigned)(DataRetrieve.hasFailedAttribute).toList
+          }) ++ Option.when(d.manualFallbackIsDesigned.contains(true))(DataRetrieve.hasFailedAttribute).toList
 
         validAttributes
           .contains(r.dataRetrieveCtx.attribute)
@@ -2401,7 +2401,7 @@ object FormTemplateValidator {
     val allDataRetrieves = pages.flatMap(_.dataRetrieves()) ++ formTemplate.dataRetrieve.toList.flatMap(_.toList)
 
     allDataRetrieves
-      .filter(_.manualFallbackIsDesigned)
+      .filter(_.manualFallbackIsDesigned.contains(true))
       .map { dataRetrieve =>
         val fallbackCondition =
           IncludeIf(Equals(DataRetrieveCtx(dataRetrieve.id, DataRetrieve.hasFailedAttribute), Constant("true")))

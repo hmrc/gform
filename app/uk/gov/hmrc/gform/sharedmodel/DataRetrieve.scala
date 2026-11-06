@@ -123,7 +123,7 @@ case class DataRetrieve(
   populateATL: Option[PopulateATL],
   urlFrontend: UrlDescriptor,
   urlBackend: Option[UrlDescriptor],
-  manualFallbackIsDesigned: Boolean = false
+  manualFallbackIsDesigned: Option[Boolean]
 )
 
 object DataRetrieve {
@@ -225,15 +225,7 @@ object DataRetrieve {
   implicit val format: OFormat[DataRetrieve] = {
     implicit val attrTypeMappingFormat: Format[Map[DataRetrieve.Attribute, DataRetrieve.AttrType]] =
       JsonUtils.formatMap[DataRetrieve.Attribute, DataRetrieve.AttrType](DataRetrieve.Attribute.apply, _.name)
-    val format = OFormatWithTemplateReadFallback(reads)
-    OFormat(
-      Reads {
-        case json: JsObject if !json.keys.contains("manualFallbackIsDesigned") =>
-          format.reads(json + ("manualFallbackIsDesigned" -> JsBoolean(false)))
-        case json => format.reads(json)
-      },
-      format
-    )
+    OFormatWithTemplateReadFallback(reads)
   }
 
   implicit val leafExprs: LeafExpr[DataRetrieve] = (path: TemplatePath, t: DataRetrieve) =>
