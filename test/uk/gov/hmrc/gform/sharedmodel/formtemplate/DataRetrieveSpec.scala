@@ -60,29 +60,32 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
     }
   }
 
-  "DataRetrieveResult.hasFailed" should "default to false when reading old JSON and always be written" in {
+  "DataRetrieveResult.hasFailed" should "read old JSON as None and round-trip explicit boolean values" in {
     val json = Json.obj(
       "id"            -> "bankDetails",
       "data"          -> Json.obj("isValid" -> "yes"),
       "requestParams" -> Json.obj()
     )
     val result = json.as[DataRetrieveResult]
-    result.hasFailed shouldBe false
+    result.hasFailed shouldBe None
     result shouldBe DataRetrieveResult(
       DataRetrieveId("bankDetails"),
       RetrieveDataType.ObjectType(Map(DataRetrieve.Attribute("isValid") -> "yes")),
       Json.obj(),
       None,
       None,
+      None,
       None
     )
-    (Json.toJson(result) \ "hasFailed").as[Boolean] shouldBe false
+    (Json.toJson(result) \ "hasFailed").asOpt[Boolean] shouldBe None
     List(false, true).foreach { hasFailed =>
-      val updated = result.copy(hasFailed = hasFailed)
+      val updated = (json + ("hasFailed" -> JsBoolean(hasFailed))).as[DataRetrieveResult]
+      updated.hasFailed shouldBe Some(hasFailed)
       Json.toJson(updated).as[DataRetrieveResult] shouldBe updated
       (Json.toJson(updated) \ "hasFailed").as[Boolean] shouldBe hasFailed
     }
-    List(JsNull, JsString("false"), JsNumber(0)).foreach { invalid =>
+    (json + ("hasFailed" -> JsNull)).as[DataRetrieveResult].hasFailed shouldBe None
+    List(JsString("false"), JsNumber(0)).foreach { invalid =>
       (json + ("hasFailed" -> invalid)).validate[DataRetrieveResult].isError shouldBe true
     }
   }

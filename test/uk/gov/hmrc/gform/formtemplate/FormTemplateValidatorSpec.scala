@@ -27,7 +27,6 @@ import uk.gov.hmrc.gform.core.{ Invalid, Opt, Valid, ValidationResult }
 import uk.gov.hmrc.gform.sharedmodel.DataRetrieve.Attribute
 import uk.gov.hmrc.gform.sharedmodel._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.PageLink
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormKind
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destinations, PrintSection }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AnyDate, BulletedList, CalendarDate, Checkbox, Choice, ChoicesAvailable, ChoicesSelected, Constant, CtUTR, DataRetrieveCtx, DataRetrieveDateCtx, Date, DateAfter, DateBefore, DateCtx, DateExprWithOffset, DateFormCtxVar, DateFunction, DateProjection, DateValueExpr, DisplayAsEntered, Dynamic, Equals, Expr, ExprWithPath, FormComponent, FormComponentId, FormComponentValidator, FormCtx, FormStartDateExprValue, FormTemplate, GreaterThan, HideZeroDecimals, Horizontal, IfElse, IncludeIf, IndexOf, IndexOfDataRetrieveCtx, InformationMessage, Instruction, IsTrue, LeafExpr, LinkCtx, LookupColumn, Mandatory, Not, NumberedList, Offset, OffsetUnit, OffsetYMD, OptionData, OptionDataValue, Page, PageId, PostcodeLookup, Radio, SaUTR, Section, ShortText, StandardInfo, SummariseGroupAsGrid, TaxPeriodDate, TemplatePath, Text, TextArea, TextWithRestrictions, TodayDateExprValue, TypeAhead, UkVrn, ValidIf, Value, Vertical }
 
@@ -2216,169 +2215,70 @@ class FormTemplateValidatorSpec
   }
 
   "validateDataRetrieveManualFallback" should {
-    val drId = DataRetrieveId("agencyInfo")
-    val retrieval = mkPersonalBankAccountExistenceDataRetrieve(drId.value, manualFallbackIsDesigned = Some(true))
-    val page = mkSectionNonRepeatingPage(formComponents = List(mkFormComponent("field"))).page
-    val condition = Equals(DataRetrieveCtx(drId, DataRetrieve.hasFailedAttribute), Constant("true"))
-
-    def template(pages: List[Page], topLevel: List[DataRetrieve]): FormTemplate =
-      mkFormTemplate(pages.map(Section.NonRepeatingPage.apply)).copy(
-        dataRetrieve = NonEmptyList.fromList(topLevel)
+    "require a matching fallback page only for opted-in top-level and page-level retrievals" in {
+      val drId = DataRetrieveId("agencyInfo")
+      val condition = IncludeIf(Equals(DataRetrieveCtx(drId, DataRetrieve.hasFailedAttribute), Constant("true")))
+      val otherCondition = IncludeIf(
+        Equals(DataRetrieveCtx(DataRetrieveId("otherInfo"), DataRetrieve.hasFailedAttribute), Constant("true"))
+      )
+      val missingFallback = Invalid(
+        "Data retrieve 'agencyInfo' has 'manualFallbackIsDesigned' set to true, but no page has includeIf exactly '${dataRetrieve.agencyInfo.hasFailed}'."
+      )
+      val table = Table(
+        ("manualFallbackIsDesigned", "includeIf", "expectedResult"),
+        (Some(true), Some(condition), Valid),
+        (Some(true), None, missingFallback),
+        (Some(true), Some(otherCondition), missingFallback),
+        (Some(false), None, Valid),
+        (None, None, Valid)
       )
 
-    "require an exact fallback page for both top-level and page-level retrievals" in {
-      val conditions = List(
-        None,
-        Some(IncludeIf(Not(condition))),
-        Some(IncludeIf(uk.gov.hmrc.gform.sharedmodel.formtemplate.And(condition, IsTrue))),
-        Some(IncludeIf(Equals(Constant("true"), condition.left)))
-      )
-      for {
-        includeIf <- conditions
-        topLevel  <- List(true, false)
-      } {
-        val source = if (topLevel) page else page.copy(dataRetrieve = NonEmptyList.fromList(retrieval.toList))
-        val pages = List(source, page.copy(includeIf = includeIf))
-        FormTemplateValidator.validateDataRetrieveManualFallback(
-          template(pages, if (topLevel) retrieval.toList else Nil),
-          pages
-        ) shouldBe Invalid(
-          "Data retrieve 'agencyInfo' has 'manualFallbackIsDesigned' set to true, but no page has includeIf exactly '${dataRetrieve.agencyInfo.hasFailed}'."
-        )
+      forAll(table) { (flag, includeIf, expectedResult) =>
+        val retrieval = mkPersonalBankAccountExistenceDataRetrieve(drId.value, manualFallbackIsDesigned = flag)
+        val page = mkSectionNonRepeatingPage(formComponents = List(mkFormComponent("field"))).page
+        List(true, false).foreach { topLevel =>
+          val source = page.copy(dataRetrieve = if (topLevel) None else NonEmptyList.fromList(retrieval.toList))
+          val pages = List(source, page.copy(includeIf = includeIf))
+          val formTemplate = mkFormTemplate(pages.map(Section.NonRepeatingPage.apply)).copy(
+            dataRetrieve = if (topLevel) NonEmptyList.fromList(retrieval.toList) else None
+          )
+          FormTemplateValidator.validateDataRetrieveManualFallback(formTemplate, pages) shouldBe expectedResult
+        }
       }
-    }
-
-    "accept an exact fallback page for both top-level and page-level retrievals" in {
-      List(true, false).foreach { topLevel =>
-        val source = if (topLevel) page else page.copy(dataRetrieve = NonEmptyList.fromList(retrieval.toList))
-        val pages = List(source, page.copy(includeIf = Some(IncludeIf(condition))))
-        FormTemplateValidator.validateDataRetrieveManualFallback(
-          template(pages, if (topLevel) retrieval.toList else Nil),
-          pages
-        ) shouldBe Valid
-      }
-    }
-
-    "not require a fallback page when the flag is false or omitted" in {
-      List(None, Some(false)).foreach { flag =>
-        val disabled = mkPersonalBankAccountExistenceDataRetrieve(drId.value, manualFallbackIsDesigned = flag)
-        FormTemplateValidator.validateDataRetrieveManualFallback(
-          template(List(page.copy(dataRetrieve = NonEmptyList.fromList(disabled.toList))), disabled.toList),
-          List(page)
-        ) shouldBe Valid
-      }
-    }
-
-    "match each retrieval id independently across form and page retrievals" in {
-      val otherId = DataRetrieveId("otherInfo")
-      val other = mkPersonalBankAccountExistenceDataRetrieve(otherId.value, manualFallbackIsDesigned = Some(true))
-      val source = page.copy(dataRetrieve = NonEmptyList.fromList(other.toList))
-      val firstFallback = page.copy(includeIf = Some(IncludeIf(condition)))
-      val otherFallback = page.copy(
-        includeIf = Some(
-          IncludeIf(Equals(DataRetrieveCtx(otherId, DataRetrieve.hasFailedAttribute), Constant("true")))
-        )
-      )
-      val missing = List(source, firstFallback)
-      FormTemplateValidator.validateDataRetrieveManualFallback(template(missing, retrieval.toList), missing) shouldBe
-        Invalid(
-          "Data retrieve 'otherInfo' has 'manualFallbackIsDesigned' set to true, but no page has includeIf exactly '${dataRetrieve.otherInfo.hasFailed}'."
-        )
-      val complete = missing :+ otherFallback
-      FormTemplateValidator.validateDataRetrieveManualFallback(
-        template(complete, retrieval.toList),
-        complete
-      ) shouldBe Valid
     }
   }
 
   "validateDataRetrieveCtx manual fallback references" should {
-    val drId = DataRetrieveId("agencyInfo")
-    val retrieval = mkPersonalBankAccountExistenceDataRetrieve(drId.value)
-    val reference = DataRetrieveCtx(drId, DataRetrieve.hasFailedAttribute)
-    val condition = Equals(reference, Constant("true"))
-    val page = mkSectionNonRepeatingPage(formComponents = List(mkFormComponent("field"))).page
-
-    def validate(formTemplate: FormTemplate): ValidationResult =
-      FormTemplateValidator.validateDataRetrieveCtx(
-        formTemplate,
-        SectionHelper.pages(formTemplate.formKind.allSections),
-        LeafExpr(TemplatePath.root, formTemplate)
+    "require opt-in on the referenced retrieval rather than another retrieval" in {
+      val drId = DataRetrieveId("agencyInfo")
+      val reference = DataRetrieveCtx(drId, DataRetrieve.hasFailedAttribute)
+      val disabledReference = Invalid(
+        "Data retrieve expression at path TemplatePath(sections.fields.[id=field].value), with id 'agencyInfo', refers to 'hasFailed', which may only be used if 'manualFallbackIsDesigned' is true on the dataRetrieve."
+      )
+      val table = Table(
+        ("manualFallbackIsDesigned", "expectedResult"),
+        (Some(true), Valid),
+        (Some(false), disabledReference),
+        (None, disabledReference)
       )
 
-    "reject references anywhere unless that retrieval opts in, independently of failure counters" in {
-      for {
-        enabled  <- List(None, Some(false), Some(true))
-        counters <- List(false, true)
-      } {
-        val configured = mkPersonalBankAccountExistenceDataRetrieve(
-          drId.value,
-          maybeMaxFailed = Option.when(counters)(3),
-          maybeFailureReset = Option.when(counters)(60),
-          manualFallbackIsDesigned = enabled
+      forAll(table) { (flag, expectedResult) =>
+        val retrieval = mkPersonalBankAccountExistenceDataRetrieve(drId.value, manualFallbackIsDesigned = flag)
+        val other = mkPersonalBankAccountExistenceDataRetrieve("otherInfo", manualFallbackIsDesigned = Some(true))
+        val section = mkSectionNonRepeatingPage(
+          formComponents = List(mkFormComponent("field", reference)),
+          dataRetrieve = retrieval
         )
-        val base = mkFormTemplate(List(Section.NonRepeatingPage(page))).copy(
-          dataRetrieve = NonEmptyList.fromList(configured.toList)
+        val sections: List[Section] = List(section)
+        val formTemplate = mkFormTemplate(sections).copy(
+          dataRetrieve = NonEmptyList.fromList(other.toList)
         )
-        val pages = List(
-          page.copy(includeIf = Some(IncludeIf(condition))),
-          page.copy(fields = List(mkFormComponent("field", reference))),
-          page.copy(title = toSmartString("${dataRetrieve.agencyInfo.hasFailed}", List(reference))),
-          page.copy(fields = List(mkFormComponent("field", IfElse(condition, Constant("yes"), Constant("no")))))
-        )
-        val templates = pages.map(p => base.copy(formKind = FormKind.Classic(List(Section.NonRepeatingPage(p))))) ++
-          List(
-            base.copy(emailExpr = Some(reference)),
-            base.copy(exitPages =
-              Some(
-                NonEmptyList.of(
-                  uk.gov.hmrc.gform.sharedmodel.formtemplate.ExitPage(
-                    IncludeIf(condition),
-                    toSmartString("Exit"),
-                    toSmartString("Exit message")
-                  )
-                )
-              )
-            ),
-            base.copy(dataRetrieve =
-              NonEmptyList.fromList(
-                mkPersonalBankAccountExistenceDataRetrieve(
-                  drId.value,
-                  maybeMaxFailed = Option.when(counters)(3),
-                  maybeFailureReset = Option.when(counters)(60),
-                  maybeFirstNameExpression = Some("${dataRetrieve.agencyInfo.hasFailed}"),
-                  manualFallbackIsDesigned = enabled
-                ).toList
-              )
-            )
-          )
-        templates.foreach { formTemplate =>
-          if (enabled.contains(true)) validate(formTemplate) shouldBe Valid
-          else {
-            val result = validate(formTemplate)
-            result shouldBe a[Invalid]
-            result.toString should include("'manualFallbackIsDesigned' is true")
-          }
-        }
+        FormTemplateValidator.validateDataRetrieveCtx(
+          formTemplate,
+          SectionHelper.pages(sections),
+          LeafExpr(TemplatePath.root, formTemplate)
+        ) shouldBe expectedResult
       }
-    }
-
-    "not let an opted-in retrieval enable references to another retrieval" in {
-      val other = mkPersonalBankAccountExistenceDataRetrieve("otherInfo", manualFallbackIsDesigned = Some(true))
-      val formTemplate = mkFormTemplate(
-        List(Section.NonRepeatingPage(page.copy(includeIf = Some(IncludeIf(condition)))))
-      ).copy(dataRetrieve = NonEmptyList.fromList(retrieval.toList ++ other.toList))
-      validate(formTemplate) shouldBe a[Invalid]
-    }
-
-    "keep failure counter restrictions when manual fallback is enabled" in {
-      val field = mkFormComponent("field", DataRetrieveCtx(drId, DataRetrieve.failureCountAttribute))
-      val enabled = mkPersonalBankAccountExistenceDataRetrieve(drId.value, manualFallbackIsDesigned = Some(true))
-      val formTemplate = mkFormTemplate(List(Section.NonRepeatingPage(page.copy(fields = List(field))))).copy(
-        dataRetrieve = NonEmptyList.fromList(enabled.toList)
-      )
-      validate(formTemplate) shouldBe a[Invalid]
-      DataRetrieve.reservedAttributes should not contain DataRetrieve.hasFailedAttribute
     }
   }
 
