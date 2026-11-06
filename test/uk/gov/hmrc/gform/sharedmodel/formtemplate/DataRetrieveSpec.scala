@@ -50,9 +50,11 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
     }
   }
 
-  it should "reject null in template JSON and non-boolean values in both formats" in {
+  it should "read null as None and reject non-boolean values in both formats" in {
     val persisted = Json.toJson(manualFallbackJson.as[DataRetrieve]).as[JsObject]
-    (manualFallbackJson + ("manualFallbackIsDesigned" -> JsNull)).validate[DataRetrieve].isError shouldBe true
+    (manualFallbackJson + ("manualFallbackIsDesigned" -> JsNull))
+      .as[DataRetrieve]
+      .manualFallbackIsDesigned shouldBe None
     (persisted + ("manualFallbackIsDesigned" -> JsNull)).as[DataRetrieve].manualFallbackIsDesigned shouldBe None
     List(JsString("true"), JsNumber(1)).foreach { invalid =>
       (manualFallbackJson + ("manualFallbackIsDesigned" -> invalid)).validate[DataRetrieve].isError shouldBe true
