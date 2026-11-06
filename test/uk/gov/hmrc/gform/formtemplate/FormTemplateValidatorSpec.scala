@@ -2214,6 +2214,74 @@ class FormTemplateValidatorSpec
     }
   }
 
+  "validateDataRetrieveManualFallback" should {
+    "require a matching fallback page only for opted-in top-level and page-level retrievals" in {
+      val drId = DataRetrieveId("agencyInfo")
+      val condition = IncludeIf(Equals(DataRetrieveCtx(drId, DataRetrieve.hasFailedAttribute), Constant("true")))
+      val otherCondition = IncludeIf(
+        Equals(DataRetrieveCtx(DataRetrieveId("otherInfo"), DataRetrieve.hasFailedAttribute), Constant("true"))
+      )
+      val missingFallback = Invalid(
+        "Data retrieve 'agencyInfo' has 'manualFallbackIsDesigned' set to true, but no page has includeIf exactly '${dataRetrieve.agencyInfo.hasFailed}'."
+      )
+      val table = Table(
+        ("manualFallbackIsDesigned", "includeIf", "expectedResult"),
+        (Some(true), Some(condition), Valid),
+        (Some(true), None, missingFallback),
+        (Some(true), Some(otherCondition), missingFallback),
+        (Some(false), None, Valid),
+        (None, None, Valid)
+      )
+
+      forAll(table) { (flag, includeIf, expectedResult) =>
+        val retrieval = mkPersonalBankAccountExistenceDataRetrieve(drId.value, manualFallbackIsDesigned = flag)
+        val page = mkSectionNonRepeatingPage(formComponents = List(mkFormComponent("field"))).page
+        List(true, false).foreach { topLevel =>
+          val source = page.copy(dataRetrieve = if (topLevel) None else NonEmptyList.fromList(retrieval.toList))
+          val pages = List(source, page.copy(includeIf = includeIf))
+          val formTemplate = mkFormTemplate(pages.map(Section.NonRepeatingPage.apply)).copy(
+            dataRetrieve = if (topLevel) NonEmptyList.fromList(retrieval.toList) else None
+          )
+          FormTemplateValidator.validateDataRetrieveManualFallback(formTemplate, pages) shouldBe expectedResult
+        }
+      }
+    }
+  }
+
+  "validateDataRetrieveCtx manual fallback references" should {
+    "require opt-in on the referenced retrieval rather than another retrieval" in {
+      val drId = DataRetrieveId("agencyInfo")
+      val reference = DataRetrieveCtx(drId, DataRetrieve.hasFailedAttribute)
+      val disabledReference = Invalid(
+        "Data retrieve expression at path TemplatePath(sections.fields.[id=field].value), with id 'agencyInfo', refers to 'hasFailed', which may only be used if 'manualFallbackIsDesigned' is true on the dataRetrieve."
+      )
+      val table = Table(
+        ("manualFallbackIsDesigned", "expectedResult"),
+        (Some(true), Valid),
+        (Some(false), disabledReference),
+        (None, disabledReference)
+      )
+
+      forAll(table) { (flag, expectedResult) =>
+        val retrieval = mkPersonalBankAccountExistenceDataRetrieve(drId.value, manualFallbackIsDesigned = flag)
+        val other = mkPersonalBankAccountExistenceDataRetrieve("otherInfo", manualFallbackIsDesigned = Some(true))
+        val section = mkSectionNonRepeatingPage(
+          formComponents = List(mkFormComponent("field", reference)),
+          dataRetrieve = retrieval
+        )
+        val sections: List[Section] = List(section)
+        val formTemplate = mkFormTemplate(sections).copy(
+          dataRetrieve = NonEmptyList.fromList(other.toList)
+        )
+        FormTemplateValidator.validateDataRetrieveCtx(
+          formTemplate,
+          SectionHelper.pages(sections),
+          LeafExpr(TemplatePath.root, formTemplate)
+        ) shouldBe expectedResult
+      }
+    }
+  }
+
   "validateDataRetrieveBlockAttributes" should {
     "validate that dataRetrieves include both block attribute or neither" in {
       val drId = DataRetrieveId("personalBankDetails")
@@ -3617,10 +3685,12 @@ class FormTemplateValidatorSpec
     maybeMaxFailed: Option[Int] = None,
     maybeFailureReset: Option[Int] = None,
     callOnNoChange: Boolean = false,
-    maybeFirstNameExpression: Option[String] = None
+    maybeFirstNameExpression: Option[String] = None,
+    manualFallbackIsDesigned: Option[Boolean] = None
   ): Option[DataRetrieve] = {
     val maxFailedAttempts = maybeMaxFailed.fold("")(i => s""""maxFailedAttempts": $i,""")
     val failureReset = maybeFailureReset.fold("")(i => s""""failureCountResetMinutes": $i,""")
+    val manualFallback = manualFallbackIsDesigned.fold("")(flag => s""""manualFallbackIsDesigned": $flag,""")
     val firstNameExpr = maybeFirstNameExpression.fold(""""firstName": "${accountFirstName}",""") { expr =>
       s"""
          |"firstName": "$expr",
@@ -3633,6 +3703,7 @@ class FormTemplateValidatorSpec
          |  "id": "$id",
          |  $maxFailedAttempts
          |  $failureReset
+         |  $manualFallback
          |  "callOnNoChange": $callOnNoChange,
          |  "parameters": {
          |    "sortCode": "$${sortCodePersonal}",

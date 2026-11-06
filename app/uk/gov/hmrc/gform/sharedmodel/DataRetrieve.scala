@@ -122,7 +122,8 @@ case class DataRetrieve(
   callOnNoChange: Boolean,
   populateATL: Option[PopulateATL],
   urlFrontend: UrlDescriptor,
-  urlBackend: Option[UrlDescriptor]
+  urlBackend: Option[UrlDescriptor],
+  manualFallbackIsDesigned: Option[Boolean]
 )
 
 object DataRetrieve {
@@ -173,6 +174,7 @@ object DataRetrieve {
   val failureIsBlockedAttribute: Attribute = Attribute("isBlocked")
   val failureResetTimeAttribute: Attribute = Attribute("unblockTime")
   val failureResetDateAttribute: Attribute = Attribute("unblockDate")
+  val hasFailedAttribute: Attribute = Attribute("hasFailed")
   val reservedAttributes: List[Attribute] =
     List(failureCountAttribute, failureIsBlockedAttribute, failureResetTimeAttribute, failureResetDateAttribute)
 
@@ -244,7 +246,8 @@ case class DataRetrieveResult(
   requestParams: JsValue,
   failureCount: Option[Int],
   failureMaxAttempts: Option[Int],
-  failureCountResetTime: Option[LocalDateTime]
+  failureCountResetTime: Option[LocalDateTime],
+  hasFailed: Option[Boolean]
 )
 
 object DataRetrieveResult {

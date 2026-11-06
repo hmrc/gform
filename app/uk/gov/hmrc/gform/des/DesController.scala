@@ -22,6 +22,7 @@ import play.api.mvc.ControllerComponents
 import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.sharedmodel.des.DesRegistrationRequest
+import uk.gov.hmrc.gform.sharedmodel.{ CannotRetrieveResponse, NotFound => RetrievalNotFound, ServiceResponse }
 
 import scala.concurrent.{ ExecutionContext, Future }
 
@@ -33,6 +34,13 @@ class DesController(controllerComponents: ControllerComponents, desService: DesS
 
   def organisation(utr: String) = Action.async(parse.json[DesRegistrationRequest]) { implicit request =>
     logger.info(s"Get Address from DES, ${loggingHelpers.cleanHeaders(request.headers)}")
-    desService.organisation(utr, request.body).map(a => Ok(Json.toJson(a)))
+    desService.organisation(utr, request.body).map { response =>
+      val json = Json.toJson(response)
+      response match {
+        case ServiceResponse(_)     => Ok(json)
+        case RetrievalNotFound      => NotFound(json)
+        case CannotRetrieveResponse => ServiceUnavailable(json)
+      }
+    }
   }
 }

@@ -1236,12 +1236,13 @@ object DataRetrieveDefinitions {
             }
             .map(expr => ParamExpr(parameter, expr))
         }
-      `if`                <- DataRetrieve.optOption[IncludeIf](json, "if")
-      maxFailedAttempts   <- DataRetrieve.optOption[Int](json, "maxFailedAttempts")
-      failureResetMinutes <- DataRetrieve.optOption[Int](json, "failureCountResetMinutes")
-      callOnNoChange      <- DataRetrieve.optOption[Boolean](json, "callOnNoChange").map(_.getOrElse(false))
-      populateAtlJson     <- DataRetrieve.optOption[PopulateAtlJson](json, "populateATL")
-      populateAtl         <- getPopulateAtl(populateAtlJson)
+      `if`                     <- DataRetrieve.optOption[IncludeIf](json, "if")
+      maxFailedAttempts        <- DataRetrieve.optOption[Int](json, "maxFailedAttempts")
+      failureResetMinutes      <- DataRetrieve.optOption[Int](json, "failureCountResetMinutes")
+      callOnNoChange           <- DataRetrieve.optOption[Boolean](json, "callOnNoChange").map(_.getOrElse(false))
+      manualFallbackIsDesigned <- DataRetrieve.optOption[Boolean](json, "manualFallbackIsDesigned")
+      populateAtlJson          <- DataRetrieve.optOption[PopulateAtlJson](json, "populateATL")
+      populateAtl              <- getPopulateAtl(populateAtlJson)
     } yield DataRetrieve(
       tpe = typeValue,
       id = idValue,
@@ -1254,7 +1255,8 @@ object DataRetrieveDefinitions {
       callOnNoChange = callOnNoChange,
       populateATL = populateAtl,
       urlFrontend = definition.urlFrontend,
-      urlBackend = definition.urlBackend
+      urlBackend = definition.urlBackend,
+      manualFallbackIsDesigned = manualFallbackIsDesigned
     )
 
   }
