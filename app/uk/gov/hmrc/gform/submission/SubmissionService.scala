@@ -29,7 +29,7 @@ import uk.gov.hmrc.gform.formtemplate.FormTemplateAlgebra
 import uk.gov.hmrc.gform.repo.Repo
 import uk.gov.hmrc.gform.sdes.workitem.DestinationWorkItemAlgebra
 import uk.gov.hmrc.gform.sharedmodel.form._
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ AsyncHandlebarsDestinationResponse, DestinationResponse, DmsDestinationResponse, HandlebarsDestinationResponse, NrsOrchestratorDestinationResponse, OtherSdesDestinationResponse }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ AsyncHandlebarsDestinationResponse, DestinationResponse, DmsDestinationResponse, EmailDestinationResponse, HandlebarsDestinationResponse, NrsOrchestratorDestinationResponse, OtherSdesDestinationResponse, PegaDestinationResponse, StateTransitionDestinationResponse, SubmissionConsolidatorDestinationResponse }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplate, FormTemplateId }
 import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination
 import uk.gov.hmrc.gform.sharedmodel.{ LangADT, SubmissionData, SubmissionRef }
@@ -208,13 +208,18 @@ class SubmissionService(
     val destinationTypes = destinationResponses
       .getOrElse(Nil)
       .collect {
-        case d: DmsDestinationResponse             => s"${SdesDestination.fromName(d.routing).toUpperCase} - ${d.dmsFormId}"
-        case o: OtherSdesDestinationResponse       => s"SDES - ${SdesDestination.fromName(o.routing)}"
-        case _: HandlebarsDestinationResponse      => "Handlebars API"
-        case _: AsyncHandlebarsDestinationResponse => "Async Handlebars API"
-        case _: NrsOrchestratorDestinationResponse => "NRS"
+        case d: DmsDestinationResponse                    => s"${SdesDestination.fromName(d.routing).toUpperCase} - ${d.dmsFormId}"
+        case o: OtherSdesDestinationResponse              => s"SDES - ${SdesDestination.fromName(o.routing)}"
+        case _: HandlebarsDestinationResponse             => "Handlebars API"
+        case _: AsyncHandlebarsDestinationResponse        => "Async Handlebars API"
+        case _: NrsOrchestratorDestinationResponse        => "NRS"
+        case s: SubmissionConsolidatorDestinationResponse => s"Submission Consolidator - ${s.projectId.id}"
+        case PegaDestinationResponse                      => "Pega API"
+        case EmailDestinationResponse                     => "Email"
+        case StateTransitionDestinationResponse           => "State Transition"
       }
-    val destinations = if (destinationTypes.nonEmpty) Some(destinationTypes) else None
+
+    val destinations = Some(if (destinationTypes.nonEmpty) destinationTypes else List("Unknown"))
     gformStatsConnector.sendEvent(
       formTemplate._id.value,
       formTemplate.formName.value(LangADT.En),

@@ -682,7 +682,7 @@ class DestinationSubmitterSpec
             )
           ),
           UserSession.empty
-        ) shouldBe Right(DestinationResponse.NoResponse)
+        ) shouldBe Right(SubmissionConsolidatorDestinationResponse(submissionConsolidator.projectId))
     }
   }
 

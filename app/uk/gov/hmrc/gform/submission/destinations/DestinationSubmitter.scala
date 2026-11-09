@@ -215,7 +215,7 @@ class DestinationSubmitter[M[_]](
           submissionInfo
         )
       case d: Destination.StateTransition =>
-        stateTransitionAlgebra(d, submissionInfo.formId).map(_ => DestinationResponse.SubmittedResponse)
+        stateTransitionAlgebra(d, submissionInfo.formId).map(_ => StateTransitionDestinationResponse)
       case d: Destination.Log => log(d, accumulatedModel, modelTree).map(_ => DestinationResponse.NoResponse)
       case d: Destination.Email =>
         submitToEmail(d, submissionInfo, modelTree.value.structuredFormData, l)
@@ -246,7 +246,9 @@ class DestinationSubmitter[M[_]](
     submissionInfo: DestinationSubmissionInfo
   )(implicit hc: HeaderCarrier): M[DestinationResponse] =
     monadError.handleErrorWith(
-      pegaSubmitterAlgebra.getAndUpdateCase(d, dr, submissionInfo)
+      pegaSubmitterAlgebra
+        .getAndUpdateCase(d, dr, submissionInfo)
+        .map(_ => PegaDestinationResponse: DestinationResponse)
     ) { msg =>
       if (d.failOnError)
         raiseDestinationError(submissionInfo.formId, d.id, msg)
@@ -278,7 +280,9 @@ class DestinationSubmitter[M[_]](
     formData: Option[FormData]
   )(implicit hc: HeaderCarrier): M[DestinationResponse] =
     monadError.handleErrorWith(
-      submissionConsolidator.submit(d, submissionInfo, accumulatedModel, modelTree, formData)
+      submissionConsolidator
+        .submit(d, submissionInfo, accumulatedModel, modelTree, formData)
+        .map(_ => SubmissionConsolidatorDestinationResponse(d.projectId): DestinationResponse)
     ) { msg =>
       if (d.failOnError)
         raiseDestinationError(submissionInfo.formId, d.id, msg)
@@ -312,8 +316,8 @@ class DestinationSubmitter[M[_]](
     l: LangADT
   ): M[DestinationResponse] =
     monadError.handleErrorWith(
-      NotifierEmailBuilder(notify.notifierTemplateId(l), d, structuredFormData) >>=
-        notifier.email
+      (NotifierEmailBuilder(notify.notifierTemplateId(l), d, structuredFormData) >>=
+        notifier.email).map(_ => EmailDestinationResponse: DestinationResponse)
     ) { msg =>
       if (d.failOnError)
         raiseDestinationError(submissionInfo.formId, d.id, msg)

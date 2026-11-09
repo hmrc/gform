@@ -90,3 +90,11 @@ object HandlebarsDestinationResponse {
 case class NrsOrchestratorDestinationResponse(workItemId: ObjectId) extends DestinationResponse
 
 case class AsyncHandlebarsDestinationResponse(workItemId: ObjectId) extends DestinationResponse
+
+case class SubmissionConsolidatorDestinationResponse(projectId: ProjectId) extends DestinationResponse
+
+case object PegaDestinationResponse extends DestinationResponse
+
+case object EmailDestinationResponse extends DestinationResponse
+
+case object StateTransitionDestinationResponse extends DestinationResponse
