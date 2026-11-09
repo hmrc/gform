@@ -33,7 +33,7 @@ class GformStatsConnector(httpClient: HttpClientV2, baseUrl: String, enabled: Bo
     formTemplateId: String,
     formTemplateName: String,
     eventType: String,
-    destinations: Option[List[String]]
+    destinations: List[String]
   )(implicit hc: HeaderCarrier): Unit =
     if (enabled) {
       val payload = Json.obj(

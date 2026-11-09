@@ -971,7 +971,7 @@ class DestinationSubmitterSpec
           )(_: HeaderCarrier)
         )
         .expects(destination, submissionInfo, accumulatedModel, model, Some(formData), hc)
-        .returning(F.pure(DestinationResponse.NoResponse))
+        .returning(F.pure(SubmissionConsolidatorDestinationResponse(destination.projectId)))
       this
     }
 

@@ -219,7 +219,7 @@ class SubmissionService(
         case StateTransitionDestinationResponse           => "State Transition"
       }
 
-    val destinations = Some(if (destinationTypes.nonEmpty) destinationTypes else List("Unknown"))
+    val destinations = if (destinationTypes.nonEmpty) destinationTypes else List("Unknown")
     gformStatsConnector.sendEvent(
       formTemplate._id.value,
       formTemplate.formName.value(LangADT.En),

@@ -246,9 +246,7 @@ class DestinationSubmitter[M[_]](
     submissionInfo: DestinationSubmissionInfo
   )(implicit hc: HeaderCarrier): M[DestinationResponse] =
     monadError.handleErrorWith(
-      pegaSubmitterAlgebra
-        .getAndUpdateCase(d, dr, submissionInfo)
-        .map(_ => PegaDestinationResponse: DestinationResponse)
+      pegaSubmitterAlgebra.getAndUpdateCase(d, dr, submissionInfo)
     ) { msg =>
       if (d.failOnError)
         raiseDestinationError(submissionInfo.formId, d.id, msg)
@@ -280,9 +278,7 @@ class DestinationSubmitter[M[_]](
     formData: Option[FormData]
   )(implicit hc: HeaderCarrier): M[DestinationResponse] =
     monadError.handleErrorWith(
-      submissionConsolidator
-        .submit(d, submissionInfo, accumulatedModel, modelTree, formData)
-        .map(_ => SubmissionConsolidatorDestinationResponse(d.projectId): DestinationResponse)
+      submissionConsolidator.submit(d, submissionInfo, accumulatedModel, modelTree, formData)
     ) { msg =>
       if (d.failOnError)
         raiseDestinationError(submissionInfo.formId, d.id, msg)

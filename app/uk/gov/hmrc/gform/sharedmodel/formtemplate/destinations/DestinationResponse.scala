@@ -45,9 +45,6 @@ object DestinationResponse {
   implicit val objectIdFormat: Format[ObjectId] = Format(objectIdReads, objectIdWrites)
 
   case object NoResponse extends DestinationResponse
-
-  /** A destination which fired successfully but has no payload to return. */
-  case object SubmittedResponse extends DestinationResponse
 }
 
 case class DmsDestinationResponse(
