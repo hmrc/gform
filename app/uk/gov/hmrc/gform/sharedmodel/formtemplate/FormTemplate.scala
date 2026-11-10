@@ -31,7 +31,7 @@ case class FormTemplate(
   version: FormTemplateVersion,
   legacyFormIds: Option[NonEmptyList[FormTemplateId]],
   formName: LocalisedString,
-  phaseBanner: Option[DevelopmentPhase],
+  phaseBanner: Option[PhaseBanner],
   formCategory: FormCategory,
   draftRetrievalMethod: DraftRetrievalMethod,
   draftRetrieval: Option[DraftRetrieval],
