@@ -2,7 +2,7 @@
   "_id": "reviewable",
   "formName": "Register Your School",
   "description": "",
-  "developmentPhase": "beta",
+  "phaseBanner": "beta",
   "emailTemplateId": "al_registration_confirmation",
   "authConfig": {
     "authModule": "hmrc"

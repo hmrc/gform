@@ -2,7 +2,7 @@
   "_id": "parent",
   "formName": "Parent Form",
   "description": "",
-  "developmentPhase": "beta",
+  "phaseBanner": "beta",
   "emailTemplateId": "al_registration_confirmation",
   "authConfig": {
     "authModule": "anonymous"

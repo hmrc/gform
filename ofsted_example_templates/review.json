@@ -2,7 +2,7 @@
   "_id": "review",
   "formName": "Review",
   "description": "",
-  "developmentPhase": "beta",
+  "phaseBanner": "beta",
   "emailTemplateId": "al_registration_confirmation",
   "authConfig": {
     "authModule": "ofsted"

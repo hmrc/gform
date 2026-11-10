@@ -213,22 +213,34 @@ class JsonSchemeValidatorSpec extends FunSuite {
     assertEquals(validateJson(jsonTemplate), Right(()))
   }
 
-  test("validateJson accepts supported developmentPhase values and rejects unsupported values") {
+  test("validateJson accepts supported phaseBanner values and rejects unsupported values") {
     val supportedPhases = List("alpha", "live", "discovery")
 
-    supportedPhases.foreach { developmentPhase =>
+    supportedPhases.foreach { phaseBanner =>
       val jsonTemplate = json"""
         {
           "_id": "development-phase",
           "formName": "Development phase",
           "version": 1,
           "description": "",
-          "developmentPhase": ${Json.fromString(developmentPhase)},
+          "phaseBanner": ${Json.fromString(phaseBanner)},
           "sections": []
         }"""
 
-      assertEquals(validateJson(jsonTemplate), Right(()), s"Expected $developmentPhase to be accepted")
+      assertEquals(validateJson(jsonTemplate), Right(()), s"Expected $phaseBanner to be accepted")
     }
+
+    val betaPhaseTemplate = json"""
+      {
+        "_id": "phase-banner",
+        "formName": "Phase banner",
+        "version": 1,
+        "description": "",
+        "phaseBanner": "beta",
+        "sections": []
+      }"""
+
+    assert(validateJson(betaPhaseTemplate).isLeft, "Expected beta to be rejected")
 
     val unsupportedPhaseTemplate = json"""
       {
@@ -236,11 +248,23 @@ class JsonSchemeValidatorSpec extends FunSuite {
         "formName": "Development phase",
         "version": 1,
         "description": "",
-        "developmentPhase": "research",
+        "phaseBanner": "research",
         "sections": []
       }"""
 
     assert(validateJson(unsupportedPhaseTemplate).isLeft, "Expected research to be rejected")
+
+    val oldPropertyTemplate = json"""
+      {
+        "_id": "development-phase",
+        "formName": "Development phase",
+        "version": 1,
+        "description": "",
+        "developmentPhase": "beta",
+        "sections": []
+      }"""
+
+    assert(validateJson(oldPropertyTemplate).isLeft, "Expected developmentPhase to be rejected")
   }
 
   test(

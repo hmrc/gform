@@ -18,31 +18,31 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
 import play.api.libs.json._
 
-sealed trait DevelopmentPhase {
+sealed trait PhaseBanner {
   val banner: String
 }
-case object AlphaBanner extends DevelopmentPhase {
+case object AlphaBanner extends PhaseBanner {
   override val banner: String = "alpha"
 }
-case object BetaBanner extends DevelopmentPhase {
+case object BetaBanner extends PhaseBanner {
   override val banner: String = "beta"
 }
-case object LiveBanner extends DevelopmentPhase {
+case object LiveBanner extends PhaseBanner {
   override val banner: String = "live"
 }
-case object DiscoveryBanner extends DevelopmentPhase {
+case object DiscoveryBanner extends PhaseBanner {
   override val banner: String = "discovery"
 }
-object DevelopmentPhase {
-  implicit val format: Format[DevelopmentPhase] = new Format[DevelopmentPhase] {
-    override def writes(o: DevelopmentPhase): JsValue = o match {
+object PhaseBanner {
+  implicit val format: Format[PhaseBanner] = new Format[PhaseBanner] {
+    override def writes(o: PhaseBanner): JsValue = o match {
       case AlphaBanner     => JsString(AlphaBanner.banner)
       case BetaBanner      => JsString(BetaBanner.banner)
       case LiveBanner      => JsString(LiveBanner.banner)
       case DiscoveryBanner => JsString(DiscoveryBanner.banner)
     }
 
-    override def reads(json: JsValue): JsResult[DevelopmentPhase] =
+    override def reads(json: JsValue): JsResult[PhaseBanner] =
       json match {
         case JsString("alpha")     => JsSuccess(AlphaBanner)
         case JsString("beta")      => JsSuccess(BetaBanner)
@@ -50,7 +50,7 @@ object DevelopmentPhase {
         case JsString("discovery") => JsSuccess(DiscoveryBanner)
         case JsString(err) =>
           JsError(
-            s"only valid DevelopmentPhase values are alpha, beta, live or discovery; $err is not allowed"
+            s"only valid PhaseBanner values are alpha, beta, live or discovery; $err is not allowed"
           )
         case _ => JsError("Failure")
       }
