@@ -16,10 +16,13 @@
 
 package uk.gov.hmrc.gform.core.parsers
 
+import munit.FunSuite
+
 import cats.data.NonEmptyList
 import org.scalatest.prop.TableDrivenPropertyChecks
 import uk.gov.hmrc.gform.Helpers._
-import uk.gov.hmrc.gform.Spec
+import org.scalatest.OptionValues
+import org.scalatest.matchers.should.Matchers
 import uk.gov.hmrc.gform.config.FileInfoConfig
 import uk.gov.hmrc.gform.core._
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
@@ -35,11 +38,11 @@ import uk.gov.hmrc.gform.sharedmodel.{ AvailableLanguages, DataRetrieve, DataRet
 
 import scala.language.implicitConversions
 
-class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
+class ValueParserSpec extends FunSuite with Matchers with OptionValues with TableDrivenPropertyChecks {
 
   implicit def implicitToFormComponentId(str: String): FormComponentId = FormComponentId(str)
 
-  "ValueParser" should "desugar a bare data retrieve hasFailed boolean and its negation" in {
+  test("ValueParser should desugar a bare data retrieve hasFailed boolean and its negation") {
     val condition = Equals(
       DataRetrieveCtx(DataRetrieveId("agencyInfo"), DataRetrieve.hasFailedAttribute),
       Constant("true")
@@ -66,104 +69,104 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     )
   }
 
-  "ValueParser" should "parse integer" in {
+  test("ValueParser should parse integer") {
     val res = ValueParser.validate("${1}")
     res.toOption.value should be(TextExpression(Constant("1")))
   }
 
-  it should "parse constant" in {
+  test("ValueParser should parse constant") {
     val res = ValueParser.validate("${' '}")
     res.toOption.value should be(TextExpression(Constant(" ")))
   }
 
-  it should "parse integer with decimal point" in {
+  test("ValueParser should parse integer with decimal point") {
     val res = ValueParser.validate("${1.}")
     res.toOption.value should be(TextExpression(Constant("1.")))
   }
 
-  it should "parse multi digit integer" in {
+  test("ValueParser should parse multi digit integer") {
     val res = ValueParser.validate("${12}")
     res.toOption.value should be(TextExpression(Constant("12")))
   }
-  it should "parse an empty string" in {
+  test("ValueParser should parse an empty string") {
     val res = ValueParser.validate("${''}")
     res.toOption.value should be(TextExpression(Constant("")))
   }
-  it should "parse an anything except singe quote" in {
+  test("ValueParser should parse an anything except singe quote") {
     val res = ValueParser.validate("${' --+===> '}")
     res.toOption.value should be(TextExpression(Constant(" --+===> ")))
   }
-  it should "parse double digit integer" in {
+  test("ValueParser should parse double digit integer") {
     val res = ValueParser.validate("${1234}")
     res.toOption.value should be(TextExpression(Constant("1234")))
   }
 
-  it should "parse multi digit integer with thousand separators" in {
+  test("ValueParser should parse multi digit integer with thousand separators") {
     val res = ValueParser.validate("${1,234}")
     res.toOption.value should be(TextExpression(Constant("1,234")))
   }
 
-  it should "parse double digit decimal fraction" in {
+  test("ValueParser should parse double digit decimal fraction") {
     val res = ValueParser.validate("${.12}")
     res.toOption.value should be(TextExpression(Constant(".12")))
   }
 
-  it should "parse multi digit decimal fraction" in {
+  test("ValueParser should parse multi digit decimal fraction") {
     val res = ValueParser.validate("${.123}")
     res.toOption.value should be(TextExpression(Constant(".123")))
   }
 
-  it should "parse number plus decimal fraction" in {
+  test("ValueParser should parse number plus decimal fraction") {
     val res = ValueParser.validate("${1,234.1}")
     res.toOption.value should be(TextExpression(Constant("1,234.1")))
   }
 
-  it should "parse number plus double digit decimal fraction" in {
+  test("ValueParser should parse number plus double digit decimal fraction") {
     val res = ValueParser.validate("${1,234.12}")
     res.toOption.value should be(TextExpression(Constant("1,234.12")))
   }
 
-  it should "parse number plus multi digit decimal fraction" in {
+  test("ValueParser should parse number plus multi digit decimal fraction") {
     val res = ValueParser.validate("${1,234.123}")
     res.toOption.value should be(TextExpression(Constant("1,234.123")))
   }
 
-  it should "parse ${firstName}" in {
+  test("ValueParser should parse ${firstName}") {
     val res = ValueParser.validate("${firstName}")
     res.toOption.value should be(TextExpression(FormCtx("firstName")))
   }
 
-  it should "parse ${age - 1}" in {
+  test("ValueParser should parse ${age - 1}") {
     val res = ValueParser.validate("${age - 1}")
     res.toOption.value should be(TextExpression(Subtraction(FormCtx("age"), Constant("1"))))
   }
 
-  it should "parse ${age -1}" in {
+  test("ValueParser should parse ${age -1}") {
     val res = ValueParser.validate("${age -1}")
     res.toOption.value should be(TextExpression(Subtraction(FormCtx("age"), Constant("1"))))
   }
 
-  it should "parse ${age-1}" in {
+  test("ValueParser should parse ${age-1}") {
     val res = ValueParser.validate("${age-1}")
     res.toOption.value should be(TextExpression(Subtraction(FormCtx("age"), Constant("1"))))
   }
 
-  it should "parse ${form.firstName}" in {
+  test("ValueParser should parse ${form.firstName}") {
     val res = ValueParser.validate("${form.firstName}")
     res.toOption.value should be(TextExpression(FormCtx("firstName")))
   }
 
-  it should "parse ${user.enrolledIdentifier}" in {
+  test("ValueParser should parse ${user.enrolledIdentifier}") {
     val res = ValueParser.validate("${user.enrolledIdentifier}")
     res.toOption.value should be(TextExpression(UserCtx(UserField.EnrolledIdentifier)))
   }
 
-  it should "parse anything except singe quote" in {
+  test("ValueParser should parse anything except singe quote") {
     val res = ValueParser.validate("${' --+===>., '}")
     res.toOption.value should be(TextExpression(Constant(" --+===>., ")))
   }
 
-  it should "fail to parse ${user.enrolledIdentifier" in {
+  test("ValueParser should fail to parse ${user.enrolledIdentifier") {
 
     val res = ValueParser.validate("${user.enrolledIdentifier")
     res.left.value should be(
@@ -173,7 +176,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     )
   }
 
-  it should "fail to parse ${user.enrolledIdentifiers}" in {
+  test("ValueParser should fail to parse ${user.enrolledIdentifiers}") {
 
     val res = ValueParser.validate("${user.enrolledIdentifiers}")
     res.left.value should be(
@@ -185,12 +188,12 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     )
   }
 
-  it should "parse ${user.credentialRole}" in {
+  test("ValueParser should parse ${user.credentialRole}") {
     val res = ValueParser.validate("${user.credentialRole}")
     res.toOption.value should be(TextExpression(UserCtx(UserField.CredentialRole)))
   }
 
-  it should "parse ${user.enrolments.<identifierName>.<referenceName>}" in {
+  test("ValueParser should parse ${user.enrolments.<identifierName>.<referenceName>}") {
 
     val validIdentifiersCombinations = Table(
       // format: off
@@ -227,93 +230,93 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     }
   }
 
-  it should "parse ${someId.sum}" in {
+  test("ValueParser should parse ${someId.sum}") {
     val res = ValueParser.validate("${age.sum}")
 
     res.toOption.value should be(TextExpression(Sum(FormCtx("age"))))
   }
 
-  it should "parse ${firstName * secondName}" in {
+  test("ValueParser should parse ${firstName * secondName}") {
     val res = ValueParser.validate("${firstName * secondName}")
     res.toOption.value should be(TextExpression(Multiply(FormCtx("firstName"), FormCtx("secondName"))))
   }
 
-  it should "parse ${firstName * auth.secondName}" in {
+  test("ValueParser should parse ${firstName * auth.secondName}") {
     val res = ValueParser.validate("${firstName * auth.sautr}")
     res.toOption.value should be(TextExpression(Multiply(FormCtx("firstName"), AuthCtx(AuthInfo.SaUtr))))
   }
 
-  it should "parse ${auth.email}" in {
+  test("ValueParser should parse ${auth.email}") {
     val res = ValueParser.validate("${auth.email}")
     res.toOption.value should be(TextExpression(AuthCtx(AuthInfo.EmailId)))
   }
 
-  it should "parse ${a - b  * c}" in {
+  test("ValueParser should parse ${a - b  * c}") {
     val res = ValueParser.validate("${firstName - secondName * thirdname}")
     res.toOption.value should be(
       TextExpression(Subtraction(FormCtx("firstName"), Multiply(FormCtx("secondName"), FormCtx("thirdname"))))
     )
   }
 
-  it should "parse ${a * b  + c}" in {
+  test("ValueParser should parse ${a * b  + c}") {
     val res = ValueParser.validate("${firstName * secondName + thirdname}")
     res.toOption.value should be(
       TextExpression(Add(Multiply(FormCtx("firstName"), FormCtx("secondName")), FormCtx("thirdname")))
     )
   }
 
-  it should "parse ${a / b}" in {
+  test("ValueParser should parse ${a / b}") {
     val res = ValueParser.validate("${firstName / secondName}")
     res.toOption.value should be(
       TextExpression(Divide(FormCtx("firstName"), FormCtx("secondName")))
     )
   }
 
-  it should "parse ${a * b  / c}" in {
+  test("ValueParser should parse ${a * b  / c}") {
     val res = ValueParser.validate("${firstName * secondName / thirdname}")
     res.toOption.value should be(
       TextExpression(Divide(Multiply(FormCtx("firstName"), FormCtx("secondName")), FormCtx("thirdname")))
     )
   }
 
-  it should "parse string constant" in {
+  test("ValueParser should parse string constant") {
     val res = ValueParser.validate("'constant'")
     res.toOption.value should be(TextExpression(Constant("constant")))
   }
 
-  it should "parse string constant including space" in {
+  test("ValueParser should parse string constant including space") {
     val res = ValueParser.validate("'const ant'")
     res.toOption.value should be(TextExpression(Constant("const ant")))
   }
 
-  it should "parse number as a choice selections" in {
+  test("ValueParser should parse number as a choice selections") {
     val res = ValueParser.validate("1")
     res.toOption.value should be(ChoiceExpression(List(1)))
   }
 
-  it should "parse numbers separated by comma as a choice selections" in {
+  test("ValueParser should parse numbers separated by comma as a choice selections") {
     val res = ValueParser.validate("1,2,3,4")
     res.toOption.value should be(ChoiceExpression(List(1, 2, 3, 4)))
   }
 
   /** Date cases
     */
-  it should "parse Date" in {
+  test("ValueParser should parse Date") {
     val res = ValueParser.validate("2015-01-15")
     res.toOption.value should be(DateExpression(ExactDateValue(2015, 1, 15)))
   }
 
-  it should "parse lastDay" in {
+  test("ValueParser should parse lastDay") {
     val res = ValueParser.validate("2015-01-lastDay")
     res.toOption.value should be(DateExpression(ExactDateValue(2015, 1, 31)))
   }
 
-  it should "parse firstDay" in {
+  test("ValueParser should parse firstDay") {
     val res = ValueParser.validate("2015-01-firstDay")
     res.toOption.value should be(DateExpression(ExactDateValue(2015, 1, 1)))
   }
 
-  it should "throw exception on 1 digit month " in {
+  test("ValueParser should throw exception on 1 digit month ") {
     val res = ValueParser.validate("2015-1-12")
     res.left.value should be(
       UnexpectedState("""Unable to parse expression 2015-1-12.
@@ -322,63 +325,63 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     )
   }
 
-  it should "throw exception on year digits" in {
+  test("ValueParser should throw exception on year digits") {
     val res = ValueParser.validate("201568-01-12")
     res.left.value should be(UnexpectedState("""Unable to parse expression 201568-01-12.
                                                |Errors:
                                                |end of input expected""".stripMargin))
   }
 
-  it should "throw exception on Date format" in {
+  test("ValueParser should throw exception on Date format") {
     val res = ValueParser.validate("65841-351")
     res.left.value should be(UnexpectedState("""Unable to parse expression 65841-351.
                                                |Errors:
                                                |end of input expected""".stripMargin))
   }
 
-  it should "parse next Date setting next year" in {
+  test("ValueParser should parse next Date setting next year") {
     val res = ValueParser.validate("next-01-15")
 
     res.toOption.value should be(DateExpression(NextDateValue(1, 15)))
   }
 
-  it should "parse next Date setting current year" in {
+  test("ValueParser should parse next Date setting current year") {
     val res = ValueParser.validate("next-04-15")
 
     res.toOption.value should be(DateExpression(NextDateValue(4, 15)))
   }
 
-  it should "parse last Date setting current year" in {
+  test("ValueParser should parse last Date setting current year") {
     val res = ValueParser.validate("last-01-15")
 
     res.toOption.value should be(DateExpression(PreviousDateValue(1, 15)))
   }
 
-  it should "parse last Date setting previous year" in {
+  test("ValueParser should parse last Date setting previous year") {
     val res = ValueParser.validate("last-04-15")
 
     res.toOption.value should be(DateExpression(PreviousDateValue(4, 15)))
   }
 
-  it should "parse Date setting current Date" in {
+  test("ValueParser should parse Date setting current Date") {
     val res = ValueParser.validate("today")
 
     res.toOption.value should be(DateExpression(TodayDateValue))
   }
 
-  it should "parse submissionReference" in {
+  test("ValueParser should parse submissionReference") {
     val res = ValueParser.validate("${form.submissionReference}")
 
     res.toOption.value should be(TextExpression(FormTemplateCtx(FormTemplateProp.SubmissionReference)))
   }
 
-  it should "parse fileSizeLimit" in {
+  test("ValueParser should parse fileSizeLimit") {
     val res = ValueParser.validate("${form.fileSizeLimit}")
 
     res.toOption.value should be(TextExpression(FormTemplateCtx(FormTemplateProp.FileSizeLimit)))
   }
 
-  it should "parse orElse expression" in {
+  test("ValueParser should parse orElse expression") {
     implicit def liftToFormCtx(s: String): FormCtx = FormCtx(s)
     val table = Table(
       ("expression", "catenable"),
@@ -426,7 +429,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     }
   }
 
-  it should "else expressions should be rewriten to nesting on right hand side" in {
+  test("ValueParser should else expressions should be rewriten to nesting on right hand side") {
     implicit def liftToFormCtx(s: String): FormCtx = FormCtx(s)
     val table = Table(
       ("expression", "catenable"),
@@ -449,7 +452,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     }
   }
 
-  it should "fail parse unclosed parenthesis" in {
+  test("ValueParser should fail parse unclosed parenthesis") {
     val res = ValueParser.validate("${name")
     res.left.value should be(UnexpectedState("""|Unable to parse expression ${name.
                                                 |Errors:
@@ -622,14 +625,14 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
 
   val formTemplateWithOneSection = plainFormTemplate.copy(formKind = FormKind.Classic(List(yourDetailsSection)))
 
-  "Expr.validate" should "return Valid if expression include fieldName id present in the form template" in {
+  test("Expr.validate should return Valid if expression include fieldName id present in the form template") {
 
     val res = FormTemplateValidator
       .validate(List(Text(ShortText.default, FormCtx("firstName"))), formTemplateWithOneSection)
     res should be(Valid)
   }
 
-  it should "return Valid if expression Add fields present in the form template" in {
+  test("Expr.validate should return Valid if expression Add fields present in the form template") {
     val res =
       FormTemplateValidator
         .validate(
@@ -639,7 +642,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     res should be(Valid)
   }
 
-  it should "return Valid if expression Multiply fields present in the form template" in {
+  test("Expr.validate should return Valid if expression Multiply fields present in the form template") {
     val res =
       FormTemplateValidator
         .validate(
@@ -649,47 +652,49 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     res should be(Valid)
   }
 
-  it should "return Invalid if expression include fieldName id not present in the form template" in {
+  test(
+    "Expr.validate should return Invalid if expression include fieldName id not present in the form template"
+  ) {
     val res = FormTemplateValidator
       .validate(List(Text(ShortText.default, FormCtx("firstNameTypo"))), formTemplateWithOneSection)
     res should be(Invalid("Form field 'firstNameTypo' is not defined in form template."))
   }
-  it should "return invalid and not be parsed as empty string" in {
+  test("Expr.validate should return invalid and not be parsed as empty string") {
     val res = FormTemplateValidator
       .validate(List(Text(ShortText.default, FormCtx("'' * ''"))), formTemplateWithOneSection)
     res should be(Invalid("Form field ''' * ''' is not defined in form template."))
   }
 
-  "Parser - contextField" should "parse form field with date offset as DateCtx (form.)" in {
+  test("Parser - contextField should parse form field with date offset as DateCtx (form.)") {
     val result = ValueParser.parseAll(ValueParser.contextField, "form.dateField + 1d").get
     result shouldBe DateCtx(
       DateExprWithOffset(DateFormCtxVar(FormCtx(FormComponentId("dateField"))), OffsetYMD(OffsetUnit.Day(1)))
     )
   }
 
-  it should "parse form field with date offset as DateCtx" in {
+  test("Parser - contextField should parse form field with date offset as DateCtx") {
     val result = ValueParser.parseAll(ValueParser.contextField, "dateField + 1d").get
     result shouldBe DateCtx(
       DateExprWithOffset(DateFormCtxVar(FormCtx(FormComponentId("dateField"))), OffsetYMD(OffsetUnit.Day(1)))
     )
   }
 
-  it should "parse form.startDate as DateCtx" in {
+  test("Parser - contextField should parse form.startDate as DateCtx") {
     val result = ValueParser.parseAll(ValueParser.contextField, "form.startDate").get
     result shouldBe DateCtx(DateValueExpr(FormStartDateExprValue))
   }
 
-  it should "parse TODAY as DateCtx" in {
+  test("Parser - contextField should parse TODAY as DateCtx") {
     val result = ValueParser.parseAll(ValueParser.contextField, "TODAY").get
     result shouldBe DateCtx(DateValueExpr(TodayDateExprValue))
   }
 
-  it should "parse TODAY with offset as DateCtx" in {
+  test("Parser - contextField should parse TODAY with offset as DateCtx") {
     val result = ValueParser.parseAll(ValueParser.contextField, "TODAY + 1m").get
     result shouldBe DateCtx(DateExprWithOffset(DateValueExpr(TodayDateExprValue), OffsetYMD(OffsetUnit.Month(1))))
   }
 
-  it should "parse TODAY with offset as DateCtx y m d" in {
+  test("Parser - contextField should parse TODAY with offset as DateCtx y m d") {
     val result = ValueParser.parseAll(ValueParser.contextField, "TODAY + 2y + 3m + 4d").get
     result shouldBe DateCtx(
       DateExprWithOffset(
@@ -699,12 +704,12 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     )
   }
 
-  it should "parse fixed date string as DateCtx" in {
+  test("Parser - contextField should parse fixed date string as DateCtx") {
     val result = ValueParser.parseAll(ValueParser.contextField, "01012020").get
     result shouldBe DateCtx(DateValueExpr(ExactDateExprValue(2020, 1, 1)))
   }
 
-  it should "support year/month/day offset for dates" in {
+  test("Parser - contextField should support year/month/day offset for dates") {
     val today = DateValueExpr(TodayDateExprValue)
     val fieldReference = DateFormCtxVar(FormCtx("dateField"))
     val table = Table(
@@ -762,7 +767,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     }
   }
 
-  it should "not support repeated year/month/day offset" in {
+  test("Parser - contextField should not support repeated year/month/day offset") {
     val table = Table(
       "expression",
       "TODAY + 2y + 3m + 4m",
@@ -776,18 +781,18 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     }
   }
 
-  it should "parse day(TODAY) function" in {
+  test("Parser - contextField should parse day(TODAY) function") {
     val res = ValueParser.validate("${day(TODAY)}")
     res.toOption.value should be(TextExpression(DateFunction(DateProjection.Day(DateValueExpr(TodayDateExprValue)))))
   }
-  it should "parse year(01012020) function" in {
+  test("Parser - contextField should parse year(01012020) function") {
     val res = ValueParser.validate("${year(01012020)}")
     res.toOption.value should be(
       TextExpression(DateFunction(DateProjection.Year(DateValueExpr(ExactDateExprValue(2020, 1, 1)))))
     )
   }
 
-  it should "parse month(dateField + 1d) function" in {
+  test("Parser - contextField should parse month(dateField + 1d) function") {
     val res = ValueParser.validate("${month(dateField + 1d)}")
     res.toOption.value should be(
       TextExpression(
@@ -800,21 +805,21 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     )
   }
 
-  it should "parse tax year from form start date" in {
+  test("Parser - contextField should parse tax year from form start date") {
     val res = ValueParser.validate("${taxYear(form.startDate)}")
     res.toOption.value should be(
       TextExpression(DateFunction(DateProjection.TaxYear(DateValueExpr(FormStartDateExprValue))))
     )
   }
 
-  it should "parse tax year from today's date" in {
+  test("Parser - contextField should parse tax year from today's date") {
     val res = ValueParser.validate("${taxYear(TODAY)}")
     res.toOption.value should be(
       TextExpression(DateFunction(DateProjection.TaxYear(DateValueExpr(TodayDateExprValue))))
     )
   }
 
-  it should "parse yearToDate('0102', TODAY) function" in {
+  test("Parser - contextField should parse yearToDate('0102', TODAY) function") {
     val res = ValueParser.validate("${yearToDate('0102', TODAY)}")
 
     res.toOption.value should be(
@@ -829,7 +834,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     )
   }
 
-  it should "parse yearToDate('0102', formField) function" in {
+  test("Parser - contextField should parse yearToDate('0102', formField) function") {
     val res = ValueParser.validate("${yearToDate('0102', exprId)}")
 
     res.toOption.value should be(
@@ -844,7 +849,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     )
   }
 
-  it should "parse period(d1, d2) function" in {
+  test("Parser - contextField should parse period(d1, d2) function") {
     val res = ValueParser.validate("${period(d1, d2)}")
     res.toOption.value should be(
       TextExpression(
@@ -857,7 +862,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     )
   }
 
-  it should "parse period(d1, d2) extension functions" in {
+  test("Parser - contextField should parse period(d1, d2) extension functions") {
     val table = Table(
       ("function", "expected prop"),
       ("${period(d1, d2).sum}", PeriodFn.Sum),
@@ -880,7 +885,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     }
   }
 
-  it should "parse days/weeks between functions" in {
+  test("Parser - contextField should parse days/weeks between functions") {
     val table = Table(
       ("function", "expected prop"),
       ("${daysBetween(d1, d2)}", MeasurementType.Days),
@@ -900,7 +905,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     }
   }
 
-  it should "parse days/weeks between sum functions" in {
+  test("Parser - contextField should parse days/weeks between sum functions") {
     val table = Table(
       ("function", "expected prop"),
       ("${daysBetween(d1, d2).sum}", MeasurementType.Days),
@@ -922,49 +927,53 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     }
   }
 
-  it should "parse form.lang as LangCtx" in {
+  test("Parser - contextField should parse form.lang as LangCtx") {
     ValueParser.validate("${form.lang}") shouldBe Right(TextExpression(LangCtx))
   }
 
-  it should "parse link.pageid as PageLink(PageId(pageid))" in {
+  test("Parser - contextField should parse link.pageid as PageLink(PageId(pageid))") {
     ValueParser.validate("${link.pageid}") shouldBe Right(TextExpression(LinkCtx(PageLink(PageId("pageid")))))
   }
 
-  it should "parse link.newForm as PageLink(NewForm)" in {
+  test("Parser - contextField should parse link.newForm as PageLink(NewForm)") {
     ValueParser.validate("${link.newForm}") shouldBe Right(TextExpression(LinkCtx(NewForm)))
   }
 
-  it should "parse link.newForm.xxxx as PageLink(NewForm(xxxx))" in {
+  test("Parser - contextField should parse link.newForm.xxxx as PageLink(NewForm(xxxx))") {
     ValueParser.validate("${link.newForm.abc-def_123}") shouldBe Right(
       TextExpression(LinkCtx(NewFormForTemplate(FormTemplateId("abc-def_123"))))
     )
   }
 
-  it should "parse link.newSession as PageLink(NewSession)" in {
+  test("Parser - contextField should parse link.newSession as PageLink(NewSession)") {
     ValueParser.validate("${link.newSession}") shouldBe Right(TextExpression(LinkCtx(NewSession)))
   }
 
-  it should "parse link.signOut as PageLink(SignOut)" in {
+  test("Parser - contextField should parse link.signOut as PageLink(SignOut)") {
     ValueParser.validate("${link.signOut}") shouldBe Right(TextExpression(LinkCtx(SignOut)))
   }
 
-  it should "parse link.printSectionPdf as PageLink(PrintSectionPdf)" in {
+  test("Parser - contextField should parse link.printSectionPdf as PageLink(PrintSectionPdf)") {
     ValueParser.validate("${link.printSectionPdf}") shouldBe Right(TextExpression(LinkCtx(PrintSectionPdf)))
   }
 
-  it should "parse link.printSectionNotificationPdf as PageLink(PrintSectionNotificationPdf)" in {
+  test(
+    "Parser - contextField should parse link.printSectionNotificationPdf as PageLink(PrintSectionNotificationPdf)"
+  ) {
     ValueParser.validate("${link.printSectionNotificationPdf}") shouldBe Right(
       TextExpression(LinkCtx(PrintSectionNotificationPdf))
     )
   }
 
-  it should "parse link.printAcknowledgementHtml as PageLink(PrintAcknowledgementHtml)" in {
+  test(
+    "Parser - contextField should parse link.printAcknowledgementHtml as PageLink(PrintAcknowledgementHtml)"
+  ) {
     ValueParser.validate("${link.printAcknowledgementHtml}") shouldBe Right(
       TextExpression(LinkCtx(PrintAcknowledgementHtml))
     )
   }
 
-  it should "parse ${user.enrolments.HMCE-VATDEC-ORG.VATRegNo.xxx} as UserCtx" in {
+  test("Parser - contextField should parse ${user.enrolments.HMCE-VATDEC-ORG.VATRegNo.xxx} as UserCtx") {
     val table = Table(
       ("expr", "result"),
       (
@@ -1023,7 +1032,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     }
   }
 
-  it should "parse business bank existence - accountNumberIsWellFormatted" in {
+  test("Parser - contextField should parse business bank existence - accountNumberIsWellFormatted") {
     val res = ValueParser.validate("${dataRetrieve.businessBankDetails.accountNumberIsWellFormatted}")
     res.toOption.value should be(
       TextExpression(
@@ -1032,7 +1041,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     )
   }
 
-  it should "parse business bank existence - sortCodeIsPresentOnEISCD" in {
+  test("Parser - contextField should parse business bank existence - sortCodeIsPresentOnEISCD") {
     val res = ValueParser.validate("${dataRetrieve.businessBankDetails.sortCodeIsPresentOnEISCD}")
     res.toOption.value should be(
       TextExpression(
@@ -1041,14 +1050,16 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     )
   }
 
-  it should "parse business bank existence - sortCodeBankName" in {
+  test("Parser - contextField should parse business bank existence - sortCodeBankName") {
     val res = ValueParser.validate("${dataRetrieve.businessBankDetails.sortCodeBankName}")
     res.toOption.value should be(
       TextExpression(DataRetrieveCtx(DataRetrieveId("businessBankDetails"), DataRetrieve.Attribute("sortCodeBankName")))
     )
   }
 
-  it should "parse business bank existence - nonStandardAccountDetailsRequiredForBacs" in {
+  test(
+    "Parser - contextField should parse business bank existence - nonStandardAccountDetailsRequiredForBacs"
+  ) {
     val res = ValueParser.validate("${dataRetrieve.businessBankDetails.nonStandardAccountDetailsRequiredForBacs}")
     res.toOption.value should be(
       TextExpression(
@@ -1060,21 +1071,21 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     )
   }
 
-  it should "parse business bank existence - accountExists" in {
+  test("Parser - contextField should parse business bank existence - accountExists") {
     val res = ValueParser.validate("${dataRetrieve.businessBankDetails.accountExists}")
     res.toOption.value should be(
       TextExpression(DataRetrieveCtx(DataRetrieveId("businessBankDetails"), DataRetrieve.Attribute("accountExists")))
     )
   }
 
-  it should "parse business bank existence - nameMatches" in {
+  test("Parser - contextField should parse business bank existence - nameMatches") {
     val res = ValueParser.validate("${dataRetrieve.businessBankDetails.nameMatches}")
     res.toOption.value should be(
       TextExpression(DataRetrieveCtx(DataRetrieveId("businessBankDetails"), DataRetrieve.Attribute("nameMatches")))
     )
   }
 
-  it should "parse business bank existence - sortCodeSupportsDirectDebit" in {
+  test("Parser - contextField should parse business bank existence - sortCodeSupportsDirectDebit") {
     val res = ValueParser.validate("${dataRetrieve.businessBankDetails.sortCodeSupportsDirectDebit}")
     res.toOption.value should be(
       TextExpression(
@@ -1083,7 +1094,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     )
   }
 
-  it should "parse business bank existence - sortCodeSupportsDirectCredit" in {
+  test("Parser - contextField should parse business bank existence - sortCodeSupportsDirectCredit") {
     val res = ValueParser.validate("${dataRetrieve.businessBankDetails.sortCodeSupportsDirectCredit}")
     res.toOption.value should be(
       TextExpression(
@@ -1092,13 +1103,13 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     )
   }
 
-  it should "parse quotedLocalisedConstant localized constant" in {
+  test("Parser - contextField should parse quotedLocalisedConstant localized constant") {
     val res = ValueParser.parseAll(ValueParser.quotedLocalisedConstant, "'Are you'| 'Wyt ti'")
     res.get shouldBe IfElse(Equals(LangCtx, Constant("en")), Constant("Are you"), Constant("Wyt ti"))
 
   }
 
-  it should "parse complex if-then-else expression from acceptance tests" in {
+  test("Parser - contextField should parse complex if-then-else expression from acceptance tests") {
 
     val res = ValueParser.validate("${if noCompanyName then 'Are you'| 'Wyt ti' else ('Is '|'Os ' + companyName)}")
 
@@ -1112,7 +1123,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
 
   }
 
-  it should "parse hmrcTaxPeriodCtx as DateCtx" in {
+  test("Parser - contextField should parse hmrcTaxPeriodCtx as DateCtx") {
     val res = ValueParser.validate("${returnTaxPeriod.periodTo}")
     res.toOption.value shouldBe TextExpression(
       DateCtx(
@@ -1121,26 +1132,26 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     )
   }
 
-  it should "parse selectedCountry.column.InEU" in {
+  test("Parser - contextField should parse selectedCountry.column.InEU") {
     val res = ValueParser.validate("${selectedCountry.column.InEU}")
     res.toOption.value should be(TextExpression(LookupColumn(FormComponentId("selectedCountry"), "InEU")))
   }
 
-  it should "parse applicantNationality.column.InEU.count('1')" in {
+  test("Parser - contextField should parse applicantNationality.column.InEU.count('1')") {
     val res = ValueParser.validate("${applicantNationality.column.InEU.count('1')}")
     res.toOption.value should be(
       TextExpression(CsvCountryCountCheck(FormComponentId("applicantNationality"), "InEU", "1"))
     )
   }
 
-  it should "parse applicantNationality.column.Name.count('United Kingdom')" in {
+  test("Parser - contextField should parse applicantNationality.column.Name.count('United Kingdom')") {
     val res = ValueParser.validate("${applicantNationality.column.Name.count('United Kingdom')}")
     res.toOption.value should be(
       TextExpression(CsvCountryCountCheck(FormComponentId("applicantNationality"), "Name", "United Kingdom"))
     )
   }
 
-  it should "parse company house profile - name" in {
+  test("Parser - contextField should parse company house profile - name") {
     val res = ValueParser.validate("${dataRetrieve.company.name}")
     res.toOption.value should be(
       TextExpression(
@@ -1149,7 +1160,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     )
   }
 
-  it should "parse company house profile - status" in {
+  test("Parser - contextField should parse company house profile - status") {
     val res = ValueParser.validate("${dataRetrieve.company.status}")
     res.toOption.value should be(
       TextExpression(
@@ -1158,7 +1169,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     )
   }
 
-  it should "parse company house profile - registeredAddress" in {
+  test("Parser - contextField should parse company house profile - registeredAddress") {
     val res = ValueParser.validate("${dataRetrieve.company.registeredAddress}")
     res.toOption.value should be(
       TextExpression(
@@ -1167,7 +1178,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     )
   }
 
-  it should "parse company house officers - activeDirectors" in {
+  test("Parser - contextField should parse company house officers - activeDirectors") {
     val res = ValueParser.validate("${dataRetrieve.directors.activeDirectors}")
     res.toOption.value should be(
       TextExpression(
@@ -1176,7 +1187,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     )
   }
 
-  it should "parse company house officers - activeSecretaries" in {
+  test("Parser - contextField should parse company house officers - activeSecretaries") {
     val res = ValueParser.validate("${dataRetrieve.directors.activeSecretaries}")
     res.toOption.value should be(
       TextExpression(
@@ -1185,7 +1196,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     )
   }
 
-  it should "parse company house officers - activeLlpMembers" in {
+  test("Parser - contextField should parse company house officers - activeLlpMembers") {
     val res = ValueParser.validate("${dataRetrieve.directors.activeLlpMembers}")
     res.toOption.value should be(
       TextExpression(
@@ -1194,7 +1205,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     )
   }
 
-  it should "parse nino insights - riskScore" in {
+  test("Parser - contextField should parse nino insights - riskScore") {
     val res = ValueParser.validate("${dataRetrieve.ninoInsights.riskScore}")
     res.toOption.value should be(
       TextExpression(
@@ -1203,7 +1214,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     )
   }
 
-  it should "parse nino insights - reason" in {
+  test("Parser - contextField should parse nino insights - reason") {
     val res = ValueParser.validate("${dataRetrieve.ninoInsights.reason}")
     res.toOption.value should be(
       TextExpression(
@@ -1212,7 +1223,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     )
   }
 
-  it should "parse bank account insights - riskScore" in {
+  test("Parser - contextField should parse bank account insights - riskScore") {
     val res = ValueParser.validate("${dataRetrieve.bankCheck.riskScore}")
     res.toOption.value should be(
       TextExpression(
@@ -1221,7 +1232,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     )
   }
 
-  it should "parse bank account insights - reason" in {
+  test("Parser - contextField should parse bank account insights - reason") {
     val res = ValueParser.validate("${dataRetrieve.bankCheck.reason}")
     res.toOption.value should be(
       TextExpression(
@@ -1230,7 +1241,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     )
   }
 
-  it should "parse personal bank account existence - accountExists" in {
+  test("Parser - contextField should parse personal bank account existence - accountExists") {
     val res = ValueParser.validate("${dataRetrieve.personalBankAccountExistence.accountExists}")
     res.toOption.value should be(
       TextExpression(
@@ -1239,7 +1250,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     )
   }
 
-  it should "parse personal bank account existence - nameMatches" in {
+  test("Parser - contextField should parse personal bank account existence - nameMatches") {
     val res = ValueParser.validate("${dataRetrieve.personalBankAccountExistence.nameMatches}")
     res.toOption.value should be(
       TextExpression(
@@ -1248,56 +1259,56 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     )
   }
 
-  it should "parse substring function" in {
+  test("Parser - contextField should parse substring function") {
     val res = ValueParser.validate("${substring(fieldId, 3, 4)}")
     res.toOption.value should be(
       TextExpression(StringOps(FormCtx(FormComponentId("fieldId")), StringFnc.SubString(3, 4)))
     )
   }
 
-  it should "parse removeSpaces function" in {
+  test("Parser - contextField should parse removeSpaces function") {
     val res = ValueParser.validate("${removeSpaces(fieldId)}")
     res.toOption.value should be(
       TextExpression(StringOps(FormCtx(FormComponentId("fieldId")), StringFnc.RemoveSpaces))
     )
   }
 
-  it should "parse capitalize function" in {
+  test("Parser - contextField should parse capitalize function") {
     val res = ValueParser.validate("${capitalize(fieldId)}")
     res.toOption.value should be(
       TextExpression(StringOps(FormCtx(FormComponentId("fieldId")), StringFnc.Capitalize))
     )
   }
 
-  it should "parse capitalizeAll function" in {
+  test("Parser - contextField should parse capitalizeAll function") {
     val res = ValueParser.validate("${capitalizeAll(fieldId)}")
     res.toOption.value should be(
       TextExpression(StringOps(FormCtx(FormComponentId("fieldId")), StringFnc.CapitalizeAll))
     )
   }
 
-  it should "parse uppercase function" in {
+  test("Parser - contextField should parse uppercase function") {
     val res = ValueParser.validate("${uppercase(fieldId)}")
     res.toOption.value should be(
       TextExpression(StringOps(FormCtx(FormComponentId("fieldId")), StringFnc.UpperCase))
     )
   }
 
-  it should "parse lowercase function" in {
+  test("Parser - contextField should parse lowercase function") {
     val res = ValueParser.validate("${lowercase(fieldId)}")
     res.toOption.value should be(
       TextExpression(StringOps(FormCtx(FormComponentId("fieldId")), StringFnc.LowerCase))
     )
   }
 
-  it should "parse lowercaseFirst function" in {
+  test("Parser - contextField should parse lowercaseFirst function") {
     val res = ValueParser.validate("${lowercaseFirst(fieldId)}")
     res.toOption.value should be(
       TextExpression(StringOps(FormCtx(FormComponentId("fieldId")), StringFnc.LowerCaseFirst))
     )
   }
 
-  it should "parse lowercase, uppercase, and capitalize functions" in {
+  test("Parser - contextField should parse lowercase, uppercase, and capitalize functions") {
     val res = ValueParser.validate("${capitalize(uppercase(lowercase(fieldId)))}")
     res.toOption.value should be(
       TextExpression(
@@ -1309,75 +1320,75 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     )
   }
 
-  it should "parse concat function" in {
+  test("Parser - contextField should parse concat function") {
     val res = ValueParser.validate("${concat(fieldId, ' test')}")
     res.toOption.value should be(
       TextExpression(Concat(List(FormCtx(FormComponentId("fieldId")), Constant(" test"))))
     )
   }
 
-  it should "parse auth.itmpAddress.country function" in {
+  test("Parser - contextField should parse auth.itmpAddress.country function") {
     val res = ValueParser.validate("${auth.itmpAddress.country}")
     res.toOption.value should be(
       TextExpression(CountryOfItmpAddress)
     )
   }
 
-  it should "parse link.download.nipClaimScheduleTemplate.xlsx function" in {
+  test("Parser - contextField should parse link.download.nipClaimScheduleTemplate.xlsx function") {
     val res = ValueParser.validate("${link.download.nipClaimScheduleTemplate.xlsx}")
     res.toOption.value should be(
       TextExpression(LinkCtx(InternalLink.Download("nipClaimScheduleTemplate.xlsx")))
     )
   }
 
-  it should "parse link.download.nipClaimScheduleTemplate.ods function" in {
+  test("Parser - contextField should parse link.download.nipClaimScheduleTemplate.ods function") {
     val res = ValueParser.validate("${link.download.nipClaimScheduleTemplate.ods}")
     res.toOption.value should be(
       TextExpression(LinkCtx(InternalLink.Download("nipClaimScheduleTemplate.ods")))
     )
   }
 
-  it should "parse link.image.imagename.png function" in {
+  test("Parser - contextField should parse link.image.imagename.png function") {
     val res = ValueParser.validate("${link.image.imagename.png}")
     res.toOption.value should be(
       TextExpression(LinkCtx(InternalLink.Image("imagename.png")))
     )
   }
 
-  it should "parse choicesRevealedField function" in {
+  test("Parser - contextField should parse choicesRevealedField function") {
     val res = ValueParser.validate("${choicesRevealedField(fieldId)}")
     res.toOption.value should be(
       TextExpression(ChoicesRevealedField(FormComponentId("fieldId")))
     )
   }
 
-  it should "parse link.'https://www.gov.uk' function" in {
+  test("Parser - contextField should parse link.'https://www.gov.uk' function") {
     val res = ValueParser.validate("${link.'https://www.gov.uk'}")
     res.toOption.value should be(
       TextExpression(LinkCtx(InternalLink.UrlLink("https://www.gov.uk")))
     )
   }
 
-  it should "parse choice function" in {
+  test("Parser - contextField should parse choice function") {
     val res = ValueParser.validate("${choice(fieldId)}")
     res.toOption.value should be(
       TextExpression(Concat(List(FormCtx(FormComponentId("fieldId")))))
     )
   }
 
-  it should "parse the hideZeroDecimals function" in {
+  test("Parser - contextField should parse the hideZeroDecimals function") {
     val res = ValueParser.validate("${hideZeroDecimals(age)}")
 
     res.toOption.value should be(TextExpression(HideZeroDecimals(FormCtx("age"))))
   }
 
-  it should "parse the hideZeroDecimals function with other functions" in {
+  test("Parser - contextField should parse the hideZeroDecimals function with other functions") {
     val res = ValueParser.validate("${hideZeroDecimals(age + 2)}")
 
     res.toOption.value should be(TextExpression(HideZeroDecimals(Add(FormCtx("age"), Constant("2")))))
   }
 
-  it should "parse substring function with user field enrolments" in {
+  test("Parser - contextField should parse substring function with user field enrolments") {
     val res = ValueParser.validate("${substring(user.enrolments.HMRC-CUS-ORG.EORINumber,0,2)}")
     res.toOption.value should be(
       TextExpression(
@@ -1389,13 +1400,13 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     )
   }
 
-  it should "parse the getCountry function" in {
+  test("Parser - contextField should parse the getCountry function") {
     val res = ValueParser.validate("${getCountry(age)}")
 
     res.toOption.value should be(TextExpression(LookupOps(FormCtx("age"), LookupFnc.CountryName)))
   }
 
-  it should "parse the getSicDescription function" in {
+  test("Parser - contextField should parse the getSicDescription function") {
     val res = ValueParser.validate("${getSicDescription(age)}")
 
     res.toOption.value should be(TextExpression(LookupOps(FormCtx("age"), LookupFnc.SicDescription)))

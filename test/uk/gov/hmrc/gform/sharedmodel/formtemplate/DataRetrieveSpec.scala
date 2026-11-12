@@ -16,13 +16,14 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
-import org.scalatest.flatspec.AnyFlatSpec
+import munit.FunSuite
+
 import org.scalatest.matchers.should.Matchers
 import play.api.libs.json.{ JsBoolean, JsError, JsNull, JsNumber, JsObject, JsPath, JsString, Json, JsonValidationError }
 import uk.gov.hmrc.gform.sharedmodel._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.AuthInfo.PayeNino
 
-class DataRetrieveSpec extends AnyFlatSpec with Matchers {
+class DataRetrieveSpec extends FunSuite with Matchers {
 
   private val manualFallbackJson = Json.obj(
     "type" -> "validateBankDetails",
@@ -33,7 +34,7 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
     )
   )
 
-  "manualFallbackIsDesigned" should "default to None in template and persisted JSON" in {
+  test("manualFallbackIsDesigned should default to None in template and persisted JSON") {
     val dataRetrieve = manualFallbackJson.as[DataRetrieve]
     dataRetrieve.manualFallbackIsDesigned shouldBe None
     val persisted = Json.toJson(dataRetrieve).as[JsObject]
@@ -41,7 +42,7 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
     (persisted - "manualFallbackIsDesigned").as[DataRetrieve] shouldBe dataRetrieve
   }
 
-  it should "read and write both boolean values" in {
+  test("manualFallbackIsDesigned should read and write both boolean values") {
     List(false, true).foreach { flag =>
       val dataRetrieve = (manualFallbackJson + ("manualFallbackIsDesigned" -> JsBoolean(flag))).as[DataRetrieve]
       dataRetrieve.manualFallbackIsDesigned shouldBe Some(flag)
@@ -50,7 +51,7 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
     }
   }
 
-  it should "read null as None and reject non-boolean values in both formats" in {
+  test("manualFallbackIsDesigned should read null as None and reject non-boolean values in both formats") {
     val persisted = Json.toJson(manualFallbackJson.as[DataRetrieve]).as[JsObject]
     (manualFallbackJson + ("manualFallbackIsDesigned" -> JsNull))
       .as[DataRetrieve]
@@ -62,7 +63,7 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
     }
   }
 
-  "DataRetrieveResult.hasFailed" should "read old JSON as None and round-trip explicit boolean values" in {
+  test("DataRetrieveResult.hasFailed should read old JSON as None and round-trip explicit boolean values") {
     val json = Json.obj(
       "id"            -> "bankDetails",
       "data"          -> Json.obj("isValid" -> "yes"),
@@ -92,7 +93,7 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
     }
   }
 
-  "Json.parse" should "parse json as ValidateBankDetails" in {
+  test("Json.parse should parse json as ValidateBankDetails") {
     Json
       .parse("""
                |{
@@ -171,7 +172,7 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
     )
   }
 
-  it should "parse json as BusinessBankAccountExistence" in {
+  test("Json.parse should parse json as BusinessBankAccountExistence") {
     Json
       .parse("""
                |{
@@ -285,7 +286,7 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
     )
   }
 
-  it should "return error when 'type' is not string" in {
+  test("Json.parse should return error when 'type' is not string") {
     Json
       .parse("""
                |{
@@ -302,7 +303,7 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
     )
   }
 
-  it should "return error when 'id' is missing" in {
+  test("Json.parse should return error when 'id' is missing") {
     Json
       .parse("""
                |{
@@ -316,7 +317,7 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
       .validateOpt[DataRetrieve] shouldBe JsError("'id' attribute missing")
   }
 
-  it should "return error when 'type' is missing" in {
+  test("Json.parse should return error when 'type' is missing") {
     Json
       .parse("""
                |{
@@ -330,7 +331,7 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
       .validateOpt[DataRetrieve] shouldBe JsError("'type' attribute missing")
   }
 
-  it should "parse json as CompanyHouseProfile" in {
+  test("Json.parse should parse json as CompanyHouseProfile") {
     Json
       .parse("""
                |{
@@ -446,7 +447,7 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
     )
   }
 
-  it should "parse json as CompanyHouseActiveOfficers" in {
+  test("Json.parse should parse json as CompanyHouseActiveOfficers") {
     Json
       .parse("""
                |{
@@ -506,7 +507,7 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
     )
   }
 
-  it should "parse json as CompanyHouseInsolvency" in {
+  test("Json.parse should parse json as CompanyHouseInsolvency") {
     Json
       .parse("""
                |{
@@ -619,7 +620,7 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
     )
   }
 
-  it should "parse json as NinoInsights" in {
+  test("Json.parse should parse json as NinoInsights") {
     Json
       .parse("""
                |{
@@ -660,7 +661,7 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
     )
   }
 
-  it should "parse json as BankAccountInsights" in {
+  test("Json.parse should parse json as BankAccountInsights") {
     Json
       .parse("""
                |{
@@ -707,7 +708,7 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
     )
   }
 
-  it should "parse json as BankAccountInsights with if" in {
+  test("Json.parse should parse json as BankAccountInsights with if") {
     Json
       .parse("""
                |{
@@ -755,7 +756,7 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
     )
   }
 
-  it should "parse json as PersonalBankAccountExistence" in {
+  test("Json.parse should parse json as PersonalBankAccountExistence") {
     Json
       .parse("""
                |{
@@ -873,7 +874,7 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
     )
   }
 
-  it should "parse json as hmrcRosmRegistrationCheck with if" in {
+  test("Json.parse should parse json as hmrcRosmRegistrationCheck with if") {
     Json
       .parse("""
                |{
@@ -949,7 +950,7 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
     )
   }
 
-  it should "parse json as agentDetails with if" in {
+  test("Json.parse should parse json as agentDetails with if") {
     Json
       .parse("""
                |{
@@ -1043,7 +1044,9 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
     )
   }
 
-  it should "return error when name, firstName and lastName are missing for PersonalBankAccountExistence" in {
+  test(
+    "Json.parse should return error when name, firstName and lastName are missing for PersonalBankAccountExistence"
+  ) {
     Json
       .parse("""
                |{
@@ -1058,7 +1061,7 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
       .validateOpt[DataRetrieve] shouldBe JsError("'firstName' attribute missing")
   }
 
-  it should "parse json as hmrcTaxRates with" in {
+  test("Json.parse should parse json as hmrcTaxRates with") {
     Json
       .parse("""
                |{
@@ -1136,7 +1139,7 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
     )
   }
 
-  it should "parse json as niRefundClaim with" in {
+  test("Json.parse should parse json as niRefundClaim with") {
     Json
       .parse("""
                |{
@@ -1213,7 +1216,7 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
     )
   }
 
-  it should "return error when code is missing from hmrcTaxRates with" in {
+  test("Json.parse should return error when code is missing from hmrcTaxRates with") {
     Json
       .parse("""
                |{
@@ -1228,7 +1231,7 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
       .validateOpt[DataRetrieve] shouldBe JsError("'code' attribute missing")
   }
 
-  it should "parse json as delegatedAgentAuthVat" in {
+  test("Json.parse should parse json as delegatedAgentAuthVat") {
     Json
       .parse("""
                |{
@@ -1274,7 +1277,7 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
     )
   }
 
-  it should "parse json as delegatedAgentAuthPaye" in {
+  test("Json.parse should parse json as delegatedAgentAuthPaye") {
     Json
       .parse("""
                |{
