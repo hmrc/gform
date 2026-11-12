@@ -19,7 +19,7 @@ package uk.gov.hmrc.gform.submission.destinations
 import uk.gov.hmrc.gform.core.{ FOpt, fromFutureA }
 import uk.gov.hmrc.gform.hip.HipAlgebra
 import uk.gov.hmrc.gform.sharedmodel.DestinationResult
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationResponse }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationResponse, PegaDestinationResponse }
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.{ ExecutionContext, Future }
@@ -43,7 +43,7 @@ class PegaSubmitter(
             for {
               eTag <- fromFutureA(hipConnectorAlgebra.getPegaCaseActionDetails(caseId, "pyChangeStage", correlationId))
               _    <- fromFutureA(hipConnectorAlgebra.pegaChangeToNextStage(caseId, eTag, correlationId))
-            } yield DestinationResponse.SubmittedResponse
+            } yield PegaDestinationResponse
           case None =>
             throw new IllegalArgumentException(
               s"Pega case ID not evaluated for destination ID: ${d.id}, Form ID: $formId"

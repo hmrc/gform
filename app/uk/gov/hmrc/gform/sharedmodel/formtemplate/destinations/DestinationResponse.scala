@@ -45,9 +45,6 @@ object DestinationResponse {
   implicit val objectIdFormat: Format[ObjectId] = Format(objectIdReads, objectIdWrites)
 
   case object NoResponse extends DestinationResponse
-
-  /** A destination which fired successfully but has no payload to return. */
-  case object SubmittedResponse extends DestinationResponse
 }
 
 case class DmsDestinationResponse(
@@ -90,3 +87,11 @@ object HandlebarsDestinationResponse {
 case class NrsOrchestratorDestinationResponse(workItemId: ObjectId) extends DestinationResponse
 
 case class AsyncHandlebarsDestinationResponse(workItemId: ObjectId) extends DestinationResponse
+
+case class SubmissionConsolidatorDestinationResponse(projectId: ProjectId) extends DestinationResponse
+
+case object PegaDestinationResponse extends DestinationResponse
+
+case object EmailDestinationResponse extends DestinationResponse
+
+case object StateTransitionDestinationResponse extends DestinationResponse

@@ -19,7 +19,6 @@ package uk.gov.hmrc.gform.notifier
 import cats.ApplicativeError
 import cats.syntax.show._
 import org.slf4j.LoggerFactory
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationResponse
 import uk.gov.service.notify.NotificationClientApi
 
 import scala.jdk.CollectionConverters._
@@ -29,12 +28,12 @@ class NotifierService[F[_]](client: NotificationClientApi)(implicit F: Applicati
     extends NotifierAlgebra[F] {
   private val logger = LoggerFactory.getLogger(getClass)
 
-  override def email(details: NotifierEmail): F[DestinationResponse] =
+  override def email(details: NotifierEmail): F[Unit] =
     Try {
       client
         .sendEmail(details.templateId.value, details.to.value, details.personalisation.asJava, details.reference.value)
     } match {
-      case Success(_) => F.pure(DestinationResponse.SubmittedResponse)
+      case Success(_) => F.unit
       case Failure(t) =>
         logger.error(show"Failed to send a Notifier email with template ID ${details.templateId}", t)
         F.raiseError(t)

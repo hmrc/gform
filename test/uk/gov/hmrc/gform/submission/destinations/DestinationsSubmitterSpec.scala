@@ -30,7 +30,7 @@ import uk.gov.hmrc.gform.sdes.workitem.DestinationWorkItemAlgebra
 import uk.gov.hmrc.gform.sharedmodel.{ DestinationEvaluation, FrontEndSubmissionVariables, LangADT, PdfContent, SubmissionRef, UserSession }
 import uk.gov.hmrc.gform.sharedmodel.form.FormData
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationId, DestinationIncludeIf, DestinationResponse, Destinations, HandlebarsDestinationResponse, HandlebarsTemplateProcessorModel, NrsOrchestratorDestinationResponse }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationId, DestinationIncludeIf, DestinationResponse, Destinations, EmailDestinationResponse, HandlebarsDestinationResponse, HandlebarsTemplateProcessorModel, NrsOrchestratorDestinationResponse }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.{ DestinationGen, DestinationsGen }
 import uk.gov.hmrc.gform.sharedmodel.generators.{ PdfDataGen, StructuredFormValueGen }
 import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
@@ -81,7 +81,7 @@ class DestinationsSubmitterSpec
           submissionInfo,
           HandlebarsTemplateProcessorModel.empty,
           destinationModel,
-          DestinationResponse.SubmittedResponse,
+          EmailDestinationResponse,
           formData,
           DestinationEvaluation.empty
         )
