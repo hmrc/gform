@@ -691,6 +691,9 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
     | "auth" ~ "." ~ loginInfo ^^ { case _ ~ _ ~ loginInfo =>
       IsLogin(loginInfo)
     }
+    | "dataRetrieve" ~ "." ~ DataRetrieveId.unanchoredIdValidation ~ "." ~ "hasFailed" ^^ { case _ ~ _ ~ id ~ _ ~ _ =>
+      Equals(DataRetrieveCtx(DataRetrieveId(id), DataRetrieve.hasFailedAttribute), Constant("true"))
+    }
     | p0)
 
   private lazy val p2: PackratParser[BooleanExpr] = ("!" ~> p1 ^^ { e =>
