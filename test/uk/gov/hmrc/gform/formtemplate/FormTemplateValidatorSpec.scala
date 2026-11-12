@@ -16,11 +16,10 @@
 
 package uk.gov.hmrc.gform.formtemplate
 
-import munit.FunSuite
-
 import cats.data.NonEmptyList
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.TableDrivenPropertyChecks
+import org.scalatest.wordspec.AnyWordSpecLike
 import play.api.libs.json.{ JsError, JsSuccess, Json }
 import uk.gov.hmrc.gform.Helpers.{ toLocalisedString, toSmartString }
 import uk.gov.hmrc.gform.core.parsers.ValueParser
@@ -31,12 +30,13 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.PageLink
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destinations, PrintSection }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AnyDate, BulletedList, CalendarDate, Checkbox, Choice, ChoicesAvailable, ChoicesSelected, Constant, CtUTR, DataRetrieveCtx, DataRetrieveDateCtx, Date, DateAfter, DateBefore, DateCtx, DateExprWithOffset, DateFormCtxVar, DateFunction, DateProjection, DateValueExpr, DisplayAsEntered, Dynamic, Equals, Expr, ExprWithPath, FormComponent, FormComponentId, FormComponentValidator, FormCtx, FormStartDateExprValue, FormTemplate, GreaterThan, HideZeroDecimals, Horizontal, IfElse, IncludeIf, IndexOf, IndexOfDataRetrieveCtx, InformationMessage, Instruction, IsTrue, LeafExpr, LinkCtx, LookupColumn, Mandatory, Not, NumberedList, Offset, OffsetUnit, OffsetYMD, OptionData, OptionDataValue, Page, PageId, PostcodeLookup, Radio, SaUTR, Section, ShortText, StandardInfo, SummariseGroupAsGrid, TaxPeriodDate, TemplatePath, Text, TextArea, TextWithRestrictions, TodayDateExprValue, TypeAhead, UkVrn, ValidIf, Value, Vertical }
 
-class FormTemplateValidatorSpec extends FunSuite with Matchers with FormTemplateSupport with TableDrivenPropertyChecks {
+class FormTemplateValidatorSpec
+    extends AnyWordSpecLike with Matchers with FormTemplateSupport with TableDrivenPropertyChecks {
 
   private val divider = toSmartString("or", "neu")
   private val noDivider = SmartString(LocalisedString(Map()), List.empty[Expr])
 
-  locally {
+  "validatePageValidators" should {
     def page(groups: List[List[String]]): Page =
       mkSectionNonRepeatingPage(formComponents =
         List("first", "second", "third", "fourth").map(id => mkFormComponent(id = id))
@@ -52,9 +52,7 @@ class FormTemplateValidatorSpec extends FunSuite with Matchers with FormTemplate
         )
       )
 
-    test(
-      "validatePageValidators should allow adjacent members in either declared order and separate groups"
-    ) {
+    "allow adjacent members in either declared order and separate groups" in {
       FormTemplateValidator.validatePageValidators(
         List(page(List(List("second", "first"), List("third", "fourth"))))
       ) shouldBe Valid
@@ -66,16 +64,12 @@ class FormTemplateValidatorSpec extends FunSuite with Matchers with FormTemplate
       List(List("first", "second", "third"), List("third", "first", "second")),
       List(List("first", "second"), List("third", "fourth"), List("second", "first"), List("fourth", "third"))
     ).foreach { groups =>
-      test(
-        "validatePageValidators" + " should " + s"reject repeated identical adjacent groups regardless of member order $groups"
-      ) {
+      s"reject repeated identical adjacent groups regardless of member order $groups" in {
         FormTemplateValidator.validatePageValidators(List(page(groups))) shouldBe a[Invalid]
       }
     }
 
-    test(
-      "validatePageValidators should reject duplicate groups even when their conditions and error messages differ"
-    ) {
+    "reject duplicate groups even when their conditions and error messages differ" in {
       val original = page(List(List("first", "second")))
       val validator = original.validators.get.head
       val duplicate = validator.copy(
@@ -87,12 +81,12 @@ class FormTemplateValidatorSpec extends FunSuite with Matchers with FormTemplate
       ) shouldBe a[Invalid]
     }
 
-    test("validatePageValidators should check group uniqueness separately for each page") {
+    "check group uniqueness separately for each page" in {
       val groups = List(List("first", "second"))
       FormTemplateValidator.validatePageValidators(List(page(groups), page(groups))) shouldBe Valid
     }
 
-    test("validatePageValidators should report the cause and offending fieldIds or validator number") {
+    "report the cause and offending fieldIds or validator number" in {
       val cases = Table(
         ("groups", "message"),
         (List(List("first")), "Page validator 1 must reference at least two fieldIds."),
@@ -120,7 +114,7 @@ class FormTemplateValidatorSpec extends FunSuite with Matchers with FormTemplate
       }
     }
 
-    test("validatePageValidators should identify an existing but ineligible field") {
+    "identify an existing but ineligible field" in {
       val original = page(List(List("first", "second")))
       val ineligibleFields = List(
         original.fields.head.copy(derived = true),
@@ -136,7 +130,7 @@ class FormTemplateValidatorSpec extends FunSuite with Matchers with FormTemplate
       }
     }
 
-    test("validatePageValidators should allow pages without validators") {
+    "allow pages without validators" in {
       FormTemplateValidator.validatePageValidators(List(page(Nil))) shouldBe Valid
     }
 
@@ -147,7 +141,7 @@ class FormTemplateValidatorSpec extends FunSuite with Matchers with FormTemplate
       List(List("first", "second", "third"), List("second", "third", "fourth")),
       List(List("first", "second"), List("second", "first"), List("second", "third"))
     ).foreach { groups =>
-      test("validatePageValidators" + " should " + s"reject different overlapping adjacent groups $groups") {
+      s"reject different overlapping adjacent groups $groups" in {
         FormTemplateValidator.validatePageValidators(List(page(groups))) shouldBe a[Invalid]
       }
     }
@@ -160,17 +154,15 @@ class FormTemplateValidatorSpec extends FunSuite with Matchers with FormTemplate
       List(List("first", "second"), List("second", "fourth")),
       List(List("first", "second"), List("second", "second", "third"))
     ).foreach { groups =>
-      test("validatePageValidators" + " should " + s"reject invalid groups $groups") {
+      s"reject invalid groups $groups" in {
         FormTemplateValidator.validatePageValidators(List(page(groups))) shouldBe a[Invalid]
       }
     }
   }
 
-  locally {
-    locally {
-      test(
-        "validate - for DateCtx when expression refers to existing Form field should return Valid"
-      ) {
+  "validate - for DateCtx" when {
+    "expression refers to existing Form field" should {
+      "return Valid" in {
         val sections = List(mkSectionNonRepeatingPage(formComponents = List(mkFormComponent(id = "someExistingId"))))
         val result =
           FormTemplateValidator.validate(DateCtx(DateFormCtxVar(FormCtx(FormComponentId("someExistingId")))), sections)
@@ -178,10 +170,8 @@ class FormTemplateValidatorSpec extends FunSuite with Matchers with FormTemplate
       }
     }
 
-    locally {
-      test(
-        "validate - for DateCtx when expression refers to non-existing Form field should return Invalid"
-      ) {
+    "expression refers to non-existing Form field" should {
+      "return Invalid" in {
         val sections = List(mkSectionNonRepeatingPage(formComponents = List(mkFormComponent(id = "someExistingId"))))
         val result = FormTemplateValidator
           .validate(DateCtx(DateFormCtxVar(FormCtx(FormComponentId("someNonExistingId")))), sections)
@@ -190,10 +180,10 @@ class FormTemplateValidatorSpec extends FunSuite with Matchers with FormTemplate
     }
   }
 
-  locally {
+  "validateInstructions" when {
 
-    locally {
-      test("validateInstructions when instructions have valid fields should return valid") {
+    "instructions have valid fields" should {
+      "return valid" in {
         val pages = List(
           mkSectionNonRepeatingPage(
             name = "section1",
@@ -213,10 +203,8 @@ class FormTemplateValidatorSpec extends FunSuite with Matchers with FormTemplate
       }
     }
 
-    locally {
-      test(
-        "validateInstructions when instructions with no names (section) should passes validation"
-      ) {
+    "instructions with no names (section)" should {
+      "passes validation" in {
         val pages = List(
           mkSectionNonRepeatingPage(
             name = "section1",
@@ -236,10 +224,8 @@ class FormTemplateValidatorSpec extends FunSuite with Matchers with FormTemplate
       }
     }
 
-    locally {
-      test(
-        "validateInstructions when instructions have empty names (section) should return validation error"
-      ) {
+    "instructions have empty names (section)" should {
+      "return validation error" in {
         val pages = List(
           mkSectionNonRepeatingPage(
             name = "section1",
@@ -259,10 +245,8 @@ class FormTemplateValidatorSpec extends FunSuite with Matchers with FormTemplate
       }
     }
 
-    locally {
-      test(
-        "validateInstructions when instructions have negative order (section) should return validation error"
-      ) {
+    "instructions have negative order (section)" should {
+      "return validation error" in {
         val pages = List(
           mkSectionNonRepeatingPage(
             name = "section1",
@@ -282,10 +266,8 @@ class FormTemplateValidatorSpec extends FunSuite with Matchers with FormTemplate
       }
     }
 
-    locally {
-      test(
-        "validateInstructions when instructions in section have duplicate order should return validation error"
-      ) {
+    "instructions in section have duplicate order" should {
+      "return validation error" in {
         val page = mkSectionNonRepeatingPage(
           name = "section1",
           formComponents = List(
@@ -307,10 +289,8 @@ class FormTemplateValidatorSpec extends FunSuite with Matchers with FormTemplate
       }
     }
 
-    locally {
-      test(
-        "validateInstructions when instructions on fields within a section have duplicate order should return validation error"
-      ) {
+    "instructions on fields within a section have duplicate order" should {
+      "return validation error" in {
         val pages = List(
           mkSectionNonRepeatingPage(
             name = "section1",
@@ -336,10 +316,8 @@ class FormTemplateValidatorSpec extends FunSuite with Matchers with FormTemplate
       }
     }
 
-    locally {
-      test(
-        "validateInstructions when instructions have empty names (field) should return validation error"
-      ) {
+    "instructions have empty names (field)" should {
+      "return validation error" in {
         val pages = List(
           mkSectionNonRepeatingPage(
             name = "section1",
@@ -356,10 +334,8 @@ class FormTemplateValidatorSpec extends FunSuite with Matchers with FormTemplate
       }
     }
 
-    locally {
-      test(
-        "validateInstructions when instructions have negative order (field) should return validation error"
-      ) {
+    "instructions have negative order (field)" should {
+      "return validation error" in {
         val pages = List(
           mkSectionNonRepeatingPage(
             name = "section1",
@@ -380,9 +356,9 @@ class FormTemplateValidatorSpec extends FunSuite with Matchers with FormTemplate
     }
   }
 
-  locally {
+  "validateShowAsVrnFunReferenceConstraints" should {
 
-    test("validateShowAsVrnFunReferenceConstraints should validate references in showAsVrn function") {
+    "validate references in showAsVrn function" in {
 
       val table = Table(
         ("expression", "expectedResult"),
@@ -447,9 +423,9 @@ class FormTemplateValidatorSpec extends FunSuite with Matchers with FormTemplate
     }
   }
 
-  locally {
+  "validateShowAsUtrFunReferenceConstraints" should {
 
-    test("validateShowAsUtrFunReferenceConstraints should validate references in showAsUtr function") {
+    "validate references in showAsUtr function" in {
 
       val table = Table(
         ("expression", "expectedResult"),
@@ -506,9 +482,9 @@ class FormTemplateValidatorSpec extends FunSuite with Matchers with FormTemplate
     }
   }
 
-  locally {
+  "validatePeriodFunReferenceConstraints" should {
 
-    test("validatePeriodFunReferenceConstraints should validate references in period function") {
+    "validate references in period function" in {
 
       val table = Table(
         ("expression", "expectedResult"),
@@ -564,11 +540,9 @@ class FormTemplateValidatorSpec extends FunSuite with Matchers with FormTemplate
     }
   }
 
-  locally {
+  "validateBetweenFunReferenceConstraints" should {
 
-    test(
-      "validateBetweenFunReferenceConstraints should validate references in daysBetween/weeksBetween function"
-    ) {
+    "validate references in daysBetween/weeksBetween function" in {
 
       val table = Table(
         ("expression", "expectedResult"),
@@ -639,8 +613,8 @@ class FormTemplateValidatorSpec extends FunSuite with Matchers with FormTemplate
     }
   }
 
-  locally {
-    test("validateUniquePageIds should validate page ids are unique") {
+  "validateUniquePageIds" should {
+    "validate page ids are unique" in {
       val table = Table(
         ("sections", "expected"),
         (
@@ -707,8 +681,8 @@ class FormTemplateValidatorSpec extends FunSuite with Matchers with FormTemplate
     }
   }
 
-  locally {
-    test("validateInvalidReferences should validate and report non-existent page id references") {
+  "validateInvalidReferences" should {
+    "validate and report non-existent page id references" in {
       val table = Table(
         ("sections", "expected"),
         (
@@ -1017,11 +991,9 @@ class FormTemplateValidatorSpec extends FunSuite with Matchers with FormTemplate
     }
   }
 
-  locally {
-    locally {
-      test(
-        "validate - for lookup column check when expression refers to existing Form field should return Valid"
-      ) {
+  "validate - for lookup column check" when {
+    "expression refers to existing Form field" should {
+      "return Valid" in {
         val sections = List(mkSectionNonRepeatingPage(formComponents = List(mkFormComponent(id = "someExistingId"))))
         val result =
           FormTemplateValidator.validate(LookupColumn(FormComponentId("someExistingId"), "column"), sections)
@@ -1029,10 +1001,8 @@ class FormTemplateValidatorSpec extends FunSuite with Matchers with FormTemplate
       }
     }
 
-    locally {
-      test(
-        "validate - for lookup column check when expression refers to non-existing Form field should return Invalid"
-      ) {
+    "expression refers to non-existing Form field" should {
+      "return Invalid" in {
         val sections = List(mkSectionNonRepeatingPage(formComponents = List(mkFormComponent(id = "someExistingId"))))
         val result =
           FormTemplateValidator.validate(LookupColumn(FormComponentId("someNonExistingId"), "column"), sections)
@@ -1041,11 +1011,9 @@ class FormTemplateValidatorSpec extends FunSuite with Matchers with FormTemplate
     }
   }
 
-  locally {
+  "validateErrorMessageConstraints" should {
 
-    test(
-      "validateErrorMessageConstraints should restrict PII in validator error messages across page locations"
-    ) {
+    "restrict PII in validator error messages across page locations" in {
       val paths = List(
         "sections.validators.errorMessage",
         "sections.tasks.sections.validators.errorMessage",
@@ -1067,7 +1035,7 @@ class FormTemplateValidatorSpec extends FunSuite with Matchers with FormTemplate
       }
     }
 
-    test("validateErrorMessageConstraints should errorMessage in NonRepeatingPage when noPII is false") {
+    "errorMessage in NonRepeatingPage when noPII is false" in {
 
       val table = Table(
         ("errorMessage", "expectedResult"),
@@ -1102,7 +1070,7 @@ class FormTemplateValidatorSpec extends FunSuite with Matchers with FormTemplate
       }
     }
 
-    test("validateErrorMessageConstraints should errorMessage in NonRepeatingPage when noPII is true") {
+    "errorMessage in NonRepeatingPage when noPII is true" in {
 
       val table = Table(
         ("errorMessage", "expectedResult"),
@@ -1134,7 +1102,7 @@ class FormTemplateValidatorSpec extends FunSuite with Matchers with FormTemplate
       }
     }
 
-    test("validateErrorMessageConstraints should validators in NonRepeatingPage when noPII is false") {
+    "validators in NonRepeatingPage when noPII is false" in {
 
       val table = Table(
         ("validator", "expectedResult"),
@@ -1175,7 +1143,7 @@ class FormTemplateValidatorSpec extends FunSuite with Matchers with FormTemplate
       }
     }
 
-    test("validateErrorMessageConstraints should validators in NonRepeatingPage when noPII is true") {
+    "validators in NonRepeatingPage when noPII is true" in {
 
       val table = Table(
         ("validator", "expectedResult"),
@@ -1217,11 +1185,9 @@ class FormTemplateValidatorSpec extends FunSuite with Matchers with FormTemplate
     }
   }
 
-  locally {
-    locally {
-      test(
-        "validate - for HideZeroDecimals when expression refers to existing Form field should return Valid"
-      ) {
+  "validate - for HideZeroDecimals" when {
+    "expression refers to existing Form field" should {
+      "return Valid" in {
         val sections = List(mkSectionNonRepeatingPage(formComponents = List(mkFormComponent(id = "someExistingId"))))
         val result =
           FormTemplateValidator.validate(HideZeroDecimals(FormCtx(FormComponentId("someExistingId"))), sections)
@@ -1229,10 +1195,8 @@ class FormTemplateValidatorSpec extends FunSuite with Matchers with FormTemplate
       }
     }
 
-    locally {
-      test(
-        "validate - for HideZeroDecimals when expression refers to non-existing Form field should return Invalid"
-      ) {
+    "expression refers to non-existing Form field" should {
+      "return Invalid" in {
         val sections = List(mkSectionNonRepeatingPage(formComponents = List(mkFormComponent(id = "someExistingId"))))
         val result = FormTemplateValidator
           .validate(HideZeroDecimals(FormCtx(FormComponentId("someNonExistingId"))), sections)
@@ -1241,10 +1205,8 @@ class FormTemplateValidatorSpec extends FunSuite with Matchers with FormTemplate
     }
   }
 
-  locally {
-    test(
-      "validate postcode lookup should return a label (or shortName) is required for postcodeLookup to use on summarySection error when a label is empty"
-    ) {
+  "validate postcode lookup" should {
+    "return a label (or shortName) is required for postcodeLookup to use on summarySection error when a label is empty" in {
       val emptyLabel = toSmartString("")
       val postcodeLookup = mkFormComponent("postcodeLookup1", PostcodeLookup(None, None, None), emptyLabel)
       val pages = List(
@@ -1261,7 +1223,7 @@ class FormTemplateValidatorSpec extends FunSuite with Matchers with FormTemplate
       )
     }
 
-    test("validate postcode lookup should succeed when shortName label is non-empty") {
+    "succeed when shortName label is non-empty" in {
       val emptyLabel = toSmartString("")
       val shortName = toSmartString("en-shortName")
       val postcodeLookup = mkFormComponent("postcodeLookup1", PostcodeLookup(None, None, None), emptyLabel)
@@ -1278,7 +1240,7 @@ class FormTemplateValidatorSpec extends FunSuite with Matchers with FormTemplate
       result shouldBe Valid
     }
 
-    test("validate postcode lookup should succeed when only welsh label is empty") {
+    "succeed when only welsh label is empty" in {
       val emptyWelshLabel = toSmartString("en-label", "")
       val postcodeLookup =
         mkFormComponent("postcodeLookup1", PostcodeLookup(None, None, None), emptyWelshLabel)
@@ -1295,9 +1257,9 @@ class FormTemplateValidatorSpec extends FunSuite with Matchers with FormTemplate
     }
   }
 
-  locally {
-    locally {
-      test("validate choice options when String base value includes spaces should return invalid") {
+  "validate choice options" when {
+    "String base value includes spaces" should {
+      "return invalid" in {
         val sections =
           List(mkSectionNonRepeatingPage(formComponents = List(getChoiceComponentWithStringBasedValues("f o o"))))
         val result = FormTemplateValidator
@@ -1308,8 +1270,8 @@ class FormTemplateValidatorSpec extends FunSuite with Matchers with FormTemplate
       }
     }
 
-    locally {
-      test("validate choice options when String base value incudes commas should return invalid") {
+    "String base value incudes commas" should {
+      "return invalid" in {
         val sections =
           List(mkSectionNonRepeatingPage(formComponents = List(getChoiceComponentWithStringBasedValues("f,o,o"))))
         val result = FormTemplateValidator
@@ -1320,10 +1282,8 @@ class FormTemplateValidatorSpec extends FunSuite with Matchers with FormTemplate
       }
     }
 
-    locally {
-      test(
-        "validate choice options when String base value incudes empty string should return invalid"
-      ) {
+    "String base value incudes empty string" should {
+      "return invalid" in {
         val sections =
           List(mkSectionNonRepeatingPage(formComponents = List(getChoiceComponentWithStringBasedValues(""))))
         val result = FormTemplateValidator
@@ -1334,10 +1294,8 @@ class FormTemplateValidatorSpec extends FunSuite with Matchers with FormTemplate
       }
     }
 
-    locally {
-      test(
-        "validate choice options when String base value incudes spaces only should return invalid"
-      ) {
+    "String base value incudes spaces only" should {
+      "return invalid" in {
         val sections =
           List(mkSectionNonRepeatingPage(formComponents = List(getChoiceComponentWithStringBasedValues(" "))))
         val result = FormTemplateValidator
@@ -1348,8 +1306,8 @@ class FormTemplateValidatorSpec extends FunSuite with Matchers with FormTemplate
       }
     }
 
-    locally {
-      test("validate choice options when String base value incudes no spaces should return valid") {
+    "String base value incudes no spaces" should {
+      "return valid" in {
         val sections =
           List(mkSectionNonRepeatingPage(formComponents = List(getChoiceComponentWithStringBasedValues("foo_bar1"))))
         val result = FormTemplateValidator
@@ -1358,8 +1316,8 @@ class FormTemplateValidatorSpec extends FunSuite with Matchers with FormTemplate
       }
     }
 
-    locally {
-      test("validate choice options when String base values are not unique should return invalid") {
+    "String base values are not unique" should {
+      "return invalid" in {
         val sections =
           List(mkSectionNonRepeatingPage(formComponents = List(getChoiceComponentWithStringBasedValues("bar"))))
         val result = FormTemplateValidator
@@ -1368,10 +1326,8 @@ class FormTemplateValidatorSpec extends FunSuite with Matchers with FormTemplate
       }
     }
 
-    locally {
-      test(
-        "validate choice options when Check hide choices selected is not for dynamic options based on a data retrieve should return invalid"
-      ) {
+    "Check hide choices selected is not for dynamic options based on a data retrieve" should {
+      "return invalid" in {
         val sections =
           List(mkSectionNonRepeatingPage(formComponents = List(mkChoiceWithDynamicDrOptions())))
         val result = FormTemplateValidator
@@ -1381,9 +1337,7 @@ class FormTemplateValidatorSpec extends FunSuite with Matchers with FormTemplate
         )
       }
 
-      test(
-        "validate choice options when Check hide choices selected is not for dynamic options based on a data retrieve should allow value-based dynamic options when replacement info is configured"
-      ) {
+      "allow value-based dynamic options when replacement info is configured" in {
         val component = mkChoiceWithDynamicDrOptions()
         val info = mkFormComponent(
           "remainingInfo",
@@ -1400,8 +1354,8 @@ class FormTemplateValidatorSpec extends FunSuite with Matchers with FormTemplate
     }
   }
 
-  locally {
-    test("validate - whenOnlyOneChoiceRemains should validate replacement component constraints") {
+  "validate - whenOnlyOneChoiceRemains" should {
+    "validate replacement component constraints" in {
       val info = mkFormComponent(
         "remainingInfo",
         InformationMessage(StandardInfo, toSmartString("Remaining approval")),
@@ -1454,8 +1408,8 @@ class FormTemplateValidatorSpec extends FunSuite with Matchers with FormTemplate
     }
   }
 
-  locally {
-    test("date construct function should validate against using 29th February") {
+  "date construct function" should {
+    "validate against using 29th February" in {
       val table = Table(
         ("expression", "expectedResult"),
         ("${yearToDate('0102', endDate)}", Valid),
@@ -1503,8 +1457,8 @@ class FormTemplateValidatorSpec extends FunSuite with Matchers with FormTemplate
     }
   }
 
-  locally {
-    test("validateLabel should validate that labels exist where required") {
+  "validateLabel" should {
+    "validate that labels exist where required" in {
       val emptySmartString: SmartString = SmartString(LocalisedString(Map()), List())
       val table = Table(
         ("formComponent", "expectedResult"),
@@ -1587,10 +1541,8 @@ class FormTemplateValidatorSpec extends FunSuite with Matchers with FormTemplate
     }
   }
 
-  locally {
-    test(
-      "validatePagesToRevisit should validate that pageIdsToDisplayOnChange exist and are forward references"
-    ) {
+  "validatePagesToRevisit" should {
+    "validate that pageIdsToDisplayOnChange exist and are forward references" in {
       val comp1 = mkFormComponent("comp1", Text(ShortText.default, Value), editable = true)
       val page1 = mkSectionNonRepeatingPage("Page 1", List(comp1), pageId = Some(PageId("page1id")))
 
@@ -1638,8 +1590,8 @@ class FormTemplateValidatorSpec extends FunSuite with Matchers with FormTemplate
     }
   }
 
-  locally {
-    test("validateAddToListAddAnotherQuestion should validate ATL add another question choices are valid") {
+  "validateAddToListAddAnotherQuestion" should {
+    "validate ATL add another question choices are valid" in {
 
       val table = Table(
         ("sections", "expected"),
@@ -1825,10 +1777,8 @@ class FormTemplateValidatorSpec extends FunSuite with Matchers with FormTemplate
     }
   }
 
-  locally {
-    test(
-      "validateAddToListRepeatConfig should validate that repeatsUntil and repeatsWhile are not based on a choice component with dyanamic options from a data retrieve"
-    ) {
+  "validateAddToListRepeatConfig" should {
+    "validate that repeatsUntil and repeatsWhile are not based on a choice component with dyanamic options from a data retrieve" in {
       val table = Table(
         ("sections", "expected"),
         (
@@ -1907,10 +1857,8 @@ class FormTemplateValidatorSpec extends FunSuite with Matchers with FormTemplate
     }
   }
 
-  locally {
-    test(
-      "validateDataRetrieve should validate dataRetrieve id duplicates and referencing other pages if callOnNoChange is true"
-    ) {
+  "validateDataRetrieve" should {
+    "validate dataRetrieve id duplicates and referencing other pages if callOnNoChange is true" in {
       val drId = DataRetrieveId("personalBankAccountExistence")
       val drCallOnChangeTrue: Option[DataRetrieve] =
         mkPersonalBankAccountExistenceDataRetrieve(drId.value, None, None, true)
@@ -2069,10 +2017,8 @@ class FormTemplateValidatorSpec extends FunSuite with Matchers with FormTemplate
     }
   }
 
-  locally {
-    test(
-      "validateDataRetrieveForwardReferences should validate that dataRetrieves do not forward reference other form components or dataRetrieves"
-    ) {
+  "validateDataRetrieveForwardReferences" should {
+    "validate that dataRetrieves do not forward reference other form components or dataRetrieves" in {
       val dr: Option[DataRetrieve] = mkHmrcTaxRatesDataRetrieve("forwardDataRetrieve")
       val fc: FormComponent = mkFormComponent("forwardFormComponent", Date(AnyDate, Offset(0), None), true)
       val fl: FormComponent = mkFormComponent("forwardLookup")
@@ -2138,10 +2084,8 @@ class FormTemplateValidatorSpec extends FunSuite with Matchers with FormTemplate
     }
   }
 
-  locally {
-    test(
-      "validateDataRetrieveCtx should validate that dataRetrieve contexts only reference valid dataRetrieves and attributes"
-    ) {
+  "validateDataRetrieveCtx" should {
+    "validate that dataRetrieve contexts only reference valid dataRetrieves and attributes" in {
       val drId = DataRetrieveId("personalBankDetails")
 
       val table = Table(
@@ -2270,10 +2214,8 @@ class FormTemplateValidatorSpec extends FunSuite with Matchers with FormTemplate
     }
   }
 
-  locally {
-    test(
-      "validateDataRetrieveManualFallback should require a matching fallback page only for opted-in top-level and page-level retrievals"
-    ) {
+  "validateDataRetrieveManualFallback" should {
+    "require a matching fallback page only for opted-in top-level and page-level retrievals" in {
       val drId = DataRetrieveId("agencyInfo")
       val condition = IncludeIf(Equals(DataRetrieveCtx(drId, DataRetrieve.hasFailedAttribute), Constant("true")))
       val otherCondition = IncludeIf(
@@ -2306,10 +2248,8 @@ class FormTemplateValidatorSpec extends FunSuite with Matchers with FormTemplate
     }
   }
 
-  locally {
-    test(
-      "validateDataRetrieveCtx manual fallback references should require opt-in on the referenced retrieval rather than another retrieval"
-    ) {
+  "validateDataRetrieveCtx manual fallback references" should {
+    "require opt-in on the referenced retrieval rather than another retrieval" in {
       val drId = DataRetrieveId("agencyInfo")
       val reference = DataRetrieveCtx(drId, DataRetrieve.hasFailedAttribute)
       val disabledReference = Invalid(
@@ -2342,10 +2282,8 @@ class FormTemplateValidatorSpec extends FunSuite with Matchers with FormTemplate
     }
   }
 
-  locally {
-    test(
-      "validateDataRetrieveBlockAttributes should validate that dataRetrieves include both block attribute or neither"
-    ) {
+  "validateDataRetrieveBlockAttributes" should {
+    "validate that dataRetrieves include both block attribute or neither" in {
       val drId = DataRetrieveId("personalBankDetails")
 
       val table = Table(
@@ -2395,8 +2333,8 @@ class FormTemplateValidatorSpec extends FunSuite with Matchers with FormTemplate
     }
   }
 
-  locally {
-    test("validateNoPIITitleConstraints should validate that no PII fields are used in titles") {
+  "validateNoPIITitleConstraints" should {
+    "validate that no PII fields are used in titles" in {
       val pageWithPiiField = mkSectionNonRepeatingPage(
         name = "page1",
         formComponents = List(mkFormComponent("name", Text(ShortText.default, Value), editable = true)),
@@ -2485,10 +2423,8 @@ class FormTemplateValidatorSpec extends FunSuite with Matchers with FormTemplate
     }
   }
 
-  locally {
-    test(
-      "validateDateFunctionReferenceConstraints should validate and report non-date references from date functions"
-    ) {
+  "validateDateFunctionReferenceConstraints" should {
+    "validate and report non-date references from date functions" in {
       val table = Table(
         ("sections", "expected"),
         (
@@ -2597,10 +2533,8 @@ class FormTemplateValidatorSpec extends FunSuite with Matchers with FormTemplate
     }
   }
 
-  locally {
-    test(
-      "validateDateExprWithOffsetConstraints should validate and report non-date references used with date offsets"
-    ) {
+  "validateDateExprWithOffsetConstraints" should {
+    "validate and report non-date references used with date offsets" in {
       val yearOffset = OffsetYMD(OffsetUnit.Year(-1))
       val monthOffset = OffsetYMD(OffsetUnit.Month(-1))
       val dayOffset = OffsetYMD(OffsetUnit.Day(-1))
@@ -2922,9 +2856,7 @@ class FormTemplateValidatorSpec extends FunSuite with Matchers with FormTemplate
       }
     }
 
-    test(
-      "validateDateExprWithOffsetConstraints should validate non-date references used with date offsets in dataRetrieve parameters"
-    ) {
+    "validate non-date references used with date offsets in dataRetrieve parameters" in {
       val table = Table(
         ("sections", "expected"),
         // Invalid: Choice field used with offset in dataRetrieve parameter
@@ -3000,12 +2932,10 @@ class FormTemplateValidatorSpec extends FunSuite with Matchers with FormTemplate
     }
   }
 
-  locally {
+  "validateDateExprWithOffsetInBooleanExprs" should {
     val yearOffset = OffsetYMD(OffsetUnit.Year(-1))
 
-    test(
-      "validateDateExprWithOffsetInBooleanExprs should validate non-date references used with date offsets in top-level boolean expressions"
-    ) {
+    "validate non-date references used with date offsets in top-level boolean expressions" in {
       val table = Table(
         ("sections", "booleanExprSubstitutions", "expected"),
         // Invalid: GreaterThan with Choice field + offset in top-level boolean expression
@@ -3158,9 +3088,7 @@ class FormTemplateValidatorSpec extends FunSuite with Matchers with FormTemplate
       }
     }
 
-    test(
-      "validateDateExprWithOffsetInBooleanExprs should validate non-date references used with date offsets in IncludeIf/ValidIf boolean expressions"
-    ) {
+    "validate non-date references used with date offsets in IncludeIf/ValidIf boolean expressions" in {
       val table = Table(
         ("sections", "expected"),
         // Invalid: DateBefore with Choice field + offset in component includeIf
@@ -3352,8 +3280,8 @@ class FormTemplateValidatorSpec extends FunSuite with Matchers with FormTemplate
     }
   }
 
-  locally {
-    test("validateTypeAheadChoices should validate TypeAhead choice constraints") {
+  "validateTypeAheadChoices" should {
+    "validate TypeAhead choice constraints" in {
       val table = Table(
         ("choice", "expectedResult"),
         // Valid TypeAhead with ValueBased options only
@@ -3484,8 +3412,8 @@ class FormTemplateValidatorSpec extends FunSuite with Matchers with FormTemplate
     }
   }
 
-  locally {
-    test("validateTypeAheadKeyWordUsage should validate keyWord usage constraints") {
+  "validateTypeAheadKeyWordUsage" should {
+    "validate keyWord usage constraints" in {
       val table = Table(
         ("choice", "expectedResult"),
         // Valid TypeAhead with keyWord
@@ -3660,24 +3588,20 @@ class FormTemplateValidatorSpec extends FunSuite with Matchers with FormTemplate
     }
   }
 
-  locally {
-    test("validatePrintSection should return Valid for non-DestinationPrint destinations") {
+  "validatePrintSection" should {
+    "return Valid for non-DestinationPrint destinations" in {
       val formTemplate = mkFormTemplate(List(mkSectionNonRepeatingPage(formComponents = List(mkFormComponent("fc1")))))
       val result = FormTemplateValidator.validatePrintSection(formTemplate)
       result shouldBe Valid
     }
 
-    test(
-      "validatePrintSection should return Valid when DestinationPrint instructions contain no invalid paths"
-    ) {
+    "return Valid when DestinationPrint instructions contain no invalid paths" in {
       val formTemplate = mkFormTemplateWithPrintSection(toSmartString("Some clean instructions"))
       val result = FormTemplateValidator.validatePrintSection(formTemplate)
       result shouldBe Valid
     }
 
-    test(
-      "validatePrintSection should return Invalid when instructions contain manual printSection notificationPdf path"
-    ) {
+    "return Invalid when instructions contain manual printSection notificationPdf path" in {
       val formTemplate = mkFormTemplateWithPrintSection(
         toSmartString("Click here /submissions/printSection/notificationPdf/ to download")
       )
@@ -3687,7 +3611,7 @@ class FormTemplateValidatorSpec extends FunSuite with Matchers with FormTemplate
       )
     }
 
-    test("validatePrintSection should return Invalid when instructions contain manual printSectionPdf path") {
+    "return Invalid when instructions contain manual printSectionPdf path" in {
       val formTemplate = mkFormTemplateWithPrintSection(
         toSmartString("Click here /submissions/printSection/pdf/ to download")
       )
@@ -3697,7 +3621,7 @@ class FormTemplateValidatorSpec extends FunSuite with Matchers with FormTemplate
       )
     }
 
-    test("validatePrintSection should return Invalid when instructions contain manual summary path") {
+    "return Invalid when instructions contain manual summary path" in {
       val formTemplate = mkFormTemplateWithPrintSection(
         toSmartString("Click here /submissions/summary/ to view")
       )
@@ -3707,7 +3631,7 @@ class FormTemplateValidatorSpec extends FunSuite with Matchers with FormTemplate
       )
     }
 
-    test("validatePrintSection should return Invalid when instructions contain both manual paths") {
+    "return Invalid when instructions contain both manual paths" in {
       val instructions = SmartString(
         LocalisedString(
           Map(

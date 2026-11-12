@@ -16,11 +16,10 @@
 
 package uk.gov.hmrc.gform.hip
 
-import munit.FunSuite
-
 import izumi.reflect.Tag
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpecLike
 import play.api.http.Status.BAD_REQUEST
 import play.api.libs.json.Json
 import play.api.libs.ws.{ BodyWritable, WSRequest }
@@ -33,7 +32,7 @@ import uk.gov.hmrc.gform.sharedmodel.{ CannotRetrieveResponse, NotFound, Service
 import java.net.URL
 import scala.concurrent.{ ExecutionContext, Future }
 
-class HipConnectorSpec extends FunSuite with Matchers with ScalaFutures {
+class HipConnectorSpec extends AnyWordSpecLike with Matchers with ScalaFutures {
 
   private implicit val hc: HeaderCarrier = HeaderCarrier()
   private implicit val ec: ExecutionContext = ExecutionContext.global
@@ -53,8 +52,8 @@ class HipConnectorSpec extends FunSuite with Matchers with ScalaFutures {
       hipConfig = hipConfig
     )
 
-  locally {
-    test("validateNIClaimReference should map a failed validation 400 response to NotFoundException") {
+  "validateNIClaimReference" should {
+    "map a failed validation 400 response to NotFoundException" in {
       val result = connector(
         HttpResponse(
           BAD_REQUEST,
@@ -84,7 +83,7 @@ class HipConnectorSpec extends FunSuite with Matchers with ScalaFutures {
         s"Validate NI Claim Reference returned identifier: $claimReference invalid"
     }
 
-    test("validateNIClaimReference should retain BadRequestException for other 400 responses") {
+    "retain BadRequestException for other 400 responses" in {
       val result = connector(HttpResponse(BAD_REQUEST, "Claim request was malformed"))
         .validateNIClaimReference("AA123456A", claimReference, CorrelationId("correlation-id"))
 
@@ -95,8 +94,8 @@ class HipConnectorSpec extends FunSuite with Matchers with ScalaFutures {
     }
   }
 
-  locally {
-    test("lookupAgentDetails should retain the successful response") {
+  "lookupAgentDetails" should {
+    "retain the successful response" in {
       val body = Json.obj("agencyDetails" -> Json.obj("name" -> "Agency"))
       connector(HttpResponse(200, Json.stringify(body)))
         .lookupAgentDetails("arn", CorrelationId("correlation-id"))
@@ -104,7 +103,7 @@ class HipConnectorSpec extends FunSuite with Matchers with ScalaFutures {
     }
 
     List(204, 400, 401, 403, 404, 418, 422, 500, 503).foreach { status =>
-      test("lookupAgentDetails" + " should " + s"not produce a successful response for upstream status $status") {
+      s"not produce a successful response for upstream status $status" in {
         connector(HttpResponse(status, "{}"))
           .lookupAgentDetails("arn", CorrelationId("correlation-id"))
           .futureValue shouldBe (if (status == 404) NotFound else CannotRetrieveResponse)
