@@ -204,5 +204,6 @@ final case class HipConnectorConfig(
 final case class NRSConnectorConfig(
   authorizationTokens: Map[BusinessId, String],
   submissionUrl: String,
-  attachmentUrl: String
+  attachmentUrl: String,
+  logRequests: Boolean
 )

@@ -144,7 +144,8 @@ class NRSConnector(
   authConnector: AuthConnector,
   apiKeys: Map[BusinessId, String],
   nrsOrchestratorWorkItemRepo: NrsOrchestratorWorkItemRepo,
-  nrsOrchestratorAttachmentWorkItemRepo: NrsOrchestratorAttachmentWorkItemRepo
+  nrsOrchestratorAttachmentWorkItemRepo: NrsOrchestratorAttachmentWorkItemRepo,
+  logRequests: Boolean
 )(implicit ec: ExecutionContext) {
 
   private val contentType = "application/json"
@@ -152,6 +153,13 @@ class NRSConnector(
   private val logger = LoggerFactory.getLogger(getClass)
 
   private def makeCall[T](url: URL, body: T, apiKey: String)(implicit writes: Writes[T], hc: HeaderCarrier) = {
+    val jsonBody = Json.toJson(body)
+    if (logRequests) {
+      logger.info(s"""nrsOrchestrator request: POST $url
+                     |Body:
+                     |${Json.prettyPrint(jsonBody)}
+                     |""".stripMargin)
+    }
     val headers = Seq(
       "Content-Type" -> contentType,
       "X-API-Key"    -> apiKey
@@ -159,7 +167,7 @@ class NRSConnector(
     httpClient
       .post(url)
       .setHeader(headers: _*)
-      .withBody(Json.toJson(body))
+      .withBody(jsonBody)
       .execute[HttpResponse]
   }
 
