@@ -154,16 +154,21 @@ class NRSConnector(
 
   private def makeCall[T](url: URL, body: T, apiKey: String)(implicit writes: Writes[T], hc: HeaderCarrier) = {
     val jsonBody = Json.toJson(body)
-    if (logRequests) {
-      logger.info(s"""nrsOrchestrator request: POST $url
-                     |Body:
-                     |${Json.prettyPrint(jsonBody)}
-                     |""".stripMargin)
-    }
     val headers = Seq(
       "Content-Type" -> contentType,
       "X-API-Key"    -> apiKey
     )
+    if (logRequests) {
+      val loggedHeaders = headers.map { case (name, value) =>
+        name -> (if (name.equalsIgnoreCase("X-API-Key")) "[REDACTED]" else value)
+      }.toMap
+      logger.info(s"""nrsOrchestrator request: POST $url
+                     |Headers:
+                     |${Json.prettyPrint(Json.toJson(loggedHeaders))}
+                     |Body:
+                     |${Json.prettyPrint(jsonBody)}
+                     |""".stripMargin)
+    }
     httpClient
       .post(url)
       .setHeader(headers: _*)
