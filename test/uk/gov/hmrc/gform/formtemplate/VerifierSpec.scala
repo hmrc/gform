@@ -49,7 +49,7 @@ class VerifierSpec extends AnyWordSpecLike with Matchers with ScalaFutures with 
       )
 
       val appConfig = AppConfig.loadOrThrow(ConfigFactory.load())
-      val nrsConfig = NRSConnectorConfig(Map.empty, "", "")
+      val nrsConfig = NRSConnectorConfig(Map.empty, "", "", logRequests = false)
       val result =
         Verifier.verify(
           mkFormTemplate(sections),
