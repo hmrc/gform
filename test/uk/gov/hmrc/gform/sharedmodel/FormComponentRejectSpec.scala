@@ -89,7 +89,7 @@ class FormComponentRejectSpec extends Spec with TableDrivenPropertyChecks {
       // format: on
     )
     val appConfig = AppConfig.loadOrThrow(ConfigFactory.load())
-    val nrsConfig = NRSConnectorConfig(Map.empty, "", "")
+    val nrsConfig = NRSConnectorConfig(Map.empty, "", "", logRequests = false)
     val exprSubstitutions = ExprSubstitutions(
       Map(
         ExpressionId("companyNameEntered") -> Constant("") // Needed for confirmation-disallow-top-level-expression
@@ -155,7 +155,7 @@ class FormComponentRejectSpec extends Spec with TableDrivenPropertyChecks {
       // format: on
     )
     val appConfig = AppConfig.loadOrThrow(ConfigFactory.load())
-    val nrsConfig = NRSConnectorConfig(Map.empty, "", "")
+    val nrsConfig = NRSConnectorConfig(Map.empty, "", "", logRequests = false)
     forAll(table) { case (fileName, expectedMessage) =>
       val jsResult = readAsFormTemplate(fileName)
       jsResult match {

@@ -501,7 +501,7 @@ class FormTemplatesControllerRequestHandlerTest extends AnyWordSpec with Matcher
     val templateRaw = implicitly[Reads[FormTemplateRaw]].reads(json).get
     val formTemplate: Option[FormTemplate] = FormTemplate.transformAndReads(json).asOpt
     val appConfig = AppConfig.loadOrThrow(ConfigFactory.load())
-    val nrsConfig = NRSConnectorConfig(Map.empty, "", "")
+    val nrsConfig = NRSConnectorConfig(Map.empty, "", "", logRequests = false)
     val verifySideEffect: Option[FOpt[Unit]] =
       formTemplate.map(formTemplate =>
         new Verifier {}
