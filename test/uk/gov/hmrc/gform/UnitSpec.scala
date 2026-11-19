@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.companieshouse
+package uk.gov.hmrc.gform
 
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
-import org.scalatestplus.mockito.MockitoSugar
 import org.scalatest.OptionValues
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import org.scalatestplus.mockito.MockitoSugar
 import play.api.http.{ HeaderNames, MimeTypes, Status }
 import play.api.libs.json.JsValue
 import play.api.mvc.Result

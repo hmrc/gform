@@ -151,10 +151,7 @@ class IfController(configModule: ConfigModule, wSHttpModule: WSHttpModule, cc: C
           val body = resp.body
           if (resp.status > 299) {
             val msg = s"non 2xx response from IF verifyPodStatus. Response code: ${resp.status}. Body: $body"
-            if (
-              resp.status == 500 && (body
-                .contains("with statusCode: 400") || body.contains("with statusCode: 404"))
-            ) {
+            if (resp.status == 500 && body.contains("with statusCode: 400")) {
               logger.warn(msg)
             } else {
               logger.error(msg)
