@@ -17,18 +17,27 @@
 package uk.gov.hmrc.gform.spreadsheet
 
 import cats.implicits._
+import java.time.format.DateTimeFormatter
+import java.util.Locale
+import org.apache.poi.ss.usermodel.{ Cell, CellType, DateUtil }
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import org.apache.poi.xssf.usermodel._
 import scala.jdk.CollectionConverters._
 
 object SpreadsheetReader {
 
+  // Dates are always rendered as d/M/yyyy, independent of the cell format and JVM locale
+  private val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("d/M/yyyy")
+
+  private def isDateCell(cell: Cell): Boolean =
+    cell.getCellType == CellType.NUMERIC && DateUtil.isCellDateFormatted(cell)
+
   def readDataFromSpreadsheet(workbook: XSSFWorkbook): SpreadsheetData = {
     val firstSheetName: String = workbook.getSheetName(0)
 
     val sheet: XSSFSheet = workbook.getSheet(firstSheetName)
 
-    val formatter = new org.apache.poi.ss.usermodel.DataFormatter()
+    val formatter = new org.apache.poi.ss.usermodel.DataFormatter(Locale.UK)
 
     val spreadheetRows: List[List[String]] = sheet
       .rowIterator()
@@ -43,6 +52,7 @@ object SpreadsheetReader {
           val cell = row.getCell(colIndex)
 
           if (cell == null) ""
+          else if (isDateCell(cell)) cell.getLocalDateTimeCellValue.toLocalDate.format(dateFormatter)
           else formatter.formatCellValue(cell)
         }
         xs.toList
