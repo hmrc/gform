@@ -25,6 +25,7 @@ import scala.concurrent.ExecutionContext
 import uk.gov.hmrc.gform.akka.AkkaModule
 import uk.gov.hmrc.gform.auditing.AuditingModule
 import uk.gov.hmrc.gform.builder.BuilderModule
+import uk.gov.hmrc.gform.bulkupload.BulkUploadController
 import uk.gov.hmrc.gform.companieshouse.CompaniesHouseModule
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.formstatistics.FormStatisticsModule
@@ -88,7 +89,8 @@ class PlayComponentsModule(
   logModule: DataAccessLogModule,
   hipModule: HipModule,
   screenshotController: ScreenshotController,
-  ifController: IfController
+  ifController: IfController,
+  bulkUploadController: BulkUploadController
 )(implicit ec: ExecutionContext) {
   private val logger = LoggerFactory.getLogger(getClass)
 
@@ -127,7 +129,8 @@ class PlayComponentsModule(
     ifController,
     retrievalModule.emailMigrationController,
     logModule.logController,
-    screenshotController
+    screenshotController,
+    bulkUploadController
   )
 
   private val healthController =

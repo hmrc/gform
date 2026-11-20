@@ -488,7 +488,15 @@ class FormComponentMaker(json: JsValue) {
     case Some(SummaryListRaw)     => summaryListOpt
     case Some(TableCompRaw)       => tableCompOpt
     case Some(ButtonRaw)          => buttonOpt
+    case Some(BulkUploadRaw)      => bulkUploadOpt
   }
+
+  lazy val bulkUploadOpt: Opt[BulkUpload] =
+    for {
+      subjectForms       <- toOpt((json \ "subjectForms").validate[SubjectForms], "/subjectForms")
+      bulkUpload         <- toOpt((json \ "spreadsheet").validate[List[SpreadsheetColumn]], "/spreadsheet")
+      maybeFileSizeLimit <- toOpt((json \ "fileSizeLimit").validateOpt[Int], "/fileSizeLimit")
+    } yield BulkUpload(subjectForms, bulkUpload, maybeFileSizeLimit)
 
   lazy val textOpt: Opt[ComponentType] = {
     for {

@@ -34,6 +34,7 @@ import uk.gov.hmrc.crypto.{ Decrypter, Encrypter, SymmetricCryptoFactory }
 import uk.gov.hmrc.gform.akka.AkkaModule
 import uk.gov.hmrc.gform.auditing.AuditingModule
 import uk.gov.hmrc.gform.builder.BuilderModule
+import uk.gov.hmrc.gform.bulkupload.{ BulkUploadController, BulkUploadService }
 import uk.gov.hmrc.gform.companieshouse.CompaniesHouseModule
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.dblookup.DbLookupModule
@@ -497,7 +498,10 @@ class ApplicationModule(context: Context)
 
   private val screenshotController = new ScreenshotController(controllerComponents, configModule.appConfig)
 
-  private lazy val ifController = new IfController(configModule, wSHttpModule, controllerComponents)
+  private val ifController = new IfController(configModule, wSHttpModule, controllerComponents)
+
+  private val bulkUploadService = BulkUploadService(objectStoreModule.objectStoreConnector)
+  private val bulkUploadController = new BulkUploadController(bulkUploadService, controllerComponents)
 
   private val playComponentsModule = new PlayComponentsModule(
     playComponents,
@@ -531,7 +535,8 @@ class ApplicationModule(context: Context)
     dataAccessLogModule,
     hipModule,
     screenshotController,
-    ifController
+    ifController,
+    bulkUploadController
   )
 
   override lazy val httpRequestHandler: HttpRequestHandler = playComponentsModule.httpRequestHandler

@@ -20,10 +20,8 @@ import play.api.mvc.{ Action, AnyContent, ControllerComponents }
 import uk.gov.hmrc.gform.config.AppConfig
 import uk.gov.hmrc.gform.controllers.BaseController
 
-import javax.inject.Singleton
 import scala.concurrent.ExecutionContext
 
-@Singleton
 class ScreenshotController(cc: ControllerComponents, config: AppConfig)(implicit ec: ExecutionContext)
     extends BaseController(cc) {
   def latestVersion: Action[AnyContent] = Action { _ =>

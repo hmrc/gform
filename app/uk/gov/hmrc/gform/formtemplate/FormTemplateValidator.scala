@@ -40,7 +40,6 @@ import uk.gov.hmrc.gform.sharedmodel.graph.DependencyGraph._
 
 import java.time.LocalDate
 import scala.Function.const
-import scala.annotation.nowarn
 import scala.util.{ Failure, Success, Try }
 
 object FormTemplateValidator {
@@ -1513,35 +1512,69 @@ object FormTemplateValidator {
     )
   }
 
-  def validate(componentTypes: List[ComponentType], formTemplate: FormTemplate): ValidationResult = {
-    val results = componentTypes.map(validate(_, formTemplate))
+  def validateComponentTypes(componentTypes: List[ComponentType], formTemplate: FormTemplate): ValidationResult = {
+    val results = componentTypes.map(validateComponentType(_, formTemplate))
     Monoid[ValidationResult].combineAll(results)
   }
 
-  @nowarn
-  def validate(componentType: ComponentType, formTemplate: FormTemplate): ValidationResult = componentType match {
-    case HasExpr(SingleExpr(expr))     => validate(expr, formTemplate.formKind.allSections)
-    case HasExpr(MultipleExpr(fields)) => Valid
-    case Date(_, _, _)                 => Valid
-    case CalendarDate                  => Valid
-    case TaxPeriodDate                 => Valid
-    case Address(_, _, _, Some(expr))  => validateAddressValue(expr, formTemplate)
-    case Address(_, _, _, _)           => Valid
-    case choice: Choice                => validateWhenOnlyOneChoiceRemains(choice)
-    case RevealingChoice(revealingChoiceElements, _) =>
-      validate(revealingChoiceElements.toList.flatMap(_.revealingFields.map(_.`type`)), formTemplate)
-    case HmrcTaxPeriod(_, _, _)                     => Valid
-    case Group(fvs, _, _, _, _)                     => validate(fvs.map(_.`type`), formTemplate)
-    case FileUpload(_, _)                           => Valid
-    case mf @ MultiFileUpload(_, _, _, _, _, _, _)  => validateMultiFileUpload(mf)
-    case InformationMessage(_, _, _)                => validateInformationMessages(formTemplate)
-    case Time(_, _)                                 => Valid
-    case OverseasAddress(_, _, _, Some(expr), _, _) => validateOverseasAddressValue(expr, formTemplate)
-    case OverseasAddress(_, _, _, _, _, _)          => Valid
-    case PostcodeLookup(_, _, _)                    => Valid
-    case MiniSummaryList(ls, _, _)                  => validateMiniSummaryList(ls, formTemplate)
-    case t: TableComp                               => TableCompValidator.validateTableComp(t)
-    case Button(_, _, _, _)                         => Valid
+  def validateComponentType(componentType: ComponentType, formTemplate: FormTemplate): ValidationResult =
+    componentType match {
+      case HasExpr(SingleExpr(expr))     => validate(expr, formTemplate.formKind.allSections)
+      case HasExpr(MultipleExpr(fields)) => Valid
+      case Date(_, _, _)                 => Valid
+      case CalendarDate                  => Valid
+      case TaxPeriodDate                 => Valid
+      case Address(_, _, _, Some(expr))  => validateAddressValue(expr, formTemplate)
+      case Address(_, _, _, _)           => Valid
+      case choice: Choice                => validateWhenOnlyOneChoiceRemains(choice)
+      case RevealingChoice(revealingChoiceElements, _) =>
+        validateComponentTypes(revealingChoiceElements.toList.flatMap(_.revealingFields.map(_.`type`)), formTemplate)
+      case HmrcTaxPeriod(_, _, _)                     => Valid
+      case Group(fvs, _, _, _, _)                     => validateComponentTypes(fvs.map(_.`type`), formTemplate)
+      case FileUpload(_, _)                           => Valid
+      case mf @ MultiFileUpload(_, _, _, _, _, _, _)  => validateMultiFileUpload(mf)
+      case InformationMessage(_, _, _)                => validateInformationMessages(formTemplate)
+      case Time(_, _)                                 => Valid
+      case OverseasAddress(_, _, _, Some(expr), _, _) => validateOverseasAddressValue(expr, formTemplate)
+      case OverseasAddress(_, _, _, _, _, _)          => Valid
+      case PostcodeLookup(_, _, _)                    => Valid
+      case MiniSummaryList(ls, _, _)                  => validateMiniSummaryList(ls, formTemplate)
+      case t: TableComp                               => TableCompValidator.validateTableComp(t)
+      case Button(_, _, _, _)                         => Valid
+      case b: BulkUpload                              => validateBulkUpload(b)
+      case Text(_, _, _, _, _, _, _, _, _)            => Valid
+      case TextArea(_, _, _, _, _, _)                 => Valid
+    }
+
+  private def validateBulkUpload(bulkUpload: BulkUpload): ValidationResult = {
+    val primaryCount = bulkUpload.spreadsheet.count(_.role.contains(DataRole.Primary))
+    val secondaryCount = bulkUpload.spreadsheet.count(_.role.contains(DataRole.Secondary))
+    val titles = bulkUpload.spreadsheet.map(_.title.trim.toLowerCase)
+    val duplicateTitles = titles.diff(titles.distinct).distinct
+
+    val primaryResult =
+      if (primaryCount === 1) Valid
+      else Invalid(s"bulkUpload spreadsheet must have exactly one column with role 'primary', found $primaryCount")
+
+    val secondaryResult =
+      if (secondaryCount <= 1) Valid
+      else Invalid(s"bulkUpload spreadsheet can have at most one column with role 'secondary', found $secondaryCount")
+
+    val blankTitleResult =
+      if (titles.forall(_.nonEmpty)) Valid
+      else Invalid("bulkUpload spreadsheet column titles must not be blank")
+
+    val titlesResult =
+      if (duplicateTitles.isEmpty) Valid
+      else Invalid(s"bulkUpload spreadsheet has duplicate column titles: ${duplicateTitles.mkString(", ")}")
+
+    val fileSizeResult =
+      if (bulkUpload.fileSizeLimit.forall(_ > 0)) Valid
+      else Invalid("bulkUpload fileSizeLimit must be greater than 0")
+
+    Monoid[ValidationResult].combineAll(
+      List(primaryResult, secondaryResult, blankTitleResult, titlesResult, fileSizeResult)
+    )
   }
 
   private def infoTypeNotAllowed(fc: FormComponent, infoType: InfoType) =

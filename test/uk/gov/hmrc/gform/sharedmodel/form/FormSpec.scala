@@ -175,7 +175,8 @@ class FormSpec extends AnyFlatSpec with Matchers with ScalaCheckDrivenPropertyCh
       None,
       None,
       None,
-      Some(Map(FormComponentId("confirmationQuestion") -> List("123.00", "456.00")))
+      Some(Map(FormComponentId("confirmationQuestion") -> List("123.00", "456.00"))),
+      None
     ),
     Some(EnvelopeExpiryDate(LocalDateTime.of(2064, 12, 1, 0, 0, 40))),
     FormComponentIdToFileIdMapping.empty,

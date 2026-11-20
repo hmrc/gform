@@ -17,22 +17,32 @@
 package uk.gov.hmrc.gform.objectstore
 
 import org.apache.pekko.stream.Materializer
+import org.apache.pekko.util.ByteString
+import org.apache.poi.xssf.usermodel.XSSFWorkbook
+import org.slf4j.LoggerFactory
+import play.api.libs.json.Json
 import play.api.mvc.{ ControllerComponents, Results }
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
 import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination
 import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination.{ Caseflow, Dms, Pega }
+import uk.gov.hmrc.gform.spreadsheet.SpreadsheetReader
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.objectstore.client.Path
 import uk.gov.hmrc.objectstore.client.RetentionPeriod.OneWeek
 
+import java.io.ByteArrayInputStream
 import scala.concurrent.{ ExecutionContext, Future }
+import scala.util.{ Failure, Success, Using }
 
 class ObjectStoreController(controllerComponents: ControllerComponents, objectStoreAlgebra: ObjectStoreAlgebra[Future])(
   implicit
   ex: ExecutionContext,
   m: Materializer
 ) extends BaseController(controllerComponents) {
+
+  private val logger = LoggerFactory.getLogger(getClass)
 
   def deleteFile(envelopeId: EnvelopeId, fileId: FileId) = Action.async { implicit request =>
     objectStoreAlgebra.deleteFile(envelopeId, fileId).asNoContent
@@ -84,6 +94,25 @@ class ObjectStoreController(controllerComponents: ControllerComponents, objectSt
   def downloadDataLakehouseFile(envelopeId: EnvelopeId) = Action.async { implicit request =>
     val paths = SdesDestination.DataLakehouse.objectStorePaths(envelopeId, None)
     downloadJsonFile(paths, envelopeId)
+  }
+
+  def downloadDataFile(envelopeId: EnvelopeId, fileName: String) = Action.async { implicit request =>
+    val directory: Path.Directory = Path.Directory(s"envelopes/${envelopeId.value}")
+    objectStoreAlgebra.getFile(directory, fileName).flatMap {
+      case Some(objectSource) =>
+        // Read the stream to memory first, so parsing does not block on the object store stream
+        objectSource.content.runFold(ByteString.empty)(_ ++ _).map { bytes =>
+          Using(new XSSFWorkbook(new ByteArrayInputStream(bytes.toArray)))(
+            SpreadsheetReader.readDataFromSpreadsheet
+          ) match {
+            case Success(spreadsheetData) => Ok(Json.toJson(spreadsheetData))
+            case Failure(e) =>
+              logger.error(s"File ${directory.value}$fileName is not a readable xlsx spreadsheet", e)
+              BadRequest(s"File ${directory.value}$fileName is not a readable xlsx spreadsheet")
+          }
+        }
+      case None => Future.successful(NotFound(s"File $fileName in ${directory.value} not found"))
+    }
   }
 
   def downloadInfoArchiveFiles(envelopeId: EnvelopeId) = Action.async { implicit request =>

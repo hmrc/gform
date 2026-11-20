@@ -28,13 +28,83 @@ import uk.gov.hmrc.gform.sharedmodel.DataRetrieve.Attribute
 import uk.gov.hmrc.gform.sharedmodel._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.PageLink
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destinations, PrintSection }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AnyDate, BulletedList, CalendarDate, Checkbox, Choice, ChoicesAvailable, ChoicesSelected, Constant, CtUTR, DataRetrieveCtx, DataRetrieveDateCtx, Date, DateAfter, DateBefore, DateCtx, DateExprWithOffset, DateFormCtxVar, DateFunction, DateProjection, DateValueExpr, DisplayAsEntered, Dynamic, Equals, Expr, ExprWithPath, FormComponent, FormComponentId, FormComponentValidator, FormCtx, FormStartDateExprValue, FormTemplate, GreaterThan, HideZeroDecimals, Horizontal, IfElse, IncludeIf, IndexOf, IndexOfDataRetrieveCtx, InformationMessage, Instruction, IsTrue, LeafExpr, LinkCtx, LookupColumn, Mandatory, Not, NumberedList, Offset, OffsetUnit, OffsetYMD, OptionData, OptionDataValue, Page, PageId, PostcodeLookup, Radio, SaUTR, Section, ShortText, StandardInfo, SummariseGroupAsGrid, TaxPeriodDate, TemplatePath, Text, TextArea, TextWithRestrictions, TodayDateExprValue, TypeAhead, UkVrn, ValidIf, Value, Vertical }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AnyDate, BulkUpload, BulletedList, CalendarDate, Checkbox, Choice, ChoicesAvailable, ChoicesSelected, ColumnType, Constant, CtUTR, DataRetrieveCtx, DataRetrieveDateCtx, DataRole, Date, DateAfter, DateBefore, DateCtx, DateExprWithOffset, DateFormCtxVar, DateFunction, DateProjection, DateValueExpr, DisplayAsEntered, Dynamic, Equals, Expr, ExprWithPath, FormComponent, FormComponentId, FormComponentValidator, FormCtx, FormStartDateExprValue, FormTemplate, GreaterThan, HideZeroDecimals, Horizontal, IfElse, IncludeIf, IndexOf, IndexOfDataRetrieveCtx, InformationMessage, Instruction, IsTrue, LeafExpr, LinkCtx, LookupColumn, Mandatory, Not, NumberedList, Offset, OffsetUnit, OffsetYMD, OptionData, OptionDataValue, Page, PageId, PostcodeLookup, Radio, SaUTR, Section, ShortText, SpreadsheetColumn, StandardInfo, SubjectForms, SummariseGroupAsGrid, TaxPeriodDate, TemplatePath, Text, TextArea, TextWithRestrictions, TodayDateExprValue, TypeAhead, UkVrn, ValidIf, Value, Vertical }
 
 class FormTemplateValidatorSpec
     extends AnyWordSpecLike with Matchers with FormTemplateSupport with TableDrivenPropertyChecks {
 
   private val divider = toSmartString("or", "neu")
   private val noDivider = SmartString(LocalisedString(Map()), List.empty[Expr])
+
+  "validateBulkUpload" should {
+    def validateBulkUpload(columns: List[SpreadsheetColumn], fileSizeLimit: Option[Int] = None): ValidationResult =
+      FormTemplateValidator.validateComponentTypes(
+        List(BulkUpload(SubjectForms(toSmartString("disposal"), toSmartString("disposals")), columns, fileSizeLimit)),
+        mkFormTemplate(Nil)
+      )
+
+    "accept one primary, one secondary and unique titles" in {
+      val columns = List(
+        SpreadsheetColumn("Name", mandatory = true, Some(DataRole.Primary), ColumnType.Text),
+        SpreadsheetColumn("Date", mandatory = true, Some(DataRole.Secondary), ColumnType.Date),
+        SpreadsheetColumn("Amount", mandatory = false, None, ColumnType.Number)
+      )
+      validateBulkUpload(columns, Some(10)) shouldBe Valid
+    }
+
+    "reject spreadsheet without primary column" in {
+      val columns = List(
+        SpreadsheetColumn("Name", mandatory = true, None, ColumnType.Text)
+      )
+      validateBulkUpload(columns) shouldBe Invalid(
+        "bulkUpload spreadsheet must have exactly one column with role 'primary', found 0"
+      )
+    }
+
+    "reject spreadsheet with two primary columns" in {
+      val columns = List(
+        SpreadsheetColumn("Name", mandatory = true, Some(DataRole.Primary), ColumnType.Text),
+        SpreadsheetColumn("Date", mandatory = true, Some(DataRole.Primary), ColumnType.Date)
+      )
+      validateBulkUpload(columns) shouldBe Invalid(
+        "bulkUpload spreadsheet must have exactly one column with role 'primary', found 2"
+      )
+    }
+
+    "reject spreadsheet with two secondary columns" in {
+      val columns = List(
+        SpreadsheetColumn("Name", mandatory = true, Some(DataRole.Primary), ColumnType.Text),
+        SpreadsheetColumn("Date", mandatory = true, Some(DataRole.Secondary), ColumnType.Date),
+        SpreadsheetColumn("Amount", mandatory = true, Some(DataRole.Secondary), ColumnType.Number)
+      )
+      validateBulkUpload(columns) shouldBe Invalid(
+        "bulkUpload spreadsheet can have at most one column with role 'secondary', found 2"
+      )
+    }
+
+    "reject blank column title" in {
+      val columns = List(
+        SpreadsheetColumn("Name", mandatory = true, Some(DataRole.Primary), ColumnType.Text),
+        SpreadsheetColumn("  ", mandatory = true, None, ColumnType.Text)
+      )
+      validateBulkUpload(columns) shouldBe Invalid("bulkUpload spreadsheet column titles must not be blank")
+    }
+
+    "reject duplicate column titles ignoring case and surrounding spaces" in {
+      val columns = List(
+        SpreadsheetColumn("Name", mandatory = true, Some(DataRole.Primary), ColumnType.Text),
+        SpreadsheetColumn(" name ", mandatory = true, None, ColumnType.Text)
+      )
+      validateBulkUpload(columns) shouldBe Invalid("bulkUpload spreadsheet has duplicate column titles: name")
+    }
+
+    "reject file size limit which is not positive" in {
+      val columns = List(
+        SpreadsheetColumn("Name", mandatory = true, Some(DataRole.Primary), ColumnType.Text)
+      )
+      validateBulkUpload(columns, Some(0)) shouldBe Invalid("bulkUpload fileSizeLimit must be greater than 0")
+    }
+  }
 
   "validatePageValidators" should {
     def page(groups: List[List[String]]): Page =
@@ -1403,7 +1473,7 @@ class FormTemplateValidatorSpec
             hideChoicesSelected = hideChoicesSelected,
             whenOnlyOneChoiceRemains = replacement
           )
-        FormTemplateValidator.validate(choice, mkFormTemplate(Nil)) shouldBe expectedResult
+        FormTemplateValidator.validateComponentType(choice, mkFormTemplate(Nil)) shouldBe expectedResult
       }
     }
   }

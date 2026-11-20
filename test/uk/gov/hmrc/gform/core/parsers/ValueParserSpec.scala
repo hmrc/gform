@@ -598,14 +598,14 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
   "Expr.validate" should "return Valid if expression include fieldName id present in the form template" in {
 
     val res = FormTemplateValidator
-      .validate(List(Text(ShortText.default, FormCtx("firstName"))), formTemplateWithOneSection)
+      .validateComponentTypes(List(Text(ShortText.default, FormCtx("firstName"))), formTemplateWithOneSection)
     res should be(Valid)
   }
 
   it should "return Valid if expression Add fields present in the form template" in {
     val res =
       FormTemplateValidator
-        .validate(
+        .validateComponentTypes(
           List(Text(ShortText.default, Add(FormCtx("firstName"), FormCtx("lastName")))),
           formTemplateWithOneSection
         )
@@ -615,7 +615,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
   it should "return Valid if expression Multiply fields present in the form template" in {
     val res =
       FormTemplateValidator
-        .validate(
+        .validateComponentTypes(
           List(Text(ShortText.default, Multiply(FormCtx("firstName"), FormCtx("lastName")))),
           formTemplateWithOneSection
         )
@@ -624,12 +624,12 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
 
   it should "return Invalid if expression include fieldName id not present in the form template" in {
     val res = FormTemplateValidator
-      .validate(List(Text(ShortText.default, FormCtx("firstNameTypo"))), formTemplateWithOneSection)
+      .validateComponentTypes(List(Text(ShortText.default, FormCtx("firstNameTypo"))), formTemplateWithOneSection)
     res should be(Invalid("Form field 'firstNameTypo' is not defined in form template."))
   }
   it should "return invalid and not be parsed as empty string" in {
     val res = FormTemplateValidator
-      .validate(List(Text(ShortText.default, FormCtx("'' * ''"))), formTemplateWithOneSection)
+      .validateComponentTypes(List(Text(ShortText.default, FormCtx("'' * ''"))), formTemplateWithOneSection)
     res should be(Invalid("Form field ''' * ''' is not defined in form template."))
   }
 
