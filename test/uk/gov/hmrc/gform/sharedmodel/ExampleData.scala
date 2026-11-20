@@ -66,7 +66,7 @@ trait ExampleAuthConfig extends DestinationGen {
   val dataStore = DataStore(
     DestinationId("TestDataStoreId"),
     SdesDestination.DataStore,
-    DestinationIncludeIf.HandlebarValue(""),
+    DestinationIncludeIf.HandlebarValue("true"),
     true,
     FormId("TestHmrcDmsFormId"),
     "1",

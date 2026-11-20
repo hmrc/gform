@@ -27,6 +27,7 @@ sealed trait SdesDestination extends Product with Serializable {
   def sdesRouting(sdesConfig: SdesConfig): SdesRouting = this match {
     case SdesDestination.HmrcIlluminate  => sdesConfig.hmrcIlluminate
     case SdesDestination.DataStore       => sdesConfig.dataStore
+    case SdesDestination.DataStoreScr    => sdesConfig.dataStoreScr
     case SdesDestination.DataStoreLegacy => sdesConfig.hmrcIlluminate
     case SdesDestination.Dms             => sdesConfig.dms
     case SdesDestination.InfoArchive     => sdesConfig.infoArchive
@@ -47,6 +48,7 @@ sealed trait SdesDestination extends Product with Serializable {
     this match {
       case SdesDestination.HmrcIlluminate  => ObjectStorePaths.hmrcIlluminatePaths(envelopeId)
       case SdesDestination.DataStore       => ObjectStorePaths.dataStorePaths(envelopeId)
+      case SdesDestination.DataStoreScr    => ObjectStorePaths.dataStorePaths(envelopeId)
       case SdesDestination.DataStoreLegacy => ObjectStorePaths.dataStorePaths(envelopeId)
       case SdesDestination.Dms             => ObjectStorePaths.dmsPaths(envelopeId, submissionPrefix)
       case SdesDestination.InfoArchive     => ObjectStorePaths.infoArchivePaths(envelopeId)
@@ -69,6 +71,7 @@ object SdesDestination {
   case object HmrcIlluminate extends SdesDestination
   case object DataStoreLegacy extends SdesDestination // Alias for HmrcIlluminate (deprecated)
   case object DataStore extends SdesDestination
+  case object DataStoreScr extends SdesDestination
   case object InfoArchive extends SdesDestination
   case object Caseflow extends SdesDestination
   case object Pega extends SdesDestination
@@ -83,6 +86,7 @@ object SdesDestination {
       "HmrcIlluminate"  -> HmrcIlluminate,
       "DataStoreLegacy" -> DataStoreLegacy,
       "DataStore"       -> DataStore,
+      "DataStoreSCR"    -> DataStoreScr,
       "InfoArchive"     -> InfoArchive,
       "Caseflow"        -> Caseflow,
       "Pega"            -> Pega,
@@ -96,6 +100,7 @@ object SdesDestination {
     case HmrcIlluminate  => "HmrcIlluminate"
     case DataStoreLegacy => "DataStoreLegacy"
     case DataStore       => "DataStore"
+    case DataStoreScr    => "DataStoreSCR"
     case InfoArchive     => "InfoArchive"
     case Caseflow        => "Caseflow"
     case Pega            => "Pega"
@@ -109,6 +114,7 @@ object SdesDestination {
     case "HmrcIlluminate"  => HmrcIlluminate
     case "DataStoreLegacy" => DataStoreLegacy
     case "DataStore"       => DataStore
+    case "DataStoreSCR"    => DataStoreScr
     case "InfoArchive"     => InfoArchive
     case "Caseflow"        => Caseflow
     case "Pega"            => Pega

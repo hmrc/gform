@@ -140,7 +140,8 @@ class DestinationWorkItemService(
     sdesDestination match {
       case SdesDestination.Dms | SdesDestination.Caseflow | SdesDestination.Pega =>
         dmsWorkItemRepo.pushNew(sdesWorkItem, initialState = initialState).map(_.id)
-      case SdesDestination.HmrcIlluminate | SdesDestination.DataStore | SdesDestination.DataStoreLegacy =>
+      case SdesDestination.HmrcIlluminate | SdesDestination.DataStore | SdesDestination.DataStoreScr |
+          SdesDestination.DataStoreLegacy =>
         dataStoreWorkItemRepo.pushNew(sdesWorkItem, initialState = initialState).map(_.id)
       case SdesDestination.InfoArchive =>
         infoArchiveWorkItemRepo.pushNew(sdesWorkItem, initialState = initialState).map(_.id)
@@ -268,7 +269,8 @@ class DestinationWorkItemService(
   private def findCollection(sdesDestination: SdesDestination): MongoCollection[WorkItem[SdesWorkItem]] =
     sdesDestination match {
       case SdesDestination.Dms | SdesDestination.Caseflow | SdesDestination.Pega => dmsWorkItemRepo.collection
-      case SdesDestination.HmrcIlluminate | SdesDestination.DataStore | SdesDestination.DataStoreLegacy =>
+      case SdesDestination.HmrcIlluminate | SdesDestination.DataStore | SdesDestination.DataStoreScr |
+          SdesDestination.DataStoreLegacy =>
         dataStoreWorkItemRepo.collection
       case SdesDestination.InfoArchive   => infoArchiveWorkItemRepo.collection
       case SdesDestination.DataLakehouse => dataLakehouseWorkItemRepo.collection
@@ -314,7 +316,8 @@ class DestinationWorkItemService(
     sdesDestination match {
       case SdesDestination.Dms | SdesDestination.Caseflow | SdesDestination.Pega =>
         dmsWorkItemRepo.markAs(new ObjectId(id), ProcessingStatus.ToDo).void
-      case SdesDestination.HmrcIlluminate | SdesDestination.DataStore | SdesDestination.DataStoreLegacy =>
+      case SdesDestination.HmrcIlluminate | SdesDestination.DataStore | SdesDestination.DataStoreScr |
+          SdesDestination.DataStoreLegacy =>
         dataStoreWorkItemRepo.markAs(new ObjectId(id), ProcessingStatus.ToDo).void
       case SdesDestination.InfoArchive => infoArchiveWorkItemRepo.markAs(new ObjectId(id), ProcessingStatus.ToDo).void
       case SdesDestination.DataLakehouse =>
@@ -415,7 +418,8 @@ class DestinationWorkItemService(
     sdesDestination match {
       case SdesDestination.Dms | SdesDestination.Caseflow | SdesDestination.Pega =>
         dmsWorkItemRepo.findById(new ObjectId(id))
-      case SdesDestination.HmrcIlluminate | SdesDestination.DataStore | SdesDestination.DataStoreLegacy =>
+      case SdesDestination.HmrcIlluminate | SdesDestination.DataStore | SdesDestination.DataStoreScr |
+          SdesDestination.DataStoreLegacy =>
         dataStoreWorkItemRepo.findById(new ObjectId(id))
       case SdesDestination.InfoArchive   => infoArchiveWorkItemRepo.findById(new ObjectId(id))
       case SdesDestination.DataLakehouse => dataLakehouseWorkItemRepo.findById(new ObjectId(id))

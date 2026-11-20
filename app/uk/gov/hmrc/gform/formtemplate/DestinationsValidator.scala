@@ -28,6 +28,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.NRSOr
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationIncludeIf.{ HandlebarValue, IncludeIfValue }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponent, FormComponentId, FormTemplateId, IsGroup }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationId, Destinations, JsonSchemaValidationSupport, ProfileName, TemplateType }
+import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination.{ DataStore, DataStoreScr }
 
 object DestinationsValidator {
   def someDestinationIdsAreUsedMoreThanOnce(duplicates: Set[DestinationId]) =
@@ -120,6 +121,34 @@ object DestinationsValidator {
       }
 
       Monoid[ValidationResult].combineAll(attributesCheck)
+    case _ => Valid
+  }
+
+  def validateDataStore(destinations: Destinations): ValidationResult = destinations match {
+    case destinationList: Destinations.DestinationList =>
+      val dataStoreList = destinationList.destinations.collect { case d: Destination.DataStore => d }
+
+      val standardDataStore = dataStoreList.exists(_.routing === DataStore)
+      val dataStoreScr = dataStoreList.exists(_.routing === DataStoreScr)
+      val anyHaveDefaultIncludeIf = dataStoreList.exists(_.includeIf === HandlebarValue(true.toString))
+
+      val isMixed = if (standardDataStore && dataStoreScr) {
+        Invalid(
+          s"Can only send to standard DataStore routing or DataStoreSCR routing, not both."
+        )
+      } else {
+        Valid
+      }
+
+      val multiplesWithDefaultIncludeIf = if (dataStoreList.size > 1 && anyHaveDefaultIncludeIf) {
+        Invalid(
+          s"Only one DataStore destination can be routed to; multiple definitions must have exclusive includeIf expressions."
+        )
+      } else {
+        Valid
+      }
+
+      Monoid[ValidationResult].combineAll(List(isMixed, multiplesWithDefaultIncludeIf))
     case _ => Valid
   }
 
