@@ -29,7 +29,8 @@ final case class SdesConfig(
   infoArchive: SdesRouting,
   caseflow: SdesRouting,
   pega: SdesRouting,
-  dataLakehouse: SdesRouting
+  dataLakehouse: SdesRouting,
+  dataStoreScr: SdesRouting
 )
 
 final case class SdesKeyAndCredentialsApiConfig(basePath: String)

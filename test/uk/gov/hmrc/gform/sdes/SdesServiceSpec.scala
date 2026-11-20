@@ -198,6 +198,7 @@ class SdesServiceSpec extends AnyFlatSpec with Matchers with MockitoSugar with S
     infoArchive = routing,
     caseflow = routing,
     pega = routing,
-    dataLakehouse = routing
+    dataLakehouse = routing,
+    dataStoreScr = routing
   )
 }

@@ -481,8 +481,8 @@ class SdesService(
   ): Future[ObjectSummaryWithMd5] = {
     val paths = destination.objectStorePaths(envelopeId, submissionPrefix)
     destination match {
-      case SdesDestination.DataStore | SdesDestination.DataStoreLegacy | SdesDestination.HmrcIlluminate |
-          SdesDestination.DataLakehouse =>
+      case SdesDestination.DataStore | SdesDestination.DataStoreScr | SdesDestination.DataStoreLegacy |
+          SdesDestination.HmrcIlluminate | SdesDestination.DataLakehouse =>
         val fileName = s"${envelopeId.value}.json"
         for {
           maybeObject <- objectStoreAlgebra.getFile(paths.permanent, fileName)
