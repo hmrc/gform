@@ -18,6 +18,7 @@ package uk.gov.hmrc.gform.sharedmodel.form
 
 import play.api.libs.json._
 import uk.gov.hmrc.gform.addresslookup.AddressLookupResult
+import uk.gov.hmrc.gform.bulkupload.BulkUploadResult
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponentId, JsonUtils }
 import uk.gov.hmrc.gform.sharedmodel.{ BooleanExprCache, DataRetrieveId, DataRetrieveResult, NotChecked, Obligations }
 import uk.gov.hmrc.auth.core.retrieve.{ ItmpAddress, ItmpName }
@@ -46,7 +47,8 @@ case class ThirdPartyData(
   enteredAddresses: Option[Map[FormComponentId, FormData]],
   confirmedAddresses: Option[Set[FormComponentId]],
   itmpRetrievals: Option[ItmpRetrievals],
-  confirmations: Option[Map[FormComponentId, List[String]]]
+  confirmations: Option[Map[FormComponentId, List[String]]],
+  bulkUploadLookup: Option[Map[FormComponentId, BulkUploadResult]]
 ) {
 
   def reviewComments: Option[String] = reviewData.flatMap(_.get("caseworkerComment"))
@@ -60,6 +62,7 @@ object ThirdPartyData {
       QueryParams.empty,
       None,
       BooleanExprCache.empty,
+      None,
       None,
       None,
       None,
@@ -82,6 +85,8 @@ object ThirdPartyData {
   implicit val formatFormComponentId: Format[FormComponentId] =
     implicitly[Format[String]].bimap(FormComponentId(_), _.value)
   implicit val formatConfirmations: Format[Map[FormComponentId, List[String]]] =
+    JsonUtils.formatMap(FormComponentId(_), _.value)
+  implicit val formatBulkUploadLookup: Format[Map[FormComponentId, BulkUploadResult]] =
     JsonUtils.formatMap(FormComponentId(_), _.value)
 
   implicit val format: OFormat[ThirdPartyData] = Json.format

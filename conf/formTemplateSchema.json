@@ -743,6 +743,48 @@
     },
     "fields": {
       "type": "object",
+      "allOf": [
+        {
+          "description": "Property subjectForms is required when type is bulkUpload",
+          "not": {
+            "required": [
+              "type"
+            ],
+            "properties": {
+              "type": {
+                "type": "string",
+                "pattern": "^(bulkUpload)$"
+              }
+            },
+            "not": {
+              "required": [
+                "subjectForms"
+              ]
+            },
+            "errorMessage": "Component of type bulkUpload requires property subjectForms to be present"
+          }
+        },
+        {
+          "description": "Property spreadsheet is required when type is bulkUpload",
+          "not": {
+            "required": [
+              "type"
+            ],
+            "properties": {
+              "type": {
+                "type": "string",
+                "pattern": "^(bulkUpload)$"
+              }
+            },
+            "not": {
+              "required": [
+                "spreadsheet"
+              ]
+            },
+            "errorMessage": "Component of type bulkUpload requires property spreadsheet to be present"
+          }
+        }
+      ],
       "additionalProperties": false,
       "properties": {
         "id": {
@@ -1138,9 +1180,80 @@
         },
         "smallText": {
           "type": "boolean"
+        },
+        "subjectForms": {
+          "type": "object",
+          "properties": {
+            "singular": {
+              "$ref": "#/$defs/stringOrEnCyObject"
+            },
+            "plural": {
+              "$ref": "#/$defs/stringOrEnCyObject"
+            }
+          },
+          "required": [
+            "singular",
+            "plural"
+          ],
+          "additionalProperties": false
+        },
+        "spreadsheet": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "properties": {
+              "title": {
+                "type": "string"
+              },
+              "mandatory": {
+                "type": "boolean"
+              },
+              "role": {
+                "type": "string",
+                "enum": [
+                  "primary",
+                  "secondary"
+                ]
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "text",
+                  "date",
+                  "number"
+                ]
+              }
+            },
+            "required": [
+              "title",
+              "type"
+            ],
+            "additionalProperties": false
+          }
         }
       },
       "dependencies": {
+        "subjectForms": {
+          "required": [
+            "type"
+          ],
+          "properties": {
+            "type": {
+              "pattern": "^(bulkUpload)$"
+            }
+          }
+        },
+        "spreadsheet": {
+          "required": [
+            "type"
+          ],
+          "properties": {
+            "type": {
+              "pattern": "^(bulkUpload)$"
+            }
+          }
+        },
         "infoText": {
           "required": [
             "type"

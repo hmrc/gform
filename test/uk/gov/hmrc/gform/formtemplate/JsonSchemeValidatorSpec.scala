@@ -6743,4 +6743,253 @@ class JsonSchemeValidatorSpec extends FunSuite {
 
     assertEquals(result, expectedResult)
   }
+
+  test("validateJson accepts a valid bulkUpload component") {
+    val jsonTemplate = constructTestOneSectionJsonTemplate(
+      json"""
+          {
+            "id": "disposalsFile",
+            "type": "bulkUpload",
+            "label": "Upload",
+            "subjectForms": {
+              "singular": "disposal",
+              "plural": "disposals"
+            },
+            "spreadsheet": [
+              {
+                "title": "Name",
+                "role": "primary",
+                "type": "text"
+              },
+              {
+                "title": "Date",
+                "mandatory": false,
+                "type": "date"
+              }
+            ]
+          }
+        """
+    )
+
+    assertEquals(validateJson(jsonTemplate), Right(()))
+  }
+
+  test("validateJson reports a missing subjectForms on a bulkUpload component") {
+    val jsonTemplate = constructTestOneSectionJsonTemplate(
+      json"""
+          {
+            "id": "disposalsFile",
+            "type": "bulkUpload",
+            "label": "Upload",
+            "spreadsheet": [
+              {
+                "title": "Name",
+                "role": "primary",
+                "type": "text"
+              }
+            ]
+          }
+        """
+    )
+
+    val result = validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/sections/0/fields/0>: Component of type bulkUpload requires property subjectForms to be present"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test("validateJson reports a missing spreadsheet on a bulkUpload component") {
+    val jsonTemplate = constructTestOneSectionJsonTemplate(
+      json"""
+          {
+            "id": "disposalsFile",
+            "type": "bulkUpload",
+            "label": "Upload",
+            "subjectForms": {
+              "singular": "disposal",
+              "plural": "disposals"
+            }
+          }
+        """
+    )
+
+    val result = validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/sections/0/fields/0>: Component of type bulkUpload requires property spreadsheet to be present"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  test("validateJson reports both subjectForms and spreadsheet missing on a bulkUpload component") {
+    val jsonTemplate = constructTestOneSectionJsonTemplate(
+      json"""
+          {
+            "id": "disposalsFile",
+            "type": "bulkUpload",
+            "label": "Upload"
+          }
+        """
+    )
+
+    val result = validateJson(jsonTemplate)
+
+    val expectedResult = List(
+      "Error at <#/sections/0/fields/0>: Component of type bulkUpload requires property subjectForms to be present",
+      "Error at <#/sections/0/fields/0>: Component of type bulkUpload requires property spreadsheet to be present"
+    )
+
+    runInvalidJsonTest(result, expectedResult)
+  }
+
+  private def bulkUploadTemplate(overrides: String): Json = {
+    val component = io.circe.parser
+      .parse(
+        s"""{
+           |  "id": "disposalsFile",
+           |  "type": "bulkUpload",
+           |  "label": "Upload",
+           |  "subjectForms": { "singular": "disposal", "plural": "disposals" },
+           |  "spreadsheet": [ { "title": "Name", "role": "primary", "type": "text" } ],
+           |  $overrides
+           |}""".stripMargin
+      )
+      .toOption
+      .get
+    constructTestOneSectionJsonTemplate(component)
+  }
+
+  private def bulkUploadErrors(overrides: String): List[String] =
+    validateJson(bulkUploadTemplate(overrides)) match {
+      case Right(_)    => fail("No error was returned from schema validation")
+      case Left(error) => error.errors.as[JsArray].value.toList.map(_.as[String])
+    }
+
+  private def runBulkUploadTest(overrides: String, expectedResult: List[String]): Unit =
+    runInvalidJsonTest(validateJson(bulkUploadTemplate(overrides)), expectedResult)
+
+  test("validateJson reports a subjectForms without plural on a bulkUpload component") {
+    runBulkUploadTest(
+      """
+        |"subjectForms": {
+        |  "singular": "disposal"
+        |}
+        |""".stripMargin,
+      List("Error at ID <disposalsFile>: subjectForms requires properties [singular, plural] to be present")
+    )
+  }
+
+  test("validateJson reports an unknown key in subjectForms on a bulkUpload component") {
+    runBulkUploadTest(
+      """
+        |"subjectForms": {
+        |  "singular": "disposal",
+        |  "plural": "disposals",
+        |  "other": "x"
+        |}
+        |""".stripMargin,
+      List("Error at ID <disposalsFile: subjectForms>: subjectForms has invalid key(s) [other]")
+    )
+  }
+
+  test("validateJson reports a non string subjectForms singular on a bulkUpload component") {
+    runBulkUploadTest(
+      """
+        |"subjectForms": {
+        |  "singular": 1,
+        |  "plural": "disposals"
+        |}
+        |""".stripMargin,
+      List(
+        "Error at ID <disposalsFile: subjectForms>: Property singular expected type String or JSONObject with structure {en: String} or {en: String, cy: String}"
+      )
+    )
+  }
+
+  test("validateJson reports an empty spreadsheet on a bulkUpload component") {
+    val errors = bulkUploadErrors(""""spreadsheet": []""")
+    assert(errors.exists(_.contains("expected minimum item count: 1, found: 0")), errors)
+  }
+
+  test("validateJson reports a spreadsheet column without title and type on a bulkUpload component") {
+    runBulkUploadTest(
+      """
+        |"spreadsheet": [
+        |  {
+        |    "role": "primary"
+        |  }
+        |]
+        |""".stripMargin,
+      List("Error at ID <disposalsFile: spreadsheet>: items requires properties [title, type] to be present")
+    )
+  }
+
+  test("validateJson reports an invalid spreadsheet column type on a bulkUpload component") {
+    val errors = bulkUploadErrors("""
+                                    |"spreadsheet": [
+                                    |  {
+                                    |    "title": "Name",
+                                    |    "type": "boolean"
+                                    |  }
+                                    |]
+                                    |""".stripMargin)
+    assert(errors.exists(_.contains("boolean is not a valid enum value")), errors)
+  }
+
+  test("validateJson reports an invalid spreadsheet column role on a bulkUpload component") {
+    val errors = bulkUploadErrors("""
+                                    |"spreadsheet": [
+                                    |  {
+                                    |    "title": "Name",
+                                    |    "type": "text",
+                                    |    "role": "third"
+                                    |  }
+                                    |]
+                                    |""".stripMargin)
+    assert(errors.exists(_.contains("third is not a valid enum value")), errors)
+  }
+
+  test("validateJson reports a non boolean spreadsheet column mandatory on a bulkUpload component") {
+    runBulkUploadTest(
+      """
+        |"spreadsheet": [
+        |  {
+        |    "title": "Name",
+        |    "type": "text",
+        |    "mandatory": "yes"
+        |  }
+        |]
+        |""".stripMargin,
+      List("Error at ID <disposalsFile: spreadsheet/0>: Property mandatory expected type [Boolean], found [String]")
+    )
+  }
+
+  test("validateJson reports an unknown key in spreadsheet column on a bulkUpload component") {
+    runBulkUploadTest(
+      """
+        |"spreadsheet": [
+        |  {
+        |    "title": "Name",
+        |    "type": "text",
+        |    "other": 1
+        |  }
+        |]
+        |""".stripMargin,
+      List("Error at ID <disposalsFile: spreadsheet/0>: items has invalid key(s) [other]")
+    )
+  }
+
+  test("validateJson reports subjectForms and spreadsheet on a component which is not bulkUpload") {
+    runBulkUploadTest(
+      """"type": "text"""",
+      List(
+        "Error at ID <disposalsFile>: Property subjectForms can only be used with type: [bulkUpload]",
+        "Error at ID <disposalsFile>: Property spreadsheet can only be used with type: [bulkUpload]"
+      )
+    )
+  }
 }

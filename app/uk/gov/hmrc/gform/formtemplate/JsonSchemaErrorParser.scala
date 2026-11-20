@@ -134,10 +134,12 @@ object JsonSchemaErrorParser {
     val errorLocation: String = tryConvertErrorLocationToId(json, error.location, propertyNameInLocation = false)
     val allSameErrors = errors.filter(_.location === error.location).filter(_.keyword === error.keyword)
 
-    val property: String = error.schemaLocation
-      .getOrElse("")
-      .split("/")
-      .last
+    // Schema location is not reported for some subschemas, fall back to the name of the enclosing property
+    val property: String = error.schemaLocation match {
+      case Some(location) => location.split("/").last
+      case None =>
+        error.location.split("/").reverse.dropWhile(_.forall(_.isDigit)).headOption.getOrElse("")
+    }
 
     val allInvalidProperties = allSameErrors
       .map(_.getMessage)
