@@ -2343,34 +2343,13 @@ object FormTemplateValidator {
       .flatMap(_.referenceInfos)
       .collect { case d @ DataRetrieveCtxExpr(_, _) => d }
 
-    // LeafExpr intentionally omits some template fields; hasFailed is opt-in everywhere.
-    def hasFailedReferences(path: TemplatePath, value: Any): List[DataRetrieveCtxExpr] = value match {
-      case ctx: DataRetrieveCtx if ctx.attribute == DataRetrieve.hasFailedAttribute =>
-        List(DataRetrieveCtxExpr(path, ctx))
-      case DataRetrieveDateCtx(id, attribute) if attribute == DataRetrieve.hasFailedAttribute =>
-        List(DataRetrieveCtxExpr(path, DataRetrieveCtx(id, attribute)))
-      case values: Iterable[_] =>
-        values.toList.zipWithIndex.flatMap { case (element, index) =>
-          hasFailedReferences(path + s"[$index]", element)
-        }
-      case product: Product =>
-        product.productElementNames.zip(product.productIterator).toList.flatMap { case (name, element) =>
-          hasFailedReferences(path + name, element)
-        }
-      case _ => Nil
-    }
-
-    val existingContexts = referenceInfos.map(_.dataRetrieveCtx).toSet
-    val additionalReferences =
-      hasFailedReferences(TemplatePath.root, formTemplate).filterNot(r => existingContexts(r.dataRetrieveCtx))
-
     val pageDataRetrieves: Map[DataRetrieveId, DataRetrieve] =
       pages.flatMap(p => p.dataRetrieves().map(d => (d.id, d))).toMap
 
     val dataRetrieves =
       formTemplate.dataRetrieve.fold(pageDataRetrieves)(d => pageDataRetrieves ++ d.toList.map(r => (r.id, r)).toMap)
 
-    (referenceInfos ++ additionalReferences).map { r =>
+    referenceInfos.map { r =>
       val maybeDataRetrieve = dataRetrieves.get(r.dataRetrieveCtx.id)
       maybeDataRetrieve.fold[ValidationResult](
         Invalid(s"Data retrieve expression at path ${r.path} refers to non-existent id ${r.dataRetrieveCtx.id.value}")
@@ -2403,12 +2382,16 @@ object FormTemplateValidator {
     allDataRetrieves
       .filter(_.manualFallbackIsDesigned.contains(true))
       .map { dataRetrieve =>
-        val fallbackCondition =
-          IncludeIf(Equals(DataRetrieveCtx(dataRetrieve.id, DataRetrieve.hasFailedAttribute), Constant("true")))
+        val fallbackReference = DataRetrieveCtx(dataRetrieve.id, DataRetrieve.hasFailedAttribute)
         pages
-          .exists(_.includeIf.contains(fallbackCondition))
+          .exists { page =>
+            LeafExpr(TemplatePath.root, page.includeIf).flatMap(_.referenceInfos).exists {
+              case DataRetrieveCtxExpr(_, ctx) => ctx == fallbackReference
+              case _                           => false
+            }
+          }
           .validationResult(
-            s"Data retrieve '${dataRetrieve.id.value}' has 'manualFallbackIsDesigned' set to true, but no page has includeIf exactly '$${dataRetrieve.${dataRetrieve.id.value}.hasFailed}'."
+            s"Data retrieve '${dataRetrieve.id.value}' has 'manualFallbackIsDesigned' set to true, but no page has includeIf referencing '$${dataRetrieve.${dataRetrieve.id.value}.hasFailed}'."
           )
       }
       .combineAll

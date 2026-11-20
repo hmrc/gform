@@ -27,6 +27,7 @@ import uk.gov.hmrc.gform.core.{ Invalid, Opt, Valid, ValidationResult }
 import uk.gov.hmrc.gform.sharedmodel.DataRetrieve.Attribute
 import uk.gov.hmrc.gform.sharedmodel._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.PageLink
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ And, Or }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destinations, PrintSection }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AnyDate, BulletedList, CalendarDate, Checkbox, Choice, ChoicesAvailable, ChoicesSelected, Constant, CtUTR, DataRetrieveCtx, DataRetrieveDateCtx, Date, DateAfter, DateBefore, DateCtx, DateExprWithOffset, DateFormCtxVar, DateFunction, DateProjection, DateValueExpr, DisplayAsEntered, Dynamic, Equals, Expr, ExprWithPath, FormComponent, FormComponentId, FormComponentValidator, FormCtx, FormStartDateExprValue, FormTemplate, GreaterThan, HideZeroDecimals, Horizontal, IfElse, IncludeIf, IndexOf, IndexOfDataRetrieveCtx, InformationMessage, Instruction, IsTrue, LeafExpr, LinkCtx, LookupColumn, Mandatory, Not, NumberedList, Offset, OffsetUnit, OffsetYMD, OptionData, OptionDataValue, Page, PageId, PostcodeLookup, Radio, SaUTR, Section, ShortText, StandardInfo, SummariseGroupAsGrid, TaxPeriodDate, TemplatePath, Text, TextArea, TextWithRestrictions, TodayDateExprValue, TypeAhead, UkVrn, ValidIf, Value, Vertical }
 
@@ -2222,13 +2223,17 @@ class FormTemplateValidatorSpec
         Equals(DataRetrieveCtx(DataRetrieveId("otherInfo"), DataRetrieve.hasFailedAttribute), Constant("true"))
       )
       val missingFallback = Invalid(
-        "Data retrieve 'agencyInfo' has 'manualFallbackIsDesigned' set to true, but no page has includeIf exactly '${dataRetrieve.agencyInfo.hasFailed}'."
+        "Data retrieve 'agencyInfo' has 'manualFallbackIsDesigned' set to true, but no page has includeIf referencing '${dataRetrieve.agencyInfo.hasFailed}'."
       )
       val table = Table(
         ("manualFallbackIsDesigned", "includeIf", "expectedResult"),
         (Some(true), Some(condition), Valid),
+        (Some(true), Some(IncludeIf(Or(IsTrue, condition.booleanExpr))), Valid),
+        (Some(true), Some(IncludeIf(Or(condition.booleanExpr, IsTrue))), Valid),
+        (Some(true), Some(IncludeIf(And(IsTrue, Or(otherCondition.booleanExpr, condition.booleanExpr)))), Valid),
         (Some(true), None, missingFallback),
         (Some(true), Some(otherCondition), missingFallback),
+        (Some(true), Some(IncludeIf(Or(IsTrue, otherCondition.booleanExpr))), missingFallback),
         (Some(false), None, Valid),
         (None, None, Valid)
       )
@@ -2249,6 +2254,48 @@ class FormTemplateValidatorSpec
   }
 
   "validateDataRetrieveCtx manual fallback references" should {
+    "validate top-level retrieval conditions and parameters with their existing-style paths" in {
+      val drId = DataRetrieveId("agencyInfo")
+      val reference = DataRetrieveCtx(drId, DataRetrieve.hasFailedAttribute)
+      val source = mkPersonalBankAccountExistenceDataRetrieve("otherInfo").get
+      val locations = Table(
+        ("path", "retrieval"),
+        (
+          "dataRetrieve.if",
+          source.copy(`if` = Some(IncludeIf(Equals(reference, Constant("true")))))
+        ),
+        (
+          "dataRetrieve.params.expr",
+          source.copy(params = List(DataRetrieve.ParamExpr(DataRetrieve.Parameter("firstName"), reference)))
+        )
+      )
+
+      forAll(locations) { (path, sourceRetrieval) =>
+        List(None, Some(false), Some(true)).foreach { flag =>
+          val retrieval = mkPersonalBankAccountExistenceDataRetrieve(
+            drId.value,
+            manualFallbackIsDesigned = flag
+          ).get
+          val sections: List[Section] = List(mkSectionNonRepeatingPage(mkFormComponent("field")))
+          val formTemplate = mkFormTemplate(sections).copy(
+            dataRetrieve = Some(NonEmptyList.of(sourceRetrieval, retrieval))
+          )
+          val expectedResult =
+            if (flag.contains(true)) Valid
+            else
+              Invalid(
+                s"Data retrieve expression at path TemplatePath($path), with id 'agencyInfo', refers to 'hasFailed', which may only be used if 'manualFallbackIsDesigned' is true on the dataRetrieve."
+              )
+
+          FormTemplateValidator.validateDataRetrieveCtx(
+            formTemplate,
+            SectionHelper.pages(sections),
+            LeafExpr(TemplatePath.root, formTemplate)
+          ) shouldBe expectedResult
+        }
+      }
+    }
+
     "require opt-in on the referenced retrieval rather than another retrieval" in {
       val drId = DataRetrieveId("agencyInfo")
       val reference = DataRetrieveCtx(drId, DataRetrieve.hasFailedAttribute)
