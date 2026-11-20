@@ -2261,8 +2261,8 @@ object FormTemplateValidator {
     val allDataRetrieves = formTemplate.dataRetrieve.fold(pageDataRetrieves)(drs => pageDataRetrieves ++ drs.toList)
 
     val invalid = allDataRetrieves.collect {
-      case DataRetrieve(_, id, _, _, _, _, Some(_), None, _, _, _, _) => id
-      case DataRetrieve(_, id, _, _, _, _, None, Some(_), _, _, _, _) => id
+      case DataRetrieve(_, id, _, _, _, _, Some(_), None, _, _, _, _, _) => id
+      case DataRetrieve(_, id, _, _, _, _, None, Some(_), _, _, _, _, _) => id
     }
 
     invalid.isEmpty.validationResult(
@@ -2358,12 +2358,14 @@ object FormTemplateValidator {
           d.attributes.attributes :++ ((d.maxFailedAttempts, d.failureCountResetMinutes) match {
             case (Some(_), Some(_)) => DataRetrieve.reservedAttributes
             case _                  => List.empty[Attribute]
-          })
+          }) ++ Option.when(d.manualFallbackIsDesigned.contains(true))(DataRetrieve.hasFailedAttribute).toList
 
         validAttributes
           .contains(r.dataRetrieveCtx.attribute)
           .validationResult {
-            if (DataRetrieve.reservedAttributes.contains(r.dataRetrieveCtx.attribute))
+            if (r.dataRetrieveCtx.attribute == DataRetrieve.hasFailedAttribute)
+              s"Data retrieve expression at path ${r.path}, with id '${r.dataRetrieveCtx.id.value}', refers to 'hasFailed', which may only be used if 'manualFallbackIsDesigned' is true on the dataRetrieve."
+            else if (DataRetrieve.reservedAttributes.contains(r.dataRetrieveCtx.attribute))
               s"Data retrieve expression at path ${r.path}, with id '${r.dataRetrieveCtx.id.value}', refers to special attribute '${r.dataRetrieveCtx.attribute.name}', which may only be used if also specifying 'maxFailedAttempts' and 'failureCountResetMinutes' on the dataRetrieve."
             else {
               val validAttributesStr = validAttributes.map(_.name).mkString(", ")
@@ -2372,6 +2374,27 @@ object FormTemplateValidator {
           }
       }
     }.combineAll
+  }
+
+  def validateDataRetrieveManualFallback(formTemplate: FormTemplate, pages: List[Page]): ValidationResult = {
+    val allDataRetrieves = pages.flatMap(_.dataRetrieves()) ++ formTemplate.dataRetrieve.toList.flatMap(_.toList)
+
+    allDataRetrieves
+      .filter(_.manualFallbackIsDesigned.contains(true))
+      .map { dataRetrieve =>
+        val fallbackReference = DataRetrieveCtx(dataRetrieve.id, DataRetrieve.hasFailedAttribute)
+        pages
+          .exists { page =>
+            LeafExpr(TemplatePath.root, page.includeIf).flatMap(_.referenceInfos).exists {
+              case DataRetrieveCtxExpr(_, ctx) => ctx == fallbackReference
+              case _                           => false
+            }
+          }
+          .validationResult(
+            s"Data retrieve '${dataRetrieve.id.value}' has 'manualFallbackIsDesigned' set to true, but no page has includeIf referencing '$${dataRetrieve.${dataRetrieve.id.value}.hasFailed}'."
+          )
+      }
+      .combineAll
   }
 
   def validateDataRetrieveCount(

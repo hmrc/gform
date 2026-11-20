@@ -21,11 +21,13 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike
 import play.api.http.Status.BAD_REQUEST
+import play.api.libs.json.Json
 import play.api.libs.ws.{ BodyWritable, WSRequest }
 import uk.gov.hmrc.gform.config.HipConnectorConfig
 import uk.gov.hmrc.http.client.{ HttpClientV2, RequestBuilder, StreamHttpReads }
 import uk.gov.hmrc.http.{ BadRequestException, HeaderCarrier, HttpReads, HttpResponse, NotFoundException }
 import uk.gov.hmrc.gform.sharedmodel.sdes.CorrelationId
+import uk.gov.hmrc.gform.sharedmodel.{ CannotRetrieveResponse, NotFound, ServiceResponse }
 
 import java.net.URL
 import scala.concurrent.{ ExecutionContext, Future }
@@ -89,6 +91,23 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with ScalaFutures {
       exception shouldBe a[BadRequestException]
       exception.getMessage shouldBe
         s"Bad request response from validate NI Claim Reference for identifier: $claimReference"
+    }
+  }
+
+  "lookupAgentDetails" should {
+    "retain the successful response" in {
+      val body = Json.obj("agencyDetails" -> Json.obj("name" -> "Agency"))
+      connector(HttpResponse(200, Json.stringify(body)))
+        .lookupAgentDetails("arn", CorrelationId("correlation-id"))
+        .futureValue shouldBe ServiceResponse(body)
+    }
+
+    List(204, 400, 401, 403, 404, 418, 422, 500, 503).foreach { status =>
+      s"not produce a successful response for upstream status $status" in {
+        connector(HttpResponse(status, "{}"))
+          .lookupAgentDetails("arn", CorrelationId("correlation-id"))
+          .futureValue shouldBe (if (status == 404) NotFound else CannotRetrieveResponse)
+      }
     }
   }
 
