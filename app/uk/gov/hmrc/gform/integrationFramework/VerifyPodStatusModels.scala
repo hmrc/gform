@@ -38,15 +38,15 @@ case class VerifyPodStatusResponse(
   registrationValidityPeriods: Option[List[RegistrationValidityPeriod]]
 ) {
   def transform: List[FlattenedVerifyPodStatusResponse] =
-    this.registrationValidityPeriods match {
+    registrationValidityPeriods match {
       case Some(periods) if periods.nonEmpty =>
         periods.map { period =>
           FlattenedVerifyPodStatusResponse(
-            this.matchFound,
-            this.matchNotFoundReason,
-            this.exporterCompanyName,
-            this.podReference,
-            this.currentRegistrationStatus,
+            matchFound,
+            matchNotFoundReason,
+            exporterCompanyName,
+            podReference,
+            currentRegistrationStatus,
             Some(period.status),
             Some(period.validFrom),
             period.validTo
@@ -55,11 +55,11 @@ case class VerifyPodStatusResponse(
       case _ =>
         List(
           FlattenedVerifyPodStatusResponse(
-            this.matchFound,
-            this.matchNotFoundReason,
-            this.exporterCompanyName,
-            this.podReference,
-            this.currentRegistrationStatus,
+            matchFound,
+            matchNotFoundReason,
+            exporterCompanyName,
+            podReference,
+            currentRegistrationStatus,
             None,
             None,
             None
