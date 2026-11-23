@@ -135,6 +135,7 @@ trait Verifier {
       _ <- fromOptA(DestinationsValidator.validateNoGroupInDeclaration(formTemplate.destinations).toEither)
       _ <- fromOptA(DestinationsValidator.validateDestinationIncludeIfs(formTemplate.destinations).toEither)
       _ <- fromOptA(DestinationsValidator.validateSubmissionPrefix(formTemplate.destinations).toEither)
+      _ <- fromOptA(DestinationsValidator.validateDataStore(formTemplate.destinations).toEither)
       _ <- fromOptA(DestinationsValidator.validateCaseflow(formTemplate.destinations).toEither)
       _ <- fromOptA(DestinationsValidator.validateNrs(formTemplate.destinations, nrsConnectorConfig).toEither)
       _ <- fromOptA(

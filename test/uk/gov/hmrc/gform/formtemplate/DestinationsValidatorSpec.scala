@@ -19,17 +19,17 @@ package uk.gov.hmrc.gform.formtemplate
 import cats.data.NonEmptyList
 import cats.syntax.eq._
 import org.scalatest.prop.Tables.Table
+import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.core.{ Invalid, Valid }
-import uk.gov.hmrc.gform.sharedmodel.HandlebarsSchemaId
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.PrimitiveGen._
-import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Constant, Equals, FormComponentId, FormCtx, IncludeIf }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationId, HttpMethod, ProfileName, TemplateType }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationIncludeIf.{ HandlebarValue, IncludeIfValue }
-import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination.{ Caseflow, Pega }
 import uk.gov.hmrc.gform.nrs.BusinessId
+import uk.gov.hmrc.gform.sharedmodel.HandlebarsSchemaId
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationIncludeIf.{ HandlebarValue, IncludeIfValue }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.PrimitiveGen._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Constant, Equals, FormComponentId, FormCtx, IncludeIf }
+import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination
+import uk.gov.hmrc.gform.sharedmodel.sdes.SdesDestination.{ Caseflow, Pega }
 
 class DestinationsValidatorSpec extends Spec with ScalaCheckDrivenPropertyChecks {
 
@@ -298,6 +298,121 @@ class DestinationsValidatorSpec extends Spec with ScalaCheckDrivenPropertyChecks
 
     org.scalatest.prop.TableDrivenPropertyChecks.forAll(table) { (destinations, expected) =>
       val result = DestinationsValidator.validateCaseflow(destinationList.copy(destinations = destinations))
+      result should be(expected)
+    }
+  }
+
+  "validateDataStore" should "validate DataStore destinations with DataStore and DataStoreScr routing correctly" in {
+    val table = Table(
+      ("destinations", "expected"),
+      (
+        NonEmptyList.of(
+          dataStore.copy(routing = SdesDestination.DataStore)
+        ),
+        Valid
+      ),
+      (
+        NonEmptyList.of(
+          dataStore.copy(routing = SdesDestination.DataStoreScr)
+        ),
+        Valid
+      ),
+      (
+        NonEmptyList.of(
+          dataStore.copy(routing = SdesDestination.DataStore),
+          dataStore.copy(routing = SdesDestination.DataStore)
+        ),
+        Invalid(
+          "Only one DataStore destination can be routed to; multiple definitions must have exclusive includeIf expressions."
+        )
+      ),
+      (
+        NonEmptyList.of(
+          dataStore.copy(routing = SdesDestination.DataStoreScr),
+          dataStore.copy(routing = SdesDestination.DataStoreScr)
+        ),
+        Invalid(
+          "Only one DataStore destination can be routed to; multiple definitions must have exclusive includeIf expressions."
+        )
+      ),
+      (
+        NonEmptyList.of(
+          dataStore.copy(routing = SdesDestination.DataStore),
+          dataStore.copy(routing = SdesDestination.DataStoreScr)
+        ),
+        Invalid(
+          "Can only send to standard DataStore routing or DataStoreSCR routing, not both."
+        )
+      ),
+      (
+        NonEmptyList.of(
+          dataStore.copy(routing = SdesDestination.DataStore),
+          dataStore.copy(
+            routing = SdesDestination.DataStore,
+            includeIf = IncludeIfValue(IncludeIf(Equals(FormCtx(FormComponentId("fieldA")), Constant("1"))))
+          )
+        ),
+        Invalid(
+          "Only one DataStore destination can be routed to; multiple definitions must have exclusive includeIf expressions."
+        )
+      ),
+      (
+        NonEmptyList.of(
+          dataStore.copy(routing = SdesDestination.DataStoreScr),
+          dataStore.copy(
+            routing = SdesDestination.DataStoreScr,
+            includeIf = IncludeIfValue(IncludeIf(Equals(FormCtx(FormComponentId("fieldA")), Constant("1"))))
+          )
+        ),
+        Invalid(
+          "Only one DataStore destination can be routed to; multiple definitions must have exclusive includeIf expressions."
+        )
+      ),
+      (
+        NonEmptyList.of(
+          dataStore.copy(
+            routing = SdesDestination.DataStore,
+            includeIf = IncludeIfValue(IncludeIf(Equals(FormCtx(FormComponentId("fieldA")), Constant("1"))))
+          ),
+          dataStore.copy(
+            routing = SdesDestination.DataStore,
+            includeIf = IncludeIfValue(IncludeIf(Equals(FormCtx(FormComponentId("fieldB")), Constant("2"))))
+          )
+        ),
+        Valid
+      ),
+      (
+        NonEmptyList.of(
+          dataStore.copy(
+            routing = SdesDestination.DataStoreScr,
+            includeIf = IncludeIfValue(IncludeIf(Equals(FormCtx(FormComponentId("fieldA")), Constant("1"))))
+          ),
+          dataStore.copy(
+            routing = SdesDestination.DataStoreScr,
+            includeIf = IncludeIfValue(IncludeIf(Equals(FormCtx(FormComponentId("fieldB")), Constant("2"))))
+          )
+        ),
+        Valid
+      ),
+      (
+        NonEmptyList.of(
+          dataStore.copy(
+            routing = SdesDestination.DataStore,
+            includeIf = IncludeIfValue(IncludeIf(Equals(FormCtx(FormComponentId("fieldA")), Constant("1"))))
+          ),
+          dataStore.copy(
+            routing = SdesDestination.DataStoreScr,
+            includeIf = IncludeIfValue(IncludeIf(Equals(FormCtx(FormComponentId("fieldB")), Constant("2"))))
+          )
+        ),
+        Invalid(
+          "Can only send to standard DataStore routing or DataStoreSCR routing, not both."
+        )
+      )
+    )
+
+    org.scalatest.prop.TableDrivenPropertyChecks.forAll(table) { (destinations, expected) =>
+      val result = DestinationsValidator.validateDataStore(destinationList.copy(destinations = destinations))
       result should be(expected)
     }
   }
