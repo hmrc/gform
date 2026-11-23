@@ -49,7 +49,7 @@ lazy val microservice = (project in file("."))
         // Default Argument added by https://github.com/hmrc/sbt-settings
         // are clashing with munit arguments, so we scope them to ScalaTest instead.
         case sbt.Tests.Argument(None, args) => sbt.Tests.Argument(Some(TestFrameworks.ScalaTest), args)
-        case otherwise                      => otherwise
+        case otherwise                      => Tests.Argument(TestFrameworks.MUnit, "--log=debug")
       }
       .distinct, // get rid of duplicates
     libraryDependencies ++= appDependencies,

@@ -100,6 +100,7 @@ GET           /object-store/data-store/envelopes/:envelopeId                    
 GET           /object-store/hmrc-illuminate/envelopes/:envelopeId                                       uk.gov.hmrc.gform.objectstore.ObjectStoreController.downloadHmrcIlluminateFile(envelopeId: EnvelopeId)
 GET           /object-store/info-archive/envelopes/:envelopeId                                          uk.gov.hmrc.gform.objectstore.ObjectStoreController.downloadInfoArchiveFiles(envelopeId: EnvelopeId)
 GET           /object-store/data-lakehouse/envelopes/:envelopeId                                        uk.gov.hmrc.gform.objectstore.ObjectStoreController.downloadDataLakehouseFile(envelopeId: EnvelopeId)
+GET           /object-store/data-file/:envelopeId/:fileName                                             uk.gov.hmrc.gform.objectstore.ObjectStoreController.downloadDataFile(envelopeId: EnvelopeId, fileName: String)
 
 GET           /translation/:formTemplateId                                                              uk.gov.hmrc.gform.translation.TranslationController.generateTranslatebleCsv(formTemplateId: FormTemplateId)
 GET           /translation/:formTemplateId/brief                                                        uk.gov.hmrc.gform.translation.TranslationController.generateBriefTranslatebleCsv(formTemplateId: FormTemplateId)
@@ -180,3 +181,6 @@ POST          /access-logs                                                      
 GET           /access-logs/:page/:pageSize                                                              uk.gov.hmrc.gform.log.DataAccessLogController.getDataAccessLogs(page: Int, pageSize: Int)
 
 GET           /screenshot-tool/version/latest                                                           uk.gov.hmrc.gform.screenshottool.ScreenshotController.latestVersion
+
+POST          /bulk-upload/generate-xlsx/:formTemplateId/:formComponentId                               uk.gov.hmrc.gform.bulkupload.BulkUploadController.generateXlsx(formTemplateId: FormTemplateId, formComponentId: FormComponentId)
+POST          /bulk-upload/upload-xlsx/:formTemplateId/:formComponentId                                 uk.gov.hmrc.gform.bulkupload.BulkUploadController.uploadXlsx(formTemplateId: FormTemplateId, formComponentId: FormComponentId)

@@ -593,6 +593,77 @@ object Button {
   implicit val format: Format[Button] = derived.oformat()
 }
 
+case class BulkUpload(
+  subjectForms: SubjectForms,
+  spreadsheet: List[SpreadsheetColumn],
+  fileSizeLimit: Option[Int]
+) extends ComponentType
+
+object BulkUpload {
+  implicit val format: Format[BulkUpload] = derived.oformat()
+}
+
+final case class SubjectForms(
+  singular: SmartString,
+  plural: SmartString
+)
+
+object SubjectForms {
+  implicit val format: Format[SubjectForms] = derived.oformat()
+}
+
+final case class SpreadsheetColumn(
+  title: String, // Handle only english spreadsheet
+  mandatory: Boolean,
+  role: Option[DataRole],
+  `type`: ColumnType
+)
+
+object SpreadsheetColumn {
+  val derivedReads: Reads[SpreadsheetColumn] = derived.reads()
+  val templateReads = derivedReads.preprocess {
+    case obj: JsObject if !obj.keys("mandatory") => obj + ("mandatory" -> JsTrue)
+    case json                                    => json
+  }
+
+  implicit val format: Format[SpreadsheetColumn] = OFormatWithTemplateReadFallback(templateReads)
+}
+
+sealed trait DataRole extends Product with Serializable
+
+object DataRole {
+  case object Primary extends DataRole
+  case object Secondary extends DataRole
+
+  val templateReads: Reads[DataRole] = Reads.StringReads
+    .flatMapResult {
+      case "primary"   => JsSuccess(DataRole.Primary)
+      case "secondary" => JsSuccess(DataRole.Secondary)
+      case unknown =>
+        JsError(s"Invalid spreadsheet.dataRole: '$unknown'. Expected one of 'primary' or 'secondary'")
+    }
+    .widen[DataRole]
+  implicit val format: Format[DataRole] = OFormatWithTemplateReadFallback(templateReads)
+}
+
+sealed trait ColumnType extends Product with Serializable
+
+object ColumnType {
+  case object Text extends ColumnType
+  case object Date extends ColumnType
+  case object Number extends ColumnType
+
+  val templateReads: Reads[ColumnType] = Reads.StringReads
+    .flatMapResult {
+      case "text"   => JsSuccess(ColumnType.Text)
+      case "date"   => JsSuccess(ColumnType.Date)
+      case "number" => JsSuccess(ColumnType.Number)
+      case unknown  => JsError(s"Invalid spreadsheet.type: '$unknown'. Expected one of 'text', 'date' or 'number'")
+    }
+    .widen[ColumnType]
+  implicit val format: Format[ColumnType] = OFormatWithTemplateReadFallback(templateReads)
+}
+
 object ComponentType {
 
   implicit def readsNonEmptyList[T: Reads]: Reads[NonEmptyList[T]] = Reads[NonEmptyList[T]] { json =>
@@ -652,6 +723,7 @@ object ComponentType {
         )
       case Button(reference, amountInPence, _, _) =>
         List(ExprWithPath(path, reference)) ++ List(ExprWithPath(path, amountInPence))
+      case BulkUpload(_, _, _) => Nil // No expressions should be used in spreadsheet definition
     }
 
 }

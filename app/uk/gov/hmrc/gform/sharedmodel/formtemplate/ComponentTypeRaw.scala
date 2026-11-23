@@ -57,6 +57,8 @@ case object TableCompRaw extends ComponentTypeRaw
 
 case object ButtonRaw extends ComponentTypeRaw
 
+case object BulkUploadRaw extends ComponentTypeRaw
+
 object ComponentTypeRaw {
 
   private val componentMap: Map[String, ComponentTypeRaw] =
@@ -79,6 +81,7 @@ object ComponentTypeRaw {
       "miniSummaryList" -> SummaryListRaw,
       "table"           -> TableCompRaw,
       "button"          -> ButtonRaw,
+      "bulkUpload"      -> BulkUploadRaw,
       ""                -> TextRaw
     )
 

@@ -67,7 +67,7 @@ trait Verifier {
       _ <- fromOptA(FormTemplateValidator.validateUniquePageIds(sections).toEither)
       _ <- fromOptA(FormTemplateValidator.validatePageValidators(pages).toEither)
       _ <- fromOptA(FormTemplateValidator.validateForwardReference(sections).toEither)
-      _ <- fromOptA(FormTemplateValidator.validate(componentTypes, formTemplate).toEither)
+      _ <- fromOptA(FormTemplateValidator.validateComponentTypes(componentTypes, formTemplate).toEither)
       _ <- fromOptA(FormTemplateValidator.validateDependencyGraph(formTemplate).toEither)
       _ <- fromOptA(FormTemplateValidator.validateEnrolmentSection(formTemplate).toEither)
       _ <- fromOptA(FormTemplateValidator.validateRegimeId(formTemplate).toEither)

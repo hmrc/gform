@@ -891,7 +891,7 @@ class TemplateValidatorSpec extends Spec {
 
     val formTemplateUpd = formTemplate.copy(formKind = FormKind.Classic(List(sectionA, sectionB)))
 
-    val res = FormTemplateValidator.validate(List(referenceToAddAnotherQuestion.`type`), formTemplateUpd)
+    val res = FormTemplateValidator.validateComponentTypes(List(referenceToAddAnotherQuestion.`type`), formTemplateUpd)
     res shouldBe Valid
   }
 
@@ -1084,7 +1084,7 @@ class TemplateValidatorSpec extends Spec {
     forAll(table) { (components, expected) =>
       val newFormTemplate = mkFormTemplate(components)
       val componentTypes: List[ComponentType] = components.map(_.`type`)
-      FormTemplateValidator.validate(componentTypes, newFormTemplate) shouldBe expected
+      FormTemplateValidator.validateComponentTypes(componentTypes, newFormTemplate) shouldBe expected
     }
   }
 
@@ -1109,7 +1109,7 @@ class TemplateValidatorSpec extends Spec {
     forAll(table) { (components, expected) =>
       val newFormTemplate = mkFormTemplate(components)
       val componentTypes: List[ComponentType] = components.map(_.`type`)
-      FormTemplateValidator.validate(componentTypes, newFormTemplate) shouldBe expected
+      FormTemplateValidator.validateComponentTypes(componentTypes, newFormTemplate) shouldBe expected
     }
   }
 
