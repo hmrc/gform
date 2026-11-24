@@ -21,6 +21,7 @@ import org.slf4j.LoggerFactory
 import play.api.libs.json.Json
 import play.api.mvc._
 import uk.gov.hmrc.gform.controllers.BaseController
+import uk.gov.hmrc.gform.sharedmodel.{ CannotRetrieveResponse, NotFound => RetrievalNotFound, ServiceResponse }
 import uk.gov.hmrc.gform.sharedmodel.sdes.CorrelationId
 import uk.gov.hmrc.http.HttpException
 
@@ -74,7 +75,15 @@ class HipController(
     withCorrelationId("agentDetails") { correlationId =>
       hipConnector
         .lookupAgentDetails(arn, correlationId)
-        .map(a => Ok(Json.toJson(a)))
+        .map { response =>
+          val json = Json.toJson(response)
+          response match {
+            case ServiceResponse(_)     => Ok(json)
+            case RetrievalNotFound      => NotFound(json)
+            case CannotRetrieveResponse => ServiceUnavailable(json)
+          }
+        }
+        .recover(standardErrors)
     }
   }
 

@@ -27,6 +27,7 @@ import uk.gov.hmrc.gform.core.{ Invalid, Opt, Valid, ValidationResult }
 import uk.gov.hmrc.gform.sharedmodel.DataRetrieve.Attribute
 import uk.gov.hmrc.gform.sharedmodel._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.PageLink
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ And, Or }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destinations, PrintSection }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AnyDate, BulkUpload, BulletedList, CalendarDate, Checkbox, Choice, ChoicesAvailable, ChoicesSelected, ColumnType, Constant, CtUTR, DataRetrieveCtx, DataRetrieveDateCtx, DataRole, Date, DateAfter, DateBefore, DateCtx, DateExprWithOffset, DateFormCtxVar, DateFunction, DateProjection, DateValueExpr, DisplayAsEntered, Dynamic, Equals, Expr, ExprWithPath, FormComponent, FormComponentId, FormComponentValidator, FormCtx, FormStartDateExprValue, FormTemplate, GreaterThan, HideZeroDecimals, Horizontal, IfElse, IncludeIf, IndexOf, IndexOfDataRetrieveCtx, InformationMessage, Instruction, IsTrue, LeafExpr, LinkCtx, LookupColumn, Mandatory, Not, NumberedList, Offset, OffsetUnit, OffsetYMD, OptionData, OptionDataValue, Page, PageId, PostcodeLookup, Radio, SaUTR, Section, ShortText, SpreadsheetColumn, StandardInfo, SubjectForms, SummariseGroupAsGrid, TaxPeriodDate, TemplatePath, Text, TextArea, TextWithRestrictions, TodayDateExprValue, TypeAhead, UkVrn, ValidIf, Value, Vertical }
 
@@ -2284,6 +2285,120 @@ class FormTemplateValidatorSpec
     }
   }
 
+  "validateDataRetrieveManualFallback" should {
+    "require a matching fallback page only for opted-in top-level and page-level retrievals" in {
+      val drId = DataRetrieveId("agencyInfo")
+      val condition = IncludeIf(Equals(DataRetrieveCtx(drId, DataRetrieve.hasFailedAttribute), Constant("true")))
+      val otherCondition = IncludeIf(
+        Equals(DataRetrieveCtx(DataRetrieveId("otherInfo"), DataRetrieve.hasFailedAttribute), Constant("true"))
+      )
+      val missingFallback = Invalid(
+        "Data retrieve 'agencyInfo' has 'manualFallbackIsDesigned' set to true, but no page has includeIf referencing '${dataRetrieve.agencyInfo.hasFailed}'."
+      )
+      val table = Table(
+        ("manualFallbackIsDesigned", "includeIf", "expectedResult"),
+        (Some(true), Some(condition), Valid),
+        (Some(true), Some(IncludeIf(Or(IsTrue, condition.booleanExpr))), Valid),
+        (Some(true), Some(IncludeIf(Or(condition.booleanExpr, IsTrue))), Valid),
+        (Some(true), Some(IncludeIf(And(IsTrue, Or(otherCondition.booleanExpr, condition.booleanExpr)))), Valid),
+        (Some(true), None, missingFallback),
+        (Some(true), Some(otherCondition), missingFallback),
+        (Some(true), Some(IncludeIf(Or(IsTrue, otherCondition.booleanExpr))), missingFallback),
+        (Some(false), None, Valid),
+        (None, None, Valid)
+      )
+
+      forAll(table) { (flag, includeIf, expectedResult) =>
+        val retrieval = mkPersonalBankAccountExistenceDataRetrieve(drId.value, manualFallbackIsDesigned = flag)
+        val page = mkSectionNonRepeatingPage(formComponents = List(mkFormComponent("field"))).page
+        List(true, false).foreach { topLevel =>
+          val source = page.copy(dataRetrieve = if (topLevel) None else NonEmptyList.fromList(retrieval.toList))
+          val pages = List(source, page.copy(includeIf = includeIf))
+          val formTemplate = mkFormTemplate(pages.map(Section.NonRepeatingPage.apply)).copy(
+            dataRetrieve = if (topLevel) NonEmptyList.fromList(retrieval.toList) else None
+          )
+          FormTemplateValidator.validateDataRetrieveManualFallback(formTemplate, pages) shouldBe expectedResult
+        }
+      }
+    }
+  }
+
+  "validateDataRetrieveCtx manual fallback references" should {
+    "validate top-level retrieval conditions and parameters with their existing-style paths" in {
+      val drId = DataRetrieveId("agencyInfo")
+      val reference = DataRetrieveCtx(drId, DataRetrieve.hasFailedAttribute)
+      val source = mkPersonalBankAccountExistenceDataRetrieve("otherInfo").get
+      val locations = Table(
+        ("path", "retrieval"),
+        (
+          "dataRetrieve.if",
+          source.copy(`if` = Some(IncludeIf(Equals(reference, Constant("true")))))
+        ),
+        (
+          "dataRetrieve.params.expr",
+          source.copy(params = List(DataRetrieve.ParamExpr(DataRetrieve.Parameter("firstName"), reference)))
+        )
+      )
+
+      forAll(locations) { (path, sourceRetrieval) =>
+        List(None, Some(false), Some(true)).foreach { flag =>
+          val retrieval = mkPersonalBankAccountExistenceDataRetrieve(
+            drId.value,
+            manualFallbackIsDesigned = flag
+          ).get
+          val sections: List[Section] = List(mkSectionNonRepeatingPage(mkFormComponent("field")))
+          val formTemplate = mkFormTemplate(sections).copy(
+            dataRetrieve = Some(NonEmptyList.of(sourceRetrieval, retrieval))
+          )
+          val expectedResult =
+            if (flag.contains(true)) Valid
+            else
+              Invalid(
+                s"Data retrieve expression at path TemplatePath($path), with id 'agencyInfo', refers to 'hasFailed', which may only be used if 'manualFallbackIsDesigned' is true on the dataRetrieve."
+              )
+
+          FormTemplateValidator.validateDataRetrieveCtx(
+            formTemplate,
+            SectionHelper.pages(sections),
+            LeafExpr(TemplatePath.root, formTemplate)
+          ) shouldBe expectedResult
+        }
+      }
+    }
+
+    "require opt-in on the referenced retrieval rather than another retrieval" in {
+      val drId = DataRetrieveId("agencyInfo")
+      val reference = DataRetrieveCtx(drId, DataRetrieve.hasFailedAttribute)
+      val disabledReference = Invalid(
+        "Data retrieve expression at path TemplatePath(sections.fields.[id=field].value), with id 'agencyInfo', refers to 'hasFailed', which may only be used if 'manualFallbackIsDesigned' is true on the dataRetrieve."
+      )
+      val table = Table(
+        ("manualFallbackIsDesigned", "expectedResult"),
+        (Some(true), Valid),
+        (Some(false), disabledReference),
+        (None, disabledReference)
+      )
+
+      forAll(table) { (flag, expectedResult) =>
+        val retrieval = mkPersonalBankAccountExistenceDataRetrieve(drId.value, manualFallbackIsDesigned = flag)
+        val other = mkPersonalBankAccountExistenceDataRetrieve("otherInfo", manualFallbackIsDesigned = Some(true))
+        val section = mkSectionNonRepeatingPage(
+          formComponents = List(mkFormComponent("field", reference)),
+          dataRetrieve = retrieval
+        )
+        val sections: List[Section] = List(section)
+        val formTemplate = mkFormTemplate(sections).copy(
+          dataRetrieve = NonEmptyList.fromList(other.toList)
+        )
+        FormTemplateValidator.validateDataRetrieveCtx(
+          formTemplate,
+          SectionHelper.pages(sections),
+          LeafExpr(TemplatePath.root, formTemplate)
+        ) shouldBe expectedResult
+      }
+    }
+  }
+
   "validateDataRetrieveBlockAttributes" should {
     "validate that dataRetrieves include both block attribute or neither" in {
       val drId = DataRetrieveId("personalBankDetails")
@@ -3687,10 +3802,12 @@ class FormTemplateValidatorSpec
     maybeMaxFailed: Option[Int] = None,
     maybeFailureReset: Option[Int] = None,
     callOnNoChange: Boolean = false,
-    maybeFirstNameExpression: Option[String] = None
+    maybeFirstNameExpression: Option[String] = None,
+    manualFallbackIsDesigned: Option[Boolean] = None
   ): Option[DataRetrieve] = {
     val maxFailedAttempts = maybeMaxFailed.fold("")(i => s""""maxFailedAttempts": $i,""")
     val failureReset = maybeFailureReset.fold("")(i => s""""failureCountResetMinutes": $i,""")
+    val manualFallback = manualFallbackIsDesigned.fold("")(flag => s""""manualFallbackIsDesigned": $flag,""")
     val firstNameExpr = maybeFirstNameExpression.fold(""""firstName": "${accountFirstName}",""") { expr =>
       s"""
          |"firstName": "$expr",
@@ -3703,6 +3820,7 @@ class FormTemplateValidatorSpec
          |  "id": "$id",
          |  $maxFailedAttempts
          |  $failureReset
+         |  $manualFallback
          |  "callOnNoChange": $callOnNoChange,
          |  "parameters": {
          |    "sortCode": "$${sortCodePersonal}",

@@ -39,6 +39,33 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
 
   implicit def implicitToFormComponentId(str: String): FormComponentId = FormComponentId(str)
 
+  "ValueParser" should "desugar a bare data retrieve hasFailed boolean and its negation" in {
+    val condition = Equals(
+      DataRetrieveCtx(DataRetrieveId("agencyInfo"), DataRetrieve.hasFailedAttribute),
+      Constant("true")
+    )
+    val cases = Table(
+      ("expression", "expected"),
+      ("${dataRetrieve.agencyInfo.hasFailed}", condition),
+      ("${!dataRetrieve.agencyInfo.hasFailed}", Not(condition)),
+      ("${!(dataRetrieve.agencyInfo.hasFailed)}", Not(condition)),
+      ("${dataRetrieve.agencyInfo.hasFailed && true}", And(condition, IsTrue)),
+      ("${dataRetrieve.agencyInfo.hasFailed || true}", Or(condition, IsTrue)),
+      ("${dataRetrieve.agencyInfo.hasFailed = 'true'}", condition),
+      ("${dataRetrieve.agencyInfo.hasFailed = 'false'}", condition.copy(right = Constant("false")))
+    )
+    forAll(cases) { (expression, expected) =>
+      ValueParser.validateWithParser(expression, ValueParser.booleanExpr) shouldBe Right(expected)
+    }
+    ValueParser.validateWithParser("${dataRetrieve.agencyInfo.isBlocked}", ValueParser.booleanExpr).isLeft shouldBe true
+    ValueParser
+      .validateWithParser("${dataRetrieve.agencyInfo.hasFailedOther}", ValueParser.booleanExpr)
+      .isLeft shouldBe true
+    ValueParser.validateWithParser("${dataRetrieve.agencyInfo.hasFailed}", ValueParser.expr) shouldBe Right(
+      DataRetrieveCtx(DataRetrieveId("agencyInfo"), DataRetrieve.hasFailedAttribute)
+    )
+  }
+
   "ValueParser" should "parse integer" in {
     val res = ValueParser.validate("${1}")
     res.toOption.value should be(TextExpression(Constant("1")))

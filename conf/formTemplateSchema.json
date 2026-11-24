@@ -1638,6 +1638,10 @@
               "callOnNoChange": {
                 "type": "boolean"
               },
+              "manualFallbackIsDesigned": {
+                "type": "boolean",
+                "default": false
+              },
               "parameters": {
                 "type": "object",
                 "properties": {
@@ -1679,6 +1683,10 @@
               "callOnNoChange": {
                 "type": "boolean"
               },
+              "manualFallbackIsDesigned": {
+                "type": "boolean",
+                "default": false
+              },
               "parameters": {
                 "type": "object",
                 "properties": {
@@ -1716,6 +1724,10 @@
               },
               "callOnNoChange": {
                 "type": "boolean"
+              },
+              "manualFallbackIsDesigned": {
+                "type": "boolean",
+                "default": false
               },
               "parameters": {
                 "type": "object",
@@ -1766,6 +1778,10 @@
               },
               "callOnNoChange": {
                 "type": "boolean"
+              },
+              "manualFallbackIsDesigned": {
+                "type": "boolean",
+                "default": false
               },
               "parameters": {
                 "type": "object",
@@ -1822,6 +1838,10 @@
               "callOnNoChange": {
                 "type": "boolean"
               },
+              "manualFallbackIsDesigned": {
+                "type": "boolean",
+                "default": false
+              },
               "parameters": {
                 "type": "object",
                 "properties": {
@@ -1858,6 +1878,10 @@
               },
               "callOnNoChange": {
                 "type": "boolean"
+              },
+              "manualFallbackIsDesigned": {
+                "type": "boolean",
+                "default": false
               },
               "parameters": {
                 "type": "object",
@@ -1904,6 +1928,10 @@
               "callOnNoChange": {
                 "type": "boolean"
               },
+              "manualFallbackIsDesigned": {
+                "type": "boolean",
+                "default": false
+              },
               "parameters": {
                 "type": "object",
                 "properties": {
@@ -1941,6 +1969,10 @@
               "callOnNoChange": {
                 "type": "boolean"
               },
+              "manualFallbackIsDesigned": {
+                "type": "boolean",
+                "default": false
+              },
               "parameters": {
                 "type": "object",
                 "properties": {
@@ -1977,6 +2009,10 @@
               },
               "callOnNoChange": {
                 "type": "boolean"
+              },
+              "manualFallbackIsDesigned": {
+                "type": "boolean",
+                "default": false
               },
               "parameters": {
                 "type": "object",
@@ -2025,6 +2061,10 @@
               "callOnNoChange": {
                 "type": "boolean"
               },
+              "manualFallbackIsDesigned": {
+                "type": "boolean",
+                "default": false
+              },
               "parameters": {
                 "type": "object",
                 "properties": {
@@ -2061,6 +2101,10 @@
               },
               "callOnNoChange": {
                 "type": "boolean"
+              },
+              "manualFallbackIsDesigned": {
+                "type": "boolean",
+                "default": false
               },
               "parameters": {
                 "type": "object",
