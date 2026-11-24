@@ -175,6 +175,47 @@ class IfController(configModule: ConfigModule, wSHttpModule: WSHttpModule, cc: C
     }
   }
 
+  def podAuthorisationDetails(podReference: String): Action[AnyContent] = Action.async { implicit req =>
+    withCorrelationIdHeader(req) { correlationId =>
+      val urlPath = DataRetrieveDefinitions.ftaPodAuthorisationDetails.getFilledPath(
+        Map("podReference" -> podReference)
+      )
+
+      ifRequest(urlPath, correlationId, AuthorizationName("gccftalookup")).get.execute
+        .map { resp =>
+          val body = resp.body
+          if (resp.status > 299) {
+            val msg =
+              s"non 2xx response from IF podAuthorisationDetails. Response code: ${resp.status}. Body: $body"
+            // 400 (business failure) and 404 are expected for some POD references, so log them as warnings.
+            // TODO: GFORMS-5108 - PDS failure codes have not been decided yet. Further handling is expected
+            //  here based on whatever the failure codes are intended to convey once those details are known.
+            if (resp.status == 400 || resp.status == 404) {
+              logger.warn(msg)
+            } else {
+              logger.error(msg)
+            }
+          }
+
+          val responseBody = if (resp.status == 200) {
+            Json.parse(body).validate[PodAuthorisationDetailsResponse] match {
+              case JsSuccess(detailsResponse, _) => Json.toJson(detailsResponse.transform).toString()
+              case JsError(errors) =>
+                logger.debug(
+                  s"Failed to parse IF podAuthorisationDetails response body: $body, with errors: $errors"
+                )
+                body
+            }
+          } else {
+            body
+          }
+
+          Status(resp.status)(responseBody).as("application/json")
+        }
+        .recover(standardErrors(correlationId))
+    }
+  }
+
   private def standardErrors(correlationId: String): PartialFunction[Throwable, Result] = {
     case e: HttpException =>
       logger.error(

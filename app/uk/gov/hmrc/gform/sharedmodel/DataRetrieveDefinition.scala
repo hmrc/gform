@@ -1192,6 +1192,68 @@ object DataRetrieveDefinitions {
     )
   )
 
+  private val ftaPodAuthorisationDetailsAttributes: List[(String, DataRetrieve.AttrType)] = List(
+    "emailConsent"               -> DataRetrieve.AttrType.String,
+    "exporterEori"               -> DataRetrieve.AttrType.String,
+    "exporterFullName"           -> DataRetrieve.AttrType.String,
+    "exporterAddressName"        -> DataRetrieve.AttrType.String,
+    "exporterStreetAndNumber"    -> DataRetrieve.AttrType.String,
+    "exporterPostCode"           -> DataRetrieve.AttrType.String,
+    "exporterCity"               -> DataRetrieve.AttrType.String,
+    "exporterCountryCode"        -> DataRetrieve.AttrType.String,
+    "yourDetailsFullName"        -> DataRetrieve.AttrType.String,
+    "yourDetailsAddressLine1"    -> DataRetrieve.AttrType.String,
+    "yourDetailsAddressLine2"    -> DataRetrieve.AttrType.String,
+    "yourDetailsPostCode"        -> DataRetrieve.AttrType.String,
+    "yourDetailsCity"            -> DataRetrieve.AttrType.String,
+    "yourDetailsCountry"         -> DataRetrieve.AttrType.String,
+    "yourDetailsTelephoneNumber" -> DataRetrieve.AttrType.String,
+    "yourDetailsEmailAddress"    -> DataRetrieve.AttrType.String,
+    "exporterActivity"           -> DataRetrieve.AttrType.String,
+    "version"                    -> DataRetrieve.AttrType.Number,
+    // ISO-8601 date-time with nanoseconds (e.g. 2026-10-05T22:28:58.303182443Z), not a LocalDate, so kept as String.
+    // Must be passed back unchanged in the FTAPOD2 POST, where PDS uses it for its stale data check (409 on mismatch).
+    "lastPodAuthModifiedDate" -> DataRetrieve.AttrType.String,
+    "hs4Code"                 -> DataRetrieve.AttrType.String,
+    "goodsDescription"        -> DataRetrieve.AttrType.String,
+    // Only populated by gform-frontend exceptional responses for 400 business failures, with a fixed value per
+    // known PDS validationMessage. PDS failure codes have not been decided yet, so failureCode is not exposed.
+    "businessFailure" -> DataRetrieve.AttrType.String
+  )
+
+  val ftaPodAuthorisationDetails = DataRetrieveDefinition(
+    DataRetrieve.Type("ftaPodAuthorisationDetails"),
+    Attr.FromArray(
+      ftaPodAuthorisationDetailsAttributes.map { case (name, _) =>
+        AttributeInstruction(
+          DataRetrieve.Attribute(name),
+          ConstructAttribute.AsIs(Fetch(List(name)))
+        )
+      }
+    ),
+    List(
+      Parameter("podReference")
+    ),
+    ftaPodAuthorisationDetailsAttributes.map { case (name, attrType) =>
+      DataRetrieve.Attribute(name) -> attrType
+    }.toMap,
+    Some(
+      // TODO: Update with the correct link when available
+      "https://jira.tools.tax.service.gov.uk/browse/GFORMS-5108"
+    ),
+    UrlDescriptor(
+      urlPath = "/if/fta/maintainpodauthorisationdetails/{{podReference}}/v1",
+      destination = UrlDestination.GForm
+    ),
+    Some(
+      // TODO: Placeholder until the IF endpoint for FTAPOD2 (maintainPodAuthorisationDetails) is available
+      UrlDescriptor(
+        urlPath = "/fta/maintainPodAuthorisationDetails/{{podReference}}/v1",
+        destination = UrlDestination.IF
+      )
+    )
+  )
+
   val staticDefinitions = DataRetrieveDefinitions(
     List(
       validateBankDetails,
@@ -1212,7 +1274,8 @@ object DataRetrieveDefinitions {
       niRefundClaim,
       caseflowCaseDetails,
       ftaManageEmails,
-      ftaVerifyPodStatus
+      ftaVerifyPodStatus,
+      ftaPodAuthorisationDetails
     )
   )
 
