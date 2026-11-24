@@ -2142,6 +2142,43 @@
               "parameters"
             ],
             "additionalProperties": false
+          },
+          {
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "ftaVerifyPodStatus"
+                ]
+              },
+              "id": {
+                "type": "string"
+              },
+              "if": {
+                "type": "string"
+              },
+              "callOnNoChange": {
+                "type": "boolean"
+              },
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "podReference": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "podReference"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "type",
+              "id",
+              "parameters"
+            ],
+            "additionalProperties": false
           }
         ]
       }

@@ -1125,6 +1125,73 @@ object DataRetrieveDefinitions {
     )
   )
 
+  val ftaVerifyPodStatus = DataRetrieveDefinition(
+    DataRetrieve.Type("ftaVerifyPodStatus"),
+    Attr.FromArray(
+      List(
+        AttributeInstruction(
+          DataRetrieve.Attribute("matchFound"),
+          ConstructAttribute.AsIs(Fetch(List("matchFound")))
+        ),
+        AttributeInstruction(
+          DataRetrieve.Attribute("matchNotFoundReason"),
+          ConstructAttribute.AsIs(Fetch(List("matchNotFoundReason")))
+        ),
+        AttributeInstruction(
+          DataRetrieve.Attribute("exporterCompanyName"),
+          ConstructAttribute.AsIs(Fetch(List("exporterCompanyName")))
+        ),
+        AttributeInstruction(
+          DataRetrieve.Attribute("podReference"),
+          ConstructAttribute.AsIs(Fetch(List("podReference")))
+        ),
+        AttributeInstruction(
+          DataRetrieve.Attribute("currentRegistrationStatus"),
+          ConstructAttribute.AsIs(Fetch(List("currentRegistrationStatus")))
+        ),
+        AttributeInstruction(
+          DataRetrieve.Attribute("periodStatus"),
+          ConstructAttribute.AsIs(Fetch(List("periodStatus")))
+        ),
+        AttributeInstruction(
+          DataRetrieve.Attribute("periodValidFrom"),
+          ConstructAttribute.AsIs(Fetch(List("periodValidFrom")))
+        ),
+        AttributeInstruction(
+          DataRetrieve.Attribute("periodValidTo"),
+          ConstructAttribute.AsIs(Fetch(List("periodValidTo")))
+        )
+      )
+    ),
+    List(
+      Parameter("podReference")
+    ),
+    Map(
+      DataRetrieve.Attribute("matchFound")                -> DataRetrieve.AttrType.String,
+      DataRetrieve.Attribute("matchNotFoundReason")       -> DataRetrieve.AttrType.String,
+      DataRetrieve.Attribute("exporterCompanyName")       -> DataRetrieve.AttrType.String,
+      DataRetrieve.Attribute("podReference")              -> DataRetrieve.AttrType.String,
+      DataRetrieve.Attribute("currentRegistrationStatus") -> DataRetrieve.AttrType.String,
+      DataRetrieve.Attribute("periodStatus")              -> DataRetrieve.AttrType.String,
+      DataRetrieve.Attribute("periodValidFrom")           -> DataRetrieve.AttrType.Date,
+      DataRetrieve.Attribute("periodValidTo")             -> DataRetrieve.AttrType.Date
+    ),
+    Some(
+      // TODO: Update with the correct link when available
+      "https://jira.tools.tax.service.gov.uk/browse/GFORMS-5107"
+    ),
+    UrlDescriptor(
+      urlPath = "/if/fta/verifypodstatus/{{podReference}}/v1",
+      destination = UrlDestination.GForm
+    ),
+    Some(
+      UrlDescriptor(
+        urlPath = "/fta/verifystatus/{{podReference}}/v1",
+        destination = UrlDestination.IF
+      )
+    )
+  )
+
   val staticDefinitions = DataRetrieveDefinitions(
     List(
       validateBankDetails,
@@ -1144,7 +1211,8 @@ object DataRetrieveDefinitions {
       delegatedAgentAuthPaye,
       niRefundClaim,
       caseflowCaseDetails,
-      ftaManageEmails
+      ftaManageEmails,
+      ftaVerifyPodStatus
     )
   )
 

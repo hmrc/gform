@@ -174,6 +174,7 @@ GET           /hip/caseflow-case-details/:caseId                                
 GET           /hip/agent-details/:arn                                                                   uk.gov.hmrc.gform.hip.HipController.agentDetails(arn: String)
 
 GET           /if/fta/manageemails/v1                                                                   uk.gov.hmrc.gform.integrationFramework.IfController.manageEmails(eori: String)
+GET           /if/fta/verifypodstatus/:podReference/v1                                                  uk.gov.hmrc.gform.integrationFramework.IfController.verifyPodStatus(podReference: String)
 
 POST          /email-migration                                                                          uk.gov.hmrc.gform.emailmigration.EmailMigrationController.migrateEmail()
 

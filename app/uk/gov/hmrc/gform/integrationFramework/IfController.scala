@@ -140,6 +140,41 @@ class IfController(configModule: ConfigModule, wSHttpModule: WSHttpModule, cc: C
     }
   }
 
+  def verifyPodStatus(podReference: String): Action[AnyContent] = Action.async { implicit req =>
+    withCorrelationIdHeader(req) { correlationId =>
+      val urlPath = DataRetrieveDefinitions.ftaVerifyPodStatus.getFilledPath(
+        Map("podReference" -> podReference)
+      )
+
+      ifRequest(urlPath, correlationId, AuthorizationName("gccverify")).get.execute
+        .map { resp =>
+          val body = resp.body
+          if (resp.status > 299) {
+            val msg = s"non 2xx response from IF verifyPodStatus. Response code: ${resp.status}. Body: $body"
+            if (resp.status == 500 && body.contains("with statusCode: 400")) {
+              logger.warn(msg)
+            } else {
+              logger.error(msg)
+            }
+          }
+
+          val responseBody = if (resp.status == 200) {
+            Json.parse(body).validate[VerifyPodStatusResponse] match {
+              case JsSuccess(verifyResponse, _) => Json.toJson(verifyResponse.transform).toString()
+              case JsError(errors) =>
+                logger.debug(s"Failed to parse IF verifyPodStatus response body: ${resp.body}, with errors: $errors")
+                body
+            }
+          } else {
+            body
+          }
+
+          Status(resp.status)(responseBody).as("application/json")
+        }
+        .recover(standardErrors(correlationId))
+    }
+  }
+
   private def standardErrors(correlationId: String): PartialFunction[Throwable, Result] = {
     case e: HttpException =>
       logger.error(
