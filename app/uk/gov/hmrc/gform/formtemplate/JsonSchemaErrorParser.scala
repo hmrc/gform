@@ -30,7 +30,7 @@ object JsonSchemaErrorParser {
 
   private val errorMessagePattern: Regex = """.*"errorMessage":"(.*?)".*""".r
   private val authModuleValues =
-    List("hmrc", "email", "anonymous", "awsAlbAuth", "ofsted", "hmrcAny", "hmrcVerified", "composite")
+    List("hmrc", "email", "anonymous", "hmrcAny", "hmrcVerified", "composite")
   private val authConfigPath = "#/authConfig"
 
   private case class AuthConfigAt(path: String, value: Json)
@@ -108,14 +108,16 @@ object JsonSchemaErrorParser {
         val allowedProperties = authProperties(authModule)
         val unknownProperties = fields.keySet -- (allowedProperties.toSet + "authModule")
         if (unknownProperties.nonEmpty)
-          Some(authConfigErrorMessage(config, authPropertiesMessage(authModule)))
+          Some(authConfigErrorMessage(config, authPropertiesMessage(authModule, unknownProperties)))
         else {
           invalidAuthPropertyValue(config, authModule, fields, errors)
             .orElse(invalidAuthPropertyType(config, authModule, errors))
             .map(message => authConfigErrorMessage(config, message))
             .orElse {
               val missingProperties = requiredAuthProperties(authModule, fields).filterNot(fields.contains)
-              Option.when(missingProperties.nonEmpty)(authConfigErrorMessage(config, authPropertiesMessage(authModule)))
+              Option.when(missingProperties.nonEmpty)(
+                authConfigErrorMessage(config, authPropertiesMessage(authModule, unknownProperties, fields))
+              )
             }
         }
       case None if !fields.contains("authModule") =>
@@ -130,7 +132,7 @@ object JsonSchemaErrorParser {
         Some(
           authConfigErrorMessage(
             config,
-            s"Invalid authModule value. Accepted authModule values are [${authModuleValues.mkString(", ")}]."
+            s"authModule: '${module.getOrElse("")}' is Invalid. Accepted authModule values are [${authModuleValues.mkString(", ")}]."
           )
         )
     }
@@ -161,7 +163,7 @@ object JsonSchemaErrorParser {
 
   private def requiredAuthProperties(authModule: String, fields: Map[String, Json]): List[String] =
     authModule match {
-      case "hmrc" if fields.contains("serviceId") => List("serviceId", "enrolmentOutcomes")
+      case "hmrc" if fields.contains("serviceId") => List("enrolmentOutcomes")
       case "hmrc"                                 => Nil
       case "email"                                => List("emailCodeTemplate")
       case "hmrcVerified" =>
@@ -170,17 +172,48 @@ object JsonSchemaErrorParser {
       case _           => Nil
     }
 
-  private def authPropertiesMessage(authModule: String): String = {
-    val accepted = authProperties(authModule)
-    val required = requiredAuthProperties(authModule, Map.empty)
-    val propertiesMessage =
-      if (accepted.isEmpty) s"authModule: '$authModule' accepts no other properties."
-      else s"authModule: '$authModule' accepts other properties [${accepted.mkString(", ")}]."
-    if (required.nonEmpty)
-      s"$propertiesMessage Required properties: [${required.mkString(", ")}]."
-    else if (authModule == "hmrc")
-      s"$propertiesMessage When serviceId is provided, enrolmentOutcomes is also required."
-    else propertiesMessage
+  private def optionalAuthProperties(authModule: String): List[String] =
+    authModule match {
+      case "hmrc" =>
+        List(
+          "agentAccess",
+          "enrolmentCheck",
+          "serviceId",
+          "regimeId",
+          "legacyFcEnrolmentVerifier",
+          "enrolmentOutcomes",
+          "enrolmentSection"
+        )
+      case "email" =>
+        List("emailService", "emailUseInfo", "emailCodeHelp", "emailConfirmation")
+      case "hmrcVerified" => Nil
+      case "composite"    => Nil
+      case _              => Nil
+    }
+
+  private def authPropertiesMessage(
+    authModule: String,
+    unknownProperties: Set[String],
+    fields: Map[String, Json] = Map.empty
+  ): String = {
+    val required = requiredAuthProperties(authModule, fields)
+    val optional = optionalAuthProperties(authModule)
+    val missingProperties = required.filterNot(fields.contains)
+
+    val summary = (authProperties(authModule), unknownProperties, missingProperties) match {
+      case (Nil, _, _) => s"authModule: '$authModule' does not accepts any other properties."
+      case (_, unknown, _) if unknown.nonEmpty =>
+        s"authModule: '$authModule' does not accept [${unknown.mkString(", ")}]."
+      case (_, _, missing) if missing.nonEmpty => s"authModule: '$authModule' is missing all required properties."
+      case _                                   => ""
+    }
+
+    val requiredMessage = Option.when(required.nonEmpty)(s" Required properties: [${required.mkString(", ")}].")
+    val optionalMessage = Option.when(optional.nonEmpty)(s" Optional properties: [${optional.mkString(", ")}].")
+    val hmrcServiceIdMessage =
+      Option.when(authModule == "hmrc")(" When serviceId is provided, enrolmentOutcomes is also required.")
+
+    (summary :: List(requiredMessage, optionalMessage, hmrcServiceIdMessage).flatten).mkString
   }
 
   private def invalidAuthPropertyValue(
@@ -191,7 +224,6 @@ object JsonSchemaErrorParser {
   ): Option[String] = {
     val allowedValues = Map(
       "agentAccess" -> List(
-        "",
         "requireMTDAgentEnrolment",
         "denyAnyAgentAffinityUser",
         "allowAnyAgentAffinityUser"
@@ -212,7 +244,7 @@ object JsonSchemaErrorParser {
         fields.get(property).flatMap { value =>
           val accepted = allowedValues(property)
           if (value.asString.exists(accepted.contains)) None
-          else Some(s"Property '$property' for authModule '$authModule' expected one of [${accepted.mkString(", ")}].")
+          else Some(s"Property '$property' for authModule: '$authModule' expected one of [${accepted.mkString(", ")}].")
         }
       }
       .take(1)

@@ -254,47 +254,39 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val authConfigErrors = List(
       AuthConfigError(
         json"""{}""",
-        "Error at <#/authConfig>: authConfig requires property [authModule] to be present. Accepted authModule values are [hmrc, email, anonymous, awsAlbAuth, ofsted, hmrcAny, hmrcVerified, composite]."
+        "Error at <#/authConfig>: authConfig requires property [authModule] to be present. Accepted authModule values are [hmrc, email, anonymous, hmrcAny, hmrcVerified, composite]."
       ),
       AuthConfigError(
         json"""{ "authModule": "unknown" }""",
-        "Error at <#/authConfig>: Invalid authModule value. Accepted authModule values are [hmrc, email, anonymous, awsAlbAuth, ofsted, hmrcAny, hmrcVerified, composite]."
+        "Error at <#/authConfig>: authModule: 'unknown' is Invalid. Accepted authModule values are [hmrc, email, anonymous, hmrcAny, hmrcVerified, composite]."
       ),
       AuthConfigError(
         json"""{ "authModule": "hmrc", "minimumCL": "200", "allowOrganisations": true, "allowSAIndividuals": true }""",
-        "Error at <#/authConfig>: authModule: 'hmrc' accepts other properties [agentAccess, enrolmentCheck, serviceId, regimeId, legacyFcEnrolmentVerifier, enrolmentOutcomes, enrolmentSection]. When serviceId is provided, enrolmentOutcomes is also required."
+        "Error at <#/authConfig>: authModule: 'hmrc' does not accept [minimumCL, allowOrganisations, allowSAIndividuals]. Optional properties: [agentAccess, enrolmentCheck, serviceId, regimeId, legacyFcEnrolmentVerifier, enrolmentOutcomes, enrolmentSection]. When serviceId is provided, enrolmentOutcomes is also required."
       ),
       AuthConfigError(
         json"""{ "authModule": "hmrc", "serviceId": "service" }""",
-        "Error at <#/authConfig>: authModule: 'hmrc' accepts other properties [agentAccess, enrolmentCheck, serviceId, regimeId, legacyFcEnrolmentVerifier, enrolmentOutcomes, enrolmentSection]. When serviceId is provided, enrolmentOutcomes is also required."
+        "Error at <#/authConfig>: authModule: 'hmrc' is missing all required properties. Required properties: [enrolmentOutcomes]. Optional properties: [agentAccess, enrolmentCheck, serviceId, regimeId, legacyFcEnrolmentVerifier, enrolmentOutcomes, enrolmentSection]. When serviceId is provided, enrolmentOutcomes is also required."
       ),
       AuthConfigError(
         json"""{ "authModule": "email" }""",
-        "Error at <#/authConfig>: authModule: 'email' accepts other properties [emailCodeTemplate, emailService, emailUseInfo, emailCodeHelp, emailConfirmation]. Required properties: [emailCodeTemplate]."
+        "Error at <#/authConfig>: authModule: 'email' is missing all required properties. Required properties: [emailCodeTemplate]. Optional properties: [emailService, emailUseInfo, emailCodeHelp, emailConfirmation]."
       ),
       AuthConfigError(
         json"""{ "authModule": "email", "emailCodeTemplate": "template", "emailService": "invalid" }""",
-        "Error at <#/authConfig>: Property 'emailService' for authModule 'email' expected one of [dc, notify]."
+        "Error at <#/authConfig>: Property 'emailService' for authModule: 'email' expected one of [dc, notify]."
       ),
       AuthConfigError(
         json"""{ "authModule": "anonymous", "minimumCL": "200" }""",
-        "Error at <#/authConfig>: authModule: 'anonymous' accepts no other properties."
-      ),
-      AuthConfigError(
-        json"""{ "authModule": "awsAlbAuth", "minimumCL": "200" }""",
-        "Error at <#/authConfig>: authModule: 'awsAlbAuth' accepts no other properties."
-      ),
-      AuthConfigError(
-        json"""{ "authModule": "ofsted", "minimumCL": "200" }""",
-        "Error at <#/authConfig>: authModule: 'ofsted' accepts no other properties."
+        "Error at <#/authConfig>: authModule: 'anonymous' does not accepts any other properties."
       ),
       AuthConfigError(
         json"""{ "authModule": "hmrcAny", "minimumCL": "200" }""",
-        "Error at <#/authConfig>: authModule: 'hmrcAny' accepts no other properties."
+        "Error at <#/authConfig>: authModule: 'hmrcAny' does not accepts any other properties."
       ),
       AuthConfigError(
         json"""{ "authModule": "hmrcVerified" }""",
-        "Error at <#/authConfig>: authModule: 'hmrcVerified' accepts other properties [ivFailure, agentAccess, minimumCL, allowOrganisations, allowSAIndividuals]. Required properties: [ivFailure, agentAccess, minimumCL, allowOrganisations, allowSAIndividuals]."
+        "Error at <#/authConfig>: authModule: 'hmrcVerified' is missing all required properties. Required properties: [ivFailure, agentAccess, minimumCL, allowOrganisations, allowSAIndividuals]."
       ),
       AuthConfigError(
         json"""{
@@ -305,18 +297,18 @@ class JsonSchemeValidatorSpec extends FunSuite {
                 "allowOrganisations": true,
                 "allowSAIndividuals": false
                 }""",
-        "Error at <#/authConfig>: Property 'minimumCL' for authModule 'hmrcVerified' expected one of [200, 250]."
+        "Error at <#/authConfig>: Property 'minimumCL' for authModule: 'hmrcVerified' expected one of [200, 250]."
       ),
       AuthConfigError(
         json"""{ "authModule": "composite", "minimumCL": "200" }""",
-        "Error at <#/authConfig>: authModule: 'composite' accepts other properties [configs]. Required properties: [configs]."
+        "Error at <#/authConfig>: authModule: 'composite' does not accept [minimumCL]. Required properties: [configs]."
       ),
       AuthConfigError(
         json"""{
                 "authModule": "composite",
-                "configs": [{ "authModule": "hmrc", "minimumCL": "200" }]
+                "configs": [{ "authModule": "hmrc", "enrolmentCheck": "always" }, { "authModule": "email", "minimumCL": "200" }]
                 }""",
-        "Error at <#/authConfig/configs/0>: authModule: 'hmrc' accepts other properties [agentAccess, enrolmentCheck, serviceId, regimeId, legacyFcEnrolmentVerifier, enrolmentOutcomes, enrolmentSection]. When serviceId is provided, enrolmentOutcomes is also required."
+        "Error at <#/authConfig/configs/1>: authModule: 'email' does not accept [minimumCL]. Required properties: [emailCodeTemplate]. Optional properties: [emailService, emailUseInfo, emailCodeHelp, emailConfirmation]."
       )
     )
 
