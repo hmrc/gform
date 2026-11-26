@@ -2179,6 +2179,64 @@
               "parameters"
             ],
             "additionalProperties": false
+          },
+          {
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "ftaPodAuthorisationDetails"
+                ]
+              },
+              "id": {
+                "type": "string"
+              },
+              "if": {
+                "type": "string"
+              },
+              "callOnNoChange": {
+                "type": "boolean"
+              },
+              "manualFallbackIsDesigned": {
+                "type": "boolean",
+                "default": false
+              },
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "podReference": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "podReference"
+                ],
+                "additionalProperties": false
+              },
+              "populateATL": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "mapping": {
+                    "type": "object",
+                    "additionalProperties": true
+                  }
+                },
+                "required": [
+                  "id",
+                  "mapping"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "type",
+              "id",
+              "parameters"
+            ],
+            "additionalProperties": false
           }
         ]
       }

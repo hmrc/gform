@@ -175,6 +175,7 @@ GET           /hip/agent-details/:arn                                           
 
 GET           /if/fta/manageemails/v1                                                                   uk.gov.hmrc.gform.integrationFramework.IfController.manageEmails(eori: String)
 GET           /if/fta/verifypodstatus/:podReference/v1                                                  uk.gov.hmrc.gform.integrationFramework.IfController.verifyPodStatus(podReference: String)
+GET           /if/fta/maintainpodauthorisationdetails/:podReference/v1                                  uk.gov.hmrc.gform.integrationFramework.IfController.podAuthorisationDetails(podReference: String)
 
 POST          /email-migration                                                                          uk.gov.hmrc.gform.emailmigration.EmailMigrationController.migrateEmail()
 
