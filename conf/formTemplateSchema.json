@@ -437,8 +437,32 @@
       "oneOf": [
         {
           "not": {
-            "required": [
-              "serviceId"
+            "anyOf": [
+              {
+                "required": [
+                  "serviceId"
+                ]
+              },
+              {
+                "required": [
+                  "enrolmentSection"
+                ]
+              },
+              {
+                "required": [
+                  "enrolmentOutcomes"
+                ]
+              },
+              {
+                "required": [
+                  "enrolmentCheck"
+                ]
+              },
+              {
+                "required": [
+                  "regimeId"
+                ]
+              }
             ]
           }
         },

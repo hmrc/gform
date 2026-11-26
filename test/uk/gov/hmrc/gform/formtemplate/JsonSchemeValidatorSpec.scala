@@ -269,6 +269,10 @@ class JsonSchemeValidatorSpec extends FunSuite {
         "Error at <#/authConfig>: authModule: 'hmrc' is missing all required properties. Required properties: [enrolmentOutcomes]. Optional properties: [agentAccess, enrolmentCheck, serviceId, regimeId, legacyFcEnrolmentVerifier, enrolmentOutcomes, enrolmentSection]. When serviceId is provided, enrolmentOutcomes is also required."
       ),
       AuthConfigError(
+        json"""{ "authModule": "hmrc", "regimeId": "regimeId", "agentAccess": "requireMTDAgentEnrolment", "legacyFcEnrolmentVerifier": "NonUKCountryCode", "enrolmentCheck": "always" }""",
+        "Error at <#/authConfig>: authModule: 'hmrc' is missing all required properties. Properties [enrolmentCheck, regimeId] requires [serviceId]. Optional properties: [agentAccess, enrolmentCheck, serviceId, regimeId, legacyFcEnrolmentVerifier, enrolmentOutcomes, enrolmentSection]. When serviceId is provided, enrolmentOutcomes is also required."
+      ),
+      AuthConfigError(
         json"""{ "authModule": "email" }""",
         "Error at <#/authConfig>: authModule: 'email' is missing all required properties. Required properties: [emailCodeTemplate]. Optional properties: [emailService, emailUseInfo, emailCodeHelp, emailConfirmation]."
       ),
@@ -306,9 +310,9 @@ class JsonSchemeValidatorSpec extends FunSuite {
       AuthConfigError(
         json"""{
                 "authModule": "composite",
-                "configs": [{ "authModule": "hmrc", "enrolmentCheck": "always" }, { "authModule": "email", "minimumCL": "200" }]
+                "configs": [{ "authModule": "email", "emailCodeTemplate": "emailCodeTemplate" }, { "authModule": "hmrc", "enrolmentCheck": "always" }]
                 }""",
-        "Error at <#/authConfig/configs/1>: authModule: 'email' does not accept [minimumCL]. Required properties: [emailCodeTemplate]. Optional properties: [emailService, emailUseInfo, emailCodeHelp, emailConfirmation]."
+        "Error at <#/authConfig/configs/1>: authModule: 'hmrc' is missing all required properties. Properties [enrolmentCheck] requires [serviceId]. Optional properties: [agentAccess, enrolmentCheck, serviceId, regimeId, legacyFcEnrolmentVerifier, enrolmentOutcomes, enrolmentSection]. When serviceId is provided, enrolmentOutcomes is also required."
       )
     )
 
