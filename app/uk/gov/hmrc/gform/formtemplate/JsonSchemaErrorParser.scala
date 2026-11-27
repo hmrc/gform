@@ -29,35 +29,259 @@ import scala.util.matching.Regex
 object JsonSchemaErrorParser {
 
   private val errorMessagePattern: Regex = """.*"errorMessage":"(.*?)".*""".r
+  private val authModuleValues =
+    List("hmrc", "email", "anonymous", "hmrcAny", "hmrcVerified", "composite")
+  private val acceptedAuthModules = authModuleValues.mkString(", ")
+  private val authConfigPath = "#/authConfig"
+
+  private val allowedAuthPropertyValues = Map(
+    "agentAccess"    -> List("requireMTDAgentEnrolment", "denyAnyAgentAffinityUser", "allowAnyAgentAffinityUser"),
+    "enrolmentCheck" -> List("never", "always", "forNonAgents"),
+    "minimumCL"      -> List("200", "250"),
+    "emailService"   -> List("dc", "notify")
+  )
+
+  private val expectedAuthPropertyTypes = Map(
+    "serviceId"                 -> "a string",
+    "regimeId"                  -> "a string",
+    "legacyFcEnrolmentVerifier" -> "a string",
+    "enrolmentOutcomes"         -> "an object containing all five outcome pages",
+    "enrolmentSection"          -> "an enrolment section object",
+    "ivFailure"                 -> "a string",
+    "minimumCL"                 -> "the string '200' or '250'",
+    "allowOrganisations"        -> "a boolean",
+    "allowSAIndividuals"        -> "a boolean",
+    "emailCodeTemplate"         -> "a string",
+    "emailService"              -> "the string 'dc' or 'notify'",
+    "emailUseInfo"              -> "a string",
+    "emailCodeHelp"             -> "a string",
+    "emailConfirmation"         -> "a string",
+    "configs"                   -> "a non-empty array of hmrc or email auth configs"
+  )
+
+  private case class AuthConfigAt(path: String, value: Json)
 
   def parseErrorMessages(errors: NonEmptyList[ValidationError], schema: Json, json: Json): SchemaValidationException = {
-    val parsedErrors: NonEmptyList[ValidationError] = errors.map { error =>
-      val parsedErrorMessage: String =
-        if (error.schemaLocation.getOrElse("").contains("dependencies")) {
-          if (error.schemaLocation.getOrElse("").contains("oneOf")) {
-            parseConditionalValidationWithOneOfErrorMessage(schema, json, error)
-          } else {
-            parseConditionalValidationErrorMessage(schema, json, error)
-          }
-        } else if (errorMessagePattern.findFirstIn(error.getMessage).isDefined) {
-          parseErrorMessage(error)
-        } else if (errors.filter(_.location === error.location).map(_.keyword).contains("type")) {
-          parseTypeError(error, errors, json, schema)
-        } else if (error.keyword === "required") {
-          parseRequiredError(schema, json, error)
-        } else if (error.keyword === "pattern") {
-          parsePatternError(schema, json, error)
-        } else if (error.keyword === "additionalProperties") {
-          parseAdditionalPropertiesError(errors, json, error)
-        } else {
-          error.getMessage
-        }
+    val authConfigMessage = parseAuthConfigError(errors, json)
+    val errorsToParse = authConfigMessage match {
+      case Some(_) => errors.toList.filterNot(isAuthConfigError)
+      case None    => errors.toList
+    }
+    val parsedMessages = errorsToParse.map(parseError(_, errors, schema, json))
 
-      ValidationError(error.keyword, parsedErrorMessage, error.location, error.schemaLocation)
+    val messages = (authConfigMessage.toList ++ parsedMessages).distinct
+    SchemaValidationException(NonEmptyList.fromList(messages).getOrElse(NonEmptyList.one("")))
+  }
+
+  private def parseError(
+    error: ValidationError,
+    errors: NonEmptyList[ValidationError],
+    schema: Json,
+    json: Json
+  ): String = {
+    val schemaLocation = error.schemaLocation.getOrElse("")
+    lazy val hasTypeErrorAtSameLocation = errors.exists(e => e.location === error.location && e.keyword === "type")
+
+    error.keyword match {
+      case _ if schemaLocation.contains("dependencies") && schemaLocation.contains("oneOf") =>
+        parseConditionalValidationWithOneOfErrorMessage(schema, json, error)
+      case _ if schemaLocation.contains("dependencies") =>
+        parseConditionalValidationErrorMessage(schema, json, error)
+      case _ if errorMessagePattern.findFirstIn(error.getMessage).isDefined => parseErrorMessage(error)
+      case _ if hasTypeErrorAtSameLocation                                  => parseTypeError(error, errors, json, schema)
+      case "required"                                                       => parseRequiredError(schema, json, error)
+      case "pattern"                                                        => parsePatternError(schema, json, error)
+      case "additionalProperties"                                           => parseAdditionalPropertiesError(errors, json, error)
+      case _                                                                => error.getMessage
+    }
+  }
+
+  private def isAuthConfigError(error: ValidationError): Boolean =
+    error.location == authConfigPath || error.location.startsWith(authConfigPath + "/")
+
+  private def parseAuthConfigError(errors: NonEmptyList[ValidationError], json: Json): Option[String] = {
+    val authConfigs =
+      json.hcursor.downField("authConfig").focus.toList.flatMap(collectAuthConfigs(_, authConfigPath))
+    val configsWithErrors = authConfigs
+      .filter(config =>
+        errors.exists(error => error.location == config.path || error.location.startsWith(config.path + "/"))
+      )
+      .sortBy(config => -config.path.count(_ == '/'))
+
+    configsWithErrors.iterator
+      .map(config => authConfigErrorFor(config, errors))
+      .collectFirst { case Some(message) => message }
+  }
+
+  private def collectAuthConfigs(value: Json, path: String): List[AuthConfigAt] =
+    value.asObject.toList.flatMap { obj =>
+      val current = AuthConfigAt(path, value)
+      val nested = obj("configs").flatMap(_.asArray).toList.flatten.zipWithIndex.flatMap { case (config, index) =>
+        collectAuthConfigs(config, s"$path/configs/$index")
+      }
+      current :: nested
     }
 
-    SchemaValidationException(parsedErrors.map(_.getMessage).distinct)
+  private def authConfigErrorFor(
+    config: AuthConfigAt,
+    errors: NonEmptyList[ValidationError]
+  ): Option[String] = {
+    val fields = config.value.asObject.map(_.toMap).getOrElse(Map.empty)
+    val module = fields.get("authModule").flatMap(_.asString)
+
+    module match {
+      case Some(authModule) if authModuleValues.contains(authModule) =>
+        val unknownProperties = fields.keySet -- (authProperties(authModule).toSet + "authModule")
+        val hasMissingProperties = requiredAuthProperties(authModule, fields).required.exists(!fields.contains(_))
+
+        Option
+          .when(unknownProperties.nonEmpty)(authPropertiesMessage(authModule, unknownProperties))
+          .orElse(invalidAuthPropertyValue(config, authModule, fields, errors))
+          .orElse(invalidAuthPropertyType(config, authModule, errors))
+          .orElse(Option.when(hasMissingProperties)(authPropertiesMessage(authModule, unknownProperties, fields)))
+          .map(authConfigErrorMessage(config, _))
+      case None if !fields.contains("authModule") =>
+        Some(
+          authConfigErrorMessage(
+            config,
+            s"authConfig requires property [authModule] to be present. Accepted authModule values are [$acceptedAuthModules]."
+          )
+        )
+      case _ =>
+        Some(
+          authConfigErrorMessage(
+            config,
+            s"authModule: '${module.getOrElse("")}' is Invalid. Accepted authModule values are [$acceptedAuthModules]."
+          )
+        )
+    }
   }
+
+  private def authConfigErrorMessage(config: AuthConfigAt, message: String): String =
+    constructCustomErrorMessage(config.path, message)
+
+  private val hmrcProperties = List(
+    "agentAccess",
+    "enrolmentCheck",
+    "serviceId",
+    "regimeId",
+    "legacyFcEnrolmentVerifier",
+    "enrolmentOutcomes",
+    "enrolmentSection"
+  )
+  private val emailProperties =
+    List("emailCodeTemplate", "emailService", "emailUseInfo", "emailCodeHelp", "emailConfirmation")
+  private val hmrcVerifiedProperties =
+    List("ivFailure", "agentAccess", "minimumCL", "allowOrganisations", "allowSAIndividuals")
+
+  private def authProperties(authModule: String): List[String] =
+    authModule match {
+      case "hmrc"         => hmrcProperties
+      case "email"        => emailProperties
+      case "hmrcVerified" => hmrcVerifiedProperties
+      case "composite"    => List("configs")
+      case _              => Nil
+    }
+
+  // `dependants` are the present properties that cause `required` to be required
+  private case class RequiredAuthProperties(required: List[String], dependants: List[String] = Nil)
+
+  private val propertiesRequiringServiceId =
+    List("enrolmentCheck", "enrolmentOutcomes", "enrolmentSection", "regimeId", "legacyFcEnrolmentVerifier")
+
+  private def requiredAuthProperties(authModule: String, fields: Map[String, Json]): RequiredAuthProperties =
+    authModule match {
+      case "hmrc" if fields.contains("serviceId") => RequiredAuthProperties(List("enrolmentOutcomes"))
+      case "hmrc" =>
+        propertiesRequiringServiceId.filter(fields.contains) match {
+          case Nil        => RequiredAuthProperties(Nil)
+          case dependants => RequiredAuthProperties(List("serviceId"), dependants)
+        }
+      case "email"        => RequiredAuthProperties(List("emailCodeTemplate"))
+      case "hmrcVerified" => RequiredAuthProperties(hmrcVerifiedProperties)
+      case "composite"    => RequiredAuthProperties(List("configs"))
+      case _              => RequiredAuthProperties(Nil)
+    }
+
+  // Only hmrc and email have optional properties; hmrc's required ones depend on serviceId so all are listed
+  private def optionalAuthProperties(authModule: String): List[String] =
+    authModule match {
+      case "hmrc"  => hmrcProperties
+      case "email" => emailProperties.filterNot(_ == "emailCodeTemplate")
+      case _       => Nil
+    }
+
+  private def authPropertiesMessage(
+    authModule: String,
+    unknownProperties: Set[String],
+    fields: Map[String, Json] = Map.empty
+  ): String = {
+    val requirements = requiredAuthProperties(authModule, fields)
+    val optional = optionalAuthProperties(authModule)
+    val missing = requirements.required.filterNot(fields.contains)
+
+    val summary = authPropertiesSummary(authModule, unknownProperties, missing)
+    val requiredMessage = requirements match {
+      case RequiredAuthProperties(required, dependants) if dependants.nonEmpty =>
+        Some(s" Properties [${dependants.mkString(", ")}] requires [${required.mkString(", ")}].")
+      case RequiredAuthProperties(required, _) if required.nonEmpty =>
+        Some(s" Required properties: [${required.mkString(", ")}].")
+      case _ => None
+    }
+    val optionalMessage = Option.when(optional.nonEmpty)(s" Optional properties: [${optional.mkString(", ")}].")
+    val hmrcServiceIdMessage =
+      Option.when(authModule == "hmrc")(" When serviceId is provided, enrolmentOutcomes is also required.")
+
+    (summary :: List(requiredMessage, optionalMessage, hmrcServiceIdMessage).flatten).mkString
+  }
+
+  private def authPropertiesSummary(authModule: String, unknown: Set[String], missing: List[String]): String =
+    (authProperties(authModule), unknown, missing) match {
+      case (Nil, _, _) => s"authModule: '$authModule' does not accepts any other properties."
+      case (_, unknown, _) if unknown.nonEmpty =>
+        s"authModule: '$authModule' does not accept [${unknown.mkString(", ")}]."
+      case (_, _, missing) if missing.nonEmpty => s"authModule: '$authModule' is missing all required properties."
+      case _                                   => ""
+    }
+
+  private def invalidAuthPropertyValue(
+    config: AuthConfigAt,
+    authModule: String,
+    fields: Map[String, Json],
+    errors: NonEmptyList[ValidationError]
+  ): Option[String] = {
+    val enumErrorProperties = errors.toList.filter(_.keyword == "enum").flatMap(propertyOf(_, config))
+
+    (enumErrorProperties ++ allowedAuthPropertyValues.keys).distinct.iterator
+      .flatMap { property =>
+        for {
+          accepted <- allowedAuthPropertyValues.get(property)
+          value    <- fields.get(property)
+          if !value.asString.exists(accepted.contains)
+        } yield s"Property '$property' for authModule: '$authModule' expected one of [${accepted.mkString(", ")}]."
+      }
+      .nextOption()
+  }
+
+  private def invalidAuthPropertyType(
+    config: AuthConfigAt,
+    authModule: String,
+    errors: NonEmptyList[ValidationError]
+  ): Option[String] =
+    errors.toList.iterator
+      .flatMap { error =>
+        for {
+          property <- propertyOf(error, config)
+          expected <- expectedAuthPropertyTypes.get(property)
+        } yield s"Property '$property' for authModule '$authModule' expected $expected."
+      }
+      .nextOption()
+
+  // The direct property of the auth config the error belongs to, if any
+  private def propertyOf(error: ValidationError, config: AuthConfigAt): Option[String] =
+    Option
+      .when(error.location.startsWith(config.path + "/"))(error.location.stripPrefix(config.path + "/"))
+      .flatMap(_.split("/").headOption)
 
   private def parseErrorMessage(error: ValidationError): String =
     error.getMessage match {

@@ -216,51 +216,7 @@
       ]
     },
     "authConfig": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "authModule": {
-          "type": "string",
-          "pattern": "^(hmrc|anonymous|composite|hmrcAny|hmrcVerified)$"
-        },
-        "configs": {
-          "type": "array"
-        },
-        "agentAccess": {
-          "type": "string"
-        },
-        "enrolmentCheck": {
-          "type": "string"
-        },
-        "serviceId": {
-          "type": "string"
-        },
-        "regimeId": {
-          "type": "string"
-        },
-        "legacyFcEnrolmentVerifier": {
-          "type": "string"
-        },
-        "enrolmentOutcomes": {
-          "type": "object"
-        },
-        "enrolmentSection": {
-          "type": "object"
-        },
-        "ivFailure": {
-          "$ref": "#/$defs/stringOrEnCyObject"
-        },
-        "minimumCL": {
-          "type": "string",
-          "pattern": "^(200|250)$"
-        },
-        "allowOrganisations": {
-          "type": "boolean"
-        },
-        "allowSAIndividuals": {
-          "type": "boolean"
-        }
-      }
+      "$ref": "#/$defs/authConfig"
     },
     "sections": {
       "type": "array",
@@ -420,6 +376,299 @@
     "version"
   ],
   "$defs": {
+    "authConfig": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/hmrcAuthConfig"
+        },
+        {
+          "$ref": "#/$defs/emailAuthConfig"
+        },
+        {
+          "$ref": "#/$defs/anonymousAuthConfig"
+        },
+        {
+          "$ref": "#/$defs/hmrcVerifiedAuthConfig"
+        },
+        {
+          "$ref": "#/$defs/compositeAuthConfig"
+        }
+      ]
+    },
+    "hmrcAuthConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "authModule": {
+          "enum": [
+            "hmrc"
+          ]
+        },
+        "agentAccess": {
+          "$ref": "#/$defs/agentAccess"
+        },
+        "enrolmentCheck": {
+          "type": "string",
+          "enum": [
+            "never",
+            "always",
+            "forNonAgents"
+          ]
+        },
+        "serviceId": {
+          "type": "string"
+        },
+        "regimeId": {
+          "type": "string"
+        },
+        "legacyFcEnrolmentVerifier": {
+          "type": "string"
+        },
+        "enrolmentOutcomes": {
+          "$ref": "#/$defs/enrolmentOutcomes"
+        },
+        "enrolmentSection": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "authModule"
+      ],
+      "oneOf": [
+        {
+          "not": {
+            "anyOf": [
+              {
+                "required": [
+                  "serviceId"
+                ]
+              },
+              {
+                "required": [
+                  "enrolmentSection"
+                ]
+              },
+              {
+                "required": [
+                  "enrolmentOutcomes"
+                ]
+              },
+              {
+                "required": [
+                  "enrolmentCheck"
+                ]
+              },
+              {
+                "required": [
+                  "regimeId"
+                ]
+              },
+              {
+                "required": [
+                  "legacyFcEnrolmentVerifier"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "required": [
+            "serviceId",
+            "enrolmentOutcomes"
+          ]
+        }
+      ]
+    },
+    "emailAuthConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "authModule": {
+          "enum": [
+            "email"
+          ]
+        },
+        "emailCodeTemplate": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "en": {
+                  "type": "string"
+                },
+                "cy": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "en"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        },
+        "emailService": {
+          "type": "string",
+          "enum": [
+            "dc",
+            "notify"
+          ]
+        },
+        "emailUseInfo": {
+          "$ref": "#/$defs/stringOrEnCyObject"
+        },
+        "emailCodeHelp": {
+          "$ref": "#/$defs/stringOrEnCyObject"
+        },
+        "emailConfirmation": {
+          "$ref": "#/$defs/stringOrEnCyObject"
+        }
+      },
+      "required": [
+        "authModule",
+        "emailCodeTemplate"
+      ]
+    },
+    "anonymousAuthConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "authModule": {
+          "enum": [
+            "anonymous",
+            "awsAlbAuth",
+            "ofsted",
+            "hmrcAny"
+          ]
+        }
+      },
+      "required": [
+        "authModule"
+      ]
+    },
+    "hmrcVerifiedAuthConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "authModule": {
+          "enum": [
+            "hmrcVerified"
+          ]
+        },
+        "ivFailure": {
+          "$ref": "#/$defs/stringOrEnCyObject"
+        },
+        "agentAccess": {
+          "$ref": "#/$defs/agentAccess"
+        },
+        "minimumCL": {
+          "type": "string",
+          "enum": [
+            "200",
+            "250"
+          ]
+        },
+        "allowOrganisations": {
+          "type": "boolean"
+        },
+        "allowSAIndividuals": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "authModule",
+        "ivFailure",
+        "agentAccess",
+        "minimumCL",
+        "allowOrganisations",
+        "allowSAIndividuals"
+      ]
+    },
+    "compositeAuthConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "authModule": {
+          "enum": [
+            "composite"
+          ]
+        },
+        "configs": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "oneOf": [
+              {
+                "$ref": "#/$defs/hmrcAuthConfig"
+              },
+              {
+                "$ref": "#/$defs/emailAuthConfig"
+              }
+            ]
+          }
+        }
+      },
+      "required": [
+        "authModule",
+        "configs"
+      ]
+    },
+    "agentAccess": {
+      "type": "string",
+      "enum": [
+        "",
+        "requireMTDAgentEnrolment",
+        "denyAnyAgentAffinityUser",
+        "allowAnyAgentAffinityUser"
+      ]
+    },
+    "enrolmentOutcomes": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "notMatchedPage": {
+          "$ref": "#/$defs/enrolmentOutcome"
+        },
+        "alreadyLinkedPage": {
+          "$ref": "#/$defs/enrolmentOutcome"
+        },
+        "technicalFailurePage": {
+          "$ref": "#/$defs/enrolmentOutcome"
+        },
+        "successPage": {
+          "$ref": "#/$defs/enrolmentOutcome"
+        },
+        "insufficientCredentialsPage": {
+          "$ref": "#/$defs/enrolmentOutcome"
+        }
+      },
+      "required": [
+        "notMatchedPage",
+        "alreadyLinkedPage",
+        "technicalFailurePage",
+        "successPage",
+        "insufficientCredentialsPage"
+      ]
+    },
+    "enrolmentOutcome": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "title": {
+          "$ref": "#/$defs/stringOrEnCyObject"
+        },
+        "content": {
+          "$ref": "#/$defs/stringOrEnCyObject"
+        }
+      },
+      "required": [
+        "title",
+        "content"
+      ]
+    },
     "sections": {
       "type": "object",
       "additionalProperties": false,

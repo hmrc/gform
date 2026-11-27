@@ -25,6 +25,8 @@ import uk.gov.hmrc.gform.exceptions.SchemaValidationException
 
 class JsonSchemeValidatorSpec extends FunSuite {
 
+  private case class AuthConfigError(authConfig: Json, errorMessage: String)
+
   private def constructTestOneSectionJsonTemplate(properties: Json): Json =
     json"""
       {
@@ -170,6 +172,17 @@ class JsonSchemeValidatorSpec extends FunSuite {
         "acknowledgementSection": $properties
       }"""
 
+  private def constructTestAuthConfigJsonTemplate(authConfig: Json): Json =
+    json"""
+      {
+        "_id": "auth-config",
+        "formName": "Auth config",
+        "version": 1,
+        "description": "",
+        "authConfig": $authConfig,
+        "sections": []
+      }"""
+
   private def runInvalidJsonTest(result: Either[SchemaValidationException, Unit], expectedResult: List[String]): Unit =
     result match {
       case Right(value) => fail("No error was returned from schema validation:\n" + value)
@@ -190,6 +203,125 @@ class JsonSchemeValidatorSpec extends FunSuite {
     val schema = scala.io.Source.fromInputStream(inputStream).mkString
 
     JsonSchemaValidator.checkSchema(json.toString, schema, JsonSchemaErrorParser.parseErrorMessages)
+  }
+
+  private def authConfigValidationMessages(authConfig: Json): List[String] =
+    validateJson(constructTestAuthConfigJsonTemplate(authConfig)) match {
+      case Left(error) => error.errors.as[JsArray].value.toList.map(_.as[String])
+      case Right(_)    => fail("Expected authConfig validation to fail")
+    }
+
+  test("validateJson accepts valid authConfig values and their required fields") {
+    val enrolmentOutcomes = json"""
+      {
+        "notMatchedPage": { "title": "Title", "content": "Content" },
+        "alreadyLinkedPage": { "title": "Title", "content": "Content" },
+        "technicalFailurePage": { "title": "Title", "content": "Content" },
+        "successPage": { "title": "Title", "content": "Content" },
+        "insufficientCredentialsPage": { "title": "Title", "content": "Content" }
+      }"""
+    val authConfigs = List(
+      json"""{ "authModule": "hmrc" }""",
+      json"""{ "authModule": "hmrc", "serviceId": "service", "enrolmentOutcomes": $enrolmentOutcomes }""",
+      json"""{ "authModule": "email", "emailCodeTemplate": "template" }""",
+      json"""{ "authModule": "anonymous" }""",
+      json"""{ "authModule": "awsAlbAuth" }""",
+      json"""{ "authModule": "ofsted" }""",
+      json"""{ "authModule": "hmrcAny" }""",
+      json"""{
+        "authModule": "hmrcVerified",
+        "ivFailure": "Failure",
+        "agentAccess": "allowAnyAgentAffinityUser",
+        "minimumCL": "200",
+        "allowOrganisations": true,
+        "allowSAIndividuals": false
+      }""",
+      json"""{
+        "authModule": "composite",
+        "configs": [
+          { "authModule": "hmrc" },
+          { "authModule": "email", "emailCodeTemplate": { "en": "template-en", "cy": "template-cy" } }
+        ]
+      }"""
+    )
+
+    authConfigs.foreach(authConfig =>
+      assertEquals(validateJson(constructTestAuthConfigJsonTemplate(authConfig)), Right(()))
+    )
+  }
+
+  test("validateJson rejects invalid authConfig and return error message") {
+    val authConfigErrors = List(
+      AuthConfigError(
+        json"""{}""",
+        "Error at <#/authConfig>: authConfig requires property [authModule] to be present. Accepted authModule values are [hmrc, email, anonymous, hmrcAny, hmrcVerified, composite]."
+      ),
+      AuthConfigError(
+        json"""{ "authModule": "unknown" }""",
+        "Error at <#/authConfig>: authModule: 'unknown' is Invalid. Accepted authModule values are [hmrc, email, anonymous, hmrcAny, hmrcVerified, composite]."
+      ),
+      AuthConfigError(
+        json"""{ "authModule": "hmrc", "minimumCL": "200", "allowOrganisations": true, "allowSAIndividuals": true }""",
+        "Error at <#/authConfig>: authModule: 'hmrc' does not accept [minimumCL, allowOrganisations, allowSAIndividuals]. Optional properties: [agentAccess, enrolmentCheck, serviceId, regimeId, legacyFcEnrolmentVerifier, enrolmentOutcomes, enrolmentSection]. When serviceId is provided, enrolmentOutcomes is also required."
+      ),
+      AuthConfigError(
+        json"""{ "authModule": "hmrc", "serviceId": "service" }""",
+        "Error at <#/authConfig>: authModule: 'hmrc' is missing all required properties. Required properties: [enrolmentOutcomes]. Optional properties: [agentAccess, enrolmentCheck, serviceId, regimeId, legacyFcEnrolmentVerifier, enrolmentOutcomes, enrolmentSection]. When serviceId is provided, enrolmentOutcomes is also required."
+      ),
+      AuthConfigError(
+        json"""{ "authModule": "hmrc", "regimeId": "regimeId", "agentAccess": "requireMTDAgentEnrolment", "legacyFcEnrolmentVerifier": "NonUKCountryCode", "enrolmentCheck": "always" }""",
+        "Error at <#/authConfig>: authModule: 'hmrc' is missing all required properties. Properties [enrolmentCheck, regimeId, legacyFcEnrolmentVerifier] requires [serviceId]. Optional properties: [agentAccess, enrolmentCheck, serviceId, regimeId, legacyFcEnrolmentVerifier, enrolmentOutcomes, enrolmentSection]. When serviceId is provided, enrolmentOutcomes is also required."
+      ),
+      AuthConfigError(
+        json"""{ "authModule": "email" }""",
+        "Error at <#/authConfig>: authModule: 'email' is missing all required properties. Required properties: [emailCodeTemplate]. Optional properties: [emailService, emailUseInfo, emailCodeHelp, emailConfirmation]."
+      ),
+      AuthConfigError(
+        json"""{ "authModule": "email", "emailCodeTemplate": "template", "emailService": "invalid" }""",
+        "Error at <#/authConfig>: Property 'emailService' for authModule: 'email' expected one of [dc, notify]."
+      ),
+      AuthConfigError(
+        json"""{ "authModule": "anonymous", "minimumCL": "200" }""",
+        "Error at <#/authConfig>: authModule: 'anonymous' does not accepts any other properties."
+      ),
+      AuthConfigError(
+        json"""{ "authModule": "hmrcAny", "minimumCL": "200" }""",
+        "Error at <#/authConfig>: authModule: 'hmrcAny' does not accepts any other properties."
+      ),
+      AuthConfigError(
+        json"""{ "authModule": "hmrcVerified" }""",
+        "Error at <#/authConfig>: authModule: 'hmrcVerified' is missing all required properties. Required properties: [ivFailure, agentAccess, minimumCL, allowOrganisations, allowSAIndividuals]."
+      ),
+      AuthConfigError(
+        json"""{
+                "authModule": "hmrcVerified",
+                "ivFailure": "Failure",
+                "agentAccess": "allowAnyAgentAffinityUser",
+                "minimumCL": "160",
+                "allowOrganisations": true,
+                "allowSAIndividuals": false
+                }""",
+        "Error at <#/authConfig>: Property 'minimumCL' for authModule: 'hmrcVerified' expected one of [200, 250]."
+      ),
+      AuthConfigError(
+        json"""{ "authModule": "composite", "minimumCL": "200" }""",
+        "Error at <#/authConfig>: authModule: 'composite' does not accept [minimumCL]. Required properties: [configs]."
+      ),
+      AuthConfigError(
+        json"""{
+                "authModule": "composite",
+                "configs": [{ "authModule": "email", "emailCodeTemplate": "emailCodeTemplate" }, { "authModule": "hmrc", "enrolmentCheck": "always" }]
+                }""",
+        "Error at <#/authConfig/configs/1>: authModule: 'hmrc' is missing all required properties. Properties [enrolmentCheck] requires [serviceId]. Optional properties: [agentAccess, enrolmentCheck, serviceId, regimeId, legacyFcEnrolmentVerifier, enrolmentOutcomes, enrolmentSection]. When serviceId is provided, enrolmentOutcomes is also required."
+      )
+    )
+
+    authConfigErrors.foreach { authConfigError =>
+      assertEquals(
+        authConfigValidationMessages(authConfigError.authConfig).mkString,
+        authConfigError.errorMessage
+      )
+    }
   }
 
   test("validateJson allows a single page validator fieldId for cause-specific form processing validation") {
