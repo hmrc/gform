@@ -460,8 +460,8 @@ class SdesService(
     val envelopeId = submission.envelopeId
     val paths = sdesDestination.objectStorePaths(envelopeId, submission.submissionPrefix)
     sdesDestination match {
-      case SdesDestination.DataStore | SdesDestination.DataStoreLegacy | SdesDestination.HmrcIlluminate |
-          SdesDestination.DataLakehouse =>
+      case SdesDestination.DataStore | SdesDestination.DataStoreScr | SdesDestination.DataStoreLegacy |
+          SdesDestination.HmrcIlluminate | SdesDestination.DataLakehouse =>
         objectStoreAlgebra.deleteFile(paths.ephemeral, fileName)
       case SdesDestination.Dms | SdesDestination.Caseflow | SdesDestination.Pega | SdesDestination.InfoArchive =>
         objectStoreAlgebra.deleteZipFile(envelopeId, paths)
@@ -601,6 +601,7 @@ class SdesService(
 
     val notDmsBased = List(
       SdesDestination.DataStore,
+      SdesDestination.DataStoreScr,
       SdesDestination.DataStoreLegacy,
       SdesDestination.HmrcIlluminate,
       SdesDestination.DataLakehouse

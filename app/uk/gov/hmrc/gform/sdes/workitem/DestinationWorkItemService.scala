@@ -164,7 +164,11 @@ class DestinationWorkItemService(
       .traverse {
         case (SdesDestination.Dms | SdesDestination.Caseflow | SdesDestination.Pega, oid) =>
           dmsWorkItemRepo.markAs(oid, ToDo)
-        case (SdesDestination.HmrcIlluminate | SdesDestination.DataStore | SdesDestination.DataStoreLegacy, oid) =>
+        case (
+              SdesDestination.HmrcIlluminate | SdesDestination.DataStore | SdesDestination.DataStoreScr |
+              SdesDestination.DataStoreLegacy,
+              oid
+            ) =>
           dataStoreWorkItemRepo.markAs(oid, ToDo)
         case (SdesDestination.InfoArchive, oid)   => infoArchiveWorkItemRepo.markAs(oid, ToDo)
         case (SdesDestination.DataLakehouse, oid) => dataLakehouseWorkItemRepo.markAs(oid, ToDo)
