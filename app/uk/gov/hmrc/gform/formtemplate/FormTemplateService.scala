@@ -97,33 +97,20 @@ class FormTemplateService(
         }
       })
 
-  def createE2e(id: FormTemplateId): Future[Unit] = {
-    def asJsObject(json: Any): JsObject = json match {
-      case jsObject: JsObject => jsObject
-      case other              => throw new RuntimeException(s"Expected JsObject type, got $other")
-    }
-
-    def replaceOrThrow[A](fopt: FOpt[A]): Future[A] =
-      fopt.value.map {
-        case Right(a)  => a
-        case Left(err) => throw new Exception(err.error)
-      }
-
+  def createE2e(id: FormTemplateId): FOpt[Unit] =
     if (id.value.endsWith("-e2e")) {
-      Future.failed(new IllegalArgumentException(s"FormTemplateId ${id.value} is already an e2e form template"))
+      fromFutureA(
+        Future.failed(new IllegalArgumentException(s"FormTemplateId ${id.value} is already an e2e form template"))
+      )
     } else {
       val e2eId = FormTemplateId(s"${id.value}-e2e")
-
       for {
-        rawJs         <- formTemplateRawRepo.getDocumentAsJson(id.value).map(asJsObject)
-        maybeInternal <- formTemplateRepo.find(id.value)
-        internal <-
-          Future.fromTry(maybeInternal.toRight(new NoSuchElementException(s"FormTemplate ${id.value} not found")).toTry)
-        _ <- replaceOrThrow(formTemplateRawRepo.replace(FormTemplateRaw(rawJs + ("_id" -> JsString(e2eId.value)))))
-        _ <- replaceOrThrow(formTemplateRepo.replace(internal.copy(_id = e2eId)))
+        rawJs    <- fromFutureA(get(FormTemplateRawId(id.value)))
+        internal <- fromFutureA(get(id))
+        _        <- formTemplateRawRepo.replace(FormTemplateRaw(rawJs.value + ("_id" -> JsString(e2eId.value))))
+        _        <- formTemplateRepo.replace(internal.copy(_id = e2eId))
       } yield ()
     }
-  }
 
   def getFormTemplateHandlebars(formTemplateId: FormTemplateId): Future[List[HandlebarsTemplateId]] =
     for {
