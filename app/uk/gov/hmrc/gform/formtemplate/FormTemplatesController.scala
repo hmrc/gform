@@ -136,6 +136,10 @@ class FormTemplatesController(
     formTemplateBehavior.asOkJson
   }
 
+  def createE2e(id: FormTemplateId): Action[AnyContent] = formTemplateAction("createE2e", id) { _ =>
+    formTemplateService.createE2e(id).fold(_.asBadRequest, _ => NoContent)
+  }
+
   private def findFormTemplate(id: FormTemplateId): Future[FormTemplate] =
     formTemplateService
       .find(id)

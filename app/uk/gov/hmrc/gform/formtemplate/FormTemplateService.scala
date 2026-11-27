@@ -18,21 +18,21 @@ package uk.gov.hmrc.gform.formtemplate
 
 import cats.implicits._
 import org.slf4j.LoggerFactory
-import play.api.libs.json.JsObject
+import play.api.libs.json.{ JsObject, JsString }
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.core.{ FOpt, _ }
 import uk.gov.hmrc.gform.formredirect.FormRedirect
 import uk.gov.hmrc.gform.gformfrontend.GformFrontendConnector
 import uk.gov.hmrc.gform.handlebarstemplate.{ HandlebarsSchemaAlgebra, HandlebarsTemplateAlgebra }
 import uk.gov.hmrc.gform.repo.Repo
-import uk.gov.hmrc.gform.sharedmodel.{ HandlebarsSchemaId, HandlebarsTemplateId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DataOutputFormat.HBS
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.{ AsyncHandlebarsHttpApi, DataStore, HandlebarsHttpApi, HmrcDms }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationId, Destinations, JsonSchemaValidationSupport, UploadableConditioning }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations._
+import uk.gov.hmrc.gform.sharedmodel.{ HandlebarsSchemaId, HandlebarsTemplateId }
 
-import scala.concurrent.{ ExecutionContext, Future }
 import java.time.Instant
+import scala.concurrent.{ ExecutionContext, Future }
 
 trait FormTemplateAlgebra[F[_]] {
   def get(id: FormTemplateId): F[FormTemplate]
@@ -96,6 +96,21 @@ class FormTemplateService(
           case some => some
         }
       })
+
+  def createE2e(id: FormTemplateId): FOpt[Unit] =
+    if (id.value.endsWith("-e2e")) {
+      fromFutureA(
+        Future.failed(new IllegalArgumentException(s"FormTemplateId ${id.value} is already an e2e form template"))
+      )
+    } else {
+      val e2eId = FormTemplateId(s"${id.value}-e2e")
+      for {
+        rawJs    <- fromFutureA(get(FormTemplateRawId(id.value)))
+        internal <- fromFutureA(get(id))
+        _        <- formTemplateRawRepo.replace(FormTemplateRaw(rawJs.value + ("_id" -> JsString(e2eId.value))))
+        _        <- formTemplateRepo.replace(internal.copy(_id = e2eId))
+      } yield ()
+    }
 
   def getFormTemplateHandlebars(formTemplateId: FormTemplateId): Future[List[HandlebarsTemplateId]] =
     for {

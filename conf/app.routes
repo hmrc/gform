@@ -54,6 +54,7 @@ GET           /formtemplates-with-redirects/:formTemplateId                     
 GET           /formtemplates-redirects/:page/:pageSize                                                  uk.gov.hmrc.gform.formtemplate.FormTemplatesController.getRedirects(page: Int, pageSize: Int)
 GET           /formtemplates-with-handlebars/:formTemplateId                                            uk.gov.hmrc.gform.formtemplate.FormTemplatesController.getHandlebarsTemplateIds(formTemplateId: FormTemplateId)
 GET           /formtemplates/:formTemplateId/behavior                                                   uk.gov.hmrc.gform.formtemplate.FormTemplatesController.getBehavior(formTemplateId: FormTemplateId)
+POST          /formtemplates/:formTemplateId/create-e2e                                                 uk.gov.hmrc.gform.formtemplate.FormTemplatesController.createE2e(formTemplateId: FormTemplateId)
 
 GET           /handlebarstemplates                                                                      uk.gov.hmrc.gform.handlebarstemplate.HandlebarsTemplateController.all
 POST          /handlebarstemplates/:handlebarsTemplateId                                                uk.gov.hmrc.gform.handlebarstemplate.HandlebarsTemplateController.upsert(handlebarsTemplateId: HandlebarsTemplateId)
