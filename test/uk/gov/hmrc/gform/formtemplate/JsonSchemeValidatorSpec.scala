@@ -270,7 +270,7 @@ class JsonSchemeValidatorSpec extends FunSuite {
       ),
       AuthConfigError(
         json"""{ "authModule": "hmrc", "regimeId": "regimeId", "agentAccess": "requireMTDAgentEnrolment", "legacyFcEnrolmentVerifier": "NonUKCountryCode", "enrolmentCheck": "always" }""",
-        "Error at <#/authConfig>: authModule: 'hmrc' is missing all required properties. Properties [enrolmentCheck, regimeId] requires [serviceId]. Optional properties: [agentAccess, enrolmentCheck, serviceId, regimeId, legacyFcEnrolmentVerifier, enrolmentOutcomes, enrolmentSection]. When serviceId is provided, enrolmentOutcomes is also required."
+        "Error at <#/authConfig>: authModule: 'hmrc' is missing all required properties. Properties [enrolmentCheck, regimeId, legacyFcEnrolmentVerifier] requires [serviceId]. Optional properties: [agentAccess, enrolmentCheck, serviceId, regimeId, legacyFcEnrolmentVerifier, enrolmentOutcomes, enrolmentSection]. When serviceId is provided, enrolmentOutcomes is also required."
       ),
       AuthConfigError(
         json"""{ "authModule": "email" }""",

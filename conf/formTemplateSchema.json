@@ -462,6 +462,11 @@
                 "required": [
                   "regimeId"
                 ]
+              },
+              {
+                "required": [
+                  "legacyFcEnrolmentVerifier"
+                ]
               }
             ]
           }

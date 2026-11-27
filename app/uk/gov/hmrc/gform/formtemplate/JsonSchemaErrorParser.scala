@@ -186,7 +186,8 @@ object JsonSchemaErrorParser {
   // `dependants` are the present properties that cause `required` to be required
   private case class RequiredAuthProperties(required: List[String], dependants: List[String] = Nil)
 
-  private val propertiesRequiringServiceId = List("enrolmentCheck", "enrolmentOutcomes", "enrolmentSection", "regimeId")
+  private val propertiesRequiringServiceId =
+    List("enrolmentCheck", "enrolmentOutcomes", "enrolmentSection", "regimeId", "legacyFcEnrolmentVerifier")
 
   private def requiredAuthProperties(authModule: String, fields: Map[String, Json]): RequiredAuthProperties =
     authModule match {
